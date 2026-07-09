@@ -130,3 +130,62 @@ modules of the base `*Agent` class defined in each `agents/__init__.py`
 23. Value Objects gravitate to the Domain where their value is first semantically initialised.
 24. Semantic identity must survive movement, migration, replication and promotion.
 25. Infrastructure placement may change; semantic ownership must remain explainable.
+
+## Deployment and Resilience Rules
+
+| Rule | Description |
+|---|---|
+| Container/WASI only | LIRA runs only as portable container or WASI workloads. |
+| Host is substrate | Host does not own semantics; it provides execution resources. |
+| Domain owns semantics | The Domain is the authoritative semantic owner. |
+| Controller is inside Domain | DomainController is embedded inside the Domain, not outside it. |
+| Fault tolerance is Domain-owned | The DomainController maintains resilience for its Domain. |
+| Two replicas | Every Primary Domain maintains two Replica Domains in two other availability zones. |
+| Kubernetes executes | Kubernetes performs infrastructure placement; LIRA decides why and when. |
+| References cross boundaries | KnownHosts and KnownDomains are by reference, not copies. |
+
+## Semantic Gravity Rules
+
+| Object | Gravity Rule |
+|---|---|
+| Domains | Gravitate toward Domains with stronger dependent knowledge relationships. |
+| Concepts | Move to the Domain where they are most likely to be semantically owned. |
+| Value Objects | Gravitate to the Domain where their value is first semantically initialised in the data lifecycle. |
+
+## Execution Model
+
+**DomainController decides:**
+- create replica (`DomainController.create_replica`)
+- promote replica (`DomainController.promote_replica`)
+- migrate domain (`DomainController.migrate_domain`)
+- rebalance placement (`DomainController.rebalance_placement`)
+- optimise semantic locality (`DomainController.optimise_semantic_locality`)
+
+**Kubernetes performs** (`lira.management_plane.KubernetesManagementPlane`):
+- schedule workload
+- select node
+- select availability zone
+- attach persistence
+- start/stop container
+
+**Host provides:**
+- CPU for rules and relational reasoning
+- GPU for tensor operations
+- tensor store
+- persistence
+- networking
+
+**Domain preserves:**
+- semantic identity
+- concepts
+- relationships
+- value objects
+- provenance
+- tensor lineage
+
+## Final architecture rule
+
+Kubernetes manages infrastructure. Hosts provide execution. Domains own
+meaning. DomainControllers inside Domains manage survival and movement.
+Agents operate inside layers. SystemProperties expose SystemTensor by
+reference.
