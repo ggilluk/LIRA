@@ -32,8 +32,11 @@ src/lira/
         ├── agents/           Domain Agents -- specialist agents not tied to one layer
         ├── vocabulary/       Vocabulary Layer
         │   └── agents/        Seed, Lookup, Hydrate, Normalise
-        ├── linguistics/      Linguistics Layer
-        │   └── agents/        Tokenise, Parse, Classify, Structure
+        ├── linguistics/      Linguistics Layer -- composed services, not an agents/ folder
+        │   ├── units.py        Word, Punctuation, Clause, Sentence, Paragraph, Subject, UserPrompt
+        │   ├── dictionary.py, dictionary_hydrator.py, dictionary_processor.py, external_dictionary_adapter.py
+        │   ├── lexer.py, clause_segmentation.py, grammar_configuration.py
+        │   └── graph_processor.py, prompt_tokenizer.py
         ├── value_objects/    Value Objects Layer
         │   └── agents/        Parse, Validate, Convert, Normalise
         └── knowledge/        Knowledge Layer (TensorLiraGraph)

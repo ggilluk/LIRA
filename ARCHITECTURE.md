@@ -22,7 +22,7 @@ LIRA
             ├── Vocabulary Layer
             │   └── Vocabulary Agents (Folder)
             ├── Linguistics Layer
-            │   └── Linguistics Agents (Folder)
+            │   └── Dictionary, GraphProcessor, PromptTokenizer, ...   // composed services, not an Agents folder
             ├── Value Objects Layer
             │   └── Value Object Agents (Folder)
             └── Knowledge Layer
@@ -64,13 +64,20 @@ it (see Execution Model below).
   form to concept resolution), run by Vocabulary Agents.
 
 - **Linguistics Layer** -- grammar/syntax-level processing (parsing,
-  morphology) that feeds concept and relationship extraction. Owns a
-  `LinguisticSystemPropertyTensor` (one growable row per Word/Clause/
-  Sentence/Paragraph/Subject, amortized-doubling like TensorLiraGraph)
-  and the artefact dataclasses (`Word`, `Clause`, `Sentence`,
-  `Paragraph`, `Subject`) that reference it by row. Run by
-  `TokeniseAgent`, `ParseAgent`, `ClassifyAgent` and `StructureAgent`,
-  which compose to turn raw text into a `Subject` tree.
+  morphology) that feeds concept and relationship extraction. Does not
+  follow the Agents-folder convention the other three layers use: its
+  processing doesn't decompose cleanly into that shape, so it's a set of
+  composed services instead. `LinguisticsLayer` wires together a
+  `Dictionary` (lexicon) fed by an `AsyncDictionaryHydrator` (background,
+  deduplicated external lookups via `ExternalDictionaryAdapter`) through
+  `DictionaryProcessor`, a `LinguisticLexer` (regex tokenisation and
+  abbreviation-aware sentence splitting) and `ClauseSegmentationUtility`
+  (splits a sentence's tokens into clauses using a
+  `LinguisticGrammarConfiguration` of conjunctions/delimiters), and a
+  `GraphProcessor` that composes all of the above into the
+  Word/Punctuation -> Clause -> Sentence -> Paragraph -> Subject tree
+  (`units.py`), each node carrying a `LinguisticSystemProperty`.
+  `PromptTokenizer` is the entry point for a `UserPrompt`.
 
 - **Value Objects Layer** -- parses and normalises primitive values
   (measures, quantities, codes, identifiers, dates) into typed
@@ -84,13 +91,18 @@ it (see Execution Model below).
   compartmentalisation, cross-domain generalisation, output attribute
   completion) that read and write it by reference.
 
-Each layer's Agents are a folder (`vocabulary/agents/`,
-`linguistics/agents/`, `value_objects/agents/`, `knowledge/agents/`),
+Vocabulary, Value Objects and Knowledge's Agents are each a folder
+(`vocabulary/agents/`, `value_objects/agents/`, `knowledge/agents/`),
 not a separate top-level layer -- concrete agents live as sibling
 modules of the base `*Agent` class defined in each `agents/__init__.py`
 (Rule 15/16). Domain Agents follow the same convention
 (`domain/agents/`), but sit at the Domain level rather than inside one
-specific layer.
+specific layer. Linguistics is the exception: its artefact-processing
+classes (`GraphProcessor`, `DictionaryProcessor`, etc.) don't fit that
+shape, so they're plain composed services in the `linguistics/` package
+instead of an `agents/` folder -- still inside the layer whose
+artefacts they manage (Rule 16), just not wrapped in an `*Agent` base
+class.
 
 ## Design Principles and Statements
 
@@ -232,12 +244,18 @@ reference.
 | Layer | Primary Artefacts | Responsibility | Typical Agents |
 |---|---|---|---|
 | Vocabulary Layer | Words, identifiers, symbols, language codes, currency codes | Lexical inventory | Seed, lookup, hydrate, normalise vocabulary |
-| Linguistics Layer | Tokens, phrases, syntax, sentence structures | Language analysis | Tokenise, parse, classify, structure language |
+| Linguistics Layer | Tokens, phrases, syntax, sentence structures | Language analysis | Tokenise, parse, classify, structure language (implemented as `LinguisticLexer`, `ClauseSegmentationUtility` and `GraphProcessor`, not `*Agent` classes -- see Component notes) |
 | Value Objects Layer | Numbers, strings, dates, measurements, units, currencies, coordinates and other unqualified value types | Typed data representation | Parse, validate, convert, normalise values |
 | Knowledge Layer | Concepts, Attributes, Relationships, Generalisations | Semantic representation and reasoning | Bind, infer, train, evaluate, promote, compartmentalise |
 
-Each "Typical Agent" above is stubbed as a concrete `*Agent` subclass in
-its layer's `agents/` folder (e.g. `vocabulary/agents/seed_agent.py` ->
-`SeedAgent`, `knowledge/agents/compartmentalise_agent.py` ->
-`CompartmentaliseAgent`), ready to be registered on the layer via
-`.register(...)` once implemented.
+Each "Typical Agent" for Vocabulary, Value Objects and Knowledge is
+stubbed as a concrete `*Agent` subclass in its layer's `agents/` folder
+(e.g. `vocabulary/agents/seed_agent.py` -> `SeedAgent`,
+`knowledge/agents/compartmentalise_agent.py` -> `CompartmentaliseAgent`),
+ready to be registered on the layer via `.register(...)` once
+implemented. Linguistics implements its typical agents directly as
+working services (not stubs) instead: `LinguisticLexer.extract_tokens`
+(tokenise), `GraphProcessor.process_token`/`ClauseSegmentationUtility`
+(parse), `LinguisticLexer.split_sentences` (classify sentence/paragraph
+boundaries), and `GraphProcessor.process_sentence` /
+`process_paragraph` / `process_subject` (structure).

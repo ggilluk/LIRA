@@ -1,27 +1,31 @@
-"""LinguisticSystemProperty: a by-reference view into a
-LinguisticSystemPropertyTensor row (Rule 14) -- reading kind,
-sequence_number or uuid reads the live tensor cell, not a copied value,
-same convention as SystemPropertyRef in the Knowledge Layer."""
+"""Bridge metadata attached to every linguistic unit. SystemPropertyRef
+is a placeholder for a reference to a native graph or tensor engine node
+(e.g. a concept in the Knowledge Layer's graph) -- not wired up yet."""
 
-from .tensor import KIND_COL, SEQUENCE_COL, LinguisticSystemPropertyTensor
-from .units import LinguisticUnitKind
+from dataclasses import dataclass
+from typing import Optional
+
+from .units import LinguisticUnit, LinguisticUnitKind
 
 
+class SystemPropertyRef:
+    """Placeholder representing a reference to a native graph or tensor engine node."""
+    pass
+
+
+@dataclass
 class LinguisticSystemProperty:
-    __slots__ = ("store", "row")
-
-    def __init__(self, store: LinguisticSystemPropertyTensor, row: int):
-        self.store = store
-        self.row = row
-
-    @property
-    def kind(self) -> LinguisticUnitKind:
-        return LinguisticUnitKind(int(self.store.values[self.row, KIND_COL]))
-
-    @property
-    def sequence_number(self) -> int:
-        return int(self.store.values[self.row, SEQUENCE_COL])
-
-    @property
-    def uuid(self) -> str:
-        return self.store.uuid_of(self.row)
+    concept_system_property: SystemPropertyRef
+    linguistic_unit: LinguisticUnit
+    kind: LinguisticUnitKind
+    sequence_number: int
+    linguistic_unit_uuid: str
+    sequence_confidence: float = 0.0
+    sequence_provenance: float = 0.0
+    sequence_temporal: float = 0.0
+    sequence_activation: float = 0.0
+    inference_depth: int = 0
+    origin: Optional[str] = None
+    valence_weight: float = 0.0
+    arousal_weight: float = 0.0
+    dominance_weight: float = 0.0
