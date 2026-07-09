@@ -64,8 +64,13 @@ it (see Execution Model below).
   form to concept resolution), run by Vocabulary Agents.
 
 - **Linguistics Layer** -- grammar/syntax-level processing (parsing,
-  morphology) that feeds concept and relationship extraction, run by
-  Linguistics Agents.
+  morphology) that feeds concept and relationship extraction. Owns a
+  `LinguisticSystemPropertyTensor` (one growable row per Word/Clause/
+  Sentence/Paragraph/Subject, amortized-doubling like TensorLiraGraph)
+  and the artefact dataclasses (`Word`, `Clause`, `Sentence`,
+  `Paragraph`, `Subject`) that reference it by row. Run by
+  `TokeniseAgent`, `ParseAgent`, `ClassifyAgent` and `StructureAgent`,
+  which compose to turn raw text into a `Subject` tree.
 
 - **Value Objects Layer** -- parses and normalises primitive values
   (measures, quantities, codes, identifiers, dates) into typed
