@@ -2,40 +2,42 @@
 
 ```
 LIRA
-└── Kubernetes / WASI Management Plane
-    └── LIRA Host
-        ├── HostSystemProperties
-        ├── HostSystemTensor
-        ├── KnownHosts                         // by reference
-        └── HostedDomains
-            └── Domain
-                ├── DomainController
-                │   ├── Replica management
-                │   ├── Fault tolerance
-                │   ├── Domain migration
-                │   ├── Semantic gravity placement
-                │   ├── Kubernetes management-plane requests
-                │   └── Health monitoring
-                ├── DomainSystemProperties
-                ├── DomainSystemTensor
-                ├── KnownDomains               // by reference
-                ├── Vocabulary Layer
-                │   └── Vocabulary Agents (Folder)
-                ├── Linguistics Layer
-                │   └── Linguistics Agents (Folder)
-                ├── Value Objects Layer
-                │   └── Value Object Agents (Folder)
-                └── Knowledge Layer
-                    └── Knowledge Agents (Folder)
+└── LIRA Host
+    ├── HostSystemProperties
+    ├── HostSystemTensor
+    ├── KnownHosts                         // by reference
+    └── HostedDomains
+        └── Domain
+            ├── DomainController
+            │   ├── Replica management
+            │   ├── Fault tolerance
+            │   ├── Domain migration
+            │   ├── Semantic gravity placement
+            │   ├── Kubernetes management-plane requests
+            │   └── Health monitoring
+            ├── DomainSystemProperties
+            ├── DomainSystemTensor
+            ├── KnownDomains               // by reference
+            ├── Vocabulary Layer
+            │   └── Vocabulary Agents (Folder)
+            ├── Linguistics Layer
+            │   └── Linguistics Agents (Folder)
+            ├── Value Objects Layer
+            │   └── Value Object Agents (Folder)
+            └── Knowledge Layer
+                └── Knowledge Agents (Folder)
 ```
+
+Kubernetes / WASI is not a node in this tree: it is external
+infrastructure that LIRA's `DomainController`s request placement from
+(`lira.management_plane.KubernetesManagementPlane`), not something that
+contains a Host. LIRA runs only as container or WASI workloads, but
+LIRA's own object model starts at Host, not at the scheduler that placed
+it (see Execution Model below).
 
 ## Component notes
 
-- **Kubernetes / WASI Management Plane** -- the substrate LIRA runs on.
-  Schedules Hosts and, via each Domain's `DomainController`, mediates
-  replica placement, fault recovery, and migration for Domains.
-
-- **LIRA Host** (`lira.host.LIRAHost`) -- a node in the management plane.
+- **LIRA Host** (`lira.host.LIRAHost`) -- the top-level runtime unit.
   Owns host-level system state (`HostSystemProperties`,
   `HostSystemTensor`), a by-reference registry of other hosts
   (`KnownHosts`), and the Domains it currently hosts (`HostedDomains`).
