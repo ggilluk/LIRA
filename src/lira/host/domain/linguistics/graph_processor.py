@@ -1,6 +1,6 @@
 """Builds the Word/Punctuation -> Clause -> Sentence -> Paragraph ->
-Subject tree from raw text, attaching a LinguisticSystemProperty to
-every unit it creates."""
+Subject tree from raw text, attaching a tensor-backed
+LinguisticSystemProperty to every unit it creates."""
 
 import uuid
 from typing import List, Union
@@ -10,22 +10,26 @@ from .dictionary_processor import DictionaryProcessor
 from .grammar_configuration import LinguisticGrammarConfiguration
 from .lexer import LinguisticLexer
 from .system_property import LinguisticSystemProperty, SystemPropertyRef
+from .tensor import LinguisticSystemPropertyTensor
 from .units import Clause, LinguisticUnit, LinguisticUnitKind, Paragraph, Punctuation, Sentence, Subject, Word
 
 
 class GraphProcessor:
     def __init__(self, dict_processor: DictionaryProcessor, config: LinguisticGrammarConfiguration,
-                 use_clause_segmentation: bool = True):
+                 store: LinguisticSystemPropertyTensor, use_clause_segmentation: bool = True):
         self.dict_processor = dict_processor
         self.config = config
+        self.store = store
         self.use_clause_segmentation = use_clause_segmentation
 
     def create_property_wrapper(self, unit: LinguisticUnit, kind: LinguisticUnitKind, seq: int, origin: str) -> LinguisticSystemProperty:
-        return LinguisticSystemProperty(
-            concept_system_property=SystemPropertyRef(), linguistic_unit=unit, kind=kind,
-            sequence_number=seq, linguistic_unit_uuid=f"{kind.value.lower()}-{uuid.uuid4().hex[:6]}",
-            sequence_confidence=0.95, sequence_activation=1.0, origin=origin
+        row = self.store.allocate_row(
+            kind=kind, sequence_number=seq,
+            uuid_str=f"{kind.value.lower()}-{uuid.uuid4().hex[:6]}",
+            linguistic_unit=unit, concept_system_property=SystemPropertyRef(),
+            confidence=0.95, activation=1.0, origin=origin,
         )
+        return LinguisticSystemProperty(self.store, row)
 
     def process_token(self, text_token: str, absolute_seq_num: int) -> Union[Word, Punctuation]:
         entry = self.dict_processor.get_or_create_entry(text_token)

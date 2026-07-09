@@ -15,6 +15,7 @@ from .graph_processor import GraphProcessor
 from .lexer import LinguisticLexer
 from .prompt_tokenizer import PromptTokenizer
 from .system_property import LinguisticSystemProperty, SystemPropertyRef
+from .tensor import LinguisticSystemPropertyTensor
 from .units import (
     Clause,
     LinguisticRelationType,
@@ -36,7 +37,8 @@ class LinguisticsLayer:
         self.dictionary = Dictionary()
         self.hydrator = AsyncDictionaryHydrator(self.dictionary)  # starts a background hydration thread
         self.dictionary_processor = DictionaryProcessor(self.dictionary, self.hydrator)
-        self.graph_processor = GraphProcessor(self.dictionary_processor, self.grammar_configuration, use_clause_segmentation)
+        self.tensor = LinguisticSystemPropertyTensor()  # persistent, canonical store for every unit's numeric fields (Rule 14)
+        self.graph_processor = GraphProcessor(self.dictionary_processor, self.grammar_configuration, self.tensor, use_clause_segmentation)
         self.tokenizer = PromptTokenizer(self.graph_processor)
 
     def tokenize_prompt(self, prompt: UserPrompt) -> Subject:
@@ -57,6 +59,7 @@ __all__ = [
     "PromptTokenizer",
     "SystemPropertyRef",
     "LinguisticSystemProperty",
+    "LinguisticSystemPropertyTensor",
     "LinguisticUnitKind",
     "PartOfSpeech",
     "LinguisticRelationType",

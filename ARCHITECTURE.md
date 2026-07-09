@@ -76,8 +76,16 @@ it (see Execution Model below).
   `LinguisticGrammarConfiguration` of conjunctions/delimiters), and a
   `GraphProcessor` that composes all of the above into the
   Word/Punctuation -> Clause -> Sentence -> Paragraph -> Subject tree
-  (`units.py`), each node carrying a `LinguisticSystemProperty`.
-  `PromptTokenizer` is the entry point for a `UserPrompt`.
+  (`units.py`), each node carrying a `LinguisticSystemProperty` -- a
+  by-reference view into `LinguisticSystemPropertyTensor` (Rule 14),
+  same discipline as `SystemPropertyRef` in the Knowledge Layer: one
+  growable, amortized-doubling row per unit holding its numeric fields
+  (sequence number, kind code, confidence/provenance/temporal/
+  activation, inference depth, valence/arousal/dominance); the uuid,
+  origin, and the live `linguistic_unit` backref stay in plain Python
+  lists alongside it, mirroring TensorLiraGraph's `_edge_uuid` /
+  `_concept_names` convention. `PromptTokenizer` is the entry point for
+  a `UserPrompt`.
 
 - **Value Objects Layer** -- parses and normalises primitive values
   (measures, quantities, codes, identifiers, dates) into typed
