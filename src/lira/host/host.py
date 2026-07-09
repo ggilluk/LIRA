@@ -11,7 +11,7 @@ from .hosted_domains import HostedDomains
 class LIRAHost:
     def __init__(self, name: str):
         self.name = name
-        self.system_properties = HostSystemProperties()
         self.system_tensor = HostSystemTensor()
+        self.system_properties = HostSystemProperties(self.system_tensor)  # by-reference view (Rule 14)
         self.known_hosts = KnownHosts()  # by reference
         self.hosted_domains = HostedDomains()

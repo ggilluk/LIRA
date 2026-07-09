@@ -1,9 +1,8 @@
-"""Host-level system tensor: aggregate weight/activation state across all
-Domains hosted on this node."""
+"""Host-level system tensor: runtime state for this node, tensor-backed
+so it stays compact and vectorisable (State Locality principle)."""
 
-import numpy as np
+from ..tensor_view import NamedTensor
 
 
-class HostSystemTensor:
-    def __init__(self):
-        self.tensor = np.zeros((0, 0))
+class HostSystemTensor(NamedTensor):
+    FIELDS = ("cpu_load", "gpu_load", "memory_used", "network_throughput", "health")

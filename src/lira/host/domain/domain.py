@@ -15,11 +15,11 @@ from .knowledge import KnowledgeLayer
 
 
 class Domain:
-    def __init__(self, name: str):
+    def __init__(self, name: str, availability_zone: str = None):
         self.name = name
-        self.controller = DomainController(self)
-        self.system_properties = DomainSystemProperties()
+        self.controller = DomainController(self, availability_zone)
         self.system_tensor = DomainSystemTensor()
+        self.system_properties = DomainSystemProperties(self.system_tensor)  # by-reference view (Rule 14)
         self.known_domains = KnownDomains()  # by reference
 
         self.vocabulary = VocabularyLayer()

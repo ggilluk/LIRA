@@ -1,9 +1,8 @@
-"""Domain-level system tensor: aggregate weight/activation state across
-this Domain's layers."""
+"""Domain-level system tensor: runtime state for this Domain, tensor-backed
+so it stays compact and vectorisable (State Locality principle)."""
 
-import numpy as np
+from ...tensor_view import NamedTensor
 
 
-class DomainSystemTensor:
-    def __init__(self):
-        self.tensor = np.zeros((0, 0))
+class DomainSystemTensor(NamedTensor):
+    FIELDS = ("concept_count", "relationship_count", "activity", "replica_lag", "health")
