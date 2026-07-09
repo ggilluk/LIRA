@@ -4,6 +4,7 @@ domain-level system state, a by-reference registry of other Domains, and
 the four processing layers: Vocabulary, Linguistics, Value Objects, and
 Knowledge -- each with its own agents."""
 
+from .agents import DomainAgent
 from .controller import DomainController
 from .system_properties import DomainSystemProperties
 from .system_tensor import DomainSystemTensor
@@ -21,11 +22,15 @@ class Domain:
         self.system_tensor = DomainSystemTensor()
         self.system_properties = DomainSystemProperties(self.system_tensor)  # by-reference view (Rule 14)
         self.known_domains = KnownDomains()  # by reference
+        self.domain_agents: list[DomainAgent] = []  # specialist agents, not tied to one layer
 
         self.vocabulary = VocabularyLayer()
         self.linguistics = LinguisticsLayer()
         self.value_objects = ValueObjectsLayer()
         self.knowledge = KnowledgeLayer()
+
+    def register_domain_agent(self, agent: DomainAgent):
+        self.domain_agents.append(agent)
 
     @property
     def graph(self):

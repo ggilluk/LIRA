@@ -18,6 +18,7 @@ LIRA
             ├── DomainSystemProperties
             ├── DomainSystemTensor
             ├── KnownDomains               // by reference
+            ├── Domain Agents (Folder)
             ├── Vocabulary Layer
             │   └── Vocabulary Agents (Folder)
             ├── Linguistics Layer
@@ -54,6 +55,11 @@ it (see Execution Model below).
   zones), fault tolerance, domain migration, semantic gravity placement,
   Kubernetes management-plane requests, and health monitoring.
 
+- **Domain Agents** -- specialist agents that operate at the Domain
+  level, across artefacts that don't belong to a single layer (e.g.
+  cross-layer orchestration). A Domain may introduce these without
+  modifying the LIRA core (Specialisation principle).
+
 - **Vocabulary Layer** -- term/lexeme-level concept identity (surface
   form to concept resolution), run by Vocabulary Agents.
 
@@ -77,7 +83,9 @@ Each layer's Agents are a folder (`vocabulary/agents/`,
 `linguistics/agents/`, `value_objects/agents/`, `knowledge/agents/`),
 not a separate top-level layer -- concrete agents live as sibling
 modules of the base `*Agent` class defined in each `agents/__init__.py`
-(Rule 15/16).
+(Rule 15/16). Domain Agents follow the same convention
+(`domain/agents/`), but sit at the Domain level rather than inside one
+specific layer.
 
 ## Design Principles and Statements
 
@@ -191,3 +199,40 @@ Kubernetes manages infrastructure. Hosts provide execution. Domains own
 meaning. DomainControllers inside Domains manage survival and movement.
 Agents operate inside layers. SystemProperties expose SystemTensor by
 reference.
+
+## Design Statements by Principle
+
+| Design Principle | Architecture Component | Design Statement | Rationale |
+|---|---|---|---|
+| Performance | SystemTensor | Every root component owns a dedicated tensor-backed state store. | Enables compact, vectorised computation with minimal memory overhead. |
+| Performance | SystemProperties | SystemProperties is a by-reference view onto the SystemTensor. | Eliminates duplicated state while exposing strongly typed accessors. |
+| Scalability | Host | Host is the runtime execution boundary. | Supports single-process, clustered, and distributed deployments using the same architecture. |
+| Scalability | HostedDomains | Domains execute independently within a Host. | Domains can be loaded, unloaded, migrated, replicated, or scaled independently. |
+| Distribution | KnownHosts | KnownHosts exposes other Hosts by reference. | Enables distributed reasoning without copying runtime state. |
+| Modularity | Domain | Domain is the semantic and computational boundary. | Keeps knowledge isolated, versioned and independently deployable. |
+| Composability | KnownDomains | KnownDomains exposes external Domains by reference. | Allows semantic reuse while preserving ownership boundaries. |
+| Correctness | Vocabulary Layer | Contains lexical inventory only. | Separates words, symbols and identifiers from meaning. |
+| Correctness | Linguistics Layer | Contains language structure only. | Separates grammar from semantics. |
+| Correctness | Value Objects Layer | Contains typed value objects without semantic qualification. | Ensures data remains independent of knowledge. |
+| Explainability | Knowledge Layer | Qualifies Value Objects through Concepts, Attributes and Relationships. | Makes reasoning explicit, inspectable and traceable. |
+| Extensibility | Agents | Agents exist within the layer whose artefacts they manipulate. | Keeps behaviour close to data while avoiding an unnecessary agent framework. |
+| Specialisation | Domain Agents | Domains may introduce specialist agents. | Enables domain expertise without modifying the LIRA core. |
+| Consistency | Root Components | Every root component follows Object -> SystemProperties -> SystemTensor. | Provides one uniform execution model across the entire platform. |
+| Governance | Host | Host governs runtime execution, scheduling and resource management. | Separates infrastructure concerns from semantic concerns. |
+| Governance | Domain | Domain governs concepts, vocabulary and knowledge evolution. | Preserves semantic ownership independently of runtime deployment. |
+| Loose Coupling | KnownHosts / KnownDomains | Cross-boundary references are always by reference. | Prevents duplication and maintains a single authoritative source of truth. |
+
+## Layer Summary
+
+| Layer | Primary Artefacts | Responsibility | Typical Agents |
+|---|---|---|---|
+| Vocabulary Layer | Words, identifiers, symbols, language codes, currency codes | Lexical inventory | Seed, lookup, hydrate, normalise vocabulary |
+| Linguistics Layer | Tokens, phrases, syntax, sentence structures | Language analysis | Tokenise, parse, classify, structure language |
+| Value Objects Layer | Numbers, strings, dates, measurements, units, currencies, coordinates and other unqualified value types | Typed data representation | Parse, validate, convert, normalise values |
+| Knowledge Layer | Concepts, Attributes, Relationships, Generalisations | Semantic representation and reasoning | Bind, infer, train, evaluate, promote, compartmentalise |
+
+Each "Typical Agent" above is stubbed as a concrete `*Agent` subclass in
+its layer's `agents/` folder (e.g. `vocabulary/agents/seed_agent.py` ->
+`SeedAgent`, `knowledge/agents/compartmentalise_agent.py` ->
+`CompartmentaliseAgent`), ready to be registered on the layer via
+`.register(...)` once implemented.
