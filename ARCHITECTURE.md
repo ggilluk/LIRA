@@ -38,18 +38,20 @@ it (see Execution Model below).
 
 ## Component notes
 
-- **LIRA Host** (`lira.host.LIRAHost`) -- the top-level runtime unit.
-  Owns host-level system state (`HostSystemProperties`,
-  `HostSystemTensor`), a by-reference registry of other hosts
-  (`KnownHosts`), and the Domains it currently hosts (`HostedDomains`).
-  Physically defined in `knowledge/data_classes/` (see Repository
-  Layout below) -- the tree above is the runtime containment structure,
-  not the file layout.
+- **LIRA Host** (`lira.LIRAHost` / `lira.knowledge.LIRAHost`) -- the
+  top-level runtime unit. Owns host-level system state
+  (`HostSystemProperties`, `HostSystemTensor`), a by-reference registry
+  of other hosts (`KnownHosts`), and the Domains it currently hosts
+  (`HostedDomains`). Physically defined in `knowledge/data_classes/`
+  (see Repository Layout below) -- the tree above is the runtime
+  containment structure, not the file layout. There is no `host/` or
+  `domain/` package on disk; `lira.knowledge` is where these types
+  actually live.
 
-- **Domain** (`lira.host.domain.Domain`) -- LIRA's semantic and
-  computational boundary; Domains partition knowledge. Composes a
-  `DomainController` for operations, domain-level system state
-  (`DomainSystemProperties`, `DomainSystemTensor`), a by-reference
+- **Domain** (`lira.Domain` / `lira.knowledge.Domain`) -- LIRA's
+  semantic and computational boundary; Domains partition knowledge.
+  Composes a `DomainController` for operations, domain-level system
+  state (`DomainSystemProperties`, `DomainSystemTensor`), a by-reference
   registry of other domains (`KnownDomains`), and four processing
   layers. Physically defined in `knowledge/data_classes/` alongside
   `LIRAHost` (see Repository Layout below).
@@ -112,14 +114,15 @@ Vocabulary, Value Objects and Knowledge's Agents are each a folder
 `knowledge/agents_role/` -- see Repository Layout below), not a separate
 top-level layer -- concrete agents live as sibling modules of the base
 `*Agent` class defined in each `agents_role/__init__.py` (Rule 15/16).
-Domain Agents follow the same convention (`domain/agents/`), but sit at
-the Domain level rather than inside one specific layer -- Domain is
-outside the scope of the Repository Layout reorg below. Linguistics is
-the exception: its artefact-processing classes (`GraphProcessor`,
-`DictionaryProcessor`, etc.) don't fit that shape, so they're plain
-composed services in `linguistics/agents_role/` instead of `*Agent`
-subclasses -- still inside the layer whose artefacts they manage
-(Rule 16), just not wrapped in an `*Agent` base class.
+Domain Agents follow the same convention, physically at
+`knowledge/agents_role/domain_agent.py` alongside `DomainController`,
+even though they sit at the Domain level rather than inside the
+Knowledge Layer specifically. Linguistics is the exception: its
+artefact-processing classes (`GraphProcessor`, `DictionaryProcessor`,
+etc.) don't fit that shape, so they're plain composed services in
+`linguistics/agents_role/` instead of `*Agent` subclasses -- still
+inside the layer whose artefacts they manage (Rule 16), just not
+wrapped in an `*Agent` base class.
 
 ## Repository Layout (Configuration Management)
 
@@ -130,6 +133,11 @@ imported as. It currently applies to the four Domain-internal layers
 Domain artefact, per below. The Management Plane (`KubernetesManagementPlane`)
 is external infrastructure, not part of LIRA's own object model (see
 above), and is unaffected.
+
+The four layers are root folders directly under `src/lira/` -- there is
+no `host/` or `domain/` package on disk. `src/lira/` contains
+`vocabulary/`, `linguistics/`, `value_objects/`, `knowledge/`,
+`management_plane/`, and the top-level `__init__.py`. Nothing else.
 
 1. **By Architectural Layer** -- `vocabulary/`, `linguistics/`,
    `value_objects/`, `knowledge/`.
@@ -170,12 +178,12 @@ physical nesting. Physical file placement follows artefact purpose, not
 the runtime object graph (see the note on the component tree above).
 
 Each layer's `__init__.py` stays a stable public import surface (e.g.
-`from lira.host.domain.knowledge import KnowledgeLayer, Domain,
-LIRAHost` all work, as do the shorter `from lira import Domain,
-LIRAHost` and `from lira.host import LIRAHost` /
-`from lira.host.domain import Domain`) -- these are thin re-export
-facades over `data_classes/` and `agents_role/`, not where the classes
-are actually defined anymore.
+`from lira.knowledge import KnowledgeLayer, Domain, LIRAHost,
+DomainController, DomainAgent` all work, as does the shorter
+`from lira import Domain, LIRAHost`) -- these are thin re-export facades
+over `data_classes/` and `agents_role/`, not where the classes are
+actually defined anymore. `lira.host` and `lira.host.domain` no longer
+exist as import paths.
 
 ## Design Principles and Statements
 
