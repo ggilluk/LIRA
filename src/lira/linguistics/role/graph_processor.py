@@ -38,7 +38,7 @@ class GraphProcessor:
     def create_property_wrapper(self, unit: LinguisticUnit, kind: LinguisticUnitKind, seq: int, origin: str) -> LinguisticSystemProperty:
         row = self.store.allocate_row(
             kind=kind, sequence_number=seq,
-            uuid_str=f"{kind.value.lower()}-{uuid.uuid4().hex[:6]}",
+            uuid_str=f"{kind.name.lower()}-{uuid.uuid4().hex[:6]}",
             linguistic_unit=unit, concept_system_property=SystemPropertyRef(),
             confidence=0.95, activation=1.0, origin=origin,
         )

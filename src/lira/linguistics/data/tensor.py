@@ -6,7 +6,11 @@ LinguisticSystemProperty reads/writes them by reference (Rule 14), not
 as copied Python floats. Non-numeric per-row data (uuid, origin, the
 live linguistic_unit backref, the concept_system_property placeholder)
 lives in plain Python lists, mirroring TensorLiraGraph's _edge_uuid /
-_concept_names convention -- never packed into the tensor itself."""
+_concept_names convention -- never packed into the tensor itself.
+
+kind is stored as kind.value directly: LinguisticUnitKind's members are
+themselves numeric codes (Word=0, Punctuation=1, ...), not string labels
+-- no separate code-lookup table needed to put a kind in the tensor."""
 
 import numpy as np
 
@@ -23,12 +27,6 @@ VALENCE_COL = 7
 AROUSAL_COL = 8
 DOMINANCE_COL = 9
 N_COLS = 10
-
-# LinguisticUnitKind's members have string .value ("Word", ...), which can't
-# live in a float array -- encode by definition-order index instead, which
-# is fixed and deterministic (unlike hash()).
-_KIND_ORDER = list(LinguisticUnitKind)
-_KIND_TO_CODE = {kind: code for code, kind in enumerate(_KIND_ORDER)}
 
 
 class LinguisticSystemPropertyTensor:
@@ -59,7 +57,7 @@ class LinguisticSystemPropertyTensor:
         row = self._n_rows
         self._n_rows += 1
 
-        self.values[row, KIND_COL] = _KIND_TO_CODE[kind]
+        self.values[row, KIND_COL] = kind.value
         self.values[row, SEQUENCE_COL] = sequence_number
         self.values[row, CONFIDENCE_COL] = confidence
         self.values[row, PROVENANCE_COL] = provenance
@@ -77,7 +75,7 @@ class LinguisticSystemPropertyTensor:
         return row
 
     def kind_of(self, row: int) -> LinguisticUnitKind:
-        return _KIND_ORDER[int(self.values[row, KIND_COL])]
+        return LinguisticUnitKind(int(self.values[row, KIND_COL]))
 
     def uuid_of(self, row: int) -> str:
         return self._uuids[row]
