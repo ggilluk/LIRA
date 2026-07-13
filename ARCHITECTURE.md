@@ -29,12 +29,14 @@ LIRA
                 └── Knowledge Agents (Folder)
 ```
 
-Kubernetes / WASI is not a node in this tree: it is external
-infrastructure that LIRA's `DomainController`s request placement from
-(`lira.management_plane.KubernetesManagementPlane`), not something that
-contains a Host. LIRA runs only as container or WASI workloads, but
-LIRA's own object model starts at Host, not at the scheduler that placed
-it (see Execution Model below).
+Kubernetes / WASI itself is not a node in this tree: it is external
+infrastructure, not something that contains a Host. LIRA's own
+`HostController` (`lira.knowledge.HostController`) is the LIRA-owned
+class that talks to it -- `DomainController`s request placement through
+their `HostController`, which is the only thing that ever reaches into
+Kubernetes/WASI directly. LIRA runs only as container or WASI
+workloads, but LIRA's own object model starts at Host, not at the
+external scheduler that placed it (see Execution Model below).
 
 ## Component notes
 
@@ -59,9 +61,17 @@ it (see Execution Model below).
 - **DomainController** -- the operational control loop for a Domain:
   replica management (two Replica Domains in two other availability
   zones), fault tolerance, domain migration, semantic gravity placement,
-  Kubernetes management-plane requests, and health monitoring.
+  requests issued through its `HostController`, and health monitoring.
   Physically defined in `knowledge/agents_role/` (Agents/Role) -- see
   Repository Layout below.
+
+- **HostController** -- LIRA's own class for talking to the actual
+  Kubernetes/WASI substrate: schedule workload, select node, select
+  availability zone, attach persistence, start/stop container (see
+  Execution Model). A `DomainController` holds a reference to one and
+  issues requests to it rather than reaching into Kubernetes/WASI
+  directly. Physically defined in `knowledge/agents_role/` alongside
+  `DomainController`.
 
 - **Domain Agents** -- specialist agents that operate at the Domain
   level, across artefacts that don't belong to a single layer (e.g.
@@ -130,14 +140,16 @@ This is a physical-file-organisation rule, separate from namespace
 naming: it governs where a file lives on disk, not what it's called or
 imported as. It currently applies to the four Domain-internal layers
 (Vocabulary, Linguistics, Value Objects, Knowledge) plus every Host and
-Domain artefact, per below. The Management Plane (`KubernetesManagementPlane`)
-is external infrastructure, not part of LIRA's own object model (see
-above), and is unaffected.
+Domain artefact, per below, including `HostController` (Agents/Role,
+LIRA's own class for talking to the Kubernetes/WASI substrate). The
+actual Kubernetes/WASI runtime is external infrastructure, not part of
+LIRA's own object model (see above), and is the only thing unaffected
+by this rule.
 
 The four layers are root folders directly under `src/lira/` -- there is
-no `host/` or `domain/` package on disk. `src/lira/` contains
-`vocabulary/`, `linguistics/`, `value_objects/`, `knowledge/`,
-`management_plane/`, and the top-level `__init__.py`. Nothing else.
+no `host/`, `domain/`, or `management_plane/` package on disk. `src/lira/`
+contains `vocabulary/`, `linguistics/`, `value_objects/`, `knowledge/`,
+and the top-level `__init__.py`. Nothing else.
 
 1. **By Architectural Layer** -- `vocabulary/`, `linguistics/`,
    `value_objects/`, `knowledge/`.
@@ -166,8 +178,10 @@ else:
   `KnownHosts`, and the shared `NamedTensor`/`NamedTensorProperties`
   base (`tensor_view.py`), alongside `KnowledgeLayer` and
   `TensorLiraGraph`.
-- `knowledge/agents_role/` -- `DomainController` and `DomainAgent`,
-  alongside `KnowledgeAgent` and the Band 1-5 concrete agents.
+- `knowledge/agents_role/` -- `DomainController`, `DomainAgent`, and
+  `HostController` (LIRA's own class for talking to the Kubernetes/WASI
+  substrate -- see below), alongside `KnowledgeAgent` and the Band 1-5
+  concrete agents.
 - `knowledge/documentation/`, `knowledge/apis/`, `knowledge/uis/`,
   `knowledge/assets/` -- Host/Domain have no distinct artefacts here
   yet, so nothing to move.
@@ -269,7 +283,8 @@ exist as import paths.
 - rebalance placement (`DomainController.rebalance_placement`)
 - optimise semantic locality (`DomainController.optimise_semantic_locality`)
 
-**Kubernetes performs** (`lira.management_plane.KubernetesManagementPlane`):
+**HostController performs** (`lira.knowledge.HostController`, LIRA's
+class for talking to the Kubernetes/WASI substrate):
 - schedule workload
 - select node
 - select availability zone

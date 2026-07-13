@@ -1,4 +1,3 @@
-from .knowledge import LIRAHost, Domain
-from .management_plane import KubernetesManagementPlane
+from .knowledge import LIRAHost, Domain, HostController
 
-__all__ = ["LIRAHost", "Domain", "KubernetesManagementPlane"]
+__all__ = ["LIRAHost", "Domain", "HostController"]

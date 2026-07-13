@@ -18,8 +18,7 @@ The four Architectural Layers are root folders directly under
 
 ```
 src/lira/
-├── __init__.py             re-exports LIRAHost, Domain, KubernetesManagementPlane
-├── management_plane/       KubernetesManagementPlane -- external infra LIRA requests placement from
+├── __init__.py             re-exports LIRAHost, Domain, HostController
 │
 │   # Every layer below follows the Repository Layout rule:
 │   # by Architectural Layer, then by artefact purpose --
@@ -54,18 +53,20 @@ src/lira/
     │                        LIRAHost, HostSystemProperties, HostSystemTensor, HostedDomains, KnownHosts;
     │                        tensor_view.py (shared NamedTensor/NamedTensorProperties base)
     ├── agents_role/         KnowledgeAgent, Bind/Infer/Train/Evaluate/Promote/Compartmentalise;
-    │                        DomainController, DomainAgent
+    │                        DomainController, DomainAgent, HostController
     └── apis/, uis/, assets/   (none yet)
 ```
 
-`Domain`, `LIRAHost`, and `DomainController` live in `lira.knowledge`
-even though, at runtime, a `LIRAHost` contains `Domain`s, a `Domain`
-contains a `KnowledgeLayer`, and `DomainController` sits inside `Domain`
--- physical file placement follows artefact purpose, not the runtime
-object graph. `from lira import LIRAHost, Domain` and
+`Domain`, `LIRAHost`, `DomainController`, and `HostController` (LIRA's
+own class for talking to the Kubernetes/WASI substrate, renamed from
+`KubernetesManagementPlane`) all live in `lira.knowledge` even though,
+at runtime, a `LIRAHost` contains `Domain`s, a `Domain` contains a
+`KnowledgeLayer`, and `DomainController` sits inside `Domain` -- physical
+file placement follows artefact purpose, not the runtime object graph.
+`from lira import LIRAHost, Domain, HostController` and
 `from lira.knowledge import LIRAHost, Domain, DomainController,
-DomainAgent` both work; there is no `lira.host` or `lira.host.domain`
-import path anymore.
+DomainAgent, HostController` both work; there is no `lira.host`,
+`lira.host.domain`, or `lira.management_plane` import path anymore.
 
 ## Install
 

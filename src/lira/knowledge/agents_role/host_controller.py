@@ -1,16 +1,17 @@
-"""Kubernetes / WASI Management Plane: the substrate LIRA runs on.
-Infrastructure Separation principle -- Kubernetes performs infrastructure
-orchestration; LIRA (via each Domain's DomainController) decides semantic
-intent. Kubernetes PERFORMS: schedule workload, select node, select
-availability zone, attach persistence, start/stop container.
+"""HostController: the Host-level counterpart to DomainController --
+handles infrastructure operations for a Host (scheduling, node/AZ
+selection, persistence, container lifecycle) that back a Kubernetes or
+WASI runtime. Infrastructure Separation principle -- HostController
+performs infrastructure orchestration; LIRA (via each Domain's
+DomainController) decides semantic intent.
 """
 
 
-class KubernetesManagementPlane:
+class HostController:
     """Placeholder for the concrete scheduler/controller integration once
     LIRA targets a real Kubernetes or WASI runtime. A DomainController
     holds a reference to one of these and issues requests to it; it never
-    reaches into Kubernetes directly."""
+    reaches into Kubernetes/WASI directly."""
 
     def schedule_workload(self, workload):
         raise NotImplementedError
