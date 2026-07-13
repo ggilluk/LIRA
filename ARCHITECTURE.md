@@ -103,7 +103,10 @@ external scheduler that placed it (see Execution Model below).
   and a `GraphProcessor` that composes all of the above (calling into
   Vocabulary's `DictionaryProcessor` to resolve each token) into the
   Word/Punctuation -> Clause -> Sentence -> Paragraph -> Subject tree
-  (`units.py`), each node carrying a `LinguisticSystemProperty` -- a
+  (`linguistic_unit.py` for the shared base, one file per concrete kind:
+  `word.py`, `punctuation.py`, `clause.py`, `sentence.py`,
+  `paragraph.py`, `subject.py`, `user_prompt.py`), each node carrying a
+  `LinguisticSystemProperty` -- a
   by-reference view into `LinguisticSystemPropertyTensor` (Rule 14),
   same discipline as `SystemPropertyRef` in the Knowledge Layer: one
   growable, amortized-doubling row per unit holding its numeric fields

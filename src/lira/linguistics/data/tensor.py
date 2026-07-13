@@ -10,7 +10,7 @@ _concept_names convention -- never packed into the tensor itself."""
 
 import numpy as np
 
-from .units import LinguisticUnitKind
+from .linguistic_unit_kind import LinguisticUnitKind
 
 KIND_COL = 0
 SEQUENCE_COL = 1

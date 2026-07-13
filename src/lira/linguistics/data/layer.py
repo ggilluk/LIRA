@@ -2,7 +2,8 @@ from ..role.graph_processor import GraphProcessor
 from ..role.prompt_tokenizer import PromptTokenizer
 from .grammar_configuration import LinguisticGrammarConfiguration
 from .tensor import LinguisticSystemPropertyTensor
-from .units import Subject, UserPrompt
+from .subject import Subject
+from .user_prompt import UserPrompt
 
 # DictionaryProcessor (lira.vocabulary) is used only as a type hint here --
 # see graph_processor.py for why it's deliberately left unimported.

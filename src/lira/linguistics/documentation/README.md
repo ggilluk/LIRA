@@ -9,8 +9,12 @@ and design rules.
 ## Layout
 
 - `data/` -- `LinguisticsLayer`; the `Word`/`Punctuation`/`Clause`/
-  `Sentence`/`Paragraph`/`Subject`/`UserPrompt` tree and their enums
-  (`units.py`); `LinguisticSystemPropertyTensor` and the by-reference
+  `Sentence`/`Paragraph`/`Subject`/`UserPrompt` tree, one class per file
+  (`linguistic_unit.py` for the shared base, `word.py`,
+  `punctuation.py`, `clause.py`, `sentence.py`, `paragraph.py`,
+  `subject.py`, `user_prompt.py`) plus their enums (`linguistic_unit_kind.py`,
+  `part_of_speech.py`, `linguistic_relation_type.py`);
+  `LinguisticSystemPropertyTensor` and the by-reference
   `LinguisticSystemProperty` view (Rule 14); `LinguisticGrammarConfiguration`.
 - `agents/` -- `LinguisticsAgent` (no concrete subclasses yet).
 - `role/` -- `GraphProcessor`, `PromptTokenizer`, `LinguisticLexer`,

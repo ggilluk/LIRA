@@ -10,13 +10,21 @@ from ..data.grammar_configuration import LinguisticGrammarConfiguration
 from .lexer import LinguisticLexer
 from ..data.system_property import LinguisticSystemProperty, SystemPropertyRef
 from ..data.tensor import LinguisticSystemPropertyTensor
-from ..data.units import Clause, LinguisticUnit, LinguisticUnitKind, Paragraph, Punctuation, Sentence, Subject, Word
+from ..data.clause import Clause
+from ..data.linguistic_unit import LinguisticUnit
+from ..data.linguistic_unit_kind import LinguisticUnitKind
+from ..data.paragraph import Paragraph
+from ..data.punctuation import Punctuation
+from ..data.sentence import Sentence
+from ..data.subject import Subject
+from ..data.word import Word
 
 # DictionaryProcessor (lira.vocabulary) is used only as a type hint here --
 # Linguistics never constructs or inspects one, just calls the instance it's
 # given. Left unimported (not even under typing.TYPE_CHECKING) because
-# Vocabulary's own modules import Linguistics's units.py, and a top-level
-# import here would form an import-time cycle between the two layers.
+# Vocabulary's own modules import Linguistics's word.py/punctuation.py/
+# part_of_speech.py, and a top-level import here would form an
+# import-time cycle between the two layers.
 
 
 class GraphProcessor:

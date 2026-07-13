@@ -35,8 +35,11 @@ src/lira/
 │   └── api/, ui/, assets/   (none yet)
 ├── linguistics/            Linguistics Layer
 │   ├── documentation/
-│   ├── data/                 LinguisticsLayer, units.py (Word/Clause/Sentence/
-│   │                          Paragraph/Subject/UserPrompt), tensor.py, system_property.py,
+│   ├── data/                 LinguisticsLayer, one class per file: linguistic_unit.py
+│   │                          (base), word.py, punctuation.py, clause.py, sentence.py,
+│   │                          paragraph.py, subject.py, user_prompt.py, plus enums
+│   │                          (linguistic_unit_kind.py, part_of_speech.py,
+│   │                          linguistic_relation_type.py), tensor.py, system_property.py,
 │   │                          grammar_configuration.py
 │   ├── agents/                 LinguisticsAgent (no concrete subclasses yet)
 │   ├── role/                   GraphProcessor, PromptTokenizer, LinguisticLexer,
@@ -79,8 +82,8 @@ constructor argument rather than owning its own lexicon --
 `vocabulary.dictionary_processor` into `LinguisticsLayer`. Linguistics
 only ever references that type as a string-quoted, unimported type hint
 (never a real import), because `vocabulary`'s own modules import
-Linguistics's `units.py` (for `Word`/`Punctuation`/`PartOfSpeech`) --
-a real top-level import in both directions would form an import cycle.
+Linguistics's `word.py`/`punctuation.py`/`part_of_speech.py` -- a real
+top-level import in both directions would form an import cycle.
 
 ## Install
 

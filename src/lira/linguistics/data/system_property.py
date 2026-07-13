@@ -23,7 +23,7 @@ from .tensor import (
     VALENCE_COL,
     LinguisticSystemPropertyTensor,
 )
-from .units import LinguisticUnitKind
+from .linguistic_unit_kind import LinguisticUnitKind
 
 
 class SystemPropertyRef:

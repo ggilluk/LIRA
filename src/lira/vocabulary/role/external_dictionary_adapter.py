@@ -2,7 +2,7 @@
 
 from typing import Any, Tuple
 
-from lira.linguistics.data.units import PartOfSpeech
+from lira.linguistics.data.part_of_speech import PartOfSpeech
 
 
 class ExternalDictionaryAdapter:

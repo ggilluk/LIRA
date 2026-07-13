@@ -27,19 +27,17 @@ from .data.grammar_configuration import LinguisticGrammarConfiguration
 from .data.layer import LinguisticsLayer
 from .data.system_property import LinguisticSystemProperty, SystemPropertyRef
 from .data.tensor import LinguisticSystemPropertyTensor
-from .data.units import (
-    Clause,
-    LinguisticRelationType,
-    LinguisticUnit,
-    LinguisticUnitKind,
-    Paragraph,
-    PartOfSpeech,
-    Punctuation,
-    Sentence,
-    Subject,
-    UserPrompt,
-    Word,
-)
+from .data.clause import Clause
+from .data.linguistic_relation_type import LinguisticRelationType
+from .data.linguistic_unit import LinguisticUnit
+from .data.linguistic_unit_kind import LinguisticUnitKind
+from .data.paragraph import Paragraph
+from .data.part_of_speech import PartOfSpeech
+from .data.punctuation import Punctuation
+from .data.sentence import Sentence
+from .data.subject import Subject
+from .data.user_prompt import UserPrompt
+from .data.word import Word
 
 __all__ = [
     "LinguisticsLayer",
