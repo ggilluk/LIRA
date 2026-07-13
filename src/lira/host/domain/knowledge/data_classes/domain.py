@@ -4,15 +4,15 @@ domain-level system state, a by-reference registry of other Domains, and
 the four processing layers: Vocabulary, Linguistics, Value Objects, and
 Knowledge -- each with its own agents."""
 
-from .agents import DomainAgent
-from .controller import DomainController
-from .system_properties import DomainSystemProperties
-from .system_tensor import DomainSystemTensor
+from ...agents import DomainAgent
+from ...controller import DomainController
+from .domain_system_properties import DomainSystemProperties
+from .domain_system_tensor import DomainSystemTensor
 from .known_domains import KnownDomains
-from .vocabulary import VocabularyLayer
-from .linguistics import LinguisticsLayer
-from .value_objects import ValueObjectsLayer
-from .knowledge import KnowledgeLayer
+from ...vocabulary import VocabularyLayer
+from ...linguistics import LinguisticsLayer
+from ...value_objects import ValueObjectsLayer
+from .layer import KnowledgeLayer
 
 
 class Domain:

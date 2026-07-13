@@ -15,20 +15,12 @@ design principles, and architecture rules.
 
 ```
 src/lira/
+├── __init__.py             re-exports LIRAHost, Domain, KubernetesManagementPlane
 ├── tensor_view.py          NamedTensor / NamedTensorProperties (shared by-reference view base)
 ├── management_plane/       KubernetesManagementPlane -- external infra LIRA requests placement from
-└── host/                   LIRAHost
-    ├── host.py
-    ├── system_properties.py
-    ├── system_tensor.py
-    ├── known_hosts.py       // by reference
-    ├── hosted_domains.py
-    └── domain/              Domain
-        ├── domain.py
+└── host/                   re-export facade for LIRAHost (see knowledge/data_classes/ below)
+    └── domain/             re-export facade for Domain (see knowledge/data_classes/ below)
         ├── controller.py     DomainController (replicas, migration, semantic placement, health)
-        ├── system_properties.py
-        ├── system_tensor.py
-        ├── known_domains.py  // by reference
         ├── agents/           Domain Agents -- specialist agents not tied to one layer
         │
         │   # The four layers below follow the Repository Layout rule:
@@ -55,13 +47,22 @@ src/lira/
         │   ├── data_classes/  ValueObjectsLayer
         │   ├── agents_role/   ValueObjectAgent, Parse/Validate/Convert/Normalise
         │   └── apis/, uis/, assets/   (none yet)
-        └── knowledge/        Knowledge Layer
+        └── knowledge/        Knowledge Layer -- also the repo's home for Host/Domain Data Classes
             ├── documentation/
             ├── data_classes/  KnowledgeLayer, TensorLiraGraph (+ ConceptRef,
-            │                  SystemPropertyRef, RelationshipRef, enums)
+            │                  SystemPropertyRef, RelationshipRef, enums);
+            │                  Domain, DomainSystemProperties, DomainSystemTensor, KnownDomains;
+            │                  LIRAHost, HostSystemProperties, HostSystemTensor, HostedDomains, KnownHosts
             ├── agents_role/   KnowledgeAgent, Bind/Infer/Train/Evaluate/Promote/Compartmentalise
             └── apis/, uis/, assets/   (none yet)
 ```
+
+`Domain` and `LIRAHost` physically live in `knowledge/data_classes/`
+even though, at runtime, a `LIRAHost` contains `Domain`s and a `Domain`
+contains a `KnowledgeLayer` -- physical file placement follows artefact
+purpose, not the runtime object graph. `lira.host`, `lira.host.domain`,
+and `lira.host.domain.knowledge` all still export the classes you'd
+expect (`from lira import LIRAHost, Domain` keeps working).
 
 ## Install
 

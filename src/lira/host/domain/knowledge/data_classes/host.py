@@ -2,8 +2,8 @@
 management plane. Owns host-level system state and the Domains it
 currently hosts."""
 
-from .system_properties import HostSystemProperties
-from .system_tensor import HostSystemTensor
+from .host_system_properties import HostSystemProperties
+from .host_system_tensor import HostSystemTensor
 from .known_hosts import KnownHosts
 from .hosted_domains import HostedDomains
 
