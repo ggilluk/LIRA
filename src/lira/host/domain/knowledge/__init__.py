@@ -4,12 +4,15 @@ Relationships.
 
 Repository layout follows Architectural Layer -> artefact purpose:
 data_classes/ (KnowledgeLayer, TensorLiraGraph and its reference/view
-types, plus Domain and LIRAHost and their state classes -- Knowledge is
-the repository's home for core data-class types, per the Repository
-Layout rule in ARCHITECTURE.md), agents_role/ (KnowledgeAgent and the
-Band 1-5 concrete agents), documentation/, apis/, uis/, assets/."""
+types, the shared NamedTensor/NamedTensorProperties base, plus Domain
+and LIRAHost and their state classes), agents_role/ (KnowledgeAgent and
+the Band 1-5 concrete agents, plus DomainController and DomainAgent) --
+Knowledge is the repository's home for core Data Class and Agents/Role
+types generally, not just Knowledge-layer-specific ones, per the
+Repository Layout rule in ARCHITECTURE.md. documentation/, apis/, uis/,
+assets/ round out the six artefact-purpose buckets."""
 
-from .agents_role import KnowledgeAgent
+from .agents_role import DomainAgent, DomainController, KnowledgeAgent
 from .data_classes.domain import Domain
 from .data_classes.domain_system_properties import DomainSystemProperties
 from .data_classes.domain_system_tensor import DomainSystemTensor
@@ -31,6 +34,7 @@ from .data_classes.tensor_graph import (
     ValueTypeKind,
     provenance_for_depth,
 )
+from .data_classes.tensor_view import NamedTensor, NamedTensorProperties
 
 __all__ = [
     "KnowledgeLayer",
@@ -45,6 +49,8 @@ __all__ = [
     "ValueTypeKind",
     "provenance_for_depth",
     "Domain",
+    "DomainController",
+    "DomainAgent",
     "DomainSystemProperties",
     "DomainSystemTensor",
     "KnownDomains",
@@ -53,4 +59,6 @@ __all__ = [
     "HostSystemTensor",
     "HostedDomains",
     "KnownHosts",
+    "NamedTensor",
+    "NamedTensorProperties",
 ]

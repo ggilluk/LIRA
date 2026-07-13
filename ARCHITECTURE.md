@@ -58,11 +58,15 @@ it (see Execution Model below).
   replica management (two Replica Domains in two other availability
   zones), fault tolerance, domain migration, semantic gravity placement,
   Kubernetes management-plane requests, and health monitoring.
+  Physically defined in `knowledge/agents_role/` (Agents/Role) -- see
+  Repository Layout below.
 
 - **Domain Agents** -- specialist agents that operate at the Domain
   level, across artefacts that don't belong to a single layer (e.g.
   cross-layer orchestration). A Domain may introduce these without
-  modifying the LIRA core (Specialisation principle).
+  modifying the LIRA core (Specialisation principle). The base
+  `DomainAgent` class is physically defined in `knowledge/agents_role/`
+  alongside `DomainController`.
 
 - **Vocabulary Layer** -- term/lexeme-level concept identity (surface
   form to concept resolution), run by Vocabulary Agents.
@@ -122,10 +126,10 @@ subclasses -- still inside the layer whose artefacts they manage
 This is a physical-file-organisation rule, separate from namespace
 naming: it governs where a file lives on disk, not what it's called or
 imported as. It currently applies to the four Domain-internal layers
-(Vocabulary, Linguistics, Value Objects, Knowledge) plus Host and
-Domain's Data Class types, per below. `DomainController`, Domain Agents,
-and the Management Plane are unaffected and keep their existing
-locations.
+(Vocabulary, Linguistics, Value Objects, Knowledge) plus every Host and
+Domain artefact, per below. The Management Plane (`KubernetesManagementPlane`)
+is external infrastructure, not part of LIRA's own object model (see
+above), and is unaffected.
 
 1. **By Architectural Layer** -- `vocabulary/`, `linguistics/`,
    `value_objects/`, `knowledge/`.
@@ -144,17 +148,26 @@ locations.
    - `uis/` -- none yet, for any layer.
    - `assets/` -- none yet, for any layer.
 
-**Knowledge is the repository's home for core data-class types
-generally**, not just Knowledge-layer-specific ones: `Domain`,
-`DomainSystemProperties`, `DomainSystemTensor`, `KnownDomains`,
-`LIRAHost`, `HostSystemProperties`, `HostSystemTensor`, `HostedDomains`
-and `KnownHosts` physically live in `knowledge/data_classes/` alongside
-`KnowledgeLayer` and `TensorLiraGraph`, even though at runtime a `Domain`
-*contains* a `KnowledgeLayer`, not the other way around -- physical file
-placement follows artefact purpose (Data Class), not the runtime object
-graph. `DomainController` (Agents/Role) and the Domain Agents folder
-stay at `domain/controller.py` and `domain/agents/`, since only Data
-Classes moved.
+**Knowledge is the repository's home for core artefact types generally**,
+not just Knowledge-layer-specific ones -- every Host and Domain artefact
+is sorted into Knowledge's purpose buckets by the same rule as anything
+else:
+- `knowledge/data_classes/` -- `Domain`, `DomainSystemProperties`,
+  `DomainSystemTensor`, `KnownDomains`, `LIRAHost`,
+  `HostSystemProperties`, `HostSystemTensor`, `HostedDomains`,
+  `KnownHosts`, and the shared `NamedTensor`/`NamedTensorProperties`
+  base (`tensor_view.py`), alongside `KnowledgeLayer` and
+  `TensorLiraGraph`.
+- `knowledge/agents_role/` -- `DomainController` and `DomainAgent`,
+  alongside `KnowledgeAgent` and the Band 1-5 concrete agents.
+- `knowledge/documentation/`, `knowledge/apis/`, `knowledge/uis/`,
+  `knowledge/assets/` -- Host/Domain have no distinct artefacts here
+  yet, so nothing to move.
+
+This holds even though, at runtime, a `LIRAHost` *contains* `Domain`s
+and a `Domain` *contains* a `KnowledgeLayer` -- the reverse of the
+physical nesting. Physical file placement follows artefact purpose, not
+the runtime object graph (see the note on the component tree above).
 
 Each layer's `__init__.py` stays a stable public import surface (e.g.
 `from lira.host.domain.knowledge import KnowledgeLayer, Domain,
