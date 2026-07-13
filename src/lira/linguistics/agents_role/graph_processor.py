@@ -6,16 +6,21 @@ import uuid
 from typing import List, Union
 
 from .clause_segmentation import ClauseSegmentationUtility
-from .dictionary_processor import DictionaryProcessor
 from ..data_classes.grammar_configuration import LinguisticGrammarConfiguration
 from .lexer import LinguisticLexer
 from ..data_classes.system_property import LinguisticSystemProperty, SystemPropertyRef
 from ..data_classes.tensor import LinguisticSystemPropertyTensor
 from ..data_classes.units import Clause, LinguisticUnit, LinguisticUnitKind, Paragraph, Punctuation, Sentence, Subject, Word
 
+# DictionaryProcessor (lira.vocabulary) is used only as a type hint here --
+# Linguistics never constructs or inspects one, just calls the instance it's
+# given. Left unimported (not even under typing.TYPE_CHECKING) because
+# Vocabulary's own modules import Linguistics's units.py, and a top-level
+# import here would form an import-time cycle between the two layers.
+
 
 class GraphProcessor:
-    def __init__(self, dict_processor: DictionaryProcessor, config: LinguisticGrammarConfiguration,
+    def __init__(self, dict_processor: "DictionaryProcessor", config: LinguisticGrammarConfiguration,
                  store: LinguisticSystemPropertyTensor, use_clause_segmentation: bool = True):
         self.dict_processor = dict_processor
         self.config = config

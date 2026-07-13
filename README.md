@@ -25,19 +25,19 @@ src/lira/
 │   # documentation/, data_classes/, agents_role/, apis/, uis/, assets/.
 │   # See ARCHITECTURE.md's "Repository Layout" section.
 │
-├── vocabulary/             Vocabulary Layer
+├── vocabulary/             Vocabulary Layer -- also owns the lexicon (Rule 17)
 │   ├── documentation/
-│   ├── data_classes/        VocabularyLayer
-│   ├── agents_role/         VocabularyAgent, Seed/Lookup/Hydrate/Normalise
+│   ├── data_classes/        VocabularyLayer, dictionary.py (Dictionary, DictionaryEntry)
+│   ├── agents_role/         VocabularyAgent, Seed/Lookup/Hydrate/Normalise;
+│   │                        DictionaryProcessor, AsyncDictionaryHydrator, ExternalDictionaryAdapter
 │   └── apis/, uis/, assets/   (none yet)
 ├── linguistics/            Linguistics Layer
 │   ├── documentation/
 │   ├── data_classes/        LinguisticsLayer, units.py (Word/Clause/Sentence/
 │   │                        Paragraph/Subject/UserPrompt), tensor.py, system_property.py,
-│   │                        dictionary.py, grammar_configuration.py
+│   │                        grammar_configuration.py
 │   ├── agents_role/         GraphProcessor, PromptTokenizer, LinguisticLexer,
-│   │                        ClauseSegmentationUtility, DictionaryProcessor,
-│   │                        AsyncDictionaryHydrator, ExternalDictionaryAdapter
+│   │                        ClauseSegmentationUtility
 │   └── apis/, uis/, assets/   (none yet)
 ├── value_objects/          Value Objects Layer
 │   ├── documentation/
@@ -67,6 +67,15 @@ file placement follows artefact purpose, not the runtime object graph.
 `from lira.knowledge import LIRAHost, Domain, DomainController,
 DomainAgent, HostController` both work; there is no `lira.host`,
 `lira.host.domain`, or `lira.management_plane` import path anymore.
+
+`LinguisticsLayer` takes a Vocabulary `DictionaryProcessor` as a
+constructor argument rather than owning its own lexicon --
+`Domain.__init__` builds `vocabulary` first and passes
+`vocabulary.dictionary_processor` into `LinguisticsLayer`. Linguistics
+only ever references that type as a string-quoted, unimported type hint
+(never a real import), because `vocabulary`'s own modules import
+Linguistics's `units.py` (for `Word`/`Punctuation`/`PartOfSpeech`) --
+a real top-level import in both directions would form an import cycle.
 
 ## Install
 

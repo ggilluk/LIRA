@@ -3,7 +3,7 @@ hydration for unknown words."""
 
 from ..data_classes.dictionary import Dictionary, DictionaryEntry
 from .dictionary_hydrator import AsyncDictionaryHydrator
-from ..data_classes.units import PartOfSpeech, Punctuation, Word
+from lira.linguistics.data_classes.units import PartOfSpeech, Punctuation, Word
 
 
 class DictionaryProcessor:

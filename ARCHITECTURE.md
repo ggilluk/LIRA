@@ -22,7 +22,7 @@ LIRA
             ├── Vocabulary Layer
             │   └── Vocabulary Agents (Folder)
             ├── Linguistics Layer
-            │   └── Dictionary, GraphProcessor, PromptTokenizer, ...   // composed services, not an Agents folder
+            │   └── GraphProcessor, PromptTokenizer, ...   // composed services, not an Agents folder
             ├── Value Objects Layer
             │   └── Value Object Agents (Folder)
             └── Knowledge Layer
@@ -81,20 +81,28 @@ external scheduler that placed it (see Execution Model below).
   alongside `DomainController`.
 
 - **Vocabulary Layer** -- term/lexeme-level concept identity (surface
-  form to concept resolution), run by Vocabulary Agents.
+  form to concept resolution), run by Vocabulary Agents. Also owns the
+  lexicon: `VocabularyLayer` wires together a `Dictionary` (lexical
+  inventory only, Rule 17) fed by an `AsyncDictionaryHydrator`
+  (background, deduplicated external lookups via
+  `ExternalDictionaryAdapter`) through `DictionaryProcessor`
+  (look up an entry, or seed a fallback one and queue hydration for it).
+  `Domain.linguistics` resolves tokens through
+  `Domain.vocabulary.dictionary_processor` rather than Linguistics
+  keeping its own copy of the lexicon.
 
 - **Linguistics Layer** -- grammar/syntax-level processing (parsing,
   morphology) that feeds concept and relationship extraction. Does not
   follow the Agents-folder convention the other three layers use: its
   processing doesn't decompose cleanly into that shape, so it's a set of
-  composed services instead. `LinguisticsLayer` wires together a
-  `Dictionary` (lexicon) fed by an `AsyncDictionaryHydrator` (background,
-  deduplicated external lookups via `ExternalDictionaryAdapter`) through
-  `DictionaryProcessor`, a `LinguisticLexer` (regex tokenisation and
-  abbreviation-aware sentence splitting) and `ClauseSegmentationUtility`
-  (splits a sentence's tokens into clauses using a
-  `LinguisticGrammarConfiguration` of conjunctions/delimiters), and a
-  `GraphProcessor` that composes all of the above into the
+  composed services instead. `LinguisticsLayer` takes a Vocabulary
+  `DictionaryProcessor` (constructor-injected, since the lexicon belongs
+  to Vocabulary, not Linguistics) and wires together a `LinguisticLexer`
+  (regex tokenisation and abbreviation-aware sentence splitting) and
+  `ClauseSegmentationUtility` (splits a sentence's tokens into clauses
+  using a `LinguisticGrammarConfiguration` of conjunctions/delimiters),
+  and a `GraphProcessor` that composes all of the above (calling into
+  Vocabulary's `DictionaryProcessor` to resolve each token) into the
   Word/Punctuation -> Clause -> Sentence -> Paragraph -> Subject tree
   (`units.py`), each node carrying a `LinguisticSystemProperty` -- a
   by-reference view into `LinguisticSystemPropertyTensor` (Rule 14),
@@ -128,11 +136,16 @@ Domain Agents follow the same convention, physically at
 `knowledge/agents_role/domain_agent.py` alongside `DomainController`,
 even though they sit at the Domain level rather than inside the
 Knowledge Layer specifically. Linguistics is the exception: its
-artefact-processing classes (`GraphProcessor`, `DictionaryProcessor`,
-etc.) don't fit that shape, so they're plain composed services in
-`linguistics/agents_role/` instead of `*Agent` subclasses -- still
-inside the layer whose artefacts they manage (Rule 16), just not
-wrapped in an `*Agent` base class.
+artefact-processing classes (`GraphProcessor`, `LinguisticLexer`,
+`ClauseSegmentationUtility`, `PromptTokenizer`) don't fit that shape, so
+they're plain composed services in `linguistics/agents_role/` instead of
+`*Agent` subclasses -- still inside the layer whose artefacts they
+manage (Rule 16), just not wrapped in an `*Agent` base class.
+Vocabulary's `agents_role/` mixes both: real `VocabularyAgent`
+subclasses (`SeedAgent`, `LookupAgent`, `HydrateAgent`, `NormaliseAgent`)
+alongside the lexicon's own plain service classes (`DictionaryProcessor`,
+`AsyncDictionaryHydrator`, `ExternalDictionaryAdapter`) for the same
+reason -- they play an active role but aren't shaped like an `*Agent`.
 
 ## Repository Layout (Configuration Management)
 
@@ -159,11 +172,16 @@ and the top-level `__init__.py`. Nothing else.
    - `data_classes/` -- state-holding types: the layer's `*Layer`
      container class, and any other class whose primary job is holding
      data (e.g. `TensorLiraGraph`, `LinguisticSystemPropertyTensor`,
-     `Dictionary`, the `Word`/`Clause`/... tree, `ConceptRef`).
+     `Dictionary`, the `Word`/`Clause`/... tree, `ConceptRef`). A
+     Dictionary is a lexicon, i.e. lexical inventory (Rule 17), so it
+     lives in Vocabulary's `data_classes/`, not Linguistics's, even
+     though Linguistics is what actually calls into it.
    - `agents_role/` -- behaviour-playing types: the base `*Agent` class
-     and its concrete subclasses, plus (for Linguistics) the
-     processor/service classes that play an active role without being
-     `*Agent` subclasses (e.g. `GraphProcessor`).
+     and its concrete subclasses, plus (for Linguistics, and for
+     Vocabulary's `DictionaryProcessor`/`AsyncDictionaryHydrator`/
+     `ExternalDictionaryAdapter`) the processor/service classes that
+     play an active role without being `*Agent` subclasses (e.g.
+     `GraphProcessor`).
    - `apis/` -- none yet, for any layer.
    - `uis/` -- none yet, for any layer.
    - `assets/` -- none yet, for any layer.
@@ -349,10 +367,15 @@ stubbed as a concrete `*Agent` subclass in its layer's `agents_role/`
 folder (e.g. `vocabulary/agents_role/seed_agent.py` -> `SeedAgent`,
 `knowledge/agents_role/compartmentalise_agent.py` ->
 `CompartmentaliseAgent`), ready to be registered on the layer via
-`.register(...)` once
-implemented. Linguistics implements its typical agents directly as
-working services (not stubs) instead: `LinguisticLexer.extract_tokens`
-(tokenise), `GraphProcessor.process_token`/`ClauseSegmentationUtility`
-(parse), `LinguisticLexer.split_sentences` (classify sentence/paragraph
+`.register(...)` once implemented -- except Vocabulary's "lookup" and
+"hydrate", which are already real, working services rather than stubs:
+`DictionaryProcessor.get_or_create_entry` (lookup, falling back to seed
+a new entry) and `AsyncDictionaryHydrator` (hydrate, via a background,
+deduplicated worker thread calling `ExternalDictionaryAdapter`).
+Linguistics implements its typical agents directly as working services
+(not stubs) too: `LinguisticLexer.extract_tokens` (tokenise),
+`GraphProcessor.process_token`/`ClauseSegmentationUtility` (parse),
+`LinguisticLexer.split_sentences` (classify sentence/paragraph
 boundaries), and `GraphProcessor.process_sentence` /
-`process_paragraph` / `process_subject` (structure).
+`process_paragraph` / `process_subject` (structure) -- calling into
+Vocabulary's `DictionaryProcessor` to resolve each token.

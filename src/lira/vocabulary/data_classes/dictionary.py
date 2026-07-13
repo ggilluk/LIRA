@@ -4,7 +4,7 @@ import threading
 from dataclasses import dataclass, field
 from typing import List, Optional, Union
 
-from .units import PartOfSpeech, Punctuation, Word
+from lira.linguistics.data_classes.units import PartOfSpeech, Punctuation, Word
 
 
 @dataclass
