@@ -4,10 +4,10 @@ instances before they enter the Knowledge Layer. Contains typed
 unqualified data only (Rule 19).
 
 Repository layout follows Architectural Layer -> artefact purpose:
-data_classes/ (ValueObjectsLayer), agents_role/ (ValueObjectAgent and
-concrete agents), documentation/, apis/, uis/, assets/."""
+data/ (ValueObjectsLayer), agents/ (ValueObjectAgent and concrete
+agents), role/ (none yet), documentation/, apis/, uis/, assets/."""
 
-from .agents_role import ValueObjectAgent
-from .data_classes.layer import ValueObjectsLayer
+from .agents import ValueObjectAgent
+from .data.layer import ValueObjectsLayer
 
 __all__ = ["ValueObjectsLayer", "ValueObjectAgent"]

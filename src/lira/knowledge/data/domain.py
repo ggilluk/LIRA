@@ -4,8 +4,8 @@ domain-level system state, a by-reference registry of other Domains, and
 the four processing layers: Vocabulary, Linguistics, Value Objects, and
 Knowledge -- each with its own agents."""
 
-from ..agents_role.domain_agent import DomainAgent
-from ..agents_role.domain_controller import DomainController
+from ..agents.domain_agent import DomainAgent
+from ..role.domain_controller import DomainController
 from .domain_system_properties import DomainSystemProperties
 from .domain_system_tensor import DomainSystemTensor
 from .known_domains import KnownDomains

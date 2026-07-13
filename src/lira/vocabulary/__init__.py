@@ -3,18 +3,18 @@
 (Rule 17).
 
 Repository layout follows Architectural Layer -> artefact purpose:
-data_classes/ (VocabularyLayer, Dictionary, DictionaryEntry),
-agents_role/ (VocabularyAgent and concrete agents, DictionaryProcessor,
+data/ (VocabularyLayer, Dictionary, DictionaryEntry), agents/
+(VocabularyAgent and concrete agents), role/ (DictionaryProcessor,
 AsyncDictionaryHydrator, ExternalDictionaryAdapter -- the lexicon and
-everything that seeds/looks up/hydrates it belong here, not Linguistics),
-documentation/, apis/, uis/, assets/."""
+everything that seeds/looks up/hydrates it belong here, not
+Linguistics), documentation/, apis/, uis/, assets/."""
 
-from .agents_role import VocabularyAgent
-from .agents_role.dictionary_hydrator import AsyncDictionaryHydrator
-from .agents_role.dictionary_processor import DictionaryProcessor
-from .agents_role.external_dictionary_adapter import ExternalDictionaryAdapter
-from .data_classes.dictionary import Dictionary, DictionaryEntry
-from .data_classes.layer import VocabularyLayer
+from .agents import VocabularyAgent
+from .role.dictionary_hydrator import AsyncDictionaryHydrator
+from .role.dictionary_processor import DictionaryProcessor
+from .role.external_dictionary_adapter import ExternalDictionaryAdapter
+from .data.dictionary import Dictionary, DictionaryEntry
+from .data.layer import VocabularyLayer
 
 __all__ = [
     "VocabularyLayer",

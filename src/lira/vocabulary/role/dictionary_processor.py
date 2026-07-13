@@ -1,9 +1,9 @@
 """Looks up or creates DictionaryEntry records, queuing background
 hydration for unknown words."""
 
-from ..data_classes.dictionary import Dictionary, DictionaryEntry
+from ..data.dictionary import Dictionary, DictionaryEntry
 from .dictionary_hydrator import AsyncDictionaryHydrator
-from lira.linguistics.data_classes.units import PartOfSpeech, Punctuation, Word
+from lira.linguistics.data.units import PartOfSpeech, Punctuation, Word
 
 
 class DictionaryProcessor:

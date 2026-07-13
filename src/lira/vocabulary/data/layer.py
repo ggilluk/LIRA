@@ -1,6 +1,6 @@
-from ..agents_role import VocabularyAgent
-from ..agents_role.dictionary_hydrator import AsyncDictionaryHydrator
-from ..agents_role.dictionary_processor import DictionaryProcessor
+from ..agents import VocabularyAgent
+from ..role.dictionary_hydrator import AsyncDictionaryHydrator
+from ..role.dictionary_processor import DictionaryProcessor
 from .dictionary import Dictionary
 
 

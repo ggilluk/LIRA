@@ -1,5 +1,5 @@
-from ..agents_role.graph_processor import GraphProcessor
-from ..agents_role.prompt_tokenizer import PromptTokenizer
+from ..role.graph_processor import GraphProcessor
+from ..role.prompt_tokenizer import PromptTokenizer
 from .grammar_configuration import LinguisticGrammarConfiguration
 from .tensor import LinguisticSystemPropertyTensor
 from .units import Subject, UserPrompt

@@ -44,7 +44,7 @@ external scheduler that placed it (see Execution Model below).
   top-level runtime unit. Owns host-level system state
   (`HostSystemProperties`, `HostSystemTensor`), a by-reference registry
   of other hosts (`KnownHosts`), and the Domains it currently hosts
-  (`HostedDomains`). Physically defined in `knowledge/data_classes/`
+  (`HostedDomains`). Physically defined in `knowledge/data/`
   (see Repository Layout below) -- the tree above is the runtime
   containment structure, not the file layout. There is no `host/` or
   `domain/` package on disk; `lira.knowledge` is where these types
@@ -55,30 +55,29 @@ external scheduler that placed it (see Execution Model below).
   Composes a `DomainController` for operations, domain-level system
   state (`DomainSystemProperties`, `DomainSystemTensor`), a by-reference
   registry of other domains (`KnownDomains`), and four processing
-  layers. Physically defined in `knowledge/data_classes/` alongside
-  `LIRAHost` (see Repository Layout below).
+  layers. Physically defined in `knowledge/data/` alongside `LIRAHost`
+  (see Repository Layout below).
 
 - **DomainController** -- the operational control loop for a Domain:
   replica management (two Replica Domains in two other availability
   zones), fault tolerance, domain migration, semantic gravity placement,
   requests issued through its `HostController`, and health monitoring.
-  Physically defined in `knowledge/agents_role/` (Agents/Role) -- see
-  Repository Layout below.
+  Physically defined in `knowledge/role/` (Role, not Agent -- see
+  Repository Layout below).
 
 - **HostController** -- LIRA's own class for talking to the actual
   Kubernetes/WASI substrate: schedule workload, select node, select
   availability zone, attach persistence, start/stop container (see
   Execution Model). A `DomainController` holds a reference to one and
   issues requests to it rather than reaching into Kubernetes/WASI
-  directly. Physically defined in `knowledge/agents_role/` alongside
+  directly. Physically defined in `knowledge/role/` alongside
   `DomainController`.
 
 - **Domain Agents** -- specialist agents that operate at the Domain
   level, across artefacts that don't belong to a single layer (e.g.
   cross-layer orchestration). A Domain may introduce these without
   modifying the LIRA core (Specialisation principle). The base
-  `DomainAgent` class is physically defined in `knowledge/agents_role/`
-  alongside `DomainController`.
+  `DomainAgent` class is physically defined in `knowledge/agents/`.
 
 - **Vocabulary Layer** -- term/lexeme-level concept identity (surface
   form to concept resolution), run by Vocabulary Agents. Also owns the
@@ -127,25 +126,26 @@ external scheduler that placed it (see Execution Model below).
   compartmentalisation, cross-domain generalisation, output attribute
   completion) that read and write it by reference.
 
-Vocabulary, Value Objects and Knowledge's Agents are each a folder
-(`vocabulary/agents_role/`, `value_objects/agents_role/`,
-`knowledge/agents_role/` -- see Repository Layout below), not a separate
-top-level layer -- concrete agents live as sibling modules of the base
-`*Agent` class defined in each `agents_role/__init__.py` (Rule 15/16).
-Domain Agents follow the same convention, physically at
-`knowledge/agents_role/domain_agent.py` alongside `DomainController`,
+Agents and Role are two separate folders per layer, not one merged
+bucket: `agents/` holds the base `*Agent` class and its concrete
+subclasses (Rule 15/16); `role/` holds plain service/controller classes
+that play an active role without being shaped like an `*Agent`.
+Vocabulary, Value Objects and Knowledge all have real `*Agent`
+subclasses in `agents/` (`vocabulary/agents/`, `value_objects/agents/`,
+`knowledge/agents/`). Vocabulary and Knowledge also have `role/`
+classes: Vocabulary's lexicon services (`DictionaryProcessor`,
+`AsyncDictionaryHydrator`, `ExternalDictionaryAdapter`) in
+`vocabulary/role/`, and `DomainController`/`HostController` in
+`knowledge/role/`. Domain Agents (the base `DomainAgent` class) follow
+the Agent convention, physically at `knowledge/agents/domain_agent.py`,
 even though they sit at the Domain level rather than inside the
-Knowledge Layer specifically. Linguistics is the exception: its
-artefact-processing classes (`GraphProcessor`, `LinguisticLexer`,
-`ClauseSegmentationUtility`, `PromptTokenizer`) don't fit that shape, so
-they're plain composed services in `linguistics/agents_role/` instead of
-`*Agent` subclasses -- still inside the layer whose artefacts they
-manage (Rule 16), just not wrapped in an `*Agent` base class.
-Vocabulary's `agents_role/` mixes both: real `VocabularyAgent`
-subclasses (`SeedAgent`, `LookupAgent`, `HydrateAgent`, `NormaliseAgent`)
-alongside the lexicon's own plain service classes (`DictionaryProcessor`,
-`AsyncDictionaryHydrator`, `ExternalDictionaryAdapter`) for the same
-reason -- they play an active role but aren't shaped like an `*Agent`.
+Knowledge Layer specifically. Linguistics has no concrete `*Agent`
+subclasses yet (`linguistics/agents/` holds only the base
+`LinguisticsAgent`) -- all its processing classes (`GraphProcessor`,
+`LinguisticLexer`, `ClauseSegmentationUtility`, `PromptTokenizer`) are
+`role/` services instead, since this processing doesn't decompose
+cleanly into `*Agent` subclasses. Value Objects has no `role/` classes
+yet.
 
 ## Repository Layout (Configuration Management)
 
@@ -169,19 +169,21 @@ and the top-level `__init__.py`. Nothing else.
 2. **Then by artefact purpose**, within each layer:
    - `documentation/` -- a short per-layer `README.md` (the canonical,
      full description stays in this file).
-   - `data_classes/` -- state-holding types: the layer's `*Layer`
-     container class, and any other class whose primary job is holding
-     data (e.g. `TensorLiraGraph`, `LinguisticSystemPropertyTensor`,
-     `Dictionary`, the `Word`/`Clause`/... tree, `ConceptRef`). A
-     Dictionary is a lexicon, i.e. lexical inventory (Rule 17), so it
-     lives in Vocabulary's `data_classes/`, not Linguistics's, even
-     though Linguistics is what actually calls into it.
-   - `agents_role/` -- behaviour-playing types: the base `*Agent` class
-     and its concrete subclasses, plus (for Linguistics, and for
-     Vocabulary's `DictionaryProcessor`/`AsyncDictionaryHydrator`/
-     `ExternalDictionaryAdapter`) the processor/service classes that
-     play an active role without being `*Agent` subclasses (e.g.
-     `GraphProcessor`).
+   - `data/` -- state-holding types: the layer's `*Layer` container
+     class, and any other class whose primary job is holding data (e.g.
+     `TensorLiraGraph`, `LinguisticSystemPropertyTensor`, `Dictionary`,
+     the `Word`/`Clause`/... tree, `ConceptRef`). A Dictionary is a
+     lexicon, i.e. lexical inventory (Rule 17), so it lives in
+     Vocabulary's `data/`, not Linguistics's, even though Linguistics is
+     what actually calls into it.
+   - `agents/` -- the base `*Agent` class and its concrete subclasses
+     (Rule 15/16).
+   - `role/` -- processor/service/controller classes that play an
+     active role without being `*Agent` subclasses (e.g.
+     `GraphProcessor`, `DomainController`, `DictionaryProcessor`) --
+     kept separate from `agents/` even though both are
+     behaviour-playing, since an `*Agent` subclass and a plain service
+     class are different shapes.
    - `apis/` -- none yet, for any layer.
    - `uis/` -- none yet, for any layer.
    - `assets/` -- none yet, for any layer.
@@ -190,16 +192,16 @@ and the top-level `__init__.py`. Nothing else.
 not just Knowledge-layer-specific ones -- every Host and Domain artefact
 is sorted into Knowledge's purpose buckets by the same rule as anything
 else:
-- `knowledge/data_classes/` -- `Domain`, `DomainSystemProperties`,
+- `knowledge/data/` -- `Domain`, `DomainSystemProperties`,
   `DomainSystemTensor`, `KnownDomains`, `LIRAHost`,
   `HostSystemProperties`, `HostSystemTensor`, `HostedDomains`,
   `KnownHosts`, and the shared `NamedTensor`/`NamedTensorProperties`
   base (`tensor_view.py`), alongside `KnowledgeLayer` and
   `TensorLiraGraph`.
-- `knowledge/agents_role/` -- `DomainController`, `DomainAgent`, and
-  `HostController` (LIRA's own class for talking to the Kubernetes/WASI
-  substrate -- see below), alongside `KnowledgeAgent` and the Band 1-5
-  concrete agents.
+- `knowledge/agents/` -- `KnowledgeAgent` and the Band 1-5 concrete
+  agents, alongside `DomainAgent`.
+- `knowledge/role/` -- `DomainController` and `HostController` (LIRA's
+  own class for talking to the Kubernetes/WASI substrate -- see below).
 - `knowledge/documentation/`, `knowledge/apis/`, `knowledge/uis/`,
   `knowledge/assets/` -- Host/Domain have no distinct artefacts here
   yet, so nothing to move.
@@ -213,9 +215,9 @@ Each layer's `__init__.py` stays a stable public import surface (e.g.
 `from lira.knowledge import KnowledgeLayer, Domain, LIRAHost,
 DomainController, DomainAgent` all work, as does the shorter
 `from lira import Domain, LIRAHost`) -- these are thin re-export facades
-over `data_classes/` and `agents_role/`, not where the classes are
-actually defined anymore. `lira.host` and `lira.host.domain` no longer
-exist as import paths.
+over `data/`, `agents/`, and `role/`, not where the classes are actually
+defined anymore. `lira.host` and `lira.host.domain` no longer exist as
+import paths.
 
 ## Design Principles and Statements
 
@@ -363,9 +365,9 @@ reference.
 | Knowledge Layer | Concepts, Attributes, Relationships, Generalisations | Semantic representation and reasoning | Bind, infer, train, evaluate, promote, compartmentalise |
 
 Each "Typical Agent" for Vocabulary, Value Objects and Knowledge is
-stubbed as a concrete `*Agent` subclass in its layer's `agents_role/`
-folder (e.g. `vocabulary/agents_role/seed_agent.py` -> `SeedAgent`,
-`knowledge/agents_role/compartmentalise_agent.py` ->
+stubbed as a concrete `*Agent` subclass in its layer's `agents/` folder
+(e.g. `vocabulary/agents/seed_agent.py` -> `SeedAgent`,
+`knowledge/agents/compartmentalise_agent.py` ->
 `CompartmentaliseAgent`), ready to be registered on the layer via
 `.register(...)` once implemented -- except Vocabulary's "lookup" and
 "hydrate", which are already real, working services rather than stubs:

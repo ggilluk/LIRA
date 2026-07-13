@@ -1,4 +1,4 @@
-from ..agents_role import ValueObjectAgent
+from ..agents import ValueObjectAgent
 
 
 class ValueObjectsLayer:

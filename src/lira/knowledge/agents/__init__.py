@@ -7,15 +7,13 @@ artefacts they manage -- Agents are not a separate layer, Rule 15).
 The Knowledge Layer is the only layer that assigns semantic meaning
 (Rule 20); these agents are what actually do that assignment.
 
-Also holds DomainController, DomainAgent, and HostController
-(domain_controller.py, domain_agent.py, host_controller.py) -- per the
-Repository Layout rule, Knowledge is the repository's home for core
-Agents/Role types generally, not just Knowledge-layer-specific ones
-(same as Domain and LIRAHost living in data_classes/)."""
+Also holds DomainAgent (domain_agent.py) -- per the Repository Layout
+rule, Knowledge is the repository's home for core Agent types
+generally, not just Knowledge-layer-specific ones (same as Domain and
+LIRAHost living in data/). DomainController and HostController are
+Role, not Agent, and live in role/ instead."""
 
 from .domain_agent import DomainAgent
-from .domain_controller import DomainController
-from .host_controller import HostController
 
 
 class KnowledgeAgent:

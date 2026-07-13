@@ -3,7 +3,7 @@
 import re
 from typing import List
 
-from ..data_classes.grammar_configuration import LinguisticGrammarConfiguration
+from ..data.grammar_configuration import LinguisticGrammarConfiguration
 
 
 class LinguisticLexer:

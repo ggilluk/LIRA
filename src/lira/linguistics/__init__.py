@@ -3,9 +3,10 @@ morphology) that feeds concept and relationship extraction (Layer
 Summary: Linguistics Layer). Contains language structure only (Rule 18).
 
 Repository layout follows Architectural Layer -> artefact purpose:
-data_classes/ (LinguisticsLayer, the Word/Clause/Sentence/Paragraph/
-Subject/UserPrompt tree, LinguisticSystemPropertyTensor),
-agents_role/ (GraphProcessor, PromptTokenizer, LinguisticLexer,
+data/ (LinguisticsLayer, the Word/Clause/Sentence/Paragraph/Subject/
+UserPrompt tree, LinguisticSystemPropertyTensor), agents/
+(LinguisticsAgent base -- no concrete subclasses yet), role/
+(GraphProcessor, PromptTokenizer, LinguisticLexer,
 ClauseSegmentationUtility -- Linguistics doesn't use the *Agent-subclass
 convention the other three layers use, since this processing doesn't
 decompose cleanly into that shape, but every one of these classes still
@@ -18,15 +19,15 @@ ExternalDictionaryAdapter) live in the Vocabulary Layer, not here --
 GraphProcessor takes a lira.vocabulary DictionaryProcessor to resolve
 tokens (Rule 17: Vocabulary contains lexical inventory only)."""
 
-from .agents_role.clause_segmentation import ClauseSegmentationUtility
-from .agents_role.graph_processor import GraphProcessor
-from .agents_role.lexer import LinguisticLexer
-from .agents_role.prompt_tokenizer import PromptTokenizer
-from .data_classes.grammar_configuration import LinguisticGrammarConfiguration
-from .data_classes.layer import LinguisticsLayer
-from .data_classes.system_property import LinguisticSystemProperty, SystemPropertyRef
-from .data_classes.tensor import LinguisticSystemPropertyTensor
-from .data_classes.units import (
+from .role.clause_segmentation import ClauseSegmentationUtility
+from .role.graph_processor import GraphProcessor
+from .role.lexer import LinguisticLexer
+from .role.prompt_tokenizer import PromptTokenizer
+from .data.grammar_configuration import LinguisticGrammarConfiguration
+from .data.layer import LinguisticsLayer
+from .data.system_property import LinguisticSystemProperty, SystemPropertyRef
+from .data.tensor import LinguisticSystemPropertyTensor
+from .data.units import (
     Clause,
     LinguisticRelationType,
     LinguisticUnit,

@@ -9,7 +9,7 @@ their OWN lightweight, band-specific structures (e.g. Band 3's
 compartment membership) that a dense weight-duplicate would be wasteful
 for.
 """
-from ..agents_role import KnowledgeAgent
+from ..agents import KnowledgeAgent
 from .tensor_graph import Band, ConceptRef, FactOrigin, TensorLiraGraph, provenance_for_depth
 
 

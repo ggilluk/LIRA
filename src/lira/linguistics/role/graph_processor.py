@@ -6,11 +6,11 @@ import uuid
 from typing import List, Union
 
 from .clause_segmentation import ClauseSegmentationUtility
-from ..data_classes.grammar_configuration import LinguisticGrammarConfiguration
+from ..data.grammar_configuration import LinguisticGrammarConfiguration
 from .lexer import LinguisticLexer
-from ..data_classes.system_property import LinguisticSystemProperty, SystemPropertyRef
-from ..data_classes.tensor import LinguisticSystemPropertyTensor
-from ..data_classes.units import Clause, LinguisticUnit, LinguisticUnitKind, Paragraph, Punctuation, Sentence, Subject, Word
+from ..data.system_property import LinguisticSystemProperty, SystemPropertyRef
+from ..data.tensor import LinguisticSystemPropertyTensor
+from ..data.units import Clause, LinguisticUnit, LinguisticUnitKind, Paragraph, Punctuation, Sentence, Subject, Word
 
 # DictionaryProcessor (lira.vocabulary) is used only as a type hint here --
 # Linguistics never constructs or inspects one, just calls the instance it's

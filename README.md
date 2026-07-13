@@ -22,38 +22,43 @@ src/lira/
 │
 │   # Every layer below follows the Repository Layout rule:
 │   # by Architectural Layer, then by artefact purpose --
-│   # documentation/, data_classes/, agents_role/, apis/, uis/, assets/.
+│   # documentation/, data/, agents/, role/, apis/, uis/, assets/.
+│   # agents/ = base *Agent class + concrete subclasses.
+│   # role/   = plain service/controller classes, not *Agent subclasses.
 │   # See ARCHITECTURE.md's "Repository Layout" section.
 │
 ├── vocabulary/             Vocabulary Layer -- also owns the lexicon (Rule 17)
 │   ├── documentation/
-│   ├── data_classes/        VocabularyLayer, dictionary.py (Dictionary, DictionaryEntry)
-│   ├── agents_role/         VocabularyAgent, Seed/Lookup/Hydrate/Normalise;
-│   │                        DictionaryProcessor, AsyncDictionaryHydrator, ExternalDictionaryAdapter
+│   ├── data/                 VocabularyLayer, dictionary.py (Dictionary, DictionaryEntry)
+│   ├── agents/                VocabularyAgent, Seed/Lookup/Hydrate/Normalise
+│   ├── role/                  DictionaryProcessor, AsyncDictionaryHydrator, ExternalDictionaryAdapter
 │   └── apis/, uis/, assets/   (none yet)
 ├── linguistics/            Linguistics Layer
 │   ├── documentation/
-│   ├── data_classes/        LinguisticsLayer, units.py (Word/Clause/Sentence/
-│   │                        Paragraph/Subject/UserPrompt), tensor.py, system_property.py,
-│   │                        grammar_configuration.py
-│   ├── agents_role/         GraphProcessor, PromptTokenizer, LinguisticLexer,
-│   │                        ClauseSegmentationUtility
+│   ├── data/                 LinguisticsLayer, units.py (Word/Clause/Sentence/
+│   │                          Paragraph/Subject/UserPrompt), tensor.py, system_property.py,
+│   │                          grammar_configuration.py
+│   ├── agents/                 LinguisticsAgent (no concrete subclasses yet)
+│   ├── role/                   GraphProcessor, PromptTokenizer, LinguisticLexer,
+│   │                           ClauseSegmentationUtility
 │   └── apis/, uis/, assets/   (none yet)
 ├── value_objects/          Value Objects Layer
 │   ├── documentation/
-│   ├── data_classes/        ValueObjectsLayer
-│   ├── agents_role/         ValueObjectAgent, Parse/Validate/Convert/Normalise
+│   ├── data/                 ValueObjectsLayer
+│   ├── agents/                 ValueObjectAgent, Parse/Validate/Convert/Normalise
+│   ├── role/                   (none yet)
 │   └── apis/, uis/, assets/   (none yet)
 └── knowledge/              Knowledge Layer -- also the repo's home for every
     │                       Host/Domain artefact, by the same Layer>purpose rule
     ├── documentation/
-    ├── data_classes/        KnowledgeLayer, TensorLiraGraph (+ ConceptRef,
-    │                        SystemPropertyRef, RelationshipRef, enums);
-    │                        Domain, DomainSystemProperties, DomainSystemTensor, KnownDomains;
-    │                        LIRAHost, HostSystemProperties, HostSystemTensor, HostedDomains, KnownHosts;
-    │                        tensor_view.py (shared NamedTensor/NamedTensorProperties base)
-    ├── agents_role/         KnowledgeAgent, Bind/Infer/Train/Evaluate/Promote/Compartmentalise;
-    │                        DomainController, DomainAgent, HostController
+    ├── data/                  KnowledgeLayer, TensorLiraGraph (+ ConceptRef,
+    │                          SystemPropertyRef, RelationshipRef, enums);
+    │                          Domain, DomainSystemProperties, DomainSystemTensor, KnownDomains;
+    │                          LIRAHost, HostSystemProperties, HostSystemTensor, HostedDomains, KnownHosts;
+    │                          tensor_view.py (shared NamedTensor/NamedTensorProperties base)
+    ├── agents/                  KnowledgeAgent, Bind/Infer/Train/Evaluate/Promote/Compartmentalise;
+    │                            DomainAgent
+    ├── role/                    DomainController, HostController
     └── apis/, uis/, assets/   (none yet)
 ```
 
