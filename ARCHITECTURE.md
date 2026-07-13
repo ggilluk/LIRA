@@ -94,7 +94,8 @@ external scheduler that placed it (see Execution Model below).
   morphology) that feeds concept and relationship extraction. Does not
   follow the Agents-folder convention the other three layers use: its
   processing doesn't decompose cleanly into that shape, so it's a set of
-  composed services instead. `LinguisticsLayer` takes a Vocabulary
+  composed services instead. `LinguisticController` (`linguistics/role/`
+  -- Role, not Data, same as `DomainController`) takes a Vocabulary
   `DictionaryProcessor` (constructor-injected, since the lexicon belongs
   to Vocabulary, not Linguistics) and wires together a `LinguisticLexer`
   (regex tokenisation and abbreviation-aware sentence splitting) and

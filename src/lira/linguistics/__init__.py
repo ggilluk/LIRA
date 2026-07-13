@@ -3,10 +3,11 @@ morphology) that feeds concept and relationship extraction (Layer
 Summary: Linguistics Layer). Contains language structure only (Rule 18).
 
 Repository layout follows Architectural Layer -> artefact purpose:
-data/ (LinguisticsLayer, the Word/Clause/Sentence/Paragraph/Subject/
-UserPrompt tree, LinguisticSystemPropertyTensor), agents/
-(LinguisticsAgent base -- no concrete subclasses yet), role/
-(GraphProcessor, PromptTokenizer, LinguisticLexer,
+data/ (the Word/Clause/Sentence/Paragraph/Subject/UserPrompt tree,
+LinguisticSystemPropertyTensor), agents/ (LinguisticsAgent base -- no
+concrete subclasses yet), role/ (LinguisticController -- wires the rest
+of this layer together, same as DomainController does for Domain --
+GraphProcessor, PromptTokenizer, LinguisticLexer,
 ClauseSegmentationUtility -- Linguistics doesn't use the *Agent-subclass
 convention the other three layers use, since this processing doesn't
 decompose cleanly into that shape, but every one of these classes still
@@ -22,9 +23,9 @@ tokens (Rule 17: Vocabulary contains lexical inventory only)."""
 from .role.clause_segmentation import ClauseSegmentationUtility
 from .role.graph_processor import GraphProcessor
 from .role.lexer import LinguisticLexer
+from .role.linguistic_controller import LinguisticController
 from .role.prompt_tokenizer import PromptTokenizer
 from .data.grammar_configuration import LinguisticGrammarConfiguration
-from .data.layer import LinguisticsLayer
 from .data.system_property import LinguisticSystemProperty, SystemPropertyRef
 from .data.tensor import LinguisticSystemPropertyTensor
 from .data.clause import Clause
@@ -40,7 +41,7 @@ from .data.user_prompt import UserPrompt
 from .data.word import Word
 
 __all__ = [
-    "LinguisticsLayer",
+    "LinguisticController",
     "LinguisticGrammarConfiguration",
     "LinguisticLexer",
     "ClauseSegmentationUtility",

@@ -1,15 +1,15 @@
-from ..role.graph_processor import GraphProcessor
-from ..role.prompt_tokenizer import PromptTokenizer
-from .grammar_configuration import LinguisticGrammarConfiguration
-from .tensor import LinguisticSystemPropertyTensor
-from .subject import Subject
-from .user_prompt import UserPrompt
+from .graph_processor import GraphProcessor
+from .prompt_tokenizer import PromptTokenizer
+from ..data.grammar_configuration import LinguisticGrammarConfiguration
+from ..data.tensor import LinguisticSystemPropertyTensor
+from ..data.subject import Subject
+from ..data.user_prompt import UserPrompt
 
 # DictionaryProcessor (lira.vocabulary) is used only as a type hint here --
 # see graph_processor.py for why it's deliberately left unimported.
 
 
-class LinguisticsLayer:
+class LinguisticController:
     def __init__(self, dictionary_processor: "DictionaryProcessor", use_clause_segmentation: bool = True):
         """dictionary_processor: Vocabulary owns the lexicon (Rule 17);
         Linguistics resolves tokens through it rather than keeping its

@@ -35,14 +35,16 @@ src/lira/
 │   └── api/, ui/, assets/   (none yet)
 ├── linguistics/            Linguistics Layer
 │   ├── documentation/
-│   ├── data/                 LinguisticsLayer, one class per file: linguistic_unit.py
+│   ├── data/                 one class per file: linguistic_unit.py
 │   │                          (base), word.py, punctuation.py, clause.py, sentence.py,
 │   │                          paragraph.py, subject.py, user_prompt.py, plus enums
 │   │                          (linguistic_unit_kind.py, part_of_speech.py,
 │   │                          linguistic_relation_type.py), tensor.py, system_property.py,
 │   │                          grammar_configuration.py
 │   ├── agents/                 LinguisticsAgent (no concrete subclasses yet)
-│   ├── role/                   GraphProcessor, PromptTokenizer, LinguisticLexer,
+│   ├── role/                   LinguisticController (wires this layer together,
+│   │                           same as DomainController does for Domain),
+│   │                           GraphProcessor, PromptTokenizer, LinguisticLexer,
 │   │                           ClauseSegmentationUtility
 │   └── api/, ui/, assets/   (none yet)
 ├── value_objects/          Value Objects Layer
@@ -76,10 +78,10 @@ file placement follows artefact purpose, not the runtime object graph.
 DomainAgent, HostController` both work; there is no `lira.host`,
 `lira.host.domain`, or `lira.management_plane` import path anymore.
 
-`LinguisticsLayer` takes a Vocabulary `DictionaryProcessor` as a
+`LinguisticController` takes a Vocabulary `DictionaryProcessor` as a
 constructor argument rather than owning its own lexicon --
 `Domain.__init__` builds `vocabulary` first and passes
-`vocabulary.dictionary_processor` into `LinguisticsLayer`. Linguistics
+`vocabulary.dictionary_processor` into `LinguisticController`. Linguistics
 only ever references that type as a string-quoted, unimported type hint
 (never a real import), because `vocabulary`'s own modules import
 Linguistics's `word.py`/`punctuation.py`/`part_of_speech.py` -- a real

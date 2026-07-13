@@ -10,7 +10,7 @@ from .domain_system_properties import DomainSystemProperties
 from .domain_system_tensor import DomainSystemTensor
 from .known_domains import KnownDomains
 from ...vocabulary import VocabularyLayer
-from ...linguistics import LinguisticsLayer
+from ...linguistics import LinguisticController
 from ...value_objects import ValueObjectsLayer
 from .layer import KnowledgeLayer
 
@@ -25,7 +25,7 @@ class Domain:
         self.domain_agents: list[DomainAgent] = []  # specialist agents, not tied to one layer
 
         self.vocabulary = VocabularyLayer()
-        self.linguistics = LinguisticsLayer(self.vocabulary.dictionary_processor)
+        self.linguistics = LinguisticController(self.vocabulary.dictionary_processor)
         self.value_objects = ValueObjectsLayer()
         self.knowledge = KnowledgeLayer()
 
