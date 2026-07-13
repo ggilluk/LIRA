@@ -7,11 +7,11 @@ from typing import List, Union
 
 from .clause_segmentation import ClauseSegmentationUtility
 from .dictionary_processor import DictionaryProcessor
-from .grammar_configuration import LinguisticGrammarConfiguration
+from ..data_classes.grammar_configuration import LinguisticGrammarConfiguration
 from .lexer import LinguisticLexer
-from .system_property import LinguisticSystemProperty, SystemPropertyRef
-from .tensor import LinguisticSystemPropertyTensor
-from .units import Clause, LinguisticUnit, LinguisticUnitKind, Paragraph, Punctuation, Sentence, Subject, Word
+from ..data_classes.system_property import LinguisticSystemProperty, SystemPropertyRef
+from ..data_classes.tensor import LinguisticSystemPropertyTensor
+from ..data_classes.units import Clause, LinguisticUnit, LinguisticUnitKind, Paragraph, Punctuation, Sentence, Subject, Word
 
 
 class GraphProcessor:

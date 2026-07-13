@@ -2,7 +2,7 @@
 
 from typing import Any, Tuple
 
-from .units import PartOfSpeech
+from ..data_classes.units import PartOfSpeech
 
 
 class ExternalDictionaryAdapter:

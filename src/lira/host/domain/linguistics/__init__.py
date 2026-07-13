@@ -1,22 +1,31 @@
 """Linguistics Layer: grammar/syntax-level processing (parsing,
 morphology) that feeds concept and relationship extraction (Layer
-Summary: Linguistics Layer). Wires together the lexicon (Dictionary +
-AsyncDictionaryHydrator), the lexer/clause-segmentation utilities, and
-GraphProcessor/PromptTokenizer, which build the Word/Punctuation ->
-Clause -> Sentence -> Paragraph -> Subject tree for a UserPrompt."""
+Summary: Linguistics Layer). Contains language structure only (Rule 18).
 
-from .clause_segmentation import ClauseSegmentationUtility
-from .dictionary import Dictionary, DictionaryEntry
-from .dictionary_hydrator import AsyncDictionaryHydrator
-from .dictionary_processor import DictionaryProcessor
-from .external_dictionary_adapter import ExternalDictionaryAdapter
-from .grammar_configuration import LinguisticGrammarConfiguration
-from .graph_processor import GraphProcessor
-from .lexer import LinguisticLexer
-from .prompt_tokenizer import PromptTokenizer
-from .system_property import LinguisticSystemProperty, SystemPropertyRef
-from .tensor import LinguisticSystemPropertyTensor
-from .units import (
+Repository layout follows Architectural Layer -> artefact purpose:
+data_classes/ (LinguisticsLayer, the Word/Clause/Sentence/Paragraph/
+Subject/UserPrompt tree, LinguisticSystemPropertyTensor, Dictionary),
+agents_role/ (GraphProcessor, PromptTokenizer, LinguisticLexer,
+ClauseSegmentationUtility, DictionaryProcessor, AsyncDictionaryHydrator,
+ExternalDictionaryAdapter -- Linguistics doesn't use the *Agent-subclass
+convention the other three layers use, since this processing doesn't
+decompose cleanly into that shape, but every one of these classes still
+plays an active role rather than just holding state), documentation/,
+apis/, uis/, assets/."""
+
+from .agents_role.clause_segmentation import ClauseSegmentationUtility
+from .agents_role.dictionary_hydrator import AsyncDictionaryHydrator
+from .agents_role.dictionary_processor import DictionaryProcessor
+from .agents_role.external_dictionary_adapter import ExternalDictionaryAdapter
+from .agents_role.graph_processor import GraphProcessor
+from .agents_role.lexer import LinguisticLexer
+from .agents_role.prompt_tokenizer import PromptTokenizer
+from .data_classes.dictionary import Dictionary, DictionaryEntry
+from .data_classes.grammar_configuration import LinguisticGrammarConfiguration
+from .data_classes.layer import LinguisticsLayer
+from .data_classes.system_property import LinguisticSystemProperty, SystemPropertyRef
+from .data_classes.tensor import LinguisticSystemPropertyTensor
+from .data_classes.units import (
     Clause,
     LinguisticRelationType,
     LinguisticUnit,
@@ -29,21 +38,6 @@ from .units import (
     UserPrompt,
     Word,
 )
-
-
-class LinguisticsLayer:
-    def __init__(self, use_clause_segmentation: bool = True):
-        self.grammar_configuration = LinguisticGrammarConfiguration()
-        self.dictionary = Dictionary()
-        self.hydrator = AsyncDictionaryHydrator(self.dictionary)  # starts a background hydration thread
-        self.dictionary_processor = DictionaryProcessor(self.dictionary, self.hydrator)
-        self.tensor = LinguisticSystemPropertyTensor()  # persistent, canonical store for every unit's numeric fields (Rule 14)
-        self.graph_processor = GraphProcessor(self.dictionary_processor, self.grammar_configuration, self.tensor, use_clause_segmentation)
-        self.tokenizer = PromptTokenizer(self.graph_processor)
-
-    def tokenize_prompt(self, prompt: UserPrompt) -> Subject:
-        return self.tokenizer.tokenize_prompt(prompt)
-
 
 __all__ = [
     "LinguisticsLayer",

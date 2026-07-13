@@ -100,17 +100,50 @@ it (see Execution Model below).
   completion) that read and write it by reference.
 
 Vocabulary, Value Objects and Knowledge's Agents are each a folder
-(`vocabulary/agents/`, `value_objects/agents/`, `knowledge/agents/`),
-not a separate top-level layer -- concrete agents live as sibling
-modules of the base `*Agent` class defined in each `agents/__init__.py`
-(Rule 15/16). Domain Agents follow the same convention
-(`domain/agents/`), but sit at the Domain level rather than inside one
-specific layer. Linguistics is the exception: its artefact-processing
-classes (`GraphProcessor`, `DictionaryProcessor`, etc.) don't fit that
-shape, so they're plain composed services in the `linguistics/` package
-instead of an `agents/` folder -- still inside the layer whose
-artefacts they manage (Rule 16), just not wrapped in an `*Agent` base
-class.
+(`vocabulary/agents_role/`, `value_objects/agents_role/`,
+`knowledge/agents_role/` -- see Repository Layout below), not a separate
+top-level layer -- concrete agents live as sibling modules of the base
+`*Agent` class defined in each `agents_role/__init__.py` (Rule 15/16).
+Domain Agents follow the same convention (`domain/agents/`), but sit at
+the Domain level rather than inside one specific layer -- Domain is
+outside the scope of the Repository Layout reorg below. Linguistics is
+the exception: its artefact-processing classes (`GraphProcessor`,
+`DictionaryProcessor`, etc.) don't fit that shape, so they're plain
+composed services in `linguistics/agents_role/` instead of `*Agent`
+subclasses -- still inside the layer whose artefacts they manage
+(Rule 16), just not wrapped in an `*Agent` base class.
+
+## Repository Layout (Configuration Management)
+
+This is a physical-file-organisation rule, separate from namespace
+naming: it governs where a file lives on disk, not what it's called or
+imported as. It currently applies only to the four Domain-internal
+layers (Vocabulary, Linguistics, Value Objects, Knowledge) -- Host,
+Domain, Domain Agents, and the Management Plane are unaffected and keep
+their existing locations.
+
+1. **By Architectural Layer** -- `vocabulary/`, `linguistics/`,
+   `value_objects/`, `knowledge/`.
+2. **Then by artefact purpose**, within each layer:
+   - `documentation/` -- a short per-layer `README.md` (the canonical,
+     full description stays in this file).
+   - `data_classes/` -- state-holding types: the layer's `*Layer`
+     container class, and any other class whose primary job is holding
+     data (e.g. `TensorLiraGraph`, `LinguisticSystemPropertyTensor`,
+     `Dictionary`, the `Word`/`Clause`/... tree, `ConceptRef`).
+   - `agents_role/` -- behaviour-playing types: the base `*Agent` class
+     and its concrete subclasses, plus (for Linguistics) the
+     processor/service classes that play an active role without being
+     `*Agent` subclasses (e.g. `GraphProcessor`, `DomainController`
+     would live here too, if Domain were in scope).
+   - `apis/` -- none yet, for any layer.
+   - `uis/` -- none yet, for any layer.
+   - `assets/` -- none yet, for any layer.
+
+Each layer's `__init__.py` stays the stable public import surface (e.g.
+`from lira.host.domain.knowledge import KnowledgeLayer` keeps working
+unchanged) -- it's a thin re-export facade over `data_classes/` and
+`agents_role/`, not where the classes are actually defined anymore.
 
 ## Design Principles and Statements
 
@@ -257,10 +290,11 @@ reference.
 | Knowledge Layer | Concepts, Attributes, Relationships, Generalisations | Semantic representation and reasoning | Bind, infer, train, evaluate, promote, compartmentalise |
 
 Each "Typical Agent" for Vocabulary, Value Objects and Knowledge is
-stubbed as a concrete `*Agent` subclass in its layer's `agents/` folder
-(e.g. `vocabulary/agents/seed_agent.py` -> `SeedAgent`,
-`knowledge/agents/compartmentalise_agent.py` -> `CompartmentaliseAgent`),
-ready to be registered on the layer via `.register(...)` once
+stubbed as a concrete `*Agent` subclass in its layer's `agents_role/`
+folder (e.g. `vocabulary/agents_role/seed_agent.py` -> `SeedAgent`,
+`knowledge/agents_role/compartmentalise_agent.py` ->
+`CompartmentaliseAgent`), ready to be registered on the layer via
+`.register(...)` once
 implemented. Linguistics implements its typical agents directly as
 working services (not stubs) instead: `LinguisticLexer.extract_tokens`
 (tokenise), `GraphProcessor.process_token`/`ClauseSegmentationUtility`

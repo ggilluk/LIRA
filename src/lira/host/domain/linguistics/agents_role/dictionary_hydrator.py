@@ -8,9 +8,9 @@ import urllib.error
 import urllib.request
 from typing import Set
 
-from .dictionary import Dictionary
+from ..data_classes.dictionary import Dictionary
 from .external_dictionary_adapter import ExternalDictionaryAdapter
-from .units import Word
+from ..data_classes.units import Word
 
 
 class AsyncDictionaryHydrator:

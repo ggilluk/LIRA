@@ -2,8 +2,8 @@
 
 from typing import List, Union
 
-from .grammar_configuration import LinguisticGrammarConfiguration
-from .units import Punctuation, Word
+from ..data_classes.grammar_configuration import LinguisticGrammarConfiguration
+from ..data_classes.units import Punctuation, Word
 
 
 class ClauseSegmentationUtility:

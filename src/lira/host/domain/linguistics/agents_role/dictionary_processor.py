@@ -1,9 +1,9 @@
 """Looks up or creates DictionaryEntry records, queuing background
 hydration for unknown words."""
 
-from .dictionary import Dictionary, DictionaryEntry
+from ..data_classes.dictionary import Dictionary, DictionaryEntry
 from .dictionary_hydrator import AsyncDictionaryHydrator
-from .units import PartOfSpeech, Punctuation, Word
+from ..data_classes.units import PartOfSpeech, Punctuation, Word
 
 
 class DictionaryProcessor:

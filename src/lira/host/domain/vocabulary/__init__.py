@@ -1,12 +1,12 @@
-from .agents import VocabularyAgent
+"""Vocabulary Layer: term/lexeme-level concept identity within a Domain
+(surface-form to concept resolution). Contains lexical inventory only
+(Rule 17).
 
+Repository layout follows Architectural Layer -> artefact purpose:
+data_classes/ (VocabularyLayer), agents_role/ (VocabularyAgent and
+concrete agents), documentation/, apis/, uis/, assets/."""
 
-class VocabularyLayer:
-    def __init__(self):
-        self.agents: list[VocabularyAgent] = []
-
-    def register(self, agent: VocabularyAgent):
-        self.agents.append(agent)
-
+from .agents_role import VocabularyAgent
+from .data_classes.layer import VocabularyLayer
 
 __all__ = ["VocabularyLayer", "VocabularyAgent"]
