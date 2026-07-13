@@ -9,8 +9,8 @@ and their state classes), agents/ (KnowledgeAgent and the Band 1-5
 concrete agents, plus DomainAgent), role/ (DomainController and
 HostController) -- Knowledge is the repository's home for core Data and
 Agent/Role types generally, not just Knowledge-layer-specific ones, per
-the Repository Layout rule in ARCHITECTURE.md. documentation/, apis/,
-uis/, assets/ round out the artefact-purpose buckets."""
+the Repository Layout rule in ARCHITECTURE.md. documentation/, api/,
+ui/, assets/ round out the artefact-purpose buckets."""
 
 from .agents import DomainAgent, KnowledgeAgent
 from .role import DomainController, HostController

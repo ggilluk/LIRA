@@ -11,7 +11,7 @@ ClauseSegmentationUtility -- Linguistics doesn't use the *Agent-subclass
 convention the other three layers use, since this processing doesn't
 decompose cleanly into that shape, but every one of these classes still
 plays an active role rather than just holding state), documentation/,
-apis/, uis/, assets/.
+api/, ui/, assets/.
 
 The lexicon (Dictionary, DictionaryEntry) and everything that
 seeds/looks up/hydrates it (DictionaryProcessor, AsyncDictionaryHydrator,

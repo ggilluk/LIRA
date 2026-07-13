@@ -22,7 +22,7 @@ src/lira/
 │
 │   # Every layer below follows the Repository Layout rule:
 │   # by Architectural Layer, then by artefact purpose --
-│   # documentation/, data/, agents/, role/, apis/, uis/, assets/.
+│   # documentation/, data/, agents/, role/, api/, ui/, assets/.
 │   # agents/ = base *Agent class + concrete subclasses.
 │   # role/   = plain service/controller classes, not *Agent subclasses.
 │   # See ARCHITECTURE.md's "Repository Layout" section.
@@ -32,7 +32,7 @@ src/lira/
 │   ├── data/                 VocabularyLayer, dictionary.py (Dictionary, DictionaryEntry)
 │   ├── agents/                VocabularyAgent, Seed/Lookup/Hydrate/Normalise
 │   ├── role/                  DictionaryProcessor, AsyncDictionaryHydrator, ExternalDictionaryAdapter
-│   └── apis/, uis/, assets/   (none yet)
+│   └── api/, ui/, assets/   (none yet)
 ├── linguistics/            Linguistics Layer
 │   ├── documentation/
 │   ├── data/                 LinguisticsLayer, units.py (Word/Clause/Sentence/
@@ -41,13 +41,13 @@ src/lira/
 │   ├── agents/                 LinguisticsAgent (no concrete subclasses yet)
 │   ├── role/                   GraphProcessor, PromptTokenizer, LinguisticLexer,
 │   │                           ClauseSegmentationUtility
-│   └── apis/, uis/, assets/   (none yet)
+│   └── api/, ui/, assets/   (none yet)
 ├── value_objects/          Value Objects Layer
 │   ├── documentation/
 │   ├── data/                 ValueObjectsLayer
 │   ├── agents/                 ValueObjectAgent, Parse/Validate/Convert/Normalise
 │   ├── role/                   (none yet)
-│   └── apis/, uis/, assets/   (none yet)
+│   └── api/, ui/, assets/   (none yet)
 └── knowledge/              Knowledge Layer -- also the repo's home for every
     │                       Host/Domain artefact, by the same Layer>purpose rule
     ├── documentation/
@@ -59,7 +59,7 @@ src/lira/
     ├── agents/                  KnowledgeAgent, Bind/Infer/Train/Evaluate/Promote/Compartmentalise;
     │                            DomainAgent
     ├── role/                    DomainController, HostController
-    └── apis/, uis/, assets/   (none yet)
+    └── api/, ui/, assets/   (none yet)
 ```
 
 `Domain`, `LIRAHost`, `DomainController`, and `HostController` (LIRA's

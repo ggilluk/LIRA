@@ -7,7 +7,7 @@ data/ (VocabularyLayer, Dictionary, DictionaryEntry), agents/
 (VocabularyAgent and concrete agents), role/ (DictionaryProcessor,
 AsyncDictionaryHydrator, ExternalDictionaryAdapter -- the lexicon and
 everything that seeds/looks up/hydrates it belong here, not
-Linguistics), documentation/, apis/, uis/, assets/."""
+Linguistics), documentation/, api/, ui/, assets/."""
 
 from .agents import VocabularyAgent
 from .role.dictionary_hydrator import AsyncDictionaryHydrator

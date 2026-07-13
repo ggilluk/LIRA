@@ -9,7 +9,7 @@ and design rules.
 
 ## Layout
 
-- `data_classes/` -- `ValueObjectsLayer`.
-- `agents_role/` -- `ValueObjectAgent` and its concrete agents
+- `data/` -- `ValueObjectsLayer`.
+- `agents/` -- `ValueObjectAgent` and its concrete agents
   (`ParseAgent`, `ValidateAgent`, `ConvertAgent`, `NormaliseAgent`).
-- `apis/`, `uis/`, `assets/` -- none yet.
+- `role/`, `api/`, `ui/`, `assets/` -- none yet.

@@ -5,7 +5,7 @@ unqualified data only (Rule 19).
 
 Repository layout follows Architectural Layer -> artefact purpose:
 data/ (ValueObjectsLayer), agents/ (ValueObjectAgent and concrete
-agents), role/ (none yet), documentation/, apis/, uis/, assets/."""
+agents), role/ (none yet), documentation/, api/, ui/, assets/."""
 
 from .agents import ValueObjectAgent
 from .data.layer import ValueObjectsLayer

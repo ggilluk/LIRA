@@ -184,8 +184,8 @@ and the top-level `__init__.py`. Nothing else.
      kept separate from `agents/` even though both are
      behaviour-playing, since an `*Agent` subclass and a plain service
      class are different shapes.
-   - `apis/` -- none yet, for any layer.
-   - `uis/` -- none yet, for any layer.
+   - `api/` -- none yet, for any layer.
+   - `ui/` -- none yet, for any layer.
    - `assets/` -- none yet, for any layer.
 
 **Knowledge is the repository's home for core artefact types generally**,
@@ -202,7 +202,7 @@ else:
   agents, alongside `DomainAgent`.
 - `knowledge/role/` -- `DomainController` and `HostController` (LIRA's
   own class for talking to the Kubernetes/WASI substrate -- see below).
-- `knowledge/documentation/`, `knowledge/apis/`, `knowledge/uis/`,
+- `knowledge/documentation/`, `knowledge/api/`, `knowledge/ui/`,
   `knowledge/assets/` -- Host/Domain have no distinct artefacts here
   yet, so nothing to move.
 
