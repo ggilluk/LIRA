@@ -12,13 +12,24 @@ Host construction, with the mandatory 300-word English Common
 Vocabulary Cache (WordSeeder, vocabulary/role/word_seeder.py) -- this
 is how "every English LIRA Domain shall contain the 300 lexical forms"
 is actually satisfied: seed Common once, and every Domain created
-afterwards inherits them via the existing seed_from propagation."""
+afterwards inherits them via the existing seed_from propagation.
+
+Every Domain -- Common included -- also gets its own
+LexicalRelationship graph seeded immediately after its Words
+(RelationshipSeeder, vocabulary/role/relationship_seeder.py). Unlike
+Words, relationships can't be copied between Domains: a
+LexicalRelationship references specific Word UUIDs, and every Domain
+has its own distinct Word instances (Dictionary.seed_from
+shallow-copies each Word). So relationships are re-resolved and
+re-created fresh for every Domain, against that Domain's own
+Dictionary, rather than propagated from Common the way Words are."""
 
 from .domain import Domain
 from .host_system_properties import HostSystemProperties
 from .host_system_tensor import HostSystemTensor
 from .known_hosts import KnownHosts
 from .hosted_domains import HostedDomains
+from ...vocabulary.role.relationship_seeder import RelationshipSeeder
 from ...vocabulary.role.word_seeder import WordSeeder
 
 COMMON_DOMAIN_NAME = "Common"
@@ -35,6 +46,7 @@ class LIRAHost:
 
         common_domain = Domain(name=COMMON_DOMAIN_NAME)
         WordSeeder(language_code=COMMON_DOMAIN_LANGUAGE_CODE).seed_closed_class_words(common_domain.vocabulary.dictionary)
+        RelationshipSeeder(language_code=COMMON_DOMAIN_LANGUAGE_CODE).seed_domain(common_domain)
         self.hosted_domains.add(common_domain)
 
     def get_or_create_domain(self, name: str, availability_zone: str = None) -> Domain:
@@ -44,7 +56,8 @@ class LIRAHost:
         when a word's sense belongs in a Domain that doesn't exist yet,
         this is how that Domain comes into being. Every newly created
         Domain (other than Common itself) has its Vocabulary seeded from
-        Common's Dictionary."""
+        Common's Dictionary, then its own relationship graph built fresh
+        against those newly seeded Words."""
         existing = self.hosted_domains.get(name)
         if existing is not None:
             return existing
@@ -53,5 +66,6 @@ class LIRAHost:
         if name != COMMON_DOMAIN_NAME:
             common_domain = self.hosted_domains.get(COMMON_DOMAIN_NAME)
             new_domain.vocabulary.dictionary.seed_from(common_domain.vocabulary.dictionary)
+            RelationshipSeeder(language_code=COMMON_DOMAIN_LANGUAGE_CODE).seed_domain(new_domain)
         self.hosted_domains.add(new_domain)
         return new_domain

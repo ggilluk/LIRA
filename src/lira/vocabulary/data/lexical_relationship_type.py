@@ -41,6 +41,17 @@ class LexicalRelationshipType(Enum):
     NOMINALISATION = 50
     ADJECTIVAL_DERIVATION = 51
     ADVERBIAL_DERIVATION = 52
+    # -- Pronoun Form (category 7 -- last available in this group; see
+    # the class docstring's 3-bit category ceiling) -- deliberately not
+    # DERIVED_FORM: a pronoun's object/possessive/reflexive form isn't a
+    # derivational relationship (it doesn't change grammatical category
+    # or add a prefix/suffix), it's a paradigm of the same pronoun.
+    PRONOUN_OBJECT_FORM = 56
+    PRONOUN_SUBJECT_FORM = 57
+    PRONOUN_POSSESSIVE_DETERMINER_FORM = 58
+    PRONOUN_POSSESSIVE_FORM = 59
+    PRONOUN_REFLEXIVE_FORM = 60
+    PRONOUN_RECIPROCAL_FORM = 61
 
     # Lexical Semantic (group 1)
     # -- Similarity / Opposition (category 0)

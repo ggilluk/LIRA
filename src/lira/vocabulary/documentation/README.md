@@ -28,12 +28,15 @@ tree and design rules.
   `LookupAgent`, `HydrateAgent`, `NormaliseAgent`).
 - `role/` -- `DictionaryProcessor`, `AsyncDictionaryHydrator`,
   `ExternalDictionaryAdapter`, `LexicalRelationshipProcessor`,
-  `WordSeeder` -- plain service classes for the lexicon and
-  relationship graph, not `*Agent` subclasses.
+  `WordSeeder`, `RelationshipSeeder` -- plain service classes for the
+  lexicon and relationship graph, not `*Agent` subclasses.
 - `assets/` -- `common/<language_code>/` -- the Common Vocabulary
   Cache `WordSeeder` loads (`common/en/` -- the mandatory 300-word
   English Common Closed-Class Cache v1; see 9.4 and
-  `assets/common/en/README.md`).
+  `assets/common/en/README.md`) plus `common/<language_code>/relationships/`
+  -- the Common Vocabulary Relationship Cache `RelationshipSeeder`
+  loads (`common/en/relationships/`; see 9.5 and
+  `assets/common/en/relationships/README.md`).
 - `api/`, `ui/` -- none yet.
 
 ---
@@ -257,7 +260,7 @@ category = (value >> 3) & 0b111  # 3 bits: 0-7   (the sub-heading within that gr
 item     = value & 0b111         # 3 bits: 0-7   (the specific relationship type within its category)
 ```
 
-Group values: `0` = Morphological, `1` = Lexical Semantic, `2` = Orthographic and Naming (`3` reserved for a future fourth group). 3 bits per field caps each group at 8 categories and each category at 8 items -- the current largest category (Derivation, 5 items) and largest group (Morphological, 7 categories) both fit with room to grow. The whole value fits in a single byte (max value used below is 146).
+Group values: `0` = Morphological, `1` = Lexical Semantic, `2` = Orthographic and Naming (`3` reserved for a future fourth group). 3 bits per field caps each group at 8 categories and each category at 8 items. The largest category (Pronoun Form, 6 items) still fits with room to grow, but Morphological is now at its 8-category ceiling (0-7 all used) -- a future ninth Morphological category would need the category field widened beyond 3 bits. The whole value fits in a single byte (max value used below is 146).
 
 ##### 6.2.1 Morphological (group 0)
 
@@ -329,6 +332,19 @@ Connects a word to a new word built from it by adding a prefix or suffix that ch
 | `NOMINALISATION` | 50 | Target is a noun derivation | "decide" → "decision" |
 | `ADJECTIVAL_DERIVATION` | 51 | Target is an adjective derivation | "wonder" → "wonderful" |
 | `ADVERBIAL_DERIVATION` | 52 | Target is an adverb derivation | "quick" → "quickly" |
+
+###### Pronoun Form (category 7)
+
+Connects a personal pronoun to one of its other paradigm forms -- the same pronoun playing a different grammatical role, not a derivational relationship (it doesn't change grammatical category or add a prefix/suffix, which is why this is its own category rather than reusing Derivation's `DERIVED_FORM`). This is the last available category in the Morphological group -- see 6.2's encoding note on the 3-bit category ceiling.
+
+| Name | Value | Meaning | Real-World Example |
+|------|-------|---------|----------------------|
+| `PRONOUN_OBJECT_FORM` | 56 | Target is the object form of the source pronoun | "I" → "me" |
+| `PRONOUN_SUBJECT_FORM` | 57 | Target is the subject form of the source pronoun | "me" → "I" |
+| `PRONOUN_POSSESSIVE_DETERMINER_FORM` | 58 | Target is the possessive determiner form of the source pronoun | "I" → "my" |
+| `PRONOUN_POSSESSIVE_FORM` | 59 | Target is the independent possessive pronoun form of the source pronoun | "I" → "mine" |
+| `PRONOUN_REFLEXIVE_FORM` | 60 | Target is the reflexive form of the source pronoun | "I" → "myself" |
+| `PRONOUN_RECIPROCAL_FORM` | 61 | Target is a reciprocal form corresponding to the source pronoun | "they" → "each other" |
 
 ##### 6.2.2 Lexical Semantic (group 1)
 
@@ -605,3 +621,91 @@ This design is language-agnostic by construction: `WordSeeder` takes a
 directory matches it. Adding `fr`, `de`, `es`, `it`, ... support means
 adding sibling asset directories in the same format -- no change to
 `WordSeeder` itself.
+
+#### 9.5 The English Common Vocabulary Relationship Cache
+
+Once a `Domain`'s 300 mandatory `Word`s exist (9.4), that `Domain`
+also gets the intrinsic lexical relationships between them --
+`be`/`have`/`do` conjugations, `this`/`that` plurals,
+comparative/superlative forms, personal pronoun paradigms, and a small
+set of universally-true prepositional synonym/antonym pairs (`above`
+↔ `below`, `beneath` ↔ `under`, ...). **Relationship assets are
+generated bootstrap assets. They are not the authoritative source of
+lexical knowledge** -- the authoritative record of every
+`LexicalRelationship` is the `Domain` it was created in.
+
+Unlike `Word`s, relationships cannot be propagated by copying: a
+`LexicalRelationship` references specific `Word` UUIDs, and every
+`Domain` has its own distinct `Word` instances (`Dictionary.seed_from`,
+9.3). So relationships are re-resolved and re-created fresh for every
+`Domain`, immediately after that `Domain`'s `Word`s are seeded, by
+looking each one up in that `Domain`'s own `Dictionary` -- Qualified
+Word resolution (Domain + Lexical Form), never lexical form alone, is
+what makes this correct.
+
+The seeding order is fixed: `Word`s first (`WordSeeder`), then a
+lookup index (in practice, the now-populated `Dictionary` itself),
+then the relationship assets, then for each one resolve its source
+`Word`, resolve its target `Word`, allocate the `LexicalRelationship`
+(which allocates its tensor-backed `SystemPropertiesRef` row, Design
+Principle 8, in the same call), and finally validate the resulting
+graph.
+
+The cache -- file format, exact relationship list, seeding order,
+validation rules, and known gaps -- is documented in full at
+`vocabulary/assets/common/en/relationships/README.md`, alongside the
+data (`manifest.json` plus `morphological_relationships.json`,
+`semantic_relationships.json`, `orthographic_relationships.json`).
+
+`RelationshipSeeder` (`vocabulary/role/relationship_seeder.py`) is the
+role that validates, loads, and seeds the cache:
+
+| Method | Responsibility |
+|--------|-----------------|
+| `validate_assets()` | Schema, per-file and total relationship counts, relationship kind validity, mandatory file existence, manifest consistency, and manifest checksum verification. |
+| `load_relationship_specs()` | Validates, then parses every category file into `(source_lexical_form, target_lexical_form, LexicalRelationshipType)` tuples. Cached after the first call. |
+| `seed_domain(domain)` | Resolves and creates every relationship against `domain`'s own `Dictionary`, skipping any that already exist (same source `Word`, kind, and target `Word` -- 12.3's duplicate definition) and raising if a source or target `Word` cannot be resolved, since that means the cache references a `Word` outside the mandatory set (see Known Gaps below), a data inconsistency rather than something to seed around silently. |
+
+No `HYPERNYM`, `MERONYM`, or `TROPONYM` relationships are seeded for
+closed-class `Word`s -- those describe how open-class concepts relate
+to each other, not how a fixed set of grammatical function words does.
+
+**Known gap:** seven relationships from the original developer
+instructions for this cache reference words outside the mandatory
+300-word set (`done`, `doing`, `little`, `fewest`, `least`, `n't`,
+`owing to`) and are not seeded -- see the relationship cache README's
+Known Gaps table. Adding those six missing words would change the
+mandatory word count from 300 to 306, a decision left to 9.4's rule
+being revisited explicitly rather than made as a side effect here.
+
+##### 9.5.1 Pronoun Form relationships
+
+Personal pronoun paradigm forms (`I` → `me`/`my`/`mine`/`myself`, and
+so on for `you`/`he`/`she`/`it`/`we`/`they`) are seeded using six new
+`LexicalRelationshipType` members added specifically for this purpose
+-- `PRONOUN_OBJECT_FORM`, `PRONOUN_SUBJECT_FORM`,
+`PRONOUN_POSSESSIVE_DETERMINER_FORM`, `PRONOUN_POSSESSIVE_FORM`,
+`PRONOUN_REFLEXIVE_FORM`, `PRONOUN_RECIPROCAL_FORM` -- rather than the
+existing `DERIVED_FORM`: a pronoun's object, possessive, or reflexive
+form isn't a derivational relationship (it doesn't change grammatical
+category or add a prefix/suffix), it's the same pronoun in a different
+paradigm slot. See 6.2.1's new Pronoun Form (category 7) subsection
+for the full member list, values, and examples -- this is also the
+last available category in the Morphological group (0-7 all now used).
+
+Where a single word form serves two roles that this seed data only
+gives one arrow to (`his`, `her`, `its` are each both a possessive
+determiner and, informally, an independent possessive pronoun), the
+seed data picks one relationship kind rather than creating both edges
+-- `he → his` and `it → its` are seeded as
+`PRONOUN_POSSESSIVE_DETERMINER_FORM` (their primary, `PartOfSpeech.DETERMINER`
+classification in the word cache), `she → her` as `PRONOUN_OBJECT_FORM`
+(paralleling `he → him`, with the possessive role covered separately
+by `she → hers`). Creating both edges for a dual-role word is not a
+duplicate under the source+kind+target rule and could be added later
+without conflicting with what's here.
+
+`PRONOUN_RECIPROCAL_FORM` is defined but not yet seeded by any
+relationship in this cache -- no personal pronoun in the seed data
+maps directly to `each other` / `one another` the way it maps to its
+object, possessive, or reflexive forms.

@@ -37,6 +37,7 @@ from .role.dictionary_hydrator import AsyncDictionaryHydrator
 from .role.dictionary_processor import DictionaryProcessor
 from .role.external_dictionary_adapter import ExternalDictionaryAdapter
 from .role.lexical_relationship_processor import LexicalRelationshipProcessor
+from .role.relationship_seeder import RelationshipSeeder
 from .role.word_seeder import WordSeeder
 from .data.attribute_value import AttributeValue
 from .data.dictionary import Dictionary
@@ -76,4 +77,5 @@ __all__ = [
     "ExternalDictionaryAdapter",
     "LexicalRelationshipProcessor",
     "WordSeeder",
+    "RelationshipSeeder",
 ]

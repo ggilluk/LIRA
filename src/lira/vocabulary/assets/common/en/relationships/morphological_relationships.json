@@ -1,0 +1,223 @@
+{
+  "schema_version": "1.0.0",
+  "language_code": "en",
+  "relationship_category": "morphological",
+  "count": 43,
+  "relationships": [
+    {
+      "source_lexical_form": "be",
+      "target_lexical_form": "am",
+      "relationship_kind": "FIRST_PERSON_FORM"
+    },
+    {
+      "source_lexical_form": "be",
+      "target_lexical_form": "is",
+      "relationship_kind": "THIRD_PERSON_FORM"
+    },
+    {
+      "source_lexical_form": "be",
+      "target_lexical_form": "are",
+      "relationship_kind": "SECOND_PERSON_FORM"
+    },
+    {
+      "source_lexical_form": "be",
+      "target_lexical_form": "was",
+      "relationship_kind": "PAST_TENSE_FORM"
+    },
+    {
+      "source_lexical_form": "be",
+      "target_lexical_form": "were",
+      "relationship_kind": "PAST_TENSE_FORM"
+    },
+    {
+      "source_lexical_form": "be",
+      "target_lexical_form": "been",
+      "relationship_kind": "PAST_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "be",
+      "target_lexical_form": "being",
+      "relationship_kind": "PRESENT_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "have",
+      "target_lexical_form": "has",
+      "relationship_kind": "THIRD_PERSON_FORM"
+    },
+    {
+      "source_lexical_form": "have",
+      "target_lexical_form": "had",
+      "relationship_kind": "PAST_TENSE_FORM"
+    },
+    {
+      "source_lexical_form": "have",
+      "target_lexical_form": "having",
+      "relationship_kind": "PRESENT_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "do",
+      "target_lexical_form": "does",
+      "relationship_kind": "THIRD_PERSON_FORM"
+    },
+    {
+      "source_lexical_form": "do",
+      "target_lexical_form": "did",
+      "relationship_kind": "PAST_TENSE_FORM"
+    },
+    {
+      "source_lexical_form": "this",
+      "target_lexical_form": "these",
+      "relationship_kind": "PLURAL_FORM"
+    },
+    {
+      "source_lexical_form": "that",
+      "target_lexical_form": "those",
+      "relationship_kind": "PLURAL_FORM"
+    },
+    {
+      "source_lexical_form": "few",
+      "target_lexical_form": "fewer",
+      "relationship_kind": "COMPARATIVE_FORM"
+    },
+    {
+      "source_lexical_form": "many",
+      "target_lexical_form": "more",
+      "relationship_kind": "COMPARATIVE_FORM"
+    },
+    {
+      "source_lexical_form": "many",
+      "target_lexical_form": "most",
+      "relationship_kind": "SUPERLATIVE_FORM"
+    },
+    {
+      "source_lexical_form": "much",
+      "target_lexical_form": "more",
+      "relationship_kind": "COMPARATIVE_FORM"
+    },
+    {
+      "source_lexical_form": "much",
+      "target_lexical_form": "most",
+      "relationship_kind": "SUPERLATIVE_FORM"
+    },
+    {
+      "source_lexical_form": "I",
+      "target_lexical_form": "me",
+      "relationship_kind": "PRONOUN_OBJECT_FORM"
+    },
+    {
+      "source_lexical_form": "I",
+      "target_lexical_form": "my",
+      "relationship_kind": "PRONOUN_POSSESSIVE_DETERMINER_FORM"
+    },
+    {
+      "source_lexical_form": "I",
+      "target_lexical_form": "mine",
+      "relationship_kind": "PRONOUN_POSSESSIVE_FORM"
+    },
+    {
+      "source_lexical_form": "I",
+      "target_lexical_form": "myself",
+      "relationship_kind": "PRONOUN_REFLEXIVE_FORM"
+    },
+    {
+      "source_lexical_form": "you",
+      "target_lexical_form": "your",
+      "relationship_kind": "PRONOUN_POSSESSIVE_DETERMINER_FORM"
+    },
+    {
+      "source_lexical_form": "you",
+      "target_lexical_form": "yours",
+      "relationship_kind": "PRONOUN_POSSESSIVE_FORM"
+    },
+    {
+      "source_lexical_form": "you",
+      "target_lexical_form": "yourself",
+      "relationship_kind": "PRONOUN_REFLEXIVE_FORM"
+    },
+    {
+      "source_lexical_form": "you",
+      "target_lexical_form": "yourselves",
+      "relationship_kind": "PRONOUN_REFLEXIVE_FORM"
+    },
+    {
+      "source_lexical_form": "he",
+      "target_lexical_form": "him",
+      "relationship_kind": "PRONOUN_OBJECT_FORM"
+    },
+    {
+      "source_lexical_form": "he",
+      "target_lexical_form": "his",
+      "relationship_kind": "PRONOUN_POSSESSIVE_DETERMINER_FORM"
+    },
+    {
+      "source_lexical_form": "he",
+      "target_lexical_form": "himself",
+      "relationship_kind": "PRONOUN_REFLEXIVE_FORM"
+    },
+    {
+      "source_lexical_form": "she",
+      "target_lexical_form": "her",
+      "relationship_kind": "PRONOUN_OBJECT_FORM"
+    },
+    {
+      "source_lexical_form": "she",
+      "target_lexical_form": "hers",
+      "relationship_kind": "PRONOUN_POSSESSIVE_FORM"
+    },
+    {
+      "source_lexical_form": "she",
+      "target_lexical_form": "herself",
+      "relationship_kind": "PRONOUN_REFLEXIVE_FORM"
+    },
+    {
+      "source_lexical_form": "it",
+      "target_lexical_form": "its",
+      "relationship_kind": "PRONOUN_POSSESSIVE_DETERMINER_FORM"
+    },
+    {
+      "source_lexical_form": "it",
+      "target_lexical_form": "itself",
+      "relationship_kind": "PRONOUN_REFLEXIVE_FORM"
+    },
+    {
+      "source_lexical_form": "we",
+      "target_lexical_form": "us",
+      "relationship_kind": "PRONOUN_OBJECT_FORM"
+    },
+    {
+      "source_lexical_form": "we",
+      "target_lexical_form": "our",
+      "relationship_kind": "PRONOUN_POSSESSIVE_DETERMINER_FORM"
+    },
+    {
+      "source_lexical_form": "we",
+      "target_lexical_form": "ours",
+      "relationship_kind": "PRONOUN_POSSESSIVE_FORM"
+    },
+    {
+      "source_lexical_form": "we",
+      "target_lexical_form": "ourselves",
+      "relationship_kind": "PRONOUN_REFLEXIVE_FORM"
+    },
+    {
+      "source_lexical_form": "they",
+      "target_lexical_form": "them",
+      "relationship_kind": "PRONOUN_OBJECT_FORM"
+    },
+    {
+      "source_lexical_form": "they",
+      "target_lexical_form": "their",
+      "relationship_kind": "PRONOUN_POSSESSIVE_DETERMINER_FORM"
+    },
+    {
+      "source_lexical_form": "they",
+      "target_lexical_form": "theirs",
+      "relationship_kind": "PRONOUN_POSSESSIVE_FORM"
+    },
+    {
+      "source_lexical_form": "they",
+      "target_lexical_form": "themselves",
+      "relationship_kind": "PRONOUN_REFLEXIVE_FORM"
+    }
+  ]
+}

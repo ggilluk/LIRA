@@ -1,0 +1,58 @@
+{
+  "schema_version": "1.0.0",
+  "language_code": "en",
+  "relationship_category": "semantic",
+  "count": 10,
+  "relationships": [
+    {
+      "source_lexical_form": "above",
+      "target_lexical_form": "below",
+      "relationship_kind": "ANTONYM"
+    },
+    {
+      "source_lexical_form": "before",
+      "target_lexical_form": "after",
+      "relationship_kind": "ANTONYM"
+    },
+    {
+      "source_lexical_form": "inside",
+      "target_lexical_form": "outside",
+      "relationship_kind": "ANTONYM"
+    },
+    {
+      "source_lexical_form": "with",
+      "target_lexical_form": "without",
+      "relationship_kind": "ANTONYM"
+    },
+    {
+      "source_lexical_form": "over",
+      "target_lexical_form": "under",
+      "relationship_kind": "ANTONYM"
+    },
+    {
+      "source_lexical_form": "toward",
+      "target_lexical_form": "towards",
+      "relationship_kind": "SYNONYM"
+    },
+    {
+      "source_lexical_form": "beneath",
+      "target_lexical_form": "under",
+      "relationship_kind": "SYNONYM"
+    },
+    {
+      "source_lexical_form": "amid",
+      "target_lexical_form": "among",
+      "relationship_kind": "SYNONYM"
+    },
+    {
+      "source_lexical_form": "despite",
+      "target_lexical_form": "in spite of",
+      "relationship_kind": "SYNONYM"
+    },
+    {
+      "source_lexical_form": "beside",
+      "target_lexical_form": "next to",
+      "relationship_kind": "SYNONYM"
+    }
+  ]
+}

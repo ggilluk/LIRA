@@ -4,7 +4,10 @@ specification, 3)."""
 
 import copy
 import threading
+import uuid as uuid_module
 from typing import List, Optional
+
+from lira.value_objects import Identifier
 
 from .word import Word
 
@@ -50,9 +53,18 @@ class Dictionary:
         `other` -- used to seed a newly created Domain's Dictionary from
         the reserved Common Domain's Dictionary. Each Word is
         shallow-copied so the two Domains never share a mutable Word
-        instance (independent hydration, independent tensor rows)."""
+        instance (independent hydration, independent tensor rows), and
+        given a freshly generated uuid -- a shallow copy shares the
+        *same* Identifier object (and so the same uuid.value) as the
+        original otherwise, which would silently violate Qualified Word
+        Identity (Domain + Lexical Form) by giving two different
+        Domains' copies of "be" the identical uuid."""
         with other._lock:
-            copied = [copy.copy(word) for word in other.words]
+            copied = []
+            for word in other.words:
+                new_word = copy.copy(word)
+                new_word.uuid = Identifier(value=str(uuid_module.uuid4()))
+                copied.append(new_word)
         with self._lock:
             self.words.extend(copied)
 

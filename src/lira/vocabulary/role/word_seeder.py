@@ -23,6 +23,7 @@ null rather than guessed at."""
 
 import copy
 import json
+import uuid as uuid_module
 from decimal import Decimal
 from pathlib import Path
 from typing import Dict, List, Optional
@@ -168,12 +169,19 @@ class WordSeeder:
         """Appends a fresh copy of every cached Word into `dictionary`
         that isn't already present (matched by text). Returns the
         number actually appended -- idempotent, safe to call more than
-        once against the same Dictionary."""
+        once against the same Dictionary. Each copy gets a freshly
+        generated uuid: load_cache() is memoized, so calling this
+        against more than one Dictionary from the same WordSeeder
+        instance must not let two Dictionaries' Words share an
+        Identifier object (Qualified Word Identity -- see
+        Dictionary.seed_from, which has the same discipline)."""
         seeded = 0
         for word in self.load_cache():
             if dictionary.lookup(word.text) is not None:
                 continue
-            dictionary.append(copy.copy(word))
+            new_word = copy.copy(word)
+            new_word.uuid = Identifier(value=str(uuid_module.uuid4()))
+            dictionary.append(new_word)
             seeded += 1
         return seeded
 
