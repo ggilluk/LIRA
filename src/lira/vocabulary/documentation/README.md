@@ -7,9 +7,9 @@ lexicon (Dictionary) and everything that seeds/looks up/hydrates it.
 
 See the repository root's `ARCHITECTURE.md` for the full component tree
 and design rules. See `DEVELOPER_SPECIFICATION.md` in this folder for
-the full Vocabulary Layer developer specification (`DictionaryEntry`,
-`LexicalRelationship`, enumerations, validation, persistence, and
-testing requirements).
+the Vocabulary Layer developer specification (`Dictionary`,
+`DictionaryEntry`, `LexicalRelationship`, enumerations, and supporting
+value objects).
 
 ## Layout
 
