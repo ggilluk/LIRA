@@ -230,69 +230,178 @@ All enumeration values below are integers, assigned sequentially, for direct use
 
 #### 6.2 LexicalRelationshipType — Encoding
 
-`LexicalRelationshipType` is a single enumeration whose values are shown here split into three tables by group (6.2.1 – 6.2.3). Each value packs three fields into one integer, so a caller can classify a value with bitwise operations alone, without a lookup table:
+`LexicalRelationshipType` classifies every kind of relationship two `Word` entries can have to each other. It is one enumeration, organised below by what its values are relationships *about*: shared grammar (6.2.1), shared or opposed meaning (6.2.2), and shared or altered writing (6.2.3). Each of those is further broken down into the specific kind of comparison being made, and each value packs its group and category into the integer itself, so a caller can classify a value with bitwise operations alone, without a lookup table:
 
 ```
 value = (group << 6) | (category << 3) | item
 
-group    = value >> 6          # 2 bits: 0-3   (which of the tables below)
-category = (value >> 3) & 0b111  # 3 bits: 0-7 (the sub-classification within that table)
-item     = value & 0b111         # 3 bits: 0-7 (the specific relationship type within its category)
+group    = value >> 6            # 2 bits: 0-3   (6.2.1, 6.2.2, or 6.2.3 below)
+category = (value >> 3) & 0b111  # 3 bits: 0-7   (the sub-heading within that group)
+item     = value & 0b111         # 3 bits: 0-7   (the specific relationship type within its category)
 ```
 
 Group values: `0` = Morphological, `1` = Lexical Semantic, `2` = Orthographic and Naming (`3` reserved for a future fourth group). 3 bits per field caps each group at 8 categories and each category at 8 items -- the current largest category (Derivation, 5 items) and largest group (Morphological, 7 categories) both fit with room to grow. The whole value fits in a single byte (max value used below is 146).
 
 ##### 6.2.1 Morphological (group 0)
 
-| Name | Category | Value | Meaning |
-|------|----------|-------|---------|
-| `LEMMA_FORM` | Base relation (0) | 0 | Target is the lemma of the source |
-| `INFLECTION` | Base relation (0) | 1 | Target is an inflected form |
-| `SINGULAR_FORM` | Number (1) | 8 | Target is a singular form |
-| `PLURAL_FORM` | Number (1) | 9 | Target is a plural form |
-| `PRESENT_TENSE_FORM` | Tense (2) | 16 | Target is a present-tense form |
-| `PAST_TENSE_FORM` | Tense (2) | 17 | Target is a past-tense form |
-| `PRESENT_PARTICIPLE_FORM` | Aspect (3) | 24 | Target is a present participle |
-| `PAST_PARTICIPLE_FORM` | Aspect (3) | 25 | Target is a past participle |
-| `FIRST_PERSON_FORM` | Person (4) | 32 | Target is a first-person form |
-| `SECOND_PERSON_FORM` | Person (4) | 33 | Target is a second-person form |
-| `THIRD_PERSON_FORM` | Person (4) | 34 | Target is a third-person form |
-| `COMPARATIVE_FORM` | Degree (5) | 40 | Target is a comparative form |
-| `SUPERLATIVE_FORM` | Degree (5) | 41 | Target is a superlative form |
-| `DERIVED_FORM` | Derivation (6) | 48 | Target is morphologically derived |
-| `AGENT_NOUN_DERIVATION` | Derivation (6) | 49 | Target denotes an agent |
-| `NOMINALISATION` | Derivation (6) | 50 | Target is a noun derivation |
-| `ADJECTIVAL_DERIVATION` | Derivation (6) | 51 | Target is an adjective derivation |
-| `ADVERBIAL_DERIVATION` | Derivation (6) | 52 | Target is an adverb derivation |
+Morphological relationships connect two forms of the *same* underlying word that differ only because of grammar -- the two `Word` entries share one core meaning, and just the grammatical shape changes (its tense, number, person, and so on).
+
+###### Base relation (category 0)
+
+The most basic morphological link: connecting an inflected or derived form back to its dictionary root, or forward to a form built from it.
+
+| Name | Value | Meaning |
+|------|-------|---------|
+| `LEMMA_FORM` | 0 | Target is the lemma of the source |
+| `INFLECTION` | 1 | Target is an inflected form |
+
+###### Number (category 1)
+
+Distinguishes a word's singular form from its plural form.
+
+| Name | Value | Meaning |
+|------|-------|---------|
+| `SINGULAR_FORM` | 8 | Target is a singular form |
+| `PLURAL_FORM` | 9 | Target is a plural form |
+
+###### Tense (category 2)
+
+Distinguishes a verb's present-tense form from its past-tense form.
+
+| Name | Value | Meaning |
+|------|-------|---------|
+| `PRESENT_TENSE_FORM` | 16 | Target is a present-tense form |
+| `PAST_TENSE_FORM` | 17 | Target is a past-tense form |
+
+###### Aspect (category 3)
+
+Distinguishes a verb's present participle (e.g. "running") from its past participle (e.g. "run").
+
+| Name | Value | Meaning |
+|------|-------|---------|
+| `PRESENT_PARTICIPLE_FORM` | 24 | Target is a present participle |
+| `PAST_PARTICIPLE_FORM` | 25 | Target is a past participle |
+
+###### Person (category 4)
+
+Distinguishes which grammatical person a verb form is conjugated for -- first person ("I"/"we"), second person ("you"), or third person ("he"/"she"/"it"/"they").
+
+| Name | Value | Meaning |
+|------|-------|---------|
+| `FIRST_PERSON_FORM` | 32 | Target is a first-person form |
+| `SECOND_PERSON_FORM` | 33 | Target is a second-person form |
+| `THIRD_PERSON_FORM` | 34 | Target is a third-person form |
+
+###### Degree (category 5)
+
+Distinguishes an adjective or adverb's comparative form (e.g. "faster") from its superlative form (e.g. "fastest").
+
+| Name | Value | Meaning |
+|------|-------|---------|
+| `COMPARATIVE_FORM` | 40 | Target is a comparative form |
+| `SUPERLATIVE_FORM` | 41 | Target is a superlative form |
+
+###### Derivation (category 6)
+
+Connects a word to a new word built from it by adding a prefix or suffix that changes its grammatical category or meaning -- for example, naming "a person who does X", or turning a verb into a noun, adjective, or adverb.
+
+| Name | Value | Meaning |
+|------|-------|---------|
+| `DERIVED_FORM` | 48 | Target is morphologically derived |
+| `AGENT_NOUN_DERIVATION` | 49 | Target denotes an agent |
+| `NOMINALISATION` | 50 | Target is a noun derivation |
+| `ADJECTIVAL_DERIVATION` | 51 | Target is an adjective derivation |
+| `ADVERBIAL_DERIVATION` | 52 | Target is an adverb derivation |
 
 ##### 6.2.2 Lexical Semantic (group 1)
 
-| Name | Category | Value | Meaning |
-|------|----------|-------|---------|
-| `SYNONYM` | Similarity/opposition (0) | 64 | Entries have similar lexical meaning |
-| `ANTONYM` | Similarity/opposition (0) | 65 | Entries express lexical opposition |
-| `HYPERNYM` | Hierarchy (1) | 72 | Target is lexically broader |
-| `HYPONYM` | Hierarchy (1) | 73 | Target is lexically narrower |
-| `MERONYM` | Part-whole (2) | 80 | Source denotes a part of target |
-| `HOLONYM` | Part-whole (2) | 81 | Source denotes a whole containing target |
-| `TROPONYM` | Manner (3) | 88 | Target expresses a specific manner |
-| `ENTAILMENT` | Entailment/causation (4) | 96 | Source lexically entails target |
-| `CAUSE` | Entailment/causation (4) | 97 | Source lexically causes target |
-| `RELATED` | Unspecified (5) | 104 | Entries have an unspecified lexical association |
+Lexical semantic relationships connect two *different* words based on how their meanings relate to each other, rather than on shared grammatical form.
+
+###### Similarity / Opposition (category 0)
+
+Connects words that mean roughly the same thing, or words that mean the opposite of each other.
+
+| Name | Value | Meaning |
+|------|-------|---------|
+| `SYNONYM` | 64 | Entries have similar lexical meaning |
+| `ANTONYM` | 65 | Entries express lexical opposition |
+
+###### Hierarchy (category 1)
+
+Connects a general term to a more specific term beneath it, and vice versa -- for example, "animal" and "dog".
+
+| Name | Value | Meaning |
+|------|-------|---------|
+| `HYPERNYM` | 72 | Target is lexically broader |
+| `HYPONYM` | 73 | Target is lexically narrower |
+
+###### Part-Whole (category 2)
+
+Connects a word naming a part to a word naming the whole it belongs to, and vice versa -- for example, "wheel" and "car".
+
+| Name | Value | Meaning |
+|------|-------|---------|
+| `MERONYM` | 80 | Source denotes a part of target |
+| `HOLONYM` | 81 | Source denotes a whole containing target |
+
+###### Manner (category 3)
+
+Connects a general action to a word describing a more specific way of performing it -- for example, "walk" and "stroll".
+
+| Name | Value | Meaning |
+|------|-------|---------|
+| `TROPONYM` | 88 | Target expresses a specific manner |
+
+###### Entailment / Causation (category 4)
+
+Connects a word to another word whose meaning it logically implies, or to a word describing what it brings about -- for example, "snore" entails "sleep", and "kill" causes "die".
+
+| Name | Value | Meaning |
+|------|-------|---------|
+| `ENTAILMENT` | 96 | Source lexically entails target |
+| `CAUSE` | 97 | Source lexically causes target |
+
+###### Unspecified (category 5)
+
+Connects two words known to be lexically related without specifying the exact nature of that relationship.
+
+| Name | Value | Meaning |
+|------|-------|---------|
+| `RELATED` | 104 | Entries have an unspecified lexical association |
 
 ##### 6.2.3 Orthographic and Naming (group 2)
 
-| Name | Category | Value | Meaning |
-|------|----------|-------|---------|
-| `SPELLING_VARIANT` | Spelling variation (0) | 128 | Alternative spelling |
-| `HISTORICAL_SPELLING` | Spelling variation (0) | 129 | Historical spelling form |
-| `ABBREVIATION` | Shortening (1) | 136 | Shortened form |
-| `ACRONYM` | Shortening (1) | 137 | Acronym form |
-| `INITIALISM` | Shortening (1) | 138 | Initial-letter form |
-| `CONTRACTION` | Shortening (1) | 139 | Contracted lexical form |
-| `TRANSLITERATION` | Script transformation (2) | 144 | Form represented in another writing system |
-| `CAPITALISATION` | Script transformation (2) | 145 | Capitalisation variant |
-| `DIACRITIC_VARIANT` | Script transformation (2) | 146 | Variant differing by diacritics |
+Orthographic and naming relationships connect two written forms of the same word that differ in spelling, length, or writing system, rather than in grammar or meaning.
+
+###### Spelling Variation (category 0)
+
+Connects alternative spellings of the same word, including older, historical spellings that have since changed.
+
+| Name | Value | Meaning |
+|------|-------|---------|
+| `SPELLING_VARIANT` | 128 | Alternative spelling |
+| `HISTORICAL_SPELLING` | 129 | Historical spelling form |
+
+###### Shortening (category 1)
+
+Connects a full word or phrase to a shortened form of it -- an abbreviation, an acronym, an initialism, or a contraction.
+
+| Name | Value | Meaning |
+|------|-------|---------|
+| `ABBREVIATION` | 136 | Shortened form |
+| `ACRONYM` | 137 | Acronym form |
+| `INITIALISM` | 138 | Initial-letter form |
+| `CONTRACTION` | 139 | Contracted lexical form |
+
+###### Script Transformation (category 2)
+
+Connects a word to a version of itself rewritten in a different script, capitalisation, or with different diacritical marks.
+
+| Name | Value | Meaning |
+|------|-------|---------|
+| `TRANSLITERATION` | 144 | Form represented in another writing system |
+| `CAPITALISATION` | 145 | Capitalisation variant |
+| `DIACRITIC_VARIANT` | 146 | Variant differing by diacritics |
 
 #### 6.5 RegisterCode
 
