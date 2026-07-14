@@ -154,7 +154,7 @@ The same written form may have multiple `Word` entries where its language, scrip
 | `editorial_labels` | `tuple[EditorialLabel, ...]` | No | Editorial classifications |
 | `source_references` | `tuple[SourceReference, ...]` | Yes | Source provenance |
 
-`Word` has no `system_properties` field -- see Design Principle 8. Note this does not touch `LinguisticUnit.system_property` (singular), the separate, Linguistics-owned tensor property `Word` still carries in its *token* role (4.1) -- that one is unaffected by this rule, which is scoped to the Vocabulary-level `SystemPropertiesRef` field.
+`Word` has no `system_properties` field -- see Design Principle 8. This is not a gap: when a `Word` is used in Linguistics, in its *token* role (4.1), it draws confidence, activation, and the rest from the Linguistics tensor instead, via the `LinguisticUnit.system_property` (singular) it inherits -- a separate, Linguistics-owned mechanism, populated by `GraphProcessor` at the point the token is created. A `Word`-as-type (Vocabulary) has no tensor row of its own; a `Word`-as-token (Linguistics) does. Vocabulary-level confidence/provenance about the word itself, as opposed to its use in a sentence, only exists by way of a `LexicalRelationship`.
 
 #### 4.3 Derived Properties
 
