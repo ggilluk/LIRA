@@ -4,7 +4,7 @@ to build its full Subject tree."""
 from .graph_processor import GraphProcessor
 from ..data.linguistic_unit_kind import LinguisticUnitKind
 from ..data.subject import Subject
-from ..data.user_prompt import UserPrompt
+from ..ui.user_prompt import UserPrompt
 
 
 class PromptTokenizer:

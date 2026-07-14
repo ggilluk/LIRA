@@ -2,7 +2,7 @@
 
 from typing import List, Union
 
-from ..data.grammar_configuration import LinguisticGrammarConfiguration
+from .grammar_configurator import GrammarConfigurator
 from ..data.punctuation import Punctuation
 from ..data.word import Word
 
@@ -11,7 +11,7 @@ class ClauseSegmentationUtility:
     @staticmethod
     def slice_tokens_into_clauses(
         tokens: List[Union[Word, Punctuation]],
-        config: LinguisticGrammarConfiguration
+        config: GrammarConfigurator
     ) -> List[List[Union[Word, Punctuation]]]:
 
         clause_buckets: List[List[Union[Word, Punctuation]]] = [[]]

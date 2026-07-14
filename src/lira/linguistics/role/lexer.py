@@ -3,14 +3,14 @@
 import re
 from typing import List
 
-from ..data.grammar_configuration import LinguisticGrammarConfiguration
+from .grammar_configurator import GrammarConfigurator
 
 
 class LinguisticLexer:
     TOKEN_REGEX = re.compile(r'(?:[A-Z]\.)+|(?:\d+\.\d+)+|\w+(?:\'\w+)?|[.,!?;]')
 
     @classmethod
-    def split_sentences(cls, text: str, config: LinguisticGrammarConfiguration) -> List[str]:
+    def split_sentences(cls, text: str, config: GrammarConfigurator) -> List[str]:
         # Use explicit boundary lookbehinds compiled dynamically from current configuration
         split_pattern = re.compile(config.sentence_abbreviation_exceptions + r'(?<=[.!?])\s+')
         return [s.strip() for s in split_pattern.split(text) if s.strip()]

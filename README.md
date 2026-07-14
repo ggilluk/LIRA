@@ -37,16 +37,16 @@ src/lira/
 │   ├── documentation/
 │   ├── data/                 one class per file: linguistic_unit.py
 │   │                          (base), word.py, punctuation.py, clause.py, sentence.py,
-│   │                          paragraph.py, subject.py, user_prompt.py, plus enums
+│   │                          paragraph.py, subject.py, plus enums
 │   │                          (linguistic_unit_kind.py, part_of_speech.py,
-│   │                          linguistic_relation_type.py), tensor.py, system_property.py,
-│   │                          grammar_configuration.py
+│   │                          linguistic_relation_type.py), tensor.py, system_property.py
 │   ├── agents/                 LinguisticsAgent (no concrete subclasses yet)
 │   ├── role/                   LinguisticController (wires this layer together,
 │   │                           same as DomainController does for Domain),
 │   │                           GraphProcessor, PromptTokenizer, LinguisticLexer,
-│   │                           ClauseSegmentationUtility
-│   └── api/, ui/, assets/   (none yet)
+│   │                           ClauseSegmentationUtility, GrammarConfigurator
+│   ├── ui/                     UserPrompt (raw input at the layer's boundary)
+│   └── api/, assets/   (none yet)
 ├── value_objects/          Value Objects Layer
 │   ├── documentation/
 │   ├── data/                 ValueObjectsLayer

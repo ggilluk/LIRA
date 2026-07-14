@@ -6,7 +6,7 @@ import uuid
 from typing import List, Union
 
 from .clause_segmentation import ClauseSegmentationUtility
-from ..data.grammar_configuration import LinguisticGrammarConfiguration
+from .grammar_configurator import GrammarConfigurator
 from .lexer import LinguisticLexer
 from ..data.system_property import LinguisticSystemProperty, SystemPropertyRef
 from ..data.tensor import LinguisticSystemPropertyTensor
@@ -28,7 +28,7 @@ from ..data.word import Word
 
 
 class GraphProcessor:
-    def __init__(self, dict_processor: "DictionaryProcessor", config: LinguisticGrammarConfiguration,
+    def __init__(self, dict_processor: "DictionaryProcessor", config: GrammarConfigurator,
                  store: LinguisticSystemPropertyTensor, use_clause_segmentation: bool = True):
         self.dict_processor = dict_processor
         self.config = config

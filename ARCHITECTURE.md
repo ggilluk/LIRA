@@ -100,14 +100,15 @@ external scheduler that placed it (see Execution Model below).
   to Vocabulary, not Linguistics) and wires together a `LinguisticLexer`
   (regex tokenisation and abbreviation-aware sentence splitting) and
   `ClauseSegmentationUtility` (splits a sentence's tokens into clauses
-  using a `LinguisticGrammarConfiguration` of conjunctions/delimiters),
-  and a `GraphProcessor` that composes all of the above (calling into
-  Vocabulary's `DictionaryProcessor` to resolve each token) into the
-  Word/Punctuation -> Clause -> Sentence -> Paragraph -> Subject tree
-  (`linguistic_unit.py` for the shared base, one file per concrete kind:
-  `word.py`, `punctuation.py`, `clause.py`, `sentence.py`,
-  `paragraph.py`, `subject.py`, `user_prompt.py`), each node carrying a
-  `LinguisticSystemProperty` -- a
+  using a `GrammarConfigurator` of conjunctions/delimiters -- also
+  `linguistics/role/`, the role those two consult for their rules rather
+  than a passive data record), and a `GraphProcessor` that composes all
+  of the above (calling into Vocabulary's `DictionaryProcessor` to
+  resolve each token) into the Word/Punctuation -> Clause -> Sentence ->
+  Paragraph -> Subject tree (`linguistic_unit.py` for the shared base,
+  one file per concrete kind: `word.py`, `punctuation.py`, `clause.py`,
+  `sentence.py`, `paragraph.py`, `subject.py`, all in `data/`), each
+  node carrying a `LinguisticSystemProperty` -- a
   by-reference view into `LinguisticSystemPropertyTensor` (Rule 14),
   same discipline as `SystemPropertyRef` in the Knowledge Layer: one
   growable, amortized-doubling row per unit holding its numeric fields
@@ -116,7 +117,8 @@ external scheduler that placed it (see Execution Model below).
   origin, and the live `linguistic_unit` backref stay in plain Python
   lists alongside it, mirroring TensorLiraGraph's `_edge_uuid` /
   `_concept_names` convention. `PromptTokenizer` is the entry point for
-  a `UserPrompt`.
+  a `UserPrompt` (`linguistics/ui/` -- the raw input at the layer's
+  boundary, before any processing).
 
 - **Value Objects Layer** -- parses and normalises primitive values
   (measures, quantities, codes, identifiers, dates) into typed

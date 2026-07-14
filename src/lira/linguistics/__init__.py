@@ -3,16 +3,17 @@ morphology) that feeds concept and relationship extraction (Layer
 Summary: Linguistics Layer). Contains language structure only (Rule 18).
 
 Repository layout follows Architectural Layer -> artefact purpose:
-data/ (the Word/Clause/Sentence/Paragraph/Subject/UserPrompt tree,
+data/ (the Word/Clause/Sentence/Paragraph/Subject tree,
 LinguisticSystemPropertyTensor), agents/ (LinguisticsAgent base -- no
 concrete subclasses yet), role/ (LinguisticController -- wires the rest
 of this layer together, same as DomainController does for Domain --
 GraphProcessor, PromptTokenizer, LinguisticLexer,
-ClauseSegmentationUtility -- Linguistics doesn't use the *Agent-subclass
-convention the other three layers use, since this processing doesn't
-decompose cleanly into that shape, but every one of these classes still
-plays an active role rather than just holding state), documentation/,
-api/, ui/, assets/.
+ClauseSegmentationUtility, GrammarConfigurator -- Linguistics doesn't use
+the *Agent-subclass convention the other three layers use, since this
+processing doesn't decompose cleanly into that shape, but every one of
+these classes still plays an active role rather than just holding
+state), documentation/, api/, ui/ (UserPrompt, the raw input at the
+boundary), assets/.
 
 The lexicon (Dictionary, DictionaryEntry) and everything that
 seeds/looks up/hydrates it (DictionaryProcessor, AsyncDictionaryHydrator,
@@ -21,11 +22,11 @@ GraphProcessor takes a lira.vocabulary DictionaryProcessor to resolve
 tokens (Rule 17: Vocabulary contains lexical inventory only)."""
 
 from .role.clause_segmentation import ClauseSegmentationUtility
+from .role.grammar_configurator import GrammarConfigurator
 from .role.graph_processor import GraphProcessor
 from .role.lexer import LinguisticLexer
 from .role.linguistic_controller import LinguisticController
 from .role.prompt_tokenizer import PromptTokenizer
-from .data.grammar_configuration import LinguisticGrammarConfiguration
 from .data.system_property import LinguisticSystemProperty, SystemPropertyRef
 from .data.tensor import LinguisticSystemPropertyTensor
 from .data.clause import Clause
@@ -37,12 +38,12 @@ from .data.part_of_speech import PartOfSpeech
 from .data.punctuation import Punctuation
 from .data.sentence import Sentence
 from .data.subject import Subject
-from .data.user_prompt import UserPrompt
+from .ui.user_prompt import UserPrompt
 from .data.word import Word
 
 __all__ = [
     "LinguisticController",
-    "LinguisticGrammarConfiguration",
+    "GrammarConfigurator",
     "LinguisticLexer",
     "ClauseSegmentationUtility",
     "GraphProcessor",
