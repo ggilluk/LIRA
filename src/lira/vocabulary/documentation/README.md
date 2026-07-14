@@ -71,7 +71,7 @@ The Vocabulary Layer is responsible only for vocabulary data. It does not model 
 | 5 | Directed relationships | Every relationship has an explicit source and target. |
 | 6 | Extensible classification | New relationship types can be added without changing `Word`. |
 | 7 | Provenance | Every `Word` and relationship retains source information. |
-| 8 | Tensor-backed system properties | Every object references authoritative system properties. |
+| 8 | Tensor-backed system properties | Only `LexicalRelationship` references authoritative, tensor-backed system properties. `Dictionary` and `Word` do not -- confidence, provenance weight, activation, and the rest are properties of a *claimed relationship*, not of a word standing alone. |
 | 9 | Immutability | Core vocabulary objects should be immutable after creation. |
 | 10 | Stable identity | Identifiers remain stable across persistence and reloading. |
 | 11 | Value-object typed attributes | Every non-identity, non-enum, non-object-graph attribute is typed as a `value_objects` Value Object (`Text`, `Number`, `Identifier`, `Code`, ...), never a raw primitive. |
@@ -93,7 +93,8 @@ The Vocabulary Layer is responsible only for vocabulary data. It does not model 
 | `language_code` | `Code` | Yes | Language this dictionary indexes |
 | `words` | `tuple[Word, ...]` | Yes | The dictionary's lexicon entries |
 | `source_references` | `tuple[SourceReference, ...]` | Yes | Source provenance |
-| `system_properties` | `SystemPropertiesRef` | Yes | By-reference LIRA system properties |
+
+`Dictionary` has no `system_properties` field -- see Design Principle 8.
 
 ### 4. Word
 
@@ -152,7 +153,8 @@ The same written form may have multiple `Word` entries where its language, scrip
 | `first_recorded_use` | `Text` | No | Earliest recorded lexical use |
 | `editorial_labels` | `tuple[EditorialLabel, ...]` | No | Editorial classifications |
 | `source_references` | `tuple[SourceReference, ...]` | Yes | Source provenance |
-| `system_properties` | `SystemPropertiesRef` | Yes | By-reference LIRA system properties |
+
+`Word` has no `system_properties` field -- see Design Principle 8. Note this does not touch `LinguisticUnit.system_property` (singular), the separate, Linguistics-owned tensor property `Word` still carries in its *token* role (4.1) -- that one is unaffected by this rule, which is scoped to the Vocabulary-level `SystemPropertiesRef` field.
 
 #### 4.3 Derived Properties
 
@@ -472,4 +474,4 @@ Every non-identity, non-enum attribute in sections 3–7 resolves to one of the 
 | `Code` | A value drawn from a defined classification or code list | `language_code`, `script_code`, `dialect_codes`, `frequency_scale`, `dialect_code` (Pronunciation) |
 | `Number` | A numeric quantity | `syllable_count`, `frequency_value` |
 
-`system_properties` (`SystemPropertiesRef`), and object-graph collections (`words`, `pronunciations`, `source_references`, `qualifiers`), reference other typed objects rather than holding a scalar value, so Design Principle 11 does not apply to them.
+`LexicalRelationship.system_properties` (`SystemPropertiesRef`), and object-graph collections (`words`, `pronunciations`, `source_references`, `qualifiers`), reference other typed objects rather than holding a scalar value, so Design Principle 11 does not apply to them. `system_properties` is not a field on `Dictionary` or `Word` at all -- see Design Principle 8.
