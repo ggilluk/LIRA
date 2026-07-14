@@ -6,7 +6,10 @@ prevents words and symbols being confused with meaning. Also owns the
 lexicon (Dictionary) and everything that seeds/looks up/hydrates it.
 
 See the repository root's `ARCHITECTURE.md` for the full component tree
-and design rules.
+and design rules. See `DEVELOPER_SPECIFICATION.md` in this folder for
+the full Vocabulary Layer developer specification (`DictionaryEntry`,
+`LexicalRelationship`, enumerations, validation, persistence, and
+testing requirements).
 
 ## Layout
 
