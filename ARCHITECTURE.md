@@ -121,9 +121,20 @@ external scheduler that placed it (see Execution Model below).
   boundary, before any processing).
 
 - **Value Objects Layer** -- parses and normalises primitive values
-  (measures, quantities, codes, identifiers, dates) into typed
-  `ValueTypeKind` instances before they enter the Knowledge Layer, run
-  by Value Object Agents.
+  (measures, quantities, codes, identifiers, dates) into typed value
+  object instances before they enter the Knowledge Layer, run by Value
+  Object Agents. The typed instances themselves (`value_objects/data/`)
+  are Core Component Types from the UN/CEFACT Core Components
+  Technical Specification (CCTS): `Text` (content + `language_id`),
+  `Number` (content only, no supplementary components), `Code`
+  (content + `name`, `language_id`, and the code-list identification
+  set -- `list_id`, `list_agency_id`, `list_agency_name`, `list_name`,
+  `list_version_id`, `list_uri`, `list_scheme_uri`), `Indicator`
+  (content only, boolean), `Quantity` (content + `unit_code` and its
+  code-list identification set -- `unit_code_list_id`,
+  `unit_code_list_agency_id`, `unit_code_list_agency_name`), and
+  `BinaryObject` (content + `format`, `mime_code`,
+  `character_set_code`, `encoding_code`, `filename`, `uri`).
 
 - **Knowledge Layer** -- owns the Domain's one authoritative tensor
   store (`TensorLiraGraph`): dense (confidence, provenance, temporal,
