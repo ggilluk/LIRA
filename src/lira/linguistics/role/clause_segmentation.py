@@ -3,16 +3,17 @@
 from typing import List, Union
 
 from .grammar_configurator import GrammarConfigurator
-from ..data.punctuation import Punctuation
-from ..data.word import Word
+
+# Word, Punctuation (lira.vocabulary) used only as type hints here -- see
+# clause.py for why they're left unimported.
 
 
 class ClauseSegmentationUtility:
     @staticmethod
     def slice_tokens_into_clauses(
-        tokens: List[Union[Word, Punctuation]],
+        tokens: List[Union["Word", "Punctuation"]],
         config: GrammarConfigurator
-    ) -> List[List[Union[Word, Punctuation]]]:
+    ) -> List[List[Union["Word", "Punctuation"]]]:
 
         clause_buckets: List[List[Union[Word, Punctuation]]] = [[]]
 

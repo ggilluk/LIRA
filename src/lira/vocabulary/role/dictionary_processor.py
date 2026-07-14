@@ -4,9 +4,9 @@ hydration for unknown words."""
 from ..data.dictionary import Dictionary
 from ..data.dictionary_entry import DictionaryEntry
 from ..data.part_of_speech import PartOfSpeech
+from ..data.punctuation import Punctuation
+from ..data.word import Word
 from .dictionary_hydrator import AsyncDictionaryHydrator
-from lira.linguistics.data.punctuation import Punctuation
-from lira.linguistics.data.word import Word
 from lira.value_objects import Text
 
 

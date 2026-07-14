@@ -32,20 +32,26 @@ src/lira/
 │   ├── data/                 VocabularyLayer; one class per file: dictionary.py
 │   │                          (Dictionary), dictionary_entry.py (DictionaryEntry --
 │   │                          meaning: Text, a value_objects type, not a plain str),
-│   │                          part_of_speech.py (PartOfSpeech -- lives here, not
-│   │                          Linguistics: a lexical attribute, same as meaning)
+│   │                          part_of_speech.py (PartOfSpeech), word.py (Word),
+│   │                          punctuation.py (Punctuation) -- all four live here, not
+│   │                          Linguistics, since a word's lexical unit status, its part
+│   │                          of speech, and its meaning are all lexical attributes;
+│   │                          Word/Punctuation still subclass Linguistics's
+│   │                          LinguisticUnit
 │   ├── agents/                VocabularyAgent, Seed/Lookup/Hydrate/Normalise
 │   ├── role/                  DictionaryProcessor, AsyncDictionaryHydrator, ExternalDictionaryAdapter
 │   └── api/, ui/, assets/   (none yet)
 ├── linguistics/            Linguistics Layer
 │   ├── documentation/
 │   ├── data/                 one class per file: linguistic_unit.py
-│   │                          (base), word.py, punctuation.py, clause.py, sentence.py,
+│   │                          (base), clause.py, sentence.py,
 │   │                          paragraph.py, subject.py, plus enums
 │   │                          (linguistic_unit_kind.py,
 │   │                          linguistic_relation_type.py), tensor.py, system_property.py.
-│   │                          Word.part_of_speech is a string-quoted, unimported hint
-│   │                          pointing at vocabulary's PartOfSpeech.
+│   │                          Clause.tokens references vocabulary's Word/Punctuation
+│   │                          only as string-quoted, unimported hints; GraphProcessor
+│   │                          (which constructs and isinstance-checks them) imports
+│   │                          them locally inside its methods instead.
 │   ├── agents/                 LinguisticsAgent (no concrete subclasses yet)
 │   ├── role/                   LinguisticController (wires this layer together,
 │   │                           same as DomainController does for Domain),
@@ -90,12 +96,20 @@ DomainAgent, HostController` both work; there is no `lira.host`,
 `LinguisticController` takes a Vocabulary `DictionaryProcessor` as a
 constructor argument rather than owning its own lexicon --
 `Domain.__init__` builds `vocabulary` first and passes
-`vocabulary.dictionary_processor` into `LinguisticController`. Linguistics
-only ever references `DictionaryProcessor` and Vocabulary's
-`PartOfSpeech` (`Word.part_of_speech`) as string-quoted, unimported
-type hints (never a real import), because `vocabulary`'s own modules
-import Linguistics's `word.py`/`punctuation.py` -- a real top-level
-import in both directions would form an import cycle.
+`vocabulary.dictionary_processor` into `LinguisticController`.
+Vocabulary now owns `Word` and `Punctuation` too (moved from
+Linguistics: a word's lexical unit status, part of speech, and meaning
+are all lexical attributes, Rule 17), and each still subclasses
+Linguistics's `LinguisticUnit` -- a real import, since inheritance
+needs the actual base class, not just a hint. That makes the cycle
+bidirectional: Linguistics's `Clause.tokens` and
+`ClauseSegmentationUtility` reference `DictionaryProcessor`,
+`PartOfSpeech`, `Word`, and `Punctuation` only as string-quoted,
+unimported type hints (never a real import at module scope), and
+`GraphProcessor` -- which actually constructs and `isinstance`-checks
+`Word`/`Punctuation`, not just holds a hint -- imports them locally
+inside `process_token`/`process_sentence` instead, deferred until
+first call, by which point both layers have already finished loading.
 
 ## Install
 

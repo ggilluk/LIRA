@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 from typing import Optional
 
-from .linguistic_unit import LinguisticUnit
+from lira.linguistics.data.linguistic_unit import LinguisticUnit
 
 
 @dataclass

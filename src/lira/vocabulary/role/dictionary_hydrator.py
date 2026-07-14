@@ -9,8 +9,8 @@ import urllib.request
 from typing import Set
 
 from ..data.dictionary import Dictionary
+from ..data.word import Word
 from .external_dictionary_adapter import ExternalDictionaryAdapter
-from lira.linguistics.data.word import Word
 
 
 class AsyncDictionaryHydrator:

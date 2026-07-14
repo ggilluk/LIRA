@@ -4,11 +4,11 @@ meaning, and its possible parts of speech."""
 from dataclasses import dataclass, field
 from typing import List, Union
 
-from lira.linguistics.data.punctuation import Punctuation
-from lira.linguistics.data.word import Word
 from lira.value_objects import Text
 
 from .part_of_speech import PartOfSpeech
+from .punctuation import Punctuation
+from .word import Word
 
 
 @dataclass

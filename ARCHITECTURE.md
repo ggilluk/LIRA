@@ -90,15 +90,22 @@ external scheduler that placed it (see Execution Model below).
   `Domain.linguistics` resolves tokens through
   `Domain.vocabulary.dictionary_processor` rather than Linguistics
   keeping its own copy of the lexicon. `PartOfSpeech` (`data/`, numeric
-  tensor-ready values) also lives here rather than in Linguistics --
-  classifying a word's part of speech is a lexical attribute of that
-  word, same as its meaning (Rule 17); `Word.part_of_speech`
-  (Linguistics) references it only as a string-quoted, unimported type
-  hint, the same device used for `DictionaryProcessor`, to avoid an
-  import cycle between the two layers. `DictionaryEntry.meaning` is a
-  `value_objects` `Text`, not a plain `str` -- `ExternalDictionaryAdapter`
-  returns one directly from the parsed API payload, and `Word.definition`
-  (Linguistics, a plain `str`) is populated from its `.value`.
+  tensor-ready values), `Word`, and `Punctuation` also live here rather
+  than in Linguistics -- a word's part of speech, meaning, and its
+  status as a lexical unit at all are lexical attributes (Rule 17).
+  `Word` and `Punctuation` each still subclass Linguistics's
+  `LinguisticUnit` (a real, necessary import: inheritance needs the
+  actual base class, not just a hint), so the cycle runs the other way
+  here -- Linguistics's own `Clause.tokens` and
+  `ClauseSegmentationUtility` reference `Word`/`Punctuation` only as
+  string-quoted, unimported type hints, and `GraphProcessor` (which
+  actually constructs and `isinstance`-checks them, not just holds a
+  hint) imports them locally inside `process_token`/`process_sentence`,
+  deferred until first call, by which point both layers have finished
+  loading. `DictionaryEntry.meaning` is a `value_objects` `Text`, not a
+  plain `str` -- `ExternalDictionaryAdapter` returns one directly from
+  the parsed API payload, and `Word.definition` (a plain `str`) is
+  populated from its `.value`.
 
 - **Linguistics Layer** -- grammar/syntax-level processing (parsing,
   morphology) that feeds concept and relationship extraction. Does not
@@ -115,10 +122,10 @@ external scheduler that placed it (see Execution Model below).
   than a passive data record), and a `GraphProcessor` that composes all
   of the above (calling into Vocabulary's `DictionaryProcessor` to
   resolve each token) into the Word/Punctuation -> Clause -> Sentence ->
-  Paragraph -> Subject tree (`linguistic_unit.py` for the shared base,
-  one file per concrete kind: `word.py`, `punctuation.py`, `clause.py`,
-  `sentence.py`, `paragraph.py`, `subject.py`, all in `data/`), each
-  node carrying a `LinguisticSystemProperty` -- a
+  Paragraph -> Subject tree (`linguistic_unit.py` for the shared base;
+  `Word`/`Punctuation` live in Vocabulary, see above; `clause.py`,
+  `sentence.py`, `paragraph.py`, `subject.py`, one file per concrete
+  kind, all in `data/`), each node carrying a `LinguisticSystemProperty` -- a
   by-reference view into `LinguisticSystemPropertyTensor` (Rule 14),
   same discipline as `SystemPropertyRef` in the Knowledge Layer: one
   growable, amortized-doubling row per unit holding its numeric fields

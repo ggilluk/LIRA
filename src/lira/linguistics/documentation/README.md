@@ -8,17 +8,20 @@ and design rules.
 
 ## Layout
 
-- `data/` -- the `Word`/`Punctuation`/`Clause`/`Sentence`/`Paragraph`/
-  `Subject` tree, one class per file (`linguistic_unit.py`
-  for the shared base, `word.py`, `punctuation.py`, `clause.py`,
+- `data/` -- the `Clause`/`Sentence`/`Paragraph`/`Subject` tree, one
+  class per file (`linguistic_unit.py` for the shared base, `clause.py`,
   `sentence.py`, `paragraph.py`, `subject.py`) plus
   their enums (`linguistic_unit_kind.py`,
   `linguistic_relation_type.py`); `LinguisticSystemPropertyTensor` and
   the by-reference `LinguisticSystemProperty` view (Rule 14).
-  `Word.part_of_speech` references Vocabulary's `PartOfSpeech` only as
-  a string-quoted, unimported type hint -- classifying a word's part
-  of speech is a lexical attribute (Rule 17), so the enum itself lives
-  in `vocabulary/data/`, not here.
+  `Word` and `Punctuation` live in `vocabulary/data/`, not here -- a
+  word's lexical unit status, its part of speech, and its meaning are
+  all lexical attributes (Rule 17), even though both still subclass
+  this layer's `LinguisticUnit`. `Clause.tokens` and
+  `ClauseSegmentationUtility` reference `Word`/`Punctuation` only as
+  string-quoted, unimported type hints; `GraphProcessor` (which
+  actually constructs and `isinstance`-checks them) imports them
+  locally inside its methods instead, deferred until first call.
 - `agents/` -- `LinguisticsAgent` (no concrete subclasses yet).
 - `role/` -- `LinguisticController` (wires this layer together, same as
   `DomainController` does for `Domain`), `GraphProcessor`,

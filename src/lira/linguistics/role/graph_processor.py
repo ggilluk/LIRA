@@ -14,17 +14,16 @@ from ..data.clause import Clause
 from ..data.linguistic_unit import LinguisticUnit
 from ..data.linguistic_unit_kind import LinguisticUnitKind
 from ..data.paragraph import Paragraph
-from ..data.punctuation import Punctuation
 from ..data.sentence import Sentence
 from ..data.subject import Subject
-from ..data.word import Word
 
-# DictionaryProcessor (lira.vocabulary) is used only as a type hint here --
-# Linguistics never constructs or inspects one, just calls the instance it's
-# given. Left unimported (not even under typing.TYPE_CHECKING) because
-# Vocabulary's own modules import Linguistics's word.py/punctuation.py/
-# part_of_speech.py, and a top-level import here would form an
-# import-time cycle between the two layers.
+# DictionaryProcessor, Word, Punctuation (lira.vocabulary) are used only
+# as type hints at module scope here -- Vocabulary's own modules import
+# Linguistics's linguistic_unit.py (Word and Punctuation both subclass
+# it), so a top-level import here would form an import-time cycle
+# between the two layers. process_token/process_sentence below import
+# Word and Punctuation locally instead, deferred until first call, by
+# which point both packages have finished loading.
 
 
 class GraphProcessor:
@@ -44,7 +43,9 @@ class GraphProcessor:
         )
         return LinguisticSystemProperty(self.store, row)
 
-    def process_token(self, text_token: str, absolute_seq_num: int) -> Union[Word, Punctuation]:
+    def process_token(self, text_token: str, absolute_seq_num: int) -> Union["Word", "Punctuation"]:
+        from lira.vocabulary import Punctuation, Word
+
         entry = self.dict_processor.get_or_create_entry(text_token)
         if isinstance(entry.unit, Punctuation):
             node = Punctuation(text=text_token, symbol=text_token)
@@ -56,6 +57,8 @@ class GraphProcessor:
         return node
 
     def process_sentence(self, raw_sentence_text: str, seq_num: int) -> Sentence:
+        from lira.vocabulary import Punctuation
+
         raw_tokens = LinguisticLexer.extract_tokens(raw_sentence_text)
         all_processed_tokens = [self.process_token(tok, abs_idx) for abs_idx, tok in enumerate(raw_tokens)]
         compiled_clauses: List[Clause] = []

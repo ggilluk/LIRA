@@ -12,10 +12,12 @@ and design rules.
 
 - `data/` -- `VocabularyLayer`; `Dictionary`, `DictionaryEntry`, one
   class per file; `PartOfSpeech` (numeric tensor-ready values, same
-  convention as Linguistics's `LinguisticUnitKind` -- lives here, not
-  Linguistics, since classifying a word's part of speech is a lexical
-  attribute, same as its meaning). `DictionaryEntry.meaning` is a
-  `value_objects` `Text` rather than a plain `str`.
+  convention as Linguistics's `LinguisticUnitKind`); `Word`,
+  `Punctuation` -- each still subclasses Linguistics's `LinguisticUnit`.
+  All three live here, not Linguistics, since a word's lexical unit
+  status, its part of speech, and its meaning are all lexical
+  attributes (Rule 17). `DictionaryEntry.meaning` is a `value_objects`
+  `Text` rather than a plain `str`.
 - `agents/` -- `VocabularyAgent` and its concrete agents (`SeedAgent`,
   `LookupAgent`, `HydrateAgent`, `NormaliseAgent`).
 - `role/` -- `DictionaryProcessor`, `AsyncDictionaryHydrator`,
