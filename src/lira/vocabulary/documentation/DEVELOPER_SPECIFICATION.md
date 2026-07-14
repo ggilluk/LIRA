@@ -73,13 +73,13 @@ The Vocabulary Layer is responsible only for vocabulary data. It does not model 
 
 The same written form may have multiple `Word` entries where its language, script, grammatical category, or other identity-defining property differs.
 
-> **Note:** this `Word` is the specification's replacement for the
-> earlier `DictionaryEntry` name. It is a forward-looking, considerably
-> richer model than the `Word` class currently implemented in
-> `vocabulary/data/word.py` (which only has `text`, `part_of_speech`,
-> and `definition`, inherited from Linguistics's `LinguisticUnit`).
-> Reconciling the two -- rename, merge, or otherwise -- is an open
-> question for implementation, not decided by this document.
+> **Note:** this `Word` supersedes the `Word` class currently
+> implemented in `vocabulary/data/word.py` (which only has `text`,
+> `part_of_speech`, and `definition`, inherited from Linguistics's
+> `LinguisticUnit`). Its `text` attribute is carried forward into 4.2
+> below so the supersession loses no capability; `part_of_speech` and
+> `definition` map directly onto this specification's fields of the
+> same name.
 
 ### 4.2 Fields
 
@@ -88,6 +88,7 @@ The same written form may have multiple `Word` entries where its language, scrip
 | `uuid` | `Identifier` | Yes | Stable identifier |
 | `version` | `Text` | Yes | Word version |
 | `language_code` | `Code` | Yes | Language of the lexical form |
+| `text` | `Text` | Yes | Raw lexical unit text, carried forward from the superseded `Word` definition (there, inherited from Linguistics's `LinguisticUnit` base) |
 | `lexical_form` | `Text` | Yes | Exact lexical form |
 | `normalised_form` | `Text` | Yes | Normalised form used for indexing |
 | `script_code` | `Code` | No | Writing system |
