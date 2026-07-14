@@ -82,13 +82,23 @@ external scheduler that placed it (see Execution Model below).
 - **Vocabulary Layer** -- term/lexeme-level concept identity (surface
   form to concept resolution), run by Vocabulary Agents. Also owns the
   lexicon: `VocabularyLayer` wires together a `Dictionary` (lexical
-  inventory only, Rule 17) fed by an `AsyncDictionaryHydrator`
+  inventory only, Rule 17; one class per file, `dictionary.py` and
+  `dictionary_entry.py`) fed by an `AsyncDictionaryHydrator`
   (background, deduplicated external lookups via
   `ExternalDictionaryAdapter`) through `DictionaryProcessor`
   (look up an entry, or seed a fallback one and queue hydration for it).
   `Domain.linguistics` resolves tokens through
   `Domain.vocabulary.dictionary_processor` rather than Linguistics
-  keeping its own copy of the lexicon.
+  keeping its own copy of the lexicon. `PartOfSpeech` (`data/`, numeric
+  tensor-ready values) also lives here rather than in Linguistics --
+  classifying a word's part of speech is a lexical attribute of that
+  word, same as its meaning (Rule 17); `Word.part_of_speech`
+  (Linguistics) references it only as a string-quoted, unimported type
+  hint, the same device used for `DictionaryProcessor`, to avoid an
+  import cycle between the two layers. `DictionaryEntry.meaning` is a
+  `value_objects` `Text`, not a plain `str` -- `ExternalDictionaryAdapter`
+  returns one directly from the parsed API payload, and `Word.definition`
+  (Linguistics, a plain `str`) is populated from its `.value`.
 
 - **Linguistics Layer** -- grammar/syntax-level processing (parsing,
   morphology) that feeds concept and relationship extraction. Does not

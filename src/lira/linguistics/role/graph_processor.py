@@ -51,7 +51,7 @@ class GraphProcessor:
             node.system_property = self.create_property_wrapper(node, LinguisticUnitKind.Punctuation, absolute_seq_num, "Lexer_TokenLayer")
             return node
 
-        node = Word(text=text_token, part_of_speech=entry.parts_of_speech[0], definition=entry.meaning)
+        node = Word(text=text_token, part_of_speech=entry.parts_of_speech[0], definition=entry.meaning.value)
         node.system_property = self.create_property_wrapper(node, LinguisticUnitKind.Word, absolute_seq_num, "Lexer_TokenLayer")
         return node
 

@@ -1,20 +1,9 @@
-"""Lexicon data structures and thread-safe storage layer."""
+"""Thread-safe lexicon storage layer."""
 
 import threading
-from dataclasses import dataclass, field
-from typing import List, Optional, Union
+from typing import List, Optional
 
-from lira.linguistics.data.part_of_speech import PartOfSpeech
-from lira.linguistics.data.punctuation import Punctuation
-from lira.linguistics.data.word import Word
-
-
-@dataclass
-class DictionaryEntry:
-    unit: Union[Word, Punctuation]
-    meaning: str
-    parts_of_speech: List[PartOfSpeech] = field(default_factory=list)
-    is_fully_hydrated: bool = True
+from .dictionary_entry import DictionaryEntry
 
 
 class Dictionary:

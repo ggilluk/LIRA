@@ -12,9 +12,13 @@ and design rules.
   `Subject` tree, one class per file (`linguistic_unit.py`
   for the shared base, `word.py`, `punctuation.py`, `clause.py`,
   `sentence.py`, `paragraph.py`, `subject.py`) plus
-  their enums (`linguistic_unit_kind.py`, `part_of_speech.py`,
+  their enums (`linguistic_unit_kind.py`,
   `linguistic_relation_type.py`); `LinguisticSystemPropertyTensor` and
   the by-reference `LinguisticSystemProperty` view (Rule 14).
+  `Word.part_of_speech` references Vocabulary's `PartOfSpeech` only as
+  a string-quoted, unimported type hint -- classifying a word's part
+  of speech is a lexical attribute (Rule 17), so the enum itself lives
+  in `vocabulary/data/`, not here.
 - `agents/` -- `LinguisticsAgent` (no concrete subclasses yet).
 - `role/` -- `LinguisticController` (wires this layer together, same as
   `DomainController` does for `Domain`), `GraphProcessor`,
@@ -30,8 +34,12 @@ and design rules.
   `GraphProcessor` has done anything to it.
 - `api/`, `assets/` -- none yet.
 
-The lexicon (`Dictionary`) and everything that seeds/looks up/hydrates
-it (`DictionaryProcessor`, `AsyncDictionaryHydrator`,
-`ExternalDictionaryAdapter`) live in the Vocabulary Layer, not here --
-`GraphProcessor` takes a `lira.vocabulary` `DictionaryProcessor` to
-resolve tokens (Rule 17).
+The lexicon (`Dictionary`, `DictionaryEntry`, `PartOfSpeech`) and
+everything that seeds/looks up/hydrates it (`DictionaryProcessor`,
+`AsyncDictionaryHydrator`, `ExternalDictionaryAdapter`) live in the
+Vocabulary Layer, not here -- `GraphProcessor` takes a
+`lira.vocabulary` `DictionaryProcessor` to resolve tokens (Rule 17).
+`Word.definition` is populated from `DictionaryEntry.meaning.value` --
+Vocabulary's `meaning` is a `value_objects` `Text`, but `Word` keeps a
+plain `str` (Rule 18: Linguistics contains language structure only,
+not typed value objects).

@@ -15,11 +15,13 @@ these classes still plays an active role rather than just holding
 state), documentation/, api/, ui/ (UserPrompt, the raw input at the
 boundary), assets/.
 
-The lexicon (Dictionary, DictionaryEntry) and everything that
-seeds/looks up/hydrates it (DictionaryProcessor, AsyncDictionaryHydrator,
-ExternalDictionaryAdapter) live in the Vocabulary Layer, not here --
-GraphProcessor takes a lira.vocabulary DictionaryProcessor to resolve
-tokens (Rule 17: Vocabulary contains lexical inventory only)."""
+The lexicon (Dictionary, DictionaryEntry), PartOfSpeech, and everything
+that seeds/looks up/hydrates the lexicon (DictionaryProcessor,
+AsyncDictionaryHydrator, ExternalDictionaryAdapter) live in the
+Vocabulary Layer, not here -- GraphProcessor takes a lira.vocabulary
+DictionaryProcessor to resolve tokens, and Word.part_of_speech is a
+string-quoted, unimported type hint pointing at Vocabulary's
+PartOfSpeech (Rule 17: Vocabulary contains lexical inventory only)."""
 
 from .role.clause_segmentation import ClauseSegmentationUtility
 from .role.grammar_configurator import GrammarConfigurator
@@ -34,7 +36,6 @@ from .data.linguistic_relation_type import LinguisticRelationType
 from .data.linguistic_unit import LinguisticUnit
 from .data.linguistic_unit_kind import LinguisticUnitKind
 from .data.paragraph import Paragraph
-from .data.part_of_speech import PartOfSpeech
 from .data.punctuation import Punctuation
 from .data.sentence import Sentence
 from .data.subject import Subject
@@ -52,7 +53,6 @@ __all__ = [
     "LinguisticSystemProperty",
     "LinguisticSystemPropertyTensor",
     "LinguisticUnitKind",
-    "PartOfSpeech",
     "LinguisticRelationType",
     "LinguisticUnit",
     "UserPrompt",

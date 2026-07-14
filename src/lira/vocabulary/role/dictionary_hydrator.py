@@ -55,7 +55,7 @@ class AsyncDictionaryHydrator:
                         entry.parts_of_speech = [pos_type]
                         if isinstance(entry.unit, Word):
                             entry.unit.part_of_speech = pos_type
-                            entry.unit.definition = meaning
+                            entry.unit.definition = meaning.value  # Word.definition is plain str (Linguistics, Rule 18)
                         entry.is_fully_hydrated = True
 
                 with self._state_lock:
