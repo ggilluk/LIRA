@@ -39,3 +39,20 @@ class DictionaryProcessor:
         self.dictionary.append(fallback_word)
         self.hydrator.queue_hydration(lookup_str)
         return fallback_word
+
+    def register_conflicting_sense(self, word: Word) -> Word:
+        """Registers `word` as a distinct sense of a lexical form already
+        present in this Dictionary under a different meaning -- the
+        "modify the word's name" resolution path for a word-sense
+        conflict (see vocabulary/documentation/README.md, Cross-Domain
+        Vocabulary). `word.text` (the raw surface form a tokenizer would
+        produce) is left untouched; only `word.lexical_form` gets the
+        sense-numbered suffix, so the two senses are distinguishable by
+        identity even though a plain surface-form lookup can still only
+        resolve to one of them. Deciding *whether* a conflict warrants
+        this treatment (versus identifying or creating another Domain
+        that already owns the other sense) is a judgement call for the
+        caller, not something this method infers."""
+        word.lexical_form = Text(value=self.dictionary.next_available_lexical_form(word.lexical_form.value))
+        self.dictionary.append(word)
+        return word

@@ -48,7 +48,12 @@ external scheduler that placed it (see Execution Model below).
   (see Repository Layout below) -- the tree above is the runtime
   containment structure, not the file layout. There is no `host/` or
   `domain/` package on disk; `lira.knowledge` is where these types
-  actually live.
+  actually live. Every `LIRAHost` auto-creates a reserved `Domain`
+  named `Common` on construction; `LIRAHost.get_or_create_domain(name)`
+  returns an already-hosted Domain by that name or creates one, seeding
+  its Vocabulary from Common's Dictionary first (Cross-Domain
+  Vocabulary, `vocabulary/documentation/README.md` 9) -- the trigger
+  point for giving a word-sense conflict its own Domain.
 
 - **Domain** (`lira.Domain` / `lira.knowledge.Domain`) -- LIRA's
   semantic and computational boundary; Domains partition knowledge.

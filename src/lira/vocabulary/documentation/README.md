@@ -51,6 +51,7 @@ objects -- implemented in `data/` per Layout above.
 6. [Enumerations](#6-enumerations)
 7. [Supporting Value Objects](#7-supporting-value-objects)
 8. [Value Object Type Reference](#8-value-object-type-reference)
+9. [Cross-Domain Vocabulary](#9-cross-domain-vocabulary)
 
 ### 1. Purpose
 
@@ -479,3 +480,59 @@ Every non-identity, non-enum attribute in sections 3–7 resolves to one of the 
 | `Number` | A numeric quantity | `syllable_count`, `frequency_value` |
 
 `LexicalRelationship.system_properties` (`SystemPropertiesRef`), and object-graph collections (`words`, `pronunciations`, `source_references`, `qualifiers`), reference other typed objects rather than holding a scalar value, so Design Principle 11 does not apply to them. `system_properties` is not a field on `Dictionary` or `Word` at all -- see Design Principle 8.
+
+### 9. Cross-Domain Vocabulary
+
+A `Dictionary` belongs to exactly one `Domain`, but the same written
+word can carry a genuinely different sense in a different `Domain` --
+"bank" means one thing in a Finance domain and another in a Geography
+domain. This section describes how a `Word`'s home `Domain` is
+resolved, and how LIRA avoids two unrelated senses silently colliding
+under the same identity.
+
+#### 9.1 A Word can live in another Domain's Vocabulary
+
+A `Word` a caller is resolving does not have to belong to the `Domain`
+currently being processed -- it can be looked up in, or stored in, a
+`Vocabulary` belonging to a different `Domain` entirely. `Domain.known_domains`
+(Knowledge Layer, by-reference registry) is how one `Domain` becomes
+aware of another's existence for this purpose.
+
+#### 9.2 Resolving a word-sense conflict
+
+When the `Word` a caller wants to register already exists in the
+current `Dictionary` under a conflicting sense (same written form,
+different meaning), resolve it in this order:
+
+| Order | Strategy | When it applies |
+|-------|----------|-------------------|
+| 1 | Identify an existing Domain that already owns the conflicting sense | Another `Domain` in `known_domains` (or hosted on the same `LIRAHost`) already has a `Word` for this exact sense -- reference that `Word` there instead of duplicating it. |
+| 2 | Create a new Domain for the sense | No existing `Domain` owns it, but the sense is significant enough to deserve its own `Domain` (e.g. a whole new subject area) -- see 9.3, `LIRAHost.get_or_create_domain`. |
+| 3 | Modify the word's name | Neither of the above applies -- the two senses coexist in the same `Dictionary`, disambiguated by a sense-numbered suffix on `lexical_form` (`bank` / `bank_2` / `bank_3`, ...), while `text` (the raw surface form a tokenizer produces) is left untouched on both. |
+
+Strategies 1 and 2 are judgement calls -- whether a conflicting sense
+warrants an entirely different `Domain`, or just a second entry in the
+same `Dictionary`, isn't something derivable from the words alone.
+Strategy 3 (`DictionaryProcessor.register_conflicting_sense`,
+`Dictionary.next_available_lexical_form`) is the mechanical fallback:
+always available, requires no semantic judgement, but means a plain
+surface-form lookup can still only resolve to one of the coexisting
+senses.
+
+#### 9.3 Every Dictionary is seeded from a reserved "Common" Domain
+
+Every `LIRAHost` auto-creates a reserved `Domain` named `Common` the
+moment the Host itself is created. Every other `Domain` a `LIRAHost`
+creates afterwards -- via `LIRAHost.get_or_create_domain`, which is
+also the trigger point for strategy 2 in 9.2, when a conflicting sense
+needs a `Domain` that doesn't exist yet -- has its `Vocabulary.dictionary`
+seeded with a copy of every `Word` in Common's `Dictionary`
+(`Dictionary.seed_from`) before anything domain-specific is added.
+This gives every `Domain` on a `Host` a shared vocabulary baseline:
+ordinary words don't have to be rediscovered independently in every
+`Domain`, only the senses specific to that `Domain` do.
+
+Seeding only happens through `LIRAHost.get_or_create_domain` -- a
+`Domain` constructed directly (without going through a `LIRAHost`) has
+no `Common` to seed from and starts with an empty `Dictionary`, exactly
+as before this section existed.

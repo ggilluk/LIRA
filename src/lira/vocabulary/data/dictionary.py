@@ -2,6 +2,7 @@
 aggregating Word records for a language (Vocabulary Layer developer
 specification, 3)."""
 
+import copy
 import threading
 from typing import List, Optional
 
@@ -29,6 +30,13 @@ class Dictionary:
                     return word
             return None
 
+    def find_by_lexical_form(self, lexical_form: str) -> Optional[Word]:
+        with self._lock:
+            for word in self.words:
+                if word.lexical_form.value.lower() == lexical_form.lower():
+                    return word
+            return None
+
     def append(self, word: Word) -> None:
         with self._lock:
             self.words.append(word)
@@ -36,3 +44,26 @@ class Dictionary:
     def total_entries(self) -> int:
         with self._lock:
             return len(self.words)
+
+    def seed_from(self, other: "Dictionary") -> None:
+        """Bootstraps this Dictionary with a copy of every Word in
+        `other` -- used to seed a newly created Domain's Dictionary from
+        the reserved Common Domain's Dictionary. Each Word is
+        shallow-copied so the two Domains never share a mutable Word
+        instance (independent hydration, independent tensor rows)."""
+        with other._lock:
+            copied = [copy.copy(word) for word in other.words]
+        with self._lock:
+            self.words.extend(copied)
+
+    def next_available_lexical_form(self, base_lexical_form: str) -> str:
+        """Returns `base_lexical_form` if no existing Word already uses
+        it as its lexical_form, otherwise the next free sense-numbered
+        variant ("bank_2", "bank_3", ...) -- the naming half of
+        resolving a word-sense conflict by modifying the word's name."""
+        if self.find_by_lexical_form(base_lexical_form) is None:
+            return base_lexical_form
+        sense_number = 2
+        while self.find_by_lexical_form(f"{base_lexical_form}_{sense_number}") is not None:
+            sense_number += 1
+        return f"{base_lexical_form}_{sense_number}"
