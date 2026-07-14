@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.0.0",
+  "schema_version": "2.0.0",
   "language_code": "en",
   "part_of_speech": "AUXILIARY",
   "closed_class_kind": "auxiliary",
@@ -8,191 +8,974 @@
     {
       "lexical_form": "be",
       "normalised_form": "be",
+      "text": "be",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "AUXILIARY",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "auxiliary",
+      "definition": "The base form of the primary verb of existence or state, and the passive/progressive auxiliary",
+      "gloss": "The base form of the primary verb of existence or state, and the passive/progressive auxiliary",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "am",
       "normalised_form": "am",
+      "text": "am",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "AUXILIARY",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "auxiliary",
+      "definition": "First person singular present tense of 'be'",
+      "gloss": "First person singular present tense of 'be'",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "is",
       "normalised_form": "is",
+      "text": "is",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "AUXILIARY",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "auxiliary",
+      "definition": "Third person singular present tense of 'be'",
+      "gloss": "Third person singular present tense of 'be'",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "are",
       "normalised_form": "are",
+      "text": "are",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "AUXILIARY",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "auxiliary",
+      "definition": "Plural or second person present tense of 'be'",
+      "gloss": "Plural or second person present tense of 'be'",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "was",
       "normalised_form": "was",
+      "text": "was",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "AUXILIARY",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "auxiliary",
+      "definition": "First/third person singular past tense of 'be'",
+      "gloss": "First/third person singular past tense of 'be'",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "were",
       "normalised_form": "were",
+      "text": "were",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "AUXILIARY",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "auxiliary",
+      "definition": "Plural or second person past tense of 'be', or subjunctive",
+      "gloss": "Plural or second person past tense of 'be', or subjunctive",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "been",
       "normalised_form": "been",
+      "text": "been",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "AUXILIARY",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "auxiliary",
+      "definition": "Past participle of 'be'",
+      "gloss": "Past participle of 'be'",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "being",
       "normalised_form": "being",
+      "text": "being",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "AUXILIARY",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "auxiliary",
+      "definition": "Present participle of 'be'",
+      "gloss": "Present participle of 'be'",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "have",
       "normalised_form": "have",
+      "text": "have",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "AUXILIARY",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "auxiliary",
+      "definition": "Auxiliary forming perfect tenses; also the base verb of possession",
+      "gloss": "Auxiliary forming perfect tenses; also the base verb of possession",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "has",
       "normalised_form": "has",
+      "text": "has",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "AUXILIARY",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "auxiliary",
+      "definition": "Third person singular present tense of 'have'",
+      "gloss": "Third person singular present tense of 'have'",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "had",
       "normalised_form": "had",
+      "text": "had",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "AUXILIARY",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "auxiliary",
+      "definition": "Past tense and past participle of 'have'",
+      "gloss": "Past tense and past participle of 'have'",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "having",
       "normalised_form": "having",
+      "text": "having",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "AUXILIARY",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "auxiliary",
+      "definition": "Present participle of 'have'",
+      "gloss": "Present participle of 'have'",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "do",
       "normalised_form": "do",
+      "text": "do",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "AUXILIARY",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "auxiliary",
+      "definition": "Auxiliary used to form questions, negatives, and emphasis; also the base verb of performing an action",
+      "gloss": "Auxiliary used to form questions, negatives, and emphasis; also the base verb of performing an action",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "does",
       "normalised_form": "does",
+      "text": "does",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "AUXILIARY",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "auxiliary",
+      "definition": "Third person singular present tense of 'do'",
+      "gloss": "Third person singular present tense of 'do'",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "did",
       "normalised_form": "did",
+      "text": "did",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "AUXILIARY",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "auxiliary",
+      "definition": "Past tense of 'do'",
+      "gloss": "Past tense of 'do'",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "will",
       "normalised_form": "will",
+      "text": "will",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "AUXILIARY",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "auxiliary",
+      "definition": "Modal auxiliary expressing future tense or intention",
+      "gloss": "Modal auxiliary expressing future tense or intention",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "would",
       "normalised_form": "would",
+      "text": "would",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "AUXILIARY",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "auxiliary",
+      "definition": "Modal auxiliary expressing hypothetical action, past habit, or polite requests",
+      "gloss": "Modal auxiliary expressing hypothetical action, past habit, or polite requests",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "shall",
       "normalised_form": "shall",
+      "text": "shall",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "AUXILIARY",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "auxiliary",
+      "definition": "Modal auxiliary expressing future tense or formal obligation",
+      "gloss": "Modal auxiliary expressing future tense or formal obligation",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "should",
       "normalised_form": "should",
+      "text": "should",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "AUXILIARY",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "auxiliary",
+      "definition": "Modal auxiliary expressing obligation, advice, or expectation",
+      "gloss": "Modal auxiliary expressing obligation, advice, or expectation",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "can",
       "normalised_form": "can",
+      "text": "can",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "AUXILIARY",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "auxiliary",
+      "definition": "Modal auxiliary expressing ability or permission",
+      "gloss": "Modal auxiliary expressing ability or permission",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "could",
       "normalised_form": "could",
+      "text": "could",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "AUXILIARY",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "auxiliary",
+      "definition": "Modal auxiliary expressing past ability, possibility, or polite requests",
+      "gloss": "Modal auxiliary expressing past ability, possibility, or polite requests",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "may",
       "normalised_form": "may",
+      "text": "may",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "AUXILIARY",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "auxiliary",
+      "definition": "Modal auxiliary expressing permission or possibility",
+      "gloss": "Modal auxiliary expressing permission or possibility",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "might",
       "normalised_form": "might",
+      "text": "might",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "AUXILIARY",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "auxiliary",
+      "definition": "Modal auxiliary expressing weaker possibility than 'may'",
+      "gloss": "Modal auxiliary expressing weaker possibility than 'may'",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "must",
       "normalised_form": "must",
+      "text": "must",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "AUXILIARY",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "auxiliary",
+      "definition": "Modal auxiliary expressing necessity or strong obligation",
+      "gloss": "Modal auxiliary expressing necessity or strong obligation",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "ought",
       "normalised_form": "ought",
+      "text": "ought",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "AUXILIARY",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "auxiliary",
+      "definition": "Semi-modal auxiliary expressing obligation or advisability (used with 'to')",
+      "gloss": "Semi-modal auxiliary expressing obligation or advisability (used with 'to')",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "need",
       "normalised_form": "need",
+      "text": "need",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "AUXILIARY",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "auxiliary",
+      "definition": "Semi-modal auxiliary expressing necessity (used without 'to' in negatives/questions)",
+      "gloss": "Semi-modal auxiliary expressing necessity (used without 'to' in negatives/questions)",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "dare",
       "normalised_form": "dare",
+      "text": "dare",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "AUXILIARY",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "auxiliary",
+      "definition": "Semi-modal auxiliary expressing having the courage to do something",
+      "gloss": "Semi-modal auxiliary expressing having the courage to do something",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     }
   ]
 }

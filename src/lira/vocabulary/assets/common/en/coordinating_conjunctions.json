@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.0.0",
+  "schema_version": "2.0.0",
   "language_code": "en",
   "part_of_speech": "CONJUNCTION",
   "closed_class_kind": "coordinating_conjunction",
@@ -8,51 +8,254 @@
     {
       "lexical_form": "for",
       "normalised_form": "for",
+      "text": "for",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "CONJUNCTION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "coordinating_conjunction",
+      "definition": "Introduces the reason for the preceding clause (formal)",
+      "gloss": "Introduces the reason for the preceding clause (formal)",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "and",
       "normalised_form": "and",
+      "text": "and",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "CONJUNCTION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "coordinating_conjunction",
+      "definition": "Joins two or more equivalent words, phrases, or clauses",
+      "gloss": "Joins two or more equivalent words, phrases, or clauses",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "nor",
       "normalised_form": "nor",
+      "text": "nor",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "CONJUNCTION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "coordinating_conjunction",
+      "definition": "Joins a second negative clause or phrase, continuing a negation",
+      "gloss": "Joins a second negative clause or phrase, continuing a negation",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "but",
       "normalised_form": "but",
+      "text": "but",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "CONJUNCTION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "coordinating_conjunction",
+      "definition": "Joins two contrasting words, phrases, or clauses",
+      "gloss": "Joins two contrasting words, phrases, or clauses",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "or",
       "normalised_form": "or",
+      "text": "or",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "CONJUNCTION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "coordinating_conjunction",
+      "definition": "Joins alternatives",
+      "gloss": "Joins alternatives",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "yet",
       "normalised_form": "yet",
+      "text": "yet",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "CONJUNCTION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "coordinating_conjunction",
+      "definition": "Introduces a contrasting statement, similar to 'but'",
+      "gloss": "Introduces a contrasting statement, similar to 'but'",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "so",
       "normalised_form": "so",
+      "text": "so",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "CONJUNCTION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "coordinating_conjunction",
+      "definition": "Introduces a result or consequence",
+      "gloss": "Introduces a result or consequence",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     }
   ]
 }

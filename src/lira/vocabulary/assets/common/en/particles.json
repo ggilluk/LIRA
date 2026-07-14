@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.0.0",
+  "schema_version": "2.0.0",
   "language_code": "en",
   "part_of_speech": "PARTICLE",
   "closed_class_kind": "particle",
@@ -8,79 +8,398 @@
     {
       "lexical_form": "not",
       "normalised_form": "not",
+      "text": "not",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "PARTICLE",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "particle",
+      "definition": "Negates the word, phrase, or clause it accompanies",
+      "gloss": "Negates the word, phrase, or clause it accompanies",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "there",
       "normalised_form": "there",
+      "text": "there",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "PARTICLE",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "particle",
+      "definition": "Introduces a clause asserting the existence of something ('there is/are')",
+      "gloss": "Introduces a clause asserting the existence of something ('there is/are')",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "please",
       "normalised_form": "please",
+      "text": "please",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "PARTICLE",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "particle",
+      "definition": "Softens a request, making it polite",
+      "gloss": "Softens a request, making it polite",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "also",
       "normalised_form": "also",
+      "text": "also",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "PARTICLE",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "particle",
+      "definition": "Adds an additional point; in addition",
+      "gloss": "Adds an additional point; in addition",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "too",
       "normalised_form": "too",
+      "text": "too",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "PARTICLE",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "particle",
+      "definition": "Adds an additional point; as well",
+      "gloss": "Adds an additional point; as well",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "only",
       "normalised_form": "only",
+      "text": "only",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "PARTICLE",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "particle",
+      "definition": "Restricts the scope of what follows to no more than what is stated",
+      "gloss": "Restricts the scope of what follows to no more than what is stated",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "just",
       "normalised_form": "just",
+      "text": "just",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "PARTICLE",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "particle",
+      "definition": "Emphasises exactness, recency, or restriction",
+      "gloss": "Emphasises exactness, recency, or restriction",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "even",
       "normalised_form": "even",
+      "text": "even",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "PARTICLE",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "particle",
+      "definition": "Emphasises something surprising or extreme",
+      "gloss": "Emphasises something surprising or extreme",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "well",
       "normalised_form": "well",
+      "text": "well",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "PARTICLE",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "particle",
+      "definition": "Discourse marker introducing a remark or hesitation",
+      "gloss": "Discourse marker introducing a remark or hesitation",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "quite",
       "normalised_form": "quite",
+      "text": "quite",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "PARTICLE",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "particle",
+      "definition": "Intensifies or moderates the degree of the following word",
+      "gloss": "Intensifies or moderates the degree of the following word",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "rather",
       "normalised_form": "rather",
+      "text": "rather",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "PARTICLE",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "particle",
+      "definition": "Moderately, or expressing a preference",
+      "gloss": "Moderately, or expressing a preference",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     }
   ]
 }

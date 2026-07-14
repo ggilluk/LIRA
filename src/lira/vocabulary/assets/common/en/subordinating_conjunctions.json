@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.0.0",
+  "schema_version": "2.0.0",
   "language_code": "en",
   "part_of_speech": "CONJUNCTION",
   "closed_class_kind": "subordinating_conjunction",
@@ -8,254 +8,1298 @@
     {
       "lexical_form": "although",
       "normalised_form": "although",
+      "text": "although",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "CONJUNCTION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "subordinating_conjunction",
+      "definition": "Introduces a clause that contrasts with the main clause",
+      "gloss": "Introduces a clause that contrasts with the main clause",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "because",
       "normalised_form": "because",
+      "text": "because",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "CONJUNCTION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "subordinating_conjunction",
+      "definition": "Introduces the reason or cause for the main clause",
+      "gloss": "Introduces the reason or cause for the main clause",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "if",
       "normalised_form": "if",
+      "text": "if",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "CONJUNCTION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "subordinating_conjunction",
+      "definition": "Introduces a condition",
+      "gloss": "Introduces a condition",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "in case",
       "normalised_form": "in case",
+      "text": "in case",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "CONJUNCTION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "subordinating_conjunction",
+      "definition": "Introduces a precaution against a possible event",
+      "gloss": "Introduces a precaution against a possible event",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": null,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "in order that",
       "normalised_form": "in order that",
+      "text": "in order that",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "CONJUNCTION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "subordinating_conjunction",
+      "definition": "Introduces the purpose of the main clause (formal)",
+      "gloss": "Introduces the purpose of the main clause (formal)",
+      "usage_notes": [],
+      "register_codes": [
+        "FORMAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": null,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "in that",
       "normalised_form": "in that",
+      "text": "in that",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "CONJUNCTION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "subordinating_conjunction",
+      "definition": "Introduces an explanation, meaning 'because' or 'in the sense that'",
+      "gloss": "Introduces an explanation, meaning 'because' or 'in the sense that'",
+      "usage_notes": [],
+      "register_codes": [
+        "FORMAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": null,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "inasmuch as",
       "normalised_form": "inasmuch as",
+      "text": "inasmuch as",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "CONJUNCTION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "subordinating_conjunction",
+      "definition": "Formal conjunction meaning 'because' or 'to the extent that'",
+      "gloss": "Formal conjunction meaning 'because' or 'to the extent that'",
+      "usage_notes": [],
+      "register_codes": [
+        "FORMAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": null,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "insofar as",
       "normalised_form": "insofar as",
+      "text": "insofar as",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "CONJUNCTION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "subordinating_conjunction",
+      "definition": "Formal conjunction meaning 'to the extent that'",
+      "gloss": "Formal conjunction meaning 'to the extent that'",
+      "usage_notes": [],
+      "register_codes": [
+        "FORMAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": null,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "lest",
       "normalised_form": "lest",
+      "text": "lest",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "CONJUNCTION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "subordinating_conjunction",
+      "definition": "Introduces a clause expressing something to be avoided ('so that ... not')",
+      "gloss": "Introduces a clause expressing something to be avoided ('so that ... not')",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "now that",
       "normalised_form": "now that",
+      "text": "now that",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "CONJUNCTION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "subordinating_conjunction",
+      "definition": "Introduces a reason that has just become true",
+      "gloss": "Introduces a reason that has just become true",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": null,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "once",
       "normalised_form": "once",
+      "text": "once",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "CONJUNCTION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "subordinating_conjunction",
+      "definition": "Introduces an action that, as soon as completed, triggers the main clause",
+      "gloss": "Introduces an action that, as soon as completed, triggers the main clause",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "provided",
       "normalised_form": "provided",
+      "text": "provided",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "CONJUNCTION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "subordinating_conjunction",
+      "definition": "Introduces a necessary condition",
+      "gloss": "Introduces a necessary condition",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 3,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "provided that",
       "normalised_form": "provided that",
+      "text": "provided that",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "CONJUNCTION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "subordinating_conjunction",
+      "definition": "Formal variant of 'provided'",
+      "gloss": "Formal variant of 'provided'",
+      "usage_notes": [],
+      "register_codes": [
+        "FORMAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": null,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "providing",
       "normalised_form": "providing",
+      "text": "providing",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "CONJUNCTION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "subordinating_conjunction",
+      "definition": "Variant of 'provided'",
+      "gloss": "Variant of 'provided'",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 3,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "rather than",
       "normalised_form": "rather than",
+      "text": "rather than",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "CONJUNCTION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "subordinating_conjunction",
+      "definition": "Introduces an alternative that is rejected in favour of the main clause",
+      "gloss": "Introduces an alternative that is rejected in favour of the main clause",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": null,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "so long as",
       "normalised_form": "so long as",
+      "text": "so long as",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "CONJUNCTION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "subordinating_conjunction",
+      "definition": "Introduces a necessary condition, meaning 'provided that'",
+      "gloss": "Introduces a necessary condition, meaning 'provided that'",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": null,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "so that",
       "normalised_form": "so that",
+      "text": "so that",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "CONJUNCTION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "subordinating_conjunction",
+      "definition": "Introduces the purpose or result of the main clause",
+      "gloss": "Introduces the purpose or result of the main clause",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": null,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "supposing",
       "normalised_form": "supposing",
+      "text": "supposing",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "CONJUNCTION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "subordinating_conjunction",
+      "definition": "Introduces a hypothetical condition",
+      "gloss": "Introduces a hypothetical condition",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 3,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "though",
       "normalised_form": "though",
+      "text": "though",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "CONJUNCTION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "subordinating_conjunction",
+      "definition": "Introduces a contrasting clause, similar to 'although'",
+      "gloss": "Introduces a contrasting clause, similar to 'although'",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "unless",
       "normalised_form": "unless",
+      "text": "unless",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "CONJUNCTION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "subordinating_conjunction",
+      "definition": "Introduces an exception that would prevent the main clause",
+      "gloss": "Introduces an exception that would prevent the main clause",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "when",
       "normalised_form": "when",
+      "text": "when",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "CONJUNCTION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "subordinating_conjunction",
+      "definition": "Introduces the time at which the main clause occurs",
+      "gloss": "Introduces the time at which the main clause occurs",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "whenever",
       "normalised_form": "whenever",
+      "text": "whenever",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "CONJUNCTION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "subordinating_conjunction",
+      "definition": "Introduces any or every time that the main clause occurs",
+      "gloss": "Introduces any or every time that the main clause occurs",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 3,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "where",
       "normalised_form": "where",
+      "text": "where",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "CONJUNCTION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "subordinating_conjunction",
+      "definition": "Introduces the place at which the main clause occurs",
+      "gloss": "Introduces the place at which the main clause occurs",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "whereas",
       "normalised_form": "whereas",
+      "text": "whereas",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "CONJUNCTION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "subordinating_conjunction",
+      "definition": "Introduces a contrasting fact, common in formal writing",
+      "gloss": "Introduces a contrasting fact, common in formal writing",
+      "usage_notes": [],
+      "register_codes": [
+        "FORMAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "wherever",
       "normalised_form": "wherever",
+      "text": "wherever",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "CONJUNCTION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "subordinating_conjunction",
+      "definition": "Introduces any or every place that the main clause occurs",
+      "gloss": "Introduces any or every place that the main clause occurs",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 3,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "whether",
       "normalised_form": "whether",
+      "text": "whether",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "CONJUNCTION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "subordinating_conjunction",
+      "definition": "Introduces an alternative or a doubt",
+      "gloss": "Introduces an alternative or a doubt",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "while",
       "normalised_form": "while",
+      "text": "while",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "CONJUNCTION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "subordinating_conjunction",
+      "definition": "Introduces something happening at the same time, or a contrast",
+      "gloss": "Introduces something happening at the same time, or a contrast",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "as if",
       "normalised_form": "as if",
+      "text": "as if",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "CONJUNCTION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "subordinating_conjunction",
+      "definition": "Introduces a hypothetical comparison",
+      "gloss": "Introduces a hypothetical comparison",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": null,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "as long as",
       "normalised_form": "as long as",
+      "text": "as long as",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "CONJUNCTION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "subordinating_conjunction",
+      "definition": "Introduces a necessary condition or duration",
+      "gloss": "Introduces a necessary condition or duration",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": null,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "as much as",
       "normalised_form": "as much as",
+      "text": "as much as",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "CONJUNCTION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "subordinating_conjunction",
+      "definition": "Introduces a degree of comparison",
+      "gloss": "Introduces a degree of comparison",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": null,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "as soon as",
       "normalised_form": "as soon as",
+      "text": "as soon as",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "CONJUNCTION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "subordinating_conjunction",
+      "definition": "Introduces an action immediately followed by the main clause",
+      "gloss": "Introduces an action immediately followed by the main clause",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": null,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "as though",
       "normalised_form": "as though",
+      "text": "as though",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "CONJUNCTION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "subordinating_conjunction",
+      "definition": "Variant of 'as if'",
+      "gloss": "Variant of 'as if'",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": null,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "even if",
       "normalised_form": "even if",
+      "text": "even if",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "CONJUNCTION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "subordinating_conjunction",
+      "definition": "Introduces a condition that would not change the main clause's truth",
+      "gloss": "Introduces a condition that would not change the main clause's truth",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": null,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "even though",
       "normalised_form": "even though",
+      "text": "even though",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "CONJUNCTION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "subordinating_conjunction",
+      "definition": "Stronger variant of 'although'",
+      "gloss": "Stronger variant of 'although'",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": null,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "every time",
       "normalised_form": "every time",
+      "text": "every time",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "CONJUNCTION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "subordinating_conjunction",
+      "definition": "Introduces an action that always triggers the main clause",
+      "gloss": "Introduces an action that always triggers the main clause",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": null,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "given that",
       "normalised_form": "given that",
+      "text": "given that",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "CONJUNCTION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "subordinating_conjunction",
+      "definition": "Introduces an assumed fact as the basis for the main clause",
+      "gloss": "Introduces an assumed fact as the basis for the main clause",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": null,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     }
   ]
 }

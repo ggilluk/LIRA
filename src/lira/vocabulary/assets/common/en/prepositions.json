@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.0.0",
+  "schema_version": "2.0.0",
   "language_code": "en",
   "part_of_speech": "PREPOSITION",
   "closed_class_kind": "preposition",
@@ -8,646 +8,3321 @@
     {
       "lexical_form": "aboard",
       "normalised_form": "aboard",
+      "text": "aboard",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "PREPOSITION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "preposition",
+      "definition": "On or into a ship, aircraft, train, or other vehicle",
+      "gloss": "On or into a ship, aircraft, train, or other vehicle",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "about",
       "normalised_form": "about",
+      "text": "about",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "PREPOSITION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "preposition",
+      "definition": "On the subject of; approximately; around",
+      "gloss": "On the subject of; approximately; around",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "above",
       "normalised_form": "above",
+      "text": "above",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "PREPOSITION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "preposition",
+      "definition": "At a higher position than",
+      "gloss": "At a higher position than",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "across",
       "normalised_form": "across",
+      "text": "across",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "PREPOSITION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "preposition",
+      "definition": "From one side to the other of",
+      "gloss": "From one side to the other of",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "after",
       "normalised_form": "after",
+      "text": "after",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "PREPOSITION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "preposition",
+      "definition": "Following in time or place",
+      "gloss": "Following in time or place",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "against",
       "normalised_form": "against",
+      "text": "against",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "PREPOSITION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "preposition",
+      "definition": "In opposition to, or in contact with",
+      "gloss": "In opposition to, or in contact with",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "along",
       "normalised_form": "along",
+      "text": "along",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "PREPOSITION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "preposition",
+      "definition": "Following the length of",
+      "gloss": "Following the length of",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "alongside",
       "normalised_form": "alongside",
+      "text": "alongside",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "PREPOSITION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "preposition",
+      "definition": "Next to and parallel with",
+      "gloss": "Next to and parallel with",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 3,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "amid",
       "normalised_form": "amid",
+      "text": "amid",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "PREPOSITION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "preposition",
+      "definition": "In the middle of, surrounded by",
+      "gloss": "In the middle of, surrounded by",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "amidst",
       "normalised_form": "amidst",
+      "text": "amidst",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "PREPOSITION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "preposition",
+      "definition": "Variant of 'amid'",
+      "gloss": "Variant of 'amid'",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "among",
       "normalised_form": "among",
+      "text": "among",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "PREPOSITION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "preposition",
+      "definition": "Surrounded by, or as part of a group of more than two",
+      "gloss": "Surrounded by, or as part of a group of more than two",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "amongst",
       "normalised_form": "amongst",
+      "text": "amongst",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "PREPOSITION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "preposition",
+      "definition": "Variant of 'among'",
+      "gloss": "Variant of 'among'",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "around",
       "normalised_form": "around",
+      "text": "around",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "PREPOSITION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "preposition",
+      "definition": "On every side of, or approximately",
+      "gloss": "On every side of, or approximately",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "as",
       "normalised_form": "as",
+      "text": "as",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "PREPOSITION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "preposition",
+      "definition": "In the role or state of; while",
+      "gloss": "In the role or state of; while",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "at",
       "normalised_form": "at",
+      "text": "at",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "PREPOSITION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "preposition",
+      "definition": "Indicating a specific point, time, or place",
+      "gloss": "Indicating a specific point, time, or place",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "atop",
       "normalised_form": "atop",
+      "text": "atop",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "PREPOSITION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "preposition",
+      "definition": "On top of",
+      "gloss": "On top of",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "before",
       "normalised_form": "before",
+      "text": "before",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "PREPOSITION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "preposition",
+      "definition": "Earlier than, or in front of",
+      "gloss": "Earlier than, or in front of",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "behind",
       "normalised_form": "behind",
+      "text": "behind",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "PREPOSITION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "preposition",
+      "definition": "At or toward the back of",
+      "gloss": "At or toward the back of",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "below",
       "normalised_form": "below",
+      "text": "below",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "PREPOSITION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "preposition",
+      "definition": "At a lower position than",
+      "gloss": "At a lower position than",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "beneath",
       "normalised_form": "beneath",
+      "text": "beneath",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "PREPOSITION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "preposition",
+      "definition": "Directly under; below",
+      "gloss": "Directly under; below",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "beside",
       "normalised_form": "beside",
+      "text": "beside",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "PREPOSITION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "preposition",
+      "definition": "Next to",
+      "gloss": "Next to",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "besides",
       "normalised_form": "besides",
+      "text": "besides",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "PREPOSITION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "preposition",
+      "definition": "In addition to; apart from",
+      "gloss": "In addition to; apart from",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 3,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "between",
       "normalised_form": "between",
+      "text": "between",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "PREPOSITION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "preposition",
+      "definition": "In the space or interval separating two things",
+      "gloss": "In the space or interval separating two things",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "beyond",
       "normalised_form": "beyond",
+      "text": "beyond",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "PREPOSITION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "preposition",
+      "definition": "On or to the far side of",
+      "gloss": "On or to the far side of",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "by",
       "normalised_form": "by",
+      "text": "by",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "PREPOSITION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "preposition",
+      "definition": "Indicating an agent, method, proximity, or deadline",
+      "gloss": "Indicating an agent, method, proximity, or deadline",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "circa",
       "normalised_form": "circa",
+      "text": "circa",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "PREPOSITION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "preposition",
+      "definition": "Approximately, used especially with dates",
+      "gloss": "Approximately, used especially with dates",
+      "usage_notes": [],
+      "register_codes": [
+        "FORMAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "despite",
       "normalised_form": "despite",
+      "text": "despite",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "PREPOSITION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "preposition",
+      "definition": "Without being affected by; in spite of",
+      "gloss": "Without being affected by; in spite of",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "down",
       "normalised_form": "down",
+      "text": "down",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "PREPOSITION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "preposition",
+      "definition": "From a higher to a lower point of",
+      "gloss": "From a higher to a lower point of",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "during",
       "normalised_form": "during",
+      "text": "during",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "PREPOSITION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "preposition",
+      "definition": "Throughout, or at a point within, a period of time",
+      "gloss": "Throughout, or at a point within, a period of time",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "except",
       "normalised_form": "except",
+      "text": "except",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "PREPOSITION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "preposition",
+      "definition": "Not including; other than",
+      "gloss": "Not including; other than",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "excepting",
       "normalised_form": "excepting",
+      "text": "excepting",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "PREPOSITION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "preposition",
+      "definition": "Variant of 'except', used after 'not' or 'always'",
+      "gloss": "Variant of 'except', used after 'not' or 'always'",
+      "usage_notes": [],
+      "register_codes": [
+        "FORMAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 3,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "following",
       "normalised_form": "following",
+      "text": "following",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "PREPOSITION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "preposition",
+      "definition": "Coming after in time or order",
+      "gloss": "Coming after in time or order",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 3,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "from",
       "normalised_form": "from",
+      "text": "from",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "PREPOSITION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "preposition",
+      "definition": "Indicating a starting point, origin, or source",
+      "gloss": "Indicating a starting point, origin, or source",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "in",
       "normalised_form": "in",
+      "text": "in",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "PREPOSITION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "preposition",
+      "definition": "Indicating enclosure, location within, or a period of time",
+      "gloss": "Indicating enclosure, location within, or a period of time",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "inside",
       "normalised_form": "inside",
+      "text": "inside",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "PREPOSITION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "preposition",
+      "definition": "Within the interior of",
+      "gloss": "Within the interior of",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "into",
       "normalised_form": "into",
+      "text": "into",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "PREPOSITION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "preposition",
+      "definition": "Indicating movement toward the interior of",
+      "gloss": "Indicating movement toward the interior of",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "like",
       "normalised_form": "like",
+      "text": "like",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "PREPOSITION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "preposition",
+      "definition": "Similar to; in the manner of",
+      "gloss": "Similar to; in the manner of",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "minus",
       "normalised_form": "minus",
+      "text": "minus",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "PREPOSITION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "preposition",
+      "definition": "With the subtraction of",
+      "gloss": "With the subtraction of",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "near",
       "normalised_form": "near",
+      "text": "near",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "PREPOSITION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "preposition",
+      "definition": "At a short distance from",
+      "gloss": "At a short distance from",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "notwithstanding",
       "normalised_form": "notwithstanding",
+      "text": "notwithstanding",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "PREPOSITION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "preposition",
+      "definition": "In spite of; without being prevented by",
+      "gloss": "In spite of; without being prevented by",
+      "usage_notes": [],
+      "register_codes": [
+        "LITERARY",
+        "FORMAL"
+      ],
+      "editorial_labels": [
+        "ARCHAIC"
+      ],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 4,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "of",
       "normalised_form": "of",
+      "text": "of",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "PREPOSITION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "preposition",
+      "definition": "Indicating belonging, origin, or a part-whole relationship",
+      "gloss": "Indicating belonging, origin, or a part-whole relationship",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "off",
       "normalised_form": "off",
+      "text": "off",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "PREPOSITION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "preposition",
+      "definition": "Away from, or no longer on, a place or surface",
+      "gloss": "Away from, or no longer on, a place or surface",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "on",
       "normalised_form": "on",
+      "text": "on",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "PREPOSITION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "preposition",
+      "definition": "Indicating position on a surface, or a point in time",
+      "gloss": "Indicating position on a surface, or a point in time",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "onto",
       "normalised_form": "onto",
+      "text": "onto",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "PREPOSITION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "preposition",
+      "definition": "Indicating movement to a position on top of",
+      "gloss": "Indicating movement to a position on top of",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "opposite",
       "normalised_form": "opposite",
+      "text": "opposite",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "PREPOSITION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "preposition",
+      "definition": "Facing, or on the other side of",
+      "gloss": "Facing, or on the other side of",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 3,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "out",
       "normalised_form": "out",
+      "text": "out",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "PREPOSITION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "preposition",
+      "definition": "Away from the inside or interior of",
+      "gloss": "Away from the inside or interior of",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "outside",
       "normalised_form": "outside",
+      "text": "outside",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "PREPOSITION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "preposition",
+      "definition": "Not within; on or to the exterior of",
+      "gloss": "Not within; on or to the exterior of",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "over",
       "normalised_form": "over",
+      "text": "over",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "PREPOSITION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "preposition",
+      "definition": "Directly above, across, or in excess of",
+      "gloss": "Directly above, across, or in excess of",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "past",
       "normalised_form": "past",
+      "text": "past",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "PREPOSITION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "preposition",
+      "definition": "Beyond, or after in time",
+      "gloss": "Beyond, or after in time",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "pending",
       "normalised_form": "pending",
+      "text": "pending",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "PREPOSITION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "preposition",
+      "definition": "While awaiting; until",
+      "gloss": "While awaiting; until",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "per",
       "normalised_form": "per",
+      "text": "per",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "PREPOSITION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "preposition",
+      "definition": "For each; in accordance with",
+      "gloss": "For each; in accordance with",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "plus",
       "normalised_form": "plus",
+      "text": "plus",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "PREPOSITION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "preposition",
+      "definition": "With the addition of",
+      "gloss": "With the addition of",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "regarding",
       "normalised_form": "regarding",
+      "text": "regarding",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "PREPOSITION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "preposition",
+      "definition": "On the subject of; concerning",
+      "gloss": "On the subject of; concerning",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 3,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "round",
       "normalised_form": "round",
+      "text": "round",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "PREPOSITION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "preposition",
+      "definition": "Variant of 'around'; on every side of",
+      "gloss": "Variant of 'around'; on every side of",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "save",
       "normalised_form": "save",
+      "text": "save",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "PREPOSITION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "preposition",
+      "definition": "Except for; other than (formal or archaic)",
+      "gloss": "Except for; other than (formal or archaic)",
+      "usage_notes": [],
+      "register_codes": [
+        "LITERARY"
+      ],
+      "editorial_labels": [
+        "ARCHAIC"
+      ],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "since",
       "normalised_form": "since",
+      "text": "since",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "PREPOSITION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "preposition",
+      "definition": "From a point in the past until now",
+      "gloss": "From a point in the past until now",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "than",
       "normalised_form": "than",
+      "text": "than",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "PREPOSITION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "preposition",
+      "definition": "Introducing the second element of a comparison",
+      "gloss": "Introducing the second element of a comparison",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "through",
       "normalised_form": "through",
+      "text": "through",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "PREPOSITION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "preposition",
+      "definition": "From one end or side to the other of",
+      "gloss": "From one end or side to the other of",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "throughout",
       "normalised_form": "throughout",
+      "text": "throughout",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "PREPOSITION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "preposition",
+      "definition": "All the way through, in time or space",
+      "gloss": "All the way through, in time or space",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "till",
       "normalised_form": "till",
+      "text": "till",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "PREPOSITION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "preposition",
+      "definition": "Up to the time of; until",
+      "gloss": "Up to the time of; until",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "to",
       "normalised_form": "to",
+      "text": "to",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "PREPOSITION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "preposition",
+      "definition": "Indicating direction, destination, or a recipient",
+      "gloss": "Indicating direction, destination, or a recipient",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "toward",
       "normalised_form": "toward",
+      "text": "toward",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "PREPOSITION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "preposition",
+      "definition": "In the direction of",
+      "gloss": "In the direction of",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "towards",
       "normalised_form": "towards",
+      "text": "towards",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "PREPOSITION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "preposition",
+      "definition": "Variant of 'toward'",
+      "gloss": "Variant of 'toward'",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "under",
       "normalised_form": "under",
+      "text": "under",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "PREPOSITION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "preposition",
+      "definition": "Below, or subject to",
+      "gloss": "Below, or subject to",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "underneath",
       "normalised_form": "underneath",
+      "text": "underneath",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "PREPOSITION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "preposition",
+      "definition": "Directly below; beneath",
+      "gloss": "Directly below; beneath",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 3,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "unlike",
       "normalised_form": "unlike",
+      "text": "unlike",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "PREPOSITION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "preposition",
+      "definition": "Different from; not like",
+      "gloss": "Different from; not like",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "until",
       "normalised_form": "until",
+      "text": "until",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "PREPOSITION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "preposition",
+      "definition": "Up to the point in time that",
+      "gloss": "Up to the point in time that",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "unto",
       "normalised_form": "unto",
+      "text": "unto",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "PREPOSITION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "preposition",
+      "definition": "Archaic or formal variant of 'to'",
+      "gloss": "Archaic or formal variant of 'to'",
+      "usage_notes": [],
+      "register_codes": [
+        "LITERARY"
+      ],
+      "editorial_labels": [
+        "ARCHAIC"
+      ],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "up",
       "normalised_form": "up",
+      "text": "up",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "PREPOSITION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "preposition",
+      "definition": "Toward a higher point or position",
+      "gloss": "Toward a higher point or position",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "upon",
       "normalised_form": "upon",
+      "text": "upon",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "PREPOSITION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "preposition",
+      "definition": "Formal variant of 'on'",
+      "gloss": "Formal variant of 'on'",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "versus",
       "normalised_form": "versus",
+      "text": "versus",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "PREPOSITION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "preposition",
+      "definition": "Against, as in a contest or comparison",
+      "gloss": "Against, as in a contest or comparison",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "via",
       "normalised_form": "via",
+      "text": "via",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "PREPOSITION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "preposition",
+      "definition": "By way of; through",
+      "gloss": "By way of; through",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "with",
       "normalised_form": "with",
+      "text": "with",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "PREPOSITION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "preposition",
+      "definition": "Accompanied by, or by means of",
+      "gloss": "Accompanied by, or by means of",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "within",
       "normalised_form": "within",
+      "text": "within",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "PREPOSITION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "preposition",
+      "definition": "Inside the limits or bounds of",
+      "gloss": "Inside the limits or bounds of",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "without",
       "normalised_form": "without",
+      "text": "without",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "PREPOSITION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "preposition",
+      "definition": "Not accompanied by; lacking",
+      "gloss": "Not accompanied by; lacking",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "worth",
       "normalised_form": "worth",
+      "text": "worth",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "PREPOSITION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "preposition",
+      "definition": "Having a value equivalent to",
+      "gloss": "Having a value equivalent to",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "according to",
       "normalised_form": "according to",
+      "text": "according to",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "PREPOSITION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "preposition",
+      "definition": "As stated by, or in a way consistent with",
+      "gloss": "As stated by, or in a way consistent with",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": null,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "ahead of",
       "normalised_form": "ahead of",
+      "text": "ahead of",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "PREPOSITION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "preposition",
+      "definition": "In front of, or earlier than",
+      "gloss": "In front of, or earlier than",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": null,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "along with",
       "normalised_form": "along with",
+      "text": "along with",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "PREPOSITION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "preposition",
+      "definition": "In addition to; together with",
+      "gloss": "In addition to; together with",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": null,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "apart from",
       "normalised_form": "apart from",
+      "text": "apart from",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "PREPOSITION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "preposition",
+      "definition": "Except for; other than",
+      "gloss": "Except for; other than",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": null,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "as for",
       "normalised_form": "as for",
+      "text": "as for",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "PREPOSITION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "preposition",
+      "definition": "With regard to; concerning",
+      "gloss": "With regard to; concerning",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": null,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "as of",
       "normalised_form": "as of",
+      "text": "as of",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "PREPOSITION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "preposition",
+      "definition": "Starting from, or up to, a specified time",
+      "gloss": "Starting from, or up to, a specified time",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": null,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "as per",
       "normalised_form": "as per",
+      "text": "as per",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "PREPOSITION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "preposition",
+      "definition": "In accordance with",
+      "gloss": "In accordance with",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": null,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "because of",
       "normalised_form": "because of",
+      "text": "because of",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "PREPOSITION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "preposition",
+      "definition": "By reason of; owing to",
+      "gloss": "By reason of; owing to",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": null,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "close to",
       "normalised_form": "close to",
+      "text": "close to",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "PREPOSITION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "preposition",
+      "definition": "Near to, in distance or degree",
+      "gloss": "Near to, in distance or degree",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": null,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "due to",
       "normalised_form": "due to",
+      "text": "due to",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "PREPOSITION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "preposition",
+      "definition": "Caused by; as a result of",
+      "gloss": "Caused by; as a result of",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": null,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "in front of",
       "normalised_form": "in front of",
+      "text": "in front of",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "PREPOSITION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "preposition",
+      "definition": "Ahead of, or facing the front side of",
+      "gloss": "Ahead of, or facing the front side of",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": null,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "in spite of",
       "normalised_form": "in spite of",
+      "text": "in spite of",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "PREPOSITION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "preposition",
+      "definition": "Without being affected or prevented by",
+      "gloss": "Without being affected or prevented by",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": null,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "instead of",
       "normalised_form": "instead of",
+      "text": "instead of",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "PREPOSITION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "preposition",
+      "definition": "In place of; as an alternative to",
+      "gloss": "In place of; as an alternative to",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": null,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "next to",
       "normalised_form": "next to",
+      "text": "next to",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "PREPOSITION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "preposition",
+      "definition": "Immediately beside",
+      "gloss": "Immediately beside",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": null,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "on top of",
       "normalised_form": "on top of",
+      "text": "on top of",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "PREPOSITION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "preposition",
+      "definition": "Resting on the upper surface of",
+      "gloss": "Resting on the upper surface of",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": null,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     },
     {
       "lexical_form": "out of",
       "normalised_form": "out of",
+      "text": "out of",
+      "version": "1.0",
       "language_code": "en",
+      "script_code": "Latn",
       "part_of_speech": "PREPOSITION",
-      "closed_class": true
+      "closed_class": true,
+      "closed_class_kind": "preposition",
+      "definition": "From within; from a supply of",
+      "gloss": "From within; from a supply of",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": null,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
     }
   ]
 }

@@ -563,6 +563,19 @@ open-class word promotion/demotion rules -- is documented in full at
 a `Word`** -- it is a generated bootstrap asset; the authoritative
 record of every `Word` remains the `Domain` that owns it.
 
+Each entry carries as much of `Word`'s field set (4.2) as the cache
+can populate responsibly: a real definition, register/editorial
+classification (archaic, informal, regional, ...), a computed syllable
+count for single-token entries, and a `source_references` entry
+attributing it to this cache rather than to an external dictionary
+that was never consulted. Fields this cache has no verified source for
+-- `pronunciations`, `stress_pattern`, `frequency_value`/`frequency_scale`,
+`etymology_text`, `first_recorded_use` -- are left `null` rather than
+invented, since fabricated IPA transcriptions or corpus frequencies
+would be presenting made-up data as fact. See
+`vocabulary/assets/common/en/README.md`'s field table for the complete
+breakdown.
+
 `WordSeeder` (`vocabulary/role/word_seeder.py`) is the role that
 validates, loads, and seeds the cache, and manages promotion/demotion
 of open-class words into and out of `promoted_words.json`:
