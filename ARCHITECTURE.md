@@ -124,17 +124,31 @@ external scheduler that placed it (see Execution Model below).
   (measures, quantities, codes, identifiers, dates) into typed value
   object instances before they enter the Knowledge Layer, run by Value
   Object Agents. The typed instances themselves (`value_objects/data/`)
-  are Core Component Types from the UN/CEFACT Core Components
-  Technical Specification (CCTS): `Text` (content + `language_id`),
-  `Number` (content only, no supplementary components), `Code`
-  (content + `name`, `language_id`, and the code-list identification
-  set -- `list_id`, `list_agency_id`, `list_agency_name`, `list_name`,
-  `list_version_id`, `list_uri`, `list_scheme_uri`), `Indicator`
-  (content only, boolean), `Quantity` (content + `unit_code` and its
-  code-list identification set -- `unit_code_list_id`,
-  `unit_code_list_agency_id`, `unit_code_list_agency_name`), and
-  `BinaryObject` (content + `format`, `mime_code`,
-  `character_set_code`, `encoding_code`, `filename`, `uri`).
+  are the full UN/CEFACT Core Components Technical Specification
+  (CCTS) Core Component Type catalogue -- each a content component
+  (`value`) plus that type's supplementary components:
+  - `Text` (`language_id`)
+  - `Number` (Numeric. Type -- content only, no supplementary components)
+  - `Percent` (content only, no supplementary components)
+  - `Indicator` (content only, boolean, no supplementary components)
+  - `Code` (`name`, `language_id`, and the code-list identification
+    set -- `list_id`, `list_agency_id`, `list_agency_name`,
+    `list_name`, `list_version_id`, `list_uri`, `list_scheme_uri`)
+  - `Identifier` (the scheme identification set -- `scheme_id`,
+    `scheme_name`, `scheme_agency_id`, `scheme_agency_name`,
+    `scheme_version_id`, `scheme_data_uri`, `scheme_uri`)
+  - `Quantity` and `Measure` (`unit_code` and its code-list
+    identification set -- `unit_code_list_id`,
+    `unit_code_list_agency_id`, `unit_code_list_agency_name`)
+  - `Amount` (`currency_id`, `currency_code_list_version_id`)
+  - `Rate` (`base_unit_measure_unit_code`, `per_unit_measure_unit_code`,
+    plus the `Amount` currency pair, for ratios like exchange rates or
+    speeds)
+  - `DateTime` (`format`)
+  - `BinaryObject`, `Graphic`, `Picture`, `Sound`, `Video` (the binary
+    content set -- `format`, `mime_code`, `character_set_code`,
+    `encoding_code`, `filename`, `uri`; distinct CCTs sharing the same
+    supplementary component shape)
 
 - **Knowledge Layer** -- owns the Domain's one authoritative tensor
   store (`TensorLiraGraph`): dense (confidence, provenance, temporal,

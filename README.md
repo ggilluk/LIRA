@@ -49,9 +49,10 @@ src/lira/
 │   └── api/, assets/   (none yet)
 ├── value_objects/          Value Objects Layer
 │   ├── documentation/
-│   ├── data/                 ValueObjectsLayer; Text, Number, Code, Indicator,
-│   │                          Quantity, BinaryObject (UN/CEFACT CCTS Core
-│   │                          Component Types)
+│   ├── data/                 ValueObjectsLayer; Text, Number, Percent, Indicator,
+│   │                          Code, Identifier, Quantity, Measure, Amount, Rate,
+│   │                          DateTime, BinaryObject, Graphic, Picture, Sound, Video
+│   │                          (full UN/CEFACT CCTS Core Component Type catalogue)
 │   ├── agents/                 ValueObjectAgent, Parse/Validate/Convert/Normalise
 │   ├── role/                   (none yet)
 │   └── api/, ui/, assets/   (none yet)
