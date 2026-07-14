@@ -1,0 +1,653 @@
+{
+  "schema_version": "1.0.0",
+  "language_code": "en",
+  "part_of_speech": "PRONOUN",
+  "closed_class_kind": "pronoun",
+  "count": 92,
+  "words": [
+    {
+      "lexical_form": "I",
+      "normalised_form": "i",
+      "language_code": "en",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "you",
+      "normalised_form": "you",
+      "language_code": "en",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "he",
+      "normalised_form": "he",
+      "language_code": "en",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "she",
+      "normalised_form": "she",
+      "language_code": "en",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "it",
+      "normalised_form": "it",
+      "language_code": "en",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "we",
+      "normalised_form": "we",
+      "language_code": "en",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "they",
+      "normalised_form": "they",
+      "language_code": "en",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "me",
+      "normalised_form": "me",
+      "language_code": "en",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "him",
+      "normalised_form": "him",
+      "language_code": "en",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "us",
+      "normalised_form": "us",
+      "language_code": "en",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "them",
+      "normalised_form": "them",
+      "language_code": "en",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "mine",
+      "normalised_form": "mine",
+      "language_code": "en",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "yours",
+      "normalised_form": "yours",
+      "language_code": "en",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "hers",
+      "normalised_form": "hers",
+      "language_code": "en",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "ours",
+      "normalised_form": "ours",
+      "language_code": "en",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "theirs",
+      "normalised_form": "theirs",
+      "language_code": "en",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "myself",
+      "normalised_form": "myself",
+      "language_code": "en",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "yourself",
+      "normalised_form": "yourself",
+      "language_code": "en",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "himself",
+      "normalised_form": "himself",
+      "language_code": "en",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "herself",
+      "normalised_form": "herself",
+      "language_code": "en",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "itself",
+      "normalised_form": "itself",
+      "language_code": "en",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "oneself",
+      "normalised_form": "oneself",
+      "language_code": "en",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "ourselves",
+      "normalised_form": "ourselves",
+      "language_code": "en",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "yourselves",
+      "normalised_form": "yourselves",
+      "language_code": "en",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "themselves",
+      "normalised_form": "themselves",
+      "language_code": "en",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "ourself",
+      "normalised_form": "ourself",
+      "language_code": "en",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "thyself",
+      "normalised_form": "thyself",
+      "language_code": "en",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "who",
+      "normalised_form": "who",
+      "language_code": "en",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "whom",
+      "normalised_form": "whom",
+      "language_code": "en",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "whose",
+      "normalised_form": "whose",
+      "language_code": "en",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "what",
+      "normalised_form": "what",
+      "language_code": "en",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "which",
+      "normalised_form": "which",
+      "language_code": "en",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "whoever",
+      "normalised_form": "whoever",
+      "language_code": "en",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "whomever",
+      "normalised_form": "whomever",
+      "language_code": "en",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "whichever",
+      "normalised_form": "whichever",
+      "language_code": "en",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "whoso",
+      "normalised_form": "whoso",
+      "language_code": "en",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "each other",
+      "normalised_form": "each other",
+      "language_code": "en",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "one another",
+      "normalised_form": "one another",
+      "language_code": "en",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "someone",
+      "normalised_form": "someone",
+      "language_code": "en",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "somebody",
+      "normalised_form": "somebody",
+      "language_code": "en",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "anyone",
+      "normalised_form": "anyone",
+      "language_code": "en",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "anybody",
+      "normalised_form": "anybody",
+      "language_code": "en",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "everyone",
+      "normalised_form": "everyone",
+      "language_code": "en",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "everybody",
+      "normalised_form": "everybody",
+      "language_code": "en",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "no one",
+      "normalised_form": "no one",
+      "language_code": "en",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "nobody",
+      "normalised_form": "nobody",
+      "language_code": "en",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "something",
+      "normalised_form": "something",
+      "language_code": "en",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "anything",
+      "normalised_form": "anything",
+      "language_code": "en",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "everything",
+      "normalised_form": "everything",
+      "language_code": "en",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "nothing",
+      "normalised_form": "nothing",
+      "language_code": "en",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "somewhere",
+      "normalised_form": "somewhere",
+      "language_code": "en",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "anywhere",
+      "normalised_form": "anywhere",
+      "language_code": "en",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "everywhere",
+      "normalised_form": "everywhere",
+      "language_code": "en",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "nowhere",
+      "normalised_form": "nowhere",
+      "language_code": "en",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "someone else",
+      "normalised_form": "someone else",
+      "language_code": "en",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "somebody else",
+      "normalised_form": "somebody else",
+      "language_code": "en",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "anyone else",
+      "normalised_form": "anyone else",
+      "language_code": "en",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "anybody else",
+      "normalised_form": "anybody else",
+      "language_code": "en",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "everyone else",
+      "normalised_form": "everyone else",
+      "language_code": "en",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "everybody else",
+      "normalised_form": "everybody else",
+      "language_code": "en",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "no one else",
+      "normalised_form": "no one else",
+      "language_code": "en",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "nobody else",
+      "normalised_form": "nobody else",
+      "language_code": "en",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "one",
+      "normalised_form": "one",
+      "language_code": "en",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "ones",
+      "normalised_form": "ones",
+      "language_code": "en",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "one's",
+      "normalised_form": "one's",
+      "language_code": "en",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "none",
+      "normalised_form": "none",
+      "language_code": "en",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "others",
+      "normalised_form": "others",
+      "language_code": "en",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "fewer",
+      "normalised_form": "fewer",
+      "language_code": "en",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "more",
+      "normalised_form": "more",
+      "language_code": "en",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "less",
+      "normalised_form": "less",
+      "language_code": "en",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "same",
+      "normalised_form": "same",
+      "language_code": "en",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "thou",
+      "normalised_form": "thou",
+      "language_code": "en",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "thee",
+      "normalised_form": "thee",
+      "language_code": "en",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "thy",
+      "normalised_form": "thy",
+      "language_code": "en",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "thine",
+      "normalised_form": "thine",
+      "language_code": "en",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "ye",
+      "normalised_form": "ye",
+      "language_code": "en",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "aught",
+      "normalised_form": "aught",
+      "language_code": "en",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "naught",
+      "normalised_form": "naught",
+      "language_code": "en",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "yon",
+      "normalised_form": "yon",
+      "language_code": "en",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "yonder",
+      "normalised_form": "yonder",
+      "language_code": "en",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "the former",
+      "normalised_form": "the former",
+      "language_code": "en",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "the latter",
+      "normalised_form": "the latter",
+      "language_code": "en",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "y'all",
+      "normalised_form": "y'all",
+      "language_code": "en",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "youse",
+      "normalised_form": "youse",
+      "language_code": "en",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "a few",
+      "normalised_form": "a few",
+      "language_code": "en",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "a little",
+      "normalised_form": "a little",
+      "language_code": "en",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "a lot",
+      "normalised_form": "a lot",
+      "language_code": "en",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "a bit",
+      "normalised_form": "a bit",
+      "language_code": "en",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "half",
+      "normalised_form": "half",
+      "language_code": "en",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "plenty",
+      "normalised_form": "plenty",
+      "language_code": "en",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "whosoever",
+      "normalised_form": "whosoever",
+      "language_code": "en",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "whatsoever",
+      "normalised_form": "whatsoever",
+      "language_code": "en",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true
+    }
+  ]
+}

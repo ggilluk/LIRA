@@ -1,0 +1,86 @@
+{
+  "schema_version": "1.0.0",
+  "language_code": "en",
+  "part_of_speech": "PARTICLE",
+  "closed_class_kind": "particle",
+  "count": 11,
+  "words": [
+    {
+      "lexical_form": "not",
+      "normalised_form": "not",
+      "language_code": "en",
+      "part_of_speech": "PARTICLE",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "there",
+      "normalised_form": "there",
+      "language_code": "en",
+      "part_of_speech": "PARTICLE",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "please",
+      "normalised_form": "please",
+      "language_code": "en",
+      "part_of_speech": "PARTICLE",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "also",
+      "normalised_form": "also",
+      "language_code": "en",
+      "part_of_speech": "PARTICLE",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "too",
+      "normalised_form": "too",
+      "language_code": "en",
+      "part_of_speech": "PARTICLE",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "only",
+      "normalised_form": "only",
+      "language_code": "en",
+      "part_of_speech": "PARTICLE",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "just",
+      "normalised_form": "just",
+      "language_code": "en",
+      "part_of_speech": "PARTICLE",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "even",
+      "normalised_form": "even",
+      "language_code": "en",
+      "part_of_speech": "PARTICLE",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "well",
+      "normalised_form": "well",
+      "language_code": "en",
+      "part_of_speech": "PARTICLE",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "quite",
+      "normalised_form": "quite",
+      "language_code": "en",
+      "part_of_speech": "PARTICLE",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "rather",
+      "normalised_form": "rather",
+      "language_code": "en",
+      "part_of_speech": "PARTICLE",
+      "closed_class": true
+    }
+  ]
+}

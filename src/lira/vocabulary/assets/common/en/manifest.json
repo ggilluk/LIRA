@@ -1,0 +1,40 @@
+{
+  "schema_version": "1.0.0",
+  "asset_version": "1.0.0",
+  "language_code": "en",
+  "total_lexical_forms": 300,
+  "files": [
+    {
+      "file": "determiners.json",
+      "count": 35
+    },
+    {
+      "file": "pronouns.json",
+      "count": 92
+    },
+    {
+      "file": "auxiliaries.json",
+      "count": 27
+    },
+    {
+      "file": "prepositions.json",
+      "count": 92
+    },
+    {
+      "file": "coordinating_conjunctions.json",
+      "count": 7
+    },
+    {
+      "file": "subordinating_conjunctions.json",
+      "count": 36
+    },
+    {
+      "file": "particles.json",
+      "count": 11
+    },
+    {
+      "file": "promoted_words.json",
+      "count": 0
+    }
+  ]
+}

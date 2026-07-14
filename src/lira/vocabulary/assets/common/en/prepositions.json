@@ -1,0 +1,653 @@
+{
+  "schema_version": "1.0.0",
+  "language_code": "en",
+  "part_of_speech": "PREPOSITION",
+  "closed_class_kind": "preposition",
+  "count": 92,
+  "words": [
+    {
+      "lexical_form": "aboard",
+      "normalised_form": "aboard",
+      "language_code": "en",
+      "part_of_speech": "PREPOSITION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "about",
+      "normalised_form": "about",
+      "language_code": "en",
+      "part_of_speech": "PREPOSITION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "above",
+      "normalised_form": "above",
+      "language_code": "en",
+      "part_of_speech": "PREPOSITION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "across",
+      "normalised_form": "across",
+      "language_code": "en",
+      "part_of_speech": "PREPOSITION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "after",
+      "normalised_form": "after",
+      "language_code": "en",
+      "part_of_speech": "PREPOSITION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "against",
+      "normalised_form": "against",
+      "language_code": "en",
+      "part_of_speech": "PREPOSITION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "along",
+      "normalised_form": "along",
+      "language_code": "en",
+      "part_of_speech": "PREPOSITION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "alongside",
+      "normalised_form": "alongside",
+      "language_code": "en",
+      "part_of_speech": "PREPOSITION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "amid",
+      "normalised_form": "amid",
+      "language_code": "en",
+      "part_of_speech": "PREPOSITION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "amidst",
+      "normalised_form": "amidst",
+      "language_code": "en",
+      "part_of_speech": "PREPOSITION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "among",
+      "normalised_form": "among",
+      "language_code": "en",
+      "part_of_speech": "PREPOSITION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "amongst",
+      "normalised_form": "amongst",
+      "language_code": "en",
+      "part_of_speech": "PREPOSITION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "around",
+      "normalised_form": "around",
+      "language_code": "en",
+      "part_of_speech": "PREPOSITION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "as",
+      "normalised_form": "as",
+      "language_code": "en",
+      "part_of_speech": "PREPOSITION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "at",
+      "normalised_form": "at",
+      "language_code": "en",
+      "part_of_speech": "PREPOSITION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "atop",
+      "normalised_form": "atop",
+      "language_code": "en",
+      "part_of_speech": "PREPOSITION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "before",
+      "normalised_form": "before",
+      "language_code": "en",
+      "part_of_speech": "PREPOSITION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "behind",
+      "normalised_form": "behind",
+      "language_code": "en",
+      "part_of_speech": "PREPOSITION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "below",
+      "normalised_form": "below",
+      "language_code": "en",
+      "part_of_speech": "PREPOSITION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "beneath",
+      "normalised_form": "beneath",
+      "language_code": "en",
+      "part_of_speech": "PREPOSITION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "beside",
+      "normalised_form": "beside",
+      "language_code": "en",
+      "part_of_speech": "PREPOSITION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "besides",
+      "normalised_form": "besides",
+      "language_code": "en",
+      "part_of_speech": "PREPOSITION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "between",
+      "normalised_form": "between",
+      "language_code": "en",
+      "part_of_speech": "PREPOSITION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "beyond",
+      "normalised_form": "beyond",
+      "language_code": "en",
+      "part_of_speech": "PREPOSITION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "by",
+      "normalised_form": "by",
+      "language_code": "en",
+      "part_of_speech": "PREPOSITION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "circa",
+      "normalised_form": "circa",
+      "language_code": "en",
+      "part_of_speech": "PREPOSITION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "despite",
+      "normalised_form": "despite",
+      "language_code": "en",
+      "part_of_speech": "PREPOSITION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "down",
+      "normalised_form": "down",
+      "language_code": "en",
+      "part_of_speech": "PREPOSITION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "during",
+      "normalised_form": "during",
+      "language_code": "en",
+      "part_of_speech": "PREPOSITION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "except",
+      "normalised_form": "except",
+      "language_code": "en",
+      "part_of_speech": "PREPOSITION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "excepting",
+      "normalised_form": "excepting",
+      "language_code": "en",
+      "part_of_speech": "PREPOSITION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "following",
+      "normalised_form": "following",
+      "language_code": "en",
+      "part_of_speech": "PREPOSITION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "from",
+      "normalised_form": "from",
+      "language_code": "en",
+      "part_of_speech": "PREPOSITION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "in",
+      "normalised_form": "in",
+      "language_code": "en",
+      "part_of_speech": "PREPOSITION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "inside",
+      "normalised_form": "inside",
+      "language_code": "en",
+      "part_of_speech": "PREPOSITION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "into",
+      "normalised_form": "into",
+      "language_code": "en",
+      "part_of_speech": "PREPOSITION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "like",
+      "normalised_form": "like",
+      "language_code": "en",
+      "part_of_speech": "PREPOSITION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "minus",
+      "normalised_form": "minus",
+      "language_code": "en",
+      "part_of_speech": "PREPOSITION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "near",
+      "normalised_form": "near",
+      "language_code": "en",
+      "part_of_speech": "PREPOSITION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "notwithstanding",
+      "normalised_form": "notwithstanding",
+      "language_code": "en",
+      "part_of_speech": "PREPOSITION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "of",
+      "normalised_form": "of",
+      "language_code": "en",
+      "part_of_speech": "PREPOSITION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "off",
+      "normalised_form": "off",
+      "language_code": "en",
+      "part_of_speech": "PREPOSITION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "on",
+      "normalised_form": "on",
+      "language_code": "en",
+      "part_of_speech": "PREPOSITION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "onto",
+      "normalised_form": "onto",
+      "language_code": "en",
+      "part_of_speech": "PREPOSITION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "opposite",
+      "normalised_form": "opposite",
+      "language_code": "en",
+      "part_of_speech": "PREPOSITION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "out",
+      "normalised_form": "out",
+      "language_code": "en",
+      "part_of_speech": "PREPOSITION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "outside",
+      "normalised_form": "outside",
+      "language_code": "en",
+      "part_of_speech": "PREPOSITION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "over",
+      "normalised_form": "over",
+      "language_code": "en",
+      "part_of_speech": "PREPOSITION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "past",
+      "normalised_form": "past",
+      "language_code": "en",
+      "part_of_speech": "PREPOSITION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "pending",
+      "normalised_form": "pending",
+      "language_code": "en",
+      "part_of_speech": "PREPOSITION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "per",
+      "normalised_form": "per",
+      "language_code": "en",
+      "part_of_speech": "PREPOSITION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "plus",
+      "normalised_form": "plus",
+      "language_code": "en",
+      "part_of_speech": "PREPOSITION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "regarding",
+      "normalised_form": "regarding",
+      "language_code": "en",
+      "part_of_speech": "PREPOSITION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "round",
+      "normalised_form": "round",
+      "language_code": "en",
+      "part_of_speech": "PREPOSITION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "save",
+      "normalised_form": "save",
+      "language_code": "en",
+      "part_of_speech": "PREPOSITION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "since",
+      "normalised_form": "since",
+      "language_code": "en",
+      "part_of_speech": "PREPOSITION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "than",
+      "normalised_form": "than",
+      "language_code": "en",
+      "part_of_speech": "PREPOSITION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "through",
+      "normalised_form": "through",
+      "language_code": "en",
+      "part_of_speech": "PREPOSITION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "throughout",
+      "normalised_form": "throughout",
+      "language_code": "en",
+      "part_of_speech": "PREPOSITION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "till",
+      "normalised_form": "till",
+      "language_code": "en",
+      "part_of_speech": "PREPOSITION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "to",
+      "normalised_form": "to",
+      "language_code": "en",
+      "part_of_speech": "PREPOSITION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "toward",
+      "normalised_form": "toward",
+      "language_code": "en",
+      "part_of_speech": "PREPOSITION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "towards",
+      "normalised_form": "towards",
+      "language_code": "en",
+      "part_of_speech": "PREPOSITION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "under",
+      "normalised_form": "under",
+      "language_code": "en",
+      "part_of_speech": "PREPOSITION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "underneath",
+      "normalised_form": "underneath",
+      "language_code": "en",
+      "part_of_speech": "PREPOSITION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "unlike",
+      "normalised_form": "unlike",
+      "language_code": "en",
+      "part_of_speech": "PREPOSITION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "until",
+      "normalised_form": "until",
+      "language_code": "en",
+      "part_of_speech": "PREPOSITION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "unto",
+      "normalised_form": "unto",
+      "language_code": "en",
+      "part_of_speech": "PREPOSITION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "up",
+      "normalised_form": "up",
+      "language_code": "en",
+      "part_of_speech": "PREPOSITION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "upon",
+      "normalised_form": "upon",
+      "language_code": "en",
+      "part_of_speech": "PREPOSITION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "versus",
+      "normalised_form": "versus",
+      "language_code": "en",
+      "part_of_speech": "PREPOSITION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "via",
+      "normalised_form": "via",
+      "language_code": "en",
+      "part_of_speech": "PREPOSITION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "with",
+      "normalised_form": "with",
+      "language_code": "en",
+      "part_of_speech": "PREPOSITION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "within",
+      "normalised_form": "within",
+      "language_code": "en",
+      "part_of_speech": "PREPOSITION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "without",
+      "normalised_form": "without",
+      "language_code": "en",
+      "part_of_speech": "PREPOSITION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "worth",
+      "normalised_form": "worth",
+      "language_code": "en",
+      "part_of_speech": "PREPOSITION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "according to",
+      "normalised_form": "according to",
+      "language_code": "en",
+      "part_of_speech": "PREPOSITION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "ahead of",
+      "normalised_form": "ahead of",
+      "language_code": "en",
+      "part_of_speech": "PREPOSITION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "along with",
+      "normalised_form": "along with",
+      "language_code": "en",
+      "part_of_speech": "PREPOSITION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "apart from",
+      "normalised_form": "apart from",
+      "language_code": "en",
+      "part_of_speech": "PREPOSITION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "as for",
+      "normalised_form": "as for",
+      "language_code": "en",
+      "part_of_speech": "PREPOSITION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "as of",
+      "normalised_form": "as of",
+      "language_code": "en",
+      "part_of_speech": "PREPOSITION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "as per",
+      "normalised_form": "as per",
+      "language_code": "en",
+      "part_of_speech": "PREPOSITION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "because of",
+      "normalised_form": "because of",
+      "language_code": "en",
+      "part_of_speech": "PREPOSITION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "close to",
+      "normalised_form": "close to",
+      "language_code": "en",
+      "part_of_speech": "PREPOSITION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "due to",
+      "normalised_form": "due to",
+      "language_code": "en",
+      "part_of_speech": "PREPOSITION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "in front of",
+      "normalised_form": "in front of",
+      "language_code": "en",
+      "part_of_speech": "PREPOSITION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "in spite of",
+      "normalised_form": "in spite of",
+      "language_code": "en",
+      "part_of_speech": "PREPOSITION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "instead of",
+      "normalised_form": "instead of",
+      "language_code": "en",
+      "part_of_speech": "PREPOSITION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "next to",
+      "normalised_form": "next to",
+      "language_code": "en",
+      "part_of_speech": "PREPOSITION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "on top of",
+      "normalised_form": "on top of",
+      "language_code": "en",
+      "part_of_speech": "PREPOSITION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "out of",
+      "normalised_form": "out of",
+      "language_code": "en",
+      "part_of_speech": "PREPOSITION",
+      "closed_class": true
+    }
+  ]
+}

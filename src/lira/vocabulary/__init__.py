@@ -13,6 +13,10 @@ LexicalRelationshipType are integer-valued enums (Design Principle 12),
 LexicalRelationshipType additionally bit-packing group/category/item
 (Design Principle 13).
 
+Every English Word.is_common is True only when it was loaded by
+WordSeeder from the English Common Vocabulary Cache (300 mandatory
+closed-class lexical forms -- assets/common/en/), never set by hand.
+
 Repository layout follows Architectural Layer -> artefact purpose:
 data/ (VocabularyLayer; Dictionary, Word, LexicalRelationship, one
 class per file; PartOfSpeech, RegisterCode, EditorialLabel,
@@ -22,16 +26,18 @@ the by-reference SystemPropertiesRef view (Rule 14); Word and
 Punctuation still subclass Linguistics's LinguisticUnit base -- see
 Word's own docstring for why), agents/ (VocabularyAgent and concrete
 agents), role/ (DictionaryProcessor, AsyncDictionaryHydrator,
-ExternalDictionaryAdapter, LexicalRelationshipProcessor -- the lexicon
-and relationship graph and everything that seeds/looks up/hydrates/
-creates them belong here, not Linguistics), documentation/, api/, ui/,
-assets/."""
+ExternalDictionaryAdapter, LexicalRelationshipProcessor, WordSeeder --
+the lexicon and relationship graph and everything that seeds/looks
+up/hydrates/creates them belong here, not Linguistics), documentation/,
+api/, ui/, assets/ (common/<language_code>/ -- the Common Vocabulary
+Cache WordSeeder loads)."""
 
 from .agents import VocabularyAgent
 from .role.dictionary_hydrator import AsyncDictionaryHydrator
 from .role.dictionary_processor import DictionaryProcessor
 from .role.external_dictionary_adapter import ExternalDictionaryAdapter
 from .role.lexical_relationship_processor import LexicalRelationshipProcessor
+from .role.word_seeder import WordSeeder
 from .data.attribute_value import AttributeValue
 from .data.dictionary import Dictionary
 from .data.editorial_label import EditorialLabel
@@ -69,4 +75,5 @@ __all__ = [
     "DictionaryProcessor",
     "ExternalDictionaryAdapter",
     "LexicalRelationshipProcessor",
+    "WordSeeder",
 ]

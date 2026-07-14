@@ -1,0 +1,261 @@
+{
+  "schema_version": "1.0.0",
+  "language_code": "en",
+  "part_of_speech": "CONJUNCTION",
+  "closed_class_kind": "subordinating_conjunction",
+  "count": 36,
+  "words": [
+    {
+      "lexical_form": "although",
+      "normalised_form": "although",
+      "language_code": "en",
+      "part_of_speech": "CONJUNCTION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "because",
+      "normalised_form": "because",
+      "language_code": "en",
+      "part_of_speech": "CONJUNCTION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "if",
+      "normalised_form": "if",
+      "language_code": "en",
+      "part_of_speech": "CONJUNCTION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "in case",
+      "normalised_form": "in case",
+      "language_code": "en",
+      "part_of_speech": "CONJUNCTION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "in order that",
+      "normalised_form": "in order that",
+      "language_code": "en",
+      "part_of_speech": "CONJUNCTION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "in that",
+      "normalised_form": "in that",
+      "language_code": "en",
+      "part_of_speech": "CONJUNCTION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "inasmuch as",
+      "normalised_form": "inasmuch as",
+      "language_code": "en",
+      "part_of_speech": "CONJUNCTION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "insofar as",
+      "normalised_form": "insofar as",
+      "language_code": "en",
+      "part_of_speech": "CONJUNCTION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "lest",
+      "normalised_form": "lest",
+      "language_code": "en",
+      "part_of_speech": "CONJUNCTION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "now that",
+      "normalised_form": "now that",
+      "language_code": "en",
+      "part_of_speech": "CONJUNCTION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "once",
+      "normalised_form": "once",
+      "language_code": "en",
+      "part_of_speech": "CONJUNCTION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "provided",
+      "normalised_form": "provided",
+      "language_code": "en",
+      "part_of_speech": "CONJUNCTION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "provided that",
+      "normalised_form": "provided that",
+      "language_code": "en",
+      "part_of_speech": "CONJUNCTION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "providing",
+      "normalised_form": "providing",
+      "language_code": "en",
+      "part_of_speech": "CONJUNCTION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "rather than",
+      "normalised_form": "rather than",
+      "language_code": "en",
+      "part_of_speech": "CONJUNCTION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "so long as",
+      "normalised_form": "so long as",
+      "language_code": "en",
+      "part_of_speech": "CONJUNCTION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "so that",
+      "normalised_form": "so that",
+      "language_code": "en",
+      "part_of_speech": "CONJUNCTION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "supposing",
+      "normalised_form": "supposing",
+      "language_code": "en",
+      "part_of_speech": "CONJUNCTION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "though",
+      "normalised_form": "though",
+      "language_code": "en",
+      "part_of_speech": "CONJUNCTION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "unless",
+      "normalised_form": "unless",
+      "language_code": "en",
+      "part_of_speech": "CONJUNCTION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "when",
+      "normalised_form": "when",
+      "language_code": "en",
+      "part_of_speech": "CONJUNCTION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "whenever",
+      "normalised_form": "whenever",
+      "language_code": "en",
+      "part_of_speech": "CONJUNCTION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "where",
+      "normalised_form": "where",
+      "language_code": "en",
+      "part_of_speech": "CONJUNCTION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "whereas",
+      "normalised_form": "whereas",
+      "language_code": "en",
+      "part_of_speech": "CONJUNCTION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "wherever",
+      "normalised_form": "wherever",
+      "language_code": "en",
+      "part_of_speech": "CONJUNCTION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "whether",
+      "normalised_form": "whether",
+      "language_code": "en",
+      "part_of_speech": "CONJUNCTION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "while",
+      "normalised_form": "while",
+      "language_code": "en",
+      "part_of_speech": "CONJUNCTION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "as if",
+      "normalised_form": "as if",
+      "language_code": "en",
+      "part_of_speech": "CONJUNCTION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "as long as",
+      "normalised_form": "as long as",
+      "language_code": "en",
+      "part_of_speech": "CONJUNCTION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "as much as",
+      "normalised_form": "as much as",
+      "language_code": "en",
+      "part_of_speech": "CONJUNCTION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "as soon as",
+      "normalised_form": "as soon as",
+      "language_code": "en",
+      "part_of_speech": "CONJUNCTION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "as though",
+      "normalised_form": "as though",
+      "language_code": "en",
+      "part_of_speech": "CONJUNCTION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "even if",
+      "normalised_form": "even if",
+      "language_code": "en",
+      "part_of_speech": "CONJUNCTION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "even though",
+      "normalised_form": "even though",
+      "language_code": "en",
+      "part_of_speech": "CONJUNCTION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "every time",
+      "normalised_form": "every time",
+      "language_code": "en",
+      "part_of_speech": "CONJUNCTION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "given that",
+      "normalised_form": "given that",
+      "language_code": "en",
+      "part_of_speech": "CONJUNCTION",
+      "closed_class": true
+    }
+  ]
+}

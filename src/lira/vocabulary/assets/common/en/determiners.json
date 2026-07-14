@@ -1,0 +1,254 @@
+{
+  "schema_version": "1.0.0",
+  "language_code": "en",
+  "part_of_speech": "DETERMINER",
+  "closed_class_kind": "determiner",
+  "count": 35,
+  "words": [
+    {
+      "lexical_form": "the",
+      "normalised_form": "the",
+      "language_code": "en",
+      "part_of_speech": "DETERMINER",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "a",
+      "normalised_form": "a",
+      "language_code": "en",
+      "part_of_speech": "DETERMINER",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "an",
+      "normalised_form": "an",
+      "language_code": "en",
+      "part_of_speech": "DETERMINER",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "this",
+      "normalised_form": "this",
+      "language_code": "en",
+      "part_of_speech": "DETERMINER",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "that",
+      "normalised_form": "that",
+      "language_code": "en",
+      "part_of_speech": "DETERMINER",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "these",
+      "normalised_form": "these",
+      "language_code": "en",
+      "part_of_speech": "DETERMINER",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "those",
+      "normalised_form": "those",
+      "language_code": "en",
+      "part_of_speech": "DETERMINER",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "my",
+      "normalised_form": "my",
+      "language_code": "en",
+      "part_of_speech": "DETERMINER",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "your",
+      "normalised_form": "your",
+      "language_code": "en",
+      "part_of_speech": "DETERMINER",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "his",
+      "normalised_form": "his",
+      "language_code": "en",
+      "part_of_speech": "DETERMINER",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "her",
+      "normalised_form": "her",
+      "language_code": "en",
+      "part_of_speech": "DETERMINER",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "its",
+      "normalised_form": "its",
+      "language_code": "en",
+      "part_of_speech": "DETERMINER",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "our",
+      "normalised_form": "our",
+      "language_code": "en",
+      "part_of_speech": "DETERMINER",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "their",
+      "normalised_form": "their",
+      "language_code": "en",
+      "part_of_speech": "DETERMINER",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "some",
+      "normalised_form": "some",
+      "language_code": "en",
+      "part_of_speech": "DETERMINER",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "any",
+      "normalised_form": "any",
+      "language_code": "en",
+      "part_of_speech": "DETERMINER",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "no",
+      "normalised_form": "no",
+      "language_code": "en",
+      "part_of_speech": "DETERMINER",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "every",
+      "normalised_form": "every",
+      "language_code": "en",
+      "part_of_speech": "DETERMINER",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "each",
+      "normalised_form": "each",
+      "language_code": "en",
+      "part_of_speech": "DETERMINER",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "either",
+      "normalised_form": "either",
+      "language_code": "en",
+      "part_of_speech": "DETERMINER",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "neither",
+      "normalised_form": "neither",
+      "language_code": "en",
+      "part_of_speech": "DETERMINER",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "all",
+      "normalised_form": "all",
+      "language_code": "en",
+      "part_of_speech": "DETERMINER",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "both",
+      "normalised_form": "both",
+      "language_code": "en",
+      "part_of_speech": "DETERMINER",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "few",
+      "normalised_form": "few",
+      "language_code": "en",
+      "part_of_speech": "DETERMINER",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "several",
+      "normalised_form": "several",
+      "language_code": "en",
+      "part_of_speech": "DETERMINER",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "many",
+      "normalised_form": "many",
+      "language_code": "en",
+      "part_of_speech": "DETERMINER",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "much",
+      "normalised_form": "much",
+      "language_code": "en",
+      "part_of_speech": "DETERMINER",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "most",
+      "normalised_form": "most",
+      "language_code": "en",
+      "part_of_speech": "DETERMINER",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "other",
+      "normalised_form": "other",
+      "language_code": "en",
+      "part_of_speech": "DETERMINER",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "another",
+      "normalised_form": "another",
+      "language_code": "en",
+      "part_of_speech": "DETERMINER",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "such",
+      "normalised_form": "such",
+      "language_code": "en",
+      "part_of_speech": "DETERMINER",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "enough",
+      "normalised_form": "enough",
+      "language_code": "en",
+      "part_of_speech": "DETERMINER",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "various",
+      "normalised_form": "various",
+      "language_code": "en",
+      "part_of_speech": "DETERMINER",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "certain",
+      "normalised_form": "certain",
+      "language_code": "en",
+      "part_of_speech": "DETERMINER",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "whatever",
+      "normalised_form": "whatever",
+      "language_code": "en",
+      "part_of_speech": "DETERMINER",
+      "closed_class": true
+    }
+  ]
+}

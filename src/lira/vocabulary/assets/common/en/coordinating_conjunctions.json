@@ -1,0 +1,58 @@
+{
+  "schema_version": "1.0.0",
+  "language_code": "en",
+  "part_of_speech": "CONJUNCTION",
+  "closed_class_kind": "coordinating_conjunction",
+  "count": 7,
+  "words": [
+    {
+      "lexical_form": "for",
+      "normalised_form": "for",
+      "language_code": "en",
+      "part_of_speech": "CONJUNCTION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "and",
+      "normalised_form": "and",
+      "language_code": "en",
+      "part_of_speech": "CONJUNCTION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "nor",
+      "normalised_form": "nor",
+      "language_code": "en",
+      "part_of_speech": "CONJUNCTION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "but",
+      "normalised_form": "but",
+      "language_code": "en",
+      "part_of_speech": "CONJUNCTION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "or",
+      "normalised_form": "or",
+      "language_code": "en",
+      "part_of_speech": "CONJUNCTION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "yet",
+      "normalised_form": "yet",
+      "language_code": "en",
+      "part_of_speech": "CONJUNCTION",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "so",
+      "normalised_form": "so",
+      "language_code": "en",
+      "part_of_speech": "CONJUNCTION",
+      "closed_class": true
+    }
+  ]
+}

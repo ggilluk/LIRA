@@ -1,0 +1,198 @@
+{
+  "schema_version": "1.0.0",
+  "language_code": "en",
+  "part_of_speech": "AUXILIARY",
+  "closed_class_kind": "auxiliary",
+  "count": 27,
+  "words": [
+    {
+      "lexical_form": "be",
+      "normalised_form": "be",
+      "language_code": "en",
+      "part_of_speech": "AUXILIARY",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "am",
+      "normalised_form": "am",
+      "language_code": "en",
+      "part_of_speech": "AUXILIARY",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "is",
+      "normalised_form": "is",
+      "language_code": "en",
+      "part_of_speech": "AUXILIARY",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "are",
+      "normalised_form": "are",
+      "language_code": "en",
+      "part_of_speech": "AUXILIARY",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "was",
+      "normalised_form": "was",
+      "language_code": "en",
+      "part_of_speech": "AUXILIARY",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "were",
+      "normalised_form": "were",
+      "language_code": "en",
+      "part_of_speech": "AUXILIARY",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "been",
+      "normalised_form": "been",
+      "language_code": "en",
+      "part_of_speech": "AUXILIARY",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "being",
+      "normalised_form": "being",
+      "language_code": "en",
+      "part_of_speech": "AUXILIARY",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "have",
+      "normalised_form": "have",
+      "language_code": "en",
+      "part_of_speech": "AUXILIARY",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "has",
+      "normalised_form": "has",
+      "language_code": "en",
+      "part_of_speech": "AUXILIARY",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "had",
+      "normalised_form": "had",
+      "language_code": "en",
+      "part_of_speech": "AUXILIARY",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "having",
+      "normalised_form": "having",
+      "language_code": "en",
+      "part_of_speech": "AUXILIARY",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "do",
+      "normalised_form": "do",
+      "language_code": "en",
+      "part_of_speech": "AUXILIARY",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "does",
+      "normalised_form": "does",
+      "language_code": "en",
+      "part_of_speech": "AUXILIARY",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "did",
+      "normalised_form": "did",
+      "language_code": "en",
+      "part_of_speech": "AUXILIARY",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "will",
+      "normalised_form": "will",
+      "language_code": "en",
+      "part_of_speech": "AUXILIARY",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "would",
+      "normalised_form": "would",
+      "language_code": "en",
+      "part_of_speech": "AUXILIARY",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "shall",
+      "normalised_form": "shall",
+      "language_code": "en",
+      "part_of_speech": "AUXILIARY",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "should",
+      "normalised_form": "should",
+      "language_code": "en",
+      "part_of_speech": "AUXILIARY",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "can",
+      "normalised_form": "can",
+      "language_code": "en",
+      "part_of_speech": "AUXILIARY",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "could",
+      "normalised_form": "could",
+      "language_code": "en",
+      "part_of_speech": "AUXILIARY",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "may",
+      "normalised_form": "may",
+      "language_code": "en",
+      "part_of_speech": "AUXILIARY",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "might",
+      "normalised_form": "might",
+      "language_code": "en",
+      "part_of_speech": "AUXILIARY",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "must",
+      "normalised_form": "must",
+      "language_code": "en",
+      "part_of_speech": "AUXILIARY",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "ought",
+      "normalised_form": "ought",
+      "language_code": "en",
+      "part_of_speech": "AUXILIARY",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "need",
+      "normalised_form": "need",
+      "language_code": "en",
+      "part_of_speech": "AUXILIARY",
+      "closed_class": true
+    },
+    {
+      "lexical_form": "dare",
+      "normalised_form": "dare",
+      "language_code": "en",
+      "part_of_speech": "AUXILIARY",
+      "closed_class": true
+    }
+  ]
+}

@@ -27,10 +27,14 @@ tree and design rules.
 - `agents/` -- `VocabularyAgent` and its concrete agents (`SeedAgent`,
   `LookupAgent`, `HydrateAgent`, `NormaliseAgent`).
 - `role/` -- `DictionaryProcessor`, `AsyncDictionaryHydrator`,
-  `ExternalDictionaryAdapter`, `LexicalRelationshipProcessor` -- plain
-  service classes for the lexicon and relationship graph, not `*Agent`
-  subclasses.
-- `api/`, `ui/`, `assets/` -- none yet.
+  `ExternalDictionaryAdapter`, `LexicalRelationshipProcessor`,
+  `WordSeeder` -- plain service classes for the lexicon and
+  relationship graph, not `*Agent` subclasses.
+- `assets/` -- `common/<language_code>/` -- the Common Vocabulary
+  Cache `WordSeeder` loads (`common/en/` -- the mandatory 300-word
+  English Common Closed-Class Cache v1; see 9.4 and
+  `assets/common/en/README.md`).
+- `api/`, `ui/` -- none yet.
 
 ---
 
@@ -158,6 +162,7 @@ The same written form may have multiple `Word` entries where its language, scrip
 | `first_recorded_use` | `Text` | No | Earliest recorded lexical use |
 | `editorial_labels` | `tuple[EditorialLabel, ...]` | No | Editorial classifications |
 | `source_references` | `tuple[SourceReference, ...]` | Yes | Source provenance |
+| `is_common` | `bool` | Yes | `True` only for a `Word` loaded by `WordSeeder` from a Common Vocabulary Cache (9.4); defaults `False`, never set by hand |
 
 `Word` has no `system_properties` field -- see Design Principle 8. This is not a gap: when a `Word` is used in Linguistics, in its *token* role (4.1), it draws confidence, activation, and the rest from the Linguistics tensor instead, via the `LinguisticUnit.system_property` (singular) it inherits -- a separate, Linguistics-owned mechanism, populated by `GraphProcessor` at the point the token is created. A `Word`-as-type (Vocabulary) has no tensor row of its own; a `Word`-as-token (Linguistics) does. Vocabulary-level confidence/provenance about the word itself, as opposed to its use in a sentence, only exists by way of a `LexicalRelationship`.
 
@@ -536,3 +541,54 @@ Seeding only happens through `LIRAHost.get_or_create_domain` -- a
 `Domain` constructed directly (without going through a `LIRAHost`) has
 no `Common` to seed from and starts with an empty `Dictionary`, exactly
 as before this section existed.
+
+#### 9.4 The English Common Vocabulary Cache
+
+> Every English LIRA Domain shall contain the 300 lexical forms
+> defined by the English Common Closed-Class Cache v1.
+
+This rule is what `Common`'s own `Dictionary` is seeded with, on
+`LIRAHost` construction, before anything else: the 300 mandatory
+English closed-class lexical forms (determiners, pronouns, auxiliaries,
+prepositions, coordinating and subordinating conjunctions, particles)
+that 9.3's propagation then carries into every `Domain` created
+afterwards. Seed `Common` once, and every English `Domain` on that
+`Host` satisfies the rule automatically.
+
+The cache itself -- its file format, exact counts, rebuild policy, and
+open-class word promotion/demotion rules -- is documented in full at
+`vocabulary/assets/common/en/README.md`, alongside the data
+(`manifest.json` plus one JSON file per closed-class kind, plus
+`promoted_words.json`). **The cache is not the authoritative source of
+a `Word`** -- it is a generated bootstrap asset; the authoritative
+record of every `Word` remains the `Domain` that owns it.
+
+`WordSeeder` (`vocabulary/role/word_seeder.py`) is the role that
+validates, loads, and seeds the cache, and manages promotion/demotion
+of open-class words into and out of `promoted_words.json`:
+
+| Method | Responsibility |
+|--------|-----------------|
+| `validate_assets()` | Schema, duplicate lexical forms, per-file and total counts, mandatory file existence, manifest consistency, language codes, normalised forms. Creates `promoted_words.json` (empty) or `manifest.json` (recomputed) if either is missing -- never the mandatory closed-class content itself, which has to be authored. |
+| `load_cache()` | Validates, then parses every mandatory file plus `promoted_words.json` into `Word` instances, each with `is_common=True`. Cached after the first call. |
+| `seed_closed_class_words(dictionary)` | Appends a fresh copy of every cached `Word` not already present into `dictionary`. Idempotent. |
+| `seed_domain(domain)` | `seed_closed_class_words` against `domain.vocabulary.dictionary`. |
+| `promote_word(word, reference_count)` | Adds an open-class `word` to `promoted_words.json` once `reference_count` exceeds `promotion_threshold` (default 3). |
+| `demote_word(word, reference_count)` | Removes a promoted `word` from `promoted_words.json` once `reference_count` falls below `demotion_threshold` (default 1) -- never touches the `Word`'s owning `Domain`. |
+
+`promotion_threshold` and `demotion_threshold` are constructor
+arguments, not hardcoded. Deciding *when* to call `promote_word` /
+`demote_word` -- i.e. actually counting cross-`Domain` references to a
+`Word` -- is not implemented anywhere in this codebase yet; `WordSeeder`
+takes `reference_count` as a parameter rather than computing it.
+
+`Word.is_common` (4.2) is `True` only for a `Word` that came from a
+Common Vocabulary Cache via `WordSeeder` -- never set directly. A
+`Word` a `Domain` discovers or defines on its own is `is_common=False`,
+regardless of how ordinary the word is.
+
+This design is language-agnostic by construction: `WordSeeder` takes a
+`language_code` and loads whichever `assets/common/<language_code>/`
+directory matches it. Adding `fr`, `de`, `es`, `it`, ... support means
+adding sibling asset directories in the same format -- no change to
+`WordSeeder` itself.

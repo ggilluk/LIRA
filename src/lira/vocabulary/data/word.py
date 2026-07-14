@@ -62,6 +62,11 @@ class Word(LinguisticUnit):
     editorial_labels: Tuple[EditorialLabel, ...] = field(default_factory=tuple, kw_only=True)
     source_references: Tuple[SourceReference, ...] = field(default_factory=tuple, kw_only=True)
 
+    # True only for a Word loaded from the English Common Vocabulary
+    # Cache (or another language's equivalent) by WordSeeder -- never
+    # set True by hand. See vocabulary/documentation/README.md, 9.5.
+    is_common: bool = field(default=False, kw_only=True)
+
     # Implementation plumbing, not part of the documented field set:
     # tracks whether AsyncDictionaryHydrator has finished populating this
     # Word's meaning/part_of_speech from the external dictionary API yet.
