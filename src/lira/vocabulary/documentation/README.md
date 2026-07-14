@@ -76,6 +76,7 @@ The Vocabulary Layer is responsible only for vocabulary data. It does not model 
 | 10 | Stable identity | Identifiers remain stable across persistence and reloading. |
 | 11 | Value-object typed attributes | Every non-identity, non-enum, non-object-graph attribute is typed as a `value_objects` Value Object (`Text`, `Number`, `Identifier`, `Code`, ...), never a raw primitive. |
 | 12 | Integer-valued enumerations | Every enumeration member carries a stable, sequential integer value alongside its name, for tensor-backed representation. |
+| 13 | Bitwise-composable classification | Where an enumeration has natural sub-groupings (see `LexicalRelationshipType`, 6.2), those groupings are packed into the integer value as bit-fields (group/category/item), so classification is a shift-and-mask, not a lookup table. |
 
 ### 3. Dictionary
 
@@ -227,59 +228,71 @@ All enumeration values below are integers, assigned sequentially, for direct use
 | `PUNCTUATION` | 14 |
 | `OTHER` | 15 |
 
-#### 6.2 LexicalRelationshipType — Morphological
+#### 6.2 LexicalRelationshipType — Encoding
 
-`LexicalRelationshipType` is a single enumeration; its values are shown here split into three tables by category, with one continuous numeric range across all three (6.2 – 6.4).
+`LexicalRelationshipType` is a single enumeration whose values are shown here split into three tables by group (6.2.1 – 6.2.3). Each value packs three fields into one integer, so a caller can classify a value with bitwise operations alone, without a lookup table:
 
-| Name | Value | Meaning |
-|------|-------|---------|
-| `LEMMA_FORM` | 0 | Target is the lemma of the source |
-| `INFLECTION` | 1 | Target is an inflected form |
-| `SINGULAR_FORM` | 2 | Target is a singular form |
-| `PLURAL_FORM` | 3 | Target is a plural form |
-| `PRESENT_TENSE_FORM` | 4 | Target is a present-tense form |
-| `PAST_TENSE_FORM` | 5 | Target is a past-tense form |
-| `PRESENT_PARTICIPLE_FORM` | 6 | Target is a present participle |
-| `PAST_PARTICIPLE_FORM` | 7 | Target is a past participle |
-| `FIRST_PERSON_FORM` | 8 | Target is a first-person form |
-| `SECOND_PERSON_FORM` | 9 | Target is a second-person form |
-| `THIRD_PERSON_FORM` | 10 | Target is a third-person form |
-| `COMPARATIVE_FORM` | 11 | Target is a comparative form |
-| `SUPERLATIVE_FORM` | 12 | Target is a superlative form |
-| `DERIVED_FORM` | 13 | Target is morphologically derived |
-| `AGENT_NOUN_DERIVATION` | 14 | Target denotes an agent |
-| `NOMINALISATION` | 15 | Target is a noun derivation |
-| `ADJECTIVAL_DERIVATION` | 16 | Target is an adjective derivation |
-| `ADVERBIAL_DERIVATION` | 17 | Target is an adverb derivation |
+```
+value = (group << 6) | (category << 3) | item
 
-#### 6.3 LexicalRelationshipType — Lexical Semantic
+group    = value >> 6          # 2 bits: 0-3   (which of the tables below)
+category = (value >> 3) & 0b111  # 3 bits: 0-7 (the sub-classification within that table)
+item     = value & 0b111         # 3 bits: 0-7 (the specific relationship type within its category)
+```
 
-| Name | Value | Meaning |
-|------|-------|---------|
-| `SYNONYM` | 18 | Entries have similar lexical meaning |
-| `ANTONYM` | 19 | Entries express lexical opposition |
-| `HYPERNYM` | 20 | Target is lexically broader |
-| `HYPONYM` | 21 | Target is lexically narrower |
-| `MERONYM` | 22 | Source denotes a part of target |
-| `HOLONYM` | 23 | Source denotes a whole containing target |
-| `TROPONYM` | 24 | Target expresses a specific manner |
-| `ENTAILMENT` | 25 | Source lexically entails target |
-| `CAUSE` | 26 | Source lexically causes target |
-| `RELATED` | 27 | Entries have an unspecified lexical association |
+Group values: `0` = Morphological, `1` = Lexical Semantic, `2` = Orthographic and Naming (`3` reserved for a future fourth group). 3 bits per field caps each group at 8 categories and each category at 8 items -- the current largest category (Derivation, 5 items) and largest group (Morphological, 7 categories) both fit with room to grow. The whole value fits in a single byte (max value used below is 146).
 
-#### 6.4 LexicalRelationshipType — Orthographic and Naming
+##### 6.2.1 Morphological (group 0)
 
-| Name | Value | Meaning |
-|------|-------|---------|
-| `SPELLING_VARIANT` | 28 | Alternative spelling |
-| `HISTORICAL_SPELLING` | 29 | Historical spelling form |
-| `ABBREVIATION` | 30 | Shortened form |
-| `ACRONYM` | 31 | Acronym form |
-| `INITIALISM` | 32 | Initial-letter form |
-| `CONTRACTION` | 33 | Contracted lexical form |
-| `TRANSLITERATION` | 34 | Form represented in another writing system |
-| `CAPITALISATION` | 35 | Capitalisation variant |
-| `DIACRITIC_VARIANT` | 36 | Variant differing by diacritics |
+| Name | Category | Value | Meaning |
+|------|----------|-------|---------|
+| `LEMMA_FORM` | Base relation (0) | 0 | Target is the lemma of the source |
+| `INFLECTION` | Base relation (0) | 1 | Target is an inflected form |
+| `SINGULAR_FORM` | Number (1) | 8 | Target is a singular form |
+| `PLURAL_FORM` | Number (1) | 9 | Target is a plural form |
+| `PRESENT_TENSE_FORM` | Tense (2) | 16 | Target is a present-tense form |
+| `PAST_TENSE_FORM` | Tense (2) | 17 | Target is a past-tense form |
+| `PRESENT_PARTICIPLE_FORM` | Aspect (3) | 24 | Target is a present participle |
+| `PAST_PARTICIPLE_FORM` | Aspect (3) | 25 | Target is a past participle |
+| `FIRST_PERSON_FORM` | Person (4) | 32 | Target is a first-person form |
+| `SECOND_PERSON_FORM` | Person (4) | 33 | Target is a second-person form |
+| `THIRD_PERSON_FORM` | Person (4) | 34 | Target is a third-person form |
+| `COMPARATIVE_FORM` | Degree (5) | 40 | Target is a comparative form |
+| `SUPERLATIVE_FORM` | Degree (5) | 41 | Target is a superlative form |
+| `DERIVED_FORM` | Derivation (6) | 48 | Target is morphologically derived |
+| `AGENT_NOUN_DERIVATION` | Derivation (6) | 49 | Target denotes an agent |
+| `NOMINALISATION` | Derivation (6) | 50 | Target is a noun derivation |
+| `ADJECTIVAL_DERIVATION` | Derivation (6) | 51 | Target is an adjective derivation |
+| `ADVERBIAL_DERIVATION` | Derivation (6) | 52 | Target is an adverb derivation |
+
+##### 6.2.2 Lexical Semantic (group 1)
+
+| Name | Category | Value | Meaning |
+|------|----------|-------|---------|
+| `SYNONYM` | Similarity/opposition (0) | 64 | Entries have similar lexical meaning |
+| `ANTONYM` | Similarity/opposition (0) | 65 | Entries express lexical opposition |
+| `HYPERNYM` | Hierarchy (1) | 72 | Target is lexically broader |
+| `HYPONYM` | Hierarchy (1) | 73 | Target is lexically narrower |
+| `MERONYM` | Part-whole (2) | 80 | Source denotes a part of target |
+| `HOLONYM` | Part-whole (2) | 81 | Source denotes a whole containing target |
+| `TROPONYM` | Manner (3) | 88 | Target expresses a specific manner |
+| `ENTAILMENT` | Entailment/causation (4) | 96 | Source lexically entails target |
+| `CAUSE` | Entailment/causation (4) | 97 | Source lexically causes target |
+| `RELATED` | Unspecified (5) | 104 | Entries have an unspecified lexical association |
+
+##### 6.2.3 Orthographic and Naming (group 2)
+
+| Name | Category | Value | Meaning |
+|------|----------|-------|---------|
+| `SPELLING_VARIANT` | Spelling variation (0) | 128 | Alternative spelling |
+| `HISTORICAL_SPELLING` | Spelling variation (0) | 129 | Historical spelling form |
+| `ABBREVIATION` | Shortening (1) | 136 | Shortened form |
+| `ACRONYM` | Shortening (1) | 137 | Acronym form |
+| `INITIALISM` | Shortening (1) | 138 | Initial-letter form |
+| `CONTRACTION` | Shortening (1) | 139 | Contracted lexical form |
+| `TRANSLITERATION` | Script transformation (2) | 144 | Form represented in another writing system |
+| `CAPITALISATION` | Script transformation (2) | 145 | Capitalisation variant |
+| `DIACRITIC_VARIANT` | Script transformation (2) | 146 | Variant differing by diacritics |
 
 #### 6.5 RegisterCode
 
