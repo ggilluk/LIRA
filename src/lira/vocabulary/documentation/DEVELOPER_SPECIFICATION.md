@@ -80,6 +80,20 @@ The same written form may have multiple `Word` entries where its language, scrip
 > below so the supersession loses no capability; `part_of_speech` and
 > `definition` map directly onto this specification's fields of the
 > same name.
+>
+> **On the `LinguisticUnit` dependency:** `Word` deliberately keeps
+> subclassing Linguistics's `LinguisticUnit`, and this is not an
+> unresolved layering error to fix. `Word` has two legitimate uses --
+> the *type* (a lexical entry, owned by Vocabulary: language, part of
+> speech, meaning, provenance) and the *token* (one occurrence of that
+> type in a sentence, participating in Linguistics's
+> Word/Clause/Sentence/Paragraph/Subject tree via `LinguisticUnit`'s
+> `text` and `system_property`). Collapsing type and token into one
+> undifferentiated notion of "word" is a known source of error in
+> conventional NLP systems; `Word` living in Vocabulary while still
+> inheriting the structural base it needs to sit inside Linguistics's
+> tree is how this specification keeps the two senses distinct without
+> duplicating the class.
 
 ### 4.2 Fields
 
