@@ -11,7 +11,7 @@ class ExternalDictionaryAdapter:
     @staticmethod
     def parse_api_payload(payload: Any) -> Tuple[Text, PartOfSpeech]:
         fallback_meaning = "Dynamically discovered via runtime prompt parsing."
-        fallback_pos = PartOfSpeech.Noun
+        fallback_pos = PartOfSpeech.NOUN
 
         if not payload or not isinstance(payload, list) or len(payload) == 0:
             return Text(value=fallback_meaning), fallback_pos
@@ -28,7 +28,7 @@ class ExternalDictionaryAdapter:
         if not isinstance(first_meaning, dict):
             return Text(value=fallback_meaning), fallback_pos
 
-        raw_pos = str(first_meaning.get("partOfSpeech", "")).strip().capitalize()
+        raw_pos = str(first_meaning.get("partOfSpeech", "")).strip().upper()
         matched_pos = fallback_pos
         for pos in PartOfSpeech:
             if pos.name == raw_pos:

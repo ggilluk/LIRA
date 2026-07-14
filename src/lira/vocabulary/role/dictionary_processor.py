@@ -1,13 +1,19 @@
-"""Looks up or creates DictionaryEntry records, queuing background
-hydration for unknown words."""
+"""Looks up or creates Word records, queuing background hydration for
+unknown words. Also resolves punctuation tokens, which live outside the
+Dictionary entirely (Vocabulary Layer developer specification, 3 --
+Dictionary aggregates Word records only)."""
+
+from typing import Union
+
+from lira.value_objects import Text
 
 from ..data.dictionary import Dictionary
-from ..data.dictionary_entry import DictionaryEntry
 from ..data.part_of_speech import PartOfSpeech
 from ..data.punctuation import Punctuation
 from ..data.word import Word
 from .dictionary_hydrator import AsyncDictionaryHydrator
-from lira.value_objects import Text
+
+PUNCTUATION_SYMBOLS = (".", "!", "?", ";", ",")
 
 
 class DictionaryProcessor:
@@ -15,27 +21,21 @@ class DictionaryProcessor:
         self.dictionary = dictionary
         self.hydrator = hydrator
 
-    def get_or_create_entry(self, raw_token_text: str) -> DictionaryEntry:
+    def get_or_create_word(self, raw_token_text: str) -> Union[Word, Punctuation]:
         lookup_str = raw_token_text.lower().strip()
-        lex_match = self.dictionary.lookup(lookup_str)
 
-        if lex_match:
-            return lex_match
+        if lookup_str in PUNCTUATION_SYMBOLS:
+            return Punctuation(text=lookup_str, symbol=lookup_str)
 
-        if lookup_str in [".", "!", "?", ";", ","]:
-            entry = DictionaryEntry(
-                unit=Punctuation(text=lookup_str, symbol=lookup_str),
-                meaning=Text(value="Punctuation boundary indicator."), parts_of_speech=[]
-            )
-            self.dictionary.append(entry)
-            return entry
+        existing = self.dictionary.lookup(lookup_str)
+        if existing:
+            return existing
 
-        fallback_word = Word(text=lookup_str, part_of_speech=PartOfSpeech.Noun)
-        entry = DictionaryEntry(
-            unit=fallback_word,
-            meaning=Text(value="Pending async network execution resolution structural tracking..."),
-            parts_of_speech=[PartOfSpeech.Noun], is_fully_hydrated=False
+        fallback_word = Word(
+            text=lookup_str, part_of_speech=PartOfSpeech.NOUN,
+            definition=Text(value="Pending async network execution resolution structural tracking..."),
+            is_fully_hydrated=False,
         )
-        self.dictionary.append(entry)
+        self.dictionary.append(fallback_word)
         self.hydrator.queue_hydration(lookup_str)
-        return entry
+        return fallback_word

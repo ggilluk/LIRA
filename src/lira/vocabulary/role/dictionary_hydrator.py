@@ -9,7 +9,6 @@ import urllib.request
 from typing import Set
 
 from ..data.dictionary import Dictionary
-from ..data.word import Word
 from .external_dictionary_adapter import ExternalDictionaryAdapter
 
 
@@ -49,14 +48,11 @@ class AsyncDictionaryHydrator:
                     raw_data = json.loads(response.read().decode())
                     meaning, pos_type = ExternalDictionaryAdapter.parse_api_payload(raw_data)
 
-                    entry = self.dictionary.lookup(word_text)
-                    if entry:
-                        entry.meaning = meaning
-                        entry.parts_of_speech = [pos_type]
-                        if isinstance(entry.unit, Word):
-                            entry.unit.part_of_speech = pos_type
-                            entry.unit.definition = meaning.value  # Word.definition is plain str (Linguistics, Rule 18)
-                        entry.is_fully_hydrated = True
+                    word = self.dictionary.lookup(word_text)
+                    if word:
+                        word.definition = meaning
+                        word.part_of_speech = pos_type
+                        word.is_fully_hydrated = True
 
                 with self._state_lock:
                     self.telemetry["successful_fetches"] += 1

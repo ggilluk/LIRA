@@ -11,19 +11,25 @@ tree and design rules.
 
 ## Layout
 
-- `data/` -- `VocabularyLayer`; `Dictionary`, `DictionaryEntry`, one
-  class per file; `PartOfSpeech` (numeric tensor-ready values, same
-  convention as Linguistics's `LinguisticUnitKind`); `Word`,
-  `Punctuation` -- each still subclasses Linguistics's `LinguisticUnit`.
-  All three live here, not Linguistics, since a word's lexical unit
-  status, its part of speech, and its meaning are all lexical
-  attributes (Rule 17). `DictionaryEntry.meaning` is a `value_objects`
-  `Text` rather than a plain `str`.
+- `data/` -- `VocabularyLayer`; one class per file implementing the
+  Developer Specification below: `Dictionary` (aggregates `Word`
+  records, no `DictionaryEntry` any more -- merged into `Word`),
+  `Word`, `LexicalRelationship`; `PartOfSpeech`, `RegisterCode`,
+  `EditorialLabel`, `LexicalRelationshipType` (integer-valued enums,
+  numeric tensor-ready values, `LexicalRelationshipType` additionally
+  bit-packing group/category/item); `Pronunciation`, `SourceReference`,
+  `AttributeValue` supporting value objects; `LexicalRelationshipSystemPropertyTensor`
+  and the by-reference `SystemPropertiesRef` view (Rule 14) -- only
+  `LexicalRelationship` carries one, not `Dictionary` or `Word` (Design
+  Principle 8). `Word` and `Punctuation` still subclass Linguistics's
+  `LinguisticUnit`, since a word's lexical unit status, its part of
+  speech, and its meaning are all lexical attributes (Rule 17).
 - `agents/` -- `VocabularyAgent` and its concrete agents (`SeedAgent`,
   `LookupAgent`, `HydrateAgent`, `NormaliseAgent`).
 - `role/` -- `DictionaryProcessor`, `AsyncDictionaryHydrator`,
-  `ExternalDictionaryAdapter` -- plain service classes for the lexicon,
-  not `*Agent` subclasses.
+  `ExternalDictionaryAdapter`, `LexicalRelationshipProcessor` -- plain
+  service classes for the lexicon and relationship graph, not `*Agent`
+  subclasses.
 - `api/`, `ui/`, `assets/` -- none yet.
 
 ---
@@ -31,11 +37,9 @@ tree and design rules.
 ## Developer Specification
 
 The rest of this document is the Vocabulary Layer's developer
-specification: the target data model for `Dictionary`, `Word`, and
+specification: the data model for `Dictionary`, `Word`, and
 `LexicalRelationship`, their enumerations, and their supporting value
-objects. Note: the `Word` defined here is designated to supersede the
-`Word` class described in Layout above -- the code in `data/` has not
-yet been updated to match; see the note under [4. Word](#4-word).
+objects -- implemented in `data/` per Layout above.
 
 ### Table of Contents
 
@@ -104,11 +108,11 @@ The Vocabulary Layer is responsible only for vocabulary data. It does not model 
 
 The same written form may have multiple `Word` entries where its language, script, grammatical category, or other identity-defining property differs.
 
-> **Note:** this `Word` supersedes the `Word` class currently
-> implemented in `vocabulary/data/word.py` (which only has `text`,
+> **Note:** this `Word` superseded the smaller class that used to be
+> implemented in `vocabulary/data/word.py` (which only had `text`,
 > `part_of_speech`, and `definition`, inherited from Linguistics's
 > `LinguisticUnit`). Its `text` attribute is carried forward into 4.2
-> below so the supersession loses no capability; `part_of_speech` and
+> below so the supersession lost no capability; `part_of_speech` and
 > `definition` map directly onto this specification's fields of the
 > same name.
 >
@@ -158,7 +162,7 @@ The same written form may have multiple `Word` entries where its language, scrip
 
 #### 4.3 Derived Properties
 
-None of the following are stored directly on `Word`. Each is a read-only property, computed on demand by querying `LexicalRelationship` for records where this `Word` is the source (or target, where noted) -- not a lookup, a live derivation from the relationship graph.
+None of the following are stored directly on `Word`. Each is computed on demand by querying `LexicalRelationship` for records where this `Word` is the source (or target, where noted) -- not a lookup, a live derivation from the relationship graph. In `word.py`, each is a method rather than a bare `@property`, since a live derivation needs the relationship store and the `Dictionary` (to resolve the other word in each match) passed in -- e.g. `word.synonyms(relationships, dictionary)`.
 
 | Derived Property | Type | Backing Relationship Type / Category | Meaning |
 |-------------------|------|---------------------------------------|---------|

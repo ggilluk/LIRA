@@ -15,8 +15,8 @@ these classes still plays an active role rather than just holding
 state), documentation/, api/, ui/ (UserPrompt, the raw input at the
 boundary), assets/.
 
-The lexicon (Dictionary, DictionaryEntry), PartOfSpeech, Word, and
-Punctuation, and everything that seeds/looks up/hydrates the lexicon
+The lexicon (Dictionary), PartOfSpeech, Word, and Punctuation, and
+everything that seeds/looks up/hydrates the lexicon
 (DictionaryProcessor, AsyncDictionaryHydrator, ExternalDictionaryAdapter)
 live in the Vocabulary Layer, not here -- GraphProcessor takes a
 lira.vocabulary DictionaryProcessor to resolve tokens, and Clause.tokens

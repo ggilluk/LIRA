@@ -44,16 +44,22 @@ class GraphProcessor:
         return LinguisticSystemProperty(self.store, row)
 
     def process_token(self, text_token: str, absolute_seq_num: int) -> Union["Word", "Punctuation"]:
+        import copy
+
         from lira.vocabulary import Punctuation, Word
 
-        entry = self.dict_processor.get_or_create_entry(text_token)
-        if isinstance(entry.unit, Punctuation):
-            node = Punctuation(text=text_token, symbol=text_token)
-            node.system_property = self.create_property_wrapper(node, LinguisticUnitKind.Punctuation, absolute_seq_num, "Lexer_TokenLayer")
-            return node
+        resolved = self.dict_processor.get_or_create_word(text_token)
+        if isinstance(resolved, Punctuation):
+            node = resolved
+            kind = LinguisticUnitKind.Punctuation
+        else:
+            # resolved may be the Dictionary's canonical Word (its *type*) --
+            # copy it so this occurrence (its *token*) gets its own identity
+            # and system_property row, without mutating the canonical entry.
+            node = copy.copy(resolved)
+            kind = LinguisticUnitKind.Word
 
-        node = Word(text=text_token, part_of_speech=entry.parts_of_speech[0], definition=entry.meaning.value)
-        node.system_property = self.create_property_wrapper(node, LinguisticUnitKind.Word, absolute_seq_num, "Lexer_TokenLayer")
+        node.system_property = self.create_property_wrapper(node, kind, absolute_seq_num, "Lexer_TokenLayer")
         return node
 
     def process_sentence(self, raw_sentence_text: str, seq_num: int) -> Sentence:
