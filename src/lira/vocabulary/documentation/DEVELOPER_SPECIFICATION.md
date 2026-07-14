@@ -5,10 +5,11 @@
 1. [Purpose](#1-purpose)
 2. [Design Principles](#2-design-principles)
 3. [Dictionary](#3-dictionary)
-4. [DictionaryEntry](#4-dictionaryentry)
+4. [Word](#4-word)
 5. [LexicalRelationship](#5-lexicalrelationship)
 6. [Enumerations](#6-enumerations)
 7. [Supporting Value Objects](#7-supporting-value-objects)
+8. [Value Object Type Reference](#8-value-object-type-reference)
 
 ---
 
@@ -19,7 +20,7 @@ The Vocabulary Layer stores lexical forms and explicit relationships between lex
 The layer contains three primary artefacts:
 
 - `Dictionary`
-- `DictionaryEntry`
+- `Word`
 - `LexicalRelationship`
 
 The Vocabulary Layer is responsible only for vocabulary data. It does not model sentences, sentence structure, contextual interpretation, or domain knowledge.
@@ -30,16 +31,18 @@ The Vocabulary Layer is responsible only for vocabulary data. It does not model 
 
 | ID | Principle | Requirement |
 |----|-----------|-------------|
-| 1 | Independent lexical forms | Each lexical form must be stored as a separate entry. |
-| 2 | Intrinsic properties only | Entries contain only properties of that lexical form. |
+| 1 | Independent lexical forms | Each lexical form must be stored as a separate `Word`. |
+| 2 | Intrinsic properties only | A `Word` contains only properties of that lexical form. |
 | 3 | Explicit relationships | Word-to-word connections are separate relationship objects. |
-| 4 | No embedded word graphs | Entries must not contain collections of related entries. |
+| 4 | No embedded word graphs | A `Word` must not contain collections of related words. |
 | 5 | Directed relationships | Every relationship has an explicit source and target. |
-| 6 | Extensible classification | New relationship types can be added without changing entries. |
-| 7 | Provenance | Every entry and relationship retains source information. |
+| 6 | Extensible classification | New relationship types can be added without changing `Word`. |
+| 7 | Provenance | Every `Word` and relationship retains source information. |
 | 8 | Tensor-backed system properties | Every object references authoritative system properties. |
 | 9 | Immutability | Core vocabulary objects should be immutable after creation. |
-| 10 | Stable identity | UUIDs remain stable across persistence and reloading. |
+| 10 | Stable identity | Identifiers remain stable across persistence and reloading. |
+| 11 | Value-object typed attributes | Every non-identity, non-enum, non-object-graph attribute is typed as a `value_objects` Value Object (`Text`, `Number`, `Identifier`, `Code`, ...), never a raw primitive. |
+| 12 | Integer-valued enumerations | Every enumeration member carries a stable, sequential integer value alongside its name, for tensor-backed representation. |
 
 ---
 
@@ -47,60 +50,68 @@ The Vocabulary Layer is responsible only for vocabulary data. It does not model 
 
 ### 3.1 Definition
 
-`Dictionary` represents the top-level lexicon container: the aggregate of `DictionaryEntry` records for a language, or a domain-scoped vocabulary.
+`Dictionary` represents the top-level lexicon container: the aggregate of `Word` records for a language, or a domain-scoped vocabulary.
 
 ### 3.2 Fields
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `uuid` | `UUID` | Yes | Stable identifier |
-| `version` | `str` | Yes | Dictionary version |
-| `language_code` | `LanguageCode` | Yes | Language this dictionary indexes |
-| `entries` | `tuple[DictionaryEntry, ...]` | Yes | The dictionary's lexicon entries |
+| `uuid` | `Identifier` | Yes | Stable identifier |
+| `version` | `Text` | Yes | Dictionary version |
+| `language_code` | `Code` | Yes | Language this dictionary indexes |
+| `words` | `tuple[Word, ...]` | Yes | The dictionary's lexicon entries |
 | `source_references` | `tuple[SourceReference, ...]` | Yes | Source provenance |
 | `system_properties` | `SystemPropertiesRef` | Yes | By-reference LIRA system properties |
 
 ---
 
-## 4. DictionaryEntry
+## 4. Word
 
 ### 4.1 Definition
 
-`DictionaryEntry` represents one lexical form in one language and one grammatical category.
+`Word` represents one lexical form in one language and one grammatical category.
 
-The same written form may have multiple entries where its language, script, grammatical category, or other identity-defining property differs.
+The same written form may have multiple `Word` entries where its language, script, grammatical category, or other identity-defining property differs.
+
+> **Note:** this `Word` is the specification's replacement for the
+> earlier `DictionaryEntry` name. It is a forward-looking, considerably
+> richer model than the `Word` class currently implemented in
+> `vocabulary/data/word.py` (which only has `text`, `part_of_speech`,
+> and `definition`, inherited from Linguistics's `LinguisticUnit`).
+> Reconciling the two -- rename, merge, or otherwise -- is an open
+> question for implementation, not decided by this document.
 
 ### 4.2 Fields
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `uuid` | `UUID` | Yes | Stable identifier |
-| `version` | `str` | Yes | Entry version |
-| `language_code` | `LanguageCode` | Yes | Language of the lexical form |
-| `lexical_form` | `str` | Yes | Exact lexical form |
-| `normalised_form` | `str` | Yes | Normalised form used for indexing |
-| `script_code` | `ScriptCode \| None` | No | Writing system |
+| `uuid` | `Identifier` | Yes | Stable identifier |
+| `version` | `Text` | Yes | Word version |
+| `language_code` | `Code` | Yes | Language of the lexical form |
+| `lexical_form` | `Text` | Yes | Exact lexical form |
+| `normalised_form` | `Text` | Yes | Normalised form used for indexing |
+| `script_code` | `Code` | No | Writing system |
 | `part_of_speech` | `PartOfSpeech` | Yes | Grammatical category |
 | `pronunciations` | `tuple[Pronunciation, ...]` | No | Pronunciation variants |
-| `syllable_representation` | `str \| None` | No | Human-readable syllable breakdown |
-| `syllable_count` | `int \| None` | No | Number of syllables |
-| `stress_pattern` | `str \| None` | No | Lexical stress pattern |
-| `gloss` | `str \| None` | No | Short lexical description |
-| `definition` | `str \| None` | No | Human-readable lexical definition |
-| `usage_notes` | `tuple[str, ...]` | No | Editorial guidance intrinsic to the lexical form |
+| `syllable_representation` | `Text` | No | Human-readable syllable breakdown |
+| `syllable_count` | `Number` | No | Number of syllables |
+| `stress_pattern` | `Text` | No | Lexical stress pattern |
+| `gloss` | `Text` | No | Short lexical description |
+| `definition` | `Text` | No | Human-readable lexical definition |
+| `usage_notes` | `tuple[Text, ...]` | No | Editorial guidance intrinsic to the lexical form |
 | `register_codes` | `tuple[RegisterCode, ...]` | No | Register classifications |
-| `dialect_codes` | `tuple[DialectCode, ...]` | No | Regional or social language classifications |
-| `frequency_value` | `float \| None` | No | Corpus-derived frequency |
-| `frequency_scale` | `FrequencyScale \| None` | No | Frequency measurement scale |
-| `etymology_text` | `str \| None` | No | Historical lexical origin |
-| `first_recorded_use` | `str \| None` | No | Earliest recorded lexical use |
+| `dialect_codes` | `tuple[Code, ...]` | No | Regional or social language classifications |
+| `frequency_value` | `Number` | No | Corpus-derived frequency |
+| `frequency_scale` | `Code` | No | Frequency measurement scale |
+| `etymology_text` | `Text` | No | Historical lexical origin |
+| `first_recorded_use` | `Text` | No | Earliest recorded lexical use |
 | `editorial_labels` | `tuple[EditorialLabel, ...]` | No | Editorial classifications |
 | `source_references` | `tuple[SourceReference, ...]` | Yes | Source provenance |
 | `system_properties` | `SystemPropertiesRef` | Yes | By-reference LIRA system properties |
 
 ### 4.3 Excluded Fields
 
-The following must not be stored directly on `DictionaryEntry`:
+The following must not be stored directly on `Word`:
 
 | Excluded field | Required representation |
 |----------------|--------------------------|
@@ -131,20 +142,20 @@ The following must not be stored directly on `DictionaryEntry`:
 
 ### 5.1 Definition
 
-`LexicalRelationship` represents a directed relationship between two `DictionaryEntry` objects.
+`LexicalRelationship` represents a directed relationship between two `Word` objects.
 
-It must reference the source and target entries by UUID.
+It must reference the source and target words by identifier.
 
 ### 5.2 Fields
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `uuid` | `UUID` | Yes | Stable relationship identifier |
-| `version` | `str` | Yes | Relationship version |
-| `source_entry_id` | `UUID` | Yes | Source DictionaryEntry identifier |
-| `target_entry_id` | `UUID` | Yes | Target DictionaryEntry identifier |
+| `uuid` | `Identifier` | Yes | Stable relationship identifier |
+| `version` | `Text` | Yes | Relationship version |
+| `source_word_id` | `Identifier` | Yes | Source Word identifier |
+| `target_word_id` | `Identifier` | Yes | Target Word identifier |
 | `relationship_type` | `LexicalRelationshipType` | Yes | Relationship classification |
-| `inverse_relationship_type` | `LexicalRelationshipType \| None` | No | Declared inverse relationship type |
+| `inverse_relationship_type` | `LexicalRelationshipType` | No | Declared inverse relationship type |
 | `qualifiers` | `tuple[AttributeValue, ...]` | No | Typed qualifications |
 | `source_references` | `tuple[SourceReference, ...]` | Yes | Source provenance |
 | `system_properties` | `SystemPropertiesRef` | Yes | By-reference LIRA system properties |
@@ -153,104 +164,108 @@ It must reference the source and target entries by UUID.
 
 ## 6. Enumerations
 
+All enumeration values below are integers, assigned sequentially, for direct use as tensor codes (Design Principle 12).
+
 ### 6.1 PartOfSpeech
 
-| Value |
-|-------|
-| `NOUN` |
-| `VERB` |
-| `ADJECTIVE` |
-| `ADVERB` |
-| `PRONOUN` |
-| `DETERMINER` |
-| `PREPOSITION` |
-| `CONJUNCTION` |
-| `INTERJECTION` |
-| `NUMERAL` |
-| `PARTICLE` |
-| `AUXILIARY` |
-| `PROPER_NOUN` |
-| `SYMBOL` |
-| `PUNCTUATION` |
-| `OTHER` |
+| Name | Value |
+|------|-------|
+| `NOUN` | 0 |
+| `VERB` | 1 |
+| `ADJECTIVE` | 2 |
+| `ADVERB` | 3 |
+| `PRONOUN` | 4 |
+| `DETERMINER` | 5 |
+| `PREPOSITION` | 6 |
+| `CONJUNCTION` | 7 |
+| `INTERJECTION` | 8 |
+| `NUMERAL` | 9 |
+| `PARTICLE` | 10 |
+| `AUXILIARY` | 11 |
+| `PROPER_NOUN` | 12 |
+| `SYMBOL` | 13 |
+| `PUNCTUATION` | 14 |
+| `OTHER` | 15 |
 
 ### 6.2 LexicalRelationshipType — Morphological
 
-| Value | Meaning |
-|-------|---------|
-| `LEMMA_FORM` | Target is the lemma of the source |
-| `INFLECTION` | Target is an inflected form |
-| `SINGULAR_FORM` | Target is a singular form |
-| `PLURAL_FORM` | Target is a plural form |
-| `PRESENT_TENSE_FORM` | Target is a present-tense form |
-| `PAST_TENSE_FORM` | Target is a past-tense form |
-| `PRESENT_PARTICIPLE_FORM` | Target is a present participle |
-| `PAST_PARTICIPLE_FORM` | Target is a past participle |
-| `FIRST_PERSON_FORM` | Target is a first-person form |
-| `SECOND_PERSON_FORM` | Target is a second-person form |
-| `THIRD_PERSON_FORM` | Target is a third-person form |
-| `COMPARATIVE_FORM` | Target is a comparative form |
-| `SUPERLATIVE_FORM` | Target is a superlative form |
-| `DERIVED_FORM` | Target is morphologically derived |
-| `AGENT_NOUN_DERIVATION` | Target denotes an agent |
-| `NOMINALISATION` | Target is a noun derivation |
-| `ADJECTIVAL_DERIVATION` | Target is an adjective derivation |
-| `ADVERBIAL_DERIVATION` | Target is an adverb derivation |
+`LexicalRelationshipType` is a single enumeration; its values are shown here split into three tables by category, with one continuous numeric range across all three (6.2 – 6.4).
+
+| Name | Value | Meaning |
+|------|-------|---------|
+| `LEMMA_FORM` | 0 | Target is the lemma of the source |
+| `INFLECTION` | 1 | Target is an inflected form |
+| `SINGULAR_FORM` | 2 | Target is a singular form |
+| `PLURAL_FORM` | 3 | Target is a plural form |
+| `PRESENT_TENSE_FORM` | 4 | Target is a present-tense form |
+| `PAST_TENSE_FORM` | 5 | Target is a past-tense form |
+| `PRESENT_PARTICIPLE_FORM` | 6 | Target is a present participle |
+| `PAST_PARTICIPLE_FORM` | 7 | Target is a past participle |
+| `FIRST_PERSON_FORM` | 8 | Target is a first-person form |
+| `SECOND_PERSON_FORM` | 9 | Target is a second-person form |
+| `THIRD_PERSON_FORM` | 10 | Target is a third-person form |
+| `COMPARATIVE_FORM` | 11 | Target is a comparative form |
+| `SUPERLATIVE_FORM` | 12 | Target is a superlative form |
+| `DERIVED_FORM` | 13 | Target is morphologically derived |
+| `AGENT_NOUN_DERIVATION` | 14 | Target denotes an agent |
+| `NOMINALISATION` | 15 | Target is a noun derivation |
+| `ADJECTIVAL_DERIVATION` | 16 | Target is an adjective derivation |
+| `ADVERBIAL_DERIVATION` | 17 | Target is an adverb derivation |
 
 ### 6.3 LexicalRelationshipType — Lexical Semantic
 
-| Value | Meaning |
-|-------|---------|
-| `SYNONYM` | Entries have similar lexical meaning |
-| `ANTONYM` | Entries express lexical opposition |
-| `HYPERNYM` | Target is lexically broader |
-| `HYPONYM` | Target is lexically narrower |
-| `MERONYM` | Source denotes a part of target |
-| `HOLONYM` | Source denotes a whole containing target |
-| `TROPONYM` | Target expresses a specific manner |
-| `ENTAILMENT` | Source lexically entails target |
-| `CAUSE` | Source lexically causes target |
-| `RELATED` | Entries have an unspecified lexical association |
+| Name | Value | Meaning |
+|------|-------|---------|
+| `SYNONYM` | 18 | Entries have similar lexical meaning |
+| `ANTONYM` | 19 | Entries express lexical opposition |
+| `HYPERNYM` | 20 | Target is lexically broader |
+| `HYPONYM` | 21 | Target is lexically narrower |
+| `MERONYM` | 22 | Source denotes a part of target |
+| `HOLONYM` | 23 | Source denotes a whole containing target |
+| `TROPONYM` | 24 | Target expresses a specific manner |
+| `ENTAILMENT` | 25 | Source lexically entails target |
+| `CAUSE` | 26 | Source lexically causes target |
+| `RELATED` | 27 | Entries have an unspecified lexical association |
 
 ### 6.4 LexicalRelationshipType — Orthographic and Naming
 
-| Value | Meaning |
-|-------|---------|
-| `SPELLING_VARIANT` | Alternative spelling |
-| `HISTORICAL_SPELLING` | Historical spelling form |
-| `ABBREVIATION` | Shortened form |
-| `ACRONYM` | Acronym form |
-| `INITIALISM` | Initial-letter form |
-| `CONTRACTION` | Contracted lexical form |
-| `TRANSLITERATION` | Form represented in another writing system |
-| `CAPITALISATION` | Capitalisation variant |
-| `DIACRITIC_VARIANT` | Variant differing by diacritics |
+| Name | Value | Meaning |
+|------|-------|---------|
+| `SPELLING_VARIANT` | 28 | Alternative spelling |
+| `HISTORICAL_SPELLING` | 29 | Historical spelling form |
+| `ABBREVIATION` | 30 | Shortened form |
+| `ACRONYM` | 31 | Acronym form |
+| `INITIALISM` | 32 | Initial-letter form |
+| `CONTRACTION` | 33 | Contracted lexical form |
+| `TRANSLITERATION` | 34 | Form represented in another writing system |
+| `CAPITALISATION` | 35 | Capitalisation variant |
+| `DIACRITIC_VARIANT` | 36 | Variant differing by diacritics |
 
 ### 6.5 RegisterCode
 
-| Value |
-|-------|
-| `FORMAL` |
-| `INFORMAL` |
-| `SLANG` |
-| `TECHNICAL` |
-| `LITERARY` |
-| `COLLOQUIAL` |
-| `VULGAR` |
-| `NEUTRAL` |
+| Name | Value |
+|------|-------|
+| `FORMAL` | 0 |
+| `INFORMAL` | 1 |
+| `SLANG` | 2 |
+| `TECHNICAL` | 3 |
+| `LITERARY` | 4 |
+| `COLLOQUIAL` | 5 |
+| `VULGAR` | 6 |
+| `NEUTRAL` | 7 |
 
 ### 6.6 EditorialLabel
 
-| Value |
-|-------|
-| `ARCHAIC` |
-| `OBSOLETE` |
-| `RARE` |
-| `HISTORICAL` |
-| `OFFENSIVE` |
-| `DEPRECATED` |
-| `REGIONAL` |
-| `NONSTANDARD` |
+| Name | Value |
+|------|-------|
+| `ARCHAIC` | 0 |
+| `OBSOLETE` | 1 |
+| `RARE` | 2 |
+| `HISTORICAL` | 3 |
+| `OFFENSIVE` | 4 |
+| `DEPRECATED` | 5 |
+| `REGIONAL` | 6 |
+| `NONSTANDARD` | 7 |
 
 ---
 
@@ -260,23 +275,38 @@ It must reference the source and target entries by UUID.
 
 | Field | Type | Required | Description |
 |-------|------|----------|--------------|
-| `notation` | `str` | Yes | Pronunciation notation system |
-| `value` | `str` | Yes | Pronunciation representation |
-| `dialect_code` | `DialectCode \| None` | No | Dialect to which pronunciation applies |
+| `notation` | `Text` | Yes | Pronunciation notation system |
+| `value` | `Text` | Yes | Pronunciation representation |
+| `dialect_code` | `Code` | No | Dialect to which pronunciation applies |
 
 ### 7.2 SourceReference
 
 | Field | Type | Required | Description |
 |-------|------|----------|--------------|
-| `source_name` | `str` | Yes | Source dataset or publication |
-| `source_version` | `str \| None` | No | Source version |
-| `external_identifier` | `str \| None` | No | Identifier assigned by the source |
-| `reference_uri` | `str \| None` | No | Source reference location |
-| `licence_identifier` | `str \| None` | No | Licence applicable to imported information |
+| `source_name` | `Text` | Yes | Source dataset or publication |
+| `source_version` | `Text` | No | Source version |
+| `external_identifier` | `Identifier` | No | Identifier assigned by the source |
+| `reference_uri` | `Identifier` | No | Source reference location |
+| `licence_identifier` | `Identifier` | No | Licence applicable to imported information |
 
 ### 7.3 AttributeValue
 
 | Field | Type | Required | Description |
 |-------|------|----------|--------------|
-| `name` | `str` | Yes | Qualifier name |
-| `value` | `str` | Yes | Serialised qualifier value |
+| `name` | `Text` | Yes | Qualifier name |
+| `value` | `Text` | Yes | Serialised qualifier value |
+
+---
+
+## 8. Value Object Type Reference
+
+Every non-identity, non-enum attribute in sections 3–7 resolves to one of the following individually-represented `lira.value_objects` Core Component Types, each its own class (`value_objects/data/<name>.py`):
+
+| Value Object | Used for |
+|---------------|----------|
+| `Identifier` | `uuid`, `source_word_id`, `target_word_id`, `external_identifier`, `reference_uri`, `licence_identifier` |
+| `Text` | `version`, `lexical_form`, `normalised_form`, `syllable_representation`, `stress_pattern`, `gloss`, `definition`, `usage_notes`, `etymology_text`, `first_recorded_use`, `notation`, `value` (Pronunciation), `source_name`, `source_version`, `name`/`value` (AttributeValue) |
+| `Code` | `language_code`, `script_code`, `dialect_codes`, `frequency_scale`, `dialect_code` (Pronunciation) |
+| `Number` | `syllable_count`, `frequency_value` |
+
+`system_properties` (`SystemPropertiesRef`), and object-graph collections (`words`, `pronunciations`, `source_references`, `qualifiers`), reference other typed objects rather than holding a scalar value, so Design Principle 11 does not apply to them.
