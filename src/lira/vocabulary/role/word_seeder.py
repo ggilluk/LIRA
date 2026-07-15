@@ -48,16 +48,33 @@ MANDATORY_FILES = (
 )
 # Supplementary files: authored, validated, and always loaded/seeded
 # like MANDATORY_FILES, but NOT counted toward the mandatory closed-class
-# total -- their content is open-class (NOUN metalinguistic terms:
-# "noun", "verb", "subject", "tense", ...), not closed-class function
-# words, so they don't belong in the 313-word mandatory count the way
-# determiners/pronouns/etc. do. Exists because these terms are
-# referenced constantly, by name, throughout the mandatory files' own
-# definitions ("Introduces a noun...", "third person", "used with
-# uncountable nouns") and this codebase's own documentation, but were
-# otherwise represented nowhere in the seeded vocabulary at all.
+# total -- their content is open-class metalinguistic terms ("noun",
+# "verb", "subject", "tense", "synonym", "determine", "grammatical",
+# "grammatically", ...), not closed-class function words, so they don't
+# belong in the 313-word mandatory count the way determiners/pronouns/
+# etc. do. Exists because these terms are referenced constantly, by
+# name, throughout the mandatory files' own definitions ("Introduces a
+# noun...", "third person", "used with uncountable nouns") and this
+# codebase's own documentation, but were otherwise represented nowhere
+# in the seeded vocabulary at all -- one file per part of speech,
+# mirroring the mandatory files' own convention.
+#
+# Order matters here beyond readability: metalinguistic_nouns.json must
+# load before metalinguistic_verbs.json, because "cause"/"result"
+# (NOUN, in metalinguistic_nouns.json) are homographs with the new
+# VERB entries of the same lexical_form added in metalinguistic_verbs.json
+# -- whichever sense loads first is the one Dictionary.lookup() resolves
+# to by default (Dictionary.lookup_all() returns every sense regardless
+# of order). "be"/"have"/"do" (AUXILIARY, mandatory auxiliaries.json)
+# and "past"/"opposite" (PREPOSITION, mandatory prepositions.json) are
+# also homographs of entries added here, but MANDATORY_FILES always
+# loads in full before SUPPLEMENTARY_FILES, so those stay correctly
+# defaulted regardless of this tuple's internal order.
 SUPPLEMENTARY_FILES = (
-    "metalinguistic_vocabulary.json",
+    "metalinguistic_nouns.json",
+    "metalinguistic_verbs.json",
+    "metalinguistic_adjectives.json",
+    "metalinguistic_adverbs.json",
 )
 PROMOTED_FILE = "promoted_words.json"
 MANIFEST_FILE = "manifest.json"

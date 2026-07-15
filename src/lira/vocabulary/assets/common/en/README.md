@@ -5,13 +5,14 @@
 This cache provides the mandatory English closed-class lexical forms
 every LIRA Domain's Vocabulary must contain: determiners, pronouns,
 auxiliaries, prepositions, coordinating and subordinating
-conjunctions, and particles. It also holds `metalinguistic_vocabulary.json`,
-37 open-class terms for grammar itself (`noun`, `verb`, `subject`,
-`tense`, ...) that the mandatory files' own definitions constantly
-presuppose (see Supplementary files below), and `promoted_words.json`,
-a generated (initially empty) list of open-class words promoted from
-Domain vocabularies once they're referenced widely enough to be worth
-treating as common.
+conjunctions, and particles. It also holds four `metalinguistic_*.json`
+files, one per part of speech, of open-class terms for grammar itself
+(`noun`, `verb`, `subject`, `tense`, `synonym`, `determine`,
+`grammatical`, `grammatically`, ...) that the mandatory files' own
+definitions constantly presuppose (see Supplementary files below), and
+`promoted_words.json`, a generated (initially empty) list of open-class
+words promoted from Domain vocabularies once they're referenced widely
+enough to be worth treating as common.
 
 **The Common Vocabulary Cache is not the authoritative source of a
 Word.** Every Word's authoritative record lives in the Domain that
@@ -31,43 +32,78 @@ working vocabulary immediately, not to be a system of record.
 | `coordinating_conjunctions.json` | FANBOYS -- for, and, nor, but, or, yet, so | 7 |
 | `subordinating_conjunctions.json` | because, although, unless, while, ... | 36 |
 | `particles.json` | not, there, please, also, too, only, ... | 12 |
-| `metalinguistic_vocabulary.json` | Open-class `NOUN` terms for grammar itself -- see Supplementary files below | 37 |
+| `metalinguistic_nouns.json` | Open-class `NOUN` terms for grammar itself, including relationship-kind terms (`synonym`, `lemma`, `contraction`, ...) -- see Supplementary files below | 58 |
+| `metalinguistic_verbs.json` | Open-class `VERB` terms for grammar itself | 30 |
+| `metalinguistic_adjectives.json` | Open-class `ADJECTIVE` terms for grammar itself | 28 |
+| `metalinguistic_adverbs.json` | Open-class `ADVERB` terms for grammar itself | 13 |
 | `promoted_words.json` | Open-class words promoted from Domain vocabularies (starts empty) | 0 |
 
 Mandatory closed-class total: **313** (37 + 99 + 29 + 93 + 7 + 36 + 12).
-`metalinguistic_vocabulary.json` and `promoted_words.json` are not
-counted toward the mandatory 313 -- see Supplementary files below and
-the Promotion policy section respectively. Since `asset_version 1.3.0`,
-the mandatory total is manifest-driven rather than a hardcoded figure
-`WordSeeder` asserts: it's whatever `determiners.json` through
+The four `metalinguistic_*.json` files and `promoted_words.json` are
+not counted toward the mandatory 313 -- see Supplementary files below
+and the Promotion policy section respectively. Since `asset_version
+1.3.0`, the mandatory total is manifest-driven rather than a hardcoded
+figure `WordSeeder` asserts: it's whatever `determiners.json` through
 `particles.json`'s counts actually sum to, cross-checked against
 `manifest.json`'s `total_lexical_forms` -- see
 `vocabulary/role/word_seeder.py`'s `validate_assets()`.
 
 ## Supplementary files
 
-`metalinguistic_vocabulary.json` is validated and seeded exactly like
-the mandatory closed-class files (`WordSeeder.SUPPLEMENTARY_FILES`),
-but excluded from the mandatory 313 total, because its content is a
-different kind of thing: 37 open-class `NOUN` entries naming
-grammatical concepts themselves -- `word`, `noun`, `verb`, `subject`,
-`tense`, `meaning`, `speaker`, and so on. These terms are referenced
-constantly, by name, throughout the mandatory files' own definitions
-("Introduces a **noun** referring to...", "used with uncountable
-**nouns**", "third **person**") and this codebase's own documentation,
-but before `asset_version 1.4.0` were represented nowhere in the seeded
-vocabulary at all -- every closed-class definition presupposed them
-without a single one actually existing as a `Word`.
+The four `metalinguistic_*.json` files -- one per part of speech,
+mirroring the mandatory files' own convention -- are validated and
+seeded exactly like the mandatory closed-class files
+(`WordSeeder.SUPPLEMENTARY_FILES`), but excluded from the mandatory 313
+total, because their content is a different kind of thing: 129
+open-class entries naming grammatical and lexical-relationship concepts
+themselves -- `word`, `noun`, `verb`, `subject`, `tense`, `synonym`,
+`lemma`, `contraction` (nouns); `identify`, `describe`, `compare`,
+`determine` (verbs); `grammatical`, `semantic`, `possessive`, `derived`
+(adjectives); `grammatically`, `directly`, `typically` (adverbs). These
+terms are referenced constantly, by name, throughout the mandatory
+files' own definitions ("Introduces a **noun** referring to...", "used
+with uncountable **nouns**", "third **person**"), the
+`LexicalRelationshipType` enum's own member names and documentation
+(6.2), and this codebase's own documentation generally, but before
+`asset_version 1.4.0` were represented nowhere in the seeded vocabulary
+at all -- every closed-class definition and every relationship kind
+presupposed them without a single one actually existing as a `Word`.
 
 These are ordinary open-class content words, not closed-class function
 words, so they don't belong in the mandatory 313 the way determiners or
 prepositions do; they also aren't `promoted_words.json` entries, since
 that file's `reference_count` field means real cross-domain usage
-tracking (`WordSeeder.promote_word`), and these 37 weren't promoted
+tracking (`WordSeeder.promote_word`), and these 129 weren't promoted
 from anywhere -- they're authored bootstrap content, same standing as
 the mandatory files themselves. `WordSeeder.seed_closed_class_words`
 seeds them into every Domain's Dictionary regardless (its name
-predates this file; see that method's docstring).
+predates these files; see that method's docstring).
+
+### Homographs with existing entries
+
+Several metalinguistic terms are genuine homographs of an already-seeded
+closed-class or metalinguistic word, following the same "same
+lexical_form, different part_of_speech" pattern as `that`
+(`DETERMINER`/`PRONOUN`) and `which` (`PRONOUN`/`DETERMINER`) in the
+mandatory files:
+
+| Word | Existing sense | New sense |
+|------|------------------|-------------|
+| `be`, `have`, `do` | `AUXILIARY` (`auxiliaries.json`) | `VERB` (`metalinguistic_verbs.json`) |
+| `cause`, `result` | `NOUN` (`metalinguistic_nouns.json`) | `VERB` (`metalinguistic_verbs.json`) |
+| `past`, `opposite` | `PREPOSITION` (`prepositions.json`) | `ADJECTIVE` (`metalinguistic_adjectives.json`) |
+
+In every case the original, closed-class-or-first-seeded sense stays
+the `Dictionary.lookup()` default: `be`/`have`/`do`/`past`/`opposite`
+are safe because `MANDATORY_FILES` (containing their original sense)
+always loads in full before `SUPPLEMENTARY_FILES` regardless of
+ordering; `cause`/`result` specifically require
+`metalinguistic_nouns.json` to load before `metalinguistic_verbs.json`
+within `SUPPLEMENTARY_FILES`' own tuple order, which is why that
+order is deliberate, not alphabetical or incidental -- see the comment
+above `SUPPLEMENTARY_FILES` in `vocabulary/role/word_seeder.py`.
+`Dictionary.lookup_all(text)` returns every sense regardless of load
+order.
 
 `asset_version 1.2.0` added seven words (`done`, `doing`, `little`,
 `fewest`, `least`, `owing to`, `n't`) that the original 300-word
@@ -210,19 +246,25 @@ they're already part of the mandatory cache.
 
 ## Version
 
-`v1` / `schema_version 2.0.0` / `asset_version 1.4.0` (added
-`metalinguistic_vocabulary.json`, 37 open-class `NOUN` entries -- see
-Supplementary files above. The mandatory total is unchanged at 313,
-since these aren't mandatory closed-class words, but every seeded
-Dictionary now carries 350 total: 313 mandatory + 37 supplementary.
-`asset_version 1.3.0` took 307 -> 313 mandatory lexical forms, adding
-`this`/`that`/`these`/`those` as `PRONOUN` and `which`/`what` as
-`DETERMINER` homographs of their existing entries -- see Files above.
-`asset_version 1.2.0` took 300 -> 307, adding `done`, `doing`,
-`little`, `fewest`, `least`, `owing to`, `n't`. `asset_version 1.1.0`
-revised the schema to carry `Word`'s full field set; the original 300
-lexical forms and their meanings were unchanged from `asset_version
-1.0.0`).
+`v1` / `schema_version 2.0.0` / `asset_version 1.5.0` (renamed
+`metalinguistic_vocabulary.json` to `metalinguistic_nouns.json` and
+added three sibling files -- `metalinguistic_verbs.json` (30),
+`metalinguistic_adjectives.json` (28), `metalinguistic_adverbs.json`
+(13) -- plus 21 more nouns to `metalinguistic_nouns.json` itself
+(37 -> 58) naming `LexicalRelationshipType`'s own concepts (`synonym`,
+`antonym`, `lemma`, `inflection`, `contraction`, ...). See
+Supplementary files and Homographs with existing entries above. The
+mandatory total is unchanged at 313; every seeded Dictionary now
+carries 442 total: 313 mandatory + 129 supplementary (58 + 30 + 28 +
+13). `asset_version 1.4.0` added the original `metalinguistic_vocabulary.json`,
+37 open-class `NOUN` entries. `asset_version 1.3.0` took 307 -> 313
+mandatory lexical forms, adding `this`/`that`/`these`/`those` as
+`PRONOUN` and `which`/`what` as `DETERMINER` homographs of their
+existing entries -- see Files above. `asset_version 1.2.0` took 300 ->
+307, adding `done`, `doing`, `little`, `fewest`, `least`, `owing to`,
+`n't`. `asset_version 1.1.0` revised the schema to carry `Word`'s full
+field set; the original 300 lexical forms and their meanings were
+unchanged from `asset_version 1.0.0`).
 
 ## Language extension
 

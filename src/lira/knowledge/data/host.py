@@ -9,8 +9,8 @@ creates has its Vocabulary seeded from Common's Dictionary, giving all
 Domains on a Host a shared vocabulary baseline before anything
 domain-specific is added. Common's own Dictionary is itself seeded, on
 Host construction, with the mandatory 313-word English Common
-Vocabulary Cache plus 37 supplementary open-class metalinguistic terms
-(350 Words total; WordSeeder, vocabulary/role/word_seeder.py) -- this
+Vocabulary Cache plus 129 supplementary open-class metalinguistic terms
+(442 Words total; WordSeeder, vocabulary/role/word_seeder.py) -- this
 is how "every English LIRA Domain shall contain the mandatory lexical
 forms defined by the English Common Closed-Class Cache" is actually
 satisfied: seed Common once, and every Domain created afterwards

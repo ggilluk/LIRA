@@ -1,6 +1,6 @@
 {
   "schema_version": "2.0.0",
-  "asset_version": "1.4.0",
+  "asset_version": "1.5.0",
   "language_code": "en",
   "total_lexical_forms": 313,
   "files": [
@@ -33,8 +33,20 @@
       "count": 12
     },
     {
-      "file": "metalinguistic_vocabulary.json",
-      "count": 37
+      "file": "metalinguistic_nouns.json",
+      "count": 58
+    },
+    {
+      "file": "metalinguistic_verbs.json",
+      "count": 30
+    },
+    {
+      "file": "metalinguistic_adjectives.json",
+      "count": 28
+    },
+    {
+      "file": "metalinguistic_adverbs.json",
+      "count": 13
     },
     {
       "file": "promoted_words.json",

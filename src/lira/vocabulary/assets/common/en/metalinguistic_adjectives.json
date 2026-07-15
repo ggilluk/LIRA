@@ -1,310 +1,22 @@
 {
   "schema_version": "2.0.0",
   "language_code": "en",
-  "part_of_speech": "NOUN",
+  "part_of_speech": "ADJECTIVE",
   "closed_class_kind": "metalinguistic_term",
-  "count": 37,
+  "count": 28,
   "words": [
     {
-      "lexical_form": "word",
-      "normalised_form": "word",
-      "text": "word",
+      "lexical_form": "lexical",
+      "normalised_form": "lexical",
+      "text": "lexical",
       "version": "1.0",
       "language_code": "en",
       "script_code": "Latn",
-      "part_of_speech": "NOUN",
+      "part_of_speech": "ADJECTIVE",
       "closed_class": false,
       "closed_class_kind": "metalinguistic_term",
-      "definition": "A unit of language that has a meaning and can stand on its own",
-      "gloss": "A unit of language that has a meaning and can stand on its own",
-      "usage_notes": [],
-      "register_codes": [
-        "NEUTRAL"
-      ],
-      "editorial_labels": [],
-      "dialect_codes": [],
-      "pronunciations": [],
-      "syllable_representation": null,
-      "syllable_count": 1,
-      "stress_pattern": null,
-      "frequency_value": null,
-      "frequency_scale": null,
-      "etymology_text": null,
-      "first_recorded_use": null,
-      "source_references": [
-        {
-          "source_name": "LIRA English Metalinguistic Vocabulary v1",
-          "source_version": "1.0.0",
-          "external_identifier": null,
-          "reference_uri": null,
-          "licence_identifier": null
-        }
-      ]
-    },
-    {
-      "lexical_form": "meaning",
-      "normalised_form": "meaning",
-      "text": "meaning",
-      "version": "1.0",
-      "language_code": "en",
-      "script_code": "Latn",
-      "part_of_speech": "NOUN",
-      "closed_class": false,
-      "closed_class_kind": "metalinguistic_term",
-      "definition": "What a word, phrase, or sentence represents or refers to",
-      "gloss": "What a word, phrase, or sentence represents or refers to",
-      "usage_notes": [],
-      "register_codes": [
-        "NEUTRAL"
-      ],
-      "editorial_labels": [],
-      "dialect_codes": [],
-      "pronunciations": [],
-      "syllable_representation": null,
-      "syllable_count": 2,
-      "stress_pattern": null,
-      "frequency_value": null,
-      "frequency_scale": null,
-      "etymology_text": null,
-      "first_recorded_use": null,
-      "source_references": [
-        {
-          "source_name": "LIRA English Metalinguistic Vocabulary v1",
-          "source_version": "1.0.0",
-          "external_identifier": null,
-          "reference_uri": null,
-          "licence_identifier": null
-        }
-      ]
-    },
-    {
-      "lexical_form": "language",
-      "normalised_form": "language",
-      "text": "language",
-      "version": "1.0",
-      "language_code": "en",
-      "script_code": "Latn",
-      "part_of_speech": "NOUN",
-      "closed_class": false,
-      "closed_class_kind": "metalinguistic_term",
-      "definition": "A system of words and grammar used for communication",
-      "gloss": "A system of words and grammar used for communication",
-      "usage_notes": [],
-      "register_codes": [
-        "NEUTRAL"
-      ],
-      "editorial_labels": [],
-      "dialect_codes": [],
-      "pronunciations": [],
-      "syllable_representation": null,
-      "syllable_count": 2,
-      "stress_pattern": null,
-      "frequency_value": null,
-      "frequency_scale": null,
-      "etymology_text": null,
-      "first_recorded_use": null,
-      "source_references": [
-        {
-          "source_name": "LIRA English Metalinguistic Vocabulary v1",
-          "source_version": "1.0.0",
-          "external_identifier": null,
-          "reference_uri": null,
-          "licence_identifier": null
-        }
-      ]
-    },
-    {
-      "lexical_form": "sentence",
-      "normalised_form": "sentence",
-      "text": "sentence",
-      "version": "1.0",
-      "language_code": "en",
-      "script_code": "Latn",
-      "part_of_speech": "NOUN",
-      "closed_class": false,
-      "closed_class_kind": "metalinguistic_term",
-      "definition": "A grammatically complete unit of language expressing a statement, question, or command",
-      "gloss": "A grammatically complete unit of language expressing a statement, question, or command",
-      "usage_notes": [],
-      "register_codes": [
-        "NEUTRAL"
-      ],
-      "editorial_labels": [],
-      "dialect_codes": [],
-      "pronunciations": [],
-      "syllable_representation": null,
-      "syllable_count": 2,
-      "stress_pattern": null,
-      "frequency_value": null,
-      "frequency_scale": null,
-      "etymology_text": null,
-      "first_recorded_use": null,
-      "source_references": [
-        {
-          "source_name": "LIRA English Metalinguistic Vocabulary v1",
-          "source_version": "1.0.0",
-          "external_identifier": null,
-          "reference_uri": null,
-          "licence_identifier": null
-        }
-      ]
-    },
-    {
-      "lexical_form": "clause",
-      "normalised_form": "clause",
-      "text": "clause",
-      "version": "1.0",
-      "language_code": "en",
-      "script_code": "Latn",
-      "part_of_speech": "NOUN",
-      "closed_class": false,
-      "closed_class_kind": "metalinguistic_term",
-      "definition": "A grammatical unit containing a subject and a predicate, forming part of a sentence",
-      "gloss": "A grammatical unit containing a subject and a predicate, forming part of a sentence",
-      "usage_notes": [],
-      "register_codes": [
-        "NEUTRAL"
-      ],
-      "editorial_labels": [],
-      "dialect_codes": [],
-      "pronunciations": [],
-      "syllable_representation": null,
-      "syllable_count": 1,
-      "stress_pattern": null,
-      "frequency_value": null,
-      "frequency_scale": null,
-      "etymology_text": null,
-      "first_recorded_use": null,
-      "source_references": [
-        {
-          "source_name": "LIRA English Metalinguistic Vocabulary v1",
-          "source_version": "1.0.0",
-          "external_identifier": null,
-          "reference_uri": null,
-          "licence_identifier": null
-        }
-      ]
-    },
-    {
-      "lexical_form": "phrase",
-      "normalised_form": "phrase",
-      "text": "phrase",
-      "version": "1.0",
-      "language_code": "en",
-      "script_code": "Latn",
-      "part_of_speech": "NOUN",
-      "closed_class": false,
-      "closed_class_kind": "metalinguistic_term",
-      "definition": "A group of words that functions as a single grammatical unit but lacks a subject and predicate",
-      "gloss": "A group of words that functions as a single grammatical unit but lacks a subject and predicate",
-      "usage_notes": [],
-      "register_codes": [
-        "NEUTRAL"
-      ],
-      "editorial_labels": [],
-      "dialect_codes": [],
-      "pronunciations": [],
-      "syllable_representation": null,
-      "syllable_count": 1,
-      "stress_pattern": null,
-      "frequency_value": null,
-      "frequency_scale": null,
-      "etymology_text": null,
-      "first_recorded_use": null,
-      "source_references": [
-        {
-          "source_name": "LIRA English Metalinguistic Vocabulary v1",
-          "source_version": "1.0.0",
-          "external_identifier": null,
-          "reference_uri": null,
-          "licence_identifier": null
-        }
-      ]
-    },
-    {
-      "lexical_form": "noun",
-      "normalised_form": "noun",
-      "text": "noun",
-      "version": "1.0",
-      "language_code": "en",
-      "script_code": "Latn",
-      "part_of_speech": "NOUN",
-      "closed_class": false,
-      "closed_class_kind": "metalinguistic_term",
-      "definition": "A word that names a person, place, thing, or idea",
-      "gloss": "A word that names a person, place, thing, or idea",
-      "usage_notes": [],
-      "register_codes": [
-        "NEUTRAL"
-      ],
-      "editorial_labels": [],
-      "dialect_codes": [],
-      "pronunciations": [],
-      "syllable_representation": null,
-      "syllable_count": 1,
-      "stress_pattern": null,
-      "frequency_value": null,
-      "frequency_scale": null,
-      "etymology_text": null,
-      "first_recorded_use": null,
-      "source_references": [
-        {
-          "source_name": "LIRA English Metalinguistic Vocabulary v1",
-          "source_version": "1.0.0",
-          "external_identifier": null,
-          "reference_uri": null,
-          "licence_identifier": null
-        }
-      ]
-    },
-    {
-      "lexical_form": "verb",
-      "normalised_form": "verb",
-      "text": "verb",
-      "version": "1.0",
-      "language_code": "en",
-      "script_code": "Latn",
-      "part_of_speech": "NOUN",
-      "closed_class": false,
-      "closed_class_kind": "metalinguistic_term",
-      "definition": "A word that expresses an action, occurrence, or state of being",
-      "gloss": "A word that expresses an action, occurrence, or state of being",
-      "usage_notes": [],
-      "register_codes": [
-        "NEUTRAL"
-      ],
-      "editorial_labels": [],
-      "dialect_codes": [],
-      "pronunciations": [],
-      "syllable_representation": null,
-      "syllable_count": 1,
-      "stress_pattern": null,
-      "frequency_value": null,
-      "frequency_scale": null,
-      "etymology_text": null,
-      "first_recorded_use": null,
-      "source_references": [
-        {
-          "source_name": "LIRA English Metalinguistic Vocabulary v1",
-          "source_version": "1.0.0",
-          "external_identifier": null,
-          "reference_uri": null,
-          "licence_identifier": null
-        }
-      ]
-    },
-    {
-      "lexical_form": "adjective",
-      "normalised_form": "adjective",
-      "text": "adjective",
-      "version": "1.0",
-      "language_code": "en",
-      "script_code": "Latn",
-      "part_of_speech": "NOUN",
-      "closed_class": false,
-      "closed_class_kind": "metalinguistic_term",
-      "definition": "A word that describes or modifies a noun",
-      "gloss": "A word that describes or modifies a noun",
+      "definition": "Relating to the words or vocabulary of a language, rather than its grammar",
+      "gloss": "Relating to the words or vocabulary of a language, rather than its grammar",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -330,89 +42,17 @@
       ]
     },
     {
-      "lexical_form": "adverb",
-      "normalised_form": "adverb",
-      "text": "adverb",
+      "lexical_form": "grammatical",
+      "normalised_form": "grammatical",
+      "text": "grammatical",
       "version": "1.0",
       "language_code": "en",
       "script_code": "Latn",
-      "part_of_speech": "NOUN",
+      "part_of_speech": "ADJECTIVE",
       "closed_class": false,
       "closed_class_kind": "metalinguistic_term",
-      "definition": "A word that modifies a verb, adjective, or another adverb",
-      "gloss": "A word that modifies a verb, adjective, or another adverb",
-      "usage_notes": [],
-      "register_codes": [
-        "NEUTRAL"
-      ],
-      "editorial_labels": [],
-      "dialect_codes": [],
-      "pronunciations": [],
-      "syllable_representation": null,
-      "syllable_count": 2,
-      "stress_pattern": null,
-      "frequency_value": null,
-      "frequency_scale": null,
-      "etymology_text": null,
-      "first_recorded_use": null,
-      "source_references": [
-        {
-          "source_name": "LIRA English Metalinguistic Vocabulary v1",
-          "source_version": "1.0.0",
-          "external_identifier": null,
-          "reference_uri": null,
-          "licence_identifier": null
-        }
-      ]
-    },
-    {
-      "lexical_form": "pronoun",
-      "normalised_form": "pronoun",
-      "text": "pronoun",
-      "version": "1.0",
-      "language_code": "en",
-      "script_code": "Latn",
-      "part_of_speech": "NOUN",
-      "closed_class": false,
-      "closed_class_kind": "metalinguistic_term",
-      "definition": "A word that stands in place of a noun",
-      "gloss": "A word that stands in place of a noun",
-      "usage_notes": [],
-      "register_codes": [
-        "NEUTRAL"
-      ],
-      "editorial_labels": [],
-      "dialect_codes": [],
-      "pronunciations": [],
-      "syllable_representation": null,
-      "syllable_count": 2,
-      "stress_pattern": null,
-      "frequency_value": null,
-      "frequency_scale": null,
-      "etymology_text": null,
-      "first_recorded_use": null,
-      "source_references": [
-        {
-          "source_name": "LIRA English Metalinguistic Vocabulary v1",
-          "source_version": "1.0.0",
-          "external_identifier": null,
-          "reference_uri": null,
-          "licence_identifier": null
-        }
-      ]
-    },
-    {
-      "lexical_form": "determiner",
-      "normalised_form": "determiner",
-      "text": "determiner",
-      "version": "1.0",
-      "language_code": "en",
-      "script_code": "Latn",
-      "part_of_speech": "NOUN",
-      "closed_class": false,
-      "closed_class_kind": "metalinguistic_term",
-      "definition": "A word that introduces a noun and specifies its reference",
-      "gloss": "A word that introduces a noun and specifies its reference",
+      "definition": "Relating to grammar, the structural rules governing a language",
+      "gloss": "Relating to grammar, the structural rules governing a language",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -438,17 +78,341 @@
       ]
     },
     {
-      "lexical_form": "preposition",
-      "normalised_form": "preposition",
-      "text": "preposition",
+      "lexical_form": "semantic",
+      "normalised_form": "semantic",
+      "text": "semantic",
       "version": "1.0",
       "language_code": "en",
       "script_code": "Latn",
-      "part_of_speech": "NOUN",
+      "part_of_speech": "ADJECTIVE",
       "closed_class": false,
       "closed_class_kind": "metalinguistic_term",
-      "definition": "A word that relates a noun or pronoun to another part of a sentence",
-      "gloss": "A word that relates a noun or pronoun to another part of a sentence",
+      "definition": "Relating to meaning in language",
+      "gloss": "Relating to meaning in language",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 3,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Metalinguistic Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "lexical_form": "syntactic",
+      "normalised_form": "syntactic",
+      "text": "syntactic",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "ADJECTIVE",
+      "closed_class": false,
+      "closed_class_kind": "metalinguistic_term",
+      "definition": "Relating to the arrangement of words to form phrases and sentences",
+      "gloss": "Relating to the arrangement of words to form phrases and sentences",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 3,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Metalinguistic Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "lexical_form": "singular",
+      "normalised_form": "singular",
+      "text": "singular",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "ADJECTIVE",
+      "closed_class": false,
+      "closed_class_kind": "metalinguistic_term",
+      "definition": "Referring to exactly one person or thing",
+      "gloss": "Referring to exactly one person or thing",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 3,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Metalinguistic Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "lexical_form": "plural",
+      "normalised_form": "plural",
+      "text": "plural",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "ADJECTIVE",
+      "closed_class": false,
+      "closed_class_kind": "metalinguistic_term",
+      "definition": "Referring to more than one person or thing",
+      "gloss": "Referring to more than one person or thing",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Metalinguistic Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "lexical_form": "first",
+      "normalised_form": "first",
+      "text": "first",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "ADJECTIVE",
+      "closed_class": false,
+      "closed_class_kind": "metalinguistic_term",
+      "definition": "Coming before all others; the first-person grammatical category (the speaker)",
+      "gloss": "Coming before all others; the first-person grammatical category (the speaker)",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Metalinguistic Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "lexical_form": "second",
+      "normalised_form": "second",
+      "text": "second",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "ADJECTIVE",
+      "closed_class": false,
+      "closed_class_kind": "metalinguistic_term",
+      "definition": "Coming after the first; the second-person grammatical category (the listener)",
+      "gloss": "Coming after the first; the second-person grammatical category (the listener)",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Metalinguistic Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "lexical_form": "third",
+      "normalised_form": "third",
+      "text": "third",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "ADJECTIVE",
+      "closed_class": false,
+      "closed_class_kind": "metalinguistic_term",
+      "definition": "Coming after the second; the third-person grammatical category (someone or something else)",
+      "gloss": "Coming after the second; the third-person grammatical category (someone or something else)",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Metalinguistic Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "lexical_form": "present",
+      "normalised_form": "present",
+      "text": "present",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "ADJECTIVE",
+      "closed_class": false,
+      "closed_class_kind": "metalinguistic_term",
+      "definition": "Referring to the current time, especially a verb's present tense",
+      "gloss": "Referring to the current time, especially a verb's present tense",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Metalinguistic Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "lexical_form": "past",
+      "normalised_form": "past",
+      "text": "past",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "ADJECTIVE",
+      "closed_class": false,
+      "closed_class_kind": "metalinguistic_term",
+      "definition": "Referring to a time before now, especially a verb's past tense",
+      "gloss": "Referring to a time before now, especially a verb's past tense",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Metalinguistic Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "lexical_form": "comparative",
+      "normalised_form": "comparative",
+      "text": "comparative",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "ADJECTIVE",
+      "closed_class": false,
+      "closed_class_kind": "metalinguistic_term",
+      "definition": "Expressing a greater or lesser degree of a quality, compared to something else",
+      "gloss": "Expressing a greater or lesser degree of a quality, compared to something else",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -474,89 +438,17 @@
       ]
     },
     {
-      "lexical_form": "conjunction",
-      "normalised_form": "conjunction",
-      "text": "conjunction",
+      "lexical_form": "superlative",
+      "normalised_form": "superlative",
+      "text": "superlative",
       "version": "1.0",
       "language_code": "en",
       "script_code": "Latn",
-      "part_of_speech": "NOUN",
+      "part_of_speech": "ADJECTIVE",
       "closed_class": false,
       "closed_class_kind": "metalinguistic_term",
-      "definition": "A word that joins words, phrases, or clauses",
-      "gloss": "A word that joins words, phrases, or clauses",
-      "usage_notes": [],
-      "register_codes": [
-        "NEUTRAL"
-      ],
-      "editorial_labels": [],
-      "dialect_codes": [],
-      "pronunciations": [],
-      "syllable_representation": null,
-      "syllable_count": 3,
-      "stress_pattern": null,
-      "frequency_value": null,
-      "frequency_scale": null,
-      "etymology_text": null,
-      "first_recorded_use": null,
-      "source_references": [
-        {
-          "source_name": "LIRA English Metalinguistic Vocabulary v1",
-          "source_version": "1.0.0",
-          "external_identifier": null,
-          "reference_uri": null,
-          "licence_identifier": null
-        }
-      ]
-    },
-    {
-      "lexical_form": "particle",
-      "normalised_form": "particle",
-      "text": "particle",
-      "version": "1.0",
-      "language_code": "en",
-      "script_code": "Latn",
-      "part_of_speech": "NOUN",
-      "closed_class": false,
-      "closed_class_kind": "metalinguistic_term",
-      "definition": "A function word that does not fit the main parts of speech and often has grammatical rather than lexical meaning",
-      "gloss": "A function word that does not fit the main parts of speech and often has grammatical rather than lexical meaning",
-      "usage_notes": [],
-      "register_codes": [
-        "NEUTRAL"
-      ],
-      "editorial_labels": [],
-      "dialect_codes": [],
-      "pronunciations": [],
-      "syllable_representation": null,
-      "syllable_count": 3,
-      "stress_pattern": null,
-      "frequency_value": null,
-      "frequency_scale": null,
-      "etymology_text": null,
-      "first_recorded_use": null,
-      "source_references": [
-        {
-          "source_name": "LIRA English Metalinguistic Vocabulary v1",
-          "source_version": "1.0.0",
-          "external_identifier": null,
-          "reference_uri": null,
-          "licence_identifier": null
-        }
-      ]
-    },
-    {
-      "lexical_form": "auxiliary",
-      "normalised_form": "auxiliary",
-      "text": "auxiliary",
-      "version": "1.0",
-      "language_code": "en",
-      "script_code": "Latn",
-      "part_of_speech": "NOUN",
-      "closed_class": false,
-      "closed_class_kind": "metalinguistic_term",
-      "definition": "A verb that accompanies a main verb to express tense, mood, or voice",
-      "gloss": "A verb that accompanies a main verb to express tense, mood, or voice",
+      "definition": "Expressing the greatest or least degree of a quality, among three or more things",
+      "gloss": "Expressing the greatest or least degree of a quality, among three or more things",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -582,17 +474,17 @@
       ]
     },
     {
-      "lexical_form": "subject",
-      "normalised_form": "subject",
-      "text": "subject",
+      "lexical_form": "possessive",
+      "normalised_form": "possessive",
+      "text": "possessive",
       "version": "1.0",
       "language_code": "en",
       "script_code": "Latn",
-      "part_of_speech": "NOUN",
+      "part_of_speech": "ADJECTIVE",
       "closed_class": false,
       "closed_class_kind": "metalinguistic_term",
-      "definition": "The noun or pronoun that performs the action or is described by a verb",
-      "gloss": "The noun or pronoun that performs the action or is described by a verb",
+      "definition": "Expressing ownership or belonging",
+      "gloss": "Expressing ownership or belonging",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -601,7 +493,7 @@
       "dialect_codes": [],
       "pronunciations": [],
       "syllable_representation": null,
-      "syllable_count": 2,
+      "syllable_count": 3,
       "stress_pattern": null,
       "frequency_value": null,
       "frequency_scale": null,
@@ -618,17 +510,17 @@
       ]
     },
     {
-      "lexical_form": "object",
-      "normalised_form": "object",
-      "text": "object",
+      "lexical_form": "reflexive",
+      "normalised_form": "reflexive",
+      "text": "reflexive",
       "version": "1.0",
       "language_code": "en",
       "script_code": "Latn",
-      "part_of_speech": "NOUN",
+      "part_of_speech": "ADJECTIVE",
       "closed_class": false,
       "closed_class_kind": "metalinguistic_term",
-      "definition": "The noun or pronoun that receives the action of a verb or follows a preposition",
-      "gloss": "The noun or pronoun that receives the action of a verb or follows a preposition",
+      "definition": "Referring back to the subject of the clause it appears in",
+      "gloss": "Referring back to the subject of the clause it appears in",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -637,7 +529,7 @@
       "dialect_codes": [],
       "pronunciations": [],
       "syllable_representation": null,
-      "syllable_count": 2,
+      "syllable_count": 3,
       "stress_pattern": null,
       "frequency_value": null,
       "frequency_scale": null,
@@ -654,197 +546,17 @@
       ]
     },
     {
-      "lexical_form": "person",
-      "normalised_form": "person",
-      "text": "person",
+      "lexical_form": "reciprocal",
+      "normalised_form": "reciprocal",
+      "text": "reciprocal",
       "version": "1.0",
       "language_code": "en",
       "script_code": "Latn",
-      "part_of_speech": "NOUN",
+      "part_of_speech": "ADJECTIVE",
       "closed_class": false,
       "closed_class_kind": "metalinguistic_term",
-      "definition": "The grammatical category distinguishing the speaker, the listener, and others being spoken about",
-      "gloss": "The grammatical category distinguishing the speaker, the listener, and others being spoken about",
-      "usage_notes": [],
-      "register_codes": [
-        "NEUTRAL"
-      ],
-      "editorial_labels": [],
-      "dialect_codes": [],
-      "pronunciations": [],
-      "syllable_representation": null,
-      "syllable_count": 2,
-      "stress_pattern": null,
-      "frequency_value": null,
-      "frequency_scale": null,
-      "etymology_text": null,
-      "first_recorded_use": null,
-      "source_references": [
-        {
-          "source_name": "LIRA English Metalinguistic Vocabulary v1",
-          "source_version": "1.0.0",
-          "external_identifier": null,
-          "reference_uri": null,
-          "licence_identifier": null
-        }
-      ]
-    },
-    {
-      "lexical_form": "number",
-      "normalised_form": "number",
-      "text": "number",
-      "version": "1.0",
-      "language_code": "en",
-      "script_code": "Latn",
-      "part_of_speech": "NOUN",
-      "closed_class": false,
-      "closed_class_kind": "metalinguistic_term",
-      "definition": "The grammatical category distinguishing singular from plural",
-      "gloss": "The grammatical category distinguishing singular from plural",
-      "usage_notes": [],
-      "register_codes": [
-        "NEUTRAL"
-      ],
-      "editorial_labels": [],
-      "dialect_codes": [],
-      "pronunciations": [],
-      "syllable_representation": null,
-      "syllable_count": 2,
-      "stress_pattern": null,
-      "frequency_value": null,
-      "frequency_scale": null,
-      "etymology_text": null,
-      "first_recorded_use": null,
-      "source_references": [
-        {
-          "source_name": "LIRA English Metalinguistic Vocabulary v1",
-          "source_version": "1.0.0",
-          "external_identifier": null,
-          "reference_uri": null,
-          "licence_identifier": null
-        }
-      ]
-    },
-    {
-      "lexical_form": "tense",
-      "normalised_form": "tense",
-      "text": "tense",
-      "version": "1.0",
-      "language_code": "en",
-      "script_code": "Latn",
-      "part_of_speech": "NOUN",
-      "closed_class": false,
-      "closed_class_kind": "metalinguistic_term",
-      "definition": "The grammatical category indicating when an action or state occurs",
-      "gloss": "The grammatical category indicating when an action or state occurs",
-      "usage_notes": [],
-      "register_codes": [
-        "NEUTRAL"
-      ],
-      "editorial_labels": [],
-      "dialect_codes": [],
-      "pronunciations": [],
-      "syllable_representation": null,
-      "syllable_count": 1,
-      "stress_pattern": null,
-      "frequency_value": null,
-      "frequency_scale": null,
-      "etymology_text": null,
-      "first_recorded_use": null,
-      "source_references": [
-        {
-          "source_name": "LIRA English Metalinguistic Vocabulary v1",
-          "source_version": "1.0.0",
-          "external_identifier": null,
-          "reference_uri": null,
-          "licence_identifier": null
-        }
-      ]
-    },
-    {
-      "lexical_form": "aspect",
-      "normalised_form": "aspect",
-      "text": "aspect",
-      "version": "1.0",
-      "language_code": "en",
-      "script_code": "Latn",
-      "part_of_speech": "NOUN",
-      "closed_class": false,
-      "closed_class_kind": "metalinguistic_term",
-      "definition": "The grammatical category indicating whether an action is ongoing, completed, or habitual",
-      "gloss": "The grammatical category indicating whether an action is ongoing, completed, or habitual",
-      "usage_notes": [],
-      "register_codes": [
-        "NEUTRAL"
-      ],
-      "editorial_labels": [],
-      "dialect_codes": [],
-      "pronunciations": [],
-      "syllable_representation": null,
-      "syllable_count": 2,
-      "stress_pattern": null,
-      "frequency_value": null,
-      "frequency_scale": null,
-      "etymology_text": null,
-      "first_recorded_use": null,
-      "source_references": [
-        {
-          "source_name": "LIRA English Metalinguistic Vocabulary v1",
-          "source_version": "1.0.0",
-          "external_identifier": null,
-          "reference_uri": null,
-          "licence_identifier": null
-        }
-      ]
-    },
-    {
-      "lexical_form": "form",
-      "normalised_form": "form",
-      "text": "form",
-      "version": "1.0",
-      "language_code": "en",
-      "script_code": "Latn",
-      "part_of_speech": "NOUN",
-      "closed_class": false,
-      "closed_class_kind": "metalinguistic_term",
-      "definition": "The particular shape a word takes to express a grammatical distinction",
-      "gloss": "The particular shape a word takes to express a grammatical distinction",
-      "usage_notes": [],
-      "register_codes": [
-        "NEUTRAL"
-      ],
-      "editorial_labels": [],
-      "dialect_codes": [],
-      "pronunciations": [],
-      "syllable_representation": null,
-      "syllable_count": 1,
-      "stress_pattern": null,
-      "frequency_value": null,
-      "frequency_scale": null,
-      "etymology_text": null,
-      "first_recorded_use": null,
-      "source_references": [
-        {
-          "source_name": "LIRA English Metalinguistic Vocabulary v1",
-          "source_version": "1.0.0",
-          "external_identifier": null,
-          "reference_uri": null,
-          "licence_identifier": null
-        }
-      ]
-    },
-    {
-      "lexical_form": "relationship",
-      "normalised_form": "relationship",
-      "text": "relationship",
-      "version": "1.0",
-      "language_code": "en",
-      "script_code": "Latn",
-      "part_of_speech": "NOUN",
-      "closed_class": false,
-      "closed_class_kind": "metalinguistic_term",
-      "definition": "A connection between two words or concepts",
-      "gloss": "A connection between two words or concepts",
+      "definition": "Expressing a mutual action or relationship between two or more parties",
+      "gloss": "Expressing a mutual action or relationship between two or more parties",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -870,17 +582,17 @@
       ]
     },
     {
-      "lexical_form": "reference",
-      "normalised_form": "reference",
-      "text": "reference",
+      "lexical_form": "relative",
+      "normalised_form": "relative",
+      "text": "relative",
       "version": "1.0",
       "language_code": "en",
       "script_code": "Latn",
-      "part_of_speech": "NOUN",
+      "part_of_speech": "ADJECTIVE",
       "closed_class": false,
       "closed_class_kind": "metalinguistic_term",
-      "definition": "The thing in the world that a word or phrase points to",
-      "gloss": "The thing in the world that a word or phrase points to",
+      "definition": "Introducing a clause that describes or identifies a preceding noun",
+      "gloss": "Introducing a clause that describes or identifies a preceding noun",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -906,17 +618,161 @@
       ]
     },
     {
-      "lexical_form": "speaker",
-      "normalised_form": "speaker",
-      "text": "speaker",
+      "lexical_form": "interrogative",
+      "normalised_form": "interrogative",
+      "text": "interrogative",
       "version": "1.0",
       "language_code": "en",
       "script_code": "Latn",
-      "part_of_speech": "NOUN",
+      "part_of_speech": "ADJECTIVE",
       "closed_class": false,
       "closed_class_kind": "metalinguistic_term",
-      "definition": "The person who is producing an utterance",
-      "gloss": "The person who is producing an utterance",
+      "definition": "Used to ask a question",
+      "gloss": "Used to ask a question",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 5,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Metalinguistic Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "lexical_form": "demonstrative",
+      "normalised_form": "demonstrative",
+      "text": "demonstrative",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "ADJECTIVE",
+      "closed_class": false,
+      "closed_class_kind": "metalinguistic_term",
+      "definition": "Pointing out a specific person or thing",
+      "gloss": "Pointing out a specific person or thing",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 4,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Metalinguistic Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "lexical_form": "indefinite",
+      "normalised_form": "indefinite",
+      "text": "indefinite",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "ADJECTIVE",
+      "closed_class": false,
+      "closed_class_kind": "metalinguistic_term",
+      "definition": "Not referring to a specific or particular person or thing",
+      "gloss": "Not referring to a specific or particular person or thing",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 4,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Metalinguistic Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "lexical_form": "definite",
+      "normalised_form": "definite",
+      "text": "definite",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "ADJECTIVE",
+      "closed_class": false,
+      "closed_class_kind": "metalinguistic_term",
+      "definition": "Referring to a specific, already-identified person or thing",
+      "gloss": "Referring to a specific, already-identified person or thing",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 3,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Metalinguistic Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "lexical_form": "common",
+      "normalised_form": "common",
+      "text": "common",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "ADJECTIVE",
+      "closed_class": false,
+      "closed_class_kind": "metalinguistic_term",
+      "definition": "Shared by, or applying generally to, many members of a class",
+      "gloss": "Shared by, or applying generally to, many members of a class",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -942,17 +798,17 @@
       ]
     },
     {
-      "lexical_form": "listener",
-      "normalised_form": "listener",
-      "text": "listener",
+      "lexical_form": "qualified",
+      "normalised_form": "qualified",
+      "text": "qualified",
       "version": "1.0",
       "language_code": "en",
       "script_code": "Latn",
-      "part_of_speech": "NOUN",
+      "part_of_speech": "ADJECTIVE",
       "closed_class": false,
       "closed_class_kind": "metalinguistic_term",
-      "definition": "The person who is receiving an utterance",
-      "gloss": "The person who is receiving an utterance",
+      "definition": "Limited or modified in meaning by an additional description",
+      "gloss": "Limited or modified in meaning by an additional description",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -978,17 +834,53 @@
       ]
     },
     {
-      "lexical_form": "entity",
-      "normalised_form": "entity",
-      "text": "entity",
+      "lexical_form": "canonical",
+      "normalised_form": "canonical",
+      "text": "canonical",
       "version": "1.0",
       "language_code": "en",
       "script_code": "Latn",
-      "part_of_speech": "NOUN",
+      "part_of_speech": "ADJECTIVE",
       "closed_class": false,
       "closed_class_kind": "metalinguistic_term",
-      "definition": "A distinct thing with an independent existence",
-      "gloss": "A distinct thing with an independent existence",
+      "definition": "Recognised as the standard, authoritative, or defining form",
+      "gloss": "Recognised as the standard, authoritative, or defining form",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 4,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Metalinguistic Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "lexical_form": "derived",
+      "normalised_form": "derived",
+      "text": "derived",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "ADJECTIVE",
+      "closed_class": false,
+      "closed_class_kind": "metalinguistic_term",
+      "definition": "Formed or obtained from something else, especially by a grammatical process",
+      "gloss": "Formed or obtained from something else, especially by a grammatical process",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -1014,125 +906,17 @@
       ]
     },
     {
-      "lexical_form": "thing",
-      "normalised_form": "thing",
-      "text": "thing",
+      "lexical_form": "related",
+      "normalised_form": "related",
+      "text": "related",
       "version": "1.0",
       "language_code": "en",
       "script_code": "Latn",
-      "part_of_speech": "NOUN",
+      "part_of_speech": "ADJECTIVE",
       "closed_class": false,
       "closed_class_kind": "metalinguistic_term",
-      "definition": "An entity that is not a person",
-      "gloss": "An entity that is not a person",
-      "usage_notes": [],
-      "register_codes": [
-        "NEUTRAL"
-      ],
-      "editorial_labels": [],
-      "dialect_codes": [],
-      "pronunciations": [],
-      "syllable_representation": null,
-      "syllable_count": 1,
-      "stress_pattern": null,
-      "frequency_value": null,
-      "frequency_scale": null,
-      "etymology_text": null,
-      "first_recorded_use": null,
-      "source_references": [
-        {
-          "source_name": "LIRA English Metalinguistic Vocabulary v1",
-          "source_version": "1.0.0",
-          "external_identifier": null,
-          "reference_uri": null,
-          "licence_identifier": null
-        }
-      ]
-    },
-    {
-      "lexical_form": "place",
-      "normalised_form": "place",
-      "text": "place",
-      "version": "1.0",
-      "language_code": "en",
-      "script_code": "Latn",
-      "part_of_speech": "NOUN",
-      "closed_class": false,
-      "closed_class_kind": "metalinguistic_term",
-      "definition": "A particular position, point, or area in space",
-      "gloss": "A particular position, point, or area in space",
-      "usage_notes": [],
-      "register_codes": [
-        "NEUTRAL"
-      ],
-      "editorial_labels": [],
-      "dialect_codes": [],
-      "pronunciations": [],
-      "syllable_representation": null,
-      "syllable_count": 1,
-      "stress_pattern": null,
-      "frequency_value": null,
-      "frequency_scale": null,
-      "etymology_text": null,
-      "first_recorded_use": null,
-      "source_references": [
-        {
-          "source_name": "LIRA English Metalinguistic Vocabulary v1",
-          "source_version": "1.0.0",
-          "external_identifier": null,
-          "reference_uri": null,
-          "licence_identifier": null
-        }
-      ]
-    },
-    {
-      "lexical_form": "time",
-      "normalised_form": "time",
-      "text": "time",
-      "version": "1.0",
-      "language_code": "en",
-      "script_code": "Latn",
-      "part_of_speech": "NOUN",
-      "closed_class": false,
-      "closed_class_kind": "metalinguistic_term",
-      "definition": "The point or period at which something occurs",
-      "gloss": "The point or period at which something occurs",
-      "usage_notes": [],
-      "register_codes": [
-        "NEUTRAL"
-      ],
-      "editorial_labels": [],
-      "dialect_codes": [],
-      "pronunciations": [],
-      "syllable_representation": null,
-      "syllable_count": 1,
-      "stress_pattern": null,
-      "frequency_value": null,
-      "frequency_scale": null,
-      "etymology_text": null,
-      "first_recorded_use": null,
-      "source_references": [
-        {
-          "source_name": "LIRA English Metalinguistic Vocabulary v1",
-          "source_version": "1.0.0",
-          "external_identifier": null,
-          "reference_uri": null,
-          "licence_identifier": null
-        }
-      ]
-    },
-    {
-      "lexical_form": "direction",
-      "normalised_form": "direction",
-      "text": "direction",
-      "version": "1.0",
-      "language_code": "en",
-      "script_code": "Latn",
-      "part_of_speech": "NOUN",
-      "closed_class": false,
-      "closed_class_kind": "metalinguistic_term",
-      "definition": "The course or line along which something moves or points",
-      "gloss": "The course or line along which something moves or points",
+      "definition": "Connected to something else in meaning, form, or origin",
+      "gloss": "Connected to something else in meaning, form, or origin",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -1158,17 +942,53 @@
       ]
     },
     {
-      "lexical_form": "position",
-      "normalised_form": "position",
-      "text": "position",
+      "lexical_form": "equivalent",
+      "normalised_form": "equivalent",
+      "text": "equivalent",
       "version": "1.0",
       "language_code": "en",
       "script_code": "Latn",
-      "part_of_speech": "NOUN",
+      "part_of_speech": "ADJECTIVE",
       "closed_class": false,
       "closed_class_kind": "metalinguistic_term",
-      "definition": "The place where something is located",
-      "gloss": "The place where something is located",
+      "definition": "Equal in value, meaning, or significance to something else",
+      "gloss": "Equal in value, meaning, or significance to something else",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 4,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Metalinguistic Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "lexical_form": "opposite",
+      "normalised_form": "opposite",
+      "text": "opposite",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "ADJECTIVE",
+      "closed_class": false,
+      "closed_class_kind": "metalinguistic_term",
+      "definition": "Completely different from, or the reverse of, something else",
+      "gloss": "Completely different from, or the reverse of, something else",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -1178,150 +998,6 @@
       "pronunciations": [],
       "syllable_representation": null,
       "syllable_count": 3,
-      "stress_pattern": null,
-      "frequency_value": null,
-      "frequency_scale": null,
-      "etymology_text": null,
-      "first_recorded_use": null,
-      "source_references": [
-        {
-          "source_name": "LIRA English Metalinguistic Vocabulary v1",
-          "source_version": "1.0.0",
-          "external_identifier": null,
-          "reference_uri": null,
-          "licence_identifier": null
-        }
-      ]
-    },
-    {
-      "lexical_form": "quantity",
-      "normalised_form": "quantity",
-      "text": "quantity",
-      "version": "1.0",
-      "language_code": "en",
-      "script_code": "Latn",
-      "part_of_speech": "NOUN",
-      "closed_class": false,
-      "closed_class_kind": "metalinguistic_term",
-      "definition": "An amount or number of something",
-      "gloss": "An amount or number of something",
-      "usage_notes": [],
-      "register_codes": [
-        "NEUTRAL"
-      ],
-      "editorial_labels": [],
-      "dialect_codes": [],
-      "pronunciations": [],
-      "syllable_representation": null,
-      "syllable_count": 3,
-      "stress_pattern": null,
-      "frequency_value": null,
-      "frequency_scale": null,
-      "etymology_text": null,
-      "first_recorded_use": null,
-      "source_references": [
-        {
-          "source_name": "LIRA English Metalinguistic Vocabulary v1",
-          "source_version": "1.0.0",
-          "external_identifier": null,
-          "reference_uri": null,
-          "licence_identifier": null
-        }
-      ]
-    },
-    {
-      "lexical_form": "condition",
-      "normalised_form": "condition",
-      "text": "condition",
-      "version": "1.0",
-      "language_code": "en",
-      "script_code": "Latn",
-      "part_of_speech": "NOUN",
-      "closed_class": false,
-      "closed_class_kind": "metalinguistic_term",
-      "definition": "A circumstance that must be true for something else to happen",
-      "gloss": "A circumstance that must be true for something else to happen",
-      "usage_notes": [],
-      "register_codes": [
-        "NEUTRAL"
-      ],
-      "editorial_labels": [],
-      "dialect_codes": [],
-      "pronunciations": [],
-      "syllable_representation": null,
-      "syllable_count": 3,
-      "stress_pattern": null,
-      "frequency_value": null,
-      "frequency_scale": null,
-      "etymology_text": null,
-      "first_recorded_use": null,
-      "source_references": [
-        {
-          "source_name": "LIRA English Metalinguistic Vocabulary v1",
-          "source_version": "1.0.0",
-          "external_identifier": null,
-          "reference_uri": null,
-          "licence_identifier": null
-        }
-      ]
-    },
-    {
-      "lexical_form": "cause",
-      "normalised_form": "cause",
-      "text": "cause",
-      "version": "1.0",
-      "language_code": "en",
-      "script_code": "Latn",
-      "part_of_speech": "NOUN",
-      "closed_class": false,
-      "closed_class_kind": "metalinguistic_term",
-      "definition": "The thing that produces an effect or result",
-      "gloss": "The thing that produces an effect or result",
-      "usage_notes": [],
-      "register_codes": [
-        "NEUTRAL"
-      ],
-      "editorial_labels": [],
-      "dialect_codes": [],
-      "pronunciations": [],
-      "syllable_representation": null,
-      "syllable_count": 1,
-      "stress_pattern": null,
-      "frequency_value": null,
-      "frequency_scale": null,
-      "etymology_text": null,
-      "first_recorded_use": null,
-      "source_references": [
-        {
-          "source_name": "LIRA English Metalinguistic Vocabulary v1",
-          "source_version": "1.0.0",
-          "external_identifier": null,
-          "reference_uri": null,
-          "licence_identifier": null
-        }
-      ]
-    },
-    {
-      "lexical_form": "result",
-      "normalised_form": "result",
-      "text": "result",
-      "version": "1.0",
-      "language_code": "en",
-      "script_code": "Latn",
-      "part_of_speech": "NOUN",
-      "closed_class": false,
-      "closed_class_kind": "metalinguistic_term",
-      "definition": "The consequence or outcome of an action or condition",
-      "gloss": "The consequence or outcome of an action or condition",
-      "usage_notes": [],
-      "register_codes": [
-        "NEUTRAL"
-      ],
-      "editorial_labels": [],
-      "dialect_codes": [],
-      "pronunciations": [],
-      "syllable_representation": null,
-      "syllable_count": 2,
       "stress_pattern": null,
       "frequency_value": null,
       "frequency_scale": null,

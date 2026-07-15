@@ -32,9 +32,9 @@ tree and design rules.
   lexicon and relationship graph, not `*Agent` subclasses.
 - `assets/` -- `common/<language_code>/` -- the Common Vocabulary
   Cache `WordSeeder` loads (`common/en/` -- the mandatory 313-word
-  English Common Closed-Class Cache v1, plus 37 supplementary
-  open-class metalinguistic terms; see 9.4 and
-  `assets/common/en/README.md`) plus `common/<language_code>/relationships/`
+  English Common Closed-Class Cache v1, plus 129 supplementary
+  open-class metalinguistic terms across four parts of speech; see 9.4
+  and `assets/common/en/README.md`) plus `common/<language_code>/relationships/`
   -- the Common Vocabulary Relationship Cache `RelationshipSeeder`
   loads (`common/en/relationships/`; see 9.5 and
   `assets/common/en/relationships/README.md`).
@@ -587,24 +587,35 @@ genuine homographs -- `this`/`that`/`these`/`those` also as `PRONOUN`,
 `which`/`what` also as `DETERMINER` -- each sharing a lexical_form with
 an existing entry under a different `part_of_speech` (4.1's "same
 written form, multiple `Word` entries" case, exercised here for the
-first time). `asset_version 1.4.0` added `metalinguistic_vocabulary.json`,
-37 open-class `NOUN` entries naming grammatical concepts themselves --
-`word`, `noun`, `verb`, `subject`, `tense`, `speaker`, ... -- referenced
+first time). `asset_version 1.4.0` and `1.5.0` added
+`metalinguistic_nouns.json`/`_verbs.json`/`_adjectives.json`/`_adverbs.json`,
+129 open-class entries across four parts of speech naming grammatical
+and lexical-relationship concepts themselves -- `word`, `noun`, `verb`,
+`subject`, `tense`, `synonym`, `lemma` (nouns); `identify`, `describe`,
+`compare` (verbs); `grammatical`, `possessive`, `derived` (adjectives);
+`grammatically`, `directly`, `typically` (adverbs) -- referenced
 constantly, by name, throughout the mandatory files' own definitions
-("Introduces a **noun**...", "third **person**") but otherwise absent
-from the seeded vocabulary entirely. This doesn't change the mandatory
-313, since these are open-class content words rather than closed-class
-function words -- `WordSeeder.SUPPLEMENTARY_FILES` marks it as
+("Introduces a **noun**...", "third **person**"), the
+`LexicalRelationshipType` enum's own documentation (6.2), and this
+codebase's own documentation generally, but otherwise absent from the
+seeded vocabulary entirely. This doesn't change the mandatory 313,
+since these are open-class content words rather than closed-class
+function words -- `WordSeeder.SUPPLEMENTARY_FILES` marks them as
 validated and always-seeded like the mandatory files, but excluded
 from the mandatory total; a freshly seeded `Dictionary` ends up with
-313 + 37 = 350 `Word`s. See `vocabulary/assets/common/en/README.md`'s
-Version section for all of the above.)
+313 + 129 = 442 `Word`s. Several are genuine homographs of an
+already-seeded word (`be`/`have`/`do` as `VERB` alongside their
+existing `AUXILIARY` sense; `cause`/`result` as `VERB` alongside their
+existing `NOUN` sense; `past`/`opposite` as `ADJECTIVE` alongside their
+existing `PREPOSITION` sense) -- see
+`vocabulary/assets/common/en/README.md`'s Homographs with existing
+entries and Version sections for all of the above.)
 
 The cache itself -- its file format, exact counts, rebuild policy, and
 open-class word promotion/demotion rules -- is documented in full at
 `vocabulary/assets/common/en/README.md`, alongside the data
-(`manifest.json` plus one JSON file per closed-class kind, plus
-`metalinguistic_vocabulary.json` and `promoted_words.json`). **The
+(`manifest.json` plus one JSON file per closed-class kind, plus the
+four `metalinguistic_*.json` files and `promoted_words.json`). **The
 cache is not the authoritative source of a `Word`** -- it is a
 generated bootstrap asset; the authoritative record of every `Word`
 remains the `Domain` that owns it.
@@ -628,7 +639,7 @@ of open-class words into and out of `promoted_words.json`:
 
 | Method | Responsibility |
 |--------|-----------------|
-| `validate_assets()` | Schema, duplicate `(lexical_form, part_of_speech)` pairs (not lexical_form alone -- a homograph like "that" as both `DETERMINER` and `PRONOUN` is legitimate, only a true repeat of the same form *and* the same part of speech is rejected), per-file and total counts, mandatory and supplementary file existence, manifest consistency, language codes, normalised forms. The mandatory total is manifest-driven, not a hardcoded constant -- whatever `MANDATORY_FILES`' counts sum to, cross-checked against `manifest.json`; `SUPPLEMENTARY_FILES` (currently just `metalinguistic_vocabulary.json`) are validated the same way but excluded from that total. Creates `promoted_words.json` (empty) or `manifest.json` (recomputed) if either is missing -- never the mandatory or supplementary content itself, which has to be authored. |
+| `validate_assets()` | Schema, duplicate `(lexical_form, part_of_speech)` pairs (not lexical_form alone -- a homograph like "that" as both `DETERMINER` and `PRONOUN` is legitimate, only a true repeat of the same form *and* the same part of speech is rejected), per-file and total counts, mandatory and supplementary file existence, manifest consistency, language codes, normalised forms. The mandatory total is manifest-driven, not a hardcoded constant -- whatever `MANDATORY_FILES`' counts sum to, cross-checked against `manifest.json`; `SUPPLEMENTARY_FILES` (the four `metalinguistic_*.json` files) are validated the same way but excluded from that total. Creates `promoted_words.json` (empty) or `manifest.json` (recomputed) if either is missing -- never the mandatory or supplementary content itself, which has to be authored. |
 | `load_cache()` | Validates, then parses every mandatory file, every supplementary file, and `promoted_words.json` into `Word` instances, each with `is_common=True`. Cached after the first call. |
 | `seed_closed_class_words(dictionary)` | Appends a fresh copy of every cached `Word` not already present into `dictionary` -- despite the name, this includes the supplementary open-class metalinguistic terms alongside the mandatory closed-class words, since `load_cache()` loads both together. Matched by text *and* `part_of_speech` together (not text alone, which would treat a homograph's second entry as already present and silently drop it). Idempotent. |
 | `seed_domain(domain)` | `seed_closed_class_words` against `domain.vocabulary.dictionary`. |
