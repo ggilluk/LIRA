@@ -15,4 +15,4 @@ build-backend = "setuptools.build_meta"
 where = ["src"]
 
 [tool.setuptools.package-data]
-"lira.vocabulary" = ["assets/**/*.json", "assets/**/*.md"]
+"lira.vocabulary" = ["assets/**/*.json", "assets/**/*.md", "assets/**/*.html"]
