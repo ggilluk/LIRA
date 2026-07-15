@@ -45,6 +45,7 @@ MANDATORY_FILES = (
     "coordinating_conjunctions.json",
     "subordinating_conjunctions.json",
     "particles.json",
+    "punctuation.json",
 )
 # Supplementary files: authored, validated, and always loaded/seeded
 # like MANDATORY_FILES, but NOT counted toward the mandatory closed-class

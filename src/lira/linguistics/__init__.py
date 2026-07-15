@@ -15,16 +15,19 @@ these classes still plays an active role rather than just holding
 state), documentation/, api/, ui/ (UserPrompt, the raw input at the
 boundary), assets/.
 
-The lexicon (Dictionary), PartOfSpeech, Word, and Punctuation, and
-everything that seeds/looks up/hydrates the lexicon
-(DictionaryProcessor, AsyncDictionaryHydrator, ExternalDictionaryAdapter)
-live in the Vocabulary Layer, not here -- GraphProcessor takes a
-lira.vocabulary DictionaryProcessor to resolve tokens, and Clause.tokens
-/ClauseSegmentationUtility reference Word and Punctuation only as
-string-quoted, unimported type hints (Rule 17: Vocabulary contains
-lexical inventory only); GraphProcessor itself imports them locally,
-deferred until first call, since it actually constructs and
-isinstance-checks them rather than just holding a type hint."""
+The lexicon (Dictionary), PartOfSpeech, and Word, and everything that
+seeds/looks up/hydrates the lexicon (DictionaryProcessor,
+AsyncDictionaryHydrator, ExternalDictionaryAdapter) live in the
+Vocabulary Layer, not here -- GraphProcessor takes a lira.vocabulary
+DictionaryProcessor to resolve tokens, and Clause.tokens
+/ClauseSegmentationUtility reference Word only as a string-quoted,
+unimported type hint (Rule 17: Vocabulary contains lexical inventory
+only); GraphProcessor itself imports it locally, deferred until first
+call, since it actually constructs Word instances rather than just
+holding a type hint. There is no separate Punctuation class -- a
+punctuation mark is a Word with part_of_speech=PartOfSpeech.PUNCTUATION;
+GraphProcessor.process_token derives a token's LinguisticUnitKind (Word
+vs Punctuation) from that field instead of an isinstance check."""
 
 from .role.clause_segmentation import ClauseSegmentationUtility
 from .role.grammar_configurator import GrammarConfigurator

@@ -14,19 +14,27 @@ LexicalRelationshipType additionally bit-packing group/category/item
 (Design Principle 13).
 
 Every English Word.is_common is True only when it was loaded by
-WordSeeder from the English Common Vocabulary Cache (313 mandatory
-closed-class lexical forms plus 129 supplementary open-class
-metalinguistic terms -- assets/common/en/), never set by hand.
+WordSeeder from the English Common Vocabulary Cache (318 mandatory
+closed-class lexical forms -- including punctuation, see below --
+plus 129 supplementary open-class metalinguistic terms --
+assets/common/en/), never set by hand.
+
+There is no separate Punctuation class: a punctuation mark (".", "!",
+"?", ";", ",") is an ordinary Word with part_of_speech=PUNCTUATION,
+seeded from assets/common/en/punctuation.json like any other mandatory
+closed-class file (WordSeeder.MANDATORY_FILES) -- Dictionary aggregates
+it the same way it aggregates every other Word, not as a special case
+living outside the Dictionary.
 
 Repository layout follows Architectural Layer -> artefact purpose:
 data/ (VocabularyLayer; Dictionary, Word, LexicalRelationship, one
 class per file; PartOfSpeech, RegisterCode, EditorialLabel,
 LexicalRelationshipType; Pronunciation, SourceReference, AttributeValue
 supporting value objects; LexicalRelationshipSystemPropertyTensor and
-the by-reference SystemPropertiesRef view (Rule 14); Word and
-Punctuation still subclass Linguistics's LinguisticUnit base -- see
-Word's own docstring for why), agents/ (VocabularyAgent and concrete
-agents), role/ (DictionaryProcessor, AsyncDictionaryHydrator,
+the by-reference SystemPropertiesRef view (Rule 14); Word still
+subclasses Linguistics's LinguisticUnit base -- see Word's own
+docstring for why), agents/ (VocabularyAgent and concrete agents),
+role/ (DictionaryProcessor, AsyncDictionaryHydrator,
 ExternalDictionaryAdapter, LexicalRelationshipProcessor, WordSeeder --
 the lexicon and relationship graph and everything that seeds/looks
 up/hydrates/creates them belong here, not Linguistics), documentation/,
@@ -50,7 +58,6 @@ from .data.lexical_relationship_tensor import LexicalRelationshipSystemPropertyT
 from .data.lexical_relationship_type import LexicalRelationshipType
 from .data.part_of_speech import PartOfSpeech
 from .data.pronunciation import Pronunciation
-from .data.punctuation import Punctuation
 from .data.register_code import RegisterCode
 from .data.source_reference import SourceReference
 from .data.system_properties_ref import SystemPropertiesRef
@@ -62,7 +69,6 @@ __all__ = [
     "VocabularyAgent",
     "Dictionary",
     "Word",
-    "Punctuation",
     "PartOfSpeech",
     "RegisterCode",
     "EditorialLabel",

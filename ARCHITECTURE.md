@@ -87,30 +87,30 @@ external scheduler that placed it (see Execution Model below).
 - **Vocabulary Layer** -- term/lexeme-level concept identity (surface
   form to concept resolution), run by Vocabulary Agents. Also owns the
   lexicon: `VocabularyLayer` wires together a `Dictionary` (lexical
-  inventory only, Rule 17; one class per file, `dictionary.py` and
-  `dictionary_entry.py`) fed by an `AsyncDictionaryHydrator`
-  (background, deduplicated external lookups via
-  `ExternalDictionaryAdapter`) through `DictionaryProcessor`
-  (look up an entry, or seed a fallback one and queue hydration for it).
-  `Domain.linguistics` resolves tokens through
+  inventory only, Rule 17; aggregates `Word` records, one class per
+  file) fed by an `AsyncDictionaryHydrator` (background, deduplicated
+  external lookups via `ExternalDictionaryAdapter`) through
+  `DictionaryProcessor` (look up an entry, or seed a fallback one and
+  queue hydration for it). `Domain.linguistics` resolves tokens through
   `Domain.vocabulary.dictionary_processor` rather than Linguistics
   keeping its own copy of the lexicon. `PartOfSpeech` (`data/`, numeric
-  tensor-ready values), `Word`, and `Punctuation` also live here rather
-  than in Linguistics -- a word's part of speech, meaning, and its
-  status as a lexical unit at all are lexical attributes (Rule 17).
-  `Word` and `Punctuation` each still subclass Linguistics's
-  `LinguisticUnit` (a real, necessary import: inheritance needs the
-  actual base class, not just a hint), so the cycle runs the other way
-  here -- Linguistics's own `Clause.tokens` and
-  `ClauseSegmentationUtility` reference `Word`/`Punctuation` only as
-  string-quoted, unimported type hints, and `GraphProcessor` (which
-  actually constructs and `isinstance`-checks them, not just holds a
-  hint) imports them locally inside `process_token`/`process_sentence`,
-  deferred until first call, by which point both layers have finished
-  loading. `DictionaryEntry.meaning` is a `value_objects` `Text`, not a
-  plain `str` -- `ExternalDictionaryAdapter` returns one directly from
-  the parsed API payload, and `Word.definition` (a plain `str`) is
-  populated from its `.value`.
+  tensor-ready values) and `Word` also live here rather than in
+  Linguistics -- a word's part of speech, meaning, and its status as a
+  lexical unit at all are lexical attributes (Rule 17). There is no
+  separate `Punctuation` class: a punctuation mark is an ordinary
+  `Word` with `part_of_speech=PUNCTUATION`, seeded from the mandatory
+  `assets/common/en/punctuation.json` like any other closed-class file.
+  `Word` still subclasses Linguistics's `LinguisticUnit` (a real,
+  necessary import: inheritance needs the actual base class, not just a
+  hint), so the cycle runs the other way here -- Linguistics's own
+  `Clause.tokens` and `ClauseSegmentationUtility` reference `Word` only
+  as a string-quoted, unimported type hint, and `GraphProcessor` (which
+  actually constructs `Word` instances, not just holds a hint) imports
+  it locally inside `process_token`/`process_sentence`, deferred until
+  first call, by which point both layers have finished loading.
+  `GraphProcessor.process_token` derives a token's `LinguisticUnitKind`
+  (`Word` vs `Punctuation` -- still two distinct tensor-row kinds) from
+  `part_of_speech` rather than an `isinstance` check.
 
 - **Linguistics Layer** -- grammar/syntax-level processing (parsing,
   morphology) that feeds concept and relationship extraction. Does not
@@ -126,9 +126,9 @@ external scheduler that placed it (see Execution Model below).
   `linguistics/role/`, the role those two consult for their rules rather
   than a passive data record), and a `GraphProcessor` that composes all
   of the above (calling into Vocabulary's `DictionaryProcessor` to
-  resolve each token) into the Word/Punctuation -> Clause -> Sentence ->
+  resolve each token) into the Word -> Clause -> Sentence ->
   Paragraph -> Subject tree (`linguistic_unit.py` for the shared base;
-  `Word`/`Punctuation` live in Vocabulary, see above; `clause.py`,
+  `Word` lives in Vocabulary, see above; `clause.py`,
   `sentence.py`, `paragraph.py`, `subject.py`, one file per concrete
   kind, all in `data/`), each node carrying a `LinguisticSystemProperty` -- a
   by-reference view into `LinguisticSystemPropertyTensor` (Rule 14),

@@ -14,14 +14,20 @@ and design rules.
   their enums (`linguistic_unit_kind.py`,
   `linguistic_relation_type.py`); `LinguisticSystemPropertyTensor` and
   the by-reference `LinguisticSystemProperty` view (Rule 14).
-  `Word` and `Punctuation` live in `vocabulary/data/`, not here -- a
-  word's lexical unit status, its part of speech, and its meaning are
-  all lexical attributes (Rule 17), even though both still subclass
-  this layer's `LinguisticUnit`. `Clause.tokens` and
-  `ClauseSegmentationUtility` reference `Word`/`Punctuation` only as
-  string-quoted, unimported type hints; `GraphProcessor` (which
-  actually constructs and `isinstance`-checks them) imports them
-  locally inside its methods instead, deferred until first call.
+  `Word` lives in `vocabulary/data/`, not here -- a word's lexical unit
+  status, its part of speech, and its meaning are all lexical
+  attributes (Rule 17), even though it still subclasses this layer's
+  `LinguisticUnit`. There is no separate `Punctuation` class: a
+  punctuation mark is a `Word` with `part_of_speech=PUNCTUATION`,
+  seeded from Vocabulary's mandatory `punctuation.json` like any other
+  closed-class word. `Clause.tokens` and `ClauseSegmentationUtility`
+  reference `Word` only as a string-quoted, unimported type hint;
+  `GraphProcessor` (which actually constructs `Word` instances) imports
+  it locally inside its methods instead, deferred until first call.
+  `GraphProcessor.process_token` derives a token's `LinguisticUnitKind`
+  (`Word` vs `Punctuation` -- still two distinct tensor-row kinds, see
+  `linguistic_unit_kind.py`) from `part_of_speech` rather than an
+  `isinstance` check, since both are the same Python type now.
 - `agents/` -- `LinguisticsAgent` (no concrete subclasses yet).
 - `role/` -- `LinguisticController` (wires this layer together, same as
   `DomainController` does for `Domain`), `GraphProcessor`,

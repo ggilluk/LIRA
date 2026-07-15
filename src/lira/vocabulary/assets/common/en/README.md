@@ -32,28 +32,46 @@ working vocabulary immediately, not to be a system of record.
 | `coordinating_conjunctions.json` | FANBOYS -- for, and, nor, but, or, yet, so | 7 |
 | `subordinating_conjunctions.json` | because, although, unless, while, ... | 36 |
 | `particles.json` | not, there, please, also, too, only, ... | 12 |
+| `punctuation.json` | `.`, `!`, `?`, `;`, `,` -- see Punctuation is a Word below | 5 |
 | `metalinguistic_nouns.json` | Open-class `NOUN` terms for grammar itself, including relationship-kind terms (`synonym`, `lemma`, `contraction`, ...) -- see Supplementary files below | 58 |
 | `metalinguistic_verbs.json` | Open-class `VERB` terms for grammar itself | 30 |
 | `metalinguistic_adjectives.json` | Open-class `ADJECTIVE` terms for grammar itself | 28 |
 | `metalinguistic_adverbs.json` | Open-class `ADVERB` terms for grammar itself | 13 |
 | `promoted_words.json` | Open-class words promoted from Domain vocabularies (starts empty) | 0 |
 
-Mandatory closed-class total: **313** (37 + 99 + 29 + 93 + 7 + 36 + 12).
+Mandatory closed-class total: **318** (37 + 99 + 29 + 93 + 7 + 36 + 12 + 5).
 The four `metalinguistic_*.json` files and `promoted_words.json` are
-not counted toward the mandatory 313 -- see Supplementary files below
+not counted toward the mandatory 318 -- see Supplementary files below
 and the Promotion policy section respectively. Since `asset_version
 1.3.0`, the mandatory total is manifest-driven rather than a hardcoded
 figure `WordSeeder` asserts: it's whatever `determiners.json` through
-`particles.json`'s counts actually sum to, cross-checked against
+`punctuation.json`'s counts actually sum to, cross-checked against
 `manifest.json`'s `total_lexical_forms` -- see
 `vocabulary/role/word_seeder.py`'s `validate_assets()`.
+
+## Punctuation is a Word
+
+There is no separate `Punctuation` class. A punctuation mark is an
+ordinary `Word` with `part_of_speech=PUNCTUATION`, seeded from the
+mandatory `punctuation.json` exactly like determiners or prepositions --
+`.`, `!`, `?`, `;`, `,`, the same five symbols
+`DictionaryProcessor.get_or_create_word` used to special-case before
+`asset_version 1.6.0`. `syllable_count` is `null` for every entry here,
+the same "genuinely undefined, not guessed at" treatment multi-word
+entries get elsewhere in this cache -- a punctuation mark isn't
+pronounced or syllabified at all. `LinguisticUnitKind.Punctuation`
+(Linguistics Layer) still exists as a tensor-row kind tag distinguishing
+a punctuation token from a word token, but `GraphProcessor` now derives
+it from `part_of_speech` at tree-build time instead of an `isinstance`
+check against a separate class -- see
+`linguistics/documentation/README.md`.
 
 ## Supplementary files
 
 The four `metalinguistic_*.json` files -- one per part of speech,
 mirroring the mandatory files' own convention -- are validated and
 seeded exactly like the mandatory closed-class files
-(`WordSeeder.SUPPLEMENTARY_FILES`), but excluded from the mandatory 313
+(`WordSeeder.SUPPLEMENTARY_FILES`), but excluded from the mandatory 318
 total, because their content is a different kind of thing: 129
 open-class entries naming grammatical and lexical-relationship concepts
 themselves -- `word`, `noun`, `verb`, `subject`, `tense`, `synonym`,
@@ -70,7 +88,7 @@ at all -- every closed-class definition and every relationship kind
 presupposed them without a single one actually existing as a `Word`.
 
 These are ordinary open-class content words, not closed-class function
-words, so they don't belong in the mandatory 313 the way determiners or
+words, so they don't belong in the mandatory 318 the way determiners or
 prepositions do; they also aren't `promoted_words.json` entries, since
 that file's `reference_count` field means real cross-domain usage
 tracking (`WordSeeder.promote_word`), and these 129 weren't promoted
@@ -246,25 +264,28 @@ they're already part of the mandatory cache.
 
 ## Version
 
-`v1` / `schema_version 2.0.0` / `asset_version 1.5.0` (renamed
+`v1` / `schema_version 2.0.0` / `asset_version 1.6.0` (added
+`punctuation.json`, 5 mandatory `PUNCTUATION` entries -- `.`, `!`, `?`,
+`;`, `,` -- ending `Punctuation`'s existence as a separate Python
+class; see Punctuation is a Word above. Mandatory total 313 -> 318;
+every seeded Dictionary now carries 447 total: 318 mandatory + 129
+supplementary. `asset_version 1.5.0` renamed
 `metalinguistic_vocabulary.json` to `metalinguistic_nouns.json` and
 added three sibling files -- `metalinguistic_verbs.json` (30),
 `metalinguistic_adjectives.json` (28), `metalinguistic_adverbs.json`
 (13) -- plus 21 more nouns to `metalinguistic_nouns.json` itself
 (37 -> 58) naming `LexicalRelationshipType`'s own concepts (`synonym`,
-`antonym`, `lemma`, `inflection`, `contraction`, ...). See
-Supplementary files and Homographs with existing entries above. The
-mandatory total is unchanged at 313; every seeded Dictionary now
-carries 442 total: 313 mandatory + 129 supplementary (58 + 30 + 28 +
-13). `asset_version 1.4.0` added the original `metalinguistic_vocabulary.json`,
-37 open-class `NOUN` entries. `asset_version 1.3.0` took 307 -> 313
-mandatory lexical forms, adding `this`/`that`/`these`/`those` as
-`PRONOUN` and `which`/`what` as `DETERMINER` homographs of their
-existing entries -- see Files above. `asset_version 1.2.0` took 300 ->
-307, adding `done`, `doing`, `little`, `fewest`, `least`, `owing to`,
-`n't`. `asset_version 1.1.0` revised the schema to carry `Word`'s full
-field set; the original 300 lexical forms and their meanings were
-unchanged from `asset_version 1.0.0`).
+`antonym`, `lemma`, `inflection`, `contraction`, ...); see Supplementary
+files and Homographs with existing entries above. `asset_version 1.4.0`
+added the original `metalinguistic_vocabulary.json`, 37 open-class
+`NOUN` entries. `asset_version 1.3.0` took 307 -> 313 mandatory lexical
+forms, adding `this`/`that`/`these`/`those` as `PRONOUN` and
+`which`/`what` as `DETERMINER` homographs of their existing entries --
+see Files above. `asset_version 1.2.0` took 300 -> 307, adding `done`,
+`doing`, `little`, `fewest`, `least`, `owing to`, `n't`. `asset_version
+1.1.0` revised the schema to carry `Word`'s full field set; the
+original 300 lexical forms and their meanings were unchanged from
+`asset_version 1.0.0`).
 
 ## Language extension
 

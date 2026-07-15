@@ -1,21 +1,22 @@
 """Isolated structural utility to cleanly decompose a token stream into sub-clauses."""
 
-from typing import List, Union
+from typing import List
 
 from .grammar_configurator import GrammarConfigurator
 
-# Word, Punctuation (lira.vocabulary) used only as type hints here -- see
-# clause.py for why they're left unimported.
+# Word (lira.vocabulary) used only as a type hint here -- see clause.py
+# for why it's left unimported. Punctuation is a Word
+# (part_of_speech=PUNCTUATION), not a separate type.
 
 
 class ClauseSegmentationUtility:
     @staticmethod
     def slice_tokens_into_clauses(
-        tokens: List[Union["Word", "Punctuation"]],
+        tokens: List["Word"],
         config: GrammarConfigurator
-    ) -> List[List[Union["Word", "Punctuation"]]]:
+    ) -> List[List["Word"]]:
 
-        clause_buckets: List[List[Union[Word, Punctuation]]] = [[]]
+        clause_buckets: List[List["Word"]] = [[]]
 
         for token in tokens:
             token_text = token.text.lower()

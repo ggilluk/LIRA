@@ -1,9 +1,9 @@
-"""Builds the Word/Punctuation -> Clause -> Sentence -> Paragraph ->
-Subject tree from raw text, attaching a tensor-backed
-LinguisticSystemProperty to every unit it creates."""
+"""Builds the Word -> Clause -> Sentence -> Paragraph -> Subject tree
+from raw text, attaching a tensor-backed LinguisticSystemProperty to
+every unit it creates."""
 
 import uuid
-from typing import List, Union
+from typing import List
 
 from .clause_segmentation import ClauseSegmentationUtility
 from .grammar_configurator import GrammarConfigurator
@@ -17,13 +17,13 @@ from ..data.paragraph import Paragraph
 from ..data.sentence import Sentence
 from ..data.subject import Subject
 
-# DictionaryProcessor, Word, Punctuation (lira.vocabulary) are used only
-# as type hints at module scope here -- Vocabulary's own modules import
-# Linguistics's linguistic_unit.py (Word and Punctuation both subclass
-# it), so a top-level import here would form an import-time cycle
-# between the two layers. process_token/process_sentence below import
-# Word and Punctuation locally instead, deferred until first call, by
-# which point both packages have finished loading.
+# DictionaryProcessor, Word, PartOfSpeech (lira.vocabulary) are used
+# only as type hints at module scope here -- Vocabulary's own modules
+# import Linguistics's linguistic_unit.py (Word subclasses it), so a
+# top-level import here would form an import-time cycle between the two
+# layers. process_token/process_sentence below import Word and
+# PartOfSpeech locally instead, deferred until first call, by which
+# point both packages have finished loading.
 
 
 class GraphProcessor:
@@ -43,27 +43,24 @@ class GraphProcessor:
         )
         return LinguisticSystemProperty(self.store, row)
 
-    def process_token(self, text_token: str, absolute_seq_num: int) -> Union["Word", "Punctuation"]:
+    def process_token(self, text_token: str, absolute_seq_num: int) -> "Word":
         import copy
 
-        from lira.vocabulary import Punctuation, Word
+        from lira.vocabulary import PartOfSpeech
 
         resolved = self.dict_processor.get_or_create_word(text_token)
-        if isinstance(resolved, Punctuation):
-            node = resolved
-            kind = LinguisticUnitKind.Punctuation
-        else:
-            # resolved may be the Dictionary's canonical Word (its *type*) --
-            # copy it so this occurrence (its *token*) gets its own identity
-            # and system_property row, without mutating the canonical entry.
-            node = copy.copy(resolved)
-            kind = LinguisticUnitKind.Word
+        # resolved is always the Dictionary's canonical Word (its *type*,
+        # punctuation included -- see dictionary_processor.py) -- copy it
+        # so this occurrence (its *token*) gets its own identity and
+        # system_property row, without mutating the canonical entry.
+        node = copy.copy(resolved)
+        kind = LinguisticUnitKind.Punctuation if node.part_of_speech == PartOfSpeech.PUNCTUATION else LinguisticUnitKind.Word
 
         node.system_property = self.create_property_wrapper(node, kind, absolute_seq_num, "Lexer_TokenLayer")
         return node
 
     def process_sentence(self, raw_sentence_text: str, seq_num: int) -> Sentence:
-        from lira.vocabulary import Punctuation
+        from lira.vocabulary import PartOfSpeech
 
         raw_tokens = LinguisticLexer.extract_tokens(raw_sentence_text)
         all_processed_tokens = [self.process_token(tok, abs_idx) for abs_idx, tok in enumerate(raw_tokens)]
@@ -81,7 +78,7 @@ class GraphProcessor:
             clause_node.system_property = self.create_property_wrapper(clause_node, LinguisticUnitKind.Clause, 0, "GraphProcessor_MonoClauseLayer")
             compiled_clauses.append(clause_node)
 
-        has_punc = any(isinstance(t, Punctuation) for t in all_processed_tokens)
+        has_punc = any(t.part_of_speech == PartOfSpeech.PUNCTUATION for t in all_processed_tokens)
         node = Sentence(text=raw_sentence_text.strip(), clauses=compiled_clauses, requires_punctuation=has_punc)
         node.system_property = self.create_property_wrapper(node, LinguisticUnitKind.Sentence, seq_num, "GraphProcessor_SentenceLayer")
         return node

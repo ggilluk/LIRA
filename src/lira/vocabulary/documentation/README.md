@@ -21,9 +21,12 @@ tree and design rules.
   `AttributeValue` supporting value objects; `LexicalRelationshipSystemPropertyTensor`
   and the by-reference `SystemPropertiesRef` view (Rule 14) -- only
   `LexicalRelationship` carries one, not `Dictionary` or `Word` (Design
-  Principle 8). `Word` and `Punctuation` still subclass Linguistics's
-  `LinguisticUnit`, since a word's lexical unit status, its part of
-  speech, and its meaning are all lexical attributes (Rule 17).
+  Principle 8). `Word` still subclasses Linguistics's `LinguisticUnit`,
+  since a word's lexical unit status, its part of speech, and its
+  meaning are all lexical attributes (Rule 17). There is no separate
+  `Punctuation` class -- a punctuation mark is an ordinary `Word` with
+  `part_of_speech=PUNCTUATION`, seeded from `assets/common/en/punctuation.json`
+  like any other mandatory closed-class file.
 - `agents/` -- `VocabularyAgent` and its concrete agents (`SeedAgent`,
   `LookupAgent`, `HydrateAgent`, `NormaliseAgent`).
 - `role/` -- `DictionaryProcessor`, `AsyncDictionaryHydrator`,
@@ -31,10 +34,10 @@ tree and design rules.
   `WordSeeder`, `RelationshipSeeder` -- plain service classes for the
   lexicon and relationship graph, not `*Agent` subclasses.
 - `assets/` -- `common/<language_code>/` -- the Common Vocabulary
-  Cache `WordSeeder` loads (`common/en/` -- the mandatory 313-word
-  English Common Closed-Class Cache v1, plus 129 supplementary
-  open-class metalinguistic terms across four parts of speech; see 9.4
-  and `assets/common/en/README.md`) plus `common/<language_code>/relationships/`
+  Cache `WordSeeder` loads (`common/en/` -- the mandatory 318-word
+  English Common Closed-Class Cache v1 (including punctuation), plus
+  129 supplementary open-class metalinguistic terms across four parts
+  of speech; see 9.4 and `assets/common/en/README.md`) plus `common/<language_code>/relationships/`
   -- the Common Vocabulary Relationship Cache `RelationshipSeeder`
   loads (`common/en/relationships/`; see 9.5 and
   `assets/common/en/relationships/README.md`).
@@ -120,6 +123,8 @@ The Vocabulary Layer is responsible only for vocabulary data. It does not model 
 `Word` represents one lexical form in one language and one grammatical category.
 
 The same written form may have multiple `Word` entries where its language, script, grammatical category, or other identity-defining property differs. The Common Vocabulary Cache exercises this for real (9.4): `that`/`this`/`these`/`those` each have both a `DETERMINER` and a `PRONOUN` entry, and `which`/`what` each have both a `PRONOUN` and a `DETERMINER` entry.
+
+There is no separate `Punctuation` class. A punctuation mark (".", "!", "?", ";", ",") is an ordinary `Word` with `part_of_speech=PUNCTUATION` (6.1), seeded from the mandatory `assets/common/en/punctuation.json` like any other closed-class file (9.4). `LinguisticUnitKind` (Linguistics Layer) still distinguishes a punctuation *token* from a word token at the tensor-kind level, but that distinction is now derived from `part_of_speech` at the point `GraphProcessor` builds the tree, not from a separate Python type.
 
 > **Note:** this `Word` superseded the smaller class that used to be
 > implemented in `vocabulary/data/word.py` (which only had `text`,
@@ -574,12 +579,12 @@ as before this section existed.
 > defined by the English Common Closed-Class Cache v1.
 
 This rule is what `Common`'s own `Dictionary` is seeded with, on
-`LIRAHost` construction, before anything else: the 313 mandatory
+`LIRAHost` construction, before anything else: the 318 mandatory
 English closed-class lexical forms (determiners, pronouns, auxiliaries,
-prepositions, coordinating and subordinating conjunctions, particles)
-that 9.3's propagation then carries into every `Domain` created
-afterwards. Seed `Common` once, and every English `Domain` on that
-`Host` satisfies the rule automatically. (The count started at 300;
+prepositions, coordinating and subordinating conjunctions, particles,
+punctuation) that 9.3's propagation then carries into every `Domain`
+created afterwards. Seed `Common` once, and every English `Domain` on
+that `Host` satisfies the rule automatically. (The count started at 300;
 `asset_version 1.2.0` added seven words -- `done`, `doing`, `little`,
 `fewest`, `least`, `owing to`, `n't` -- needed to seed 9.5's
 relationship cache in full. `asset_version 1.3.0` added six more as
@@ -598,18 +603,30 @@ constantly, by name, throughout the mandatory files' own definitions
 ("Introduces a **noun**...", "third **person**"), the
 `LexicalRelationshipType` enum's own documentation (6.2), and this
 codebase's own documentation generally, but otherwise absent from the
-seeded vocabulary entirely. This doesn't change the mandatory 313,
+seeded vocabulary entirely. This doesn't change the mandatory total,
 since these are open-class content words rather than closed-class
 function words -- `WordSeeder.SUPPLEMENTARY_FILES` marks them as
 validated and always-seeded like the mandatory files, but excluded
-from the mandatory total; a freshly seeded `Dictionary` ends up with
-313 + 129 = 442 `Word`s. Several are genuine homographs of an
+from the mandatory total. Several are genuine homographs of an
 already-seeded word (`be`/`have`/`do` as `VERB` alongside their
 existing `AUXILIARY` sense; `cause`/`result` as `VERB` alongside their
 existing `NOUN` sense; `past`/`opposite` as `ADJECTIVE` alongside their
 existing `PREPOSITION` sense) -- see
 `vocabulary/assets/common/en/README.md`'s Homographs with existing
-entries and Version sections for all of the above.)
+entries and Version sections for all of the above.
+
+`asset_version 1.6.0` folded punctuation into the mandatory cache
+itself, ending `Punctuation`'s existence as a separate class: a
+punctuation mark is now an ordinary `Word` with
+`part_of_speech=PUNCTUATION`, seeded from the new mandatory
+`punctuation.json` (`.`, `!`, `?`, `;`, `,` -- the same five symbols
+`DictionaryProcessor` previously special-cased) exactly like any other
+`MANDATORY_FILES` entry, taking the mandatory total 313 -> 318. A
+freshly seeded `Dictionary` now ends up with 318 + 129 = 447 `Word`s.
+See 4.1 and `vocabulary/assets/common/en/README.md`'s Version section
+for the full rationale, and `linguistics/documentation/README.md` for
+the consequences on the Linguistics side (`GraphProcessor`,
+`Clause.tokens`, `ClauseSegmentationUtility`).)
 
 The cache itself -- its file format, exact counts, rebuild policy, and
 open-class word promotion/demotion rules -- is documented in full at

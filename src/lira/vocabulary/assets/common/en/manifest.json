@@ -1,8 +1,8 @@
 {
   "schema_version": "2.0.0",
-  "asset_version": "1.5.0",
+  "asset_version": "1.6.0",
   "language_code": "en",
-  "total_lexical_forms": 313,
+  "total_lexical_forms": 318,
   "files": [
     {
       "file": "determiners.json",
@@ -31,6 +31,10 @@
     {
       "file": "particles.json",
       "count": 12
+    },
+    {
+      "file": "punctuation.json",
+      "count": 5
     },
     {
       "file": "metalinguistic_nouns.json",
