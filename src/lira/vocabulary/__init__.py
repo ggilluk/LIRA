@@ -54,6 +54,7 @@ from .data.register_code import RegisterCode
 from .data.source_reference import SourceReference
 from .data.system_properties_ref import SystemPropertiesRef
 from .data.word import Word
+from .ui.dictionary_view import DictionaryView
 
 __all__ = [
     "VocabularyLayer",
@@ -78,4 +79,5 @@ __all__ = [
     "LexicalRelationshipProcessor",
     "WordSeeder",
     "RelationshipSeeder",
+    "DictionaryView",
 ]

@@ -37,7 +37,11 @@ tree and design rules.
   -- the Common Vocabulary Relationship Cache `RelationshipSeeder`
   loads (`common/en/relationships/`; see 9.5 and
   `assets/common/en/relationships/README.md`).
-- `api/`, `ui/` -- none yet.
+- `ui/` -- `DictionaryView`: renders a `Dictionary` and its
+  `LexicalRelationshipStore` as a single self-contained HTML page
+  (searchable/sortable Words and Relationships tables, cross-linked);
+  see `ui/README.md`.
+- `api/` -- none yet.
 
 ---
 

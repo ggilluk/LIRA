@@ -16,6 +16,10 @@ class LexicalRelationshipStore:
         with self._lock:
             self.relationships.append(relationship)
 
+    def all(self) -> Tuple[LexicalRelationship, ...]:
+        with self._lock:
+            return tuple(self.relationships)
+
     def outgoing(self, source_word_id: str) -> Tuple[LexicalRelationship, ...]:
         with self._lock:
             return tuple(r for r in self.relationships if r.source_word_id.value == source_word_id)

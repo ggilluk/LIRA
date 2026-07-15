@@ -5,7 +5,7 @@ specification, 3)."""
 import copy
 import threading
 import uuid as uuid_module
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 from lira.value_objects import Identifier
 
@@ -18,6 +18,10 @@ class Dictionary:
     def __init__(self):
         self.words: List[Word] = []
         self._lock = threading.Lock()
+
+    def all(self) -> Tuple[Word, ...]:
+        with self._lock:
+            return tuple(self.words)
 
     def lookup(self, text: str) -> Optional[Word]:
         with self._lock:
