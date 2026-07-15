@@ -119,7 +119,7 @@ class DictionaryView:
                 "kind": rel.relationship_type.name,
                 "group": rel.relationship_type.group,
                 "category": rel.relationship_type.category,
-                "confidence": round(rel.system_properties.confidence_weight, 3),
+                "confidence": round(rel.system_properties.confidence_weight, 4),
             })
         return records
 
@@ -664,7 +664,7 @@ function renderRels() {
       <td><span class="word-form">${r.source_text}</span> ${r.source_pos ? posPill(r.source_pos) : ''}</td>
       <td>${relPill(r.kind, r.group)}</td>
       <td><span class="word-form">${r.target_text}</span> ${r.target_pos ? posPill(r.target_pos) : ''}</td>
-      <td style="text-align:right" class="confidence">${r.confidence.toFixed(3)}</td>
+      <td style="text-align:right" class="confidence">${r.confidence.toFixed(4)}</td>
     </tr>`).join('');
   document.getElementById("stat-rels").textContent = rows.length;
 }

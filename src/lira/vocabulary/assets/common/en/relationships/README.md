@@ -46,7 +46,11 @@ Relationships are always seeded in this order, enforced by
 4. Resolve the source Word by lexical form, within this Domain's
    Dictionary.
 5. Resolve the target Word the same way.
-6. Allocate the `LexicalRelationship` (`domain.vocabulary.lexical_relationship_processor.create`).
+6. Allocate the `LexicalRelationship` (`domain.vocabulary.lexical_relationship_processor.create`),
+   passing `confidence`/`provenance`/`temporal`/`activation` all as
+   `RelationshipSeeder.SEEDER_DEFAULT_WEIGHT` (`0.9999`) -- these are
+   curated facts from this cache, not unweighted placeholders, so they
+   don't get `LexicalRelationshipProcessor.create`'s `0.0` default.
 7. That allocation call also allocates the relationship's
    tensor-backed `SystemPropertiesRef` row (Design Principle 8).
 8. Validate the resulting graph (duplicate edges, unresolved

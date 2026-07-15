@@ -33,6 +33,15 @@ CACHE_SOURCE_REFERENCE = SourceReference(
     source_version=Text(value="1.0.0"),
 )
 
+# Every seeded relationship is a curated, hand-authored linguistic fact
+# ("be" -> "am" is FIRST_PERSON_FORM), not an observation or inference
+# with genuine uncertainty attached -- so it gets the same
+# as-good-as-certain weight the Knowledge Layer uses for directly
+# authored facts elsewhere (knowledge/data/tensor_graph.py), on all
+# four system properties. 0.9999 rather than a literal 1.0 by the same
+# convention: certainty is never asserted as exactly 1.0.
+SEEDER_DEFAULT_WEIGHT = 0.9999
+
 RelationshipSpec = Tuple[str, str, LexicalRelationshipType]
 
 
@@ -120,7 +129,10 @@ class RelationshipSeeder:
         raising if a source or target Word cannot be resolved -- a
         cache/asset inconsistency, not something to seed around
         silently. Words must already be seeded (WordSeeder) before
-        calling this."""
+        calling this. Every relationship created this way gets all four
+        system properties set to SEEDER_DEFAULT_WEIGHT, not the
+        LexicalRelationshipProcessor.create default of 0.0 -- a seeded
+        relationship is a curated fact, not an unweighted placeholder."""
         dictionary: Dictionary = domain.vocabulary.dictionary
         store: LexicalRelationshipStore = domain.vocabulary.lexical_relationships
         processor = domain.vocabulary.lexical_relationship_processor
@@ -142,6 +154,10 @@ class RelationshipSeeder:
                 target_word_id=target_word.uuid.value,
                 relationship_type=relationship_type,
                 source_references=(CACHE_SOURCE_REFERENCE,),
+                confidence=SEEDER_DEFAULT_WEIGHT,
+                provenance=SEEDER_DEFAULT_WEIGHT,
+                temporal=SEEDER_DEFAULT_WEIGHT,
+                activation=SEEDER_DEFAULT_WEIGHT,
             )
             seeded += 1
         return seeded
