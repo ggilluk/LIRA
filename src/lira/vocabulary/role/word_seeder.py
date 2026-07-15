@@ -46,6 +46,19 @@ MANDATORY_FILES = (
     "subordinating_conjunctions.json",
     "particles.json",
 )
+# Supplementary files: authored, validated, and always loaded/seeded
+# like MANDATORY_FILES, but NOT counted toward the mandatory closed-class
+# total -- their content is open-class (NOUN metalinguistic terms:
+# "noun", "verb", "subject", "tense", ...), not closed-class function
+# words, so they don't belong in the 313-word mandatory count the way
+# determiners/pronouns/etc. do. Exists because these terms are
+# referenced constantly, by name, throughout the mandatory files' own
+# definitions ("Introduces a noun...", "third person", "used with
+# uncountable nouns") and this codebase's own documentation, but were
+# otherwise represented nowhere in the seeded vocabulary at all.
+SUPPLEMENTARY_FILES = (
+    "metalinguistic_vocabulary.json",
+)
 PROMOTED_FILE = "promoted_words.json"
 MANIFEST_FILE = "manifest.json"
 SCHEMA_VERSION = "2.0.0"
@@ -96,29 +109,15 @@ class WordSeeder:
         computed_total = 0
 
         for filename in MANDATORY_FILES:
-            path = self.assets_dir / filename
-            if not path.is_file():
-                raise FileNotFoundError(f"mandatory Common Vocabulary Cache file missing: {filename}")
-            doc = json.loads(path.read_text())
-            for required_key in ("schema_version", "language_code", "part_of_speech", "closed_class_kind", "count", "words"):
-                if required_key not in doc:
-                    raise ValueError(f"{filename}: missing required key '{required_key}'")
-            if doc["count"] != len(doc["words"]):
-                raise ValueError(f"{filename}: count {doc['count']} does not match {len(doc['words'])} word entries")
-            for entry in doc["words"]:
-                lexical_form = entry["lexical_form"]
-                pos = entry["part_of_speech"]
-                if entry["language_code"] != self.language_code:
-                    raise ValueError(f"{filename}: '{lexical_form}' has language_code '{entry['language_code']}', expected '{self.language_code}'")
-                if entry.get("normalised_form") != lexical_form.lower():
-                    raise ValueError(f"{filename}: '{lexical_form}' has an inconsistent normalised_form")
-                key = (lexical_form, pos)
-                if key in seen_lexical_form_pos:
-                    raise ValueError(f"{filename}: duplicate lexical_form '{lexical_form}' with part_of_speech '{pos}' in the mandatory cache")
-                self._validate_entry_enums(filename, entry)
-                seen_lexical_form_pos.add(key)
-            file_counts[filename] = doc["count"]
-            computed_total += doc["count"]
+            file_counts[filename] = self._validate_word_file(filename, seen_lexical_form_pos, required=True)
+            computed_total += file_counts[filename]
+
+        for filename in SUPPLEMENTARY_FILES:
+            # Validated and counted (own manifest row, own duplicate
+            # checking against the same seen_lexical_form_pos set) but
+            # excluded from computed_total -- these are open-class,
+            # not part of the mandatory closed-class total.
+            file_counts[filename] = self._validate_word_file(filename, seen_lexical_form_pos, required=True)
 
         seen_lexical_forms = {lexical_form for lexical_form, _ in seen_lexical_form_pos}
         promoted_path = self.assets_dir / PROMOTED_FILE
@@ -147,6 +146,38 @@ class WordSeeder:
                     f"does not match the computed total ({computed_total})"
                 )
 
+    def _validate_word_file(self, filename: str, seen_lexical_form_pos: set, *, required: bool) -> int:
+        """Validates one word file's schema, per-entry language code,
+        normalised_form consistency, enum members, and
+        (lexical_form, part_of_speech) uniqueness against
+        `seen_lexical_form_pos` (shared across every file this is
+        called for, so a duplicate is caught even across file
+        boundaries). Returns the file's word count."""
+        path = self.assets_dir / filename
+        if not path.is_file():
+            if required:
+                raise FileNotFoundError(f"mandatory Common Vocabulary Cache file missing: {filename}")
+            return 0
+        doc = json.loads(path.read_text())
+        for required_key in ("schema_version", "language_code", "part_of_speech", "closed_class_kind", "count", "words"):
+            if required_key not in doc:
+                raise ValueError(f"{filename}: missing required key '{required_key}'")
+        if doc["count"] != len(doc["words"]):
+            raise ValueError(f"{filename}: count {doc['count']} does not match {len(doc['words'])} word entries")
+        for entry in doc["words"]:
+            lexical_form = entry["lexical_form"]
+            pos = entry["part_of_speech"]
+            if entry["language_code"] != self.language_code:
+                raise ValueError(f"{filename}: '{lexical_form}' has language_code '{entry['language_code']}', expected '{self.language_code}'")
+            if entry.get("normalised_form") != lexical_form.lower():
+                raise ValueError(f"{filename}: '{lexical_form}' has an inconsistent normalised_form")
+            key = (lexical_form, pos)
+            if key in seen_lexical_form_pos:
+                raise ValueError(f"{filename}: duplicate lexical_form '{lexical_form}' with part_of_speech '{pos}' in the mandatory cache")
+            self._validate_entry_enums(filename, entry)
+            seen_lexical_form_pos.add(key)
+        return doc["count"]
+
     @staticmethod
     def _validate_entry_enums(filename: str, entry: dict) -> None:
         lexical_form = entry.get("lexical_form")
@@ -165,14 +196,17 @@ class WordSeeder:
 
     def load_cache(self) -> List[Word]:
         """Validates the assets, then parses every mandatory closed-class
-        file plus promoted_words.json into Word instances (is_common=True
-        on all of them). Cached after the first call."""
+        file, every supplementary file (SUPPLEMENTARY_FILES --
+        open-class metalinguistic terms, not counted toward the
+        mandatory total but seeded the same way), and
+        promoted_words.json into Word instances (is_common=True on all
+        of them). Cached after the first call."""
         if self._cache is not None:
             return list(self._cache)
 
         self.validate_assets()
         words = []
-        for filename in (*MANDATORY_FILES, PROMOTED_FILE):
+        for filename in (*MANDATORY_FILES, *SUPPLEMENTARY_FILES, PROMOTED_FILE):
             doc = json.loads((self.assets_dir / filename).read_text())
             for entry in doc["words"]:
                 words.append(self._entry_to_word(entry))
@@ -181,7 +215,14 @@ class WordSeeder:
 
     def seed_closed_class_words(self, dictionary: Dictionary) -> int:
         """Appends a fresh copy of every cached Word into `dictionary`
-        that isn't already present (matched by text AND part_of_speech,
+        that isn't already present -- despite the name, this includes
+        SUPPLEMENTARY_FILES' open-class metalinguistic terms
+        (load_cache() loads MANDATORY_FILES, SUPPLEMENTARY_FILES, and
+        PROMOTED_FILE together) alongside the mandatory closed-class
+        words; kept as one method rather than split, since a Domain's
+        Dictionary is meant to end up with all of the Common Vocabulary
+        Cache's content regardless of which file contributed it. Matched
+        by text AND part_of_speech,
         not text alone -- a homograph like "that" (DETERMINER) and
         "that" (PRONOUN) are two distinct cached Words sharing one
         surface text, and dictionary.lookup(text) alone would find

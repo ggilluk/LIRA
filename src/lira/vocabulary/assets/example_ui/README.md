@@ -5,8 +5,9 @@
 it directly in a browser to see the UI without running any code.
 
 It was generated from the Common Domain's Dictionary and
-LexicalRelationshipStore (313 words from the English Common
-Closed-Class Cache, 121 seeded relationships -- see
+LexicalRelationshipStore (350 words -- 313 from the English Common
+Closed-Class Cache plus 37 supplementary metalinguistic terms -- and
+121 seeded relationships -- see
 `assets/common/en/README.md` and `assets/common/en/relationships/README.md`),
 using:
 

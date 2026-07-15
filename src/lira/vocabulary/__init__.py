@@ -15,7 +15,8 @@ LexicalRelationshipType additionally bit-packing group/category/item
 
 Every English Word.is_common is True only when it was loaded by
 WordSeeder from the English Common Vocabulary Cache (313 mandatory
-closed-class lexical forms -- assets/common/en/), never set by hand.
+closed-class lexical forms plus 37 supplementary open-class
+metalinguistic terms -- assets/common/en/), never set by hand.
 
 Repository layout follows Architectural Layer -> artefact purpose:
 data/ (VocabularyLayer; Dictionary, Word, LexicalRelationship, one
