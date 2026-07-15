@@ -24,11 +24,22 @@ class Dictionary:
             return tuple(self.words)
 
     def lookup(self, text: str) -> Optional[Word]:
+        matches = self.lookup_all(text)
+        return matches[0] if matches else None
+
+    def lookup_all(self, text: str) -> Tuple[Word, ...]:
+        """Returns every Word whose surface text matches `text`
+        (case-insensitive) -- every homograph, not just the first. A
+        word with more than one legitimate part of speech (e.g. "run"
+        as NOUN vs VERB) is modelled as multiple Word entries (4.1: "one
+        lexical form in one language and one grammatical category"),
+        each with its own lexical_form but the same unmodified text --
+        the same mechanism 9.2's sense-numbered lexical_form suffix uses
+        (bank / bank_2), which also leaves text untouched on every
+        sense. lookup() only ever surfaced the first such entry; this is
+        how the rest become visible too."""
         with self._lock:
-            for word in self.words:
-                if word.text.lower() == text.lower():
-                    return word
-            return None
+            return tuple(word for word in self.words if word.text.lower() == text.lower())
 
     def find_by_uuid(self, word_id: str) -> Optional[Word]:
         with self._lock:

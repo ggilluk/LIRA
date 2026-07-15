@@ -48,8 +48,9 @@ class DictionaryProcessor:
         Vocabulary). `word.text` (the raw surface form a tokenizer would
         produce) is left untouched; only `word.lexical_form` gets the
         sense-numbered suffix, so the two senses are distinguishable by
-        identity even though a plain surface-form lookup can still only
-        resolve to one of them. Deciding *whether* a conflict warrants
+        identity even though `Dictionary.lookup` still only resolves to
+        one of them by default -- `Dictionary.lookup_all` returns every
+        coexisting sense. Deciding *whether* a conflict warrants
         this treatment (versus identifying or creating another Domain
         that already owns the other sense) is a judgement call for the
         caller, not something this method infers."""

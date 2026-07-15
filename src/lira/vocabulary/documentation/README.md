@@ -540,9 +540,12 @@ warrants an entirely different `Domain`, or just a second entry in the
 same `Dictionary`, isn't something derivable from the words alone.
 Strategy 3 (`DictionaryProcessor.register_conflicting_sense`,
 `Dictionary.next_available_lexical_form`) is the mechanical fallback:
-always available, requires no semantic judgement, but means a plain
-surface-form lookup can still only resolve to one of the coexisting
-senses.
+always available, requires no semantic judgement, but means two (or
+more) `Word` entries coexist under the same `text`, distinguished only
+by their sense-numbered `lexical_form`. `Dictionary.lookup(text)`
+still resolves to just one of them (whichever was appended first) --
+for a caller that genuinely needs every sense, `Dictionary.lookup_all(text)`
+returns all of them, unlike `lookup`.
 
 #### 9.3 Every Dictionary is seeded from a reserved "Common" Domain
 
