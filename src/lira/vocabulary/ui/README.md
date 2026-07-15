@@ -4,9 +4,13 @@
 
 `DictionaryView` (`dictionary_view.py`) renders a `Dictionary` and its
 `LexicalRelationshipStore` as a single, self-contained HTML page: a
-sortable, searchable Words table and a Relationships table (source →
-kind → target), cross-linked so clicking a word's relationship count
-jumps straight to its edges, filtered.
+sortable, searchable Words table with a master-detail layout -- select
+a word and its relationships (source → kind → target, both outgoing and
+incoming) appear inline in a side panel, no navigation away from the
+list. Each related word in that panel is itself clickable, pivoting the
+detail panel to it, so the relationship graph can be walked in place. A
+separate Relationships tab lists every edge in the domain, sortable and
+searchable on its own.
 
 ```python
 from lira.vocabulary import DictionaryView

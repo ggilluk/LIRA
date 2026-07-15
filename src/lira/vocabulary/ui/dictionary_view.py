@@ -392,24 +392,63 @@ tbody tr:hover { background: color-mix(in srgb, var(--accent) 6%, transparent); 
   color: var(--ink-muted);
   font-size: 0.9rem;
 }
-.active-filter {
-  display: none;
+.words-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 16px;
+  align-items: start;
+}
+tbody tr[data-word-id] { cursor: pointer; }
+tbody tr[data-word-id].selected { background: color-mix(in srgb, var(--accent) 14%, transparent); }
+.detail-panel {
+  position: sticky;
+  top: 16px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 18px;
+  max-height: calc(100vh - 32px);
+  overflow-y: auto;
+}
+.detail-empty {
+  color: var(--ink-muted);
+  font-size: 0.85rem;
+  text-align: center;
+  padding: 28px 8px;
+}
+.detail-word {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 1.15rem;
+}
+.detail-definition {
+  color: var(--ink-muted);
+  font-size: 0.85rem;
+  margin-top: 8px;
+  line-height: 1.4;
+}
+.detail-section-title {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ink-muted);
+  margin: 16px 0 6px;
+}
+.rel-row {
+  display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 0.82rem;
-  color: var(--ink-muted);
-  margin-bottom: 10px;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 0.83rem;
 }
-.active-filter.showing { display: flex; }
-.active-filter button {
-  border: 1px solid var(--line-strong);
-  background: var(--surface);
-  border-radius: 4px;
-  padding: 2px 8px;
-  cursor: pointer;
-  color: var(--ink);
-  font-family: var(--font-body);
-  font-size: 0.78rem;
+.rel-row:last-child { border-bottom: none; }
+.rel-row .rel-dir { color: var(--ink-muted); font-size: 0.8rem; width: 12px; text-align: center; flex: none; }
+.rel-row .link-btn { margin-left: auto; text-align: right; }
+@media (max-width: 860px) {
+  .words-layout { grid-template-columns: 1fr; }
+  .detail-panel { position: static; max-height: none; }
 }
 footer {
   margin-top: 28px;
@@ -443,26 +482,27 @@ footer {
     </div>
   </div>
 
-  <div class="active-filter" id="active-filter">
-    <span id="active-filter-text"></span>
-    <button id="clear-filter">Clear</button>
-  </div>
-
   <section class="panel active" id="panel-words">
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th data-sort="lexical_form">Word</th>
-            <th data-sort="pos">Part of speech</th>
-            <th data-sort="definition">Definition</th>
-            <th>Labels</th>
-            <th data-sort="relationship_count" style="text-align:right">Relationships</th>
-          </tr>
-        </thead>
-        <tbody id="words-body"></tbody>
-      </table>
-      <div class="empty-state" id="words-empty" style="display:none">No words match this search.</div>
+    <div class="words-layout">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th data-sort="lexical_form">Word</th>
+              <th data-sort="pos">Part of speech</th>
+              <th data-sort="definition">Definition</th>
+              <th>Labels</th>
+              <th data-sort="relationship_count" style="text-align:right">Relationships</th>
+            </tr>
+          </thead>
+          <tbody id="words-body"></tbody>
+        </table>
+        <div class="empty-state" id="words-empty" style="display:none">No words match this search.</div>
+      </div>
+      <aside class="detail-panel">
+        <div class="detail-empty" id="detail-empty">Select a word to see its relationships.</div>
+        <div id="detail-content" style="display:none"></div>
+      </aside>
     </div>
   </section>
 
@@ -493,7 +533,7 @@ const POS_COLORS = @@POS_COLORS_JSON@@;
 const GROUP_COLORS = @@GROUP_COLORS_JSON@@;
 const GROUP_NAMES = @@GROUP_NAMES_JSON@@;
 
-const state = { tab: "words", query: "", pos: "", wordFilterId: null, wordFilterText: "", sort: { words: ["lexical_form", 1], rels: ["source_text", 1] } };
+const state = { tab: "words", query: "", pos: "", selectedWordId: null, sort: { words: ["lexical_form", 1], rels: ["source_text", 1] } };
 
 function titleCase(s) {
   return s.toLowerCase().split("_").map(w => w[0].toUpperCase() + w.slice(1)).join(" ");
@@ -534,11 +574,19 @@ function filteredWords() {
 
 function filteredRels() {
   return RELS.filter(r => {
-    if (state.wordFilterId && r.source_id !== state.wordFilterId && r.target_id !== state.wordFilterId) return false;
     if (!state.query) return true;
     const q = state.query.toLowerCase();
     return r.source_text.toLowerCase().includes(q) || r.target_text.toLowerCase().includes(q) || r.kind.toLowerCase().includes(q);
   });
+}
+
+function relationshipsForWord(wordId) {
+  return RELS.filter(r => r.source_id === wordId || r.target_id === wordId)
+    .map(r => {
+      const outgoing = r.source_id === wordId;
+      return { ...r, outgoing, otherId: outgoing ? r.target_id : r.source_id, otherText: outgoing ? r.target_text : r.source_text };
+    })
+    .sort((a, b) => (a.group - b.group) || a.kind.localeCompare(b.kind));
 }
 
 function sortRows(rows, key, dir) {
@@ -556,23 +604,50 @@ function renderWords() {
   const body = document.getElementById("words-body");
   document.getElementById("words-empty").style.display = rows.length ? "none" : "block";
   body.innerHTML = rows.map(w => `
-    <tr>
+    <tr data-word-id="${w.id}" class="${w.id === state.selectedWordId ? 'selected' : ''}">
       <td><span class="word-form">${w.lexical_form}</span>${w.is_common ? ' <span class="badge-common">common</span>' : ''}</td>
       <td>${posPill(w.pos)}</td>
       <td class="definition">${w.definition || w.gloss || '<span style="opacity:.5">&mdash;</span>'}</td>
       <td>${w.register_codes.concat(w.editorial_labels).map(t => `<span class="tag">${titleCase(t)}</span>`).join('')}</td>
-      <td style="text-align:right">${w.relationship_count > 0
-        ? `<button class="link-btn rel-count" data-word-id="${w.id}" data-word-text="${w.lexical_form}">${w.relationship_count}</button>`
-        : `<span class="rel-count" style="color:var(--ink-muted)">0</span>`}</td>
+      <td style="text-align:right" class="rel-count">${w.relationship_count}</td>
     </tr>`).join('');
   document.getElementById("stat-words").textContent = rows.length;
-  body.querySelectorAll("button[data-word-id]").forEach(btn => {
-    btn.addEventListener("click", () => {
-      state.wordFilterId = btn.dataset.wordId;
-      state.wordFilterText = btn.dataset.wordText;
-      selectTab("rels");
-      renderAll();
-    });
+}
+
+function selectWord(wordId) {
+  state.selectedWordId = wordId;
+  document.querySelectorAll("#words-body tr[data-word-id]").forEach(tr => {
+    tr.classList.toggle("selected", tr.dataset.wordId === wordId);
+  });
+  renderDetail();
+}
+
+function renderDetail() {
+  const empty = document.getElementById("detail-empty");
+  const content = document.getElementById("detail-content");
+  const word = WORDS.find(w => w.id === state.selectedWordId);
+  if (!word) {
+    empty.style.display = "block";
+    content.style.display = "none";
+    return;
+  }
+  const rels = relationshipsForWord(word.id);
+  empty.style.display = "none";
+  content.style.display = "block";
+  content.innerHTML = `
+    <div class="detail-word">${word.lexical_form}${word.is_common ? ' <span class="badge-common">common</span>' : ''}</div>
+    <div style="margin-top:6px">${posPill(word.pos)}</div>
+    <div class="detail-definition">${word.definition || word.gloss || 'No definition on record.'}</div>
+    <div class="detail-section-title">Relationships (${rels.length})</div>
+    ${rels.length === 0 ? '<div class="detail-empty" style="padding:8px 0">No relationships recorded.</div>' : rels.map(r => `
+      <div class="rel-row">
+        <span class="rel-dir" title="${r.outgoing ? 'Outgoing' : 'Incoming'}">${r.outgoing ? '&rarr;' : '&larr;'}</span>
+        ${relPill(r.kind, r.group)}
+        <button class="link-btn" data-pivot-id="${r.otherId}">${r.otherText}</button>
+      </div>`).join('')}
+  `;
+  content.querySelectorAll("button[data-pivot-id]").forEach(btn => {
+    btn.addEventListener("click", () => selectWord(btn.dataset.pivotId));
   });
 }
 
@@ -590,19 +665,12 @@ function renderRels() {
       <td style="text-align:right" class="confidence">${r.confidence.toFixed(3)}</td>
     </tr>`).join('');
   document.getElementById("stat-rels").textContent = rows.length;
-
-  const filterBar = document.getElementById("active-filter");
-  if (state.wordFilterId) {
-    filterBar.classList.add("showing");
-    document.getElementById("active-filter-text").textContent = `Showing relationships for "${state.wordFilterText}"`;
-  } else {
-    filterBar.classList.remove("showing");
-  }
 }
 
 function renderAll() {
   renderWords();
   renderRels();
+  renderDetail();
 }
 
 function selectTab(tab) {
@@ -626,10 +694,9 @@ document.getElementById("pos-filter").addEventListener("change", (e) => {
   renderWords();
 });
 
-document.getElementById("clear-filter").addEventListener("click", () => {
-  state.wordFilterId = null;
-  state.wordFilterText = "";
-  renderRels();
+document.getElementById("words-body").addEventListener("click", (e) => {
+  const row = e.target.closest("tr[data-word-id]");
+  if (row) selectWord(row.dataset.wordId);
 });
 
 document.querySelectorAll("#panel-words thead th[data-sort]").forEach(th => {
