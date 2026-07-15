@@ -112,8 +112,10 @@ class DictionaryView:
                 "id": rel.uuid.value,
                 "source_id": rel.source_word_id.value,
                 "source_text": source.text if source is not None else "?",
+                "source_pos": source.part_of_speech.name if source is not None else None,
                 "target_id": rel.target_word_id.value,
                 "target_text": target.text if target is not None else "?",
+                "target_pos": target.part_of_speech.name if target is not None else None,
                 "kind": rel.relationship_type.name,
                 "group": rel.relationship_type.group,
                 "category": rel.relationship_type.category,
@@ -659,9 +661,9 @@ function renderRels() {
   document.getElementById("rels-empty").style.display = rows.length ? "none" : "block";
   body.innerHTML = rows.map(r => `
     <tr>
-      <td><span class="word-form">${r.source_text}</span></td>
+      <td><span class="word-form">${r.source_text}</span> ${r.source_pos ? posPill(r.source_pos) : ''}</td>
       <td>${relPill(r.kind, r.group)}</td>
-      <td><span class="word-form">${r.target_text}</span></td>
+      <td><span class="word-form">${r.target_text}</span> ${r.target_pos ? posPill(r.target_pos) : ''}</td>
       <td style="text-align:right" class="confidence">${r.confidence.toFixed(3)}</td>
     </tr>`).join('');
   document.getElementById("stat-rels").textContent = rows.length;

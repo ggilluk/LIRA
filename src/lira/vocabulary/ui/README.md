@@ -10,7 +10,9 @@ incoming) appear inline in a side panel, no navigation away from the
 list. Each related word in that panel is itself clickable, pivoting the
 detail panel to it, so the relationship graph can be walked in place. A
 separate Relationships tab lists every edge in the domain, sortable and
-searchable on its own.
+searchable on its own, each source/target word shown with its part of
+speech so grammatical category is visible without switching back to
+the Words tab.
 
 ```python
 from lira.vocabulary import DictionaryView
