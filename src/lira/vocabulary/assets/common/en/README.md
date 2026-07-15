@@ -21,18 +21,26 @@ working vocabulary immediately, not to be a system of record.
 | File | Contents | Required entries |
 |------|----------|-------------------|
 | `manifest.json` | Schema/asset version, language, per-file and total lexical form counts | -- |
-| `determiners.json` | Determiners (the, a, this, my, some, ...) | 35 |
-| `pronouns.json` | Personal, possessive, reflexive, interrogative, relative, reciprocal, and indefinite pronouns | 92 |
-| `auxiliaries.json` | Primary auxiliaries (be, have, do), modals (will, can, must), semi-modals (need, dare) | 27 |
-| `prepositions.json` | Simple and compound/complex prepositions | 92 |
+| `determiners.json` | Determiners (the, a, this, my, some, ...) | 37 |
+| `pronouns.json` | Personal, possessive, reflexive, interrogative, relative, reciprocal, and indefinite pronouns | 93 |
+| `auxiliaries.json` | Primary auxiliaries (be, have, do), modals (will, can, must), semi-modals (need, dare) | 29 |
+| `prepositions.json` | Simple and compound/complex prepositions | 93 |
 | `coordinating_conjunctions.json` | FANBOYS -- for, and, nor, but, or, yet, so | 7 |
 | `subordinating_conjunctions.json` | because, although, unless, while, ... | 36 |
-| `particles.json` | not, there, please, also, too, only, ... | 11 |
+| `particles.json` | not, there, please, also, too, only, ... | 12 |
 | `promoted_words.json` | Open-class words promoted from Domain vocabularies (starts empty) | 0 |
 
-Mandatory closed-class total: **300** (35 + 92 + 27 + 92 + 7 + 36 + 11).
-`promoted_words.json` is not counted toward the mandatory 300 -- it's a
+Mandatory closed-class total: **307** (37 + 93 + 29 + 93 + 7 + 36 + 12).
+`promoted_words.json` is not counted toward the mandatory 307 -- it's a
 separate, uncapped, generated list.
+
+`asset_version 1.2.0` added seven words (`done`, `doing`, `little`,
+`fewest`, `least`, `owing to`, `n't`) that the original 300-word
+`asset_version 1.1.0` cache omitted, needed as targets for seven
+relationships specified for the Relationship Cache
+(`relationships/README.md`) but previously left unseeded because they
+had no source Word to resolve against -- see that file's version
+history for the corresponding relationship-side change.
 
 ## File format
 
@@ -133,9 +141,12 @@ they're already part of the mandatory cache.
 
 ## Version
 
-`v1` / `schema_version 2.0.0` / `asset_version 1.1.0` (schema revised
-to carry `Word`'s full field set; the mandatory 300 lexical forms and
-their meanings are unchanged from `asset_version 1.0.0`).
+`v1` / `schema_version 2.0.0` / `asset_version 1.2.0` (300 -> 307
+mandatory lexical forms, adding `done`, `doing`, `little`, `fewest`,
+`least`, `owing to`, `n't` -- see Files above. `asset_version 1.1.0`
+revised the schema to carry `Word`'s full field set; the original 300
+lexical forms and their meanings were unchanged from `asset_version
+1.0.0`).
 
 ## Language extension
 

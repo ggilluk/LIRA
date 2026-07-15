@@ -8,11 +8,12 @@ vocabulary/documentation/README.md): every other Domain this Host
 creates has its Vocabulary seeded from Common's Dictionary, giving all
 Domains on a Host a shared vocabulary baseline before anything
 domain-specific is added. Common's own Dictionary is itself seeded, on
-Host construction, with the mandatory 300-word English Common
+Host construction, with the mandatory 307-word English Common
 Vocabulary Cache (WordSeeder, vocabulary/role/word_seeder.py) -- this
-is how "every English LIRA Domain shall contain the 300 lexical forms"
-is actually satisfied: seed Common once, and every Domain created
-afterwards inherits them via the existing seed_from propagation.
+is how "every English LIRA Domain shall contain the mandatory lexical
+forms defined by the English Common Closed-Class Cache" is actually
+satisfied: seed Common once, and every Domain created afterwards
+inherits them via the existing seed_from propagation.
 
 Every Domain -- Common included -- also gets its own
 LexicalRelationship graph seeded immediately after its Words

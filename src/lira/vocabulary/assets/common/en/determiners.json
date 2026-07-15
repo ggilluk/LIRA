@@ -3,7 +3,7 @@
   "language_code": "en",
   "part_of_speech": "DETERMINER",
   "closed_class_kind": "determiner",
-  "count": 35,
+  "count": 37,
   "words": [
     {
       "lexical_form": "the",
@@ -1250,6 +1250,78 @@
       "pronunciations": [],
       "syllable_representation": null,
       "syllable_count": 3,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "lexical_form": "little",
+      "normalised_form": "little",
+      "text": "little",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "DETERMINER",
+      "closed_class": true,
+      "closed_class_kind": "determiner",
+      "definition": "A small amount of (used with uncountable nouns)",
+      "gloss": "A small amount of (used with uncountable nouns)",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "lexical_form": "fewest",
+      "normalised_form": "fewest",
+      "text": "fewest",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "DETERMINER",
+      "closed_class": true,
+      "closed_class_kind": "determiner",
+      "definition": "Superlative of 'few': the smallest number of",
+      "gloss": "Superlative of 'few': the smallest number of",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
       "stress_pattern": null,
       "frequency_value": null,
       "frequency_scale": null,

@@ -21,9 +21,9 @@ against a specific Domain's already-seeded `Word`s, not a store of
 
 | File | Category | Kinds seeded | Count |
 |------|----------|----------------|-------|
-| `morphological_relationships.json` | Morphological (6.2.1) | Person, tense, participle, and plural forms (`be`/`have`/`do` conjugations, `this`/`that` plurals); comparative/superlative forms (`few`/`many`/`much`); pronoun paradigm forms (`PRONOUN_OBJECT_FORM`, `PRONOUN_SUBJECT_FORM`, `PRONOUN_POSSESSIVE_DETERMINER_FORM`, `PRONOUN_POSSESSIVE_FORM`, `PRONOUN_REFLEXIVE_FORM`) | 43 |
-| `semantic_relationships.json` | Lexical Semantic (6.2.2) | `ANTONYM` (spatial/temporal opposites: above/below, before/after, ...) and `SYNONYM` (equivalent prepositions: beneath/under, amid/among, ...) only | 10 |
-| `orthographic_relationships.json` | Orthographic and Naming (6.2.3) | `CONTRACTION` | 0 (see Known gaps) |
+| `morphological_relationships.json` | Morphological (6.2.1) | Person, tense, participle, and plural forms (`be`/`have`/`do` conjugations, `this`/`that` plurals); comparative/superlative forms (`few`/`many`/`much`/`little`); pronoun paradigm forms (`PRONOUN_OBJECT_FORM`, `PRONOUN_SUBJECT_FORM`, `PRONOUN_POSSESSIVE_DETERMINER_FORM`, `PRONOUN_POSSESSIVE_FORM`, `PRONOUN_REFLEXIVE_FORM`) | 48 |
+| `semantic_relationships.json` | Lexical Semantic (6.2.2) | `ANTONYM` (spatial/temporal opposites: above/below, before/after, ...) and `SYNONYM` (equivalent prepositions: beneath/under, amid/among, due to/owing to, ...) only | 11 |
+| `orthographic_relationships.json` | Orthographic and Naming (6.2.3) | `CONTRACTION` (not/n't) | 1 |
 
 No `HYPERNYM`, `MERONYM`, or `TROPONYM` relationships are seeded for
 closed-class Words -- those hierarchy/part-whole/manner relationships
@@ -31,7 +31,7 @@ describe how open-class concepts relate to each other, and don't apply
 to a fixed set of grammatical function words the way conjugation,
 pronoun paradigms, and near-synonymy do.
 
-Total relationships: **53**.
+Total relationships: **60**.
 
 ## Seeding order
 
@@ -97,37 +97,43 @@ duplicate.
 - Mandatory file existence (all three category files plus the
   manifest)
 
-`RelationshipSeeder.seed_domain()` additionally fails a specific
-relationship (skips it, and is expected to be re-run once the gap is
-fixed -- see Known gaps) rather than seeding a dangling reference, if
-either the source or target Word cannot be resolved in that Domain's
-Dictionary.
+`RelationshipSeeder.seed_domain()` raises `ValueError` -- it does not
+skip -- if either the source or target Word of a relationship cannot
+be resolved in that Domain's Dictionary. This is treated as a cache/
+asset inconsistency (a relationship referencing a lexical form the
+mandatory word cache doesn't contain), not something to seed around
+silently; see Resolved gaps below for the one case this actually
+happened.
 
-## Known gaps
+## Resolved gaps
 
 Seven relationships described in the original developer instructions
-for this cache reference target words that aren't in the mandatory
-300-word cache yet, so they are **not** included in these files:
+for this cache referenced target words that weren't in the mandatory
+300-word word cache at `asset_version 1.1.0` (`done`, `doing`,
+`little`, `fewest`, `least`, `owing to`, `n't`), so they were left out
+of these files entirely rather than seeded as dangling references:
 
-| Source → Target | Kind | Missing word |
-|-------------------|------|----------------|
-| do → done | `PAST_PARTICIPLE_FORM` | `done` |
-| do → doing | `PRESENT_PARTICIPLE_FORM` | `doing` |
-| few → fewest | `SUPERLATIVE_FORM` | `fewest` |
-| little → less | `COMPARATIVE_FORM` | `little` |
-| little → least | `SUPERLATIVE_FORM` | `little`, `least` |
-| due to → owing to | `SYNONYM` | `owing to` |
-| not → n't | `CONTRACTION` | `n't` |
+| Source → Target | Kind |
+|-------------------|------|
+| do → done | `PAST_PARTICIPLE_FORM` |
+| do → doing | `PRESENT_PARTICIPLE_FORM` |
+| few → fewest | `SUPERLATIVE_FORM` |
+| little → less | `COMPARATIVE_FORM` |
+| little → least | `SUPERLATIVE_FORM` |
+| due to → owing to | `SYNONYM` |
+| not → n't | `CONTRACTION` |
 
-Adding these six missing words (`done`, `doing`, `little`, `fewest`,
-`least`, `n't`, `owing to`) to the mandatory word cache would change
-its total from the documented 300 to 306 -- a deliberate decision left
-for the Vocabulary Layer developer specification's Design Principle
-9.4 rule to be revisited explicitly, not made silently here.
+The word cache's `asset_version 1.2.0` added those seven words
+(`../README.md`, 300 -> 307), and this cache's `asset_version 1.1.0`
+adds these seven relationships -- all now present in
+`morphological_relationships.json`, `semantic_relationships.json`, and
+`orthographic_relationships.json` above.
 
 ## Version
 
-`v1` / `schema_version 1.0.0` / `asset_version 1.0.0`.
+`v1` / `schema_version 1.0.0` / `asset_version 1.1.0` (53 -> 60
+relationships, resolving the seven gaps above; `asset_version 1.0.0`'s
+53 relationships are unchanged).
 
 ## Future languages
 

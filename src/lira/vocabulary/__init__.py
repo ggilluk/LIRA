@@ -14,7 +14,7 @@ LexicalRelationshipType additionally bit-packing group/category/item
 (Design Principle 13).
 
 Every English Word.is_common is True only when it was loaded by
-WordSeeder from the English Common Vocabulary Cache (300 mandatory
+WordSeeder from the English Common Vocabulary Cache (307 mandatory
 closed-class lexical forms -- assets/common/en/), never set by hand.
 
 Repository layout follows Architectural Layer -> artefact purpose:

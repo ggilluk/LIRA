@@ -46,7 +46,7 @@ MANDATORY_FILES = (
     "subordinating_conjunctions.json",
     "particles.json",
 )
-MANDATORY_TOTAL = 300
+MANDATORY_TOTAL = 307
 PROMOTED_FILE = "promoted_words.json"
 MANIFEST_FILE = "manifest.json"
 SCHEMA_VERSION = "2.0.0"
@@ -344,7 +344,7 @@ class WordSeeder:
     def _write_manifest(self, file_counts: Dict[str, int], total: int) -> None:
         manifest = {
             "schema_version": SCHEMA_VERSION,
-            "asset_version": "1.1.0",
+            "asset_version": "1.2.0",
             "language_code": self.language_code,
             "total_lexical_forms": total,
             "files": [{"file": fname, "count": count} for fname, count in file_counts.items()],

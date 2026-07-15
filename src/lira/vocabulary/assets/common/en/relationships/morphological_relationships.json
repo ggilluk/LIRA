@@ -2,7 +2,7 @@
   "schema_version": "1.0.0",
   "language_code": "en",
   "relationship_category": "morphological",
-  "count": 43,
+  "count": 48,
   "relationships": [
     {
       "source_lexical_form": "be",
@@ -218,6 +218,31 @@
       "source_lexical_form": "they",
       "target_lexical_form": "themselves",
       "relationship_kind": "PRONOUN_REFLEXIVE_FORM"
+    },
+    {
+      "source_lexical_form": "do",
+      "target_lexical_form": "done",
+      "relationship_kind": "PAST_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "do",
+      "target_lexical_form": "doing",
+      "relationship_kind": "PRESENT_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "few",
+      "target_lexical_form": "fewest",
+      "relationship_kind": "SUPERLATIVE_FORM"
+    },
+    {
+      "source_lexical_form": "little",
+      "target_lexical_form": "less",
+      "relationship_kind": "COMPARATIVE_FORM"
+    },
+    {
+      "source_lexical_form": "little",
+      "target_lexical_form": "least",
+      "relationship_kind": "SUPERLATIVE_FORM"
     }
   ]
 }

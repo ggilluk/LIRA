@@ -3,7 +3,7 @@
   "language_code": "en",
   "part_of_speech": "PRONOUN",
   "closed_class_kind": "pronoun",
-  "count": 92,
+  "count": 93,
   "words": [
     {
       "lexical_form": "I",
@@ -3336,6 +3336,42 @@
       "pronunciations": [],
       "syllable_representation": null,
       "syllable_count": 3,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "lexical_form": "least",
+      "normalised_form": "least",
+      "text": "least",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true,
+      "closed_class_kind": "pronoun",
+      "definition": "Superlative of 'little': the smallest amount of",
+      "gloss": "Superlative of 'little': the smallest amount of",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
       "stress_pattern": null,
       "frequency_value": null,
       "frequency_scale": null,

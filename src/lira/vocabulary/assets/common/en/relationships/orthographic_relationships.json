@@ -2,6 +2,12 @@
   "schema_version": "1.0.0",
   "language_code": "en",
   "relationship_category": "orthographic",
-  "count": 0,
-  "relationships": []
+  "count": 1,
+  "relationships": [
+    {
+      "source_lexical_form": "not",
+      "target_lexical_form": "n't",
+      "relationship_kind": "CONTRACTION"
+    }
+  ]
 }

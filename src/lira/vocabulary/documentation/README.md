@@ -31,7 +31,7 @@ tree and design rules.
   `WordSeeder`, `RelationshipSeeder` -- plain service classes for the
   lexicon and relationship graph, not `*Agent` subclasses.
 - `assets/` -- `common/<language_code>/` -- the Common Vocabulary
-  Cache `WordSeeder` loads (`common/en/` -- the mandatory 300-word
+  Cache `WordSeeder` loads (`common/en/` -- the mandatory 307-word
   English Common Closed-Class Cache v1; see 9.4 and
   `assets/common/en/README.md`) plus `common/<language_code>/relationships/`
   -- the Common Vocabulary Relationship Cache `RelationshipSeeder`
@@ -564,16 +564,20 @@ as before this section existed.
 
 #### 9.4 The English Common Vocabulary Cache
 
-> Every English LIRA Domain shall contain the 300 lexical forms
+> Every English LIRA Domain shall contain the mandatory lexical forms
 > defined by the English Common Closed-Class Cache v1.
 
 This rule is what `Common`'s own `Dictionary` is seeded with, on
-`LIRAHost` construction, before anything else: the 300 mandatory
+`LIRAHost` construction, before anything else: the 307 mandatory
 English closed-class lexical forms (determiners, pronouns, auxiliaries,
 prepositions, coordinating and subordinating conjunctions, particles)
 that 9.3's propagation then carries into every `Domain` created
 afterwards. Seed `Common` once, and every English `Domain` on that
-`Host` satisfies the rule automatically.
+`Host` satisfies the rule automatically. (The count started at 300;
+`asset_version 1.2.0` added seven words -- `done`, `doing`, `little`,
+`fewest`, `least`, `owing to`, `n't` -- needed to seed 9.5's
+relationship cache in full; see `vocabulary/assets/common/en/README.md`'s
+Version section.)
 
 The cache itself -- its file format, exact counts, rebuild policy, and
 open-class word promotion/demotion rules -- is documented in full at
@@ -628,7 +632,7 @@ adding sibling asset directories in the same format -- no change to
 
 #### 9.5 The English Common Vocabulary Relationship Cache
 
-Once a `Domain`'s 300 mandatory `Word`s exist (9.4), that `Domain`
+Once a `Domain`'s 307 mandatory `Word`s exist (9.4), that `Domain`
 also gets the intrinsic lexical relationships between them --
 `be`/`have`/`do` conjugations, `this`/`that` plurals,
 comparative/superlative forms, personal pronoun paradigms, and a small
@@ -655,8 +659,8 @@ then the relationship assets, then for each one resolve its source
 Principle 8, in the same call), and finally validate the resulting
 graph.
 
-The cache -- file format, exact relationship list, seeding order,
-validation rules, and known gaps -- is documented in full at
+The cache -- file format, exact relationship list, and seeding and
+validation rules -- is documented in full at
 `vocabulary/assets/common/en/relationships/README.md`, alongside the
 data (`manifest.json` plus `morphological_relationships.json`,
 `semantic_relationships.json`, `orthographic_relationships.json`).
@@ -668,19 +672,19 @@ role that validates, loads, and seeds the cache:
 |--------|-----------------|
 | `validate_assets()` | Schema, per-file and total relationship counts, relationship kind validity, mandatory file existence, manifest consistency, and manifest checksum verification. |
 | `load_relationship_specs()` | Validates, then parses every category file into `(source_lexical_form, target_lexical_form, LexicalRelationshipType)` tuples. Cached after the first call. |
-| `seed_domain(domain)` | Resolves and creates every relationship against `domain`'s own `Dictionary`, skipping any that already exist (same source `Word`, kind, and target `Word` -- 12.3's duplicate definition) and raising if a source or target `Word` cannot be resolved, since that means the cache references a `Word` outside the mandatory set (see Known Gaps below), a data inconsistency rather than something to seed around silently. |
+| `seed_domain(domain)` | Resolves and creates every relationship against `domain`'s own `Dictionary`, skipping any that already exist (same source `Word`, kind, and target `Word` -- 12.3's duplicate definition) and raising if a source or target `Word` cannot be resolved, since that means the cache references a `Word` outside the mandatory set, a data inconsistency rather than something to seed around silently. |
 
 No `HYPERNYM`, `MERONYM`, or `TROPONYM` relationships are seeded for
 closed-class `Word`s -- those describe how open-class concepts relate
 to each other, not how a fixed set of grammatical function words does.
 
-**Known gap:** seven relationships from the original developer
-instructions for this cache reference words outside the mandatory
-300-word set (`done`, `doing`, `little`, `fewest`, `least`, `n't`,
-`owing to`) and are not seeded -- see the relationship cache README's
-Known Gaps table. Adding those six missing words would change the
-mandatory word count from 300 to 306, a decision left to 9.4's rule
-being revisited explicitly rather than made as a side effect here.
+Total relationships: **60**. (Seven of these -- `do`→`done`,
+`do`→`doing`, `few`→`fewest`, `little`→`less`, `little`→`least`,
+`due to`→`owing to`, `not`→`n't` -- originally referenced words outside
+the mandatory word set and were left unseeded; 9.4's word cache
+`asset_version 1.2.0` added those seven words specifically so this
+cache could seed them too. See the relationship cache README's
+Resolved Gaps section for the full history.)
 
 ##### 9.5.1 Pronoun Form relationships
 

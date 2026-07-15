@@ -2,7 +2,7 @@
   "schema_version": "1.0.0",
   "language_code": "en",
   "relationship_category": "semantic",
-  "count": 10,
+  "count": 11,
   "relationships": [
     {
       "source_lexical_form": "above",
@@ -52,6 +52,11 @@
     {
       "source_lexical_form": "beside",
       "target_lexical_form": "next to",
+      "relationship_kind": "SYNONYM"
+    },
+    {
+      "source_lexical_form": "due to",
+      "target_lexical_form": "owing to",
       "relationship_kind": "SYNONYM"
     }
   ]
