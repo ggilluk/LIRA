@@ -21,7 +21,7 @@ against a specific Domain's already-seeded `Word`s, not a store of
 
 | File | Category | Kinds seeded | Count |
 |------|----------|----------------|-------|
-| `morphological_relationships.json` | Morphological (6.2.1) | Person, tense, participle, and plural forms (`be`/`have`/`do` conjugations, `this`/`that` plurals); comparative/superlative forms (`few`/`many`/`much`/`little`); pronoun paradigm forms (`PRONOUN_OBJECT_FORM`, `PRONOUN_SUBJECT_FORM`, `PRONOUN_POSSESSIVE_DETERMINER_FORM`, `PRONOUN_POSSESSIVE_FORM`, `PRONOUN_REFLEXIVE_FORM`) | 48 |
+| `morphological_relationships.json` | Morphological (6.2.1) | Person, tense, participle, and plural forms (`be`/`have`/`do` conjugations, `this`/`that` plurals); comparative/superlative forms (`few`/`many`/`much`/`little`); pronoun paradigm forms (`PRONOUN_OBJECT_FORM`, `PRONOUN_POSSESSIVE_DETERMINER_FORM`, `PRONOUN_POSSESSIVE_FORM`, `PRONOUN_REFLEXIVE_FORM`) | 49 |
 | `semantic_relationships.json` | Lexical Semantic (6.2.2) | `ANTONYM` (spatial/temporal opposites: above/below, before/after, ...) and `SYNONYM` (equivalent prepositions: beneath/under, amid/among, due to/owing to, ...) only | 11 |
 | `orthographic_relationships.json` | Orthographic and Naming (6.2.3) | `CONTRACTION` (not/n't) | 1 |
 
@@ -31,7 +31,13 @@ describe how open-class concepts relate to each other, and don't apply
 to a fixed set of grammatical function words the way conjugation,
 pronoun paradigms, and near-synonymy do.
 
-Total relationships: **60**.
+`PRONOUN_SUBJECT_FORM` and `PRONOUN_RECIPROCAL_FORM` are defined
+(6.2.1, Pronoun Form) but not currently seeded anywhere in this file --
+every pronoun paradigm edge below runs from the subject/nominative form
+("I", "she", "they", ...) outward to its other forms, never the reverse
+direction those two kinds would represent. See Known gaps.
+
+Total relationships: **61**.
 
 ## Seeding order
 
@@ -109,6 +115,21 @@ mandatory word cache doesn't contain), not something to seed around
 silently; see Resolved gaps below for the one case this actually
 happened.
 
+## Known gaps
+
+`PRONOUN_SUBJECT_FORM` (e.g. "me" -> "I") and `PRONOUN_RECIPROCAL_FORM`
+(e.g. "they" -> "each other") are real `LexicalRelationshipType`
+members with no relationships seeded under them -- every existing
+pronoun paradigm edge is one-directional, from the subject form
+outward. Whether to add the reverse-direction edges (materialising
+`PRONOUN_SUBJECT_FORM` as the literal inverse of `PRONOUN_OBJECT_FORM`
+for every pronoun pair, and adding `PRONOUN_RECIPROCAL_FORM` targets)
+is a deliberate scope decision -- how many new edges, and whether the
+same treatment should extend to the other asymmetric morphological
+kinds (`PRESENT_TENSE_FORM`, `SINGULAR_FORM`, generic `LEMMA_FORM`/
+`INFLECTION`, ...), which are similarly one-directional today -- left
+open rather than guessed at here.
+
 ## Resolved gaps
 
 Seven relationships described in the original developer instructions
@@ -135,9 +156,14 @@ adds these seven relationships -- all now present in
 
 ## Version
 
-`v1` / `schema_version 1.0.0` / `asset_version 1.1.0` (53 -> 60
-relationships, resolving the seven gaps above; `asset_version 1.0.0`'s
-53 relationships are unchanged).
+`v1` / `schema_version 1.0.0` / `asset_version 1.2.0` (60 -> 61
+relationships: added the missing `she` -> `her`
+`PRONOUN_POSSESSIVE_DETERMINER_FORM` edge -- "her" is dual-role, both
+the object form and the possessive determiner form of "she", unlike
+`him`/`his` where those are distinct words, so it needed two edges, not
+one. `asset_version 1.1.0` took 53 -> 60, resolving the seven gaps in
+Resolved Gaps above; `asset_version 1.0.0`'s 53 relationships are
+unchanged).
 
 ## Future languages
 

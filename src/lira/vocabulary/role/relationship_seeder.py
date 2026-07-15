@@ -132,12 +132,18 @@ class RelationshipSeeder:
         calling this. Every relationship created this way gets all four
         system properties set to SEEDER_DEFAULT_WEIGHT, not the
         LexicalRelationshipProcessor.create default of 0.0 -- a seeded
-        relationship is a curated fact, not an unweighted placeholder."""
+        relationship is a curated fact, not an unweighted placeholder.
+
+        Resolution happens as a complete first pass, before any
+        relationship is created: if the Nth spec in the cache can't be
+        resolved, the first N-1 are never created either, rather than
+        this Domain ending up with a partially-seeded relationship
+        graph and no indication where it stopped."""
         dictionary: Dictionary = domain.vocabulary.dictionary
         store: LexicalRelationshipStore = domain.vocabulary.lexical_relationships
         processor = domain.vocabulary.lexical_relationship_processor
 
-        seeded = 0
+        resolved = []
         for source_form, target_form, relationship_type in self.load_relationship_specs():
             source_word = dictionary.lookup(source_form)
             if source_word is None:
@@ -145,7 +151,10 @@ class RelationshipSeeder:
             target_word = dictionary.lookup(target_form)
             if target_word is None:
                 raise ValueError(f"cannot resolve target Word '{target_form}' in Domain '{domain.name}'")
+            resolved.append((source_word, target_word, relationship_type))
 
+        seeded = 0
+        for source_word, target_word, relationship_type in resolved:
             if self._relationship_exists(store, source_word.uuid.value, target_word.uuid.value, relationship_type):
                 continue
 

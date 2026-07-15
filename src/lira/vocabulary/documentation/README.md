@@ -675,19 +675,25 @@ role that validates, loads, and seeds the cache:
 |--------|-----------------|
 | `validate_assets()` | Schema, per-file and total relationship counts, relationship kind validity, mandatory file existence, manifest consistency, and manifest checksum verification. |
 | `load_relationship_specs()` | Validates, then parses every category file into `(source_lexical_form, target_lexical_form, LexicalRelationshipType)` tuples. Cached after the first call. |
-| `seed_domain(domain)` | Resolves and creates every relationship against `domain`'s own `Dictionary`, skipping any that already exist (same source `Word`, kind, and target `Word` -- 12.3's duplicate definition) and raising if a source or target `Word` cannot be resolved, since that means the cache references a `Word` outside the mandatory set, a data inconsistency rather than something to seed around silently. Every relationship it creates gets all four system properties (confidence, provenance, temporal, activation) set to `SEEDER_DEFAULT_WEIGHT` (`0.9999`) -- a seeded relationship is a curated linguistic fact ("be" → "am" is `FIRST_PERSON_FORM`), not an unweighted placeholder, so it doesn't get `LexicalRelationshipProcessor.create`'s `0.0` default. `0.9999` rather than a literal `1.0` follows the same convention the Knowledge Layer uses for directly authored facts (`knowledge/data/tensor_graph.py`): certainty is never asserted as exactly `1.0`. |
+| `seed_domain(domain)` | Resolves every relationship against `domain`'s own `Dictionary` in a complete first pass -- raising if a source or target `Word` cannot be resolved, before creating anything, so a resolution failure partway through the cache never leaves a partially-seeded relationship graph -- then creates each one not already present (same source `Word`, kind, and target `Word` -- 12.3's duplicate definition). Every relationship it creates gets all four system properties (confidence, provenance, temporal, activation) set to `SEEDER_DEFAULT_WEIGHT` (`0.9999`) -- a seeded relationship is a curated linguistic fact ("be" → "am" is `FIRST_PERSON_FORM`), not an unweighted placeholder, so it doesn't get `LexicalRelationshipProcessor.create`'s `0.0` default. `0.9999` rather than a literal `1.0` follows the same convention the Knowledge Layer uses for directly authored facts (`knowledge/data/tensor_graph.py`): certainty is never asserted as exactly `1.0`. |
 
 No `HYPERNYM`, `MERONYM`, or `TROPONYM` relationships are seeded for
 closed-class `Word`s -- those describe how open-class concepts relate
 to each other, not how a fixed set of grammatical function words does.
 
-Total relationships: **60**. (Seven of these -- `do`→`done`,
+Total relationships: **61**. (Seven of these -- `do`→`done`,
 `do`→`doing`, `few`→`fewest`, `little`→`less`, `little`→`least`,
 `due to`→`owing to`, `not`→`n't` -- originally referenced words outside
 the mandatory word set and were left unseeded; 9.4's word cache
 `asset_version 1.2.0` added those seven words specifically so this
-cache could seed them too. See the relationship cache README's
-Resolved Gaps section for the full history.)
+cache could seed them too. An eighth, `she`→`her` `PRONOUN_POSSESSIVE_DETERMINER_FORM`,
+was added separately: "her" is dual-role, both the object and
+possessive-determiner form of "she", and only the object-form edge had
+been seeded. See the relationship cache README's Resolved Gaps and
+Known Gaps sections for the full history -- the latter covers
+`PRONOUN_SUBJECT_FORM`/`PRONOUN_RECIPROCAL_FORM` and the other
+currently one-directional morphological kinds, left open as a scope
+decision rather than guessed at here.)
 
 ##### 9.5.1 Pronoun Form relationships
 

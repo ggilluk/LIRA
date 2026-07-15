@@ -46,7 +46,6 @@ MANDATORY_FILES = (
     "subordinating_conjunctions.json",
     "particles.json",
 )
-MANDATORY_TOTAL = 307
 PROMOTED_FILE = "promoted_words.json"
 MANIFEST_FILE = "manifest.json"
 SCHEMA_VERSION = "2.0.0"
@@ -73,7 +72,14 @@ class WordSeeder:
         empty) or manifest.json (recomputed from the word files) if
         either is missing -- the only two files this can create, since
         the mandatory closed-class content itself has to be authored,
-        not synthesised."""
+        not synthesised.
+
+        The mandatory total is manifest-driven, not a hardcoded Python
+        constant: it's whatever the per-file `count`s actually sum to,
+        cross-checked against manifest.json's `total_lexical_forms` (or
+        written fresh from that sum if manifest.json doesn't exist yet).
+        Adding or removing mandatory words never requires a code change
+        here -- only the asset files and their manifest."""
         if not self.assets_dir.is_dir():
             raise FileNotFoundError(f"no Common Vocabulary Cache for language '{self.language_code}' at {self.assets_dir}")
 
@@ -103,10 +109,6 @@ class WordSeeder:
                 seen_lexical_forms.add(lexical_form)
             file_counts[filename] = doc["count"]
             computed_total += doc["count"]
-
-        if computed_total != MANDATORY_TOTAL:
-            raise ValueError(f"mandatory {self.language_code} cache does not contain exactly {MANDATORY_TOTAL} lexical forms (found {computed_total})")
-
         promoted_path = self.assets_dir / PROMOTED_FILE
         if not promoted_path.is_file():
             self._write_promoted_words([])

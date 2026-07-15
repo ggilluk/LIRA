@@ -2,7 +2,7 @@
   "schema_version": "1.0.0",
   "language_code": "en",
   "relationship_category": "morphological",
-  "count": 48,
+  "count": 49,
   "relationships": [
     {
       "source_lexical_form": "be",
@@ -158,6 +158,11 @@
       "source_lexical_form": "she",
       "target_lexical_form": "her",
       "relationship_kind": "PRONOUN_OBJECT_FORM"
+    },
+    {
+      "source_lexical_form": "she",
+      "target_lexical_form": "her",
+      "relationship_kind": "PRONOUN_POSSESSIVE_DETERMINER_FORM"
     },
     {
       "source_lexical_form": "she",
