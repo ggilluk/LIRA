@@ -64,26 +64,34 @@ class WordSeeder:
         self._cache: Optional[List[Word]] = None
 
     def validate_assets(self) -> None:
-        """Validates JSON schema, duplicate lexical forms, lexical
-        counts, mandatory file existence, manifest consistency,
-        promoted word uniqueness, language codes, normalised forms, and
-        that every register_codes/editorial_labels/part_of_speech value
-        names a real enum member. Creates promoted_words.json (starts
-        empty) or manifest.json (recomputed from the word files) if
-        either is missing -- the only two files this can create, since
-        the mandatory closed-class content itself has to be authored,
-        not synthesised.
+        """Validates JSON schema, duplicate (lexical_form, part_of_speech)
+        pairs, lexical counts, mandatory file existence, manifest
+        consistency, promoted word uniqueness, language codes,
+        normalised forms, and that every register_codes/editorial_labels/
+        part_of_speech value names a real enum member. Creates
+        promoted_words.json (starts empty) or manifest.json (recomputed
+        from the word files) if either is missing -- the only two files
+        this can create, since the mandatory closed-class content
+        itself has to be authored, not synthesised.
 
         The mandatory total is manifest-driven, not a hardcoded Python
         constant: it's whatever the per-file `count`s actually sum to,
         cross-checked against manifest.json's `total_lexical_forms` (or
         written fresh from that sum if manifest.json doesn't exist yet).
         Adding or removing mandatory words never requires a code change
-        here -- only the asset files and their manifest."""
+        here -- only the asset files and their manifest.
+
+        The same lexical_form may appear more than once in the mandatory
+        cache as long as each occurrence has a different part_of_speech
+        (Word 4.1: "the same written form may have multiple Word entries
+        where its ... grammatical category ... differs") -- "that" as
+        both DETERMINER and PRONOUN is legitimate; two entries with the
+        same lexical_form *and* the same part_of_speech is still a real
+        duplicate and still rejected."""
         if not self.assets_dir.is_dir():
             raise FileNotFoundError(f"no Common Vocabulary Cache for language '{self.language_code}' at {self.assets_dir}")
 
-        seen_lexical_forms = set()
+        seen_lexical_form_pos = set()
         file_counts: Dict[str, int] = {}
         computed_total = 0
 
@@ -99,16 +107,20 @@ class WordSeeder:
                 raise ValueError(f"{filename}: count {doc['count']} does not match {len(doc['words'])} word entries")
             for entry in doc["words"]:
                 lexical_form = entry["lexical_form"]
+                pos = entry["part_of_speech"]
                 if entry["language_code"] != self.language_code:
                     raise ValueError(f"{filename}: '{lexical_form}' has language_code '{entry['language_code']}', expected '{self.language_code}'")
                 if entry.get("normalised_form") != lexical_form.lower():
                     raise ValueError(f"{filename}: '{lexical_form}' has an inconsistent normalised_form")
-                if lexical_form in seen_lexical_forms:
-                    raise ValueError(f"{filename}: duplicate lexical_form '{lexical_form}' in the mandatory cache")
+                key = (lexical_form, pos)
+                if key in seen_lexical_form_pos:
+                    raise ValueError(f"{filename}: duplicate lexical_form '{lexical_form}' with part_of_speech '{pos}' in the mandatory cache")
                 self._validate_entry_enums(filename, entry)
-                seen_lexical_forms.add(lexical_form)
+                seen_lexical_form_pos.add(key)
             file_counts[filename] = doc["count"]
             computed_total += doc["count"]
+
+        seen_lexical_forms = {lexical_form for lexical_form, _ in seen_lexical_form_pos}
         promoted_path = self.assets_dir / PROMOTED_FILE
         if not promoted_path.is_file():
             self._write_promoted_words([])
@@ -169,17 +181,26 @@ class WordSeeder:
 
     def seed_closed_class_words(self, dictionary: Dictionary) -> int:
         """Appends a fresh copy of every cached Word into `dictionary`
-        that isn't already present (matched by text). Returns the
-        number actually appended -- idempotent, safe to call more than
-        once against the same Dictionary. Each copy gets a freshly
-        generated uuid: load_cache() is memoized, so calling this
-        against more than one Dictionary from the same WordSeeder
-        instance must not let two Dictionaries' Words share an
-        Identifier object (Qualified Word Identity -- see
-        Dictionary.seed_from, which has the same discipline)."""
+        that isn't already present (matched by text AND part_of_speech,
+        not text alone -- a homograph like "that" (DETERMINER) and
+        "that" (PRONOUN) are two distinct cached Words sharing one
+        surface text, and dictionary.lookup(text) alone would find
+        whichever was seeded first and treat the second as already
+        present, silently dropping it). Returns the number actually
+        appended -- idempotent, safe to call more than once against the
+        same Dictionary. Each copy gets a freshly generated uuid:
+        load_cache() is memoized, so calling this against more than one
+        Dictionary from the same WordSeeder instance must not let two
+        Dictionaries' Words share an Identifier object (Qualified Word
+        Identity -- see Dictionary.seed_from, which has the same
+        discipline)."""
         seeded = 0
         for word in self.load_cache():
-            if dictionary.lookup(word.text) is not None:
+            already_present = any(
+                existing.part_of_speech == word.part_of_speech
+                for existing in dictionary.lookup_all(word.text)
+            )
+            if already_present:
                 continue
             new_word = copy.copy(word)
             new_word.uuid = Identifier(value=str(uuid_module.uuid4()))

@@ -3,7 +3,7 @@
   "language_code": "en",
   "part_of_speech": "PRONOUN",
   "closed_class_kind": "pronoun",
-  "count": 93,
+  "count": 99,
   "words": [
     {
       "lexical_form": "I",
@@ -1126,6 +1126,42 @@
       ]
     },
     {
+      "lexical_form": "what",
+      "normalised_form": "what",
+      "text": "what",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "DETERMINER",
+      "closed_class": true,
+      "closed_class_kind": "determiner",
+      "definition": "Asks about the identity or nature of a thing, used directly before a noun",
+      "gloss": "Asks about the identity or nature of a thing, used directly before a noun",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
       "lexical_form": "which",
       "normalised_form": "which",
       "text": "which",
@@ -1137,6 +1173,42 @@
       "closed_class_kind": "pronoun",
       "definition": "Asks about, or singles out, one of a specific set of things or people",
       "gloss": "Asks about, or singles out, one of a specific set of things or people",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "lexical_form": "which",
+      "normalised_form": "which",
+      "text": "which",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "DETERMINER",
+      "closed_class": true,
+      "closed_class_kind": "determiner",
+      "definition": "Asks about, or singles out, one of a specific set of things or people, used directly before a noun",
+      "gloss": "Asks about, or singles out, one of a specific set of things or people, used directly before a noun",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -3363,6 +3435,150 @@
       "closed_class_kind": "pronoun",
       "definition": "Superlative of 'little': the smallest amount of",
       "gloss": "Superlative of 'little': the smallest amount of",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "lexical_form": "this",
+      "normalised_form": "this",
+      "text": "this",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true,
+      "closed_class_kind": "pronoun",
+      "definition": "Refers to a specific nearby thing being pointed to or discussed, standing alone rather than before a noun",
+      "gloss": "Refers to a specific nearby thing being pointed to or discussed, standing alone rather than before a noun",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "lexical_form": "that",
+      "normalised_form": "that",
+      "text": "that",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true,
+      "closed_class_kind": "pronoun",
+      "definition": "Refers to a specific thing already mentioned or farther away, standing alone, or introduces a relative clause",
+      "gloss": "Refers to a specific thing already mentioned or farther away, standing alone, or introduces a relative clause",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "lexical_form": "these",
+      "normalised_form": "these",
+      "text": "these",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true,
+      "closed_class_kind": "pronoun",
+      "definition": "Refers to multiple specific nearby things, standing alone rather than before a noun (plural of this)",
+      "gloss": "Refers to multiple specific nearby things, standing alone rather than before a noun (plural of this)",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "lexical_form": "those",
+      "normalised_form": "those",
+      "text": "those",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true,
+      "closed_class_kind": "pronoun",
+      "definition": "Refers to multiple specific distant or previously mentioned things, standing alone rather than before a noun (plural of that)",
+      "gloss": "Refers to multiple specific distant or previously mentioned things, standing alone rather than before a noun (plural of that)",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"

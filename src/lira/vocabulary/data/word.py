@@ -97,6 +97,16 @@ class Word(LinguisticUnit):
                         relationship_type: Optional[LexicalRelationshipType] = None,
                         group: Optional[int] = None, category: Optional[int] = None,
                         direction: str = "outgoing") -> Tuple["Word", ...]:
+        """Returns the distinct set of related Words, in first-seen
+        order -- not one entry per matching relationship. Two different
+        edges can legitimately point at the same other Word (e.g. "her"
+        is both the object form and the possessive-determiner form of
+        "she", two distinct LexicalRelationships to the same Word), and
+        a reciprocal pair (e.g. SYNONYM/ANTONYM, materialised in both
+        directions -- see assets/common/en/relationships/README.md's
+        Symmetric and inverse edges) is visible as both an outgoing and
+        an incoming match under direction="both". Either way, a caller
+        asking "what Words is this related to" wants each Word once."""
         my_id = self.uuid.value
         other_ids = []
         if direction in ("outgoing", "both"):
@@ -105,14 +115,28 @@ class Word(LinguisticUnit):
         if direction in ("incoming", "both"):
             other_ids += [r.source_word_id.value for r in relationships.incoming(my_id)
                           if self._relationship_matches(r, relationship_type, group, category)]
-        resolved = (dictionary.find_by_uuid(word_id) for word_id in other_ids)
-        return tuple(word for word in resolved if word is not None)
+        seen_ids = set()
+        resolved = []
+        for word_id in other_ids:
+            if word_id in seen_ids:
+                continue
+            seen_ids.add(word_id)
+            word = dictionary.find_by_uuid(word_id)
+            if word is not None:
+                resolved.append(word)
+        return tuple(resolved)
 
     def lemma_forms(self, relationships: LexicalRelationshipStore, dictionary: "Dictionary") -> Tuple["Word", ...]:
         return self._related_words(relationships, dictionary, relationship_type=LexicalRelationshipType.LEMMA_FORM)
 
     def inflections(self, relationships: LexicalRelationshipStore, dictionary: "Dictionary") -> Tuple["Word", ...]:
-        return self._related_words(relationships, dictionary, relationship_type=LexicalRelationshipType.INFLECTION)
+        """Every Word that names this Word as its LEMMA_FORM -- the
+        inverse direction of lemma_forms(), read via LEMMA_FORM's own
+        incoming edges rather than a separately-seeded INFLECTION edge
+        (which would just duplicate the same (source, target) pair
+        under a second, less specific kind for no additional queryable
+        value)."""
+        return self._related_words(relationships, dictionary, relationship_type=LexicalRelationshipType.LEMMA_FORM, direction="incoming")
 
     def morphological_variants(self, relationships: LexicalRelationshipStore, dictionary: "Dictionary") -> Tuple["Word", ...]:
         return self._related_words(relationships, dictionary, group=0)

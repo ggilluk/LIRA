@@ -21,8 +21,8 @@ against a specific Domain's already-seeded `Word`s, not a store of
 
 | File | Category | Kinds seeded | Count |
 |------|----------|----------------|-------|
-| `morphological_relationships.json` | Morphological (6.2.1) | Person, tense, participle, and plural forms (`be`/`have`/`do` conjugations, `this`/`that` plurals); comparative/superlative forms (`few`/`many`/`much`/`little`); pronoun paradigm forms (`PRONOUN_OBJECT_FORM`, `PRONOUN_POSSESSIVE_DETERMINER_FORM`, `PRONOUN_POSSESSIVE_FORM`, `PRONOUN_REFLEXIVE_FORM`) | 49 |
-| `semantic_relationships.json` | Lexical Semantic (6.2.2) | `ANTONYM` (spatial/temporal opposites: above/below, before/after, ...) and `SYNONYM` (equivalent prepositions: beneath/under, amid/among, due to/owing to, ...) only | 11 |
+| `morphological_relationships.json` | Morphological (6.2.1) | Person, tense, participle, and plural forms (`be`/`have`/`do` conjugations, `this`/`that` plurals); comparative/superlative forms (`few`/`many`/`much`/`little`); pronoun paradigm forms (`PRONOUN_OBJECT_FORM`, `PRONOUN_SUBJECT_FORM`, `PRONOUN_POSSESSIVE_DETERMINER_FORM`, `PRONOUN_POSSESSIVE_FORM`, `PRONOUN_REFLEXIVE_FORM`); `LEMMA_FORM` (every edge's materialised reverse -- see Symmetric and inverse edges) | 98 |
+| `semantic_relationships.json` | Lexical Semantic (6.2.2) | `ANTONYM` (spatial/temporal opposites: above/below, before/after, ...) and `SYNONYM` (equivalent prepositions: beneath/under, amid/among, due to/owing to, ...), each materialised in both directions | 22 |
 | `orthographic_relationships.json` | Orthographic and Naming (6.2.3) | `CONTRACTION` (not/n't) | 1 |
 
 No `HYPERNYM`, `MERONYM`, or `TROPONYM` relationships are seeded for
@@ -31,13 +31,58 @@ describe how open-class concepts relate to each other, and don't apply
 to a fixed set of grammatical function words the way conjugation,
 pronoun paradigms, and near-synonymy do.
 
-`PRONOUN_SUBJECT_FORM` and `PRONOUN_RECIPROCAL_FORM` are defined
-(6.2.1, Pronoun Form) but not currently seeded anywhere in this file --
-every pronoun paradigm edge below runs from the subject/nominative form
-("I", "she", "they", ...) outward to its other forms, never the reverse
-direction those two kinds would represent. See Known gaps.
+`PRONOUN_RECIPROCAL_FORM` is defined (6.2.1, Pronoun Form) but not
+currently seeded in either direction -- see Known gaps.
 
-Total relationships: **61**.
+Total relationships: **121**.
+
+## Symmetric and inverse edges
+
+Every entry in `semantic_relationships.json`, and every entry in
+`morphological_relationships.json` originally seeded (49 of the 98
+entries there today), has its reverse materialised as a second, real
+edge -- not left to be inferred at query time:
+
+- **Semantic (`SYNONYM`/`ANTONYM`)**: genuinely symmetric relationships
+  -- if `above` is the `ANTONYM` of `below`, `below` is the `ANTONYM`
+  of `above` just as much, so both directions are stored (`above` →
+  `below` and `below` → `above`, each `ANTONYM`).
+- **Morphological, `PRONOUN_OBJECT_FORM` pairs**: the reverse of `I` →
+  `me` (`PRONOUN_OBJECT_FORM`) is `me` → `I`, seeded as
+  `PRONOUN_SUBJECT_FORM` -- the enum's own defined inverse of
+  `PRONOUN_OBJECT_FORM` (6.2.1's worked example for
+  `PRONOUN_SUBJECT_FORM` is exactly `"me" → "I"`).
+- **Every other morphological pair** (tense, number, aspect, degree,
+  the non-object pronoun-paradigm forms): the reverse is seeded as
+  `LEMMA_FORM` -- e.g. the reverse of `be` → `am`
+  (`FIRST_PERSON_FORM`) is `am` → `be` (`LEMMA_FORM`), and the reverse
+  of `I` → `myself` (`PRONOUN_REFLEXIVE_FORM`) is `myself` → `I`
+  (`LEMMA_FORM`). No separate, more-specific inverse kind exists for
+  these pairs the way `PRONOUN_SUBJECT_FORM` exists for
+  `PRONOUN_OBJECT_FORM`, so `LEMMA_FORM` -- "target is the lemma of
+  the source" -- is the correct fit: in every one of these pairs the
+  original edge's source genuinely is the more canonical, paradigm-
+  anchor form.
+- **A generic forward `INFLECTION` edge is deliberately never seeded**
+  alongside the specific kind an edge already has (e.g. no redundant
+  `be` → `am` `INFLECTION` on top of the existing `be` → `am`
+  `FIRST_PERSON_FORM`) -- it would assert the same `(source, target)`
+  pair twice under a less specific kind for no additional queryable
+  value. `Word.inflections()` gets the equivalent of a generic
+  `INFLECTION` view for free by querying `LEMMA_FORM` from the
+  *incoming* direction instead (`vocabulary/documentation/README.md`,
+  4.3) -- every seeded `LEMMA_FORM` edge already serves both
+  directions' derived properties.
+- **A word that fills two paradigm roles gets two reverse edges under
+  two different kinds**: `her` is both the object form and the
+  possessive-determiner form of `she`, so it has both `her` → `she`
+  (`PRONOUN_SUBJECT_FORM`, the reverse of the object-form edge) and
+  `her` → `she` (`LEMMA_FORM`, the reverse of the possessive-determiner
+  edge).
+- **`orthographic_relationships.json`'s one entry (`not` → `n't`,
+  `CONTRACTION`) is not reversed** -- there's no defined inverse kind
+  for "target is the expanded form", the way `LEMMA_FORM` covers every
+  morphological case.
 
 ## Seeding order
 
@@ -90,9 +135,11 @@ relationship kind, and a target Word UUID. `RelationshipSeeder` treats
 two relationships as duplicates only when all three match exactly (the
 same rule as documented in the Vocabulary Layer developer
 specification, 12.3) -- the same source and target Word under two
-*different* kinds (e.g. `his` as both `PRONOUN_POSSESSIVE_DETERMINER_FORM`
-and, in a future revision, `PRONOUN_POSSESSIVE_FORM`) is not a
-duplicate.
+*different* kinds is not a duplicate. This is exercised for real by
+`her` → `she`, which is seeded under both `PRONOUN_SUBJECT_FORM` (the
+reverse of `she` → `her`'s object-form edge) and `LEMMA_FORM` (the
+reverse of `she` → `her`'s possessive-determiner edge) -- two distinct,
+legitimate relationships between the same pair of Words.
 
 ## Validation
 
@@ -117,18 +164,29 @@ happened.
 
 ## Known gaps
 
-`PRONOUN_SUBJECT_FORM` (e.g. "me" -> "I") and `PRONOUN_RECIPROCAL_FORM`
-(e.g. "they" -> "each other") are real `LexicalRelationshipType`
-members with no relationships seeded under them -- every existing
-pronoun paradigm edge is one-directional, from the subject form
-outward. Whether to add the reverse-direction edges (materialising
-`PRONOUN_SUBJECT_FORM` as the literal inverse of `PRONOUN_OBJECT_FORM`
-for every pronoun pair, and adding `PRONOUN_RECIPROCAL_FORM` targets)
-is a deliberate scope decision -- how many new edges, and whether the
-same treatment should extend to the other asymmetric morphological
-kinds (`PRESENT_TENSE_FORM`, `SINGULAR_FORM`, generic `LEMMA_FORM`/
-`INFLECTION`, ...), which are similarly one-directional today -- left
-open rather than guessed at here.
+`PRONOUN_RECIPROCAL_FORM` (e.g. "they" -> "each other") is a real
+`LexicalRelationshipType` member with no relationships seeded under it
+in either direction -- unlike the rest of the Pronoun Form category,
+this one was never seeded even in its forward direction, so there was
+no existing edge for the Symmetric and inverse edges pass above to
+reverse. Adding it requires a new forward relationship (and possibly
+new target words, e.g. "each other"/"one another", if they aren't
+already in the mandatory word cache), not just materialising a reverse
+of something already present -- left open as a separate scope decision
+rather than folded into this pass.
+
+`PRESENT_TENSE_FORM` and `SINGULAR_FORM` are no longer gaps: every
+existing morphological edge, including tense and number pairs, now has
+its reverse materialised (as `LEMMA_FORM`, per Symmetric and inverse
+edges above) rather than the more specific inverse-tense/inverse-number
+kind. This means `PRESENT_TENSE_FORM` and `SINGULAR_FORM` themselves
+remain unused as *kinds* (no edge is seeded under those specific
+names), even though the relationship they'd represent -- "was" back to
+"be", "these" back to "this" -- is fully covered via `LEMMA_FORM`.
+Whether to additionally re-seed those specific reverse edges under
+their own more precise kind, instead of the generic `LEMMA_FORM`, is a
+possible future refinement, not required for `lemma_forms()`/
+`inflections()` to work correctly today.
 
 ## Resolved gaps
 
@@ -156,14 +214,18 @@ adds these seven relationships -- all now present in
 
 ## Version
 
-`v1` / `schema_version 1.0.0` / `asset_version 1.2.0` (60 -> 61
-relationships: added the missing `she` -> `her`
-`PRONOUN_POSSESSIVE_DETERMINER_FORM` edge -- "her" is dual-role, both
-the object form and the possessive determiner form of "she", unlike
-`him`/`his` where those are distinct words, so it needed two edges, not
-one. `asset_version 1.1.0` took 53 -> 60, resolving the seven gaps in
-Resolved Gaps above; `asset_version 1.0.0`'s 53 relationships are
-unchanged).
+`v1` / `schema_version 1.0.0` / `asset_version 1.3.0` (61 -> 121
+relationships: materialised the reverse of every existing morphological
+and semantic edge -- see Symmetric and inverse edges above -- taking
+`morphological_relationships.json` 49 -> 98 and
+`semantic_relationships.json` 11 -> 22; `orthographic_relationships.json`
+is unchanged at 1. `asset_version 1.2.0` took 60 -> 61, adding the
+missing `she` -> `her` `PRONOUN_POSSESSIVE_DETERMINER_FORM` edge --
+"her" is dual-role, both the object form and the possessive determiner
+form of "she", unlike `him`/`his` where those are distinct words, so it
+needed two edges, not one. `asset_version 1.1.0` took 53 -> 60,
+resolving the seven gaps in Resolved Gaps above; `asset_version 1.0.0`'s
+53 relationships are unchanged).
 
 ## Future languages
 

@@ -118,7 +118,7 @@ The Vocabulary Layer is responsible only for vocabulary data. It does not model 
 
 `Word` represents one lexical form in one language and one grammatical category.
 
-The same written form may have multiple `Word` entries where its language, script, grammatical category, or other identity-defining property differs.
+The same written form may have multiple `Word` entries where its language, script, grammatical category, or other identity-defining property differs. The Common Vocabulary Cache exercises this for real (9.4): `that`/`this`/`these`/`those` each have both a `DETERMINER` and a `PRONOUN` entry, and `which`/`what` each have both a `PRONOUN` and a `DETERMINER` entry.
 
 > **Note:** this `Word` superseded the smaller class that used to be
 > implemented in `vocabulary/data/word.py` (which only had `text`,
@@ -177,10 +177,12 @@ The same written form may have multiple `Word` entries where its language, scrip
 
 None of the following are stored directly on `Word`. Each is computed on demand by querying `LexicalRelationship` for records where this `Word` is the source (or target, where noted) -- not a lookup, a live derivation from the relationship graph. In `word.py`, each is a method rather than a bare `@property`, since a live derivation needs the relationship store and the `Dictionary` (to resolve the other word in each match) passed in -- e.g. `word.synonyms(relationships, dictionary)`.
 
+Every one of these returns each related `Word` once, not once per matching relationship -- two different edges can legitimately point at the same other `Word` (`her` is both the object form and the possessive-determiner form of `she`, two distinct `LexicalRelationship`s to the same `Word`), and a reciprocal pair materialised in both directions (`SYNONYM`/`ANTONYM`, see the relationship cache README's Symmetric and inverse edges section) is visible as both an outgoing and an incoming match for a `direction="both"` property. `Word._related_words` (the shared helper behind every property below) deduplicates by target `Word` identity before returning.
+
 | Derived Property | Type | Backing Relationship Type / Category | Meaning |
 |-------------------|------|---------------------------------------|---------|
 | `lemma_forms` | `tuple[Word, ...]` | `LEMMA_FORM` (6.2.1 Base relation) | The dictionary root form(s) this `Word` is an inflected or derived form of |
-| `inflections` | `tuple[Word, ...]` | `INFLECTION` (6.2.1 Base relation) | The inflected form(s) derived from this `Word` |
+| `inflections` | `tuple[Word, ...]` | `LEMMA_FORM`, incoming (6.2.1 Base relation) | The inflected form(s) derived from this `Word` -- every `Word` that names this one as its `LEMMA_FORM`, not a separately-seeded `INFLECTION` edge (`INFLECTION` is defined but never seeded, since it would only duplicate the same pair `LEMMA_FORM` already covers from the other direction) |
 | `morphological_variants` | `tuple[Word, ...]` | Morphological group, all categories (6.2.1) | Every grammatical variant of this `Word` -- tense, number, person, degree, and derivational forms combined |
 | `derived_forms` | `tuple[Word, ...]` | Derivation category (6.2.1) | New words formed from this `Word` by a derivational prefix or suffix |
 | `synonyms` | `tuple[Word, ...]` | `SYNONYM` (6.2.2 Similarity/Opposition) | Words that mean roughly the same as this `Word` |
@@ -571,7 +573,7 @@ as before this section existed.
 > defined by the English Common Closed-Class Cache v1.
 
 This rule is what `Common`'s own `Dictionary` is seeded with, on
-`LIRAHost` construction, before anything else: the 307 mandatory
+`LIRAHost` construction, before anything else: the 313 mandatory
 English closed-class lexical forms (determiners, pronouns, auxiliaries,
 prepositions, coordinating and subordinating conjunctions, particles)
 that 9.3's propagation then carries into every `Domain` created
@@ -579,8 +581,13 @@ afterwards. Seed `Common` once, and every English `Domain` on that
 `Host` satisfies the rule automatically. (The count started at 300;
 `asset_version 1.2.0` added seven words -- `done`, `doing`, `little`,
 `fewest`, `least`, `owing to`, `n't` -- needed to seed 9.5's
-relationship cache in full; see `vocabulary/assets/common/en/README.md`'s
-Version section.)
+relationship cache in full. `asset_version 1.3.0` added six more as
+genuine homographs -- `this`/`that`/`these`/`those` also as `PRONOUN`,
+`which`/`what` also as `DETERMINER` -- each sharing a lexical_form with
+an existing entry under a different `part_of_speech` (4.1's "same
+written form, multiple `Word` entries" case, exercised here for the
+first time); see `vocabulary/assets/common/en/README.md`'s Version
+section for both.)
 
 The cache itself -- its file format, exact counts, rebuild policy, and
 open-class word promotion/demotion rules -- is documented in full at
@@ -609,9 +616,9 @@ of open-class words into and out of `promoted_words.json`:
 
 | Method | Responsibility |
 |--------|-----------------|
-| `validate_assets()` | Schema, duplicate lexical forms, per-file and total counts, mandatory file existence, manifest consistency, language codes, normalised forms. Creates `promoted_words.json` (empty) or `manifest.json` (recomputed) if either is missing -- never the mandatory closed-class content itself, which has to be authored. |
+| `validate_assets()` | Schema, duplicate `(lexical_form, part_of_speech)` pairs (not lexical_form alone -- a homograph like "that" as both `DETERMINER` and `PRONOUN` is legitimate, only a true repeat of the same form *and* the same part of speech is rejected), per-file and total counts, mandatory file existence, manifest consistency, language codes, normalised forms. The mandatory total is manifest-driven, not a hardcoded constant -- whatever the per-file counts sum to, cross-checked against `manifest.json`. Creates `promoted_words.json` (empty) or `manifest.json` (recomputed) if either is missing -- never the mandatory closed-class content itself, which has to be authored. |
 | `load_cache()` | Validates, then parses every mandatory file plus `promoted_words.json` into `Word` instances, each with `is_common=True`. Cached after the first call. |
-| `seed_closed_class_words(dictionary)` | Appends a fresh copy of every cached `Word` not already present into `dictionary`. Idempotent. |
+| `seed_closed_class_words(dictionary)` | Appends a fresh copy of every cached `Word` not already present into `dictionary`, matched by text *and* `part_of_speech` together (not text alone, which would treat a homograph's second entry as already present and silently drop it). Idempotent. |
 | `seed_domain(domain)` | `seed_closed_class_words` against `domain.vocabulary.dictionary`. |
 | `promote_word(word, reference_count)` | Adds an open-class `word` to `promoted_words.json` once `reference_count` exceeds `promotion_threshold` (default 3). |
 | `demote_word(word, reference_count)` | Removes a promoted `word` from `promoted_words.json` once `reference_count` falls below `demotion_threshold` (default 1) -- never touches the `Word`'s owning `Domain`. |
@@ -681,19 +688,25 @@ No `HYPERNYM`, `MERONYM`, or `TROPONYM` relationships are seeded for
 closed-class `Word`s -- those describe how open-class concepts relate
 to each other, not how a fixed set of grammatical function words does.
 
-Total relationships: **61**. (Seven of these -- `do`→`done`,
-`do`→`doing`, `few`→`fewest`, `little`→`less`, `little`→`least`,
-`due to`→`owing to`, `not`→`n't` -- originally referenced words outside
-the mandatory word set and were left unseeded; 9.4's word cache
-`asset_version 1.2.0` added those seven words specifically so this
-cache could seed them too. An eighth, `she`→`her` `PRONOUN_POSSESSIVE_DETERMINER_FORM`,
-was added separately: "her" is dual-role, both the object and
-possessive-determiner form of "she", and only the object-form edge had
-been seeded. See the relationship cache README's Resolved Gaps and
-Known Gaps sections for the full history -- the latter covers
-`PRONOUN_SUBJECT_FORM`/`PRONOUN_RECIPROCAL_FORM` and the other
-currently one-directional morphological kinds, left open as a scope
-decision rather than guessed at here.)
+Total relationships: **121**. Every originally-seeded morphological and
+semantic edge now has its reverse materialised as a second, real edge
+(`her`'s two roles get two reverse edges under two different kinds; see
+the relationship cache README's Symmetric and inverse edges section for
+the full rule set) -- this is also why `Word.inflections()` (4.3) reads
+`LEMMA_FORM` from the *incoming* direction rather than a separately-
+seeded `INFLECTION` edge: every derived form now has an explicit
+outgoing `LEMMA_FORM` edge back to its lemma, so the lemma's incoming
+`LEMMA_FORM` edges already are its inflections, with no redundant
+generic edge needed. (Earlier history: seven relationships --
+`do`→`done`, `do`→`doing`, `few`→`fewest`, `little`→`less`,
+`little`→`least`, `due to`→`owing to`, `not`→`n't` -- originally
+referenced words outside the mandatory word set and were left unseeded
+until 9.4's word cache `asset_version 1.2.0` added those seven words;
+an eighth, `she`→`her` `PRONOUN_POSSESSIVE_DETERMINER_FORM`, was added
+separately since only the object-form edge had been seeded for that
+dual-role word. See the relationship cache README's Resolved Gaps and
+Known Gaps sections for the full history, including
+`PRONOUN_RECIPROCAL_FORM`, still unseeded in either direction.)
 
 ##### 9.5.1 Pronoun Form relationships
 

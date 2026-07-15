@@ -22,7 +22,7 @@ working vocabulary immediately, not to be a system of record.
 |------|----------|-------------------|
 | `manifest.json` | Schema/asset version, language, per-file and total lexical form counts | -- |
 | `determiners.json` | Determiners (the, a, this, my, some, ...) | 37 |
-| `pronouns.json` | Personal, possessive, reflexive, interrogative, relative, reciprocal, and indefinite pronouns | 93 |
+| `pronouns.json` | Personal, possessive, reflexive, interrogative, relative, reciprocal, and indefinite pronouns, plus `which`/`what`'s secondary `DETERMINER` entries (see the file-placement note above) | 99 |
 | `auxiliaries.json` | Primary auxiliaries (be, have, do), modals (will, can, must), semi-modals (need, dare) | 29 |
 | `prepositions.json` | Simple and compound/complex prepositions | 93 |
 | `coordinating_conjunctions.json` | FANBOYS -- for, and, nor, but, or, yet, so | 7 |
@@ -30,9 +30,13 @@ working vocabulary immediately, not to be a system of record.
 | `particles.json` | not, there, please, also, too, only, ... | 12 |
 | `promoted_words.json` | Open-class words promoted from Domain vocabularies (starts empty) | 0 |
 
-Mandatory closed-class total: **307** (37 + 93 + 29 + 93 + 7 + 36 + 12).
-`promoted_words.json` is not counted toward the mandatory 307 -- it's a
-separate, uncapped, generated list.
+Mandatory closed-class total: **313** (37 + 99 + 29 + 93 + 7 + 36 + 12).
+`promoted_words.json` is not counted toward the mandatory 313 -- it's a
+separate, uncapped, generated list. Since `asset_version 1.3.0`, this
+total is manifest-driven rather than a hardcoded figure `WordSeeder`
+asserts: it's whatever the per-file counts actually sum to, cross-checked
+against `manifest.json`'s `total_lexical_forms` -- see
+`vocabulary/role/word_seeder.py`'s `validate_assets()`.
 
 `asset_version 1.2.0` added seven words (`done`, `doing`, `little`,
 `fewest`, `least`, `owing to`, `n't`) that the original 300-word
@@ -41,6 +45,40 @@ relationships specified for the Relationship Cache
 (`relationships/README.md`) but previously left unseeded because they
 had no source Word to resolve against -- see that file's version
 history for the corresponding relationship-side change.
+
+`asset_version 1.3.0` added six words as genuine homographs, each
+sharing a lexical_form with an existing entry but under a different
+part_of_speech: `this`/`that`/`these`/`those` also as `PRONOUN` (their
+new entries live in `pronouns.json`, alongside their existing
+`DETERMINER` entries in `determiners.json`), and `which`/`what` also as
+`DETERMINER` (their new entries live in `pronouns.json` too --
+positioned right after their existing `PRONOUN` entries there, *not*
+in `determiners.json` -- see the file-placement note below). `who` was
+deliberately not given a second entry -- it has no natural determiner
+use ("who book" isn't valid English) the way "which book" or "what
+time" are. This is the first real use of the homograph modelling `Word`
+4.1 always permitted in principle: two `Word` entries sharing one
+written form, distinguished by `part_of_speech`.
+
+`Dictionary.lookup(text)` still only resolves to whichever entry was
+seeded first, and `WordSeeder.load_cache()` processes `MANDATORY_FILES`
+in a fixed order (`determiners.json`, `pronouns.json`, `auxiliaries.json`,
+...) -- so for `this`/`that`/`these`/`those`, whose original,
+higher-frequency sense is `DETERMINER`, adding the new `PRONOUN` entry
+to `pronouns.json` (processed second) correctly keeps `DETERMINER` as
+the default. But `which`/`what`'s original, higher-frequency sense is
+`PRONOUN` (in `pronouns.json`) -- adding their new `DETERMINER` entry to
+`determiners.json` would have made it load *first*, silently flipping
+the default sense. So `which`/`what`'s new `DETERMINER` entries are
+deliberately placed inside `pronouns.json` instead, positioned after
+the original `PRONOUN` entry in that file's array, purely to preserve
+correct load order; a word's `part_of_speech` field is authoritative
+per entry regardless of which file it lives in -- `determiners.json`/
+`pronouns.json` are organisational buckets, not enforced-by-validation
+type boundaries. Every existing relationship that resolves these words
+by lexical form (e.g. `that` → `those` `PLURAL_FORM`) continues to
+resolve to the correct sense either way. `Dictionary.lookup_all(text)`
+returns every sense regardless of file placement or load order.
 
 ## File format
 
@@ -141,12 +179,14 @@ they're already part of the mandatory cache.
 
 ## Version
 
-`v1` / `schema_version 2.0.0` / `asset_version 1.2.0` (300 -> 307
-mandatory lexical forms, adding `done`, `doing`, `little`, `fewest`,
-`least`, `owing to`, `n't` -- see Files above. `asset_version 1.1.0`
-revised the schema to carry `Word`'s full field set; the original 300
-lexical forms and their meanings were unchanged from `asset_version
-1.0.0`).
+`v1` / `schema_version 2.0.0` / `asset_version 1.3.0` (307 -> 313
+mandatory lexical forms, adding `this`/`that`/`these`/`those` as
+`PRONOUN` and `which`/`what` as `DETERMINER` homographs of their
+existing entries -- see Files above. `asset_version 1.2.0` took 300 ->
+307, adding `done`, `doing`, `little`, `fewest`, `least`, `owing to`,
+`n't`. `asset_version 1.1.0` revised the schema to carry `Word`'s full
+field set; the original 300 lexical forms and their meanings were
+unchanged from `asset_version 1.0.0`).
 
 ## Language extension
 

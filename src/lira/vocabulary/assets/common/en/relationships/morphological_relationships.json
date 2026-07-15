@@ -2,7 +2,7 @@
   "schema_version": "1.0.0",
   "language_code": "en",
   "relationship_category": "morphological",
-  "count": 49,
+  "count": 98,
   "relationships": [
     {
       "source_lexical_form": "be",
@@ -248,6 +248,251 @@
       "source_lexical_form": "little",
       "target_lexical_form": "least",
       "relationship_kind": "SUPERLATIVE_FORM"
+    },
+    {
+      "source_lexical_form": "am",
+      "target_lexical_form": "be",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "is",
+      "target_lexical_form": "be",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "are",
+      "target_lexical_form": "be",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "was",
+      "target_lexical_form": "be",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "were",
+      "target_lexical_form": "be",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "been",
+      "target_lexical_form": "be",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "being",
+      "target_lexical_form": "be",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "has",
+      "target_lexical_form": "have",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "had",
+      "target_lexical_form": "have",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "having",
+      "target_lexical_form": "have",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "does",
+      "target_lexical_form": "do",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "did",
+      "target_lexical_form": "do",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "these",
+      "target_lexical_form": "this",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "those",
+      "target_lexical_form": "that",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "fewer",
+      "target_lexical_form": "few",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "more",
+      "target_lexical_form": "many",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "most",
+      "target_lexical_form": "many",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "more",
+      "target_lexical_form": "much",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "most",
+      "target_lexical_form": "much",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "me",
+      "target_lexical_form": "I",
+      "relationship_kind": "PRONOUN_SUBJECT_FORM"
+    },
+    {
+      "source_lexical_form": "my",
+      "target_lexical_form": "I",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "mine",
+      "target_lexical_form": "I",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "myself",
+      "target_lexical_form": "I",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "your",
+      "target_lexical_form": "you",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "yours",
+      "target_lexical_form": "you",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "yourself",
+      "target_lexical_form": "you",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "yourselves",
+      "target_lexical_form": "you",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "him",
+      "target_lexical_form": "he",
+      "relationship_kind": "PRONOUN_SUBJECT_FORM"
+    },
+    {
+      "source_lexical_form": "his",
+      "target_lexical_form": "he",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "himself",
+      "target_lexical_form": "he",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "her",
+      "target_lexical_form": "she",
+      "relationship_kind": "PRONOUN_SUBJECT_FORM"
+    },
+    {
+      "source_lexical_form": "her",
+      "target_lexical_form": "she",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "hers",
+      "target_lexical_form": "she",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "herself",
+      "target_lexical_form": "she",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "its",
+      "target_lexical_form": "it",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "itself",
+      "target_lexical_form": "it",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "us",
+      "target_lexical_form": "we",
+      "relationship_kind": "PRONOUN_SUBJECT_FORM"
+    },
+    {
+      "source_lexical_form": "our",
+      "target_lexical_form": "we",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "ours",
+      "target_lexical_form": "we",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "ourselves",
+      "target_lexical_form": "we",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "them",
+      "target_lexical_form": "they",
+      "relationship_kind": "PRONOUN_SUBJECT_FORM"
+    },
+    {
+      "source_lexical_form": "their",
+      "target_lexical_form": "they",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "theirs",
+      "target_lexical_form": "they",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "themselves",
+      "target_lexical_form": "they",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "done",
+      "target_lexical_form": "do",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "doing",
+      "target_lexical_form": "do",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "fewest",
+      "target_lexical_form": "few",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "less",
+      "target_lexical_form": "little",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "least",
+      "target_lexical_form": "little",
+      "relationship_kind": "LEMMA_FORM"
     }
   ]
 }
