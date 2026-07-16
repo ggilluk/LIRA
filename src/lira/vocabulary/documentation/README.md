@@ -36,8 +36,8 @@ tree and design rules.
 - `assets/` -- `common/<language_code>/` -- the Common Vocabulary
   Cache `WordSeeder` loads (`common/en/` -- the mandatory 376-word
   English Common Closed-Class Cache v1 (including punctuation, symbols,
-  and numerals), plus 143 supplementary open-class metalinguistic terms
-  across five parts of speech; see 9.4 and `assets/common/en/README.md`)
+  and numerals), plus 158 supplementary open-class metalinguistic terms
+  across six parts of speech; see 9.4 and `assets/common/en/README.md`)
   plus `common/<language_code>/relationships/`
   -- the Common Vocabulary Relationship Cache `RelationshipSeeder`
   loads (`common/en/relationships/`; see 9.5 and
@@ -654,9 +654,39 @@ also grew by 13 mathematics and logic operator verbs -- `add`,
 `or`, `not`, `nor`) are homographs of their existing mandatory
 `PREPOSITION`/`CONJUNCTION`/`PARTICLE` senses, safe by the same
 `MANDATORY_FILES`-loads-before-`SUPPLEMENTARY_FILES` rule as
-`be`/`have`/`do` above. A freshly seeded `Dictionary` now ends up with
-376 + 143 = 519 `Word`s, covering 14 of `PartOfSpeech`'s 16 members --
-only `INTERJECTION` and `OTHER` remain unseeded.)
+`be`/`have`/`do` above.
+
+`asset_version 1.8.0` seeded `INTERJECTION`, the last populatable
+`PartOfSpeech` category: `metalinguistic_interjections.json` (12
+entries -- `yes`, `no`, `please`, `alas`, `hurrah`, `huzzah`, `oh`,
+`ah`, `wow`, `hey`, `ouch`, `hmm`) joined `SUPPLEMENTARY_FILES`. Unlike
+`PROPER_NOUN`'s strict scan, none of these are literally referenced in
+an existing definition -- `INTERJECTION` came back empty under that
+standard, so this list instead uses a looser "actually recognized
+use" standard, seeded only after explicit sign-off on each entry:
+`yes`/`no`/`please` are homographs of already-seeded words (`no` as
+`DETERMINER`, `please` as `PARTICLE`) and double as the canonical
+answers/requests; `alas`/`hurrah`/`huzzah` match the existing
+`LITERARY`/`ARCHAIC` register precedent already established elsewhere
+in the cache (`huzzah` also carries `editorial_labels: ["ARCHAIC"]`);
+`oh`/`ah`/`wow`/`hey`/`ouch`/`hmm` are the prototypical core of the
+category. `metalinguistic_nouns.json` also grew by three: `true`,
+`false`, `null` (all `register_codes: ["TECHNICAL"]`) -- these are
+`OTHER`-shaped at first glance ("doesn't fit `NOUN`/`VERB`/..."), but
+each has an ordinary, definable lexical meaning (a truth value; the
+absence of a value) and functions grammatically as a noun in the
+sentences that use them ("the result is **true**"), so they were
+seeded as `NOUN` rather than forced into `OTHER` on the same reasoning
+that keeps `OTHER` itself empty: an articulable definition is evidence
+a word belongs somewhere else, not in `OTHER`. `OTHER` is a pure
+"doesn't fit any other category" residual with no defined membership
+of its own, so unlike every other category in this cache it stays
+deliberately unseeded rather than seeded to completion -- there is no
+principled stopping point for "words that fit nowhere else" the way
+there is for a finite symbol set or a closed grammatical class. A
+freshly seeded `Dictionary` now ends up with 376 + 158 = 534 `Word`s,
+covering 15 of `PartOfSpeech`'s 16 members -- only `OTHER` remains
+unseeded, by design.)
 
 The cache itself -- its file format, exact counts, rebuild policy, and
 open-class word promotion/demotion rules -- is documented in full at

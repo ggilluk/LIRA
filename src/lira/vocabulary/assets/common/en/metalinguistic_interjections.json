@@ -1,0 +1,443 @@
+{
+  "schema_version": "2.0.0",
+  "language_code": "en",
+  "part_of_speech": "INTERJECTION",
+  "closed_class_kind": "metalinguistic_term",
+  "count": 12,
+  "words": [
+    {
+      "lexical_form": "yes",
+      "normalised_form": "yes",
+      "text": "yes",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "INTERJECTION",
+      "closed_class": false,
+      "closed_class_kind": "metalinguistic_term",
+      "definition": "Expresses affirmation or agreement",
+      "gloss": "Expresses affirmation or agreement",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Metalinguistic Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "lexical_form": "no",
+      "normalised_form": "no",
+      "text": "no",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "INTERJECTION",
+      "closed_class": false,
+      "closed_class_kind": "metalinguistic_term",
+      "definition": "Expresses negation, refusal, or disagreement, standing alone rather than before a noun",
+      "gloss": "Expresses negation, refusal, or disagreement, standing alone rather than before a noun",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Metalinguistic Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "lexical_form": "please",
+      "normalised_form": "please",
+      "text": "please",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "INTERJECTION",
+      "closed_class": false,
+      "closed_class_kind": "metalinguistic_term",
+      "definition": "A standalone, urgent or emphatic plea, rather than softening a request before a verb",
+      "gloss": "A standalone, urgent or emphatic plea, rather than softening a request before a verb",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Metalinguistic Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "lexical_form": "alas",
+      "normalised_form": "alas",
+      "text": "alas",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "INTERJECTION",
+      "closed_class": false,
+      "closed_class_kind": "metalinguistic_term",
+      "definition": "Expresses grief, regret, or concern",
+      "gloss": "Expresses grief, regret, or concern",
+      "usage_notes": [],
+      "register_codes": [
+        "LITERARY"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Metalinguistic Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "lexical_form": "hurrah",
+      "normalised_form": "hurrah",
+      "text": "hurrah",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "INTERJECTION",
+      "closed_class": false,
+      "closed_class_kind": "metalinguistic_term",
+      "definition": "Expresses joy, approval, or triumph",
+      "gloss": "Expresses joy, approval, or triumph",
+      "usage_notes": [],
+      "register_codes": [
+        "LITERARY"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Metalinguistic Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "lexical_form": "huzzah",
+      "normalised_form": "huzzah",
+      "text": "huzzah",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "INTERJECTION",
+      "closed_class": false,
+      "closed_class_kind": "metalinguistic_term",
+      "definition": "Archaic expression of joy or triumph",
+      "gloss": "Archaic expression of joy or triumph",
+      "usage_notes": [],
+      "register_codes": [
+        "LITERARY"
+      ],
+      "editorial_labels": [
+        "ARCHAIC"
+      ],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Metalinguistic Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "lexical_form": "oh",
+      "normalised_form": "oh",
+      "text": "oh",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "INTERJECTION",
+      "closed_class": false,
+      "closed_class_kind": "metalinguistic_term",
+      "definition": "Expresses surprise, realisation, or emotion",
+      "gloss": "Expresses surprise, realisation, or emotion",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Metalinguistic Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "lexical_form": "ah",
+      "normalised_form": "ah",
+      "text": "ah",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "INTERJECTION",
+      "closed_class": false,
+      "closed_class_kind": "metalinguistic_term",
+      "definition": "Expresses realisation, understanding, or satisfaction",
+      "gloss": "Expresses realisation, understanding, or satisfaction",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Metalinguistic Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "lexical_form": "wow",
+      "normalised_form": "wow",
+      "text": "wow",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "INTERJECTION",
+      "closed_class": false,
+      "closed_class_kind": "metalinguistic_term",
+      "definition": "Expresses astonishment or admiration",
+      "gloss": "Expresses astonishment or admiration",
+      "usage_notes": [],
+      "register_codes": [
+        "INFORMAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Metalinguistic Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "lexical_form": "hey",
+      "normalised_form": "hey",
+      "text": "hey",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "INTERJECTION",
+      "closed_class": false,
+      "closed_class_kind": "metalinguistic_term",
+      "definition": "Used to attract attention, or as an informal greeting",
+      "gloss": "Used to attract attention, or as an informal greeting",
+      "usage_notes": [],
+      "register_codes": [
+        "INFORMAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Metalinguistic Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "lexical_form": "ouch",
+      "normalised_form": "ouch",
+      "text": "ouch",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "INTERJECTION",
+      "closed_class": false,
+      "closed_class_kind": "metalinguistic_term",
+      "definition": "Expresses sudden physical pain",
+      "gloss": "Expresses sudden physical pain",
+      "usage_notes": [],
+      "register_codes": [
+        "INFORMAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Metalinguistic Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "lexical_form": "hmm",
+      "normalised_form": "hmm",
+      "text": "hmm",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "INTERJECTION",
+      "closed_class": false,
+      "closed_class_kind": "metalinguistic_term",
+      "definition": "Expresses hesitation, thought, or mild doubt",
+      "gloss": "Expresses hesitation, thought, or mild doubt",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Metalinguistic Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    }
+  ]
+}

@@ -16,7 +16,7 @@ LexicalRelationshipType additionally bit-packing group/category/item
 Every English Word.is_common is True only when it was loaded by
 WordSeeder from the English Common Vocabulary Cache (376 mandatory
 closed-class lexical forms -- including punctuation, symbols, and
-numerals, see below -- plus 143 supplementary open-class metalinguistic
+numerals, see below -- plus 158 supplementary open-class metalinguistic
 terms -- assets/common/en/), never set by hand.
 
 There is no separate Punctuation class: a punctuation mark (".", "!",

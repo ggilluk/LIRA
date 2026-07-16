@@ -89,10 +89,21 @@ SUPPLEMENTARY_FILES = (
     # inherently open-ended, unlike SYMBOL/NUMERAL above), just the one
     # word already referenced by name in an existing definition
     # ("y'all", pronouns.json: "...chiefly Southern US English").
-    # INTERJECTION and OTHER stay unseeded: nothing in the current cache
-    # references an example of either.
     "metalinguistic_proper_nouns.json",
+    # metalinguistic_interjections.json: "no" and "please" are homographs
+    # of mandatory determiners.json/particles.json entries -- safe
+    # regardless of this tuple's order, since MANDATORY_FILES always
+    # loads first in full (same reasoning as be/have/do above).
+    "metalinguistic_interjections.json",
 )
+# OTHER stays deliberately unseeded: it is PartOfSpeech's pure "doesn't
+# fit any other category" residual, with no defined membership --
+# unlike every category above, being able to articulate a real
+# definition for a word is evidence it belongs in NOUN/VERB/whatever,
+# not OTHER. true/false/null (boolean and null constants, pairing with
+# the and/or/xor/nand/nor/xnor operator verbs) were seeded as NOUN in
+# metalinguistic_nouns.json instead, on exactly that reasoning, rather
+# than forced into OTHER just to make the tag non-empty.
 PROMOTED_FILE = "promoted_words.json"
 MANIFEST_FILE = "manifest.json"
 SCHEMA_VERSION = "2.0.0"

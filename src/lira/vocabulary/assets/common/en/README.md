@@ -6,10 +6,10 @@ This cache provides the mandatory English closed-class lexical forms
 every LIRA Domain's Vocabulary must contain: determiners, pronouns,
 auxiliaries, prepositions, coordinating and subordinating
 conjunctions, particles, punctuation, symbols, and numerals. It also
-holds five `metalinguistic_*.json` files, one per part of speech, of
+holds six `metalinguistic_*.json` files, one per part of speech, of
 open-class terms for grammar itself (`noun`, `verb`, `subject`,
 `tense`, `synonym`, `determine`, `grammatical`, `grammatically`,
-`English`, ...) that the mandatory files' own definitions constantly
+`English`, `yes`, ...) that the mandatory files' own definitions constantly
 presuppose (see Supplementary files below), and `promoted_words.json`,
 a generated (initially empty) list of open-class words promoted from
 Domain vocabularies once they're referenced widely enough to be worth
@@ -36,15 +36,16 @@ working vocabulary immediately, not to be a system of record.
 | `punctuation.json` | `.`, `!`, `?`, `;`, `,` -- see Punctuation is a Word below | 5 |
 | `symbols.json` | `$`, `%`, `&`, `@`, `+`, `=`, ... -- common typographic/mathematical symbols | 25 |
 | `numerals.json` | `zero` through `trillion` -- the base numeral words all other numbers are compositionally built from | 33 |
-| `metalinguistic_nouns.json` | Open-class `NOUN` terms for grammar itself, including relationship-kind terms (`synonym`, `lemma`, `contraction`, ...) -- see Supplementary files below | 58 |
+| `metalinguistic_nouns.json` | Open-class `NOUN` terms for grammar itself, including relationship-kind terms (`synonym`, `lemma`, `contraction`, ...) and `true`/`false`/`null` -- see Supplementary files below | 61 |
 | `metalinguistic_verbs.json` | Open-class `VERB` terms for grammar itself, including mathematics/logic operator verbs (`add`, `xor`, `nand`, ...) | 43 |
 | `metalinguistic_adjectives.json` | Open-class `ADJECTIVE` terms for grammar itself | 28 |
 | `metalinguistic_adverbs.json` | Open-class `ADVERB` terms for grammar itself | 13 |
 | `metalinguistic_proper_nouns.json` | A single `PROPER_NOUN` entry, `English` -- see Supplementary files below | 1 |
+| `metalinguistic_interjections.json` | Open-class `INTERJECTION` terms (`yes`, `no`, `please`, `alas`, `hurrah`, `huzzah`, `oh`, `ah`, `wow`, `hey`, `ouch`, `hmm`) -- see Supplementary files below | 12 |
 | `promoted_words.json` | Open-class words promoted from Domain vocabularies (starts empty) | 0 |
 
 Mandatory closed-class total: **376** (37 + 99 + 29 + 93 + 7 + 36 + 12 + 5 + 25 + 33).
-The five `metalinguistic_*.json` files and `promoted_words.json` are
+The six `metalinguistic_*.json` files and `promoted_words.json` are
 not counted toward the mandatory 376 -- see Supplementary files below
 and the Promotion policy section respectively. Since `asset_version
 1.3.0`, the mandatory total is manifest-driven rather than a hardcoded
@@ -96,37 +97,73 @@ default -- see the ordering comment above `MANDATORY_FILES` in
 
 ## Supplementary files
 
-The five `metalinguistic_*.json` files -- one per part of speech,
+The six `metalinguistic_*.json` files -- one per part of speech,
 mirroring the mandatory files' own convention -- are validated and
 seeded exactly like the mandatory closed-class files
 (`WordSeeder.SUPPLEMENTARY_FILES`), but excluded from the mandatory 376
-total, because their content is a different kind of thing: 143
+total, because their content is a different kind of thing: 158
 open-class entries naming grammatical and lexical-relationship concepts
 themselves -- `word`, `noun`, `verb`, `subject`, `tense`, `synonym`,
-`lemma`, `contraction` (nouns); `identify`, `describe`, `compare`,
-`determine`, plus mathematics/logic operator verbs `add`, `subtract`,
-`multiply`, `divide`, `xor`, `nand`, `nor`, `xnor` (verbs);
-`grammatical`, `semantic`, `possessive`, `derived` (adjectives);
-`grammatically`, `directly`, `typically` (adverbs); `English` (the one
-`PROPER_NOUN`). These terms are referenced constantly, by name,
-throughout the mandatory files' own definitions ("Introduces a
-**noun** referring to...", "used with uncountable **nouns**", "third
-**person**"), the `LexicalRelationshipType` enum's own member names
-and documentation (6.2), and this codebase's own documentation
-generally, but before `asset_version 1.4.0` were represented nowhere
-in the seeded vocabulary at all -- every closed-class definition and
-every relationship kind presupposed them without a single one actually
-existing as a `Word`.
+`lemma`, `contraction`, `true`, `false`, `null` (nouns); `identify`,
+`describe`, `compare`, `determine`, plus mathematics/logic operator
+verbs `add`, `subtract`, `multiply`, `divide`, `xor`, `nand`, `nor`,
+`xnor` (verbs); `grammatical`, `semantic`, `possessive`, `derived`
+(adjectives); `grammatically`, `directly`, `typically` (adverbs);
+`English` (the one `PROPER_NOUN`); `yes`, `alas`, `hmm` (interjections,
+see Interjections and the `OTHER` exception below). These terms are
+referenced constantly, by name, throughout the mandatory files' own
+definitions ("Introduces a **noun** referring to...", "used with
+uncountable **nouns**", "third **person**"), the
+`LexicalRelationshipType` enum's own member names and documentation
+(6.2), and this codebase's own documentation generally, but before
+`asset_version 1.4.0` were represented nowhere in the seeded vocabulary
+at all -- every closed-class definition and every relationship kind
+presupposed them without a single one actually existing as a `Word`.
 
 These are ordinary open-class content words, not closed-class function
 words, so they don't belong in the mandatory 376 the way determiners or
 prepositions do; they also aren't `promoted_words.json` entries, since
 that file's `reference_count` field means real cross-domain usage
-tracking (`WordSeeder.promote_word`), and these 143 weren't promoted
+tracking (`WordSeeder.promote_word`), and these 158 weren't promoted
 from anywhere -- they're authored bootstrap content, same standing as
 the mandatory files themselves. `WordSeeder.seed_closed_class_words`
 seeds them into every Domain's Dictionary regardless (its name
 predates these files; see that method's docstring).
+
+### Interjections and the `OTHER` exception
+
+`asset_version 1.8.0` seeded `INTERJECTION`, the last `PartOfSpeech`
+category with a real, principled path to seeding. Every other
+supplementary category so far was scoped by a strict rule -- seed only
+what an existing definition already references (`PROPER_NOUN`), or
+what a finite closed inventory contains in full (`SYMBOL`,
+`NUMERAL`, `PUNCTUATION`) -- and `INTERJECTION` came back empty under
+that same strict scan: nothing in the existing cache literally quotes
+an interjection. It was seeded anyway, on explicit sign-off, using a
+looser "actually recognized use" standard instead:
+`metalinguistic_interjections.json`'s 12 entries are `yes`/`no`/`please`
+(homographs of already-seeded `DETERMINER`/`PARTICLE` words, doubling
+as the canonical answers/requests), `alas`/`hurrah`/`huzzah` (matching
+the `LITERARY`/`ARCHAIC` register precedent this cache already uses
+elsewhere for archaic forms like `thou`/`ye`), and
+`oh`/`ah`/`wow`/`hey`/`ouch`/`hmm` (the prototypical core of the
+category). `true`, `false`, and `null` were added to
+`metalinguistic_nouns.json` in the same `asset_version` for a related
+but distinct reason: they read as `OTHER`-shaped at first glance, but
+each has an ordinary, definable meaning (a truth value; the absence of
+a value) and functions grammatically as a `NOUN` in the sentences that
+use them ("the result is **true**"), so they were seeded as `NOUN`
+rather than forced into `OTHER`.
+
+`OTHER` itself remains, and is expected to permanently remain,
+unseeded. It is `PartOfSpeech`'s pure "doesn't fit any other category"
+residual, with no defined membership of its own -- unlike every other
+category in this cache, there is no principled stopping point for
+"words that fit nowhere else" the way there is for a finite symbol set,
+a closed grammatical class, or even a looser "recognized use" standard.
+An articulable definition and grammatical function, as `true`/`false`/
+`null` both have, is evidence a word belongs somewhere else, not in
+`OTHER`.
 
 ### Homographs with existing entries
 
@@ -145,12 +182,14 @@ mandatory files:
 | `and`, `or`, `nor` | `CONJUNCTION` (`coordinating_conjunctions.json`) | `VERB` (`metalinguistic_verbs.json`, logic operator sense) |
 | `not` | `PARTICLE` (`particles.json`) | `VERB` (`metalinguistic_verbs.json`, logic operator sense) |
 | `one` | `PRONOUN` (`pronouns.json`) | `NUMERAL` (`numerals.json`) |
+| `no` | `DETERMINER` (`determiners.json`) | `INTERJECTION` (`metalinguistic_interjections.json`) |
+| `please` | `PARTICLE` (`particles.json`) | `INTERJECTION` (`metalinguistic_interjections.json`) |
 
 In every case the original, closed-class-or-first-seeded sense stays
 the `Dictionary.lookup()` default: `be`/`have`/`do`/`past`/`opposite`/
-`plus`/`minus`/`and`/`or`/`nor`/`not` are safe because `MANDATORY_FILES`
-(containing their original sense) always loads in full before
-`SUPPLEMENTARY_FILES` regardless of ordering; `cause`/`result` and
+`plus`/`minus`/`and`/`or`/`nor`/`not`/`no`/`please` are safe because
+`MANDATORY_FILES` (containing their original sense) always loads in
+full before `SUPPLEMENTARY_FILES` regardless of ordering; `cause`/`result` and
 `one` specifically require their mandatory/original file
 (`metalinguistic_nouns.json`, `pronouns.json`) to load before the file
 carrying their new sense (`metalinguistic_verbs.json`, `numerals.json`)
@@ -302,7 +341,18 @@ they're already part of the mandatory cache.
 
 ## Version
 
-`v1` / `schema_version 2.0.0` / `asset_version 1.7.0` (added
+`v1` / `schema_version 2.0.0` / `asset_version 1.8.0` (added
+`metalinguistic_interjections.json`, 12 `INTERJECTION` entries -- `yes`,
+`no`, `please`, `alas`, `hurrah`, `huzzah`, `oh`, `ah`, `wow`, `hey`,
+`ouch`, `hmm` -- to `SUPPLEMENTARY_FILES`; two are homographs of
+existing mandatory senses (`no`/`please`), see Homographs with existing
+entries above. Added `true`, `false`, `null` to
+`metalinguistic_nouns.json` (58 -> 61), on the same reasoning that
+keeps `OTHER` unseeded -- see Interjections and the `OTHER` exception
+above. Supplementary total 143 -> 158; every seeded Dictionary now
+carries 534 total: 376 mandatory + 158 supplementary, covering 15 of
+`PartOfSpeech`'s 16 members (only `OTHER` remains unseeded, by design).
+`asset_version 1.7.0` added
 `symbols.json` (25 `SYMBOL`) and `numerals.json` (33 `NUMERAL`) to
 `MANDATORY_FILES` -- mandatory total 318 -> 376; see Symbols and
 numerals above. Added `metalinguistic_proper_nouns.json` (1
