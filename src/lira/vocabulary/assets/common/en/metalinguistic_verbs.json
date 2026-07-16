@@ -3,7 +3,7 @@
   "language_code": "en",
   "part_of_speech": "VERB",
   "closed_class_kind": "metalinguistic_term",
-  "count": 30,
+  "count": 43,
   "words": [
     {
       "lexical_form": "be",
@@ -1070,6 +1070,474 @@
       "pronunciations": [],
       "syllable_representation": null,
       "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Metalinguistic Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "lexical_form": "add",
+      "normalised_form": "add",
+      "text": "add",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "VERB",
+      "closed_class": false,
+      "closed_class_kind": "metalinguistic_term",
+      "definition": "To combine two or more numbers or quantities into a single sum",
+      "gloss": "To combine two or more numbers or quantities into a single sum",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Metalinguistic Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "lexical_form": "subtract",
+      "normalised_form": "subtract",
+      "text": "subtract",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "VERB",
+      "closed_class": false,
+      "closed_class_kind": "metalinguistic_term",
+      "definition": "To take one number or quantity away from another",
+      "gloss": "To take one number or quantity away from another",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Metalinguistic Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "lexical_form": "multiply",
+      "normalised_form": "multiply",
+      "text": "multiply",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "VERB",
+      "closed_class": false,
+      "closed_class_kind": "metalinguistic_term",
+      "definition": "To combine a number with itself a given number of times to produce a product",
+      "gloss": "To combine a number with itself a given number of times to produce a product",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 3,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Metalinguistic Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "lexical_form": "divide",
+      "normalised_form": "divide",
+      "text": "divide",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "VERB",
+      "closed_class": false,
+      "closed_class_kind": "metalinguistic_term",
+      "definition": "To separate a number or quantity into equal parts by another",
+      "gloss": "To separate a number or quantity into equal parts by another",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Metalinguistic Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "lexical_form": "plus",
+      "normalised_form": "plus",
+      "text": "plus",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "VERB",
+      "closed_class": false,
+      "closed_class_kind": "metalinguistic_term",
+      "definition": "To add together with (the operator sense of the preposition 'plus', used as a verb)",
+      "gloss": "To add together with (the operator sense of the preposition 'plus', used as a verb)",
+      "usage_notes": [],
+      "register_codes": [
+        "TECHNICAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Metalinguistic Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "lexical_form": "minus",
+      "normalised_form": "minus",
+      "text": "minus",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "VERB",
+      "closed_class": false,
+      "closed_class_kind": "metalinguistic_term",
+      "definition": "To subtract from (the operator sense of the preposition 'minus', used as a verb)",
+      "gloss": "To subtract from (the operator sense of the preposition 'minus', used as a verb)",
+      "usage_notes": [],
+      "register_codes": [
+        "TECHNICAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Metalinguistic Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "lexical_form": "and",
+      "normalised_form": "and",
+      "text": "and",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "VERB",
+      "closed_class": false,
+      "closed_class_kind": "metalinguistic_term",
+      "definition": "To combine two conditions such that both must be true (logical AND, used as a verb)",
+      "gloss": "To combine two conditions such that both must be true (logical AND, used as a verb)",
+      "usage_notes": [],
+      "register_codes": [
+        "TECHNICAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Metalinguistic Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "lexical_form": "or",
+      "normalised_form": "or",
+      "text": "or",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "VERB",
+      "closed_class": false,
+      "closed_class_kind": "metalinguistic_term",
+      "definition": "To combine two conditions such that at least one must be true (logical OR, used as a verb)",
+      "gloss": "To combine two conditions such that at least one must be true (logical OR, used as a verb)",
+      "usage_notes": [],
+      "register_codes": [
+        "TECHNICAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Metalinguistic Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "lexical_form": "xor",
+      "normalised_form": "xor",
+      "text": "xor",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "VERB",
+      "closed_class": false,
+      "closed_class_kind": "metalinguistic_term",
+      "definition": "To combine two conditions such that exactly one, but not both, must be true (logical exclusive OR)",
+      "gloss": "To combine two conditions such that exactly one, but not both, must be true (logical exclusive OR)",
+      "usage_notes": [],
+      "register_codes": [
+        "TECHNICAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Metalinguistic Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "lexical_form": "not",
+      "normalised_form": "not",
+      "text": "not",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "VERB",
+      "closed_class": false,
+      "closed_class_kind": "metalinguistic_term",
+      "definition": "To reverse the truth value of a condition (logical negation, used as a verb)",
+      "gloss": "To reverse the truth value of a condition (logical negation, used as a verb)",
+      "usage_notes": [],
+      "register_codes": [
+        "TECHNICAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Metalinguistic Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "lexical_form": "nand",
+      "normalised_form": "nand",
+      "text": "nand",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "VERB",
+      "closed_class": false,
+      "closed_class_kind": "metalinguistic_term",
+      "definition": "To combine two conditions such that the result is false only when both are true (logical NAND, the negation of AND)",
+      "gloss": "To combine two conditions such that the result is false only when both are true (logical NAND, the negation of AND)",
+      "usage_notes": [],
+      "register_codes": [
+        "TECHNICAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Metalinguistic Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "lexical_form": "nor",
+      "normalised_form": "nor",
+      "text": "nor",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "VERB",
+      "closed_class": false,
+      "closed_class_kind": "metalinguistic_term",
+      "definition": "To combine two conditions such that the result is true only when both are false (logical NOR, the negation of OR, used as a verb)",
+      "gloss": "To combine two conditions such that the result is true only when both are false (logical NOR, the negation of OR, used as a verb)",
+      "usage_notes": [],
+      "register_codes": [
+        "TECHNICAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Metalinguistic Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "lexical_form": "xnor",
+      "normalised_form": "xnor",
+      "text": "xnor",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "VERB",
+      "closed_class": false,
+      "closed_class_kind": "metalinguistic_term",
+      "definition": "To combine two conditions such that the result is true only when both have the same truth value (logical XNOR, the negation of XOR)",
+      "gloss": "To combine two conditions such that the result is true only when both have the same truth value (logical XNOR, the negation of XOR)",
+      "usage_notes": [],
+      "register_codes": [
+        "TECHNICAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
       "stress_pattern": null,
       "frequency_value": null,
       "frequency_scale": null,

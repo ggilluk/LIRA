@@ -46,6 +46,14 @@ MANDATORY_FILES = (
     "subordinating_conjunctions.json",
     "particles.json",
     "punctuation.json",
+    # symbols.json and numerals.json are appended last, not
+    # alphabetically or arbitrarily: numerals.json's "one" is a
+    # homograph of pronouns.json's existing "one" (indefinite PRONOUN,
+    # "one should always...") -- pronouns.json must load first so
+    # PRONOUN stays Dictionary.lookup()'s default, the same ordering
+    # discipline SUPPLEMENTARY_FILES documents below for cause/result.
+    "symbols.json",
+    "numerals.json",
 )
 # Supplementary files: authored, validated, and always loaded/seeded
 # like MANDATORY_FILES, but NOT counted toward the mandatory closed-class
@@ -76,6 +84,14 @@ SUPPLEMENTARY_FILES = (
     "metalinguistic_verbs.json",
     "metalinguistic_adjectives.json",
     "metalinguistic_adverbs.json",
+    # metalinguistic_proper_nouns.json is a single word, "English" -- not
+    # an attempt at a general proper-noun vocabulary (PROPER_NOUN is
+    # inherently open-ended, unlike SYMBOL/NUMERAL above), just the one
+    # word already referenced by name in an existing definition
+    # ("y'all", pronouns.json: "...chiefly Southern US English").
+    # INTERJECTION and OTHER stay unseeded: nothing in the current cache
+    # references an example of either.
+    "metalinguistic_proper_nouns.json",
 )
 PROMOTED_FILE = "promoted_words.json"
 MANIFEST_FILE = "manifest.json"

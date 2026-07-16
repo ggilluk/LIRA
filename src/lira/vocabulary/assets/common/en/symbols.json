@@ -1,0 +1,909 @@
+{
+  "schema_version": "2.0.0",
+  "language_code": "en",
+  "part_of_speech": "SYMBOL",
+  "closed_class_kind": "symbol",
+  "count": 25,
+  "words": [
+    {
+      "lexical_form": "$",
+      "normalised_form": "$",
+      "text": "$",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "SYMBOL",
+      "closed_class": true,
+      "closed_class_kind": "symbol",
+      "definition": "Dollar sign: denotes an amount of money in dollars",
+      "gloss": "Dollar sign: denotes an amount of money in dollars",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": null,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "lexical_form": "%",
+      "normalised_form": "%",
+      "text": "%",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "SYMBOL",
+      "closed_class": true,
+      "closed_class_kind": "symbol",
+      "definition": "Percent sign: denotes a proportion out of one hundred",
+      "gloss": "Percent sign: denotes a proportion out of one hundred",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": null,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "lexical_form": "&",
+      "normalised_form": "&",
+      "text": "&",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "SYMBOL",
+      "closed_class": true,
+      "closed_class_kind": "symbol",
+      "definition": "Ampersand: represents the word 'and'",
+      "gloss": "Ampersand: represents the word 'and'",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": null,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "lexical_form": "@",
+      "normalised_form": "@",
+      "text": "@",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "SYMBOL",
+      "closed_class": true,
+      "closed_class_kind": "symbol",
+      "definition": "At sign: marks a location, rate, or the domain part of an email address",
+      "gloss": "At sign: marks a location, rate, or the domain part of an email address",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": null,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "lexical_form": "#",
+      "normalised_form": "#",
+      "text": "#",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "SYMBOL",
+      "closed_class": true,
+      "closed_class_kind": "symbol",
+      "definition": "Hash (or number) sign: marks a number, a code, or a social-media tag",
+      "gloss": "Hash (or number) sign: marks a number, a code, or a social-media tag",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": null,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "lexical_form": "*",
+      "normalised_form": "*",
+      "text": "*",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "SYMBOL",
+      "closed_class": true,
+      "closed_class_kind": "symbol",
+      "definition": "Asterisk: marks a footnote, an omission, or multiplication",
+      "gloss": "Asterisk: marks a footnote, an omission, or multiplication",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": null,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "lexical_form": "+",
+      "normalised_form": "+",
+      "text": "+",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "SYMBOL",
+      "closed_class": true,
+      "closed_class_kind": "symbol",
+      "definition": "Plus sign: denotes addition or a positive value",
+      "gloss": "Plus sign: denotes addition or a positive value",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": null,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "lexical_form": "-",
+      "normalised_form": "-",
+      "text": "-",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "SYMBOL",
+      "closed_class": true,
+      "closed_class_kind": "symbol",
+      "definition": "Minus sign (or hyphen): denotes subtraction, a negative value, or joins compound words",
+      "gloss": "Minus sign (or hyphen): denotes subtraction, a negative value, or joins compound words",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": null,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "lexical_form": "=",
+      "normalised_form": "=",
+      "text": "=",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "SYMBOL",
+      "closed_class": true,
+      "closed_class_kind": "symbol",
+      "definition": "Equals sign: denotes that two expressions have the same value",
+      "gloss": "Equals sign: denotes that two expressions have the same value",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": null,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "lexical_form": "<",
+      "normalised_form": "<",
+      "text": "<",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "SYMBOL",
+      "closed_class": true,
+      "closed_class_kind": "symbol",
+      "definition": "Less-than sign: denotes that the value on the left is smaller than the value on the right",
+      "gloss": "Less-than sign: denotes that the value on the left is smaller than the value on the right",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": null,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "lexical_form": ">",
+      "normalised_form": ">",
+      "text": ">",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "SYMBOL",
+      "closed_class": true,
+      "closed_class_kind": "symbol",
+      "definition": "Greater-than sign: denotes that the value on the left is larger than the value on the right",
+      "gloss": "Greater-than sign: denotes that the value on the left is larger than the value on the right",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": null,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "lexical_form": "/",
+      "normalised_form": "/",
+      "text": "/",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "SYMBOL",
+      "closed_class": true,
+      "closed_class_kind": "symbol",
+      "definition": "Slash: denotes division, alternatives, or a fraction",
+      "gloss": "Slash: denotes division, alternatives, or a fraction",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": null,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "lexical_form": "\\",
+      "normalised_form": "\\",
+      "text": "\\",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "SYMBOL",
+      "closed_class": true,
+      "closed_class_kind": "symbol",
+      "definition": "Backslash: separates elements in a file path or introduces an escape sequence",
+      "gloss": "Backslash: separates elements in a file path or introduces an escape sequence",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": null,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "lexical_form": "|",
+      "normalised_form": "|",
+      "text": "|",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "SYMBOL",
+      "closed_class": true,
+      "closed_class_kind": "symbol",
+      "definition": "Vertical bar (pipe): denotes logical OR, alternatives, or separates values",
+      "gloss": "Vertical bar (pipe): denotes logical OR, alternatives, or separates values",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": null,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "lexical_form": "~",
+      "normalised_form": "~",
+      "text": "~",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "SYMBOL",
+      "closed_class": true,
+      "closed_class_kind": "symbol",
+      "definition": "Tilde: denotes approximation or negation",
+      "gloss": "Tilde: denotes approximation or negation",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": null,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "lexical_form": "^",
+      "normalised_form": "^",
+      "text": "^",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "SYMBOL",
+      "closed_class": true,
+      "closed_class_kind": "symbol",
+      "definition": "Caret: denotes exponentiation or logical XOR",
+      "gloss": "Caret: denotes exponentiation or logical XOR",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": null,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "lexical_form": "_",
+      "normalised_form": "_",
+      "text": "_",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "SYMBOL",
+      "closed_class": true,
+      "closed_class_kind": "symbol",
+      "definition": "Underscore: joins words in place of a space, especially in identifiers",
+      "gloss": "Underscore: joins words in place of a space, especially in identifiers",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": null,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "lexical_form": "°",
+      "normalised_form": "°",
+      "text": "°",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "SYMBOL",
+      "closed_class": true,
+      "closed_class_kind": "symbol",
+      "definition": "Degree sign: denotes degrees of temperature, angle, or arc",
+      "gloss": "Degree sign: denotes degrees of temperature, angle, or arc",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": null,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "lexical_form": "§",
+      "normalised_form": "§",
+      "text": "§",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "SYMBOL",
+      "closed_class": true,
+      "closed_class_kind": "symbol",
+      "definition": "Section sign: marks a numbered section of a document",
+      "gloss": "Section sign: marks a numbered section of a document",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": null,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "lexical_form": "©",
+      "normalised_form": "©",
+      "text": "©",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "SYMBOL",
+      "closed_class": true,
+      "closed_class_kind": "symbol",
+      "definition": "Copyright sign: denotes that a work is protected by copyright",
+      "gloss": "Copyright sign: denotes that a work is protected by copyright",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": null,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "lexical_form": "®",
+      "normalised_form": "®",
+      "text": "®",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "SYMBOL",
+      "closed_class": true,
+      "closed_class_kind": "symbol",
+      "definition": "Registered trademark sign: denotes a legally registered trademark",
+      "gloss": "Registered trademark sign: denotes a legally registered trademark",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": null,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "lexical_form": "™",
+      "normalised_form": "™",
+      "text": "™",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "SYMBOL",
+      "closed_class": true,
+      "closed_class_kind": "symbol",
+      "definition": "Trademark sign: denotes an unregistered trademark",
+      "gloss": "Trademark sign: denotes an unregistered trademark",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": null,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "lexical_form": "€",
+      "normalised_form": "€",
+      "text": "€",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "SYMBOL",
+      "closed_class": true,
+      "closed_class_kind": "symbol",
+      "definition": "Euro sign: denotes an amount of money in euros",
+      "gloss": "Euro sign: denotes an amount of money in euros",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": null,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "lexical_form": "£",
+      "normalised_form": "£",
+      "text": "£",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "SYMBOL",
+      "closed_class": true,
+      "closed_class_kind": "symbol",
+      "definition": "Pound sign: denotes an amount of money in pounds sterling",
+      "gloss": "Pound sign: denotes an amount of money in pounds sterling",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": null,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "lexical_form": "¥",
+      "normalised_form": "¥",
+      "text": "¥",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "SYMBOL",
+      "closed_class": true,
+      "closed_class_kind": "symbol",
+      "definition": "Yen sign: denotes an amount of money in Japanese yen",
+      "gloss": "Yen sign: denotes an amount of money in Japanese yen",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": null,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    }
+  ]
+}

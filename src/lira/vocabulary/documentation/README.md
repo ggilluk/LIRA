@@ -34,10 +34,11 @@ tree and design rules.
   `WordSeeder`, `RelationshipSeeder` -- plain service classes for the
   lexicon and relationship graph, not `*Agent` subclasses.
 - `assets/` -- `common/<language_code>/` -- the Common Vocabulary
-  Cache `WordSeeder` loads (`common/en/` -- the mandatory 318-word
-  English Common Closed-Class Cache v1 (including punctuation), plus
-  129 supplementary open-class metalinguistic terms across four parts
-  of speech; see 9.4 and `assets/common/en/README.md`) plus `common/<language_code>/relationships/`
+  Cache `WordSeeder` loads (`common/en/` -- the mandatory 376-word
+  English Common Closed-Class Cache v1 (including punctuation, symbols,
+  and numerals), plus 143 supplementary open-class metalinguistic terms
+  across five parts of speech; see 9.4 and `assets/common/en/README.md`)
+  plus `common/<language_code>/relationships/`
   -- the Common Vocabulary Relationship Cache `RelationshipSeeder`
   loads (`common/en/relationships/`; see 9.5 and
   `assets/common/en/relationships/README.md`).
@@ -588,12 +589,12 @@ as before this section existed.
 > defined by the English Common Closed-Class Cache v1.
 
 This rule is what `Common`'s own `Dictionary` is seeded with, on
-`LIRAHost` construction, before anything else: the 318 mandatory
+`LIRAHost` construction, before anything else: the 376 mandatory
 English closed-class lexical forms (determiners, pronouns, auxiliaries,
 prepositions, coordinating and subordinating conjunctions, particles,
-punctuation) that 9.3's propagation then carries into every `Domain`
-created afterwards. Seed `Common` once, and every English `Domain` on
-that `Host` satisfies the rule automatically. (The count started at 300;
+punctuation, symbols, numerals) that 9.3's propagation then carries
+into every `Domain` created afterwards. Seed `Common` once, and every
+English `Domain` on that `Host` satisfies the rule automatically. (The count started at 300;
 `asset_version 1.2.0` added seven words -- `done`, `doing`, `little`,
 `fewest`, `least`, `owing to`, `n't` -- needed to seed 9.5's
 relationship cache in full. `asset_version 1.3.0` added six more as
@@ -630,18 +631,38 @@ punctuation mark is now an ordinary `Word` with
 `part_of_speech=PUNCTUATION`, seeded from the new mandatory
 `punctuation.json` (`.`, `!`, `?`, `;`, `,` -- the same five symbols
 `DictionaryProcessor` previously special-cased) exactly like any other
-`MANDATORY_FILES` entry, taking the mandatory total 313 -> 318. A
-freshly seeded `Dictionary` now ends up with 318 + 129 = 447 `Word`s.
-See 4.1 and `vocabulary/assets/common/en/README.md`'s Version section
-for the full rationale, and `linguistics/documentation/README.md` for
-the consequences on the Linguistics side (`GraphProcessor`,
-`Clause.tokens`, `ClauseSegmentationUtility`).)
+`MANDATORY_FILES` entry, taking the mandatory total 313 -> 318. See 4.1
+and `vocabulary/assets/common/en/README.md`'s Version section for the
+full rationale, and `linguistics/documentation/README.md` for the
+consequences on the Linguistics side (`GraphProcessor`, `Clause.tokens`,
+`ClauseSegmentationUtility`).
+
+`asset_version 1.7.0` seeded four more previously-empty `PartOfSpeech`
+categories: `symbols.json` (25 `SYMBOL` entries -- `$`, `%`, `@`, `+`,
+`=`, ...) and `numerals.json` (33 `NUMERAL` entries, the base numeral
+words `zero` through `trillion` all other numbers are compositionally
+built from) joined `MANDATORY_FILES`, taking the mandatory total 318 ->
+376; `metalinguistic_proper_nouns.json` (a single `PROPER_NOUN` entry,
+`English`) joined `SUPPLEMENTARY_FILES`, seeded strictly from a word
+already named in an existing definition (`y'all`'s, "...chiefly
+Southern US English") rather than an attempt at a general proper-noun
+vocabulary -- `INTERJECTION` and `OTHER` stayed unseeded, since nothing
+in the cache references an example of either. `metalinguistic_verbs.json`
+also grew by 13 mathematics and logic operator verbs -- `add`,
+`subtract`, `multiply`, `divide`, `plus`, `minus`, `and`, `or`, `xor`,
+`not`, `nand`, `nor`, `xnor` -- six of which (`plus`, `minus`, `and`,
+`or`, `not`, `nor`) are homographs of their existing mandatory
+`PREPOSITION`/`CONJUNCTION`/`PARTICLE` senses, safe by the same
+`MANDATORY_FILES`-loads-before-`SUPPLEMENTARY_FILES` rule as
+`be`/`have`/`do` above. A freshly seeded `Dictionary` now ends up with
+376 + 143 = 519 `Word`s, covering 14 of `PartOfSpeech`'s 16 members --
+only `INTERJECTION` and `OTHER` remain unseeded.)
 
 The cache itself -- its file format, exact counts, rebuild policy, and
 open-class word promotion/demotion rules -- is documented in full at
 `vocabulary/assets/common/en/README.md`, alongside the data
 (`manifest.json` plus one JSON file per closed-class kind, plus the
-four `metalinguistic_*.json` files and `promoted_words.json`). **The
+five `metalinguistic_*.json` files and `promoted_words.json`). **The
 cache is not the authoritative source of a `Word`** -- it is a
 generated bootstrap asset; the authoritative record of every `Word`
 remains the `Domain` that owns it.
@@ -665,7 +686,7 @@ of open-class words into and out of `promoted_words.json`:
 
 | Method | Responsibility |
 |--------|-----------------|
-| `validate_assets()` | Schema, duplicate `(lexical_form, part_of_speech)` pairs (not lexical_form alone -- a homograph like "that" as both `DETERMINER` and `PRONOUN` is legitimate, only a true repeat of the same form *and* the same part of speech is rejected), per-file and total counts, mandatory and supplementary file existence, manifest consistency, language codes, normalised forms. The mandatory total is manifest-driven, not a hardcoded constant -- whatever `MANDATORY_FILES`' counts sum to, cross-checked against `manifest.json`; `SUPPLEMENTARY_FILES` (the four `metalinguistic_*.json` files) are validated the same way but excluded from that total. Creates `promoted_words.json` (empty) or `manifest.json` (recomputed) if either is missing -- never the mandatory or supplementary content itself, which has to be authored. |
+| `validate_assets()` | Schema, duplicate `(lexical_form, part_of_speech)` pairs (not lexical_form alone -- a homograph like "that" as both `DETERMINER` and `PRONOUN` is legitimate, only a true repeat of the same form *and* the same part of speech is rejected), per-file and total counts, mandatory and supplementary file existence, manifest consistency, language codes, normalised forms. The mandatory total is manifest-driven, not a hardcoded constant -- whatever `MANDATORY_FILES`' counts sum to, cross-checked against `manifest.json`; `SUPPLEMENTARY_FILES` (the five `metalinguistic_*.json` files) are validated the same way but excluded from that total. Creates `promoted_words.json` (empty) or `manifest.json` (recomputed) if either is missing -- never the mandatory or supplementary content itself, which has to be authored. |
 | `load_cache()` | Validates, then parses every mandatory file, every supplementary file, and `promoted_words.json` into `Word` instances, each with `is_common=True`. Cached after the first call. |
 | `seed_closed_class_words(dictionary)` | Appends a fresh copy of every cached `Word` not already present into `dictionary` -- despite the name, this includes the supplementary open-class metalinguistic terms alongside the mandatory closed-class words, since `load_cache()` loads both together. Matched by text *and* `part_of_speech` together (not text alone, which would treat a homograph's second entry as already present and silently drop it). Idempotent. |
 | `seed_domain(domain)` | `seed_closed_class_words` against `domain.vocabulary.dictionary`. |

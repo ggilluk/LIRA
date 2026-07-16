@@ -1,8 +1,8 @@
 {
   "schema_version": "2.0.0",
-  "asset_version": "1.6.0",
+  "asset_version": "1.7.0",
   "language_code": "en",
-  "total_lexical_forms": 318,
+  "total_lexical_forms": 376,
   "files": [
     {
       "file": "determiners.json",
@@ -37,12 +37,20 @@
       "count": 5
     },
     {
+      "file": "symbols.json",
+      "count": 25
+    },
+    {
+      "file": "numerals.json",
+      "count": 33
+    },
+    {
       "file": "metalinguistic_nouns.json",
       "count": 58
     },
     {
       "file": "metalinguistic_verbs.json",
-      "count": 30
+      "count": 43
     },
     {
       "file": "metalinguistic_adjectives.json",
@@ -51,6 +59,10 @@
     {
       "file": "metalinguistic_adverbs.json",
       "count": 13
+    },
+    {
+      "file": "metalinguistic_proper_nouns.json",
+      "count": 1
     },
     {
       "file": "promoted_words.json",

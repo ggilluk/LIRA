@@ -5,14 +5,15 @@
 This cache provides the mandatory English closed-class lexical forms
 every LIRA Domain's Vocabulary must contain: determiners, pronouns,
 auxiliaries, prepositions, coordinating and subordinating
-conjunctions, and particles. It also holds four `metalinguistic_*.json`
-files, one per part of speech, of open-class terms for grammar itself
-(`noun`, `verb`, `subject`, `tense`, `synonym`, `determine`,
-`grammatical`, `grammatically`, ...) that the mandatory files' own
-definitions constantly presuppose (see Supplementary files below), and
-`promoted_words.json`, a generated (initially empty) list of open-class
-words promoted from Domain vocabularies once they're referenced widely
-enough to be worth treating as common.
+conjunctions, particles, punctuation, symbols, and numerals. It also
+holds five `metalinguistic_*.json` files, one per part of speech, of
+open-class terms for grammar itself (`noun`, `verb`, `subject`,
+`tense`, `synonym`, `determine`, `grammatical`, `grammatically`,
+`English`, ...) that the mandatory files' own definitions constantly
+presuppose (see Supplementary files below), and `promoted_words.json`,
+a generated (initially empty) list of open-class words promoted from
+Domain vocabularies once they're referenced widely enough to be worth
+treating as common.
 
 **The Common Vocabulary Cache is not the authoritative source of a
 Word.** Every Word's authoritative record lives in the Domain that
@@ -33,19 +34,22 @@ working vocabulary immediately, not to be a system of record.
 | `subordinating_conjunctions.json` | because, although, unless, while, ... | 36 |
 | `particles.json` | not, there, please, also, too, only, ... | 12 |
 | `punctuation.json` | `.`, `!`, `?`, `;`, `,` -- see Punctuation is a Word below | 5 |
+| `symbols.json` | `$`, `%`, `&`, `@`, `+`, `=`, ... -- common typographic/mathematical symbols | 25 |
+| `numerals.json` | `zero` through `trillion` -- the base numeral words all other numbers are compositionally built from | 33 |
 | `metalinguistic_nouns.json` | Open-class `NOUN` terms for grammar itself, including relationship-kind terms (`synonym`, `lemma`, `contraction`, ...) -- see Supplementary files below | 58 |
-| `metalinguistic_verbs.json` | Open-class `VERB` terms for grammar itself | 30 |
+| `metalinguistic_verbs.json` | Open-class `VERB` terms for grammar itself, including mathematics/logic operator verbs (`add`, `xor`, `nand`, ...) | 43 |
 | `metalinguistic_adjectives.json` | Open-class `ADJECTIVE` terms for grammar itself | 28 |
 | `metalinguistic_adverbs.json` | Open-class `ADVERB` terms for grammar itself | 13 |
+| `metalinguistic_proper_nouns.json` | A single `PROPER_NOUN` entry, `English` -- see Supplementary files below | 1 |
 | `promoted_words.json` | Open-class words promoted from Domain vocabularies (starts empty) | 0 |
 
-Mandatory closed-class total: **318** (37 + 99 + 29 + 93 + 7 + 36 + 12 + 5).
-The four `metalinguistic_*.json` files and `promoted_words.json` are
-not counted toward the mandatory 318 -- see Supplementary files below
+Mandatory closed-class total: **376** (37 + 99 + 29 + 93 + 7 + 36 + 12 + 5 + 25 + 33).
+The five `metalinguistic_*.json` files and `promoted_words.json` are
+not counted toward the mandatory 376 -- see Supplementary files below
 and the Promotion policy section respectively. Since `asset_version
 1.3.0`, the mandatory total is manifest-driven rather than a hardcoded
 figure `WordSeeder` asserts: it's whatever `determiners.json` through
-`punctuation.json`'s counts actually sum to, cross-checked against
+`numerals.json`'s counts actually sum to, cross-checked against
 `manifest.json`'s `total_lexical_forms` -- see
 `vocabulary/role/word_seeder.py`'s `validate_assets()`.
 
@@ -66,32 +70,59 @@ it from `part_of_speech` at tree-build time instead of an `isinstance`
 check against a separate class -- see
 `linguistics/documentation/README.md`.
 
+## Symbols and numerals: the other finite closed classes
+
+`SYMBOL` and `NUMERAL` were, like `PUNCTUATION` before `asset_version
+1.6.0`, `PartOfSpeech` members with zero seeded `Word`s -- unlike
+`INTERJECTION`, `PROPER_NOUN`, and `OTHER`, both name a genuinely
+finite, enumerable inventory (25 common symbols; the base numeral words
+`zero` through `trillion`, from which every other number is
+compositionally built, e.g. "twenty-one" is `twenty` + `one`, not a new
+base word), so `asset_version 1.7.0` seeded them the same way
+`punctuation.json` was seeded: `symbols.json` and `numerals.json`
+joined `MANDATORY_FILES`. Every entry in `symbols.json` has `syllable_count`
+`null`, for the same reason punctuation does -- a symbol character
+isn't itself pronounced (only its spoken *name*, "dollar sign", would
+be, and that name isn't what's seeded as the `lexical_form`).
+`numerals.json` entries get a real `syllable_count`, since numeral
+words are ordinary pronounceable English words.
+
+`numerals.json`'s `one` is a homograph of `pronouns.json`'s existing
+`one` (the indefinite pronoun, "one should always..."): `numerals.json`
+is deliberately the last file in `MANDATORY_FILES`, after
+`pronouns.json`, so the `PRONOUN` sense stays `Dictionary.lookup()`'s
+default -- see the ordering comment above `MANDATORY_FILES` in
+`vocabulary/role/word_seeder.py`.
+
 ## Supplementary files
 
-The four `metalinguistic_*.json` files -- one per part of speech,
+The five `metalinguistic_*.json` files -- one per part of speech,
 mirroring the mandatory files' own convention -- are validated and
 seeded exactly like the mandatory closed-class files
-(`WordSeeder.SUPPLEMENTARY_FILES`), but excluded from the mandatory 318
-total, because their content is a different kind of thing: 129
+(`WordSeeder.SUPPLEMENTARY_FILES`), but excluded from the mandatory 376
+total, because their content is a different kind of thing: 143
 open-class entries naming grammatical and lexical-relationship concepts
 themselves -- `word`, `noun`, `verb`, `subject`, `tense`, `synonym`,
 `lemma`, `contraction` (nouns); `identify`, `describe`, `compare`,
-`determine` (verbs); `grammatical`, `semantic`, `possessive`, `derived`
-(adjectives); `grammatically`, `directly`, `typically` (adverbs). These
-terms are referenced constantly, by name, throughout the mandatory
-files' own definitions ("Introduces a **noun** referring to...", "used
-with uncountable **nouns**", "third **person**"), the
-`LexicalRelationshipType` enum's own member names and documentation
-(6.2), and this codebase's own documentation generally, but before
-`asset_version 1.4.0` were represented nowhere in the seeded vocabulary
-at all -- every closed-class definition and every relationship kind
-presupposed them without a single one actually existing as a `Word`.
+`determine`, plus mathematics/logic operator verbs `add`, `subtract`,
+`multiply`, `divide`, `xor`, `nand`, `nor`, `xnor` (verbs);
+`grammatical`, `semantic`, `possessive`, `derived` (adjectives);
+`grammatically`, `directly`, `typically` (adverbs); `English` (the one
+`PROPER_NOUN`). These terms are referenced constantly, by name,
+throughout the mandatory files' own definitions ("Introduces a
+**noun** referring to...", "used with uncountable **nouns**", "third
+**person**"), the `LexicalRelationshipType` enum's own member names
+and documentation (6.2), and this codebase's own documentation
+generally, but before `asset_version 1.4.0` were represented nowhere
+in the seeded vocabulary at all -- every closed-class definition and
+every relationship kind presupposed them without a single one actually
+existing as a `Word`.
 
 These are ordinary open-class content words, not closed-class function
-words, so they don't belong in the mandatory 318 the way determiners or
+words, so they don't belong in the mandatory 376 the way determiners or
 prepositions do; they also aren't `promoted_words.json` entries, since
 that file's `reference_count` field means real cross-domain usage
-tracking (`WordSeeder.promote_word`), and these 129 weren't promoted
+tracking (`WordSeeder.promote_word`), and these 143 weren't promoted
 from anywhere -- they're authored bootstrap content, same standing as
 the mandatory files themselves. `WordSeeder.seed_closed_class_words`
 seeds them into every Domain's Dictionary regardless (its name
@@ -110,16 +141,23 @@ mandatory files:
 | `be`, `have`, `do` | `AUXILIARY` (`auxiliaries.json`) | `VERB` (`metalinguistic_verbs.json`) |
 | `cause`, `result` | `NOUN` (`metalinguistic_nouns.json`) | `VERB` (`metalinguistic_verbs.json`) |
 | `past`, `opposite` | `PREPOSITION` (`prepositions.json`) | `ADJECTIVE` (`metalinguistic_adjectives.json`) |
+| `plus`, `minus` | `PREPOSITION` (`prepositions.json`) | `VERB` (`metalinguistic_verbs.json`, math operator sense) |
+| `and`, `or`, `nor` | `CONJUNCTION` (`coordinating_conjunctions.json`) | `VERB` (`metalinguistic_verbs.json`, logic operator sense) |
+| `not` | `PARTICLE` (`particles.json`) | `VERB` (`metalinguistic_verbs.json`, logic operator sense) |
+| `one` | `PRONOUN` (`pronouns.json`) | `NUMERAL` (`numerals.json`) |
 
 In every case the original, closed-class-or-first-seeded sense stays
-the `Dictionary.lookup()` default: `be`/`have`/`do`/`past`/`opposite`
-are safe because `MANDATORY_FILES` (containing their original sense)
-always loads in full before `SUPPLEMENTARY_FILES` regardless of
-ordering; `cause`/`result` specifically require
-`metalinguistic_nouns.json` to load before `metalinguistic_verbs.json`
-within `SUPPLEMENTARY_FILES`' own tuple order, which is why that
-order is deliberate, not alphabetical or incidental -- see the comment
-above `SUPPLEMENTARY_FILES` in `vocabulary/role/word_seeder.py`.
+the `Dictionary.lookup()` default: `be`/`have`/`do`/`past`/`opposite`/
+`plus`/`minus`/`and`/`or`/`nor`/`not` are safe because `MANDATORY_FILES`
+(containing their original sense) always loads in full before
+`SUPPLEMENTARY_FILES` regardless of ordering; `cause`/`result` and
+`one` specifically require their mandatory/original file
+(`metalinguistic_nouns.json`, `pronouns.json`) to load before the file
+carrying their new sense (`metalinguistic_verbs.json`, `numerals.json`)
+within `MANDATORY_FILES`'/`SUPPLEMENTARY_FILES`' own tuple order,
+which is why those orders are deliberate, not alphabetical or
+incidental -- see the ordering comments above `MANDATORY_FILES` and
+`SUPPLEMENTARY_FILES` in `vocabulary/role/word_seeder.py`.
 `Dictionary.lookup_all(text)` returns every sense regardless of load
 order.
 
@@ -264,12 +302,25 @@ they're already part of the mandatory cache.
 
 ## Version
 
-`v1` / `schema_version 2.0.0` / `asset_version 1.6.0` (added
+`v1` / `schema_version 2.0.0` / `asset_version 1.7.0` (added
+`symbols.json` (25 `SYMBOL`) and `numerals.json` (33 `NUMERAL`) to
+`MANDATORY_FILES` -- mandatory total 318 -> 376; see Symbols and
+numerals above. Added `metalinguistic_proper_nouns.json` (1
+`PROPER_NOUN`, `English`) to `SUPPLEMENTARY_FILES`, strictly scoped to
+a word already named in an existing definition, not a general
+proper-noun vocabulary. Grew `metalinguistic_verbs.json` by 13
+mathematics/logic operator verbs (`add`, `subtract`, `multiply`,
+`divide`, `plus`, `minus`, `and`, `or`, `xor`, `not`, `nand`, `nor`,
+`xnor`; 30 -> 43) -- six are homographs of existing mandatory senses,
+see Homographs with existing entries above. Supplementary total 129 ->
+143; every seeded Dictionary now carries 519 total: 376 mandatory +
+143 supplementary, covering 14 of `PartOfSpeech`'s 16 members
+(`INTERJECTION` and `OTHER` remain unseeded -- nothing in the cache
+references an example of either). `asset_version 1.6.0` added
 `punctuation.json`, 5 mandatory `PUNCTUATION` entries -- `.`, `!`, `?`,
 `;`, `,` -- ending `Punctuation`'s existence as a separate Python
-class; see Punctuation is a Word above. Mandatory total 313 -> 318;
-every seeded Dictionary now carries 447 total: 318 mandatory + 129
-supplementary. `asset_version 1.5.0` renamed
+class; see Punctuation is a Word above (mandatory total 313 -> 318).
+`asset_version 1.5.0` renamed
 `metalinguistic_vocabulary.json` to `metalinguistic_nouns.json` and
 added three sibling files -- `metalinguistic_verbs.json` (30),
 `metalinguistic_adjectives.json` (28), `metalinguistic_adverbs.json`

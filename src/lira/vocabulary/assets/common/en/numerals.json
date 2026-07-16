@@ -1,0 +1,1197 @@
+{
+  "schema_version": "2.0.0",
+  "language_code": "en",
+  "part_of_speech": "NUMERAL",
+  "closed_class_kind": "numeral",
+  "count": 33,
+  "words": [
+    {
+      "lexical_form": "zero",
+      "normalised_form": "zero",
+      "text": "zero",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "NUMERAL",
+      "closed_class": true,
+      "closed_class_kind": "numeral",
+      "definition": "The number 0; the absence of quantity",
+      "gloss": "The number 0; the absence of quantity",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "lexical_form": "one",
+      "normalised_form": "one",
+      "text": "one",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "NUMERAL",
+      "closed_class": true,
+      "closed_class_kind": "numeral",
+      "definition": "The number 1",
+      "gloss": "The number 1",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "lexical_form": "two",
+      "normalised_form": "two",
+      "text": "two",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "NUMERAL",
+      "closed_class": true,
+      "closed_class_kind": "numeral",
+      "definition": "The number 2",
+      "gloss": "The number 2",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "lexical_form": "three",
+      "normalised_form": "three",
+      "text": "three",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "NUMERAL",
+      "closed_class": true,
+      "closed_class_kind": "numeral",
+      "definition": "The number 3",
+      "gloss": "The number 3",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "lexical_form": "four",
+      "normalised_form": "four",
+      "text": "four",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "NUMERAL",
+      "closed_class": true,
+      "closed_class_kind": "numeral",
+      "definition": "The number 4",
+      "gloss": "The number 4",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "lexical_form": "five",
+      "normalised_form": "five",
+      "text": "five",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "NUMERAL",
+      "closed_class": true,
+      "closed_class_kind": "numeral",
+      "definition": "The number 5",
+      "gloss": "The number 5",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "lexical_form": "six",
+      "normalised_form": "six",
+      "text": "six",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "NUMERAL",
+      "closed_class": true,
+      "closed_class_kind": "numeral",
+      "definition": "The number 6",
+      "gloss": "The number 6",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "lexical_form": "seven",
+      "normalised_form": "seven",
+      "text": "seven",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "NUMERAL",
+      "closed_class": true,
+      "closed_class_kind": "numeral",
+      "definition": "The number 7",
+      "gloss": "The number 7",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "lexical_form": "eight",
+      "normalised_form": "eight",
+      "text": "eight",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "NUMERAL",
+      "closed_class": true,
+      "closed_class_kind": "numeral",
+      "definition": "The number 8",
+      "gloss": "The number 8",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "lexical_form": "nine",
+      "normalised_form": "nine",
+      "text": "nine",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "NUMERAL",
+      "closed_class": true,
+      "closed_class_kind": "numeral",
+      "definition": "The number 9",
+      "gloss": "The number 9",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "lexical_form": "ten",
+      "normalised_form": "ten",
+      "text": "ten",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "NUMERAL",
+      "closed_class": true,
+      "closed_class_kind": "numeral",
+      "definition": "The number 10",
+      "gloss": "The number 10",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "lexical_form": "eleven",
+      "normalised_form": "eleven",
+      "text": "eleven",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "NUMERAL",
+      "closed_class": true,
+      "closed_class_kind": "numeral",
+      "definition": "The number 11",
+      "gloss": "The number 11",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 3,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "lexical_form": "twelve",
+      "normalised_form": "twelve",
+      "text": "twelve",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "NUMERAL",
+      "closed_class": true,
+      "closed_class_kind": "numeral",
+      "definition": "The number 12",
+      "gloss": "The number 12",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "lexical_form": "thirteen",
+      "normalised_form": "thirteen",
+      "text": "thirteen",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "NUMERAL",
+      "closed_class": true,
+      "closed_class_kind": "numeral",
+      "definition": "The number 13",
+      "gloss": "The number 13",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "lexical_form": "fourteen",
+      "normalised_form": "fourteen",
+      "text": "fourteen",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "NUMERAL",
+      "closed_class": true,
+      "closed_class_kind": "numeral",
+      "definition": "The number 14",
+      "gloss": "The number 14",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "lexical_form": "fifteen",
+      "normalised_form": "fifteen",
+      "text": "fifteen",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "NUMERAL",
+      "closed_class": true,
+      "closed_class_kind": "numeral",
+      "definition": "The number 15",
+      "gloss": "The number 15",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "lexical_form": "sixteen",
+      "normalised_form": "sixteen",
+      "text": "sixteen",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "NUMERAL",
+      "closed_class": true,
+      "closed_class_kind": "numeral",
+      "definition": "The number 16",
+      "gloss": "The number 16",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "lexical_form": "seventeen",
+      "normalised_form": "seventeen",
+      "text": "seventeen",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "NUMERAL",
+      "closed_class": true,
+      "closed_class_kind": "numeral",
+      "definition": "The number 17",
+      "gloss": "The number 17",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 3,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "lexical_form": "eighteen",
+      "normalised_form": "eighteen",
+      "text": "eighteen",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "NUMERAL",
+      "closed_class": true,
+      "closed_class_kind": "numeral",
+      "definition": "The number 18",
+      "gloss": "The number 18",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "lexical_form": "nineteen",
+      "normalised_form": "nineteen",
+      "text": "nineteen",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "NUMERAL",
+      "closed_class": true,
+      "closed_class_kind": "numeral",
+      "definition": "The number 19",
+      "gloss": "The number 19",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 3,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "lexical_form": "twenty",
+      "normalised_form": "twenty",
+      "text": "twenty",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "NUMERAL",
+      "closed_class": true,
+      "closed_class_kind": "numeral",
+      "definition": "The number 20",
+      "gloss": "The number 20",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "lexical_form": "thirty",
+      "normalised_form": "thirty",
+      "text": "thirty",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "NUMERAL",
+      "closed_class": true,
+      "closed_class_kind": "numeral",
+      "definition": "The number 30",
+      "gloss": "The number 30",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "lexical_form": "forty",
+      "normalised_form": "forty",
+      "text": "forty",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "NUMERAL",
+      "closed_class": true,
+      "closed_class_kind": "numeral",
+      "definition": "The number 40",
+      "gloss": "The number 40",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "lexical_form": "fifty",
+      "normalised_form": "fifty",
+      "text": "fifty",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "NUMERAL",
+      "closed_class": true,
+      "closed_class_kind": "numeral",
+      "definition": "The number 50",
+      "gloss": "The number 50",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "lexical_form": "sixty",
+      "normalised_form": "sixty",
+      "text": "sixty",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "NUMERAL",
+      "closed_class": true,
+      "closed_class_kind": "numeral",
+      "definition": "The number 60",
+      "gloss": "The number 60",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "lexical_form": "seventy",
+      "normalised_form": "seventy",
+      "text": "seventy",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "NUMERAL",
+      "closed_class": true,
+      "closed_class_kind": "numeral",
+      "definition": "The number 70",
+      "gloss": "The number 70",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 3,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "lexical_form": "eighty",
+      "normalised_form": "eighty",
+      "text": "eighty",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "NUMERAL",
+      "closed_class": true,
+      "closed_class_kind": "numeral",
+      "definition": "The number 80",
+      "gloss": "The number 80",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "lexical_form": "ninety",
+      "normalised_form": "ninety",
+      "text": "ninety",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "NUMERAL",
+      "closed_class": true,
+      "closed_class_kind": "numeral",
+      "definition": "The number 90",
+      "gloss": "The number 90",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 3,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "lexical_form": "hundred",
+      "normalised_form": "hundred",
+      "text": "hundred",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "NUMERAL",
+      "closed_class": true,
+      "closed_class_kind": "numeral",
+      "definition": "The number 100, or a multiple of it",
+      "gloss": "The number 100, or a multiple of it",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "lexical_form": "thousand",
+      "normalised_form": "thousand",
+      "text": "thousand",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "NUMERAL",
+      "closed_class": true,
+      "closed_class_kind": "numeral",
+      "definition": "The number 1,000, or a multiple of it",
+      "gloss": "The number 1,000, or a multiple of it",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "lexical_form": "million",
+      "normalised_form": "million",
+      "text": "million",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "NUMERAL",
+      "closed_class": true,
+      "closed_class_kind": "numeral",
+      "definition": "The number 1,000,000, or a multiple of it",
+      "gloss": "The number 1,000,000, or a multiple of it",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "lexical_form": "billion",
+      "normalised_form": "billion",
+      "text": "billion",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "NUMERAL",
+      "closed_class": true,
+      "closed_class_kind": "numeral",
+      "definition": "The number 1,000,000,000, or a multiple of it",
+      "gloss": "The number 1,000,000,000, or a multiple of it",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "lexical_form": "trillion",
+      "normalised_form": "trillion",
+      "text": "trillion",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "NUMERAL",
+      "closed_class": true,
+      "closed_class_kind": "numeral",
+      "definition": "The number 1,000,000,000,000, or a multiple of it",
+      "gloss": "The number 1,000,000,000,000, or a multiple of it",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    }
+  ]
+}
