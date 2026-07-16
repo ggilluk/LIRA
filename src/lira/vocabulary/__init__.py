@@ -14,10 +14,11 @@ LexicalRelationshipType additionally bit-packing group/category/item
 (Design Principle 13).
 
 Every English Word.is_common is True only when it was loaded by
-WordSeeder from the English Common Vocabulary Cache (376 mandatory
-closed-class lexical forms -- including punctuation, symbols, and
-numerals, see below -- plus 158 supplementary open-class metalinguistic
-terms -- assets/common/en/), never set by hand.
+WordSeeder from the English Common Vocabulary Cache (388 mandatory
+closed-class lexical forms -- including punctuation, symbols,
+numerals, and closed-class contractions/phrasal particles, see below --
+plus 163 supplementary open-class metalinguistic terms --
+assets/common/en/), never set by hand.
 
 There is no separate Punctuation class: a punctuation mark (".", "!",
 "?", ";", ",") is an ordinary Word with part_of_speech=PUNCTUATION,

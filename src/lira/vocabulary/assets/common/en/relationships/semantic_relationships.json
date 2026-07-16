@@ -2,7 +2,7 @@
   "schema_version": "1.0.0",
   "language_code": "en",
   "relationship_category": "semantic",
-  "count": 22,
+  "count": 24,
   "relationships": [
     {
       "source_lexical_form": "above",
@@ -112,6 +112,16 @@
     {
       "source_lexical_form": "owing to",
       "target_lexical_form": "due to",
+      "relationship_kind": "SYNONYM"
+    },
+    {
+      "source_lexical_form": "however",
+      "target_lexical_form": "nevertheless",
+      "relationship_kind": "SYNONYM"
+    },
+    {
+      "source_lexical_form": "nevertheless",
+      "target_lexical_form": "however",
       "relationship_kind": "SYNONYM"
     }
   ]

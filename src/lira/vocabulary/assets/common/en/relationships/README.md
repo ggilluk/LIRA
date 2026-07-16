@@ -22,8 +22,8 @@ against a specific Domain's already-seeded `Word`s, not a store of
 | File | Category | Kinds seeded | Count |
 |------|----------|----------------|-------|
 | `morphological_relationships.json` | Morphological (6.2.1) | Person, tense, participle, and plural forms (`be`/`have`/`do` conjugations, `this`/`that` plurals); comparative/superlative forms (`few`/`many`/`much`/`little`); pronoun paradigm forms (`PRONOUN_OBJECT_FORM`, `PRONOUN_SUBJECT_FORM`, `PRONOUN_POSSESSIVE_DETERMINER_FORM`, `PRONOUN_POSSESSIVE_FORM`, `PRONOUN_REFLEXIVE_FORM`); `LEMMA_FORM` (every edge's materialised reverse -- see Symmetric and inverse edges) | 98 |
-| `semantic_relationships.json` | Lexical Semantic (6.2.2) | `ANTONYM` (spatial/temporal opposites: above/below, before/after, ...) and `SYNONYM` (equivalent prepositions: beneath/under, amid/among, due to/owing to, ...), each materialised in both directions | 22 |
-| `orthographic_relationships.json` | Orthographic and Naming (6.2.3) | `CONTRACTION` (not/n't) | 1 |
+| `semantic_relationships.json` | Lexical Semantic (6.2.2) | `ANTONYM` (spatial/temporal opposites: above/below, before/after, ...) and `SYNONYM` (equivalent prepositions: beneath/under, amid/among, due to/owing to, ...; the discourse-marker pair however/nevertheless), each materialised in both directions | 24 |
+| `orthographic_relationships.json` | Orthographic and Naming (6.2.3) | `CONTRACTION` -- not/n't, plus each full contraction's component words (do/not -> don't, can/not -> can't, I/am -> I'm, it/is/has -> it's, is/not -> isn't, was/not -> wasn't, had/not -> hadn't) | 16 |
 
 No `HYPERNYM`, `MERONYM`, or `TROPONYM` relationships are seeded for
 closed-class Words -- those hierarchy/part-whole/manner relationships
@@ -34,7 +34,7 @@ pronoun paradigms, and near-synonymy do.
 `PRONOUN_RECIPROCAL_FORM` is defined (6.2.1, Pronoun Form) but not
 currently seeded in either direction -- see Known gaps.
 
-Total relationships: **121**.
+Total relationships: **138**.
 
 ## Symmetric and inverse edges
 
@@ -79,10 +79,18 @@ edge -- not left to be inferred at query time:
   (`PRONOUN_SUBJECT_FORM`, the reverse of the object-form edge) and
   `her` → `she` (`LEMMA_FORM`, the reverse of the possessive-determiner
   edge).
-- **`orthographic_relationships.json`'s one entry (`not` → `n't`,
-  `CONTRACTION`) is not reversed** -- there's no defined inverse kind
-  for "target is the expanded form", the way `LEMMA_FORM` covers every
-  morphological case.
+- **No `orthographic_relationships.json` entry is reversed** -- `not` →
+  `n't` and every full-contraction edge added in `asset_version 1.4.0`
+  (e.g. `do` → `don't`, `not` → `don't`) point from full form to
+  contracted form only. There's no defined inverse kind for "target is
+  the expanded form", the way `LEMMA_FORM` covers every morphological
+  case. A contraction with two contracted components (`don't`,
+  `isn't`, `wasn't`, `hadn't`: auxiliary + `not`; `I'm`: pronoun +
+  auxiliary) gets two separate forward `CONTRACTION` edges, one per
+  component, rather than one edge to a two-word phrase that has no
+  single matching Word -- `it's` gets three, since it genuinely
+  contracts either `it is` or `it has` and this cache doesn't attempt
+  to disambiguate which reading a given occurrence intends.
 
 ## Seeding order
 
@@ -214,7 +222,18 @@ adds these seven relationships -- all now present in
 
 ## Version
 
-`v1` / `schema_version 1.0.0` / `asset_version 1.3.0` (61 -> 121
+`v1` / `schema_version 1.0.0` / `asset_version 1.4.0` (121 -> 138
+relationships: added 15 `CONTRACTION` edges to
+`orthographic_relationships.json` (1 -> 16) for the seven full
+contractions added to `../auxiliaries.json` -- see Symmetric and
+inverse edges above for why each gets one edge per component rather
+than a reverse. Added a `however` <-> `nevertheless` `SYNONYM` pair,
+both directions, to `semantic_relationships.json` (22 -> 24) -- the
+only relationship among the four new discourse markers with a clear,
+already-seeded partner; `therefore` and `moreover` have no existing
+semantic neighbour in this cache to link to, so neither was forced
+into an artificial relationship. `morphological_relationships.json` is
+unchanged at 98. `asset_version 1.3.0` (61 -> 121
 relationships: materialised the reverse of every existing morphological
 and semantic edge -- see Symmetric and inverse edges above -- taking
 `morphological_relationships.json` 49 -> 98 and

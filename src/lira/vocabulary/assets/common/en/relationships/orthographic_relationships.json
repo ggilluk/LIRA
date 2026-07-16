@@ -2,11 +2,86 @@
   "schema_version": "1.0.0",
   "language_code": "en",
   "relationship_category": "orthographic",
-  "count": 1,
+  "count": 16,
   "relationships": [
     {
       "source_lexical_form": "not",
       "target_lexical_form": "n't",
+      "relationship_kind": "CONTRACTION"
+    },
+    {
+      "source_lexical_form": "do",
+      "target_lexical_form": "don't",
+      "relationship_kind": "CONTRACTION"
+    },
+    {
+      "source_lexical_form": "not",
+      "target_lexical_form": "don't",
+      "relationship_kind": "CONTRACTION"
+    },
+    {
+      "source_lexical_form": "can",
+      "target_lexical_form": "can't",
+      "relationship_kind": "CONTRACTION"
+    },
+    {
+      "source_lexical_form": "not",
+      "target_lexical_form": "can't",
+      "relationship_kind": "CONTRACTION"
+    },
+    {
+      "source_lexical_form": "I",
+      "target_lexical_form": "I'm",
+      "relationship_kind": "CONTRACTION"
+    },
+    {
+      "source_lexical_form": "am",
+      "target_lexical_form": "I'm",
+      "relationship_kind": "CONTRACTION"
+    },
+    {
+      "source_lexical_form": "it",
+      "target_lexical_form": "it's",
+      "relationship_kind": "CONTRACTION"
+    },
+    {
+      "source_lexical_form": "is",
+      "target_lexical_form": "it's",
+      "relationship_kind": "CONTRACTION"
+    },
+    {
+      "source_lexical_form": "has",
+      "target_lexical_form": "it's",
+      "relationship_kind": "CONTRACTION"
+    },
+    {
+      "source_lexical_form": "is",
+      "target_lexical_form": "isn't",
+      "relationship_kind": "CONTRACTION"
+    },
+    {
+      "source_lexical_form": "not",
+      "target_lexical_form": "isn't",
+      "relationship_kind": "CONTRACTION"
+    },
+    {
+      "source_lexical_form": "was",
+      "target_lexical_form": "wasn't",
+      "relationship_kind": "CONTRACTION"
+    },
+    {
+      "source_lexical_form": "not",
+      "target_lexical_form": "wasn't",
+      "relationship_kind": "CONTRACTION"
+    },
+    {
+      "source_lexical_form": "had",
+      "target_lexical_form": "hadn't",
+      "relationship_kind": "CONTRACTION"
+    },
+    {
+      "source_lexical_form": "not",
+      "target_lexical_form": "hadn't",
       "relationship_kind": "CONTRACTION"
     }
   ]

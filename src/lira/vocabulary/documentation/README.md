@@ -34,10 +34,11 @@ tree and design rules.
   `WordSeeder`, `RelationshipSeeder` -- plain service classes for the
   lexicon and relationship graph, not `*Agent` subclasses.
 - `assets/` -- `common/<language_code>/` -- the Common Vocabulary
-  Cache `WordSeeder` loads (`common/en/` -- the mandatory 376-word
+  Cache `WordSeeder` loads (`common/en/` -- the mandatory 388-word
   English Common Closed-Class Cache v1 (including punctuation, symbols,
-  and numerals), plus 158 supplementary open-class metalinguistic terms
-  across six parts of speech; see 9.4 and `assets/common/en/README.md`)
+  numerals, and closed-class contractions/phrasal particles), plus 163
+  supplementary open-class metalinguistic terms across six parts of
+  speech; see 9.4 and `assets/common/en/README.md`)
   plus `common/<language_code>/relationships/`
   -- the Common Vocabulary Relationship Cache `RelationshipSeeder`
   loads (`common/en/relationships/`; see 9.5 and
@@ -589,7 +590,7 @@ as before this section existed.
 > defined by the English Common Closed-Class Cache v1.
 
 This rule is what `Common`'s own `Dictionary` is seeded with, on
-`LIRAHost` construction, before anything else: the 376 mandatory
+`LIRAHost` construction, before anything else: the 388 mandatory
 English closed-class lexical forms (determiners, pronouns, auxiliaries,
 prepositions, coordinating and subordinating conjunctions, particles,
 punctuation, symbols, numerals) that 9.3's propagation then carries
@@ -683,16 +684,43 @@ a word belongs somewhere else, not in `OTHER`. `OTHER` is a pure
 of its own, so unlike every other category in this cache it stays
 deliberately unseeded rather than seeded to completion -- there is no
 principled stopping point for "words that fit nowhere else" the way
-there is for a finite symbol set or a closed grammatical class. A
-freshly seeded `Dictionary` now ends up with 376 + 158 = 534 `Word`s,
-covering 15 of `PartOfSpeech`'s 16 members -- only `OTHER` remains
-unseeded, by design.)
+there is for a finite symbol set or a closed grammatical class.)
+
+`asset_version 1.9.0` filled in six more categories a user-supplied
+gap review flagged as commonly missing from a working English
+vocabulary, folding every one of them into an existing file and
+`PartOfSpeech` member rather than inventing a new category: discourse
+markers (`however`, `therefore`, `moreover`, `nevertheless` -- joined
+`metalinguistic_adverbs.json` as `ADVERB`, `closed_class_kind:
+"discourse_marker"`, 13 -> 17); full contractions (`don't`, `can't`,
+`I'm`, `it's`, `isn't`, `wasn't`, `hadn't` -- joined the mandatory
+`auxiliaries.json` as `AUXILIARY`, `closed_class_kind: "contraction"`,
+29 -> 36, each linked to its component word(s) by new `CONTRACTION`
+relationship edges -- see 9.5); phrasal-verb particles (`up`, `off`,
+`out` -- joined the mandatory `particles.json` as `PARTICLE` homographs
+of their existing `PREPOSITION` sense; `away`, which had no existing
+sense, joined as a plain new `PARTICLE` entry; particles.json 12 ->
+16); a multi-word preposition (`as well as` -- joined the mandatory
+`prepositions.json` alongside `because of`/`in spite of`/`according
+to`, 93 -> 94); and `well` as a second, `INTERJECTION` sense of the
+already-seeded `PARTICLE` entry, joining `metalinguistic_interjections.json`
+(12 -> 13). Two categories from that same review needed no work:
+"clause markers" (`whether`, `whereas`, `although`, `unless`) were
+already fully present in `subordinating_conjunctions.json`, and of the
+proposed "multi-word grammatical units" only `as well as` was actually
+new -- `because of`, `in spite of`, and `according to` were already
+seeded. Mandatory total 376 -> 388 (+7 contractions, +4 particle
+entries, +1 multi-word preposition); supplementary total 158 -> 163
+(+4 discourse markers, +1 interjection). A freshly seeded `Dictionary`
+now ends up with 388 + 163 = 551 `Word`s, still covering 15 of
+`PartOfSpeech`'s 16 members -- only `OTHER` remains unseeded, by
+design.
 
 The cache itself -- its file format, exact counts, rebuild policy, and
 open-class word promotion/demotion rules -- is documented in full at
 `vocabulary/assets/common/en/README.md`, alongside the data
 (`manifest.json` plus one JSON file per closed-class kind, plus the
-five `metalinguistic_*.json` files and `promoted_words.json`). **The
+six `metalinguistic_*.json` files and `promoted_words.json`). **The
 cache is not the authoritative source of a `Word`** -- it is a
 generated bootstrap asset; the authoritative record of every `Word`
 remains the `Domain` that owns it.
@@ -788,7 +816,7 @@ No `HYPERNYM`, `MERONYM`, or `TROPONYM` relationships are seeded for
 closed-class `Word`s -- those describe how open-class concepts relate
 to each other, not how a fixed set of grammatical function words does.
 
-Total relationships: **121**. Every originally-seeded morphological and
+Total relationships: **138**. Every originally-seeded morphological and
 semantic edge now has its reverse materialised as a second, real edge
 (`her`'s two roles get two reverse edges under two different kinds; see
 the relationship cache README's Symmetric and inverse edges section for

@@ -8,11 +8,12 @@ vocabulary/documentation/README.md): every other Domain this Host
 creates has its Vocabulary seeded from Common's Dictionary, giving all
 Domains on a Host a shared vocabulary baseline before anything
 domain-specific is added. Common's own Dictionary is itself seeded, on
-Host construction, with the mandatory 376-word English Common
-Vocabulary Cache (including punctuation, symbols, and numerals -- there
+Host construction, with the mandatory 388-word English Common
+Vocabulary Cache (including punctuation, symbols, numerals, and
+closed-class contractions/phrasal particles -- there
 is no separate Punctuation class, see
-vocabulary/documentation/README.md, 4.1) plus 158 supplementary
-open-class metalinguistic terms (534 Words total;
+vocabulary/documentation/README.md, 4.1) plus 163 supplementary
+open-class metalinguistic terms (551 Words total;
 WordSeeder, vocabulary/role/word_seeder.py) -- this
 is how "every English LIRA Domain shall contain the mandatory lexical
 forms defined by the English Common Closed-Class Cache" is actually

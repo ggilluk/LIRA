@@ -28,25 +28,25 @@ working vocabulary immediately, not to be a system of record.
 | `manifest.json` | Schema/asset version, language, per-file and total lexical form counts | -- |
 | `determiners.json` | Determiners (the, a, this, my, some, ...) | 37 |
 | `pronouns.json` | Personal, possessive, reflexive, interrogative, relative, reciprocal, and indefinite pronouns, plus `which`/`what`'s secondary `DETERMINER` entries (see the file-placement note above) | 99 |
-| `auxiliaries.json` | Primary auxiliaries (be, have, do), modals (will, can, must), semi-modals (need, dare) | 29 |
-| `prepositions.json` | Simple and compound/complex prepositions | 93 |
+| `auxiliaries.json` | Primary auxiliaries (be, have, do), modals (will, can, must), semi-modals (need, dare), and full contractions (don't, can't, I'm, it's, isn't, wasn't, hadn't -- see Contractions below) | 36 |
+| `prepositions.json` | Simple and compound/complex prepositions, including multi-word units (because of, in spite of, according to, as well as, ...) | 94 |
 | `coordinating_conjunctions.json` | FANBOYS -- for, and, nor, but, or, yet, so | 7 |
 | `subordinating_conjunctions.json` | because, although, unless, while, ... | 36 |
-| `particles.json` | not, there, please, also, too, only, ... | 12 |
+| `particles.json` | not, there, please, also, too, only, ..., plus verb-particle senses of up/off/out/away (see Phrasal-verb particles below) | 16 |
 | `punctuation.json` | `.`, `!`, `?`, `;`, `,` -- see Punctuation is a Word below | 5 |
 | `symbols.json` | `$`, `%`, `&`, `@`, `+`, `=`, ... -- common typographic/mathematical symbols | 25 |
 | `numerals.json` | `zero` through `trillion` -- the base numeral words all other numbers are compositionally built from | 33 |
 | `metalinguistic_nouns.json` | Open-class `NOUN` terms for grammar itself, including relationship-kind terms (`synonym`, `lemma`, `contraction`, ...) and `true`/`false`/`null` -- see Supplementary files below | 61 |
 | `metalinguistic_verbs.json` | Open-class `VERB` terms for grammar itself, including mathematics/logic operator verbs (`add`, `xor`, `nand`, ...) | 43 |
 | `metalinguistic_adjectives.json` | Open-class `ADJECTIVE` terms for grammar itself | 28 |
-| `metalinguistic_adverbs.json` | Open-class `ADVERB` terms for grammar itself | 13 |
+| `metalinguistic_adverbs.json` | Open-class `ADVERB` terms for grammar itself, plus four closed-class discourse markers (however, therefore, moreover, nevertheless -- see Discourse markers below) | 17 |
 | `metalinguistic_proper_nouns.json` | A single `PROPER_NOUN` entry, `English` -- see Supplementary files below | 1 |
-| `metalinguistic_interjections.json` | Open-class `INTERJECTION` terms (`yes`, `no`, `please`, `alas`, `hurrah`, `huzzah`, `oh`, `ah`, `wow`, `hey`, `ouch`, `hmm`) -- see Supplementary files below | 12 |
+| `metalinguistic_interjections.json` | Open-class `INTERJECTION` terms (`yes`, `no`, `please`, `alas`, `hurrah`, `huzzah`, `oh`, `ah`, `wow`, `hey`, `ouch`, `hmm`, `well`) -- see Supplementary files below | 13 |
 | `promoted_words.json` | Open-class words promoted from Domain vocabularies (starts empty) | 0 |
 
-Mandatory closed-class total: **376** (37 + 99 + 29 + 93 + 7 + 36 + 12 + 5 + 25 + 33).
+Mandatory closed-class total: **388** (37 + 99 + 36 + 94 + 7 + 36 + 16 + 5 + 25 + 33).
 The six `metalinguistic_*.json` files and `promoted_words.json` are
-not counted toward the mandatory 376 -- see Supplementary files below
+not counted toward the mandatory 388 -- see Supplementary files below
 and the Promotion policy section respectively. Since `asset_version
 1.3.0`, the mandatory total is manifest-driven rather than a hardcoded
 figure `WordSeeder` asserts: it's whatever `determiners.json` through
@@ -75,7 +75,7 @@ check against a separate class -- see
 
 `SYMBOL` and `NUMERAL` were, like `PUNCTUATION` before `asset_version
 1.6.0`, `PartOfSpeech` members with zero seeded `Word`s -- unlike
-`INTERJECTION`, `PROPER_NOUN`, and `OTHER`, both name a genuinely
+`PROPER_NOUN` and `OTHER`, both name a genuinely
 finite, enumerable inventory (25 common symbols; the base numeral words
 `zero` through `trillion`, from which every other number is
 compositionally built, e.g. "twenty-one" is `twenty` + `one`, not a new
@@ -95,40 +95,114 @@ is deliberately the last file in `MANDATORY_FILES`, after
 default -- see the ordering comment above `MANDATORY_FILES` in
 `vocabulary/role/word_seeder.py`.
 
+## Contractions
+
+`asset_version 1.9.0` added seven full contractions to the mandatory
+`auxiliaries.json`: `don't`, `can't`, `I'm`, `it's`, `isn't`, `wasn't`,
+`hadn't` -- all `part_of_speech=AUXILIARY`, `closed_class_kind:
+"contraction"`, distinguishing them from the file's existing `auxiliary`-
+kind entries. `AUXILIARY` was chosen because a contraction occupies the
+same clause-level auxiliary-verb slot its expanded form would ("isn't
+here" parses the same way "is not here" does), not because a
+contraction is a distinct grammatical category of its own -- the same
+reasoning that put `punctuation.json` under an existing `PartOfSpeech`
+member rather than inventing one. This is a finite, genuinely
+closed-class set (English has a fixed inventory of standard
+contractions, unlike open-class vocabulary), so it belongs in a
+mandatory file rather than a `metalinguistic_*.json` one.
+
+Each contraction is linked to its full-form component word(s) by new
+`CONTRACTION` relationship edges (`assets/common/en/relationships/`,
+`orthographic_relationships.json`), extending the existing `not` → `n't`
+precedent: `do`/`not` → `don't`, `can`/`not` → `can't`, `I`/`am` →
+`I'm`, `is`/`not` → `isn't`, `was`/`not` → `wasn't`, `had`/`not` →
+`hadn't`. `it's` gets three edges -- `it`, `is`, *and* `has` -- because
+it genuinely contracts either "it is" or "it has", and this cache
+doesn't attempt to disambiguate which reading a given occurrence
+intends; modelling that ambiguity as multiple relationship targets from
+one Word avoids forcing a same-`part_of_speech` homograph split the way
+`Word` 4.1's model would otherwise require. See the relationship
+cache's own README, Symmetric and inverse edges, for why none of these
+edges (including the original `not` → `n't`) are reversed.
+
+## Phrasal-verb particles
+
+`asset_version 1.9.0` also added `PARTICLE` entries for the verb-
+particle sense of `up`, `off`, `out`, and `away` to the mandatory
+`particles.json` -- the sense used in phrasal verbs like "give up",
+"turn off", "find out", "give away", distinct from each word's
+ordinary prepositional sense ("up the hill", "off the table", "out the
+door"). `up`, `off`, and `out` are genuine homographs of their existing
+`PREPOSITION` entries (`prepositions.json`); `away` had no existing
+entry at all (it doesn't function as a preposition in standard
+English), so it's seeded fresh, `PARTICLE` only. `prepositions.json`
+loads before `particles.json` within `MANDATORY_FILES`, so `up`/`off`/
+`out` correctly keep `PREPOSITION` as `Dictionary.lookup()`'s default;
+`Dictionary.lookup_all()` returns the `PARTICLE` sense too. No
+relationship links a homograph's two senses to each other anywhere in
+this cache (the same is true of `be`/`have`/`do`'s `AUXILIARY`/`VERB`
+pair and every other homograph here), so none was added for these
+either.
+
 ## Supplementary files
 
 The six `metalinguistic_*.json` files -- one per part of speech,
 mirroring the mandatory files' own convention -- are validated and
 seeded exactly like the mandatory closed-class files
-(`WordSeeder.SUPPLEMENTARY_FILES`), but excluded from the mandatory 376
-total, because their content is a different kind of thing: 158
-open-class entries naming grammatical and lexical-relationship concepts
-themselves -- `word`, `noun`, `verb`, `subject`, `tense`, `synonym`,
-`lemma`, `contraction`, `true`, `false`, `null` (nouns); `identify`,
-`describe`, `compare`, `determine`, plus mathematics/logic operator
-verbs `add`, `subtract`, `multiply`, `divide`, `xor`, `nand`, `nor`,
-`xnor` (verbs); `grammatical`, `semantic`, `possessive`, `derived`
-(adjectives); `grammatically`, `directly`, `typically` (adverbs);
-`English` (the one `PROPER_NOUN`); `yes`, `alas`, `hmm` (interjections,
-see Interjections and the `OTHER` exception below). These terms are
-referenced constantly, by name, throughout the mandatory files' own
-definitions ("Introduces a **noun** referring to...", "used with
-uncountable **nouns**", "third **person**"), the
+(`WordSeeder.SUPPLEMENTARY_FILES`), but excluded from the mandatory 388
+total, because most of their content is a different kind of thing: 163
+open-class-or-supplementary entries naming grammatical and
+lexical-relationship concepts themselves -- `word`, `noun`, `verb`,
+`subject`, `tense`, `synonym`, `lemma`, `contraction`, `true`, `false`,
+`null` (nouns); `identify`, `describe`, `compare`, `determine`, plus
+mathematics/logic operator verbs `add`, `subtract`, `multiply`,
+`divide`, `xor`, `nand`, `nor`, `xnor` (verbs); `grammatical`,
+`semantic`, `possessive`, `derived` (adjectives); `grammatically`,
+`directly`, `typically`, plus four discourse markers `however`,
+`therefore`, `moreover`, `nevertheless` (adverbs, see Discourse markers
+below); `English` (the one `PROPER_NOUN`); `yes`, `alas`, `hmm`, `well`
+(interjections, see Interjections and the `OTHER` exception below).
+These terms are referenced constantly, by name, throughout the
+mandatory files' own definitions ("Introduces a **noun** referring
+to...", "used with uncountable **nouns**", "third **person**"), the
 `LexicalRelationshipType` enum's own member names and documentation
 (6.2), and this codebase's own documentation generally, but before
 `asset_version 1.4.0` were represented nowhere in the seeded vocabulary
 at all -- every closed-class definition and every relationship kind
 presupposed them without a single one actually existing as a `Word`.
 
-These are ordinary open-class content words, not closed-class function
-words, so they don't belong in the mandatory 376 the way determiners or
-prepositions do; they also aren't `promoted_words.json` entries, since
-that file's `reference_count` field means real cross-domain usage
-tracking (`WordSeeder.promote_word`), and these 158 weren't promoted
-from anywhere -- they're authored bootstrap content, same standing as
-the mandatory files themselves. `WordSeeder.seed_closed_class_words`
+These are mostly ordinary open-class content words, not closed-class
+function words, so they don't belong in the mandatory 388 the way
+determiners or prepositions do; they also aren't `promoted_words.json`
+entries, since that file's `reference_count` field means real
+cross-domain usage tracking (`WordSeeder.promote_word`), and these 163
+weren't promoted from anywhere -- they're authored bootstrap content,
+same standing as the mandatory files themselves. `WordSeeder.seed_closed_class_words`
 seeds them into every Domain's Dictionary regardless (its name
-predates these files; see that method's docstring).
+predates these files; see that method's docstring). The four discourse
+markers are the one exception to "open-class" here -- see Discourse
+markers below.
+
+### Discourse markers
+
+`asset_version 1.9.0` added `however`, `therefore`, `moreover`, and
+`nevertheless` to `metalinguistic_adverbs.json` as `part_of_speech=ADVERB`,
+`closed_class_kind: "discourse_marker"` -- distinct from the file's
+other entries (`closed_class_kind: "metalinguistic_term"`) and, unlike
+them, individually marked `closed_class: true`: a conjunctive adverb
+like `however` genuinely is a member of a small, closed, non-productive
+class (conventional grammars call these "conjunctive adverbs" or
+"linking adverbs"), unlike `grammatically` or `typically`, which are
+ordinary open-class adverbs that merely happen to be about grammar.
+They live in the existing `metalinguistic_adverbs.json` -- and count
+toward the supplementary, not mandatory, total -- rather than a new
+dedicated file or `PartOfSpeech` member, reusing the existing `ADVERB`
+category and the existing supplementary-file structure rather than
+growing either. `however` and `nevertheless` are linked by a `SYNONYM`
+relationship pair (both directions -- see 9.5's Symmetric and inverse
+edges) since both mark contrast/concession; `therefore` and `moreover`
+have no existing semantic neighbour in this cache, so neither was
+forced into an artificial relationship just to have one.
 
 ### Interjections and the `OTHER` exception
 
@@ -147,7 +221,11 @@ as the canonical answers/requests), `alas`/`hurrah`/`huzzah` (matching
 the `LITERARY`/`ARCHAIC` register precedent this cache already uses
 elsewhere for archaic forms like `thou`/`ye`), and
 `oh`/`ah`/`wow`/`hey`/`ouch`/`hmm` (the prototypical core of the
-category). `true`, `false`, and `null` were added to
+category). `asset_version 1.9.0` added a thirteenth, `well`, on the
+same "recognized use" standard -- a second, `INTERJECTION` homograph of
+the already-seeded `PARTICLE` sense (`particles.json`'s
+discourse-marker "well" -- "Well, I never!" versus "Well, I said,
+that's true"). `true`, `false`, and `null` were added to
 `metalinguistic_nouns.json` in the same `asset_version` for a related
 but distinct reason: they read as `OTHER`-shaped at first glance, but
 each has an ordinary, definable meaning (a truth value; the absence of
@@ -184,12 +262,18 @@ mandatory files:
 | `one` | `PRONOUN` (`pronouns.json`) | `NUMERAL` (`numerals.json`) |
 | `no` | `DETERMINER` (`determiners.json`) | `INTERJECTION` (`metalinguistic_interjections.json`) |
 | `please` | `PARTICLE` (`particles.json`) | `INTERJECTION` (`metalinguistic_interjections.json`) |
+| `up`, `off`, `out` | `PREPOSITION` (`prepositions.json`) | `PARTICLE` (`particles.json`, verb-particle sense) |
+| `well` | `PARTICLE` (`particles.json`) | `INTERJECTION` (`metalinguistic_interjections.json`) |
 
 In every case the original, closed-class-or-first-seeded sense stays
 the `Dictionary.lookup()` default: `be`/`have`/`do`/`past`/`opposite`/
-`plus`/`minus`/`and`/`or`/`nor`/`not`/`no`/`please` are safe because
-`MANDATORY_FILES` (containing their original sense) always loads in
-full before `SUPPLEMENTARY_FILES` regardless of ordering; `cause`/`result` and
+`plus`/`minus`/`and`/`or`/`nor`/`not`/`no`/`please`/`well` are safe
+because `MANDATORY_FILES` (containing their original sense) always
+loads in full before `SUPPLEMENTARY_FILES` regardless of ordering;
+`up`/`off`/`out` are a mandatory-to-mandatory homograph pair --
+`prepositions.json` precedes `particles.json` in `MANDATORY_FILES`'s
+own tuple order, so `PREPOSITION` stays default without requiring any
+reordering; `cause`/`result` and
 `one` specifically require their mandatory/original file
 (`metalinguistic_nouns.json`, `pronouns.json`) to load before the file
 carrying their new sense (`metalinguistic_verbs.json`, `numerals.json`)
@@ -341,7 +425,30 @@ they're already part of the mandatory cache.
 
 ## Version
 
-`v1` / `schema_version 2.0.0` / `asset_version 1.8.0` (added
+`v1` / `schema_version 2.0.0` / `asset_version 1.9.0` (folded a
+user-supplied gap review's six categories into existing files and
+`PartOfSpeech` members, adding no new file or category: discourse
+markers `however`/`therefore`/`moreover`/`nevertheless` to
+`metalinguistic_adverbs.json` (13 -> 17, `ADVERB`,
+`closed_class_kind: "discourse_marker"`; see Discourse markers above);
+full contractions `don't`/`can't`/`I'm`/`it's`/`isn't`/`wasn't`/`hadn't`
+to `auxiliaries.json` (29 -> 36, `AUXILIARY`, `closed_class_kind:
+"contraction"`; see Contractions above); phrasal-verb particles
+`up`/`off`/`out`/`away` to `particles.json` (12 -> 16, `PARTICLE`; see
+Phrasal-verb particles above); the multi-word preposition `as well as`
+to `prepositions.json` (93 -> 94); and `well` as a second,
+`INTERJECTION` sense to `metalinguistic_interjections.json` (12 -> 13;
+see Interjections and the `OTHER` exception above). Two of the review's
+categories needed no changes: "clause markers" (`whether`, `whereas`,
+`although`, `unless`) were already fully present in
+`subordinating_conjunctions.json`, and of "multi-word grammatical
+units" only `as well as` was actually new (`because of`, `in spite
+of`, `according to` were already seeded). Mandatory total 376 -> 388;
+supplementary total 158 -> 163; every seeded Dictionary now carries
+551 total: 388 mandatory + 163 supplementary, still covering 15 of
+`PartOfSpeech`'s 16 members. The relationship cache grew alongside
+this -- see `relationships/README.md`'s Version section. `asset_version
+1.8.0` added
 `metalinguistic_interjections.json`, 12 `INTERJECTION` entries -- `yes`,
 `no`, `please`, `alas`, `hurrah`, `huzzah`, `oh`, `ah`, `wow`, `hey`,
 `ouch`, `hmm` -- to `SUPPLEMENTARY_FILES`; two are homographs of

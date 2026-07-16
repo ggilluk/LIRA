@@ -3,7 +3,7 @@
   "language_code": "en",
   "part_of_speech": "AUXILIARY",
   "closed_class_kind": "auxiliary",
-  "count": 29,
+  "count": 36,
   "words": [
     {
       "lexical_form": "be",
@@ -1025,6 +1025,258 @@
       "closed_class_kind": "auxiliary",
       "definition": "Present participle of 'do'",
       "gloss": "Present participle of 'do'",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "lexical_form": "don't",
+      "normalised_form": "don't",
+      "text": "don't",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "AUXILIARY",
+      "closed_class": true,
+      "closed_class_kind": "contraction",
+      "definition": "Contraction of 'do' and 'not', used to form negative statements and questions with do-support",
+      "gloss": "Contraction of 'do' and 'not', used to form negative statements and questions with do-support",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "lexical_form": "can't",
+      "normalised_form": "can't",
+      "text": "can't",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "AUXILIARY",
+      "closed_class": true,
+      "closed_class_kind": "contraction",
+      "definition": "Contraction of 'can' and 'not', denoting inability, impossibility, or prohibition",
+      "gloss": "Contraction of 'can' and 'not', denoting inability, impossibility, or prohibition",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "lexical_form": "I'm",
+      "normalised_form": "i'm",
+      "text": "I'm",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "AUXILIARY",
+      "closed_class": true,
+      "closed_class_kind": "contraction",
+      "definition": "Contraction of 'I' and 'am'",
+      "gloss": "Contraction of 'I' and 'am'",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "lexical_form": "it's",
+      "normalised_form": "it's",
+      "text": "it's",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "AUXILIARY",
+      "closed_class": true,
+      "closed_class_kind": "contraction",
+      "definition": "Contraction of 'it' and 'is', or of 'it' and 'has'",
+      "gloss": "Contraction of 'it' and 'is', or of 'it' and 'has'",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "lexical_form": "isn't",
+      "normalised_form": "isn't",
+      "text": "isn't",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "AUXILIARY",
+      "closed_class": true,
+      "closed_class_kind": "contraction",
+      "definition": "Contraction of 'is' and 'not'",
+      "gloss": "Contraction of 'is' and 'not'",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "lexical_form": "wasn't",
+      "normalised_form": "wasn't",
+      "text": "wasn't",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "AUXILIARY",
+      "closed_class": true,
+      "closed_class_kind": "contraction",
+      "definition": "Contraction of 'was' and 'not'",
+      "gloss": "Contraction of 'was' and 'not'",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "lexical_form": "hadn't",
+      "normalised_form": "hadn't",
+      "text": "hadn't",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "AUXILIARY",
+      "closed_class": true,
+      "closed_class_kind": "contraction",
+      "definition": "Contraction of 'had' and 'not'",
+      "gloss": "Contraction of 'had' and 'not'",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
