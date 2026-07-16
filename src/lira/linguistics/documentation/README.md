@@ -52,3 +52,36 @@ Vocabulary Layer, not here -- `GraphProcessor` takes a
 Vocabulary's `meaning` is a `value_objects` `Text`, but `Word` keeps a
 plain `str` (Rule 18: Linguistics contains language structure only,
 not typed value objects).
+
+## TODO: Semantic decomposition and semantic disambiguation
+
+Nothing downstream of this layer (Knowledge Layer concept/relationship
+extraction in particular) should be built against what `GraphProcessor`
+produces today without first doing two things:
+
+1. **Semantic decomposition** -- breaking a parsed `Clause`/`Sentence`
+   down into its constituent semantic units and relations (who did
+   what to whom, under what condition), not just the syntactic
+   `Word`/`Clause`/`Sentence`/`Paragraph`/`Subject` tree
+   `GraphProcessor` builds today. The current tree is structural
+   (tokens grouped into clauses grouped into sentences); it doesn't yet
+   represent *meaning*.
+2. **Semantic disambiguation** -- resolving a `Word` to its correct
+   sense in context wherever more than one is possible.
+   `GraphProcessor.process_token` currently calls
+   `DictionaryProcessor.get_or_create_word`, which resolves via
+   `Dictionary.lookup(text)` -- first match only, by seeding order, not
+   by meaning (`vocabulary/documentation/README.md`, 9.2). This was a
+   theoretical limitation before homographs existed in the seeded data;
+   it's now a concrete, live one -- `that`/`this`/`these`/`those`
+   (`DETERMINER`/`PRONOUN`), `which`/`what` (`PRONOUN`/`DETERMINER`),
+   `be`/`have`/`do`/`cause`/`result` (`AUXILIARY or NOUN`/`VERB`),
+   `past`/`opposite` (`PREPOSITION`/`ADJECTIVE`) all currently resolve
+   to whichever sense was seeded first, regardless of which sense the
+   surrounding sentence actually calls for. `Dictionary.lookup_all(text)`
+   already returns every candidate sense; nothing yet picks among them
+   using context.
+
+Both are prerequisites for treating this layer's output as meaningful
+input elsewhere, not incremental improvements to bolt on after the
+fact.

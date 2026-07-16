@@ -555,6 +555,15 @@ still resolves to just one of them (whichever was appended first) --
 for a caller that genuinely needs every sense, `Dictionary.lookup_all(text)`
 returns all of them, unlike `lookup`.
 
+This is exactly the limitation `linguistics/documentation/README.md`'s
+"Semantic decomposition and semantic disambiguation" TODO is tracking
+from the parsing side: `GraphProcessor.process_token` resolves every
+token via plain `Dictionary.lookup`, so a homograph in running text
+(`that`, `which`, `be`, `past`, ...) currently always gets whichever
+sense was seeded first, never the sense the sentence actually calls
+for. `lookup_all` makes every candidate sense visible; nothing yet
+chooses among them using context.
+
 #### 9.3 Every Dictionary is seeded from a reserved "Common" Domain
 
 Every `LIRAHost` auto-creates a reserved `Domain` named `Common` the
