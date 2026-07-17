@@ -3,7 +3,7 @@ from raw text, attaching a tensor-backed LinguisticSystemProperty to
 every unit it creates."""
 
 import uuid
-from typing import List
+from typing import List, Tuple
 
 from .clause_segmentation import ClauseSegmentationUtility
 from .grammar_configurator import GrammarConfigurator
@@ -43,17 +43,58 @@ class GraphProcessor:
         )
         return LinguisticSystemProperty(self.store, row)
 
-    def process_token(self, text_token: str, absolute_seq_num: int) -> "Word":
+    def process_token(
+        self, text_token: str, absolute_seq_num: int, *,
+        sentence_index: int = 0, token_index: int = 0, is_sentence_start: bool = False,
+        preceding_words: Tuple[str, ...] = (), following_words: Tuple[str, ...] = (),
+    ) -> "Word":
         import copy
 
-        from lira.vocabulary import PartOfSpeech
+        from lira.value_objects import Text
+        from lira.vocabulary import PartOfSpeech, Word
 
-        resolved = self.dict_processor.get_or_create_word(text_token)
-        # resolved is always the Dictionary's canonical Word (its *type*,
-        # punctuation included -- see dictionary_processor.py) -- copy it
-        # so this occurrence (its *token*) gets its own identity and
-        # system_property row, without mutating the canonical entry.
-        node = copy.copy(resolved)
+        candidates = self.dict_processor.identify_word(
+            text_token,
+            sentence_index=sentence_index, token_index=token_index, is_sentence_start=is_sentence_start,
+            preceding_words=preceding_words, following_words=following_words,
+        )
+
+        if candidates:
+            # Highest-confidence candidate for this occurrence
+            # (DictionaryProcessor.identify_word already ranks them).
+            # word is always the Dictionary's canonical Word (its
+            # *type*, punctuation included -- see
+            # dictionary_processor.py) -- copy it so this occurrence
+            # (its *token*) gets its own identity and system_property
+            # row, without mutating the canonical entry. Selecting
+            # among more than one candidate for THIS sentence occurrence
+            # (semantic disambiguation, as opposed to this ranking by
+            # occurrence-level orthographic evidence) is Linguistics
+            # Layer work not yet built -- see
+            # linguistics/documentation/README.md.
+            node = copy.copy(candidates[0].word)
+        else:
+            # No seeded or previously-hydrated sense exists yet.
+            # identify_word has already queued external hydration, but
+            # that resolves asynchronously and won't be ready before
+            # this call returns, so this occurrence gets a transient,
+            # unclassified node of its own -- never added to the
+            # Dictionary, since an unresolved occurrence must not enter
+            # the authoritative vocabulary as a guess (vocabulary/data/word_identification.py).
+            node = Word(
+                text=text_token,
+                part_of_speech=PartOfSpeech.OTHER,
+                definition=Text(value="Pending external hydration; part of speech not yet identified."),
+                is_common=False,
+                is_fully_hydrated=False,
+            )
+
+        # This occurrence's own casing, not the canonical Word's --
+        # Clause/Sentence text is reconstructed from token text
+        # (process_sentence below), so it must reflect what was
+        # actually written, not the Dictionary's seed-data casing.
+        node.text = text_token
+
         kind = LinguisticUnitKind.Punctuation if node.part_of_speech == PartOfSpeech.PUNCTUATION else LinguisticUnitKind.Word
 
         node.system_property = self.create_property_wrapper(node, kind, absolute_seq_num, "Lexer_TokenLayer")
@@ -63,7 +104,14 @@ class GraphProcessor:
         from lira.vocabulary import PartOfSpeech
 
         raw_tokens = LinguisticLexer.extract_tokens(raw_sentence_text)
-        all_processed_tokens = [self.process_token(tok, abs_idx) for abs_idx, tok in enumerate(raw_tokens)]
+        all_processed_tokens = [
+            self.process_token(
+                tok, idx,
+                sentence_index=seq_num, token_index=idx, is_sentence_start=(idx == 0),
+                preceding_words=tuple(raw_tokens[:idx]), following_words=tuple(raw_tokens[idx + 1:]),
+            )
+            for idx, tok in enumerate(raw_tokens)
+        ]
         compiled_clauses: List[Clause] = []
 
         if self.use_clause_segmentation:

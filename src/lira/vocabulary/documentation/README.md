@@ -18,7 +18,9 @@ tree and design rules.
   `EditorialLabel`, `LexicalRelationshipType` (integer-valued enums,
   numeric tensor-ready values, `LexicalRelationshipType` additionally
   bit-packing group/category/item); `Pronunciation`, `SourceReference`,
-  `AttributeValue` supporting value objects; `LexicalRelationshipSystemPropertyTensor`
+  `AttributeValue` supporting value objects; `WordLookupContext`,
+  `WordIdentification`/`IdentificationSource`, `ExternalWordCandidate`
+  -- occurrence-resolution types, see 9.6; `LexicalRelationshipSystemPropertyTensor`
   and the by-reference `SystemPropertiesRef` view (Rule 14) -- only
   `LexicalRelationship` carries one, not `Dictionary` or `Word` (Design
   Principle 8). `Word` still subclasses Linguistics's `LinguisticUnit`,
@@ -29,10 +31,12 @@ tree and design rules.
   like any other mandatory closed-class file.
 - `agents/` -- `VocabularyAgent` and its concrete agents (`SeedAgent`,
   `LookupAgent`, `HydrateAgent`, `NormaliseAgent`).
-- `role/` -- `DictionaryProcessor`, `AsyncDictionaryHydrator`,
-  `ExternalDictionaryAdapter`, `LexicalRelationshipProcessor`,
-  `WordSeeder`, `RelationshipSeeder` -- plain service classes for the
-  lexicon and relationship graph, not `*Agent` subclasses.
+- `role/` -- `DictionaryProcessor` (`identify_word()` -- never a
+  guessed part of speech, see 9.6), `PartOfSpeechIdentifier`,
+  `AsyncDictionaryHydrator`, `ExternalDictionaryAdapter`,
+  `LexicalRelationshipProcessor`, `WordSeeder`, `RelationshipSeeder` --
+  plain service classes for the lexicon and relationship graph, not
+  `*Agent` subclasses.
 - `assets/` -- `common/<language_code>/` -- the Common Vocabulary
   Cache `WordSeeder` loads (`common/en/` -- the mandatory 388-word
   English Common Closed-Class Cache v1 (including punctuation, symbols,
@@ -867,3 +871,100 @@ without conflicting with what's here.
 relationship in this cache -- no personal pronoun in the seed data
 maps directly to `each other` / `one another` the way it maps to its
 object, possessive, or reflexive forms.
+
+#### 9.6 Resolving a raw token occurrence: `identify_word`
+
+A raw token from the Linguistics Layer's lexer (`GraphProcessor.process_token`)
+is resolved against this Domain's Dictionary through
+`DictionaryProcessor.identify_word`, never through a method that
+creates a placeholder Word with a guessed `part_of_speech`. The
+pipeline:
+
+1. **`WordLookupContext`** (`vocabulary/data/word_lookup_context.py`) --
+   describes one occurrence: its raw text (casing preserved, never
+   lowercased before this point), its case-folded normalised text (the
+   actual lookup key), the owning Domain's name, and its position and
+   surrounding tokens within the sentence. A frozen dataclass -- pure
+   occurrence metadata, never part of an authoritative `Word`.
+   `is_title_case`/`is_upper_case`/`contains_hyphen`/`contains_digit`
+   are computed properties over the raw text.
+2. **`PartOfSpeechIdentifier.identify_seeded`** (`vocabulary/role/part_of_speech_identifier.py`)
+   -- calls `Dictionary.lookup_all(context.normalised_text)`, not
+   `lookup()`: every homograph sense already in this Domain's
+   Dictionary (seeded by `WordSeeder`, or added by a previous
+   hydration -- `lookup_all` doesn't distinguish the two) becomes a
+   candidate, not just whichever was seeded first. Each candidate is a
+   `WordIdentification` (`vocabulary/data/word_identification.py`) --
+   `word`, `part_of_speech`, `source` (`IdentificationSource`), a
+   `confidence` float, and a human-readable `reason`. Candidates are
+   ranked by confidence, which starts at `1.0` for every exact seeded
+   match and is nudged upward only where occurrence evidence actually
+   supports one candidate over another today (non-sentence-initial
+   title casing favours `PROPER_NOUN`; upper casing favours `SYMBOL`) --
+   ties keep `lookup_all`'s own order, i.e. seeding/insertion order, so
+   this is a strict superset of `Dictionary.lookup()`'s old
+   first-seeded-wins default, not a replacement for it.
+   `PartOfSpeechIdentifier` never touches the network and never
+   creates a `Word`.
+3. **No seeded/hydrated candidate found** -- `identify_word` returns an
+   empty tuple immediately (no `Word` is created for the occurrence)
+   and queues the context on `AsyncDictionaryHydrator.queue_hydration`,
+   deduplicated by `(normalised_text, domain_name)` so a second
+   occurrence of the same lexical form doesn't trigger a second
+   in-flight network call.
+4. **External hydration** (`vocabulary/role/external_dictionary_adapter.py`,
+   `vocabulary/role/dictionary_hydrator.py`) -- runs on
+   `AsyncDictionaryHydrator`'s background worker thread, asynchronously
+   with respect to the `identify_word` call that queued it.
+   `ExternalDictionaryAdapter.parse_api_payload` parses every meaning
+   the external source returns into an `ExternalWordCandidate`
+   (`vocabulary/data/external_word_candidate.py` -- a field set mirroring
+   `Word`'s own, not a new schema), scores each by `domain_relevance`
+   (how much its definition overlaps the Domain's name and the
+   occurrence's surrounding words -- a ranking hint, not proof: `plant`
+   in a `"Energy Power Generation"` Domain ranks the power-station
+   sense above the biological one only because the external source's
+   own definition text supports that ranking) and a fixed
+   `source_confidence`, then keeps the single highest-`combined_confidence`
+   candidate per `part_of_speech` (`_deduplicate`) -- an entry the
+   adapter can't map to a real `PartOfSpeech` member is dropped, never
+   defaulted to `NOUN`. `AsyncDictionaryHydrator._hydrate` then appends
+   one new `Word` per surviving candidate straight to this Domain's own
+   Dictionary (`is_common=False`, `is_fully_hydrated=True`) -- skipping
+   any `(text, part_of_speech)` pair that already exists there. This
+   is the "different POS categories become separate Word entries
+   immediately" half of Word 4.1's homograph model; a same-form/
+   same-`part_of_speech` sense conflict (the biological and
+   power-station senses of `plant`, both `NOUN`) is deliberately *not*
+   auto-created as a second Word -- that needs the explicit,
+   judgement-requiring `register_conflicting_sense` path (9.2), not an
+   automatic one. These hydrated Words become this Domain's
+   authoritative record immediately (the same standing as any other
+   Word in it); they are not written to `promoted_words.json` --
+   promotion to the Common cache is a separate, deliberate step
+   (`WordSeeder.promote_word`) gated on cross-domain reference count,
+   not something hydration decides on its own.
+
+`domain_name` is bound once when `DictionaryProcessor` is constructed
+(`VocabularyLayer.__init__`, itself constructed once per `Domain`),
+the same pattern `WordSeeder`/`RelationshipSeeder` use for
+`language_code`, rather than being passed on every `identify_word`
+call -- a `DictionaryProcessor` already belongs to exactly one Domain.
+
+Choosing among more than one candidate `identify_word` returns for a
+*specific sentence occurrence* -- semantic disambiguation proper, as
+opposed to the occurrence-level orthographic ranking `PartOfSpeechIdentifier`
+already does -- is Linguistics Layer work that doesn't exist yet (see
+`linguistics/documentation/README.md`'s TODO section).
+`GraphProcessor.process_token` currently takes the highest-ranked
+candidate for its tree node when at least one exists, and gives an
+unresolved occurrence a transient node of its own
+(`part_of_speech=PartOfSpeech.OTHER`, `is_fully_hydrated=False`) that
+is never added to the Dictionary -- a placeholder for that one
+occurrence in the tree being built right now, not a vocabulary entry,
+since hydration resolves asynchronously and can't complete before that
+tree node has to exist. Every token node also gets this specific
+occurrence's own raw text on `Word.text` (never the seeded/hydrated
+canonical Word's casing) once a candidate is chosen, so that
+`Clause`/`Sentence` text reconstruction (`" ".join(t.text for t in
+tokens)`) reflects what was actually written.

@@ -24,7 +24,7 @@ class Domain:
         self.known_domains = KnownDomains()  # by reference
         self.domain_agents: list[DomainAgent] = []  # specialist agents, not tied to one layer
 
-        self.vocabulary = VocabularyLayer()
+        self.vocabulary = VocabularyLayer(self.name)
         self.linguistics = LinguisticController(self.vocabulary.dictionary_processor)
         self.value_objects = ValueObjectsLayer()
         self.knowledge = KnowledgeLayer()
