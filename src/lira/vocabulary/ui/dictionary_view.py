@@ -9,7 +9,7 @@ embedded webfont) so the output stays a single dependency-free file."""
 
 import json
 from html import escape
-from typing import Dict, List
+from typing import Dict, List, Tuple
 
 from ..data.dictionary import Dictionary
 from ..data.lexical_relationship_store import LexicalRelationshipStore
@@ -45,10 +45,18 @@ class DictionaryView:
     `domain.vocabulary.dictionary` and `domain.vocabulary.lexical_relationships`
     -- call `render()` for the HTML string or `save(path)` to write it."""
 
-    def __init__(self, dictionary: Dictionary, relationships: LexicalRelationshipStore, *, title: str = "LIRA Dictionary"):
+    def __init__(self, dictionary: Dictionary, relationships: LexicalRelationshipStore, *,
+                 title: str = "LIRA Dictionary", unresolved: Tuple[str, ...] = ()):
         self.dictionary = dictionary
         self.relationships = relationships
         self.title = title
+        # Words a caller looked up and could not resolve (no seeded
+        # sense, no successful hydration) -- optional, since most
+        # callers render a Dictionary on its own with no such list to
+        # hand in. Never derived from the Dictionary itself: an
+        # unresolved word by definition has no Word record to find
+        # here (vocabulary/documentation/README.md, 9.6).
+        self.unresolved = tuple(unresolved)
 
     def render(self) -> str:
         words = self._word_records()
@@ -69,8 +77,10 @@ class DictionaryView:
             "COMMON_COUNT": str(common_count),
             "DOMAIN_SPECIFIC_COUNT": str(len(words) - common_count),
             "POS_COUNT": str(len(pos_counts)),
+            "UNRESOLVED_COUNT": str(len(self.unresolved)),
             "WORDS_JSON": json.dumps(words),
             "RELS_JSON": json.dumps(rels),
+            "UNRESOLVED_JSON": json.dumps(sorted(self.unresolved)),
             "POS_COLORS_JSON": json.dumps(POS_COLORS),
             "GROUP_COLORS_JSON": json.dumps(GROUP_COLORS),
             "GROUP_NAMES_JSON": json.dumps(GROUP_NAMES),
@@ -98,6 +108,8 @@ class DictionaryView:
                 "dialect_codes": [code.value for code in word.dialect_codes],
                 "editorial_labels": [label.name for label in word.editorial_labels],
                 "is_common": word.is_common,
+                "is_fully_hydrated": word.is_fully_hydrated,
+                "sources": [ref.source_name.value for ref in word.source_references],
                 "relationship_count": relationship_count,
             })
         records.sort(key=lambda r: r["lexical_form"].lower())
@@ -394,6 +406,23 @@ tbody tr:hover { background: color-mix(in srgb, var(--accent) 6%, transparent); 
   color: var(--ink-muted);
   font-size: 0.9rem;
 }
+.unresolved-panel {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-left: 3px solid #C2544B;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 14px 16px;
+  margin-bottom: 16px;
+}
+.unresolved-panel .word-form {
+  display: inline-block;
+  margin: 0 6px 6px 0;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: color-mix(in srgb, #C2544B 12%, transparent);
+  font-size: 0.82rem;
+}
 .words-layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 320px;
@@ -473,6 +502,7 @@ footer {
     <div class="stat"><div class="value">@@COMMON_COUNT@@</div><div class="label">Common vocabulary</div></div>
     <div class="stat"><div class="value">@@DOMAIN_SPECIFIC_COUNT@@</div><div class="label">Domain-specific</div></div>
     <div class="stat"><div class="value">@@POS_COUNT@@</div><div class="label">Parts of speech</div></div>
+    <div class="stat"><div class="value">@@UNRESOLVED_COUNT@@</div><div class="label">Unresolved</div></div>
   </div>
 
   <div class="toolbar">
@@ -483,6 +513,11 @@ footer {
       <button id="tab-rels" role="tab" aria-selected="false">Relationships</button>
     </div>
   </div>
+
+  <section class="unresolved-panel" id="unresolved-panel" style="display:none">
+    <div class="detail-section-title" style="margin-top:0">Unresolved &mdash; no seeded sense, no successful hydration</div>
+    <div id="unresolved-list"></div>
+  </section>
 
   <section class="panel active" id="panel-words">
     <div class="words-layout">
@@ -531,6 +566,7 @@ footer {
 <script>
 const WORDS = @@WORDS_JSON@@;
 const RELS = @@RELS_JSON@@;
+const UNRESOLVED = @@UNRESOLVED_JSON@@;
 const POS_COLORS = @@POS_COLORS_JSON@@;
 const GROUP_COLORS = @@GROUP_COLORS_JSON@@;
 const GROUP_NAMES = @@GROUP_NAMES_JSON@@;
@@ -637,9 +673,11 @@ function renderDetail() {
   empty.style.display = "none";
   content.style.display = "block";
   content.innerHTML = `
-    <div class="detail-word">${word.lexical_form}${word.is_common ? ' <span class="badge-common">common</span>' : ''}</div>
+    <div class="detail-word">${word.lexical_form}${word.is_common ? ' <span class="badge-common">common</span>' : ''}${word.is_fully_hydrated ? '' : ' <span class="badge-common" style="color:#C2544B;border-color:#C2544B">hydration pending</span>'}</div>
     <div style="margin-top:6px">${posPill(word.pos)}</div>
     <div class="detail-definition">${word.definition || word.gloss || 'No definition on record.'}</div>
+    <div class="detail-section-title">Provenance</div>
+    <div class="detail-definition" style="margin-top:0">${word.sources && word.sources.length ? word.sources.map(s => `<span class="tag">${s}</span>`).join('') : '<span style="opacity:.6">No source recorded.</span>'}</div>
     <div class="detail-section-title">Relationships (${rels.length})</div>
     ${rels.length === 0 ? '<div class="detail-empty" style="padding:8px 0">No relationships recorded.</div>' : rels.map(r => `
       <div class="rel-row">
@@ -669,10 +707,22 @@ function renderRels() {
   document.getElementById("stat-rels").textContent = rows.length;
 }
 
+function renderUnresolved() {
+  const panel = document.getElementById("unresolved-panel");
+  if (!UNRESOLVED.length) {
+    panel.style.display = "none";
+    return;
+  }
+  panel.style.display = "block";
+  document.getElementById("unresolved-list").innerHTML = UNRESOLVED
+    .map(w => `<span class="word-form">${w}</span>`).join('');
+}
+
 function renderAll() {
   renderWords();
   renderRels();
   renderDetail();
+  renderUnresolved();
 }
 
 function selectTab(tab) {

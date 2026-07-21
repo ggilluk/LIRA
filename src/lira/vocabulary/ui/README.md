@@ -21,9 +21,21 @@ view = DictionaryView(
     domain.vocabulary.dictionary,
     domain.vocabulary.lexical_relationships,
     title="LIRA Common Dictionary",
+    unresolved=(),  # optional: surface caller-tracked words that never resolved (see below)
 )
 view.save("dictionary.html")
 ```
+
+The word detail panel includes a **Provenance** line, reading each
+`Word.source_references` (previously a populated field this view never
+displayed). The optional `unresolved` constructor argument -- a tuple
+of surface forms, default `()` -- renders a small **Unresolved** panel
+above the tables when non-empty; a `Dictionary` has no concept of "a
+word that was never resolved" on its own (there's no `Word` record to
+find), so a caller that tracks failed lookups (e.g. a domain-seeding
+run) hands the list in explicitly. See `assets/example_ui/README.md`
+for a worked example (a Physics Domain seeded via
+`examples/physics_domain_seeding.py`, repo root).
 
 All Word and LexicalRelationship data is embedded as JSON in the page
 and searched/filtered/sorted client-side in vanilla JS -- there is no
