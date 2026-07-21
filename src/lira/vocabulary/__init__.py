@@ -35,6 +35,8 @@ supporting value objects; WordLookupContext (one raw token occurrence),
 WordIdentification/IdentificationSource (a candidate resolution of an
 occurrence to a grammatical category), ExternalWordCandidate (one
 externally-sourced grammatical-category candidate, pre-Word);
+DefinitionWordReference (one token of a Word's own definition text,
+resolved against a Dictionary -- Word.definition_words());
 LexicalRelationshipSystemPropertyTensor and the by-reference
 SystemPropertiesRef view (Rule 14); Word still subclasses Linguistics's
 LinguisticUnit base -- see Word's own docstring for why), agents/
@@ -58,6 +60,7 @@ from .role.part_of_speech_identifier import PartOfSpeechIdentifier
 from .role.relationship_seeder import RelationshipSeeder
 from .role.word_seeder import WordSeeder
 from .data.attribute_value import AttributeValue
+from .data.definition_word_reference import DefinitionWordReference
 from .data.dictionary import Dictionary
 from .data.editorial_label import EditorialLabel
 from .data.external_word_candidate import ExternalWordCandidate
@@ -92,6 +95,7 @@ __all__ = [
     "Pronunciation",
     "SourceReference",
     "AttributeValue",
+    "DefinitionWordReference",
     "AsyncDictionaryHydrator",
     "DictionaryProcessor",
     "ExternalDictionaryAdapter",

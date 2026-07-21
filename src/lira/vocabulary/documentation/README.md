@@ -219,6 +219,16 @@ The following are genuinely out of scope for the Vocabulary Layer -- not derived
 | sentence grammar | The grammatical role this `Word` plays within a sentence | Belongs to the Linguistics Layer -- it depends on a specific sentence, not the word itself |
 | contextual interpretation | What this `Word` means in a specific domain or situation | Belongs to the Knowledge Layer -- domain context, not lexical inventory |
 
+#### 4.4 Definition Word Breakdown: `definition_words`
+
+Also not a stored field, and also computed on demand -- but resolved directly against a `Dictionary` rather than a `LexicalRelationshipStore`, since a definition is prose about this `Word`, not a claimed relationship between two `Word`s, so there is no `LexicalRelationship` to read. Signature is accordingly narrower than the 4.3 properties: `word.definition_words(dictionary)`, no `relationships` parameter.
+
+`Word.definition_words` splits `self.definition`'s text into its own sequenced array of `DefinitionWordReference`s (`vocabulary/data/definition_word_reference.py` -- `text`, `word: Optional[Word]`, `is_resolved`), one per token in reading order. Unlike every 4.3 property, duplicates are kept and position is preserved -- this describes a sentence, not a set of related `Word`s. Tokenizing is a local regex (`word.py`'s own `_definition_tokens`), not a Linguistics Layer import: Vocabulary must not depend on Linguistics (Linguistics depends on Vocabulary, by way of `Word`), and this only needs "the words in this string," not sentence or grammar structure.
+
+Each token is resolved domain-first: every same-text candidate `Dictionary.lookup_all` returns, preferring one with `is_common=False` if any exists, else falling back to `lookup_all`'s own first-seeded order -- the same one-liner already used to prefer a Domain's own hydrated sense over Common's when curating Physics relationships (`examples/physics_domain_seeding.py`'s `resolve`). This reflects a Domain-scoping insight distinct from 9.2's word-sense conflict handling: two different senses of the same (text, part_of_speech) *within one Domain* usually means that Domain is missing a specialising sub-Domain boundary, not that the Vocabulary Layer needs to disambiguate at lookup time -- so a definition-word reference simply prefers whatever this Domain already made its own.
+
+A token with no candidate at all in the Dictionary resolves to `word=None` -- reported, not guessed, the same discipline `identify_word` (9.6) applies to an unresolved occurrence. Completeness is not a precondition of usefulness here: an unresolved reference is the actionable signal for what to hydrate next (9.7), not an error state to eliminate before the property can be used.
+
 ### 5. LexicalRelationship
 
 #### 5.1 Definition
@@ -968,3 +978,11 @@ occurrence's own raw text on `Word.text` (never the seeded/hydrated
 canonical Word's casing) once a candidate is chosen, so that
 `Clause`/`Sentence` text reconstruction (`" ".join(t.text for t in
 tokens)`) reflects what was actually written.
+
+#### 9.7 Recursive vocabulary discovery through a definition: `queue_definition_hydration`
+
+A `Word`'s own `definition` is itself English prose, so it can be broken down the same way any other source text can (4.4's `definition_words`) -- and doing so surfaces the same two outcomes 9.6 already distinguishes for a sentence occurrence: a token this Domain's Dictionary already has a sense for, and a token it has never seen at all. `DictionaryProcessor.queue_definition_hydration(word)` walks `word.definition_words(self.dictionary)` and, for every unresolved reference, queues it exactly the way `identify_word` (9.6, step 3) queues an unresolved sentence occurrence -- the same `AsyncDictionaryHydrator.queue_hydration`, deduplicated the same way by `(normalised_text, domain_name)`. Duplicate tokens within one definition are only queued once; a form already in flight elsewhere is silently skipped by `queue_hydration` itself.
+
+This treats an unresolved definition-word reference as a discovery signal, not a defect to fix before the property is useful: a definition mentioning a word this Domain hasn't hydrated yet is exactly the information needed to decide what to hydrate next, recursively -- the same completeness-as-signal reasoning 4.4 already states for `definition_words` on its own, just closed into a loop here by actually acting on the gap. Nothing about this is a new pipeline stage: `queue_definition_hydration` only decides *when* to call the existing `queue_hydration`, the same primitive 9.6 is built on; hydration itself, ranking, and Word creation are unchanged.
+
+Not called automatically by anything in this layer today -- a caller (a Domain-seeding script, a completeness audit) decides when walking a Word's own definition for gaps is worth the network calls it may trigger, the same judgement `identify_word`'s callers already exercise implicitly every time they tokenize a sentence. See `examples/physics_definition_completeness.py` for a worked demonstration against the Physics Domain (`examples/README.md`).

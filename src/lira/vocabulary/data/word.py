@@ -15,6 +15,7 @@ confidence/activation/etc. from the Linguistics tensor instead, via
 the inherited LinguisticUnit.system_property, populated by
 GraphProcessor when the token is created."""
 
+import re
 import uuid as uuid_module
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Optional, Tuple
@@ -22,6 +23,7 @@ from typing import TYPE_CHECKING, Optional, Tuple
 from lira.linguistics.data.linguistic_unit import LinguisticUnit
 from lira.value_objects import Code, Identifier, Number, Text
 
+from .definition_word_reference import DefinitionWordReference
 from .editorial_label import EditorialLabel
 from .lexical_relationship_store import LexicalRelationshipStore
 from .lexical_relationship_type import LexicalRelationshipType
@@ -34,6 +36,18 @@ if TYPE_CHECKING:
     # Dictionary imports Word (to type its `words` field), so this is a
     # string-quoted, unimported hint to avoid a same-package import cycle.
     from .dictionary import Dictionary
+
+# Splits a definition's prose into its own word tokens -- deliberately a
+# local regex, not a Linguistics-Layer LinguisticLexer import: Vocabulary
+# must not depend on Linguistics (Linguistics depends on Vocabulary, via
+# Word), and definition_words() only needs "the words in this string",
+# not sentence/grammar structure. Same pattern as
+# ExternalDictionaryAdapter._word_terms.
+_DEFINITION_WORD_PATTERN = re.compile(r"[^\W_]+")
+
+
+def _definition_tokens(definition_text: str) -> Tuple[str, ...]:
+    return tuple(_DEFINITION_WORD_PATTERN.findall(definition_text.replace("-", " ")))
 
 
 @dataclass
@@ -182,3 +196,39 @@ class Word(LinguisticUnit):
 
     def related_words(self, relationships: LexicalRelationshipStore, dictionary: "Dictionary") -> Tuple["Word", ...]:
         return self._related_words(relationships, dictionary, relationship_type=LexicalRelationshipType.RELATED, direction="both")
+
+    # -- Definition word breakdown (4.4) ---------------------------------
+    # Also not a stored field -- computed on demand, like the derived
+    # properties above -- but resolved directly against a Dictionary
+    # rather than a LexicalRelationshipStore: a definition is prose about
+    # this Word, not a claimed relationship between two Words, so there is
+    # no LexicalRelationship to read. Signature is deliberately narrower
+    # than _related_words' callers above (no `relationships` parameter)
+    # for the same reason.
+
+    def definition_words(self, dictionary: "Dictionary") -> Tuple[DefinitionWordReference, ...]:
+        """Breaks this Word's own `definition` text into its own sequenced
+        array of DefinitionWordReferences, one per token in reading order
+        -- unlike _related_words, duplicates are kept and position is
+        preserved, since this describes a sentence, not a set of related
+        Words. Empty when `definition` is None.
+
+        Each token is resolved against `dictionary` domain-first: every
+        same-text candidate `Dictionary.lookup_all` returns, preferring
+        one with `is_common=False` if any exists, else falling back to
+        `lookup_all`'s own first-seeded order -- the same one-liner
+        `identify_word`'s own callers already use to prefer a Domain's
+        own hydrated sense over Common's (vocabulary/documentation/README.md,
+        9.7). A token with no candidate at all resolves to `word=None`,
+        reported rather than guessed -- the same discipline
+        DictionaryProcessor.identify_word applies to an unresolved
+        occurrence, and the signal DictionaryProcessor.queue_definition_hydration
+        acts on."""
+        if self.definition is None:
+            return ()
+        references = []
+        for token in _definition_tokens(self.definition.value):
+            candidates = dictionary.lookup_all(token)
+            resolved = next((word for word in candidates if not word.is_common), candidates[0]) if candidates else None
+            references.append(DefinitionWordReference(text=token, word=resolved))
+        return tuple(references)

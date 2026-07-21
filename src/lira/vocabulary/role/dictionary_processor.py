@@ -89,3 +89,31 @@ class DictionaryProcessor:
         word.lexical_form = Text(value=self.dictionary.next_available_lexical_form(word.lexical_form.value))
         self.dictionary.append(word)
         return word
+
+    def queue_definition_hydration(self, word: Word) -> Tuple[str, ...]:
+        """Walks `word.definition_words(self.dictionary)` (4.4) and queues
+        external hydration -- the same AsyncDictionaryHydrator.queue_hydration
+        path identify_word itself uses (9.6) -- for every token that came
+        back unresolved. A gap in one Word's own definition is treated as
+        a discovery signal, not a blocker: the same recursive-vocabulary-
+        discovery idea documented at 9.7. Returns the distinct surface
+        forms actually queued, in first-seen order; a form already
+        in-flight (AsyncDictionaryHydrator's own dedup) is silently
+        skipped, same as any other queue_hydration call."""
+        queued = []
+        seen = set()
+        for reference in word.definition_words(self.dictionary):
+            if reference.word is not None:
+                continue
+            normalised_text = reference.text.casefold()
+            if normalised_text in seen:
+                continue
+            seen.add(normalised_text)
+            context = WordLookupContext(
+                raw_text=reference.text,
+                normalised_text=normalised_text,
+                domain_name=self.domain_name,
+            )
+            self.hydrator.queue_hydration(context)
+            queued.append(reference.text)
+        return tuple(queued)
