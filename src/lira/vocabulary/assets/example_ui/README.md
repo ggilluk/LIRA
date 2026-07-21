@@ -54,6 +54,17 @@ unaffected):
   `move`); select `be` (Common) to see the same treatment applied to
   ordinary morphological kinds, e.g. "am is the first-person form of
   be".
+- Each word's own definition, in the detail panel, rendered word-by-word
+  with a hover/keyboard-focus popup on every token -- select `atom` to
+  see its definition ("The basic unit of a chemical element, consisting
+  of a nucleus surrounded by electrons.") with `nucleus` popping up
+  `Noun · Physics` and its own definition, while `basic`, `unit`,
+  `chemical`, `element`, `consisting`, `surrounded`, and `electrons`
+  (the plural inflection doesn't exact-match the singular `electron`
+  Word's `text`) each pop up "Not in this Dictionary" instead --
+  `Word.definition_words()` (`vocabulary/documentation/README.md`, 4.4),
+  not guessed. See `examples/README.md`'s Definition word breakdown
+  section for the completeness numbers behind this.
 
 Regenerate with:
 

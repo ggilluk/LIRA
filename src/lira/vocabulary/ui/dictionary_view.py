@@ -8,6 +8,7 @@ served as a static asset. Uses only system font stacks (no CDN or
 embedded webfont) so the output stays a single dependency-free file."""
 
 import json
+import re
 from html import escape
 from typing import Dict, List, Optional, Tuple
 
@@ -15,6 +16,17 @@ from ..data.dictionary import Dictionary
 from ..data.lexical_relationship_store import LexicalRelationshipStore
 from ..data.part_of_speech import PartOfSpeech
 from ..data.word import Word
+
+# Matches word.py's own _definition_tokens pattern (same literal, same
+# reasoning -- see external_dictionary_adapter.py's _word_terms for the
+# existing precedent of this small tokenizer being duplicated rather
+# than cross-imported as a private helper). Used with finditer, not
+# findall, so each match's position in the original definition text is
+# available to reconstruct the surrounding punctuation/whitespace
+# Word.definition_words() itself discards -- the two must tokenize
+# identically, or _definition_segments' zip() below would misalign a
+# resolved/unresolved DefinitionWordReference with the wrong surface span.
+_DEFINITION_TOKEN_PATTERN = re.compile(r"[^\W_]+")
 
 GROUP_NAMES = {0: "Morphological", 1: "Lexical Semantic", 2: "Orthographic and Naming"}
 
@@ -129,9 +141,47 @@ class DictionaryView:
                 "is_fully_hydrated": word.is_fully_hydrated,
                 "sources": [ref.source_name.value for ref in word.source_references],
                 "relationship_count": relationship_count,
+                "definition_segments": self._definition_segments(word),
             })
         records.sort(key=lambda r: r["lexical_form"].lower())
         return records
+
+    def _definition_segments(self, word: Word) -> List[dict]:
+        """Reconstructs word.definition's text as an ordered list of
+        segments -- plain text (punctuation, whitespace) interleaved with
+        word-token segments carrying each token's own resolution from
+        Word.definition_words() (vocabulary/documentation/README.md, 4.4)
+        -- so the detail panel can render the definition with each word
+        individually identifiable (a tooltip popup), without re-deriving
+        the resolution itself in JS. Empty when there's no definition."""
+        if word.definition is None:
+            return []
+        text = word.definition.value
+        references = word.definition_words(self.dictionary)
+        segments: List[dict] = []
+        last_end = 0
+        for match, reference in zip(_DEFINITION_TOKEN_PATTERN.finditer(text), references):
+            if match.start() > last_end:
+                segments.append({"text": text[last_end:match.start()]})
+            segments.append(self._definition_word_segment(match.group(), reference.word))
+            last_end = match.end()
+        if last_end < len(text):
+            segments.append({"text": text[last_end:]})
+        return segments
+
+    def _definition_word_segment(self, surface_text: str, resolved: Optional[Word]) -> dict:
+        if resolved is None:
+            return {"text": surface_text, "word": True, "resolved": False}
+        return {
+            "text": surface_text,
+            "word": True,
+            "resolved": True,
+            "word_id": resolved.uuid.value,
+            "lexical_form": resolved.lexical_form.value if resolved.lexical_form else resolved.text,
+            "pos": resolved.part_of_speech.name,
+            "domain": self._domain_label(resolved),
+            "gloss": resolved.gloss.value if resolved.gloss else (resolved.definition.value if resolved.definition else ""),
+        }
 
     def _relationship_records(self) -> List[dict]:
         records = []
@@ -510,6 +560,50 @@ tbody tr[data-word-id].selected { background: color-mix(in srgb, var(--accent) 1
   font-size: 0.8rem;
   line-height: 1.4;
 }
+.def-text { line-height: 1.7; }
+.def-word {
+  position: relative;
+  border-bottom: 1px dotted var(--ink-muted);
+  cursor: help;
+}
+.def-word.def-word-unresolved {
+  border-bottom-style: dashed;
+  border-bottom-color: #C2544B;
+}
+.def-word .def-tooltip {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 7px);
+  transform: translate(-50%, 4px);
+  width: max-content;
+  max-width: 220px;
+  background: var(--ink);
+  color: var(--ground);
+  font-size: 0.74rem;
+  line-height: 1.4;
+  padding: 8px 10px;
+  border-radius: 5px;
+  box-shadow: var(--shadow);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.12s ease, transform 0.12s ease;
+  z-index: 5;
+}
+.def-word .def-tooltip .tt-title {
+  display: block;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+.def-word .def-tooltip .tt-meta {
+  display: block;
+  opacity: 0.75;
+  margin-bottom: 4px;
+}
+.def-word:hover .def-tooltip, .def-word:focus .def-tooltip, .def-word:focus-visible .def-tooltip {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
 @media (max-width: 860px) {
   .words-layout { grid-template-columns: 1fr; }
   .detail-panel { position: static; max-height: none; }
@@ -698,6 +792,39 @@ function relationshipSentence(kind, sourceText, targetText) {
   return `${sourceText} is ${titleCase(kind).toLowerCase()}-related to ${targetText}.`;
 }
 
+function truncate(text, max) {
+  if (!text) return "";
+  return text.length > max ? text.slice(0, max - 1).trimEnd() + "…" : text;
+}
+
+// Renders word.definition_segments (DictionaryView._definition_segments)
+// as inline text with each word token wrapped in a hover/focus tooltip
+// identifying its own part of speech, domain, and a short gloss -- built
+// from Word.definition_words() (vocabulary/documentation/README.md, 4.4)
+// on the Python side, not re-derived here. Plain-text segments
+// (punctuation, whitespace) pass through unwrapped, so the sentence
+// reads exactly as word.definition itself does.
+function definitionSegmentHTML(seg) {
+  if (!seg.word) return seg.text;
+  if (!seg.resolved) {
+    return `<span class="def-word def-word-unresolved" tabindex="0">${seg.text}`
+      + `<span class="def-tooltip"><span class="tt-title">${seg.text}</span>`
+      + `<span class="tt-meta">Not in this Dictionary</span></span></span>`;
+  }
+  const meta = [titleCase(seg.pos)];
+  if (seg.domain) meta.push(seg.domain);
+  return `<span class="def-word" tabindex="0" data-word-id="${seg.word_id}">${seg.text}`
+    + `<span class="def-tooltip"><span class="tt-title">${seg.lexical_form}</span>`
+    + `<span class="tt-meta">${meta.join(" &middot; ")}</span>${truncate(seg.gloss, 110)}</span></span>`;
+}
+
+function renderDefinition(word) {
+  if (!word.definition_segments || !word.definition_segments.length) {
+    return word.definition || word.gloss || "No definition on record.";
+  }
+  return `<span class="def-text">${word.definition_segments.map(definitionSegmentHTML).join("")}</span>`;
+}
+
 function populatePosFilter() {
   const select = document.getElementById("pos-filter");
   const seen = new Set(WORDS.map(w => w.pos));
@@ -803,7 +930,7 @@ function renderDetail() {
   content.innerHTML = `
     <div class="detail-word">${word.lexical_form}${word.is_common ? ' <span class="badge-common">common</span>' : ''}${word.is_fully_hydrated ? '' : ' <span class="badge-common" style="color:#C2544B;border-color:#C2544B">hydration pending</span>'}</div>
     <div style="margin-top:6px">${posPill(word.pos)} ${domainPill(word.domain)}</div>
-    <div class="detail-definition">${word.definition || word.gloss || 'No definition on record.'}</div>
+    <div class="detail-definition">${renderDefinition(word)}</div>
     <div class="detail-section-title">Provenance</div>
     <div class="detail-definition" style="margin-top:0">${word.sources && word.sources.length ? word.sources.map(s => `<span class="tag">${s}</span>`).join('') : '<span style="opacity:.6">No source recorded.</span>'}</div>
     <div class="detail-section-title">Relationships (${rels.length})</div>

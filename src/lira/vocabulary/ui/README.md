@@ -66,6 +66,22 @@ against `Word.py`'s own derived properties before shipping it (see
 `examples/physics_domain_relationships.py`'s module docstring for the
 full reasoning), not assumed from the kind's name alone.
 
+The word detail panel's definition is itself rendered word-by-word: each
+token is wrapped so hovering or keyboard-focusing it reveals a small
+popup naming that word's own lexical form, part of speech, domain, and
+a short gloss -- built from `Word.definition_words()`
+(`vocabulary/documentation/README.md`, 4.4) on the Python side
+(`DictionaryView._definition_segments`), not re-derived in JS. A token
+`definition_words()` couldn't resolve gets a dashed underline and a
+"Not in this Dictionary" popup instead of fabricated detail -- the same
+reported-not-guessed discipline the rest of this view already follows
+for an unresolved sentence occurrence. Plain punctuation and whitespace
+between words pass through unwrapped, so the sentence still reads
+exactly as `word.definition` itself does. Popups are pure CSS
+(`opacity`/`pointer-events` on `:hover`/`:focus`), not JS-positioned, so
+they respect `prefers-reduced-motion` for free like everything else on
+this page.
+
 All Word and LexicalRelationship data is embedded as JSON in the page
 and searched/filtered/sorted client-side in vanilla JS -- there is no
 server and the page makes no external requests. Typefaces are system
