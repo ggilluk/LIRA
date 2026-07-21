@@ -35,6 +35,7 @@ from pathlib import Path
 from unittest import mock
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+from physics_domain_relationships import PHYSICS_RELATIONSHIPS  # noqa: E402
 from physics_domain_seeding_fixtures import PHYSICS_FIXTURES  # noqa: E402
 from physics_source_text import PHYSICS_SOURCE_TEXT  # noqa: E402
 
@@ -42,11 +43,17 @@ from lira.knowledge.data.host import LIRAHost  # noqa: E402
 from lira.linguistics.role.grammar_configurator import GrammarConfigurator  # noqa: E402
 from lira.linguistics.role.lexer import LinguisticLexer  # noqa: E402
 from lira.linguistics.ui.user_prompt import UserPrompt  # noqa: E402
-from lira.vocabulary import DictionaryView  # noqa: E402
+from lira.value_objects import Text  # noqa: E402
+from lira.vocabulary import DictionaryView, LexicalRelationshipType, PartOfSpeech  # noqa: E402
+from lira.vocabulary.data.source_reference import SourceReference  # noqa: E402
 
 FIXTURE_SOURCE_NAME = (
     "Curated fixture data, dictionaryapi.dev response shape "
     "(this sandbox blocks live calls to api.dictionaryapi.dev -- see this file's module docstring)"
+)
+RELATIONSHIP_SOURCE_NAME = (
+    "Hand-curated for this demonstration (examples/physics_domain_relationships.py) -- "
+    "RelationshipSeeder has no path to relate a word added by hydration, see that file's module docstring"
 )
 PUNCTUATION = {".", ",", ";", "!", "?"}
 DOMAIN_NAME = "Physics"
@@ -92,6 +99,49 @@ def _pos_set(dictionary, word: str):
     return {w.part_of_speech.name for w in dictionary.lookup_all(word)}
 
 
+def _seed_physics_relationships(physics_domain) -> dict:
+    """Hand-curated relationships among the hydrated Physics words --
+    see physics_domain_relationships.py's module docstring for why
+    this exists (RelationshipSeeder never runs again after Domain
+    creation, so nothing else relates a word hydration adds). Resolves
+    each pair by exact (text, part_of_speech), since several are
+    homographs; skips (and reports) any pair where a word or the exact
+    sense named isn't present. Idempotent like RelationshipSeeder.seed_domain:
+    checks for an existing identical edge before creating one, safe to
+    call more than once against the same Domain."""
+    dictionary = physics_domain.vocabulary.dictionary
+    store = physics_domain.vocabulary.lexical_relationships
+    processor = physics_domain.vocabulary.lexical_relationship_processor
+    source_reference = SourceReference(source_name=Text(value=RELATIONSHIP_SOURCE_NAME))
+
+    def resolve(text: str, pos_name: str):
+        pos = PartOfSpeech[pos_name]
+        return next((w for w in dictionary.lookup_all(text) if w.part_of_speech == pos), None)
+
+    def edge_exists(source_id: str, target_id: str, kind: LexicalRelationshipType) -> bool:
+        return any(r.target_word_id.value == target_id and r.relationship_type == kind for r in store.outgoing(source_id))
+
+    created = 0
+    skipped = []
+    for source_text, source_pos, target_text, target_pos, kind_name in PHYSICS_RELATIONSHIPS:
+        kind = LexicalRelationshipType[kind_name]
+        source = resolve(source_text, source_pos)
+        target = resolve(target_text, target_pos)
+        if source is None or target is None:
+            skipped.append(f"{source_text} ({source_pos}) {kind_name} {target_text} ({target_pos}) -- word or sense not found")
+            continue
+        for a, b in ((source, target), (target, source)):
+            if not edge_exists(a.uuid.value, b.uuid.value, kind):
+                processor.create(
+                    source_word_id=a.uuid.value, target_word_id=b.uuid.value,
+                    relationship_type=kind, source_references=(source_reference,),
+                    confidence=0.9999, provenance=0.9999, temporal=0.9999, activation=0.9999,
+                )
+                created += 1
+
+    return {"created": created, "skipped": skipped, "attempted_pairs": len(PHYSICS_RELATIONSHIPS)}
+
+
 def run() -> dict:
     host = LIRAHost(name="physics-domain-seeding-demo")
     physics = host.get_or_create_domain(DOMAIN_NAME)
@@ -106,6 +156,7 @@ def run() -> dict:
     # (Domain creation already seeded Physics from Common -- 9.3).
     already_covered = sorted(t for t in tokens if dictionary.lookup_all(t))
     pos_before = {t: _pos_set(dictionary, t) for t in tokens}
+    relationship_count_before = len(physics.vocabulary.lexical_relationships.relationships)
 
     with mock.patch("urllib.request.urlopen", side_effect=_fixture_urlopen):
         physics.linguistics.tokenize_prompt(UserPrompt(text=PHYSICS_SOURCE_TEXT))
@@ -113,6 +164,8 @@ def run() -> dict:
 
         first_run_telemetry = dict(hydrator.telemetry)
         word_count_after_first_run = dictionary.total_entries()
+
+        relationship_seeding = _seed_physics_relationships(physics)
 
         # Repeat-processing test: same text, same Domain, second pass.
         physics.linguistics.tokenize_prompt(UserPrompt(text=PHYSICS_SOURCE_TEXT))
@@ -149,6 +202,8 @@ def run() -> dict:
         "duplicate_prevention_confirmed": word_count_after_first_run == word_count_after_second_run,
         "first_run_telemetry": first_run_telemetry,
         "second_run_telemetry": second_run_telemetry,
+        "relationship_seeding": relationship_seeding,
+        "relationship_count_before": relationship_count_before,
         "final_word_count": dictionary.total_entries(),
         "final_relationship_count": len(physics.vocabulary.lexical_relationships.relationships),
     }
@@ -202,9 +257,25 @@ def _format_report(report: dict) -> str:
                   "resolved; the deliberately-unresolved words are retried and fail again each pass, since "
                   "nothing in this pipeline blacklists a word after one failed lookup.)\n")
 
+    lines.append("## Relationships among hydrated words\n")
+    rel_seed = report["relationship_seeding"]
+    lines.append("RelationshipSeeder only runs once, at Domain creation, against the static Common "
+                  "relationship cache -- it never relates a word added later by hydration. "
+                  f"{rel_seed['attempted_pairs']} pairs hand-curated for this domain "
+                  "(examples/physics_domain_relationships.py) were seeded, both directions "
+                  f"(SYNONYM/ANTONYM/RELATED are symmetric): **{rel_seed['created']} edges created**.")
+    if rel_seed["skipped"]:
+        lines.append(f"\n{len(rel_seed['skipped'])} pair(s) skipped (word or exact sense not found):")
+        for reason in rel_seed["skipped"]:
+            lines.append(f"- {reason}")
+    lines.append("")
+
     lines.append("## Final state\n")
     lines.append(f"- Total words in the Physics Dictionary: {report['final_word_count']}")
-    lines.append(f"- Total relationships: {report['final_relationship_count']}")
+    lines.append(f"- Total relationships: {report['final_relationship_count']} "
+                  f"({report['relationship_count_before']} inherited from Common + "
+                  f"{report['final_relationship_count'] - report['relationship_count_before']} "
+                  "hand-curated for this domain)")
     return "\n".join(lines)
 
 

@@ -95,7 +95,11 @@ None in this run -- none of the Physics-specific content words in this source te
 - Second run (cumulative): {'successful_fetches': 63, 'failed_fetches': 4, 'deduplicated_calls': 17, 'created_words': 81}
   (successful_fetches/created_words do not grow on the second run for anything already resolved; the deliberately-unresolved words are retried and fail again each pass, since nothing in this pipeline blacklists a word after one failed lookup.)
 
+## Relationships among hydrated words
+
+RelationshipSeeder only runs once, at Domain creation, against the static Common relationship cache -- it never relates a word added later by hydration. 12 pairs hand-curated for this domain (examples/physics_domain_relationships.py) were seeded, both directions (SYNONYM/ANTONYM/RELATED are symmetric): **24 edges created**.
+
 ## Final state
 
 - Total words in the Physics Dictionary: 632
-- Total relationships: 138
+- Total relationships: 162 (138 inherited from Common + 24 hand-curated for this domain)

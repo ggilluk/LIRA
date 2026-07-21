@@ -11,9 +11,13 @@ than one part of speech, e.g. `charge` -> NOUN + VERB, `field` -> NOUN
 + VERB) hydrated from a representative Physics source text via the
 Vocabulary Layer's domain-seeding pipeline
 (`DictionaryProcessor.identify_word`, `AsyncDictionaryHydrator`,
-`ExternalDictionaryAdapter`) -- 632 words, 138 relationships in total.
-See `examples/README.md` (repo root) for the full demonstration,
-including the network caveat (this sandbox blocks live calls to
+`ExternalDictionaryAdapter`) -- 632 words, 162 relationships in total
+(138 inherited from Common + 24 hand-curated among the hydrated
+Physics words, e.g. `hot`<->`cold` ANTONYM, `charge`<->`current`
+RELATED -- `RelationshipSeeder` itself never relates a hydrated word;
+see `examples/physics_domain_relationships.py`). See
+`examples/README.md` (repo root) for the full demonstration, including
+the network caveat (this sandbox blocks live calls to
 `api.dictionaryapi.dev`, so the hydrated words came from curated
 fixture data in that API's real response shape, run through the
 otherwise-unmodified pipeline -- the generated page's title says so
