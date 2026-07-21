@@ -48,6 +48,24 @@ each related word in the detail panel's relationship list -- so a
 Domain-specific word's inherited-vs-own relationships are visible at a
 glance without leaving the panel.
 
+Each relationship row in that panel also carries a one-sentence plain-
+English gloss of what the edge actually means -- "particle is a type
+of matter" (HYPERNYM), "nucleus is part of atom" (MERONYM), "exert
+causes accelerate" (CAUSE), "am is the first-person form of be"
+(FIRST_PERSON_FORM), and so on for every `LexicalRelationshipType`
+member, generic-Semantic and morphological/orthographic alike
+(`RELATIONSHIP_SENTENCES` in the page's own script, one template
+function per kind, keyed by kind name; an unlisted kind falls back to
+"X is Y-related to Z"). Always phrased from the edge's own stored
+(source, target) -- worth knowing since several kinds are asymmetric
+(a HYPERNYM edge is stored narrower→broader, so the sentence reads
+"source is a type of target"; a HYPONYM edge over the *same* pair is
+stored broader→narrower, so its sentence is "target is a type of
+source") -- getting this right for every kind was verified directly
+against `Word.py`'s own derived properties before shipping it (see
+`examples/physics_domain_relationships.py`'s module docstring for the
+full reasoning), not assumed from the kind's name alone.
+
 All Word and LexicalRelationship data is embedded as JSON in the page
 and searched/filtered/sorted client-side in vanilla JS -- there is no
 server and the page makes no external requests. Typefaces are system

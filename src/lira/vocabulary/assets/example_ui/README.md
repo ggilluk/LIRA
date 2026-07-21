@@ -47,6 +47,13 @@ unaffected):
   (`word.is_common`); filtering to "Physics" isolates exactly the 95
   hydrated (or conflict-resolved) words, filtering to "Common" the
   inherited 551.
+- A one-sentence plain-English gloss under each relationship row in
+  the detail panel, phrased per kind -- select `particle_2` to see
+  "particle is a type of matter" (HYPERNYM), "nucleus is part of atom"
+  (MERONYM, select `nucleus`), "exert causes accelerate" (CAUSE, select
+  `move`); select `be` (Common) to see the same treatment applied to
+  ordinary morphological kinds, e.g. "am is the first-person form of
+  be".
 
 Regenerate with:
 

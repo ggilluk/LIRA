@@ -105,8 +105,8 @@ None in this run -- none of the Physics-specific content words in this source te
 
 ## Hydrator telemetry
 
-- First run: {'successful_fetches': 77, 'failed_fetches': 2, 'deduplicated_calls': 14, 'created_words': 95}
-- Second run (cumulative): {'successful_fetches': 77, 'failed_fetches': 4, 'deduplicated_calls': 14, 'created_words': 95}
+- First run: {'successful_fetches': 77, 'failed_fetches': 2, 'deduplicated_calls': 8, 'created_words': 95}
+- Second run (cumulative): {'successful_fetches': 77, 'failed_fetches': 4, 'deduplicated_calls': 8, 'created_words': 95}
   (successful_fetches/created_words do not grow on the second run for anything already resolved; the deliberately-unresolved words are retried and fail again each pass, since nothing in this pipeline blacklists a word after one failed lookup.)
 
 ## Word-sense conflicts found and resolved

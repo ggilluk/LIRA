@@ -491,17 +491,25 @@ tbody tr[data-word-id].selected { background: color-mix(in srgb, var(--accent) 1
   color: var(--ink-muted);
   margin: 16px 0 6px;
 }
+.rel-entry {
+  padding: 7px 0;
+  border-bottom: 1px solid var(--line);
+}
+.rel-entry:last-child { border-bottom: none; }
 .rel-row {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 7px 0;
-  border-bottom: 1px solid var(--line);
   font-size: 0.83rem;
 }
-.rel-row:last-child { border-bottom: none; }
 .rel-row .rel-dir { color: var(--ink-muted); font-size: 0.8rem; width: 12px; text-align: center; flex: none; }
 .rel-row .link-btn { margin-left: auto; text-align: right; }
+.rel-sentence {
+  margin: 4px 0 0 20px;
+  color: var(--ink-muted);
+  font-size: 0.8rem;
+  line-height: 1.4;
+}
 @media (max-width: 860px) {
   .words-layout { grid-template-columns: 1fr; }
   .detail-panel { position: static; max-height: none; }
@@ -621,6 +629,75 @@ function domainPill(domain) {
   return `<span class="pill" style="background:${color}">${domain}</span>`;
 }
 
+// One plain-English sentence per relationship kind, always phrased in
+// terms of the edge's own (source, target) -- e.g. a HYPERNYM edge is
+// stored as (narrower, HYPERNYM, broader), so "source is a type of
+// target" reads correctly regardless of which side the viewer selected
+// (relationshipsForWord's otherText/outgoing only control the arrow and
+// which word is clickable, not this sentence). Kinds not listed fall
+// back to a generic "source is target-kind-related to target".
+const RELATIONSHIP_SENTENCES = {
+  // Lexical Semantic
+  SYNONYM: (s, t) => `${s} means the same as ${t}.`,
+  ANTONYM: (s, t) => `${s} is the opposite of ${t}.`,
+  HYPERNYM: (s, t) => `${s} is a type of ${t}.`,
+  HYPONYM: (s, t) => `${t} is a type of ${s}.`,
+  MERONYM: (s, t) => `${s} is part of ${t}.`,
+  HOLONYM: (s, t) => `${t} is part of ${s}.`,
+  TROPONYM: (s, t) => `${t} is a specific manner of ${s}.`,
+  ENTAILMENT: (s, t) => `${s} entails ${t}.`,
+  CAUSE: (s, t) => `${s} causes ${t}.`,
+  RELATED: (s, t) => `${s} is related to ${t}.`,
+  // Morphological -- base relation
+  LEMMA_FORM: (s, t) => `${t} is the base (lemma) form of ${s}.`,
+  INFLECTION: (s, t) => `${t} is an inflected form of ${s}.`,
+  // Morphological -- number
+  SINGULAR_FORM: (s, t) => `${t} is the singular form of ${s}.`,
+  PLURAL_FORM: (s, t) => `${t} is the plural form of ${s}.`,
+  // Morphological -- tense
+  PRESENT_TENSE_FORM: (s, t) => `${t} is the present-tense form of ${s}.`,
+  PAST_TENSE_FORM: (s, t) => `${t} is the past-tense form of ${s}.`,
+  // Morphological -- aspect
+  PRESENT_PARTICIPLE_FORM: (s, t) => `${t} is the present-participle form of ${s}.`,
+  PAST_PARTICIPLE_FORM: (s, t) => `${t} is the past-participle form of ${s}.`,
+  // Morphological -- person
+  FIRST_PERSON_FORM: (s, t) => `${t} is the first-person form of ${s}.`,
+  SECOND_PERSON_FORM: (s, t) => `${t} is the second-person form of ${s}.`,
+  THIRD_PERSON_FORM: (s, t) => `${t} is the third-person form of ${s}.`,
+  // Morphological -- degree
+  COMPARATIVE_FORM: (s, t) => `${t} is the comparative form of ${s}.`,
+  SUPERLATIVE_FORM: (s, t) => `${t} is the superlative form of ${s}.`,
+  // Morphological -- derivation
+  DERIVED_FORM: (s, t) => `${t} is derived from ${s}.`,
+  AGENT_NOUN_DERIVATION: (s, t) => `${t} is the agent-noun form of ${s}.`,
+  NOMINALISATION: (s, t) => `${t} is the noun form of ${s}.`,
+  ADJECTIVAL_DERIVATION: (s, t) => `${t} is the adjective form of ${s}.`,
+  ADVERBIAL_DERIVATION: (s, t) => `${t} is the adverb form of ${s}.`,
+  // Morphological -- pronoun form
+  PRONOUN_OBJECT_FORM: (s, t) => `${t} is the object form of ${s}.`,
+  PRONOUN_SUBJECT_FORM: (s, t) => `${t} is the subject form of ${s}.`,
+  PRONOUN_POSSESSIVE_DETERMINER_FORM: (s, t) => `${t} is the possessive-determiner form of ${s}.`,
+  PRONOUN_POSSESSIVE_FORM: (s, t) => `${t} is the possessive form of ${s}.`,
+  PRONOUN_REFLEXIVE_FORM: (s, t) => `${t} is the reflexive form of ${s}.`,
+  PRONOUN_RECIPROCAL_FORM: (s, t) => `${t} is the reciprocal form of ${s}.`,
+  // Orthographic and Naming
+  SPELLING_VARIANT: (s, t) => `${t} is a spelling variant of ${s}.`,
+  HISTORICAL_SPELLING: (s, t) => `${t} is a historical spelling of ${s}.`,
+  ABBREVIATION: (s, t) => `${t} is an abbreviation of ${s}.`,
+  ACRONYM: (s, t) => `${t} is an acronym formed from ${s}.`,
+  INITIALISM: (s, t) => `${t} is an initialism formed from ${s}.`,
+  CONTRACTION: (s, t) => `${t} is a contracted form of ${s}.`,
+  TRANSLITERATION: (s, t) => `${t} is a transliteration of ${s}.`,
+  CAPITALISATION: (s, t) => `${t} is a capitalisation variant of ${s}.`,
+  DIACRITIC_VARIANT: (s, t) => `${t} is a diacritic variant of ${s}.`,
+};
+
+function relationshipSentence(kind, sourceText, targetText) {
+  const template = RELATIONSHIP_SENTENCES[kind];
+  if (template) return template(sourceText, targetText);
+  return `${sourceText} is ${titleCase(kind).toLowerCase()}-related to ${targetText}.`;
+}
+
 function populatePosFilter() {
   const select = document.getElementById("pos-filter");
   const seen = new Set(WORDS.map(w => w.pos));
@@ -731,11 +808,14 @@ function renderDetail() {
     <div class="detail-definition" style="margin-top:0">${word.sources && word.sources.length ? word.sources.map(s => `<span class="tag">${s}</span>`).join('') : '<span style="opacity:.6">No source recorded.</span>'}</div>
     <div class="detail-section-title">Relationships (${rels.length})</div>
     ${rels.length === 0 ? '<div class="detail-empty" style="padding:8px 0">No relationships recorded.</div>' : rels.map(r => `
-      <div class="rel-row">
-        <span class="rel-dir" title="${r.outgoing ? 'Outgoing' : 'Incoming'}">${r.outgoing ? '&rarr;' : '&larr;'}</span>
-        ${relPill(r.kind, r.group)}
-        <button class="link-btn" data-pivot-id="${r.otherId}">${r.otherText}</button>
-        ${domainPill(r.otherDomain)}
+      <div class="rel-entry">
+        <div class="rel-row">
+          <span class="rel-dir" title="${r.outgoing ? 'Outgoing' : 'Incoming'}">${r.outgoing ? '&rarr;' : '&larr;'}</span>
+          ${relPill(r.kind, r.group)}
+          <button class="link-btn" data-pivot-id="${r.otherId}">${r.otherText}</button>
+          ${domainPill(r.otherDomain)}
+        </div>
+        <div class="rel-sentence">${relationshipSentence(r.kind, r.source_text, r.target_text)}</div>
       </div>`).join('')}
   `;
   content.querySelectorAll("button[data-pivot-id]").forEach(btn => {
