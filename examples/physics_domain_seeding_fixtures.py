@@ -539,4 +539,93 @@ PHYSICS_FIXTURES = {
              "example": "both bodies reach the same temperature"},
         ]},
     ]}],
+    # Added to give the seeded vocabulary enough breadth to support at
+    # least 5 genuine examples of every Lexical Semantic relationship
+    # kind (physics_domain_relationships.py) -- atom/nucleus/proton/
+    # neutron/electron in particular exist specifically for MERONYM/
+    # HOLONYM (part-whole) and HYPONYM examples.
+    "atom": [{"word": "atom", "meanings": [
+        {"partOfSpeech": "noun", "definitions": [
+            {"definition": "The basic unit of a chemical element, consisting of a nucleus surrounded by electrons.",
+             "example": "an atom of hydrogen"},
+        ]},
+    ]}],
+    "nucleus": [{"word": "nucleus", "meanings": [
+        {"partOfSpeech": "noun", "definitions": [
+            {"definition": "The central and most important part of an atom, composed of protons and neutrons.",
+             "example": "the nucleus of an atom"},
+        ]},
+    ]}],
+    "proton": [{"word": "proton", "meanings": [
+        {"partOfSpeech": "noun", "definitions": [
+            {"definition": "A stable subatomic particle with a positive electric charge, found in the nucleus of every atom.",
+             "example": "a proton in the nucleus"},
+        ]},
+    ]}],
+    "neutron": [{"word": "neutron", "meanings": [
+        {"partOfSpeech": "noun", "definitions": [
+            {"definition": "A subatomic particle with no electric charge, found in the nucleus of most atoms.",
+             "example": "a neutron in the nucleus"},
+        ]},
+    ]}],
+    "electron": [{"word": "electron", "meanings": [
+        {"partOfSpeech": "noun", "definitions": [
+            {"definition": "A stable subatomic particle with a negative electric charge, found in every atom.",
+             "example": "an electron of an atom"},
+        ]},
+    ]}],
+    "melt": [{"word": "melt", "meanings": [
+        {"partOfSpeech": "verb", "definitions": [
+            {"definition": "To change from a solid to a liquid state, typically as a result of heating.",
+             "example": "heat can melt ice"},
+        ]},
+    ]}],
+    "expand": [{"word": "expand", "meanings": [
+        {"partOfSpeech": "verb", "definitions": [
+            {"definition": "To become or make larger in size, number, volume, or extent, typically as a result of heating.",
+             "example": "heat can expand a gas"},
+        ]},
+    ]}],
+    "attract": [{"word": "attract", "meanings": [
+        {"partOfSpeech": "verb", "definitions": [
+            {"definition": "To pull (something) closer by exerting a force on it.",
+             "example": "opposite charges attract each other"},
+        ]},
+    ]}],
+    "open": [{"word": "open", "meanings": [
+        {"partOfSpeech": "adjective", "definitions": [
+            {"definition": "Of a system, exchanging matter or energy with its surroundings.",
+             "example": "an open system"},
+        ]},
+    ]}],
+    "inverse": [{"word": "inverse", "meanings": [
+        {"partOfSpeech": "adjective", "definitions": [
+            {"definition": "Opposite in effect, order, or relation; varying in such a way that as one quantity increases, the other decreases.",
+             "example": "an inverse relationship between resistance and current"},
+        ]},
+    ]}],
+    "stationary": [{"word": "stationary", "meanings": [
+        {"partOfSpeech": "adjective", "definitions": [
+            {"definition": "Not moving; having zero velocity.",
+             "example": "a stationary object"},
+        ]},
+    ]}],
+    "apply": [{"word": "apply", "meanings": [
+        {"partOfSpeech": "verb", "definitions": [
+            {"definition": "To bring into operation or effect; to exert (a force) on an object.",
+             "example": "apply a force to the object"},
+        ]},
+    ]}],
+    "characteristic": [{"word": "characteristic", "meanings": [
+        {"partOfSpeech": "noun", "definitions": [
+            {"definition": "A feature or property belonging typically to a person, place, or thing, and serving to identify it.",
+             "example": "charge is a characteristic of matter"},
+        ]},
+    ]}],
+    "speed": [{"word": "speed", "meanings": [
+        {"partOfSpeech": "noun", "definitions": [
+            {"definition": "The rate at which someone or something moves or is able to move; commonly used interchangeably with velocity outside strict technical contexts.",
+             "example": "the speed of the object"},
+        ]},
+    ]}],
 }

@@ -1,21 +1,25 @@
 # Physics Domain Seeding -- Test Report
 
 Domain: **Physics**  
-Source: 12 sentences, 97 unique tokens
+Source: 23 sentences, 117 unique tokens
 
 ## Words already covered by the Common seed
 
-32 tokens resolved immediately, no external lookup: a, after, an, and, around, at, before, between, both, can, done, from, in, is, may, object, of, on, particle, position, same, several, that, the, through, to, until, when, which, while, within, without
+38 tokens resolved immediately, no external lookup: a, after, also, an, and, another, around, at, be, before, between, both, can, done, from, has, in, is, may, object, of, on, or, particle, position, same, several, that, the, through, to, until, when, which, while, within, without, zero
 
 ## New words hydrated
 
-63 lexical forms newly added, with every externally-evidenced part of speech:
+77 lexical forms newly added, with every externally-evidenced part of speech:
 
 - **accelerate** -> VERB
 - **acceleration** -> NOUN
+- **apply** -> VERB
+- **atom** -> NOUN
+- **attract** -> VERB
 - **body** -> NOUN
 - **called** -> VERB
 - **causes** -> VERB
+- **characteristic** -> NOUN
 - **charge** -> NOUN, VERB
 - **circuit** -> NOUN
 - **closed** -> ADJECTIVE
@@ -28,10 +32,12 @@ Source: 12 sentences, 97 unique tokens
 - **depends** -> VERB
 - **distance** -> NOUN
 - **electric** -> ADJECTIVE
+- **electron** -> NOUN
 - **energy** -> NOUN
 - **equals** -> VERB
 - **exert** -> VERB
 - **exists** -> VERB
+- **expand** -> VERB
 - **field** -> NOUN, VERB
 - **flow** -> NOUN, VERB
 - **flows** -> VERB
@@ -40,15 +46,20 @@ Source: 12 sentences, 97 unique tokens
 - **gravitational** -> ADJECTIVE
 - **heat** -> NOUN, VERB
 - **hot** -> ADJECTIVE
+- **inverse** -> ADJECTIVE
 - **kinetic** -> ADJECTIVE
 - **magnetic** -> ADJECTIVE
 - **mass** -> NOUN, VERB
 - **matter** -> NOUN, VERB
 - **mechanics** -> NOUN
+- **melt** -> VERB
 - **momentum** -> NOUN
 - **moves** -> VERB
 - **moving** -> ADJECTIVE
 - **net** -> ADJECTIVE, NOUN
+- **neutron** -> NOUN
+- **nucleus** -> NOUN
+- **open** -> ADJECTIVE
 - **physics** -> NOUN
 - **points** -> NOUN
 - **possess** -> VERB
@@ -56,12 +67,15 @@ Source: 12 sentences, 97 unique tokens
 - **power** -> NOUN, VERB
 - **property** -> NOUN
 - **proportional** -> ADJECTIVE
+- **proton** -> NOUN
 - **quantum** -> ADJECTIVE, NOUN
 - **rate** -> NOUN, VERB
 - **reach** -> VERB
 - **resistance** -> NOUN
 - **science** -> NOUN
+- **speed** -> NOUN
 - **spin** -> NOUN, VERB
+- **stationary** -> ADJECTIVE
 - **successive** -> ADJECTIVE
 - **system** -> NOUN
 - **temperature** -> NOUN
@@ -85,21 +99,41 @@ None in this run -- none of the Physics-specific content words in this source te
 
 ## Duplicate prevention (repeat-processing test)
 
-- Dictionary size after first run: 632
-- Dictionary size after second run: 632
+- Dictionary size after first run: 648
+- Dictionary size after second run: 648
 - Confirmed no duplicates created on reprocessing: **True**
 
 ## Hydrator telemetry
 
-- First run: {'successful_fetches': 63, 'failed_fetches': 2, 'deduplicated_calls': 17, 'created_words': 81}
-- Second run (cumulative): {'successful_fetches': 63, 'failed_fetches': 4, 'deduplicated_calls': 17, 'created_words': 81}
+- First run: {'successful_fetches': 77, 'failed_fetches': 2, 'deduplicated_calls': 14, 'created_words': 95}
+- Second run (cumulative): {'successful_fetches': 77, 'failed_fetches': 4, 'deduplicated_calls': 14, 'created_words': 95}
   (successful_fetches/created_words do not grow on the second run for anything already resolved; the deliberately-unresolved words are retried and fail again each pass, since nothing in this pipeline blacklists a word after one failed lookup.)
+
+## Word-sense conflicts found and resolved
+
+Checking every fixture word against the Common seed directly found 4 collisions (`object`, `depend`, `position`, `particle`) -- identify_word() only queues hydration when *no* existing sense at all matches, so these never reached ExternalDictionaryAdapter. `depend`/`position` turned out to have compatible general-English definitions already in Common, fine as-is. `object`/`particle` are genuine conflicts -- Common's senses are the grammatical terms ("the noun that receives the action of a verb", "a function word that does not fit the main parts of speech"), not the physics ones this domain's own relationships need. Resolved via `DictionaryProcessor.register_conflicting_sense` -- the same, pre-existing conflict-resolution path a Domain owner would use for any other word-sense conflict (`vocabulary/documentation/README.md`, 9.2), not a new mechanism:
+
+- `object` (NOUN) registered as a second sense, `lexical_form="object_2"`
+- `particle` (NOUN) registered as a second sense, `lexical_form="particle_2"`
 
 ## Relationships among hydrated words
 
-RelationshipSeeder only runs once, at Domain creation, against the static Common relationship cache -- it never relates a word added later by hydration. 12 pairs hand-curated for this domain (examples/physics_domain_relationships.py) were seeded, both directions (SYNONYM/ANTONYM/RELATED are symmetric): **24 edges created**.
+RelationshipSeeder only runs once, at Domain creation, against the static Common relationship cache -- it never relates a word added later by hydration. 45 pairs hand-curated for this domain (examples/physics_domain_relationships.py), covering every Lexical Semantic kind with at least 5 real examples, RELATED kept deliberately smallest as the lowest-priority catch-all: **75 edges created**.
+
+| Kind | Edges created |
+|------|---------------|
+| SYNONYM | 10 |
+| ANTONYM | 10 |
+| HYPERNYM | 10 |
+| HYPONYM | 10 |
+| MERONYM | 6 |
+| HOLONYM | 6 |
+| TROPONYM | 5 |
+| ENTAILMENT | 5 |
+| CAUSE | 5 |
+| RELATED | 8 |
 
 ## Final state
 
-- Total words in the Physics Dictionary: 632
-- Total relationships: 162 (138 inherited from Common + 24 hand-curated for this domain)
+- Total words in the Physics Dictionary: 648
+- Total relationships: 213 (138 inherited from Common + 75 hand-curated for this domain)
