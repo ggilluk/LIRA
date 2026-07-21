@@ -1,10 +1,14 @@
 """LIRA Vocabulary Layer Definition Word Breakdown demonstration -- Physics.
 
 Prototypes Word.definition_words() and DictionaryProcessor.queue_definition_hydration
-(vocabulary/documentation/README.md, 4.4 and 9.7) against the same Physics
-Domain physics_domain_seeding.py seeds. No Vocabulary Layer class is
-modified for this demonstration either -- it drives definition_words()
-and queue_definition_hydration() exactly the way any other caller would.
+(vocabulary/documentation/README.md, 4.4 and 9.7) against the Physics
+Domain definition_gap_vocabulary_seeding.py seeds -- Physics after both
+the original domain seeding (physics_domain_seeding.py) and the
+definition-gap vocabulary pass (definition_gap_vocabulary_seeding.py,
+which promotes/hydrates the words this very completeness measurement
+originally found missing). No Vocabulary Layer class is modified for
+this demonstration either -- it drives definition_words() and
+queue_definition_hydration() exactly the way any other caller would.
 
 Two things are measured:
 
@@ -27,8 +31,8 @@ Two things are measured:
    failure.
 
 Run: python3 examples/physics_definition_completeness.py
-(seeds its own Physics Domain via physics_domain_seeding.run() first --
-no separate seeding step needed.)
+(seeds its own Physics Domain via definition_gap_vocabulary_seeding.run()
+first -- no separate seeding step needed.)
 """
 
 import sys
@@ -36,8 +40,9 @@ from pathlib import Path
 from unittest import mock
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from physics_domain_seeding import DOMAIN_NAME, _fixture_urlopen  # noqa: E402
-from physics_domain_seeding import run as seed_physics_domain  # noqa: E402
+from definition_gap_vocabulary_seeding import _gap_fixture_urlopen as _fixture_urlopen  # noqa: E402
+from definition_gap_vocabulary_seeding import run as seed_definition_gap_vocabulary  # noqa: E402
+from physics_domain_seeding import DOMAIN_NAME  # noqa: E402
 
 
 def _completeness(physics_domain) -> dict:
@@ -108,7 +113,7 @@ def _demonstrate_recursive_discovery(physics_domain, sample_word_text: str) -> d
 
 
 def run() -> dict:
-    _, physics_domain = seed_physics_domain()
+    physics_domain = seed_definition_gap_vocabulary()["physics_domain"]
     completeness = _completeness(physics_domain)
 
     # Smallest, cleanest gap first (fewest unresolved tokens, then fewest

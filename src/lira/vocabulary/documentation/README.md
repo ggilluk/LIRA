@@ -725,10 +725,11 @@ proposed "multi-word grammatical units" only `as well as` was actually
 new -- `because of`, `in spite of`, and `according to` were already
 seeded. Mandatory total 376 -> 388 (+7 contractions, +4 particle
 entries, +1 multi-word preposition); supplementary total 158 -> 163
-(+4 discourse markers, +1 interjection). A freshly seeded `Dictionary`
-now ends up with 388 + 163 = 551 `Word`s, still covering 15 of
+(+4 discourse markers, +1 interjection). At that point a freshly seeded
+`Dictionary` ended up with 388 + 163 = 551 `Word`s, still covering 15 of
 `PartOfSpeech`'s 16 members -- only `OTHER` remains unseeded, by
-design.
+design. `promoted_words.json` has since grown past its initial empty
+state (9.4 below covers the current total).
 
 The cache itself -- its file format, exact counts, rebuild policy, and
 open-class word promotion/demotion rules -- is documented in full at

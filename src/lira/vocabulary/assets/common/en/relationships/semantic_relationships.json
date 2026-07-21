@@ -2,7 +2,7 @@
   "schema_version": "1.0.0",
   "language_code": "en",
   "relationship_category": "semantic",
-  "count": 24,
+  "count": 32,
   "relationships": [
     {
       "source_lexical_form": "above",
@@ -123,6 +123,46 @@
       "source_lexical_form": "nevertheless",
       "target_lexical_form": "however",
       "relationship_kind": "SYNONYM"
+    },
+    {
+      "source_lexical_form": "discrete",
+      "target_lexical_form": "continuous",
+      "relationship_kind": "ANTONYM"
+    },
+    {
+      "source_lexical_form": "continuous",
+      "target_lexical_form": "discrete",
+      "relationship_kind": "ANTONYM"
+    },
+    {
+      "source_lexical_form": "high",
+      "target_lexical_form": "low",
+      "relationship_kind": "ANTONYM"
+    },
+    {
+      "source_lexical_form": "low",
+      "target_lexical_form": "high",
+      "relationship_kind": "ANTONYM"
+    },
+    {
+      "source_lexical_form": "push",
+      "target_lexical_form": "pull",
+      "relationship_kind": "ANTONYM"
+    },
+    {
+      "source_lexical_form": "pull",
+      "target_lexical_form": "push",
+      "relationship_kind": "ANTONYM"
+    },
+    {
+      "source_lexical_form": "negative",
+      "target_lexical_form": "positive",
+      "relationship_kind": "ANTONYM"
+    },
+    {
+      "source_lexical_form": "positive",
+      "target_lexical_form": "negative",
+      "relationship_kind": "ANTONYM"
     }
   ]
 }

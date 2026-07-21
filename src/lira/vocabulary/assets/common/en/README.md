@@ -42,7 +42,7 @@ working vocabulary immediately, not to be a system of record.
 | `metalinguistic_adverbs.json` | Open-class `ADVERB` terms for grammar itself, plus four closed-class discourse markers (however, therefore, moreover, nevertheless -- see Discourse markers below) | 17 |
 | `metalinguistic_proper_nouns.json` | A single `PROPER_NOUN` entry, `English` -- see Supplementary files below | 1 |
 | `metalinguistic_interjections.json` | Open-class `INTERJECTION` terms (`yes`, `no`, `please`, `alas`, `hurrah`, `huzzah`, `oh`, `ah`, `wow`, `hey`, `ouch`, `hmm`, `well`) -- see Supplementary files below | 13 |
-| `promoted_words.json` | Open-class words promoted from Domain vocabularies (starts empty) | 0 |
+| `promoted_words.json` | Open-class words promoted from Domain vocabularies (started empty; see Version below) | 221 |
 
 Mandatory closed-class total: **388** (37 + 99 + 36 + 94 + 7 + 36 + 16 + 5 + 25 + 33).
 The six `metalinguistic_*.json` files and `promoted_words.json` are
@@ -52,7 +52,13 @@ and the Promotion policy section respectively. Since `asset_version
 figure `WordSeeder` asserts: it's whatever `determiners.json` through
 `numerals.json`'s counts actually sum to, cross-checked against
 `manifest.json`'s `total_lexical_forms` -- see
-`vocabulary/role/word_seeder.py`'s `validate_assets()`.
+`vocabulary/role/word_seeder.py`'s `validate_assets()`. A freshly
+seeded `Dictionary` currently ends up with 388 + 163 + 221 = **772**
+`Word`s (mandatory + supplementary + promoted) -- unlike the mandatory
+and supplementary totals, the promoted total isn't manifest-enforced
+(`promote_word`/`demote_word` mutate `promoted_words.json` directly;
+its `manifest.json` row is informational, not cross-checked by
+`validate_assets()`).
 
 ## Punctuation is a Word
 
@@ -424,6 +430,25 @@ by promotion or demotion. Closed-class words are never promoted:
 they're already part of the mandatory cache.
 
 ## Version
+
+`v1` / `schema_version 2.0.0` / `asset_version 1.10.0` -- `promoted_words.json`
+grew from empty to 221 entries via `WordSeeder.promote_word`, all
+`NOUN`/`VERB`/`ADJECTIVE`/`ADVERB`, `source_references` naming `LIRA
+English Definition-Gap Vocabulary v1`. Not a cross-domain-reference-count
+promotion in the literal sense `WordSeeder.promote_word`'s
+`reference_count` parameter otherwise measures (that tracking doesn't
+exist yet elsewhere in this codebase, per `dictionary_hydrator.py`'s own
+docstring) -- an editorial judgement that these 221 words are genuinely
+common, general-English vocabulary, found by breaking every Physics
+Domain word's own `definition` down into its constituent words
+(`Word.definition_words()`, 4.4) and classifying each unresolved one as
+belonging to Common, to the Physics Domain instead, or to neither (see
+`examples/README.md`'s Definition-gap vocabulary section for the full
+worked example and the one excluded word). 25 of the 221 also gained a
+morphological relationship (`relationships/README.md`'s Version
+section). Every seeded Dictionary now carries 772 total: 388 mandatory
++ 163 supplementary + 221 promoted, still covering 15 of
+`PartOfSpeech`'s 16 members.
 
 `v1` / `schema_version 2.0.0` / `asset_version 1.9.0` (folded a
 user-supplied gap review's six categories into existing files and

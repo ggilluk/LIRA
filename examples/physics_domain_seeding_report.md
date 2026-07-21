@@ -5,7 +5,7 @@ Source: 23 sentences, 117 unique tokens
 
 ## Words already covered by the Common seed
 
-38 tokens resolved immediately, no external lookup: a, after, also, an, and, another, around, at, be, before, between, both, can, done, from, has, in, is, may, object, of, on, or, particle, position, same, several, that, the, through, to, until, when, which, while, within, without, zero
+39 tokens resolved immediately, no external lookup: a, after, also, an, and, another, around, at, be, before, between, both, branch, can, done, from, has, in, is, may, object, of, on, or, particle, position, same, several, that, the, through, to, until, when, which, while, within, without, zero
 
 ## New words hydrated
 
@@ -95,18 +95,18 @@ None in this run -- none of the Physics-specific content words in this source te
 
 ## Unresolved words
 
-2 tokens had no seeded sense and no fixture evidence, and were correctly left unresolved rather than guessed: branch, studies
+1 tokens had no seeded sense and no fixture evidence, and were correctly left unresolved rather than guessed: studies
 
 ## Duplicate prevention (repeat-processing test)
 
-- Dictionary size after first run: 648
-- Dictionary size after second run: 648
+- Dictionary size after first run: 869
+- Dictionary size after second run: 869
 - Confirmed no duplicates created on reprocessing: **True**
 
 ## Hydrator telemetry
 
-- First run: {'successful_fetches': 77, 'failed_fetches': 2, 'deduplicated_calls': 8, 'created_words': 95}
-- Second run (cumulative): {'successful_fetches': 77, 'failed_fetches': 4, 'deduplicated_calls': 8, 'created_words': 95}
+- First run: {'successful_fetches': 77, 'failed_fetches': 1, 'deduplicated_calls': 14, 'created_words': 95}
+- Second run (cumulative): {'successful_fetches': 77, 'failed_fetches': 2, 'deduplicated_calls': 14, 'created_words': 95}
   (successful_fetches/created_words do not grow on the second run for anything already resolved; the deliberately-unresolved words are retried and fail again each pass, since nothing in this pipeline blacklists a word after one failed lookup.)
 
 ## Word-sense conflicts found and resolved
@@ -135,5 +135,5 @@ RelationshipSeeder only runs once, at Domain creation, against the static Common
 
 ## Final state
 
-- Total words in the Physics Dictionary: 648
-- Total relationships: 213 (138 inherited from Common + 75 hand-curated for this domain)
+- Total words in the Physics Dictionary: 869
+- Total relationships: 271 (196 inherited from Common + 75 hand-curated for this domain)

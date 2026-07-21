@@ -2,7 +2,7 @@
   "schema_version": "1.0.0",
   "language_code": "en",
   "relationship_category": "morphological",
-  "count": 98,
+  "count": 148,
   "relationships": [
     {
       "source_lexical_form": "be",
@@ -492,6 +492,256 @@
     {
       "source_lexical_form": "least",
       "target_lexical_form": "little",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "relate",
+      "target_lexical_form": "relating",
+      "relationship_kind": "PRESENT_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "relating",
+      "target_lexical_form": "relate",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "cause",
+      "target_lexical_form": "causing",
+      "relationship_kind": "PRESENT_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "causing",
+      "target_lexical_form": "cause",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "express",
+      "target_lexical_form": "expressed",
+      "relationship_kind": "PAST_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "expressed",
+      "target_lexical_form": "express",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "common",
+      "target_lexical_form": "commonly",
+      "relationship_kind": "ADVERBIAL_DERIVATION"
+    },
+    {
+      "source_lexical_form": "commonly",
+      "target_lexical_form": "common",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "compare",
+      "target_lexical_form": "compared",
+      "relationship_kind": "PAST_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "compared",
+      "target_lexical_form": "compare",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "describe",
+      "target_lexical_form": "described",
+      "relationship_kind": "PAST_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "described",
+      "target_lexical_form": "describe",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "determine",
+      "target_lexical_form": "determined",
+      "relationship_kind": "PAST_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "determined",
+      "target_lexical_form": "determine",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "number",
+      "target_lexical_form": "numbers",
+      "relationship_kind": "PLURAL_FORM"
+    },
+    {
+      "source_lexical_form": "numbers",
+      "target_lexical_form": "number",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "place",
+      "target_lexical_form": "placed",
+      "relationship_kind": "PAST_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "placed",
+      "target_lexical_form": "place",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "position",
+      "target_lexical_form": "positions",
+      "relationship_kind": "PLURAL_FORM"
+    },
+    {
+      "source_lexical_form": "positions",
+      "target_lexical_form": "position",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "quantity",
+      "target_lexical_form": "quantities",
+      "relationship_kind": "PLURAL_FORM"
+    },
+    {
+      "source_lexical_form": "quantities",
+      "target_lexical_form": "quantity",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "represent",
+      "target_lexical_form": "represents",
+      "relationship_kind": "THIRD_PERSON_FORM"
+    },
+    {
+      "source_lexical_form": "represents",
+      "target_lexical_form": "represent",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "result",
+      "target_lexical_form": "resulting",
+      "relationship_kind": "PRESENT_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "resulting",
+      "target_lexical_form": "result",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "change",
+      "target_lexical_form": "changes",
+      "relationship_kind": "THIRD_PERSON_FORM"
+    },
+    {
+      "source_lexical_form": "changes",
+      "target_lexical_form": "change",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "change",
+      "target_lexical_form": "changing",
+      "relationship_kind": "PRESENT_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "changing",
+      "target_lexical_form": "change",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "continuous",
+      "target_lexical_form": "continuously",
+      "relationship_kind": "ADVERBIAL_DERIVATION"
+    },
+    {
+      "source_lexical_form": "continuously",
+      "target_lexical_form": "continuous",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "effect",
+      "target_lexical_form": "effects",
+      "relationship_kind": "PLURAL_FORM"
+    },
+    {
+      "source_lexical_form": "effects",
+      "target_lexical_form": "effect",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "happen",
+      "target_lexical_form": "happening",
+      "relationship_kind": "PRESENT_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "happening",
+      "target_lexical_form": "happen",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "increase",
+      "target_lexical_form": "increases",
+      "relationship_kind": "THIRD_PERSON_FORM"
+    },
+    {
+      "source_lexical_form": "increases",
+      "target_lexical_form": "increase",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "make",
+      "target_lexical_form": "makes",
+      "relationship_kind": "THIRD_PERSON_FORM"
+    },
+    {
+      "source_lexical_form": "makes",
+      "target_lexical_form": "make",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "measure",
+      "target_lexical_form": "measured",
+      "relationship_kind": "PAST_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "measured",
+      "target_lexical_form": "measure",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "part",
+      "target_lexical_form": "parts",
+      "relationship_kind": "PLURAL_FORM"
+    },
+    {
+      "source_lexical_form": "parts",
+      "target_lexical_form": "part",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "relation",
+      "target_lexical_form": "relations",
+      "relationship_kind": "PLURAL_FORM"
+    },
+    {
+      "source_lexical_form": "relations",
+      "target_lexical_form": "relation",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "steady",
+      "target_lexical_form": "steadily",
+      "relationship_kind": "ADVERBIAL_DERIVATION"
+    },
+    {
+      "source_lexical_form": "steadily",
+      "target_lexical_form": "steady",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "store",
+      "target_lexical_form": "stored",
+      "relationship_kind": "PAST_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "stored",
+      "target_lexical_form": "store",
       "relationship_kind": "LEMMA_FORM"
     }
   ]

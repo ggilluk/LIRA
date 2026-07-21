@@ -21,8 +21,8 @@ against a specific Domain's already-seeded `Word`s, not a store of
 
 | File | Category | Kinds seeded | Count |
 |------|----------|----------------|-------|
-| `morphological_relationships.json` | Morphological (6.2.1) | Person, tense, participle, and plural forms (`be`/`have`/`do` conjugations, `this`/`that` plurals); comparative/superlative forms (`few`/`many`/`much`/`little`); pronoun paradigm forms (`PRONOUN_OBJECT_FORM`, `PRONOUN_SUBJECT_FORM`, `PRONOUN_POSSESSIVE_DETERMINER_FORM`, `PRONOUN_POSSESSIVE_FORM`, `PRONOUN_REFLEXIVE_FORM`); `LEMMA_FORM` (every edge's materialised reverse -- see Symmetric and inverse edges) | 98 |
-| `semantic_relationships.json` | Lexical Semantic (6.2.2) | `ANTONYM` (spatial/temporal opposites: above/below, before/after, ...) and `SYNONYM` (equivalent prepositions: beneath/under, amid/among, due to/owing to, ...; the discourse-marker pair however/nevertheless), each materialised in both directions | 24 |
+| `morphological_relationships.json` | Morphological (6.2.1) | Person, tense, participle, and plural forms (`be`/`have`/`do` conjugations, `this`/`that` plurals); comparative/superlative forms (`few`/`many`/`much`/`little`); pronoun paradigm forms (`PRONOUN_OBJECT_FORM`, `PRONOUN_SUBJECT_FORM`, `PRONOUN_POSSESSIVE_DETERMINER_FORM`, `PRONOUN_POSSESSIVE_FORM`, `PRONOUN_REFLEXIVE_FORM`); `LEMMA_FORM` (every edge's materialised reverse -- see Symmetric and inverse edges); 25 base/derived pairs among the promoted words added in `asset_version 1.5.0` (see Version below) | 148 |
+| `semantic_relationships.json` | Lexical Semantic (6.2.2) | `ANTONYM` (spatial/temporal opposites: above/below, before/after, ...; discrete/continuous, high/low, push/pull, negative/positive among the promoted words) and `SYNONYM` (equivalent prepositions: beneath/under, amid/among, due to/owing to, ...; the discourse-marker pair however/nevertheless), each materialised in both directions | 32 |
 | `orthographic_relationships.json` | Orthographic and Naming (6.2.3) | `CONTRACTION` -- not/n't, plus each full contraction's component words (do/not -> don't, can/not -> can't, I/am -> I'm, it/is/has -> it's, is/not -> isn't, was/not -> wasn't, had/not -> hadn't) | 16 |
 
 No `HYPERNYM`, `MERONYM`, or `TROPONYM` relationships are seeded for
@@ -34,7 +34,7 @@ pronoun paradigms, and near-synonymy do.
 `PRONOUN_RECIPROCAL_FORM` is defined (6.2.1, Pronoun Form) but not
 currently seeded in either direction -- see Known gaps.
 
-Total relationships: **138**.
+Total relationships: **196**.
 
 ## Symmetric and inverse edges
 
@@ -222,7 +222,20 @@ adds these seven relationships -- all now present in
 
 ## Version
 
-`v1` / `schema_version 1.0.0` / `asset_version 1.4.0` (121 -> 138
+`v1` / `schema_version 1.0.0` / `asset_version 1.5.0` (138 -> 196
+relationships, alongside `../README.md`'s `asset_version 1.10.0`
+promoted-words batch: 25 base/derived morphological pairs among the 221
+newly-promoted words -- each a (base, specific-form-kind, derived) edge
+plus its materialised reverse (derived, `LEMMA_FORM`, base), the same
+convention as every other pair in this cache -- taking
+`morphological_relationships.json` 98 -> 148; and 4 `ANTONYM` pairs
+(discrete/continuous, high/low, push/pull, negative/positive), each
+materialised in both directions, taking `semantic_relationships.json`
+24 -> 32. `orthographic_relationships.json` is unchanged at 16. Kept
+deliberately small -- only pairs found directly while classifying the
+promoted words, not an attempted full taxonomy for 221 new words in one
+pass; see `examples/README.md`'s Definition-gap vocabulary section.
+`asset_version 1.4.0` (121 -> 138
 relationships: added 15 `CONTRACTION` edges to
 `orthographic_relationships.json` (1 -> 16) for the seven full
 contractions added to `../auxiliaries.json` -- see Symmetric and
