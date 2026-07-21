@@ -19,14 +19,22 @@ fixture data in that API's real response shape, run through the
 otherwise-unmodified pipeline -- the generated page's title says so
 explicitly) and the full seeding report.
 
-It also demonstrates two `DictionaryView` display additions made for
-this exercise: a **Provenance** line in the word detail panel (reads
-`Word.source_references`, previously computed but never shown), and
-an **Unresolved** panel listing words the pipeline could not resolve
-(`branch`, `studies`) -- reported rather than guessed. Both are
-additive and optional (`DictionaryView(..., unresolved=(...))`,
-default `()`); rendering a `Dictionary` with no unresolved list behaves
-exactly as before.
+It also demonstrates several `DictionaryView` display additions made
+for this exercise, all additive and optional (existing call sites
+unaffected):
+
+- A **Provenance** line in the word detail panel, reading
+  `Word.source_references` (previously computed but never shown).
+- An **Unresolved** panel listing words the pipeline could not resolve
+  (`branch`, `studies`) -- reported rather than guessed
+  (`DictionaryView(..., unresolved=(...))`, default `()`).
+- A **Domain** column in the Words table, a **Domain** filter dropdown
+  alongside the part-of-speech one, and a domain pill next to every
+  related word in the detail panel's relationship list --
+  `DictionaryView(..., domain_name="Physics")`, default `"Domain"`.
+  Every word and relationship is labelled "Common" or "Physics"
+  (`word.is_common`); filtering to "Physics" isolates exactly the 81
+  hydrated words, filtering to "Common" the inherited 551.
 
 Regenerate with:
 

@@ -223,6 +223,7 @@ if __name__ == "__main__":
         physics_domain.vocabulary.lexical_relationships,
         title="LIRA Dictionary -- Physics Domain (hydrated words sourced from curated fixture "
               "data standing in for Free Dictionary API -- see examples/README.md)",
+        domain_name=DOMAIN_NAME,
         unresolved=tuple(report["unresolved_words"]),
     ).save(str(ui_path))
     print(f"Example UI regenerated at {ui_path}")

@@ -9,11 +9,12 @@ embedded webfont) so the output stays a single dependency-free file."""
 
 import json
 from html import escape
-from typing import Dict, List, Tuple
+from typing import Dict, List, Optional, Tuple
 
 from ..data.dictionary import Dictionary
 from ..data.lexical_relationship_store import LexicalRelationshipStore
 from ..data.part_of_speech import PartOfSpeech
+from ..data.word import Word
 
 GROUP_NAMES = {0: "Morphological", 1: "Lexical Semantic", 2: "Orthographic and Naming"}
 
@@ -46,10 +47,20 @@ class DictionaryView:
     -- call `render()` for the HTML string or `save(path)` to write it."""
 
     def __init__(self, dictionary: Dictionary, relationships: LexicalRelationshipStore, *,
-                 title: str = "LIRA Dictionary", unresolved: Tuple[str, ...] = ()):
+                 title: str = "LIRA Dictionary", domain_name: str = "Domain", unresolved: Tuple[str, ...] = ()):
         self.dictionary = dictionary
         self.relationships = relationships
         self.title = title
+        # A Word carries no domain field of its own (a Domain owns its
+        # Dictionary; the Word doesn't know which Domain it's in) --
+        # this view renders exactly one Domain's Dictionary at a time,
+        # so every Word in it is either that Domain's own
+        # (word.is_common is False) or inherited from Common
+        # (word.is_common is True, vocabulary/documentation/README.md,
+        # 9.3). domain_name supplies the label for the former; "Common"
+        # is never overridden, since that's the one label every
+        # Domain's inherited words genuinely share.
+        self.domain_name = domain_name
         # Words a caller looked up and could not resolve (no seeded
         # sense, no successful hydration) -- optional, since most
         # callers render a Dictionary on its own with no such list to
@@ -68,6 +79,11 @@ class DictionaryView:
         group_counts: Dict[int, int] = {}
         for r in rels:
             group_counts[r["group"]] = group_counts.get(r["group"], 0) + 1
+        # Just two labels are ever possible for one DictionaryView render
+        # ("Common" and this.domain_name -- see domain_name's docstring
+        # above), so a fixed two-color assignment, not a per-domain
+        # palette, is enough.
+        domain_colors = {"Common": "#6E7B8B", self.domain_name: "#2B6E63"}
 
         html = _PAGE_TEMPLATE
         for token, value in {
@@ -84,6 +100,7 @@ class DictionaryView:
             "POS_COLORS_JSON": json.dumps(POS_COLORS),
             "GROUP_COLORS_JSON": json.dumps(GROUP_COLORS),
             "GROUP_NAMES_JSON": json.dumps(GROUP_NAMES),
+            "DOMAIN_COLORS_JSON": json.dumps(domain_colors),
         }.items():
             html = html.replace("@@%s@@" % token, value)
         return html
@@ -108,6 +125,7 @@ class DictionaryView:
                 "dialect_codes": [code.value for code in word.dialect_codes],
                 "editorial_labels": [label.name for label in word.editorial_labels],
                 "is_common": word.is_common,
+                "domain": "Common" if word.is_common else self.domain_name,
                 "is_fully_hydrated": word.is_fully_hydrated,
                 "sources": [ref.source_name.value for ref in word.source_references],
                 "relationship_count": relationship_count,
@@ -125,15 +143,22 @@ class DictionaryView:
                 "source_id": rel.source_word_id.value,
                 "source_text": source.text if source is not None else "?",
                 "source_pos": source.part_of_speech.name if source is not None else None,
+                "source_domain": self._domain_label(source),
                 "target_id": rel.target_word_id.value,
                 "target_text": target.text if target is not None else "?",
                 "target_pos": target.part_of_speech.name if target is not None else None,
+                "target_domain": self._domain_label(target),
                 "kind": rel.relationship_type.name,
                 "group": rel.relationship_type.group,
                 "category": rel.relationship_type.category,
                 "confidence": round(rel.system_properties.confidence_weight, 4),
             })
         return records
+
+    def _domain_label(self, word: Optional[Word]) -> Optional[str]:
+        if word is None:
+            return None
+        return "Common" if word.is_common else self.domain_name
 
 
 _PAGE_TEMPLATE = """<!DOCTYPE html>
@@ -292,7 +317,7 @@ h1 {
   border-radius: 50%;
   box-shadow: 4px 4px 0 -2px var(--ink-muted);
 }
-select#pos-filter {
+select#pos-filter, select#domain-filter {
   padding: 9px 12px;
   border: 1px solid var(--line-strong);
   border-radius: var(--radius);
@@ -508,6 +533,7 @@ footer {
   <div class="toolbar">
     <div class="search-field"><input id="search" type="text" placeholder="Search word, gloss, or definition&hellip;" autocomplete="off"></div>
     <select id="pos-filter"><option value="">All parts of speech</option></select>
+    <select id="domain-filter"><option value="">All domains</option></select>
     <div class="tabs" role="tablist">
       <button id="tab-words" role="tab" aria-selected="true">Words</button>
       <button id="tab-rels" role="tab" aria-selected="false">Relationships</button>
@@ -527,6 +553,7 @@ footer {
             <tr>
               <th data-sort="lexical_form">Word</th>
               <th data-sort="pos">Part of speech</th>
+              <th data-sort="domain">Domain</th>
               <th data-sort="definition">Definition</th>
               <th>Labels</th>
               <th data-sort="relationship_count" style="text-align:right">Relationships</th>
@@ -570,8 +597,9 @@ const UNRESOLVED = @@UNRESOLVED_JSON@@;
 const POS_COLORS = @@POS_COLORS_JSON@@;
 const GROUP_COLORS = @@GROUP_COLORS_JSON@@;
 const GROUP_NAMES = @@GROUP_NAMES_JSON@@;
+const DOMAIN_COLORS = @@DOMAIN_COLORS_JSON@@;
 
-const state = { tab: "words", query: "", pos: "", selectedWordId: null, sort: { words: ["lexical_form", 1], rels: ["source_text", 1] } };
+const state = { tab: "words", query: "", pos: "", domain: "", selectedWordId: null, sort: { words: ["lexical_form", 1], rels: ["source_text", 1] } };
 
 function titleCase(s) {
   return s.toLowerCase().split("_").map(w => w[0].toUpperCase() + w.slice(1)).join(" ");
@@ -587,6 +615,12 @@ function relPill(kind, group) {
   return `<span class="pill" style="background:${color}" title="${GROUP_NAMES[group] || ''}">${titleCase(kind)}</span>`;
 }
 
+function domainPill(domain) {
+  if (!domain) return "";
+  const color = DOMAIN_COLORS[domain] || "#7A7A7A";
+  return `<span class="pill" style="background:${color}">${domain}</span>`;
+}
+
 function populatePosFilter() {
   const select = document.getElementById("pos-filter");
   const seen = new Set(WORDS.map(w => w.pos));
@@ -594,6 +628,17 @@ function populatePosFilter() {
     const opt = document.createElement("option");
     opt.value = pos;
     opt.textContent = titleCase(pos);
+    select.appendChild(opt);
+  });
+}
+
+function populateDomainFilter() {
+  const select = document.getElementById("domain-filter");
+  const seen = new Set(WORDS.map(w => w.domain));
+  [...seen].sort().forEach(domain => {
+    const opt = document.createElement("option");
+    opt.value = domain;
+    opt.textContent = domain;
     select.appendChild(opt);
   });
 }
@@ -607,7 +652,7 @@ function matchesQuery(word) {
 }
 
 function filteredWords() {
-  return WORDS.filter(w => matchesQuery(w) && (!state.pos || w.pos === state.pos));
+  return WORDS.filter(w => matchesQuery(w) && (!state.pos || w.pos === state.pos) && (!state.domain || w.domain === state.domain));
 }
 
 function filteredRels() {
@@ -622,7 +667,12 @@ function relationshipsForWord(wordId) {
   return RELS.filter(r => r.source_id === wordId || r.target_id === wordId)
     .map(r => {
       const outgoing = r.source_id === wordId;
-      return { ...r, outgoing, otherId: outgoing ? r.target_id : r.source_id, otherText: outgoing ? r.target_text : r.source_text };
+      return {
+        ...r, outgoing,
+        otherId: outgoing ? r.target_id : r.source_id,
+        otherText: outgoing ? r.target_text : r.source_text,
+        otherDomain: outgoing ? r.target_domain : r.source_domain,
+      };
     })
     .sort((a, b) => (a.group - b.group) || a.kind.localeCompare(b.kind));
 }
@@ -645,6 +695,7 @@ function renderWords() {
     <tr data-word-id="${w.id}" class="${w.id === state.selectedWordId ? 'selected' : ''}">
       <td><span class="word-form">${w.lexical_form}</span>${w.is_common ? ' <span class="badge-common">common</span>' : ''}</td>
       <td>${posPill(w.pos)}</td>
+      <td>${domainPill(w.domain)}</td>
       <td class="definition">${w.definition || w.gloss || '<span style="opacity:.5">&mdash;</span>'}</td>
       <td>${w.register_codes.concat(w.editorial_labels).map(t => `<span class="tag">${titleCase(t)}</span>`).join('')}</td>
       <td style="text-align:right" class="rel-count">${w.relationship_count}</td>
@@ -674,7 +725,7 @@ function renderDetail() {
   content.style.display = "block";
   content.innerHTML = `
     <div class="detail-word">${word.lexical_form}${word.is_common ? ' <span class="badge-common">common</span>' : ''}${word.is_fully_hydrated ? '' : ' <span class="badge-common" style="color:#C2544B;border-color:#C2544B">hydration pending</span>'}</div>
-    <div style="margin-top:6px">${posPill(word.pos)}</div>
+    <div style="margin-top:6px">${posPill(word.pos)} ${domainPill(word.domain)}</div>
     <div class="detail-definition">${word.definition || word.gloss || 'No definition on record.'}</div>
     <div class="detail-section-title">Provenance</div>
     <div class="detail-definition" style="margin-top:0">${word.sources && word.sources.length ? word.sources.map(s => `<span class="tag">${s}</span>`).join('') : '<span style="opacity:.6">No source recorded.</span>'}</div>
@@ -684,6 +735,7 @@ function renderDetail() {
         <span class="rel-dir" title="${r.outgoing ? 'Outgoing' : 'Incoming'}">${r.outgoing ? '&rarr;' : '&larr;'}</span>
         ${relPill(r.kind, r.group)}
         <button class="link-btn" data-pivot-id="${r.otherId}">${r.otherText}</button>
+        ${domainPill(r.otherDomain)}
       </div>`).join('')}
   `;
   content.querySelectorAll("button[data-pivot-id]").forEach(btn => {
@@ -746,6 +798,11 @@ document.getElementById("pos-filter").addEventListener("change", (e) => {
   renderWords();
 });
 
+document.getElementById("domain-filter").addEventListener("change", (e) => {
+  state.domain = e.target.value;
+  renderWords();
+});
+
 document.getElementById("words-body").addEventListener("click", (e) => {
   const row = e.target.closest("tr[data-word-id]");
   if (row) selectWord(row.dataset.wordId);
@@ -770,6 +827,7 @@ document.querySelectorAll("#panel-rels thead th[data-sort]").forEach(th => {
 });
 
 populatePosFilter();
+populateDomainFilter();
 renderAll();
 </script>
 </body>

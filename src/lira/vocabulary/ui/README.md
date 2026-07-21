@@ -21,6 +21,7 @@ view = DictionaryView(
     domain.vocabulary.dictionary,
     domain.vocabulary.lexical_relationships,
     title="LIRA Common Dictionary",
+    domain_name="Physics",  # optional, default "Domain" -- see below
     unresolved=(),  # optional: surface caller-tracked words that never resolved (see below)
 )
 view.save("dictionary.html")
@@ -36,6 +37,16 @@ find), so a caller that tracks failed lookups (e.g. a domain-seeding
 run) hands the list in explicitly. See `assets/example_ui/README.md`
 for a worked example (a Physics Domain seeded via
 `examples/physics_domain_seeding.py`, repo root).
+
+`Word` itself carries no domain field (a Domain owns its Dictionary;
+the Word doesn't know which one it's in), so this view labels each
+word "Common" (`word.is_common`) or `domain_name` (everything else --
+default `"Domain"` when the caller doesn't supply one) and shows that
+label as its own **Domain** column in the Words table, a **Domain**
+filter dropdown alongside the part-of-speech one, and a pill next to
+each related word in the detail panel's relationship list -- so a
+Domain-specific word's inherited-vs-own relationships are visible at a
+glance without leaving the panel.
 
 All Word and LexicalRelationship data is embedded as JSON in the page
 and searched/filtered/sorted client-side in vanilla JS -- there is no
