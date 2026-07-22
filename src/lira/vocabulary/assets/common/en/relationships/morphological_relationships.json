@@ -2,7 +2,7 @@
   "schema_version": "1.0.0",
   "language_code": "en",
   "relationship_category": "morphological",
-  "count": 148,
+  "count": 218,
   "relationships": [
     {
       "source_lexical_form": "be",
@@ -505,16 +505,6 @@
       "relationship_kind": "LEMMA_FORM"
     },
     {
-      "source_lexical_form": "cause",
-      "target_lexical_form": "causing",
-      "relationship_kind": "PRESENT_PARTICIPLE_FORM"
-    },
-    {
-      "source_lexical_form": "causing",
-      "target_lexical_form": "cause",
-      "relationship_kind": "LEMMA_FORM"
-    },
-    {
       "source_lexical_form": "express",
       "target_lexical_form": "expressed",
       "relationship_kind": "PAST_PARTICIPLE_FORM"
@@ -742,6 +732,366 @@
     {
       "source_lexical_form": "stored",
       "target_lexical_form": "store",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "achieve",
+      "target_lexical_form": "achievement",
+      "relationship_kind": "NOMINALISATION"
+    },
+    {
+      "source_lexical_form": "achievement",
+      "target_lexical_form": "achieve",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "add",
+      "target_lexical_form": "addition",
+      "relationship_kind": "NOMINALISATION"
+    },
+    {
+      "source_lexical_form": "addition",
+      "target_lexical_form": "add",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "appear",
+      "target_lexical_form": "appearance",
+      "relationship_kind": "NOMINALISATION"
+    },
+    {
+      "source_lexical_form": "appearance",
+      "target_lexical_form": "appear",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "assemble",
+      "target_lexical_form": "assembly",
+      "relationship_kind": "NOMINALISATION"
+    },
+    {
+      "source_lexical_form": "assembly",
+      "target_lexical_form": "assemble",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "assign",
+      "target_lexical_form": "assignment",
+      "relationship_kind": "NOMINALISATION"
+    },
+    {
+      "source_lexical_form": "assignment",
+      "target_lexical_form": "assign",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "choose",
+      "target_lexical_form": "choice",
+      "relationship_kind": "NOMINALISATION"
+    },
+    {
+      "source_lexical_form": "choice",
+      "target_lexical_form": "choose",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "combine",
+      "target_lexical_form": "combination",
+      "relationship_kind": "NOMINALISATION"
+    },
+    {
+      "source_lexical_form": "combination",
+      "target_lexical_form": "combine",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "compare",
+      "target_lexical_form": "comparison",
+      "relationship_kind": "NOMINALISATION"
+    },
+    {
+      "source_lexical_form": "comparison",
+      "target_lexical_form": "compare",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "connect",
+      "target_lexical_form": "connection",
+      "relationship_kind": "NOMINALISATION"
+    },
+    {
+      "source_lexical_form": "connection",
+      "target_lexical_form": "connect",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "depend",
+      "target_lexical_form": "dependence",
+      "relationship_kind": "NOMINALISATION"
+    },
+    {
+      "source_lexical_form": "dependence",
+      "target_lexical_form": "depend",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "describe",
+      "target_lexical_form": "description",
+      "relationship_kind": "NOMINALISATION"
+    },
+    {
+      "source_lexical_form": "description",
+      "target_lexical_form": "describe",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "determine",
+      "target_lexical_form": "determination",
+      "relationship_kind": "NOMINALISATION"
+    },
+    {
+      "source_lexical_form": "determination",
+      "target_lexical_form": "determine",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "develop",
+      "target_lexical_form": "development",
+      "relationship_kind": "NOMINALISATION"
+    },
+    {
+      "source_lexical_form": "development",
+      "target_lexical_form": "develop",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "divide",
+      "target_lexical_form": "division",
+      "relationship_kind": "NOMINALISATION"
+    },
+    {
+      "source_lexical_form": "division",
+      "target_lexical_form": "divide",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "exclude",
+      "target_lexical_form": "exclusion",
+      "relationship_kind": "NOMINALISATION"
+    },
+    {
+      "source_lexical_form": "exclusion",
+      "target_lexical_form": "exclude",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "express",
+      "target_lexical_form": "expression",
+      "relationship_kind": "NOMINALISATION"
+    },
+    {
+      "source_lexical_form": "expression",
+      "target_lexical_form": "express",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "gather",
+      "target_lexical_form": "gathering",
+      "relationship_kind": "NOMINALISATION"
+    },
+    {
+      "source_lexical_form": "gathering",
+      "target_lexical_form": "gather",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "identify",
+      "target_lexical_form": "identification",
+      "relationship_kind": "NOMINALISATION"
+    },
+    {
+      "source_lexical_form": "identification",
+      "target_lexical_form": "identify",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "include",
+      "target_lexical_form": "inclusion",
+      "relationship_kind": "NOMINALISATION"
+    },
+    {
+      "source_lexical_form": "inclusion",
+      "target_lexical_form": "include",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "indicate",
+      "target_lexical_form": "indication",
+      "relationship_kind": "NOMINALISATION"
+    },
+    {
+      "source_lexical_form": "indication",
+      "target_lexical_form": "indicate",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "locate",
+      "target_lexical_form": "location",
+      "relationship_kind": "NOMINALISATION"
+    },
+    {
+      "source_lexical_form": "location",
+      "target_lexical_form": "locate",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "manifest",
+      "target_lexical_form": "manifestation",
+      "relationship_kind": "NOMINALISATION"
+    },
+    {
+      "source_lexical_form": "manifestation",
+      "target_lexical_form": "manifest",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "modify",
+      "target_lexical_form": "modification",
+      "relationship_kind": "NOMINALISATION"
+    },
+    {
+      "source_lexical_form": "modification",
+      "target_lexical_form": "modify",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "move",
+      "target_lexical_form": "movement",
+      "relationship_kind": "NOMINALISATION"
+    },
+    {
+      "source_lexical_form": "movement",
+      "target_lexical_form": "move",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "multiply",
+      "target_lexical_form": "multiplication",
+      "relationship_kind": "NOMINALISATION"
+    },
+    {
+      "source_lexical_form": "multiplication",
+      "target_lexical_form": "multiply",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "pass",
+      "target_lexical_form": "passage",
+      "relationship_kind": "NOMINALISATION"
+    },
+    {
+      "source_lexical_form": "passage",
+      "target_lexical_form": "pass",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "perform",
+      "target_lexical_form": "performance",
+      "relationship_kind": "NOMINALISATION"
+    },
+    {
+      "source_lexical_form": "performance",
+      "target_lexical_form": "perform",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "precede",
+      "target_lexical_form": "precedence",
+      "relationship_kind": "NOMINALISATION"
+    },
+    {
+      "source_lexical_form": "precedence",
+      "target_lexical_form": "precede",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "qualify",
+      "target_lexical_form": "qualification",
+      "relationship_kind": "NOMINALISATION"
+    },
+    {
+      "source_lexical_form": "qualification",
+      "target_lexical_form": "qualify",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "refer",
+      "target_lexical_form": "reference",
+      "relationship_kind": "NOMINALISATION"
+    },
+    {
+      "source_lexical_form": "reference",
+      "target_lexical_form": "refer",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "relate",
+      "target_lexical_form": "relation",
+      "relationship_kind": "NOMINALISATION"
+    },
+    {
+      "source_lexical_form": "relation",
+      "target_lexical_form": "relate",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "replace",
+      "target_lexical_form": "replacement",
+      "relationship_kind": "NOMINALISATION"
+    },
+    {
+      "source_lexical_form": "replacement",
+      "target_lexical_form": "replace",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "represent",
+      "target_lexical_form": "representation",
+      "relationship_kind": "NOMINALISATION"
+    },
+    {
+      "source_lexical_form": "representation",
+      "target_lexical_form": "represent",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "specify",
+      "target_lexical_form": "specification",
+      "relationship_kind": "NOMINALISATION"
+    },
+    {
+      "source_lexical_form": "specification",
+      "target_lexical_form": "specify",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "store",
+      "target_lexical_form": "storage",
+      "relationship_kind": "NOMINALISATION"
+    },
+    {
+      "source_lexical_form": "storage",
+      "target_lexical_form": "store",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "subtract",
+      "target_lexical_form": "subtraction",
+      "relationship_kind": "NOMINALISATION"
+    },
+    {
+      "source_lexical_form": "subtraction",
+      "target_lexical_form": "subtract",
       "relationship_kind": "LEMMA_FORM"
     }
   ]

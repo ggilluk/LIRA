@@ -5,17 +5,18 @@
 it directly in a browser to see the UI without running any code.
 
 It now shows a **Physics Domain**, seeded from the Common Domain (now
-772 words: 388 mandatory closed-class + 163 supplementary
-metalinguistic terms + 221 promoted open-class words -- see below)
-plus 117 lexical forms hydrated directly into the Physics Domain
+805 words: 388 mandatory closed-class + 163 supplementary
+metalinguistic terms + 254 promoted open-class words -- see below)
+plus 143 lexical forms hydrated directly into the Physics Domain
 (95 `Word` records from a representative Physics source text, several
 with more than one part of speech, e.g. `charge` -> NOUN + VERB, plus
 40 more found by breaking every hydrated word's own definition down
-into its constituent words -- see Definition-gap vocabulary below) via
-the Vocabulary Layer's domain-seeding pipeline
-(`DictionaryProcessor.identify_word`, `AsyncDictionaryHydrator`,
-`ExternalDictionaryAdapter`) -- 909 words, 305 relationships in total
-(196 inherited from Common + 109 hand-curated or morphologically-linked
+into its constituent words, plus 6 more abstract nouns for the
+NOMINALISATION relationship -- see Definition-gap vocabulary and Verb
+nominalisation below) via the Vocabulary Layer's domain-seeding
+pipeline (`DictionaryProcessor.identify_word`, `AsyncDictionaryHydrator`,
+`ExternalDictionaryAdapter`) -- 948 words, 389 relationships in total
+(266 inherited from Common + 123 hand-curated or morphologically-linked
 among the hydrated Physics words, covering every
 `LexicalRelationshipType` Lexical Semantic kind with at least 5 real
 examples each: `hot`<->`cold` ANTONYM, `matter` HYPERNYM `particle`,
@@ -45,7 +46,7 @@ them too, not just Physics), 40 as Physics-specific (SI units,
 subatomic-particle plurals, the electromagnetism/thermodynamics
 cluster -- hydrated directly into this Physics Domain), and exactly one
 excluded (`s`, the trailing letter of a possessive like `wave's`
-against the tokenizer's word pattern -- not a lexical item). 66 of
+against the tokenizer's word pattern -- not a lexical item). 41 of
 these also gained a real morphological relationship back to an
 existing word (`electrons` -> `PLURAL_FORM` of `electron`, `measured`
 -> `PAST_PARTICIPLE_FORM` of `measure`, and so on), plus four `ANTONYM`
@@ -61,6 +62,32 @@ already discusses, not something this pass tries to chase to zero. See
 `examples/definition_gap_vocabulary.py` (the full classification) and
 `examples/README.md`'s Definition-gap vocabulary section for the
 worked example.
+
+### Verb nominalisation
+
+`NOMINALISATION` (`vocabulary/documentation/README.md`, 6.2.1
+Derivation -- defined since the relationship type enum's first version
+but never actually seeded until now) links a base verb to its abstract
+noun form: `achieve` -> `achievement`, `identify` -> `identification`,
+`exist` -> `existence`, and so on. `examples/verb_nominalisation_vocabulary.py`
+works through every base-form `VERB` already seeded (Common and
+Physics) and either finds a genuine, standard-English nominalisation
+(36 in Common, 7 in Physics -- 4 of the 43 nouns, `movement`, `passage`,
+`reference`/`relation`, `acceleration`, already existed) or leaves it
+out: zero-derivation verbs where the noun sense is the *same* word, not
+a distinct form (`change`, `measure`, `force`, `wave`, and more),
+grammar/logic-operator verbs with no natural nominalisation (`and`,
+`or`, `xor`, `plus`, `minus`, ...), and verbs with no single standard
+form (`be`, `have`, `do`, `become`, `happen`, ...) were all left alone
+rather than forced. One planned pair, `cause` -> `causation`, surfaced
+a real pre-existing bug instead of a clean relationship: `cause` is a
+Common homograph (`NOUN` and `VERB`), and `RelationshipSeeder`'s
+homograph resolution isn't part-of-speech-aware, so both this new pair
+and an identical *existing* one (`cause` -> `causing`) had silently
+attached to the wrong (`NOUN`) sense -- both removed rather than left
+wrong; `causation` still exists as a Word, just without the formal
+edge. See `assets/common/en/relationships/README.md`'s own Version
+section for the full story.
 
 It also demonstrates several `DictionaryView` display additions made
 for this exercise, all additive and optional (existing call sites
@@ -104,16 +131,18 @@ unaffected):
 Regenerate with:
 
 ```
-python3 examples/definition_gap_vocabulary_seeding.py
+python3 examples/verb_nominalisation_seeding.py
 ```
 
 run from the repository root, which seeds the Physics Domain
 (`physics_domain_seeding.run()`), promotes/hydrates the definition-gap
-vocabulary on top of it, and regenerates this file directly from the
-result. `python3 examples/physics_domain_seeding.py` on its own still
-works and still writes `examples/physics_domain_seeding_report.md`,
-but no longer regenerates this file -- it would only reflect the
-Physics Domain *before* the definition-gap pass.
+vocabulary (`definition_gap_vocabulary_seeding.run()`), adds the
+NOMINALISATION pass on top of both, and regenerates this file directly
+from the result. `python3 examples/physics_domain_seeding.py` and
+`python3 examples/definition_gap_vocabulary_seeding.py` still work and
+still write their own report files, but neither regenerates this file
+any more -- each would only reflect an earlier, less complete state of
+the same Physics Domain.
 
 To instead regenerate a plain Common-only snapshot (the previous
 content of this file):

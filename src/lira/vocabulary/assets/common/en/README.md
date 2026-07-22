@@ -42,7 +42,7 @@ working vocabulary immediately, not to be a system of record.
 | `metalinguistic_adverbs.json` | Open-class `ADVERB` terms for grammar itself, plus four closed-class discourse markers (however, therefore, moreover, nevertheless -- see Discourse markers below) | 17 |
 | `metalinguistic_proper_nouns.json` | A single `PROPER_NOUN` entry, `English` -- see Supplementary files below | 1 |
 | `metalinguistic_interjections.json` | Open-class `INTERJECTION` terms (`yes`, `no`, `please`, `alas`, `hurrah`, `huzzah`, `oh`, `ah`, `wow`, `hey`, `ouch`, `hmm`, `well`) -- see Supplementary files below | 13 |
-| `promoted_words.json` | Open-class words promoted from Domain vocabularies (started empty; see Version below) | 221 |
+| `promoted_words.json` | Open-class words promoted from Domain vocabularies (started empty; see Version below) | 254 |
 
 Mandatory closed-class total: **388** (37 + 99 + 36 + 94 + 7 + 36 + 16 + 5 + 25 + 33).
 The six `metalinguistic_*.json` files and `promoted_words.json` are
@@ -53,7 +53,7 @@ figure `WordSeeder` asserts: it's whatever `determiners.json` through
 `numerals.json`'s counts actually sum to, cross-checked against
 `manifest.json`'s `total_lexical_forms` -- see
 `vocabulary/role/word_seeder.py`'s `validate_assets()`. A freshly
-seeded `Dictionary` currently ends up with 388 + 163 + 221 = **772**
+seeded `Dictionary` currently ends up with 388 + 163 + 254 = **805**
 `Word`s (mandatory + supplementary + promoted) -- unlike the mandatory
 and supplementary totals, the promoted total isn't manifest-enforced
 (`promote_word`/`demote_word` mutate `promoted_words.json` directly;
@@ -431,7 +431,32 @@ they're already part of the mandatory cache.
 
 ## Version
 
-`v1` / `schema_version 2.0.0` / `asset_version 1.10.0` -- `promoted_words.json`
+`v1` / `schema_version 2.0.0` / `asset_version 1.11.0` -- `promoted_words.json`
+grew from 221 to 254 entries: 34 new abstract nouns for the
+NOMINALISATION relationship (`vocabulary/documentation/README.md`,
+6.2.1 Derivation -- defined since `schema_version 2.0.0` but never
+actually seeded until now), `achieve` -> `achievement`, `identify` ->
+`identification`, and so on for every base-form `VERB` already seeded
+that has one (`examples/verb_nominalisation_vocabulary.py` -- the full
+classification, including which verbs were deliberately excluded and
+why: zero-derivation verbs like `change`/`measure` where the noun sense
+is the same word, not a distinct form; grammar/logic-operator verbs
+with no natural nominalisation; and verbs with no single standard
+form). `source_references` naming `LIRA English Definition-Gap
+Vocabulary v1`, the same source label the previous batch used (this is
+an extension of that same batch's own follow-up work, not a new
+source). One planned pair, `cause` -> `causation`, was *not* wired as a
+relationship (though `causation` is still promoted as a Word) --
+`cause` is a Common homograph (NOUN and VERB) and
+`RelationshipSeeder.seed_domain` resolves a static relationship cache
+entry via `Dictionary.lookup()`, first-seeded-wins by text alone, not
+part-of-speech-aware, so a cache entry naming `cause` as source can
+only ever attach to the NOUN sense. This also surfaced (and fixed) an
+identical pre-existing bug from `asset_version 1.10.0`: `cause` ->
+`causing` (`PRESENT_PARTICIPLE_FORM`) had silently attached to the NOUN
+sense too -- both wrong edges removed; see
+`relationships/README.md`'s own Version section for the exact edges
+and reasoning. `asset_version 1.10.0` -- `promoted_words.json`
 grew from empty to 221 entries via `WordSeeder.promote_word`, all
 `NOUN`/`VERB`/`ADJECTIVE`/`ADVERB`, `source_references` naming `LIRA
 English Definition-Gap Vocabulary v1`. Not a cross-domain-reference-count

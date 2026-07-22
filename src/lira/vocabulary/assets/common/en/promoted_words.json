@@ -3,7 +3,7 @@
   "language_code": "en",
   "part_of_speech": null,
   "closed_class_kind": "promoted_open_class",
-  "count": 221,
+  "count": 254,
   "words": [
     {
       "lexical_form": "able",
@@ -7945,6 +7945,1194 @@
       "pronunciations": [],
       "syllable_representation": null,
       "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Definition-Gap Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "reference_count": 4
+    },
+    {
+      "lexical_form": "achievement",
+      "normalised_form": "achievement",
+      "text": "achievement",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "NOUN",
+      "closed_class": false,
+      "definition": "A thing done successfully, especially by effort, skill, or courage; the act of achieving something.",
+      "gloss": "A thing done successfully, especially by effort, skill, or courage; the act of achieving something.",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 4,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Definition-Gap Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "reference_count": 4
+    },
+    {
+      "lexical_form": "addition",
+      "normalised_form": "addition",
+      "text": "addition",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "NOUN",
+      "closed_class": false,
+      "definition": "The action or process of adding something; the mathematical operation of combining numbers to find their total.",
+      "gloss": "The action or process of adding something; the mathematical operation of combining numbers to find their total.",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 3,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Definition-Gap Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "reference_count": 4
+    },
+    {
+      "lexical_form": "appearance",
+      "normalised_form": "appearance",
+      "text": "appearance",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "NOUN",
+      "closed_class": false,
+      "definition": "The way that someone or something looks; an instance of coming into sight or presence.",
+      "gloss": "The way that someone or something looks; an instance of coming into sight or presence.",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 4,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Definition-Gap Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "reference_count": 4
+    },
+    {
+      "lexical_form": "assembly",
+      "normalised_form": "assembly",
+      "text": "assembly",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "NOUN",
+      "closed_class": false,
+      "definition": "A group of people gathered together for a purpose, or the action of putting the parts of something together.",
+      "gloss": "A group of people gathered together for a purpose, or the action of putting the parts of something together.",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 3,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Definition-Gap Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "reference_count": 4
+    },
+    {
+      "lexical_form": "assignment",
+      "normalised_form": "assignment",
+      "text": "assignment",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "NOUN",
+      "closed_class": false,
+      "definition": "A task or piece of work assigned to someone; the action of assigning something.",
+      "gloss": "A task or piece of work assigned to someone; the action of assigning something.",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 3,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Definition-Gap Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "reference_count": 4
+    },
+    {
+      "lexical_form": "causation",
+      "normalised_form": "causation",
+      "text": "causation",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "NOUN",
+      "closed_class": false,
+      "definition": "The action of causing something; the relationship between cause and effect.",
+      "gloss": "The action of causing something; the relationship between cause and effect.",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 3,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Definition-Gap Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "reference_count": 4
+    },
+    {
+      "lexical_form": "choice",
+      "normalised_form": "choice",
+      "text": "choice",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "NOUN",
+      "closed_class": false,
+      "definition": "An act of choosing between two or more possibilities; the option chosen.",
+      "gloss": "An act of choosing between two or more possibilities; the option chosen.",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Definition-Gap Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "reference_count": 4
+    },
+    {
+      "lexical_form": "combination",
+      "normalised_form": "combination",
+      "text": "combination",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "NOUN",
+      "closed_class": false,
+      "definition": "A joining or mixing of different things; the resulting mixture.",
+      "gloss": "A joining or mixing of different things; the resulting mixture.",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 4,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Definition-Gap Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "reference_count": 4
+    },
+    {
+      "lexical_form": "comparison",
+      "normalised_form": "comparison",
+      "text": "comparison",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "NOUN",
+      "closed_class": false,
+      "definition": "The act of comparing two or more things to establish their similarities or differences.",
+      "gloss": "The act of comparing two or more things to establish their similarities or differences.",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 4,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Definition-Gap Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "reference_count": 4
+    },
+    {
+      "lexical_form": "connection",
+      "normalised_form": "connection",
+      "text": "connection",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "NOUN",
+      "closed_class": false,
+      "definition": "A relationship in which a person, thing, or idea is linked or associated with something else.",
+      "gloss": "A relationship in which a person, thing, or idea is linked or associated with something else.",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 3,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Definition-Gap Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "reference_count": 4
+    },
+    {
+      "lexical_form": "dependence",
+      "normalised_form": "dependence",
+      "text": "dependence",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "NOUN",
+      "closed_class": false,
+      "definition": "The state of relying on or being controlled by someone or something else.",
+      "gloss": "The state of relying on or being controlled by someone or something else.",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 4,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Definition-Gap Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "reference_count": 4
+    },
+    {
+      "lexical_form": "description",
+      "normalised_form": "description",
+      "text": "description",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "NOUN",
+      "closed_class": false,
+      "definition": "A spoken or written account that details what something or someone is like.",
+      "gloss": "A spoken or written account that details what something or someone is like.",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 3,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Definition-Gap Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "reference_count": 4
+    },
+    {
+      "lexical_form": "determination",
+      "normalised_form": "determination",
+      "text": "determination",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "NOUN",
+      "closed_class": false,
+      "definition": "The action of ascertaining or establishing something precisely; firmness of purpose.",
+      "gloss": "The action of ascertaining or establishing something precisely; firmness of purpose.",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 5,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Definition-Gap Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "reference_count": 4
+    },
+    {
+      "lexical_form": "development",
+      "normalised_form": "development",
+      "text": "development",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "NOUN",
+      "closed_class": false,
+      "definition": "The process of developing or being developed; a growth or advancement over time.",
+      "gloss": "The process of developing or being developed; a growth or advancement over time.",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 4,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Definition-Gap Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "reference_count": 4
+    },
+    {
+      "lexical_form": "division",
+      "normalised_form": "division",
+      "text": "division",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "NOUN",
+      "closed_class": false,
+      "definition": "The action of separating something into parts; the mathematical operation of dividing one number by another.",
+      "gloss": "The action of separating something into parts; the mathematical operation of dividing one number by another.",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 3,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Definition-Gap Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "reference_count": 4
+    },
+    {
+      "lexical_form": "exclusion",
+      "normalised_form": "exclusion",
+      "text": "exclusion",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "NOUN",
+      "closed_class": false,
+      "definition": "The action of excluding or the state of being excluded.",
+      "gloss": "The action of excluding or the state of being excluded.",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 3,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Definition-Gap Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "reference_count": 4
+    },
+    {
+      "lexical_form": "expression",
+      "normalised_form": "expression",
+      "text": "expression",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "NOUN",
+      "closed_class": false,
+      "definition": "The action of expressing something in words, actions, or symbols.",
+      "gloss": "The action of expressing something in words, actions, or symbols.",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 3,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Definition-Gap Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "reference_count": 4
+    },
+    {
+      "lexical_form": "gathering",
+      "normalised_form": "gathering",
+      "text": "gathering",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "NOUN",
+      "closed_class": false,
+      "definition": "An assembly of people, typically for a particular purpose.",
+      "gloss": "An assembly of people, typically for a particular purpose.",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 3,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Definition-Gap Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "reference_count": 4
+    },
+    {
+      "lexical_form": "identification",
+      "normalised_form": "identification",
+      "text": "identification",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "NOUN",
+      "closed_class": false,
+      "definition": "The action of identifying someone or something, or the fact of being identified.",
+      "gloss": "The action of identifying someone or something, or the fact of being identified.",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 6,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Definition-Gap Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "reference_count": 4
+    },
+    {
+      "lexical_form": "inclusion",
+      "normalised_form": "inclusion",
+      "text": "inclusion",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "NOUN",
+      "closed_class": false,
+      "definition": "The action or state of including or being included within a group or structure.",
+      "gloss": "The action or state of including or being included within a group or structure.",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 3,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Definition-Gap Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "reference_count": 4
+    },
+    {
+      "lexical_form": "indication",
+      "normalised_form": "indication",
+      "text": "indication",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "NOUN",
+      "closed_class": false,
+      "definition": "A sign or piece of information that suggests something; the action of indicating.",
+      "gloss": "A sign or piece of information that suggests something; the action of indicating.",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 4,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Definition-Gap Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "reference_count": 4
+    },
+    {
+      "lexical_form": "location",
+      "normalised_form": "location",
+      "text": "location",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "NOUN",
+      "closed_class": false,
+      "definition": "A particular place or position; the action of locating something.",
+      "gloss": "A particular place or position; the action of locating something.",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 3,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Definition-Gap Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "reference_count": 4
+    },
+    {
+      "lexical_form": "manifestation",
+      "normalised_form": "manifestation",
+      "text": "manifestation",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "NOUN",
+      "closed_class": false,
+      "definition": "An event, action, or object that clearly shows or embodies something.",
+      "gloss": "An event, action, or object that clearly shows or embodies something.",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 5,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Definition-Gap Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "reference_count": 4
+    },
+    {
+      "lexical_form": "modification",
+      "normalised_form": "modification",
+      "text": "modification",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "NOUN",
+      "closed_class": false,
+      "definition": "The action of making a change or alteration to something.",
+      "gloss": "The action of making a change or alteration to something.",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 5,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Definition-Gap Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "reference_count": 4
+    },
+    {
+      "lexical_form": "multiplication",
+      "normalised_form": "multiplication",
+      "text": "multiplication",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "NOUN",
+      "closed_class": false,
+      "definition": "The mathematical operation of repeated addition of a number a specified number of times.",
+      "gloss": "The mathematical operation of repeated addition of a number a specified number of times.",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 5,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Definition-Gap Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "reference_count": 4
+    },
+    {
+      "lexical_form": "performance",
+      "normalised_form": "performance",
+      "text": "performance",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "NOUN",
+      "closed_class": false,
+      "definition": "An act of performing something, such as a task, function, or work; how well something functions.",
+      "gloss": "An act of performing something, such as a task, function, or work; how well something functions.",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 4,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Definition-Gap Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "reference_count": 4
+    },
+    {
+      "lexical_form": "precedence",
+      "normalised_form": "precedence",
+      "text": "precedence",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "NOUN",
+      "closed_class": false,
+      "definition": "The condition of being considered more important than someone or something else; priority in order.",
+      "gloss": "The condition of being considered more important than someone or something else; priority in order.",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 4,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Definition-Gap Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "reference_count": 4
+    },
+    {
+      "lexical_form": "qualification",
+      "normalised_form": "qualification",
+      "text": "qualification",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "NOUN",
+      "closed_class": false,
+      "definition": "A skill or quality that makes someone suitable for a particular role, or the action of qualifying.",
+      "gloss": "A skill or quality that makes someone suitable for a particular role, or the action of qualifying.",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 5,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Definition-Gap Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "reference_count": 4
+    },
+    {
+      "lexical_form": "replacement",
+      "normalised_form": "replacement",
+      "text": "replacement",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "NOUN",
+      "closed_class": false,
+      "definition": "The action of replacing something, or a person or thing that replaces another.",
+      "gloss": "The action of replacing something, or a person or thing that replaces another.",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 4,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Definition-Gap Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "reference_count": 4
+    },
+    {
+      "lexical_form": "representation",
+      "normalised_form": "representation",
+      "text": "representation",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "NOUN",
+      "closed_class": false,
+      "definition": "The action of representing someone or something, or the state of being represented.",
+      "gloss": "The action of representing someone or something, or the state of being represented.",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 5,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Definition-Gap Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "reference_count": 4
+    },
+    {
+      "lexical_form": "specification",
+      "normalised_form": "specification",
+      "text": "specification",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "NOUN",
+      "closed_class": false,
+      "definition": "A detailed description of the requirements, design, or standards for something.",
+      "gloss": "A detailed description of the requirements, design, or standards for something.",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 5,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Definition-Gap Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "reference_count": 4
+    },
+    {
+      "lexical_form": "storage",
+      "normalised_form": "storage",
+      "text": "storage",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "NOUN",
+      "closed_class": false,
+      "definition": "The action or method of storing something for future use.",
+      "gloss": "The action or method of storing something for future use.",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 3,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Definition-Gap Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "reference_count": 4
+    },
+    {
+      "lexical_form": "subtraction",
+      "normalised_form": "subtraction",
+      "text": "subtraction",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "NOUN",
+      "closed_class": false,
+      "definition": "The mathematical operation of removing one number or quantity from another.",
+      "gloss": "The mathematical operation of removing one number or quantity from another.",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 3,
       "stress_pattern": null,
       "frequency_value": null,
       "frequency_scale": null,

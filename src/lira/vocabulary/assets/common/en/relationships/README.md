@@ -21,7 +21,7 @@ against a specific Domain's already-seeded `Word`s, not a store of
 
 | File | Category | Kinds seeded | Count |
 |------|----------|----------------|-------|
-| `morphological_relationships.json` | Morphological (6.2.1) | Person, tense, participle, and plural forms (`be`/`have`/`do` conjugations, `this`/`that` plurals); comparative/superlative forms (`few`/`many`/`much`/`little`); pronoun paradigm forms (`PRONOUN_OBJECT_FORM`, `PRONOUN_SUBJECT_FORM`, `PRONOUN_POSSESSIVE_DETERMINER_FORM`, `PRONOUN_POSSESSIVE_FORM`, `PRONOUN_REFLEXIVE_FORM`); `LEMMA_FORM` (every edge's materialised reverse -- see Symmetric and inverse edges); 25 base/derived pairs among the promoted words added in `asset_version 1.5.0` (see Version below) | 148 |
+| `morphological_relationships.json` | Morphological (6.2.1) | Person, tense, participle, and plural forms (`be`/`have`/`do` conjugations, `this`/`that` plurals); comparative/superlative forms (`few`/`many`/`much`/`little`); pronoun paradigm forms (`PRONOUN_OBJECT_FORM`, `PRONOUN_SUBJECT_FORM`, `PRONOUN_POSSESSIVE_DETERMINER_FORM`, `PRONOUN_POSSESSIVE_FORM`, `PRONOUN_REFLEXIVE_FORM`); `LEMMA_FORM` (every edge's materialised reverse -- see Symmetric and inverse edges); 25 base/derived pairs among the promoted words added in `asset_version 1.5.0`; 36 `NOMINALISATION` pairs (`achieve`/`achievement`, `identify`/`identification`, ...) added in `asset_version 1.6.0` (see Version below) | 218 |
 | `semantic_relationships.json` | Lexical Semantic (6.2.2) | `ANTONYM` (spatial/temporal opposites: above/below, before/after, ...; discrete/continuous, high/low, push/pull, negative/positive among the promoted words) and `SYNONYM` (equivalent prepositions: beneath/under, amid/among, due to/owing to, ...; the discourse-marker pair however/nevertheless), each materialised in both directions | 32 |
 | `orthographic_relationships.json` | Orthographic and Naming (6.2.3) | `CONTRACTION` -- not/n't, plus each full contraction's component words (do/not -> don't, can/not -> can't, I/am -> I'm, it/is/has -> it's, is/not -> isn't, was/not -> wasn't, had/not -> hadn't) | 16 |
 
@@ -34,7 +34,7 @@ pronoun paradigms, and near-synonymy do.
 `PRONOUN_RECIPROCAL_FORM` is defined (6.2.1, Pronoun Form) but not
 currently seeded in either direction -- see Known gaps.
 
-Total relationships: **196**.
+Total relationships: **266**.
 
 ## Symmetric and inverse edges
 
@@ -221,6 +221,42 @@ adds these seven relationships -- all now present in
 `orthographic_relationships.json` above.
 
 ## Version
+
+`v1` / `schema_version 1.0.0` / `asset_version 1.6.0` (196 -> 266
+relationships, alongside `../README.md`'s `asset_version 1.11.0`
+promoted-words batch: `NOMINALISATION` (6.2.1 Derivation -- defined
+since `schema_version 1.0.0` but never seeded until now) for 36
+base-form verbs, each a (verb, `NOMINALISATION`, noun) edge plus its
+materialised reverse (noun, `LEMMA_FORM`, verb) -- taking
+`morphological_relationships.json` 148 -> 222, then 222 -> 218 net
+after also removing 4 wrong edges (below). `semantic_relationships.json`
+and `orthographic_relationships.json` are unchanged at 32 and 16.
+`examples/verb_nominalisation_vocabulary.py` has the full
+verb-by-verb reasoning (which verbs qualify, which don't, and why).
+
+While seeding this batch, `cause` -> `causation` (a genuine
+nominalisation) proved unseedable correctly: `cause` is a Common
+homograph (`NOUN` and `VERB`, both open-class), and
+`RelationshipSeeder.seed_domain` resolves a cache entry's
+`source_lexical_form` via `Dictionary.lookup()` -- first-seeded-wins by
+text alone, not part-of-speech-aware -- so an entry naming `cause` as
+source can only ever attach to the `NOUN` sense. Checking the actual
+resulting edge confirmed it: the `NOMINALISATION` edge had attached to
+`cause` (`NOUN`), not `cause` (`VERB`). Rather than ship a wrong edge,
+it was removed, and `causation` stays a promoted Word with no formal
+relationship (`../README.md`'s Version section has the reasoning).
+Checking for the same failure mode elsewhere in the cache found one
+more, pre-existing since `asset_version 1.5.0`: `cause` -> `causing`
+(`PRESENT_PARTICIPLE_FORM`) had the identical problem, silently
+attached to the `NOUN` sense the whole time. Both `cause`-involving
+pairs (4 edges total: `cause`/`causing` `PRESENT_PARTICIPLE_FORM` +
+reverse `LEMMA_FORM`, `cause`/`causation` `NOMINALISATION` + reverse
+`LEMMA_FORM`) were removed together. `causing` and `causation` keep
+their own accurate definitions (each already states the relationship
+in prose); only the formal graph edges are gone. Surfaced, not fixed:
+making `seed_domain`'s resolution part-of-speech-aware would be a
+change to a shared pipeline class, well beyond either of these two
+batches' scope.
 
 `v1` / `schema_version 1.0.0` / `asset_version 1.5.0` (138 -> 196
 relationships, alongside `../README.md`'s `asset_version 1.10.0`

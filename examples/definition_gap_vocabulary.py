@@ -323,7 +323,20 @@ MORPHOLOGICAL_LINKS: List[MorphLink] = [
     # -- derived word's base already resolved (Common or Physics) --
     ("property", "PLURAL_FORM", "properties", "existing"),
     ("relate", "PRESENT_PARTICIPLE_FORM", "relating", "existing"),
-    ("cause", "PRESENT_PARTICIPLE_FORM", "causing", "existing"),
+    # No ("cause", "PRESENT_PARTICIPLE_FORM", "causing") here: "cause" is
+    # a Common homograph (NOUN and VERB, metalinguistic_nouns.json's
+    # NOUN sense loads before metalinguistic_verbs.json's VERB sense --
+    # word_seeder.py's own SUPPLEMENTARY_FILES ordering comment).
+    # RelationshipSeeder.seed_domain resolves a static cache entry's
+    # source_lexical_form via Dictionary.lookup(), first-seeded-wins by
+    # TEXT alone, not part-of-speech-aware -- so a static-cache entry
+    # naming "cause" as source can only ever attach to the NOUN sense,
+    # never the VERB one this relationship actually needs. Originally
+    # seeded here, discovered wrong (attached to the NOUN) while adding
+    # examples/verb_nominalisation_seeding.py's cause -> causation pair
+    # hit the identical ambiguity; both were removed together rather
+    # than left silently wrong. Surfaced, not fixed -- see
+    # verb_nominalisation_vocabulary.py's own docstring.
     ("express", "PAST_PARTICIPLE_FORM", "expressed", "existing"),
     ("heat", "PRESENT_PARTICIPLE_FORM", "heating", "existing"),
     ("transfer", "PAST_PARTICIPLE_FORM", "transferred", "existing"),
