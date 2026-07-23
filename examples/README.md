@@ -22,7 +22,9 @@ the pipeline exactly the way any other Domain is seeded (see
 | `definition_gap_vocabulary.py` | Classification data for the 262 definition-breakdown words the completeness report above originally found unresolved -- see Definition-gap vocabulary below. |
 | `definition_gap_vocabulary_seeding.py` | The runnable seeding script for that classification -- promotes/hydrates every word and adds relationships. `python3 examples/definition_gap_vocabulary_seeding.py` from the repo root. |
 | `verb_nominalisation_vocabulary.py` | Classification data for the `NOMINALISATION` relationship (verb -> abstract noun, e.g. `generalise` -> `generalisation`) across every base-form verb already seeded -- see Verb nominalisation below. |
-| `verb_nominalisation_seeding.py` | The runnable seeding script for that classification -- promotes/hydrates any missing nouns, wires the relationship, and regenerates the example UI. `python3 examples/verb_nominalisation_seeding.py` from the repo root (this is now the canonical way to regenerate `assets/example_ui/dictionary_view_example.html` -- see that directory's own README). |
+| `verb_nominalisation_seeding.py` | The runnable seeding script for that classification -- promotes/hydrates any missing nouns and wires the relationship. `python3 examples/verb_nominalisation_seeding.py` from the repo root. |
+| `common_core_vocabulary.py` | Classification data for a user-supplied audit of core words the Common Vocabulary Cache's own definitions repeatedly depend on but never seeded -- see Common core vocabulary below. |
+| `common_core_vocabulary_seeding.py` | The runnable seeding script for that classification -- adds genuine grammar terms directly to the metalinguistic files, promotes general vocabulary, wires relationships, and regenerates the example UI. `python3 examples/common_core_vocabulary_seeding.py` from the repo root (this is now the canonical way to regenerate `assets/example_ui/dictionary_view_example.html` -- see that directory's own README). |
 
 ## Network caveat
 
@@ -380,6 +382,71 @@ just without the formal graph edge. Surfaced, not fixed: making
 shared pipeline class, well beyond this batch's scope -- see
 `assets/common/en/relationships/README.md`'s own Version section for
 the exact edges removed and the full reasoning.
+
+## Common core vocabulary
+
+A user-supplied audit named 33 nouns and 21 verbs the *existing* Common
+Vocabulary Cache's own definitions repeatedly depend on (`word`,
+`sentence`, `clause`, `phrase`, `noun`, `verb`, `auxiliary`,
+`preposition`, ...) but that were never themselves seeded --
+`examples/common_core_vocabulary.py` has the full classification.
+
+The audit's own status column was checked against the live Dictionary
+before acting on anything, not trusted at face value: 17 of the words
+it flagged as missing (`action`, `state`, `part`, `question`, `world`,
+`reference`, `connection`, `represent`, `refer`, `express`, `describe`,
+`modify`, `specify`, `relate`, `join`, `perform`, `indicate`) turned
+out already seeded, from the two previous batches above -- the audit
+predates them. `tense`, `person`, and `subject` were already
+metalinguistic terms.
+
+Of the genuinely missing words, three -- `mood`, `voice`, `predicate`
+-- are themselves grammar terminology, the same category
+`tense`/`aspect`/`person`/`subject` already occupy, so they were
+hand-added directly to `metalinguistic_nouns.json` (61 -> 64), not
+promoted. `form` (`VERB`, "to form a sentence") joined
+`metalinguistic_verbs.json` (43 -> 44) as a homograph of the existing
+`NOUN` sense, the same `cause`/`result`-style pattern that file already
+documents. The other 26 words -- 16 general nouns (`idea`, `group`,
+`statement`, `concept`, `occurrence`, ...) and 10 general verbs
+(`stand`, `contain`, `produce`, `occur`, ...) -- were promoted via
+`WordSeeder.promote_word`, the same path the previous two batches used.
+5 more nouns (`production`, `introduction`, `containment`,
+`accompaniment`, `reception`) aren't in the original audit at all --
+found while giving the newly-added verbs the same `NOMINALISATION`
+treatment as the Verb nominalisation batch above, a natural extension
+of "all associated relationships for each word" applied to genuinely
+new verbs.
+
+Not added: a `VERB` sense for `name`/`point`/`state`. All three already
+have a promoted `NOUN` sense, and `WordSeeder.promote_word`/
+`validate_assets()` reject a second promoted entry sharing a
+lexical_form regardless of part_of_speech
+(`promoted_lexical_forms` is a flat set of lexical_form strings, unlike
+the mandatory/supplementary files' own `(lexical_form, part_of_speech)`
+uniqueness check) -- `form` sidesteps this by going through a
+metalinguistic file instead, since it already had one; `name`/`point`/
+`state` don't. Surfaced, not fixed, the same discipline the `cause`
+homograph bug got above.
+
+Relationships: 6 `NOMINALISATION` pairs (`occur`/`occurrence`,
+`produce`/`production`, `introduce`/`introduction`,
+`contain`/`containment`, `accompany`/`accompaniment`,
+`receive`/`reception`), each with its reciprocal `LEMMA_FORM` edge; 1
+`THIRD_PERSON_FORM` pair (`occur`/`occurs`) plus reciprocal
+`LEMMA_FORM` -- retroactively linking `occurs`, seeded unlinked in the
+definition-gap batch since its true lemma `occur` didn't exist yet, to
+its now-seeded lemma; and 1 `SYNONYM` pair (`idea`/`concept`, both
+directions), found directly -- both words' own definitions are
+near-paraphrases of each other.
+
+Idempotent and verified directly in headless Chromium: `occur` shows
+both the `NOMINALISATION` (to `occurrence`) and `THIRD_PERSON_FORM`
+(to `occurs`) relationships in both directions; `idea`/`concept` show
+the `SYNONYM` sentence; `mood` and `form` (`VERB`) correctly show none
+(no relationship was ever planned for either). Common Vocabulary Cache:
+805 -> 835 words, 266 -> 282 relationships. Physics Domain: 948 -> 978
+words, 389 -> 405 relationships.
 
 ## Known, pre-existing limitation surfaced (not fixed) by this exercise
 

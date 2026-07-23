@@ -5,8 +5,8 @@
 it directly in a browser to see the UI without running any code.
 
 It now shows a **Physics Domain**, seeded from the Common Domain (now
-805 words: 388 mandatory closed-class + 163 supplementary
-metalinguistic terms + 254 promoted open-class words -- see below)
+835 words: 388 mandatory closed-class + 167 supplementary
+metalinguistic terms + 280 promoted open-class words -- see below)
 plus 143 lexical forms hydrated directly into the Physics Domain
 (95 `Word` records from a representative Physics source text, several
 with more than one part of speech, e.g. `charge` -> NOUN + VERB, plus
@@ -15,8 +15,8 @@ into its constituent words, plus 6 more abstract nouns for the
 NOMINALISATION relationship -- see Definition-gap vocabulary and Verb
 nominalisation below) via the Vocabulary Layer's domain-seeding
 pipeline (`DictionaryProcessor.identify_word`, `AsyncDictionaryHydrator`,
-`ExternalDictionaryAdapter`) -- 948 words, 389 relationships in total
-(266 inherited from Common + 123 hand-curated or morphologically-linked
+`ExternalDictionaryAdapter`) -- 978 words, 405 relationships in total
+(282 inherited from Common + 123 hand-curated or morphologically-linked
 among the hydrated Physics words, covering every
 `LexicalRelationshipType` Lexical Semantic kind with at least 5 real
 examples each: `hot`<->`cold` ANTONYM, `matter` HYPERNYM `particle`,
@@ -89,6 +89,26 @@ wrong; `causation` still exists as a Word, just without the formal
 edge. See `assets/common/en/relationships/README.md`'s own Version
 section for the full story.
 
+### Common core vocabulary
+
+A user-supplied audit of words the Common Vocabulary Cache's own
+definitions repeatedly depend on (`word`, `sentence`, `clause`,
+`phrase`, `noun`, `verb`, ...) but never seeded added 30 more Common
+words: `mood`/`voice`/`predicate` (genuine grammar terminology, added
+directly to `metalinguistic_nouns.json` alongside `tense`/`aspect`/
+`person`/`subject`, not promoted), `form` (`VERB`, a homograph of the
+existing metalinguistic `NOUN` sense), and 26 promoted general nouns
+and verbs (`idea`, `group`, `stand`, `occur`, ...) plus 5 more nouns
+found while giving the new verbs the same `NOMINALISATION` treatment
+as the batch above (`occur` -> `occurrence`, `produce` -> `production`,
+...). Select `occur` to see both a `NOMINALISATION` sentence
+("occurrence is the noun form of occur") and a `THIRD_PERSON_FORM` one
+("occurs is the third-person form of occur") -- the latter
+retroactively links `occurs`, seeded unlinked in the definition-gap
+batch since its lemma didn't exist yet. See `examples/README.md`'s
+Common core vocabulary section for the full audit, including which
+words it flagged as missing that turned out already seeded.
+
 It also demonstrates several `DictionaryView` display additions made
 for this exercise, all additive and optional (existing call sites
 unaffected):
@@ -105,7 +125,7 @@ unaffected):
   Every word and relationship is labelled "Common" or "Physics"
   (`word.is_common`); filtering to "Physics" isolates exactly the 137
   hydrated (or conflict-resolved) words, filtering to "Common" the
-  inherited 772.
+  inherited 835.
 - A one-sentence plain-English gloss under each relationship row in
   the detail panel, phrased per kind -- select `particle_2` to see
   "particle is a type of matter" (HYPERNYM), "nucleus is part of atom"
@@ -131,16 +151,18 @@ unaffected):
 Regenerate with:
 
 ```
-python3 examples/verb_nominalisation_seeding.py
+python3 examples/common_core_vocabulary_seeding.py
 ```
 
 run from the repository root, which seeds the Physics Domain
 (`physics_domain_seeding.run()`), promotes/hydrates the definition-gap
 vocabulary (`definition_gap_vocabulary_seeding.run()`), adds the
-NOMINALISATION pass on top of both, and regenerates this file directly
-from the result. `python3 examples/physics_domain_seeding.py` and
-`python3 examples/definition_gap_vocabulary_seeding.py` still work and
-still write their own report files, but neither regenerates this file
+NOMINALISATION pass (`verb_nominalisation_seeding.run()`), adds the
+common-core vocabulary pass on top of all three, and regenerates this
+file directly from the result. `python3 examples/physics_domain_seeding.py`,
+`python3 examples/definition_gap_vocabulary_seeding.py`, and
+`python3 examples/verb_nominalisation_seeding.py` still work and still
+write their own report files, but none of them regenerates this file
 any more -- each would only reflect an earlier, less complete state of
 the same Physics Domain.
 

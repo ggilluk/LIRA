@@ -3,7 +3,7 @@
   "language_code": "en",
   "part_of_speech": "NOUN",
   "closed_class_kind": "metalinguistic_term",
-  "count": 61,
+  "count": 64,
   "words": [
     {
       "lexical_form": "word",
@@ -2186,6 +2186,114 @@
       "pronunciations": [],
       "syllable_representation": null,
       "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Metalinguistic Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "lexical_form": "mood",
+      "normalised_form": "mood",
+      "text": "mood",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "NOUN",
+      "closed_class": false,
+      "closed_class_kind": "metalinguistic_term",
+      "definition": "A temporary state of mind or feeling; in grammar, a verb form indicating whether an action is stated as fact, command, or possibility.",
+      "gloss": "A temporary state of mind or feeling; in grammar, a verb form indicating whether an action is stated as fact, command, or possibility.",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Metalinguistic Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "lexical_form": "voice",
+      "normalised_form": "voice",
+      "text": "voice",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "NOUN",
+      "closed_class": false,
+      "closed_class_kind": "metalinguistic_term",
+      "definition": "The sound produced through a person's mouth, used for speech; in grammar, the form of a verb indicating whether the subject performs or receives the action.",
+      "gloss": "The sound produced through a person's mouth, used for speech; in grammar, the form of a verb indicating whether the subject performs or receives the action.",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Metalinguistic Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "lexical_form": "predicate",
+      "normalised_form": "predicate",
+      "text": "predicate",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "NOUN",
+      "closed_class": false,
+      "closed_class_kind": "metalinguistic_term",
+      "definition": "The part of a sentence or clause that states something about the subject, typically including the verb.",
+      "gloss": "The part of a sentence or clause that states something about the subject, typically including the verb.",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 4,
       "stress_pattern": null,
       "frequency_value": null,
       "frequency_scale": null,

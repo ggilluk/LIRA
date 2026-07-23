@@ -21,8 +21,8 @@ against a specific Domain's already-seeded `Word`s, not a store of
 
 | File | Category | Kinds seeded | Count |
 |------|----------|----------------|-------|
-| `morphological_relationships.json` | Morphological (6.2.1) | Person, tense, participle, and plural forms (`be`/`have`/`do` conjugations, `this`/`that` plurals); comparative/superlative forms (`few`/`many`/`much`/`little`); pronoun paradigm forms (`PRONOUN_OBJECT_FORM`, `PRONOUN_SUBJECT_FORM`, `PRONOUN_POSSESSIVE_DETERMINER_FORM`, `PRONOUN_POSSESSIVE_FORM`, `PRONOUN_REFLEXIVE_FORM`); `LEMMA_FORM` (every edge's materialised reverse -- see Symmetric and inverse edges); 25 base/derived pairs among the promoted words added in `asset_version 1.5.0`; 36 `NOMINALISATION` pairs (`achieve`/`achievement`, `identify`/`identification`, ...) added in `asset_version 1.6.0` (see Version below) | 218 |
-| `semantic_relationships.json` | Lexical Semantic (6.2.2) | `ANTONYM` (spatial/temporal opposites: above/below, before/after, ...; discrete/continuous, high/low, push/pull, negative/positive among the promoted words) and `SYNONYM` (equivalent prepositions: beneath/under, amid/among, due to/owing to, ...; the discourse-marker pair however/nevertheless), each materialised in both directions | 32 |
+| `morphological_relationships.json` | Morphological (6.2.1) | Person, tense, participle, and plural forms (`be`/`have`/`do` conjugations, `this`/`that` plurals); comparative/superlative forms (`few`/`many`/`much`/`little`); pronoun paradigm forms (`PRONOUN_OBJECT_FORM`, `PRONOUN_SUBJECT_FORM`, `PRONOUN_POSSESSIVE_DETERMINER_FORM`, `PRONOUN_POSSESSIVE_FORM`, `PRONOUN_REFLEXIVE_FORM`); `LEMMA_FORM` (every edge's materialised reverse -- see Symmetric and inverse edges); 25 base/derived pairs among the promoted words added in `asset_version 1.5.0`; 36 `NOMINALISATION` pairs added in `asset_version 1.6.0`; 6 more `NOMINALISATION` pairs plus 1 `THIRD_PERSON_FORM` pair (`occur`/`occurs`) added in `asset_version 1.7.0` (see Version below) | 232 |
+| `semantic_relationships.json` | Lexical Semantic (6.2.2) | `ANTONYM` (spatial/temporal opposites: above/below, before/after, ...; discrete/continuous, high/low, push/pull, negative/positive among the promoted words) and `SYNONYM` (equivalent prepositions: beneath/under, amid/among, due to/owing to, ...; the discourse-marker pair however/nevertheless; idea/concept among the promoted words), each materialised in both directions | 34 |
 | `orthographic_relationships.json` | Orthographic and Naming (6.2.3) | `CONTRACTION` -- not/n't, plus each full contraction's component words (do/not -> don't, can/not -> can't, I/am -> I'm, it/is/has -> it's, is/not -> isn't, was/not -> wasn't, had/not -> hadn't) | 16 |
 
 No `HYPERNYM`, `MERONYM`, or `TROPONYM` relationships are seeded for
@@ -34,7 +34,7 @@ pronoun paradigms, and near-synonymy do.
 `PRONOUN_RECIPROCAL_FORM` is defined (6.2.1, Pronoun Form) but not
 currently seeded in either direction -- see Known gaps.
 
-Total relationships: **266**.
+Total relationships: **282**.
 
 ## Symmetric and inverse edges
 
@@ -221,6 +221,23 @@ adds these seven relationships -- all now present in
 `orthographic_relationships.json` above.
 
 ## Version
+
+`v1` / `schema_version 1.0.0` / `asset_version 1.7.0` (266 -> 282
+relationships, alongside `../README.md`'s `asset_version 1.12.0`
+common-core vocabulary batch: 6 more `NOMINALISATION` pairs
+(`occur`/`occurrence`, `produce`/`production`, `introduce`/`introduction`,
+`contain`/`containment`, `accompany`/`accompaniment`,
+`receive`/`reception`), each with its reciprocal `LEMMA_FORM` edge,
+taking `morphological_relationships.json` 218 -> 230; 1
+`THIRD_PERSON_FORM` pair (`occur`/`occurs`) plus reciprocal
+`LEMMA_FORM`, retroactively linking `occurs` -- seeded unlinked in
+`asset_version 1.5.0`, its true lemma `occur` didn't exist yet -- to
+its now-seeded lemma, taking `morphological_relationships.json` 230 ->
+232; and 1 `SYNONYM` pair (`idea`/`concept`), both directions, taking
+`semantic_relationships.json` 32 -> 34. `orthographic_relationships.json`
+is unchanged at 16. `examples/common_core_vocabulary.py` has the full
+reasoning, including which words a user-supplied audit flagged as
+missing but turned out already seeded from earlier batches.
 
 `v1` / `schema_version 1.0.0` / `asset_version 1.6.0` (196 -> 266
 relationships, alongside `../README.md`'s `asset_version 1.11.0`

@@ -2,7 +2,7 @@
   "schema_version": "1.0.0",
   "language_code": "en",
   "relationship_category": "morphological",
-  "count": 218,
+  "count": 232,
   "relationships": [
     {
       "source_lexical_form": "be",
@@ -1092,6 +1092,76 @@
     {
       "source_lexical_form": "subtraction",
       "target_lexical_form": "subtract",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "occur",
+      "target_lexical_form": "occurrence",
+      "relationship_kind": "NOMINALISATION"
+    },
+    {
+      "source_lexical_form": "occurrence",
+      "target_lexical_form": "occur",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "produce",
+      "target_lexical_form": "production",
+      "relationship_kind": "NOMINALISATION"
+    },
+    {
+      "source_lexical_form": "production",
+      "target_lexical_form": "produce",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "introduce",
+      "target_lexical_form": "introduction",
+      "relationship_kind": "NOMINALISATION"
+    },
+    {
+      "source_lexical_form": "introduction",
+      "target_lexical_form": "introduce",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "contain",
+      "target_lexical_form": "containment",
+      "relationship_kind": "NOMINALISATION"
+    },
+    {
+      "source_lexical_form": "containment",
+      "target_lexical_form": "contain",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "accompany",
+      "target_lexical_form": "accompaniment",
+      "relationship_kind": "NOMINALISATION"
+    },
+    {
+      "source_lexical_form": "accompaniment",
+      "target_lexical_form": "accompany",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "receive",
+      "target_lexical_form": "reception",
+      "relationship_kind": "NOMINALISATION"
+    },
+    {
+      "source_lexical_form": "reception",
+      "target_lexical_form": "receive",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "occur",
+      "target_lexical_form": "occurs",
+      "relationship_kind": "THIRD_PERSON_FORM"
+    },
+    {
+      "source_lexical_form": "occurs",
+      "target_lexical_form": "occur",
       "relationship_kind": "LEMMA_FORM"
     }
   ]

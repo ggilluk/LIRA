@@ -36,13 +36,13 @@ working vocabulary immediately, not to be a system of record.
 | `punctuation.json` | `.`, `!`, `?`, `;`, `,` -- see Punctuation is a Word below | 5 |
 | `symbols.json` | `$`, `%`, `&`, `@`, `+`, `=`, ... -- common typographic/mathematical symbols | 25 |
 | `numerals.json` | `zero` through `trillion` -- the base numeral words all other numbers are compositionally built from | 33 |
-| `metalinguistic_nouns.json` | Open-class `NOUN` terms for grammar itself, including relationship-kind terms (`synonym`, `lemma`, `contraction`, ...) and `true`/`false`/`null` -- see Supplementary files below | 61 |
-| `metalinguistic_verbs.json` | Open-class `VERB` terms for grammar itself, including mathematics/logic operator verbs (`add`, `xor`, `nand`, ...) | 43 |
+| `metalinguistic_nouns.json` | Open-class `NOUN` terms for grammar itself, including relationship-kind terms (`synonym`, `lemma`, `contraction`, ...), `true`/`false`/`null`, and `mood`/`voice`/`predicate` -- see Supplementary files below | 64 |
+| `metalinguistic_verbs.json` | Open-class `VERB` terms for grammar itself, including mathematics/logic operator verbs (`add`, `xor`, `nand`, ...) and `form` (a homograph of the `NOUN` sense, "to form a sentence") | 44 |
 | `metalinguistic_adjectives.json` | Open-class `ADJECTIVE` terms for grammar itself | 28 |
 | `metalinguistic_adverbs.json` | Open-class `ADVERB` terms for grammar itself, plus four closed-class discourse markers (however, therefore, moreover, nevertheless -- see Discourse markers below) | 17 |
 | `metalinguistic_proper_nouns.json` | A single `PROPER_NOUN` entry, `English` -- see Supplementary files below | 1 |
 | `metalinguistic_interjections.json` | Open-class `INTERJECTION` terms (`yes`, `no`, `please`, `alas`, `hurrah`, `huzzah`, `oh`, `ah`, `wow`, `hey`, `ouch`, `hmm`, `well`) -- see Supplementary files below | 13 |
-| `promoted_words.json` | Open-class words promoted from Domain vocabularies (started empty; see Version below) | 254 |
+| `promoted_words.json` | Open-class words promoted from Domain vocabularies (started empty; see Version below) | 280 |
 
 Mandatory closed-class total: **388** (37 + 99 + 36 + 94 + 7 + 36 + 16 + 5 + 25 + 33).
 The six `metalinguistic_*.json` files and `promoted_words.json` are
@@ -53,7 +53,7 @@ figure `WordSeeder` asserts: it's whatever `determiners.json` through
 `numerals.json`'s counts actually sum to, cross-checked against
 `manifest.json`'s `total_lexical_forms` -- see
 `vocabulary/role/word_seeder.py`'s `validate_assets()`. A freshly
-seeded `Dictionary` currently ends up with 388 + 163 + 254 = **805**
+seeded `Dictionary` currently ends up with 388 + 167 + 280 = **835**
 `Word`s (mandatory + supplementary + promoted) -- unlike the mandatory
 and supplementary totals, the promoted total isn't manifest-enforced
 (`promote_word`/`demote_word` mutate `promoted_words.json` directly;
@@ -261,6 +261,7 @@ mandatory files:
 |------|------------------|-------------|
 | `be`, `have`, `do` | `AUXILIARY` (`auxiliaries.json`) | `VERB` (`metalinguistic_verbs.json`) |
 | `cause`, `result` | `NOUN` (`metalinguistic_nouns.json`) | `VERB` (`metalinguistic_verbs.json`) |
+| `form` | `NOUN` (`metalinguistic_nouns.json`) | `VERB` (`metalinguistic_verbs.json`) |
 | `past`, `opposite` | `PREPOSITION` (`prepositions.json`) | `ADJECTIVE` (`metalinguistic_adjectives.json`) |
 | `plus`, `minus` | `PREPOSITION` (`prepositions.json`) | `VERB` (`metalinguistic_verbs.json`, math operator sense) |
 | `and`, `or`, `nor` | `CONJUNCTION` (`coordinating_conjunctions.json`) | `VERB` (`metalinguistic_verbs.json`, logic operator sense) |
@@ -430,6 +431,50 @@ by promotion or demotion. Closed-class words are never promoted:
 they're already part of the mandatory cache.
 
 ## Version
+
+`v1` / `schema_version 2.0.0` / `asset_version 1.12.0` -- a user-supplied
+audit of words the Common Vocabulary Cache's own definitions repeatedly
+depend on but never seeded (`examples/common_core_vocabulary.py` has
+the full classification and reasoning). Checked against the live
+Dictionary before acting on anything, not trusted at face value --
+several of the audit's "missing" words (`action`, `state`, `part`,
+`question`, `world`, `reference`, `connection`, `represent`, `refer`,
+`express`, `describe`, `modify`, `specify`, `relate`, `join`,
+`perform`, `indicate`) turned out already seeded from the two previous
+batches, and `tense`/`person`/`subject` were already metalinguistic
+terms. Three genuine grammar terms -- `mood`, `voice`, `predicate` --
+added to `metalinguistic_nouns.json` directly (61 -> 64), the same file
+`tense`/`aspect`/`person`/`subject` already live in, not
+`promoted_words.json`: these describe grammar itself, not general
+vocabulary. `form` (`VERB`, "to form a sentence") added to
+`metalinguistic_verbs.json` (43 -> 44) as a homograph of the existing
+`NOUN` sense, the same `cause`/`result`-style pattern that file already
+documents. `promoted_words.json` grew from 254 to 280: 16 general nouns
+(`idea`, `group`, `statement`, `concept`, `occurrence`, ...) and 10
+general verbs (`stand`, `contain`, `produce`, `occur`, ...) the audit
+named, plus 5 more nouns found while giving the new verbs the same
+`NOMINALISATION` treatment as `asset_version 1.11.0`
+(`production`, `introduction`, `containment`, `accompaniment`,
+`reception` -- not in the original audit, a natural extension of it).
+Not added: a `VERB` sense for `name`/`point`/`state` -- all three
+already have a promoted `NOUN` sense, and `promote_word`/
+`validate_assets()` reject a second promoted entry sharing a
+lexical_form regardless of part_of_speech (`promoted_lexical_forms` is
+a flat set of lexical_form strings, unlike the mandatory/supplementary
+files' own `(lexical_form, part_of_speech)` uniqueness check) --
+`form` sidesteps this by going through a metalinguistic file instead;
+these three don't have one to fall back on. Surfaced, not fixed.
+Relationships: 6 `NOMINALISATION` pairs (`occur`/`occurrence`,
+`produce`/`production`, `introduce`/`introduction`,
+`contain`/`containment`, `accompany`/`accompaniment`,
+`receive`/`reception`) plus reciprocal `LEMMA_FORM`; 1
+`THIRD_PERSON_FORM` pair (`occur`/`occurs`, retroactively linking
+`occurs` -- added unlinked in `asset_version 1.10.0`, its true lemma
+didn't exist yet -- to its now-seeded lemma) plus reciprocal
+`LEMMA_FORM`; 1 `SYNONYM` pair (`idea`/`concept`, both directions) --
+see `relationships/README.md`'s own Version section. Every seeded
+Dictionary now carries 388 + 167 + 280 = **835** total: 388 mandatory +
+167 supplementary + 280 promoted.
 
 `v1` / `schema_version 2.0.0` / `asset_version 1.11.0` -- `promoted_words.json`
 grew from 221 to 254 entries: 34 new abstract nouns for the

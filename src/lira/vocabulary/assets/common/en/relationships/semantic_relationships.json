@@ -2,7 +2,7 @@
   "schema_version": "1.0.0",
   "language_code": "en",
   "relationship_category": "semantic",
-  "count": 32,
+  "count": 34,
   "relationships": [
     {
       "source_lexical_form": "above",
@@ -163,6 +163,16 @@
       "source_lexical_form": "positive",
       "target_lexical_form": "negative",
       "relationship_kind": "ANTONYM"
+    },
+    {
+      "source_lexical_form": "idea",
+      "target_lexical_form": "concept",
+      "relationship_kind": "SYNONYM"
+    },
+    {
+      "source_lexical_form": "concept",
+      "target_lexical_form": "idea",
+      "relationship_kind": "SYNONYM"
     }
   ]
 }

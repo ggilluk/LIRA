@@ -3,7 +3,7 @@
   "language_code": "en",
   "part_of_speech": "VERB",
   "closed_class_kind": "metalinguistic_term",
-  "count": 43,
+  "count": 44,
   "words": [
     {
       "lexical_form": "be",
@@ -1532,6 +1532,42 @@
       "usage_notes": [],
       "register_codes": [
         "TECHNICAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Metalinguistic Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "lexical_form": "form",
+      "normalised_form": "form",
+      "text": "form",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "VERB",
+      "closed_class": false,
+      "closed_class_kind": "metalinguistic_term",
+      "definition": "To bring together the parts or elements of something so as to constitute it; to make or shape.",
+      "gloss": "To bring together the parts or elements of something so as to constitute it; to make or shape.",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
       ],
       "editorial_labels": [],
       "dialect_codes": [],
