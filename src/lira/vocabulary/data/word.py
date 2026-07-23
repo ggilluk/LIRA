@@ -55,6 +55,26 @@ class Word(LinguisticUnit):
     part_of_speech: PartOfSpeech = field(kw_only=True)
 
     uuid: Identifier = field(default_factory=lambda: Identifier(value=str(uuid_module.uuid4())), kw_only=True)
+
+    # The persistent Qualified Word Identity (Domain + Lexical Form +
+    # part_of_speech) -- distinct from `uuid` above, which is deliberately
+    # NOT stable: `uuid` is a per-Domain-graph-instance identity, freshly
+    # regenerated every time a Word is copied into a Domain's own
+    # Dictionary (Dictionary.seed_from, WordSeeder.seed_closed_class_words),
+    # so that two Domains' independent copies of "be" are never confused
+    # as the same graph node. `entry_id` is the opposite: assigned once,
+    # when a Word is first authored (an asset-file entry, a promotion, a
+    # hydration, or a conflict-resolution registration), stored in the
+    # Common Vocabulary Cache's asset JSON for every entry that lives
+    # there, and left untouched by every later copy -- the same
+    # underlying vocabulary entry keeps the same entry_id no matter how
+    # many Domains end up holding their own runtime copy of it. This is
+    # what lets a Dictionary tell two distinct senses of the same
+    # (domain, part_of_speech, lexical_form) apart (vocabulary/documentation/README.md,
+    # 9.2) without needing to mangle lexical_form into something like
+    # "particle_2" to do it.
+    entry_id: Identifier = field(default_factory=lambda: Identifier(value=str(uuid_module.uuid4())), kw_only=True)
+
     version: Text = field(default_factory=lambda: Text(value="1.0"), kw_only=True)
     language_code: Code = field(default_factory=lambda: Code(value="en"), kw_only=True)
     lexical_form: Optional[Text] = field(default=None, kw_only=True)

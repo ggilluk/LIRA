@@ -158,7 +158,8 @@ There is no separate `Punctuation` class. A punctuation mark (".", "!", "?", ";"
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `uuid` | `Identifier` | Yes | Stable identifier |
+| `uuid` | `Identifier` | Yes | Per-Domain-graph-instance identifier -- freshly regenerated every time this Word is copied into a Domain's own Dictionary (`Dictionary.seed_from`, `WordSeeder.seed_closed_class_words`), so relationship edges within one Domain's graph never get confused with another Domain's independent copy of the same word |
+| `entry_id` | `Identifier` | Yes | The persistent Qualified Word Identity (Domain + part_of_speech + lexical form, 9.2) -- assigned once, when a Word is first authored (a Common Vocabulary Cache asset entry, a promotion, a hydration, or a conflict-resolution registration), stored verbatim in the cache, and left unchanged by every later copy, unlike `uuid` above. Lets a caller (or the UI) tell two distinct senses of the same (domain, part_of_speech, lexical_form) apart without needing to mangle `lexical_form` to do it |
 | `version` | `Text` | Yes | Word version |
 | `language_code` | `Code` | Yes | Language of the lexical form |
 | `text` | `Text` | Yes | Raw lexical unit text, carried forward from the superseded `Word` definition (there, inherited from Linguistics's `LinguisticUnit` base) |
@@ -523,7 +524,7 @@ Every non-identity, non-enum attribute in sections 3–7 resolves to one of the 
 
 | Value Object | Meaning | Used for |
 |---------------|---------|----------|
-| `Identifier` | A stable reference to another record or external resource | `uuid`, `source_word_id`, `target_word_id`, `external_identifier`, `reference_uri`, `licence_identifier` |
+| `Identifier` | A stable reference to another record or external resource | `uuid`, `entry_id`, `source_word_id`, `target_word_id`, `external_identifier`, `reference_uri`, `licence_identifier` |
 | `Text` | Free-form textual content | `version`, `lexical_form`, `normalised_form`, `syllable_representation`, `stress_pattern`, `gloss`, `definition`, `usage_notes`, `etymology_text`, `first_recorded_use`, `notation`, `value` (Pronunciation), `source_name`, `source_version`, `name`/`value` (AttributeValue) |
 | `Code` | A value drawn from a defined classification or code list | `language_code`, `script_code`, `dialect_codes`, `frequency_scale`, `dialect_code` (Pronunciation) |
 | `Number` | A numeric quantity | `syllable_count`, `frequency_value` |
@@ -557,19 +558,23 @@ different meaning), resolve it in this order:
 |-------|----------|-------------------|
 | 1 | Identify an existing Domain that already owns the conflicting sense | Another `Domain` in `known_domains` (or hosted on the same `LIRAHost`) already has a `Word` for this exact sense -- reference that `Word` there instead of duplicating it. |
 | 2 | Create a new Domain for the sense | No existing `Domain` owns it, but the sense is significant enough to deserve its own `Domain` (e.g. a whole new subject area) -- see 9.3, `LIRAHost.get_or_create_domain`. |
-| 3 | Modify the word's name | Neither of the above applies -- the two senses coexist in the same `Dictionary`, disambiguated by a sense-numbered suffix on `lexical_form` (`bank` / `bank_2` / `bank_3`, ...), while `text` (the raw surface form a tokenizer produces) is left untouched on both. |
+| 3 | Register both, distinguished by identity | Neither of the above applies -- the two senses coexist in the same `Dictionary`, both keeping the identical, unmodified `lexical_form` and `text`, distinguished only by their own `entry_id` (4.2). |
 
 Strategies 1 and 2 are judgement calls -- whether a conflicting sense
 warrants an entirely different `Domain`, or just a second entry in the
 same `Dictionary`, isn't something derivable from the words alone.
-Strategy 3 (`DictionaryProcessor.register_conflicting_sense`,
-`Dictionary.next_available_lexical_form`) is the mechanical fallback:
-always available, requires no semantic judgement, but means two (or
-more) `Word` entries coexist under the same `text`, distinguished only
-by their sense-numbered `lexical_form`. `Dictionary.lookup(text)`
-still resolves to just one of them (whichever was appended first) --
-for a caller that genuinely needs every sense, `Dictionary.lookup_all(text)`
-returns all of them, unlike `lookup`.
+Strategy 3 (`DictionaryProcessor.register_conflicting_sense`) is the
+mechanical fallback: always available, requires no semantic judgement,
+but means two (or more) `Word` entries coexist under the same `text`
+*and* the same `lexical_form`, distinguished only by their own
+`entry_id`. `Dictionary.lookup(text)` still resolves to just one of
+them (whichever was appended first) -- for a caller that genuinely
+needs every sense, `Dictionary.lookup_all(text)` returns all of them,
+unlike `lookup`. (Before `entry_id` existed, this strategy mangled
+`lexical_form` into a sense-numbered suffix instead -- `bank` /
+`bank_2` / `bank_3` -- to make the two senses distinguishable by name;
+see `assets/common/en/README.md`'s Version section, `asset_version 1.14.0`,
+for why that was replaced.)
 
 This is exactly the limitation `linguistics/documentation/README.md`'s
 "Semantic decomposition and semantic disambiguation" TODO is tracking

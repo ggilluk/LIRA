@@ -6,6 +6,7 @@
   "count": 37,
   "words": [
     {
+      "entry_id": "0cc62e9f-c9de-4aac-abc8-22409f4a54c8",
       "lexical_form": "the",
       "normalised_form": "the",
       "text": "the",
@@ -42,6 +43,7 @@
       ]
     },
     {
+      "entry_id": "c3bb1d82-6695-40e8-9709-81c47764c4a3",
       "lexical_form": "a",
       "normalised_form": "a",
       "text": "a",
@@ -78,6 +80,7 @@
       ]
     },
     {
+      "entry_id": "02a4a407-e14c-4ab7-a478-fa59b65600be",
       "lexical_form": "an",
       "normalised_form": "an",
       "text": "an",
@@ -114,6 +117,7 @@
       ]
     },
     {
+      "entry_id": "a1c6fc07-73db-4dc7-bcb4-eea3cf47eaa7",
       "lexical_form": "this",
       "normalised_form": "this",
       "text": "this",
@@ -150,6 +154,7 @@
       ]
     },
     {
+      "entry_id": "8692b033-9192-410f-811b-71375e9d94ce",
       "lexical_form": "that",
       "normalised_form": "that",
       "text": "that",
@@ -186,6 +191,7 @@
       ]
     },
     {
+      "entry_id": "4af6ceec-dd64-4624-b525-07a9b2e01ce9",
       "lexical_form": "these",
       "normalised_form": "these",
       "text": "these",
@@ -222,6 +228,7 @@
       ]
     },
     {
+      "entry_id": "7477c3a6-3bdc-4b23-95f7-fb11292526d9",
       "lexical_form": "those",
       "normalised_form": "those",
       "text": "those",
@@ -258,6 +265,7 @@
       ]
     },
     {
+      "entry_id": "d568ec75-411f-4311-8fb9-bd64f3e38b3c",
       "lexical_form": "my",
       "normalised_form": "my",
       "text": "my",
@@ -294,6 +302,7 @@
       ]
     },
     {
+      "entry_id": "c5b5dafc-60ac-424e-9ff0-57979e0fe632",
       "lexical_form": "your",
       "normalised_form": "your",
       "text": "your",
@@ -330,6 +339,7 @@
       ]
     },
     {
+      "entry_id": "bc501dc4-350d-4e82-801b-7291f2ce9e7f",
       "lexical_form": "his",
       "normalised_form": "his",
       "text": "his",
@@ -366,6 +376,7 @@
       ]
     },
     {
+      "entry_id": "98f17467-683a-42d6-8da6-51a556a52cb5",
       "lexical_form": "her",
       "normalised_form": "her",
       "text": "her",
@@ -402,6 +413,7 @@
       ]
     },
     {
+      "entry_id": "5257f29e-92b5-4c07-b03e-bc9c134f73b8",
       "lexical_form": "its",
       "normalised_form": "its",
       "text": "its",
@@ -438,6 +450,7 @@
       ]
     },
     {
+      "entry_id": "d10078e1-4038-4ebd-aa4c-3b713b5055d2",
       "lexical_form": "our",
       "normalised_form": "our",
       "text": "our",
@@ -474,6 +487,7 @@
       ]
     },
     {
+      "entry_id": "2c91ce4b-742f-426f-bdba-6aefc5fd0739",
       "lexical_form": "their",
       "normalised_form": "their",
       "text": "their",
@@ -510,6 +524,7 @@
       ]
     },
     {
+      "entry_id": "bf01366e-96a9-4815-9c66-ac96956cb981",
       "lexical_form": "some",
       "normalised_form": "some",
       "text": "some",
@@ -546,6 +561,7 @@
       ]
     },
     {
+      "entry_id": "92d2c4f2-bcb8-4fbe-b175-03886d7dea09",
       "lexical_form": "any",
       "normalised_form": "any",
       "text": "any",
@@ -582,6 +598,7 @@
       ]
     },
     {
+      "entry_id": "89c602ed-58d1-40e3-9eec-ef15269859ef",
       "lexical_form": "no",
       "normalised_form": "no",
       "text": "no",
@@ -618,6 +635,7 @@
       ]
     },
     {
+      "entry_id": "7813b20e-7288-4134-9e58-06586b7c524a",
       "lexical_form": "every",
       "normalised_form": "every",
       "text": "every",
@@ -654,6 +672,7 @@
       ]
     },
     {
+      "entry_id": "53b44ff9-9d3d-44ce-ab4f-0fb301dd2c1b",
       "lexical_form": "each",
       "normalised_form": "each",
       "text": "each",
@@ -690,6 +709,7 @@
       ]
     },
     {
+      "entry_id": "ed3731e6-f8ef-4170-a15f-1319022e58a9",
       "lexical_form": "either",
       "normalised_form": "either",
       "text": "either",
@@ -726,6 +746,7 @@
       ]
     },
     {
+      "entry_id": "eb8ee458-d7d7-4484-b349-9ec64a980874",
       "lexical_form": "neither",
       "normalised_form": "neither",
       "text": "neither",
@@ -762,6 +783,7 @@
       ]
     },
     {
+      "entry_id": "4144c220-317b-4632-8b65-03815d3d84a5",
       "lexical_form": "all",
       "normalised_form": "all",
       "text": "all",
@@ -798,6 +820,7 @@
       ]
     },
     {
+      "entry_id": "62d41b72-f0d0-4afd-a2ca-ca4969ccf98a",
       "lexical_form": "both",
       "normalised_form": "both",
       "text": "both",
@@ -834,6 +857,7 @@
       ]
     },
     {
+      "entry_id": "3f3381d5-1675-4cf3-8a01-96e751a7e3f6",
       "lexical_form": "few",
       "normalised_form": "few",
       "text": "few",
@@ -870,6 +894,7 @@
       ]
     },
     {
+      "entry_id": "5f5929d5-e94b-481c-9f1a-f7b611361b1c",
       "lexical_form": "several",
       "normalised_form": "several",
       "text": "several",
@@ -906,6 +931,7 @@
       ]
     },
     {
+      "entry_id": "cc19adcc-b77d-4e83-a6f8-aa3b6160ef4c",
       "lexical_form": "many",
       "normalised_form": "many",
       "text": "many",
@@ -942,6 +968,7 @@
       ]
     },
     {
+      "entry_id": "38a567cf-c9a6-44a1-a28d-bef30c0f2cb9",
       "lexical_form": "much",
       "normalised_form": "much",
       "text": "much",
@@ -978,6 +1005,7 @@
       ]
     },
     {
+      "entry_id": "5356d6cd-2965-4d9a-a08c-d0e3b0c13231",
       "lexical_form": "most",
       "normalised_form": "most",
       "text": "most",
@@ -1014,6 +1042,7 @@
       ]
     },
     {
+      "entry_id": "f3b496d4-4be2-4707-960c-553d8908a80a",
       "lexical_form": "other",
       "normalised_form": "other",
       "text": "other",
@@ -1050,6 +1079,7 @@
       ]
     },
     {
+      "entry_id": "44f34bb1-5a96-4caa-a193-029715a10d59",
       "lexical_form": "another",
       "normalised_form": "another",
       "text": "another",
@@ -1086,6 +1116,7 @@
       ]
     },
     {
+      "entry_id": "fa55ff72-9e2d-471a-9ac1-b035128f676a",
       "lexical_form": "such",
       "normalised_form": "such",
       "text": "such",
@@ -1122,6 +1153,7 @@
       ]
     },
     {
+      "entry_id": "7163e2ae-7547-44cd-bba2-660aac28c0d5",
       "lexical_form": "enough",
       "normalised_form": "enough",
       "text": "enough",
@@ -1158,6 +1190,7 @@
       ]
     },
     {
+      "entry_id": "30b5feb6-10bf-4c79-b381-672a018a9967",
       "lexical_form": "various",
       "normalised_form": "various",
       "text": "various",
@@ -1194,6 +1227,7 @@
       ]
     },
     {
+      "entry_id": "95841d99-986c-4685-9648-d2f925f4f246",
       "lexical_form": "certain",
       "normalised_form": "certain",
       "text": "certain",
@@ -1230,6 +1264,7 @@
       ]
     },
     {
+      "entry_id": "261302df-c7c1-4120-a9de-9e38be0a3c6d",
       "lexical_form": "whatever",
       "normalised_form": "whatever",
       "text": "whatever",
@@ -1266,6 +1301,7 @@
       ]
     },
     {
+      "entry_id": "9b78438d-b90e-424e-96c6-cfcc99a2b6fb",
       "lexical_form": "little",
       "normalised_form": "little",
       "text": "little",
@@ -1302,6 +1338,7 @@
       ]
     },
     {
+      "entry_id": "a7c3b5c9-9328-4004-90d5-b5597f946453",
       "lexical_form": "fewest",
       "normalised_form": "fewest",
       "text": "fewest",

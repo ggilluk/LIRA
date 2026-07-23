@@ -6,6 +6,7 @@
   "count": 283,
   "words": [
     {
+      "entry_id": "f7d5d34d-506b-406c-b0f0-3e22c35ec007",
       "lexical_form": "able",
       "normalised_form": "able",
       "text": "able",
@@ -42,6 +43,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "4760e1d4-b3d9-438d-bdce-fb7333c316e2",
       "lexical_form": "according",
       "normalised_form": "according",
       "text": "according",
@@ -78,6 +80,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "feb13ad3-3d46-495e-88c9-a71b34703c08",
       "lexical_form": "accounted",
       "normalised_form": "accounted",
       "text": "accounted",
@@ -114,6 +117,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "21ddf63d-1c6f-4bfd-9e2d-10c6a90f5a84",
       "lexical_form": "achieve",
       "normalised_form": "achieve",
       "text": "achieve",
@@ -150,6 +154,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "68d3ce2d-b6d4-4fa1-9d18-e0f0849c31e5",
       "lexical_form": "action",
       "normalised_form": "action",
       "text": "action",
@@ -186,6 +191,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "4a18584c-e1d0-4391-9325-a5bc16f87f3d",
       "lexical_form": "acts",
       "normalised_form": "acts",
       "text": "acts",
@@ -222,6 +228,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "ef94fbe7-ba8a-40ab-afda-61993d99a6fe",
       "lexical_form": "actual",
       "normalised_form": "actual",
       "text": "actual",
@@ -258,6 +265,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "48af0d50-4495-4ca7-b9af-5806859da38e",
       "lexical_form": "amount",
       "normalised_form": "amount",
       "text": "amount",
@@ -294,6 +302,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "83760e28-46a5-40ae-bab0-0ae2c5f6c1c1",
       "lexical_form": "answer",
       "normalised_form": "answer",
       "text": "answer",
@@ -330,6 +339,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "47848342-6287-4d23-9013-5923a57d0158",
       "lexical_form": "appear",
       "normalised_form": "appear",
       "text": "appear",
@@ -366,6 +376,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "38618ada-2766-41b0-95f6-00d23f0b1d4f",
       "lexical_form": "arising",
       "normalised_form": "arising",
       "text": "arising",
@@ -402,6 +413,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "9a406700-9aaf-477f-a9ad-e4a92dcd7456",
       "lexical_form": "arrives",
       "normalised_form": "arrives",
       "text": "arrives",
@@ -438,6 +450,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "e7caf43f-282e-4bc8-8f34-f657a76e095c",
       "lexical_form": "assemble",
       "normalised_form": "assemble",
       "text": "assemble",
@@ -474,6 +487,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "c363425b-82e1-43d4-bb31-95536eeb14e5",
       "lexical_form": "assign",
       "normalised_form": "assign",
       "text": "assign",
@@ -510,6 +524,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "aee74fae-ad79-42ec-a96f-6dc43fed9404",
       "lexical_form": "attribute",
       "normalised_form": "attribute",
       "text": "attribute",
@@ -546,6 +561,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "1ca19f6f-d035-41ae-8472-83114ae1f933",
       "lexical_form": "basic",
       "normalised_form": "basic",
       "text": "basic",
@@ -582,6 +598,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "c24c19f8-155d-4af3-8313-6fd212db08f8",
       "lexical_form": "bear",
       "normalised_form": "bear",
       "text": "bear",
@@ -618,6 +635,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "6baec59c-8935-4100-9c25-c91f8b42e6ae",
       "lexical_form": "become",
       "normalised_form": "become",
       "text": "become",
@@ -654,6 +672,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "0c28028e-ee0c-41fa-91bf-2c5fb8c9ae37",
       "lexical_form": "behaviour",
       "normalised_form": "behaviour",
       "text": "behaviour",
@@ -690,6 +709,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "b352749d-7620-4b6a-b930-14f6c0bffb5b",
       "lexical_form": "belonging",
       "normalised_form": "belonging",
       "text": "belonging",
@@ -726,6 +746,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "27ee5df8-bb29-4887-9ad1-5824ff2ef4f3",
       "lexical_form": "branch",
       "normalised_form": "branch",
       "text": "branch",
@@ -762,6 +783,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "6f7b30eb-6f7c-4fe5-9e65-e7c4459ed8b1",
       "lexical_form": "bring",
       "normalised_form": "bring",
       "text": "bring",
@@ -798,6 +820,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "d0982572-3293-494d-a5e7-9d13dcb62bd2",
       "lexical_form": "capacity",
       "normalised_form": "capacity",
       "text": "capacity",
@@ -834,6 +857,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "7733b3fe-94c1-4474-acce-e0fd1a3af661",
       "lexical_form": "causing",
       "normalised_form": "causing",
       "text": "causing",
@@ -870,6 +894,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "3b372143-7c5d-4b85-896b-245e60289ffe",
       "lexical_form": "central",
       "normalised_form": "central",
       "text": "central",
@@ -906,6 +931,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "d64819db-72ab-43cb-9876-95af13df3c3f",
       "lexical_form": "challenge",
       "normalised_form": "challenge",
       "text": "challenge",
@@ -942,6 +968,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "9fa9e2cd-a9b6-4d4f-98b6-9d02e95ad188",
       "lexical_form": "change",
       "normalised_form": "change",
       "text": "change",
@@ -978,6 +1005,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "935d3e1a-e4a9-4fbe-9083-c8bde444d2d8",
       "lexical_form": "changes",
       "normalised_form": "changes",
       "text": "changes",
@@ -1014,6 +1042,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "9cf13aa3-3601-495e-a109-5a3f2359a5b9",
       "lexical_form": "changing",
       "normalised_form": "changing",
       "text": "changing",
@@ -1050,6 +1079,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "d035303e-ffa6-49d1-ae89-f9317a88f4f1",
       "lexical_form": "chemical",
       "normalised_form": "chemical",
       "text": "chemical",
@@ -1086,6 +1116,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "078b24dc-2011-4336-a864-2692fa6f6b30",
       "lexical_form": "closer",
       "normalised_form": "closer",
       "text": "closer",
@@ -1122,6 +1153,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "93bd0a40-646a-4652-8eb6-745a55de5b84",
       "lexical_form": "comes",
       "normalised_form": "comes",
       "text": "comes",
@@ -1158,6 +1190,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "4137c8fc-0ff4-4912-9aea-d10ff59242e1",
       "lexical_form": "commonly",
       "normalised_form": "commonly",
       "text": "commonly",
@@ -1194,6 +1227,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "d23abf35-ec24-4a4a-9354-a5e804232fb5",
       "lexical_form": "compared",
       "normalised_form": "compared",
       "text": "compared",
@@ -1230,6 +1264,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "a11a44e2-7b4d-4105-8681-bc9d6e88d4d2",
       "lexical_form": "complete",
       "normalised_form": "complete",
       "text": "complete",
@@ -1266,6 +1301,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "fabc6f76-4ad4-4e0b-a61d-2dc032471c43",
       "lexical_form": "composed",
       "normalised_form": "composed",
       "text": "composed",
@@ -1302,6 +1338,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "b911fd92-53c8-40c9-a536-039c5886f598",
       "lexical_form": "comprising",
       "normalised_form": "comprising",
       "text": "comprising",
@@ -1338,6 +1375,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "b316f18c-5aff-406e-acce-1d9029434bfa",
       "lexical_form": "concerned",
       "normalised_form": "concerned",
       "text": "concerned",
@@ -1374,6 +1412,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "34d8c2cb-848b-4676-bcd7-0e482fa54d1e",
       "lexical_form": "configuration",
       "normalised_form": "configuration",
       "text": "configuration",
@@ -1410,6 +1449,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "72f338af-5df1-459b-be5a-3288951c5bb4",
       "lexical_form": "consecutive",
       "normalised_form": "consecutive",
       "text": "consecutive",
@@ -1446,6 +1486,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "442acf92-8698-41be-a9de-581a4ca6e215",
       "lexical_form": "considered",
       "normalised_form": "considered",
       "text": "considered",
@@ -1482,6 +1523,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "a1603123-f322-407f-a98d-d734f9ee26bb",
       "lexical_form": "consisting",
       "normalised_form": "consisting",
       "text": "consisting",
@@ -1518,6 +1560,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "22c3c3d0-8f78-4ed2-a693-f867b821db27",
       "lexical_form": "constant",
       "normalised_form": "constant",
       "text": "constant",
@@ -1554,6 +1597,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "604a8789-b099-4d77-ad7b-6252bb766bbe",
       "lexical_form": "contexts",
       "normalised_form": "contexts",
       "text": "contexts",
@@ -1590,6 +1634,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "54376f8f-3fb1-4ff2-9d86-888a273ef4e3",
       "lexical_form": "continuous",
       "normalised_form": "continuous",
       "text": "continuous",
@@ -1626,6 +1671,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "8f7d9642-2628-4570-97ec-f164c0cee8cf",
       "lexical_form": "continuously",
       "normalised_form": "continuously",
       "text": "continuously",
@@ -1662,6 +1708,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "9f92181a-0398-4355-8d82-898be9700296",
       "lexical_form": "controlled",
       "normalised_form": "controlled",
       "text": "controlled",
@@ -1698,6 +1745,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "62da808c-7a7b-4064-a205-3edbaf420cb3",
       "lexical_form": "corresponding",
       "normalised_form": "corresponding",
       "text": "corresponding",
@@ -1734,6 +1782,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "3bfb870d-e8f4-483e-9537-1faca7696a8f",
       "lexical_form": "deal",
       "normalised_form": "deal",
       "text": "deal",
@@ -1770,6 +1819,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "3facdf8a-b5b3-40f0-9bf9-8cf5c0d51a5a",
       "lexical_form": "decreases",
       "normalised_form": "decreases",
       "text": "decreases",
@@ -1806,6 +1856,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "4cd07779-105f-4b3c-b1d0-0be23baf22a3",
       "lexical_form": "deductions",
       "normalised_form": "deductions",
       "text": "deductions",
@@ -1842,6 +1893,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "0c4f47de-5943-4874-a684-9f31bcc308ca",
       "lexical_form": "degree",
       "normalised_form": "degree",
       "text": "degree",
@@ -1878,6 +1930,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "363cf742-24d0-4e1c-8f93-bfd150b67e46",
       "lexical_form": "described",
       "normalised_form": "described",
       "text": "described",
@@ -1914,6 +1967,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "0df1a561-ca09-4de6-b057-43b15888604e",
       "lexical_form": "determined",
       "normalised_form": "determined",
       "text": "determined",
@@ -1950,6 +2004,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "86e3d5ec-8b3d-4fab-a9b7-99fdce621095",
       "lexical_form": "develop",
       "normalised_form": "develop",
       "text": "develop",
@@ -1986,6 +2041,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "b35b722a-cca3-44d1-9929-52f76c789b8f",
       "lexical_form": "device",
       "normalised_form": "device",
       "text": "device",
@@ -2022,6 +2078,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "6be2e76d-a6d9-44e5-88b0-34dde8a28d74",
       "lexical_form": "difference",
       "normalised_form": "difference",
       "text": "difference",
@@ -2058,6 +2115,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "39525f06-991a-4a7e-9bc7-efb065ddf1e2",
       "lexical_form": "discrete",
       "normalised_form": "discrete",
       "text": "discrete",
@@ -2094,6 +2152,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "10165fd2-ca1e-45ea-b00e-836157780209",
       "lexical_form": "distinct",
       "normalised_form": "distinct",
       "text": "distinct",
@@ -2130,6 +2189,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "61277edd-7dc9-433d-9e96-55a5a3930e84",
       "lexical_form": "disturbance",
       "normalised_form": "disturbance",
       "text": "disturbance",
@@ -2166,6 +2226,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "04712f49-77ad-4d96-8ca0-ead9149d32f9",
       "lexical_form": "easily",
       "normalised_form": "easily",
       "text": "easily",
@@ -2202,6 +2263,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "a0e2e9b9-4e93-4660-a370-aac6cf7bbca3",
       "lexical_form": "effect",
       "normalised_form": "effect",
       "text": "effect",
@@ -2238,6 +2300,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "1f8155ef-34f9-498f-a28b-8387d7b3572a",
       "lexical_form": "effects",
       "normalised_form": "effects",
       "text": "effects",
@@ -2274,6 +2337,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "4dc75ed5-b174-41be-a241-b42f0cdd1927",
       "lexical_form": "effort",
       "normalised_form": "effort",
       "text": "effort",
@@ -2310,6 +2374,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "f847027c-8214-4e88-bb75-080b892d8c13",
       "lexical_form": "element",
       "normalised_form": "element",
       "text": "element",
@@ -2346,6 +2411,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "cadcd194-9e7f-4941-bfd1-ae755ea7e717",
       "lexical_form": "else",
       "normalised_form": "else",
       "text": "else",
@@ -2382,6 +2448,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "9929d8d2-cdf5-4e31-9826-0630539f9fd8",
       "lexical_form": "especially",
       "normalised_form": "especially",
       "text": "especially",
@@ -2418,6 +2485,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "4b4d5373-4866-4348-ad7c-fdccb013a58a",
       "lexical_form": "exchanging",
       "normalised_form": "exchanging",
       "text": "exchanging",
@@ -2454,6 +2522,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "af2318e5-4a4e-4135-aab4-29d4bbd71203",
       "lexical_form": "experience",
       "normalised_form": "experience",
       "text": "experience",
@@ -2490,6 +2559,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "cf8e35ee-289d-40d4-98ff-8af3f5a9e1c2",
       "lexical_form": "experiment",
       "normalised_form": "experiment",
       "text": "experiment",
@@ -2526,6 +2596,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "52bb1bbf-e629-4b9c-a30c-169bbf80cce0",
       "lexical_form": "expressed",
       "normalised_form": "expressed",
       "text": "expressed",
@@ -2562,6 +2633,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "f8e8c408-d36f-42e8-a8bf-add0d90b3092",
       "lexical_form": "extent",
       "normalised_form": "extent",
       "text": "extent",
@@ -2598,6 +2670,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "89856197-d19a-4fb7-8f68-19d2eb721de8",
       "lexical_form": "fact",
       "normalised_form": "fact",
       "text": "fact",
@@ -2634,6 +2707,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "d50ae323-1522-4ad2-bd29-0c4a458724ec",
       "lexical_form": "factual",
       "normalised_form": "factual",
       "text": "factual",
@@ -2670,6 +2744,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "f1958458-f883-4ded-aaab-31a5d0d22fda",
       "lexical_form": "feature",
       "normalised_form": "feature",
       "text": "feature",
@@ -2706,6 +2781,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "c7833349-3a55-4baf-a562-c7f1294eb8b9",
       "lexical_form": "found",
       "normalised_form": "found",
       "text": "found",
@@ -2742,6 +2818,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "2dab1cb4-41be-4ca3-849c-7a36a2328699",
       "lexical_form": "fro",
       "normalised_form": "fro",
       "text": "fro",
@@ -2778,6 +2855,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "d16bacfb-120a-4cad-9261-22114033a7df",
       "lexical_form": "future",
       "normalised_form": "future",
       "text": "future",
@@ -2814,6 +2892,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "49edcc59-7704-4982-9e2d-fc4680310dff",
       "lexical_form": "gather",
       "normalised_form": "gather",
       "text": "gather",
@@ -2850,6 +2929,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "ed128aed-1c76-48c3-8a8d-a272f5fe6fe0",
       "lexical_form": "general",
       "normalised_form": "general",
       "text": "general",
@@ -2886,6 +2966,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "569af410-7647-47ef-9de9-25fb0449ba7f",
       "lexical_form": "given",
       "normalised_form": "given",
       "text": "given",
@@ -2922,6 +3003,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "e03e5457-dba3-4497-8d97-e0d612f1eae8",
       "lexical_form": "greeting",
       "normalised_form": "greeting",
       "text": "greeting",
@@ -2958,6 +3040,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "d59492af-347a-457c-a6ad-2a440c1b9eb1",
       "lexical_form": "hand",
       "normalised_form": "hand",
       "text": "hand",
@@ -2994,6 +3077,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "77027696-3871-4c82-b291-1e36ad68e695",
       "lexical_form": "happen",
       "normalised_form": "happen",
       "text": "happen",
@@ -3030,6 +3114,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "260519c2-d0cf-4824-80d3-e0e27c2cd0d0",
       "lexical_form": "happening",
       "normalised_form": "happening",
       "text": "happening",
@@ -3066,6 +3151,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "a85c7ea2-1075-4c40-9e80-137b9eeaa7ed",
       "lexical_form": "high",
       "normalised_form": "high",
       "text": "high",
@@ -3102,6 +3188,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "812e6423-b3d4-4423-86d3-209b3be417d1",
       "lexical_form": "human",
       "normalised_form": "human",
       "text": "human",
@@ -3138,6 +3225,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "1dd0c761-dd55-4563-a09a-c7a25f60cf22",
       "lexical_form": "identified",
       "normalised_form": "identified",
       "text": "identified",
@@ -3174,6 +3262,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "95e56f9d-e70b-49a9-9b11-c1462deb4b78",
       "lexical_form": "importance",
       "normalised_form": "importance",
       "text": "importance",
@@ -3210,6 +3299,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "007b87a0-2140-407b-99fc-23d7837c5c78",
       "lexical_form": "important",
       "normalised_form": "important",
       "text": "important",
@@ -3246,6 +3336,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "2d9bd0c8-766d-4758-88a2-df0ab3485844",
       "lexical_form": "increase",
       "normalised_form": "increase",
       "text": "increase",
@@ -3282,6 +3373,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "b16e7cd8-e762-4efe-ae63-5049551670f0",
       "lexical_form": "increases",
       "normalised_form": "increases",
       "text": "increases",
@@ -3318,6 +3410,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "0e0babbb-521e-41ec-ba61-61060f0f3250",
       "lexical_form": "indivisible",
       "normalised_form": "indivisible",
       "text": "indivisible",
@@ -3354,6 +3447,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "88263800-4fb3-48b9-93c1-1fea1955d8c2",
       "lexical_form": "influence",
       "normalised_form": "influence",
       "text": "influence",
@@ -3390,6 +3484,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "0d02ffc9-5780-46f4-866c-5e523e0b2851",
       "lexical_form": "instance",
       "normalised_form": "instance",
       "text": "instance",
@@ -3426,6 +3521,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "db90eb99-5e34-439f-aa24-4ba2fb3d688c",
       "lexical_form": "intensity",
       "normalised_form": "intensity",
       "text": "intensity",
@@ -3462,6 +3558,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "b8445056-30ca-40c2-8a24-19498d50b918",
       "lexical_form": "interaction",
       "normalised_form": "interaction",
       "text": "interaction",
@@ -3498,6 +3595,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "a3a0471d-492c-413d-b25d-428ddce47b6f",
       "lexical_form": "interchangeably",
       "normalised_form": "interchangeably",
       "text": "interchangeably",
@@ -3534,6 +3632,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "b90a5162-7812-4724-b4f7-10c9e4b1e722",
       "lexical_form": "intrinsic",
       "normalised_form": "intrinsic",
       "text": "intrinsic",
@@ -3570,6 +3669,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "eb49ef5e-686a-4054-b351-eb69f2fd345b",
       "lexical_form": "iron",
       "normalised_form": "iron",
       "text": "iron",
@@ -3606,6 +3706,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "ac78e7c4-1913-47ad-ab99-fb3a17dc8931",
       "lexical_form": "kept",
       "normalised_form": "kept",
       "text": "kept",
@@ -3642,6 +3743,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "23f2f032-1b90-4cdd-a661-d1bdfb30686d",
       "lexical_form": "larger",
       "normalised_form": "larger",
       "text": "larger",
@@ -3678,6 +3780,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "9e21d176-d4fa-4540-ad86-b9255f65b39f",
       "lexical_form": "level",
       "normalised_form": "level",
       "text": "level",
@@ -3714,6 +3817,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "dee7b393-9142-4e69-9f7a-5f67b7970f0e",
       "lexical_form": "line",
       "normalised_form": "line",
       "text": "line",
@@ -3750,6 +3854,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "35bb6085-191f-4367-ad53-2fc6ecd81b0f",
       "lexical_form": "low",
       "normalised_form": "low",
       "text": "low",
@@ -3786,6 +3891,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "e97a0fac-f35f-45f2-b817-df76037b3503",
       "lexical_form": "machine",
       "normalised_form": "machine",
       "text": "machine",
@@ -3822,6 +3928,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "af8645bc-b0e2-46c0-b906-77f8dedbfef8",
       "lexical_form": "magnitude",
       "normalised_form": "magnitude",
       "text": "magnitude",
@@ -3858,6 +3965,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "ab219da8-28d7-4ce4-9fbb-82b2ddf29450",
       "lexical_form": "make",
       "normalised_form": "make",
       "text": "make",
@@ -3894,6 +4002,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "8acbeb32-3ceb-4c55-9642-40c4b4f8eaaa",
       "lexical_form": "makes",
       "normalised_form": "makes",
       "text": "makes",
@@ -3930,6 +4039,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "0509b370-5862-4581-b88f-205bfaede5e4",
       "lexical_form": "manifest",
       "normalised_form": "manifest",
       "text": "manifest",
@@ -3966,6 +4076,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "0d566d71-018e-4bfb-96d0-41c62751de41",
       "lexical_form": "material",
       "normalised_form": "material",
       "text": "material",
@@ -4002,6 +4113,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "844f6b93-99e1-4a8d-9de3-1b80ee617d31",
       "lexical_form": "measure",
       "normalised_form": "measure",
       "text": "measure",
@@ -4038,6 +4150,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "43deb965-2ae7-4ecf-a21f-98518bd79d39",
       "lexical_form": "measured",
       "normalised_form": "measured",
       "text": "measured",
@@ -4074,6 +4187,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "e9953f95-f5fd-4878-b787-a159a479a700",
       "lexical_form": "mental",
       "normalised_form": "mental",
       "text": "mental",
@@ -4110,6 +4224,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "538aa050-8ec4-4cd6-99fb-0f764c773630",
       "lexical_form": "meshed",
       "normalised_form": "meshed",
       "text": "meshed",
@@ -4146,6 +4261,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "df1a77a0-c612-4011-99ae-ec4c8dfc204e",
       "lexical_form": "minute",
       "normalised_form": "minute",
       "text": "minute",
@@ -4182,6 +4298,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "0790632d-01e7-4b09-8f8b-c996ba8d249b",
       "lexical_form": "moments",
       "normalised_form": "moments",
       "text": "moments",
@@ -4218,6 +4335,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "98fdd943-93d3-47d9-9037-b9bdd4fa1c73",
       "lexical_form": "movement",
       "normalised_form": "movement",
       "text": "movement",
@@ -4254,6 +4372,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "c9cf626c-9bcd-4c46-9e0d-3cee567d23ed",
       "lexical_form": "name",
       "normalised_form": "name",
       "text": "name",
@@ -4290,6 +4409,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "6eb7a552-8d5d-4693-9c9f-ed5ca19ea47f",
       "lexical_form": "natural",
       "normalised_form": "natural",
       "text": "natural",
@@ -4326,6 +4446,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "b24cc633-a0d5-4c8e-a243-f9ec49306a79",
       "lexical_form": "nature",
       "normalised_form": "nature",
       "text": "nature",
@@ -4362,6 +4483,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "7a3087e4-d749-4b87-a751-b555e380db84",
       "lexical_form": "negative",
       "normalised_form": "negative",
       "text": "negative",
@@ -4398,6 +4520,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "26a11448-d65e-48e3-b051-19c1b9f3e155",
       "lexical_form": "now",
       "normalised_form": "now",
       "text": "now",
@@ -4434,6 +4557,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "548967cb-26c5-4e64-a2c3-3c5167254949",
       "lexical_form": "numbers",
       "normalised_form": "numbers",
       "text": "numbers",
@@ -4470,6 +4594,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "4a8cd510-ea1d-4ba1-9913-0b80da1a0a27",
       "lexical_form": "observation",
       "normalised_form": "observation",
       "text": "observation",
@@ -4506,6 +4631,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "54cbd600-d910-4d25-8dd5-25ffb4ccbdbf",
       "lexical_form": "occupies",
       "normalised_form": "occupies",
       "text": "occupies",
@@ -4542,6 +4668,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "b930a53f-3323-4151-9a6b-153148d5cff7",
       "lexical_form": "occurs",
       "normalised_form": "occurs",
       "text": "occurs",
@@ -4578,6 +4705,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "7aa476ca-186f-4833-87a9-d5b0cafda07b",
       "lexical_form": "operation",
       "normalised_form": "operation",
       "text": "operation",
@@ -4614,6 +4742,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "1637bc89-58c5-454a-9aa0-664f8586b3c1",
       "lexical_form": "opposes",
       "normalised_form": "opposes",
       "text": "opposes",
@@ -4650,6 +4779,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "b50ba45f-388f-48e8-967b-b3928011b341",
       "lexical_form": "opposing",
       "normalised_form": "opposing",
       "text": "opposing",
@@ -4686,6 +4816,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "31db2f9a-4afb-4e93-91a5-bb52c30b782d",
       "lexical_form": "order",
       "normalised_form": "order",
       "text": "order",
@@ -4722,6 +4853,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "ead86d35-4884-438a-82ef-c02fc434e83b",
       "lexical_form": "overall",
       "normalised_form": "overall",
       "text": "overall",
@@ -4758,6 +4890,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "936599f1-330d-48e4-bd1b-94f01eff7acc",
       "lexical_form": "own",
       "normalised_form": "own",
       "text": "own",
@@ -4794,6 +4927,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "7c2c9f8a-28f5-40da-a0c3-257aa3b871d7",
       "lexical_form": "part",
       "normalised_form": "part",
       "text": "part",
@@ -4830,6 +4964,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "f4777dd9-8d27-4111-af17-3bdd222d66ed",
       "lexical_form": "particular",
       "normalised_form": "particular",
       "text": "particular",
@@ -4866,6 +5001,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "eeb80ca9-00c9-4b7a-978d-b27819c88644",
       "lexical_form": "parts",
       "normalised_form": "parts",
       "text": "parts",
@@ -4902,6 +5038,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "13e5ec15-407d-42d9-b463-ca958b1df43b",
       "lexical_form": "pass",
       "normalised_form": "pass",
       "text": "pass",
@@ -4938,6 +5075,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "597cf899-4f2b-4907-b17f-28fc87f6d122",
       "lexical_form": "passage",
       "normalised_form": "passage",
       "text": "passage",
@@ -4974,6 +5112,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "fa88899d-9787-4d10-8df1-43ec7515f5b3",
       "lexical_form": "path",
       "normalised_form": "path",
       "text": "path",
@@ -5010,6 +5149,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "99f382e9-78b1-4b97-ac78-1bb8ac09c8ae",
       "lexical_form": "perform",
       "normalised_form": "perform",
       "text": "perform",
@@ -5046,6 +5186,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "20b70113-9730-41fe-a982-9e7f07061ed8",
       "lexical_form": "permits",
       "normalised_form": "permits",
       "text": "permits",
@@ -5082,6 +5223,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "b9723dd2-cfb0-4396-b459-64e73e75396b",
       "lexical_form": "physical",
       "normalised_form": "physical",
       "text": "physical",
@@ -5118,6 +5260,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "199d982b-e092-4be5-94e2-a9abbd31d1f0",
       "lexical_form": "piece",
       "normalised_form": "piece",
       "text": "piece",
@@ -5154,6 +5297,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "ba39461a-38b2-4a87-8df3-0efcb4f80d16",
       "lexical_form": "placed",
       "normalised_form": "placed",
       "text": "placed",
@@ -5190,6 +5334,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "230f4175-a490-45a1-88fc-2cffcd6a00cb",
       "lexical_form": "point",
       "normalised_form": "point",
       "text": "point",
@@ -5226,6 +5371,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "ec8230f8-f018-4aae-bb50-4827ed83e6b5",
       "lexical_form": "portion",
       "normalised_form": "portion",
       "text": "portion",
@@ -5262,6 +5408,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "f102c0dd-2644-475a-8204-aa2af84ccb64",
       "lexical_form": "positions",
       "normalised_form": "positions",
       "text": "positions",
@@ -5298,6 +5445,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "a46c4ce6-bf22-4702-8b3e-38eb7932de22",
       "lexical_form": "positive",
       "normalised_form": "positive",
       "text": "positive",
@@ -5334,6 +5482,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "91b2e15d-af25-40c9-b1e9-21fb26eeefaa",
       "lexical_form": "process",
       "normalised_form": "process",
       "text": "process",
@@ -5370,6 +5519,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "c261e8d2-f54d-48a2-9d9b-8962b5767054",
       "lexical_form": "producing",
       "normalised_form": "producing",
       "text": "producing",
@@ -5406,6 +5556,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "63216728-eec9-40de-ba03-ca0227f882a8",
       "lexical_form": "product",
       "normalised_form": "product",
       "text": "product",
@@ -5442,6 +5593,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "61b3fcd0-782b-4c38-a4f6-fdb007c51f17",
       "lexical_form": "pull",
       "normalised_form": "pull",
       "text": "pull",
@@ -5478,6 +5630,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "8cb4f96e-d7c1-446a-bfaf-999669ec63c1",
       "lexical_form": "push",
       "normalised_form": "push",
       "text": "push",
@@ -5514,6 +5667,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "9863bd8e-a0bf-406a-8339-b9dfb3fd088b",
       "lexical_form": "quality",
       "normalised_form": "quality",
       "text": "quality",
@@ -5550,6 +5704,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "acb0a223-2b16-4a4d-91d1-ddd906c64a55",
       "lexical_form": "quantifies",
       "normalised_form": "quantifies",
       "text": "quantifies",
@@ -5586,6 +5741,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "b2e45b67-7b47-429b-924f-690e32150d62",
       "lexical_form": "quantities",
       "normalised_form": "quantities",
       "text": "quantities",
@@ -5622,6 +5778,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "2df4b6d3-817d-4236-abad-cf7841d0875a",
       "lexical_form": "question",
       "normalised_form": "question",
       "text": "question",
@@ -5658,6 +5815,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "0118d2a0-64f7-4802-ae03-b02cc5b9d8e7",
       "lexical_form": "quickly",
       "normalised_form": "quickly",
       "text": "quickly",
@@ -5694,6 +5852,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "edd03282-1254-4f7b-99e4-31af81024e48",
       "lexical_form": "rank",
       "normalised_form": "rank",
       "text": "rank",
@@ -5730,6 +5889,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "7954f245-44af-4c47-83e9-41e22734a3ed",
       "lexical_form": "real",
       "normalised_form": "real",
       "text": "real",
@@ -5766,6 +5926,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "ca1ecf86-541c-48f3-b6c1-ce901ce20934",
       "lexical_form": "reason",
       "normalised_form": "reason",
       "text": "reason",
@@ -5802,6 +5963,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "fef7459e-c225-4d21-ac0b-f347a6190b67",
       "lexical_form": "region",
       "normalised_form": "region",
       "text": "region",
@@ -5838,6 +6000,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "8c4de520-b543-45b0-a720-62c26612e944",
       "lexical_form": "relating",
       "normalised_form": "relating",
       "text": "relating",
@@ -5874,6 +6037,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "49be500e-3fbc-4255-b3c5-bc1a9f14293e",
       "lexical_form": "relation",
       "normalised_form": "relation",
       "text": "relation",
@@ -5910,6 +6074,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "c90c0a5d-d072-4330-b7b6-f2bf216d2992",
       "lexical_form": "relations",
       "normalised_form": "relations",
       "text": "relations",
@@ -5946,6 +6111,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "a90299fa-cc80-4685-9821-e27ccbff1990",
       "lexical_form": "remaining",
       "normalised_form": "remaining",
       "text": "remaining",
@@ -5982,6 +6148,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "045cff85-b4f9-44fe-a5e0-5e5a5d83889a",
       "lexical_form": "represents",
       "normalised_form": "represents",
       "text": "represents",
@@ -6018,6 +6185,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "a3d4e673-2c4c-489d-b159-691c08d50f79",
       "lexical_form": "respect",
       "normalised_form": "respect",
       "text": "respect",
@@ -6054,6 +6222,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "88b23eeb-1fab-4ea5-867a-de0bc286505c",
       "lexical_form": "resulting",
       "normalised_form": "resulting",
       "text": "resulting",
@@ -6090,6 +6259,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "1fd1d133-9511-489e-b72a-7ac9d8110ac9",
       "lexical_form": "scale",
       "normalised_form": "scale",
       "text": "scale",
@@ -6126,6 +6296,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "a014acd6-0fe6-4369-b300-407246e47a8d",
       "lexical_form": "seen",
       "normalised_form": "seen",
       "text": "seen",
@@ -6162,6 +6333,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "a6540a81-9bb8-4491-92c7-ce13e62468f4",
       "lexical_form": "separately",
       "normalised_form": "separately",
       "text": "separately",
@@ -6198,6 +6370,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "2ff224fd-2de6-4934-b63d-937f90d4b692",
       "lexical_form": "serving",
       "normalised_form": "serving",
       "text": "serving",
@@ -6234,6 +6407,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "2cb7b29f-b0c0-43b4-a812-be95641b484f",
       "lexical_form": "set",
       "normalised_form": "set",
       "text": "set",
@@ -6270,6 +6444,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "f6f01d4c-0659-4f15-b06f-eb1cb2ab6f26",
       "lexical_form": "showing",
       "normalised_form": "showing",
       "text": "showing",
@@ -6306,6 +6481,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "688555c1-670c-4a46-b80b-107a2e734f0e",
       "lexical_form": "signal",
       "normalised_form": "signal",
       "text": "signal",
@@ -6342,6 +6518,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "3160dd85-1f99-45d4-a159-4d68c97663cd",
       "lexical_form": "significance",
       "normalised_form": "significance",
       "text": "significance",
@@ -6378,6 +6555,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "e428eb23-6eee-43e4-9cf0-f0bef2c1874e",
       "lexical_form": "size",
       "normalised_form": "size",
       "text": "size",
@@ -6414,6 +6592,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "0b1b6e4e-1ffb-437e-8871-e6dd7e11a930",
       "lexical_form": "sound",
       "normalised_form": "sound",
       "text": "sound",
@@ -6450,6 +6629,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "ed09bfb4-b776-471a-af83-7cc6d898a337",
       "lexical_form": "specified",
       "normalised_form": "specified",
       "text": "specified",
@@ -6486,6 +6666,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "6ec00605-9f5c-4c93-bca0-ae688dbee618",
       "lexical_form": "spots",
       "normalised_form": "spots",
       "text": "spots",
@@ -6522,6 +6703,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "c978a3f6-4520-4c3a-9efe-8ffcd42b4955",
       "lexical_form": "stable",
       "normalised_form": "stable",
       "text": "stable",
@@ -6558,6 +6740,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "9b567d48-1720-4110-9035-e13f5c64337e",
       "lexical_form": "standard",
       "normalised_form": "standard",
       "text": "standard",
@@ -6594,6 +6777,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "70e39774-80b5-4a8d-a4d0-163ea6b69c67",
       "lexical_form": "state",
       "normalised_form": "state",
       "text": "state",
@@ -6630,6 +6814,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "b5385aab-6571-4c01-8dd7-356101239db0",
       "lexical_form": "steadily",
       "normalised_form": "steadily",
       "text": "steadily",
@@ -6666,6 +6851,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "ff407b3c-37ad-4716-b2ad-922f0c66498a",
       "lexical_form": "steady",
       "normalised_form": "steady",
       "text": "steady",
@@ -6702,6 +6888,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "82d2e3d9-2069-4b9b-b341-27e8ffaf9005",
       "lexical_form": "steel",
       "normalised_form": "steel",
       "text": "steel",
@@ -6738,6 +6925,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "a51384b9-0fa1-4583-b021-cf248c789376",
       "lexical_form": "store",
       "normalised_form": "store",
       "text": "store",
@@ -6774,6 +6962,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "2662e925-39ab-44f7-a246-f1591021abd2",
       "lexical_form": "stored",
       "normalised_form": "stored",
       "text": "stored",
@@ -6810,6 +6999,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "5ed581d2-066e-4556-a7b4-be6f594b9369",
       "lexical_form": "straight",
       "normalised_form": "straight",
       "text": "straight",
@@ -6846,6 +7036,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "f2121cab-5afa-41f4-ad1f-0ace394ef0b9",
       "lexical_form": "strands",
       "normalised_form": "strands",
       "text": "strands",
@@ -6882,6 +7073,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "c271e8c4-1f72-4abf-9b35-ff9b9a365dd4",
       "lexical_form": "stream",
       "normalised_form": "stream",
       "text": "stream",
@@ -6918,6 +7110,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "1e190d51-4a6b-4c52-9400-4dbe3deca6b2",
       "lexical_form": "strength",
       "normalised_form": "strength",
       "text": "strength",
@@ -6954,6 +7147,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "0f24befc-4cf8-4b7a-87d3-88a4f747f347",
       "lexical_form": "strict",
       "normalised_form": "strict",
       "text": "strict",
@@ -6990,6 +7184,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "b5063130-5358-4d3a-bd8b-d23b9c4a6cb3",
       "lexical_form": "striking",
       "normalised_form": "striking",
       "text": "striking",
@@ -7026,6 +7221,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "5517d767-adb2-4b43-a926-a3c2b5a934ce",
       "lexical_form": "structure",
       "normalised_form": "structure",
       "text": "structure",
@@ -7062,6 +7258,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "3bd47047-57ed-4208-94cd-9802b2ade39a",
       "lexical_form": "study",
       "normalised_form": "study",
       "text": "study",
@@ -7098,6 +7295,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "1d8cb46e-d519-436b-a142-6cc537c6c7e7",
       "lexical_form": "substance",
       "normalised_form": "substance",
       "text": "substance",
@@ -7134,6 +7332,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "017c9c1c-b53f-4537-8b18-fc996cd70cba",
       "lexical_form": "successfully",
       "normalised_form": "successfully",
       "text": "successfully",
@@ -7170,6 +7369,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "a5a33a44-126e-49e6-80d9-268bfa977f07",
       "lexical_form": "sum",
       "normalised_form": "sum",
       "text": "sum",
@@ -7206,6 +7406,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "352eb5ae-467d-458b-87e4-c7b4b6b3471e",
       "lexical_form": "superior",
       "normalised_form": "superior",
       "text": "superior",
@@ -7242,6 +7443,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "d0033b34-d16c-455c-aeb0-297785dc6707",
       "lexical_form": "supply",
       "normalised_form": "supply",
       "text": "supply",
@@ -7278,6 +7480,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "fecd6ab2-31b1-47fd-8279-0f24d1e34ab4",
       "lexical_form": "surrounded",
       "normalised_form": "surrounded",
       "text": "surrounded",
@@ -7314,6 +7517,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "281d9e84-8db3-40f6-a146-1dd3d635a4c6",
       "lexical_form": "surroundings",
       "normalised_form": "surroundings",
       "text": "surroundings",
@@ -7350,6 +7554,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "1c1a7e4e-d36d-402f-9b57-271166d7bb94",
       "lexical_form": "systematic",
       "normalised_form": "systematic",
       "text": "systematic",
@@ -7386,6 +7591,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "a5330de2-a176-45c7-a034-89b27b14eb78",
       "lexical_form": "technical",
       "normalised_form": "technical",
       "text": "technical",
@@ -7422,6 +7628,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "595527be-ab18-4890-9d8e-1ed908ad599c",
       "lexical_form": "topmost",
       "normalised_form": "topmost",
       "text": "topmost",
@@ -7458,6 +7665,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "52a55420-510f-49c3-8640-00d786bbe168",
       "lexical_form": "touched",
       "normalised_form": "touched",
       "text": "touched",
@@ -7494,6 +7702,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "2da40951-ca1a-4eff-a186-0ac3d506a267",
       "lexical_form": "turn",
       "normalised_form": "turn",
       "text": "turn",
@@ -7530,6 +7739,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "d1b255b0-24d6-405b-bc2e-8be6ace244dc",
       "lexical_form": "types",
       "normalised_form": "types",
       "text": "types",
@@ -7566,6 +7776,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "eda3dad7-12e5-46b6-b787-0e5e95fc35d2",
       "lexical_form": "unit",
       "normalised_form": "unit",
       "text": "unit",
@@ -7602,6 +7813,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "88c13bb4-2c82-4110-aaa6-848dcfd2636c",
       "lexical_form": "used",
       "normalised_form": "used",
       "text": "used",
@@ -7638,6 +7850,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "09c6cb40-4689-41fe-b767-b3d07625ffcb",
       "lexical_form": "using",
       "normalised_form": "using",
       "text": "using",
@@ -7674,6 +7887,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "749a2193-1471-432c-8191-1cf2ad886735",
       "lexical_form": "value",
       "normalised_form": "value",
       "text": "value",
@@ -7710,6 +7924,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "db107296-2cf1-424c-9eb7-896d736c3b9f",
       "lexical_form": "varieties",
       "normalised_form": "varieties",
       "text": "varieties",
@@ -7746,6 +7961,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "43b3866f-3248-493d-908b-137b77636ee1",
       "lexical_form": "varying",
       "normalised_form": "varying",
       "text": "varying",
@@ -7782,6 +7998,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "cbccc1cd-ff5b-4961-ae5f-483bbaf45ed9",
       "lexical_form": "violently",
       "normalised_form": "violently",
       "text": "violently",
@@ -7818,6 +8035,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "7aaae69d-9734-4e54-89da-30518b17402b",
       "lexical_form": "volume",
       "normalised_form": "volume",
       "text": "volume",
@@ -7854,6 +8072,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "4f4edbde-edf2-4026-82d4-ea4651a5aa80",
       "lexical_form": "way",
       "normalised_form": "way",
       "text": "way",
@@ -7890,6 +8109,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "667dfc50-3b42-41a1-9758-71d28aff036e",
       "lexical_form": "whole",
       "normalised_form": "whole",
       "text": "whole",
@@ -7926,6 +8146,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "4696d4db-c056-4d6e-8209-08d1f9a3a851",
       "lexical_form": "world",
       "normalised_form": "world",
       "text": "world",
@@ -7962,6 +8183,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "5bb23ce4-b259-4f7e-82d1-1857235c2752",
       "lexical_form": "achievement",
       "normalised_form": "achievement",
       "text": "achievement",
@@ -7998,6 +8220,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "2968dbba-57a9-4f72-aaed-7a7b65a88107",
       "lexical_form": "addition",
       "normalised_form": "addition",
       "text": "addition",
@@ -8034,6 +8257,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "d8be2073-4273-482a-a40e-7eac74804014",
       "lexical_form": "appearance",
       "normalised_form": "appearance",
       "text": "appearance",
@@ -8070,6 +8294,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "00102b7c-d593-47c6-acbb-242dc602b093",
       "lexical_form": "assembly",
       "normalised_form": "assembly",
       "text": "assembly",
@@ -8106,6 +8331,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "51dd843c-c941-4b0f-b72c-a5bf64444ef6",
       "lexical_form": "assignment",
       "normalised_form": "assignment",
       "text": "assignment",
@@ -8142,6 +8368,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "25086061-491a-407c-9037-a5e526ec63b6",
       "lexical_form": "causation",
       "normalised_form": "causation",
       "text": "causation",
@@ -8178,6 +8405,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "d661621c-f855-4f83-aa17-57d3841a9ef0",
       "lexical_form": "choice",
       "normalised_form": "choice",
       "text": "choice",
@@ -8214,6 +8442,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "4bee1a98-0af4-469f-9334-626ebadf2781",
       "lexical_form": "combination",
       "normalised_form": "combination",
       "text": "combination",
@@ -8250,6 +8479,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "ca166960-c822-4a50-b167-ecbfc0241810",
       "lexical_form": "comparison",
       "normalised_form": "comparison",
       "text": "comparison",
@@ -8286,6 +8516,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "45d9711d-6cf0-4c09-a203-a17b4567c029",
       "lexical_form": "connection",
       "normalised_form": "connection",
       "text": "connection",
@@ -8322,6 +8553,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "e5b6a96f-cd38-4fb9-bc73-2f48a8899191",
       "lexical_form": "dependence",
       "normalised_form": "dependence",
       "text": "dependence",
@@ -8358,6 +8590,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "bda0efd5-aa3f-40f8-af1f-9f14e58f2c0e",
       "lexical_form": "description",
       "normalised_form": "description",
       "text": "description",
@@ -8394,6 +8627,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "ecf9c73e-e09c-4969-8022-5920931c774a",
       "lexical_form": "determination",
       "normalised_form": "determination",
       "text": "determination",
@@ -8430,6 +8664,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "b75d3d5b-8bcc-40a1-a984-c820b7eddaf0",
       "lexical_form": "development",
       "normalised_form": "development",
       "text": "development",
@@ -8466,6 +8701,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "d988cebc-6cd5-408f-a3de-83d02ff92e84",
       "lexical_form": "division",
       "normalised_form": "division",
       "text": "division",
@@ -8502,6 +8738,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "1cd96724-abdb-4c81-8945-629ab6bf8a6c",
       "lexical_form": "exclusion",
       "normalised_form": "exclusion",
       "text": "exclusion",
@@ -8538,6 +8775,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "c3118351-5d79-4a8d-9f6d-f748ec30e9fb",
       "lexical_form": "expression",
       "normalised_form": "expression",
       "text": "expression",
@@ -8574,6 +8812,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "576a11af-3ff0-4a3a-ac83-c99369c15d58",
       "lexical_form": "gathering",
       "normalised_form": "gathering",
       "text": "gathering",
@@ -8610,6 +8849,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "97900cb2-f657-4e37-9992-f022a8230c9d",
       "lexical_form": "identification",
       "normalised_form": "identification",
       "text": "identification",
@@ -8646,6 +8886,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "0e15005d-4766-4e85-a316-468251c3e172",
       "lexical_form": "inclusion",
       "normalised_form": "inclusion",
       "text": "inclusion",
@@ -8682,6 +8923,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "76bb36c6-c959-4322-b6d7-ceaa5bd869ea",
       "lexical_form": "indication",
       "normalised_form": "indication",
       "text": "indication",
@@ -8718,6 +8960,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "e19b63b1-2189-4960-a079-42e6fec37347",
       "lexical_form": "location",
       "normalised_form": "location",
       "text": "location",
@@ -8754,6 +8997,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "84b7152f-9d48-4a5a-aa7d-e1bf3629b15e",
       "lexical_form": "manifestation",
       "normalised_form": "manifestation",
       "text": "manifestation",
@@ -8790,6 +9034,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "852bf38c-61e8-4cca-9e64-70f25dd742d3",
       "lexical_form": "modification",
       "normalised_form": "modification",
       "text": "modification",
@@ -8826,6 +9071,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "a3313aca-7b6d-418c-a398-a5965f3c689b",
       "lexical_form": "multiplication",
       "normalised_form": "multiplication",
       "text": "multiplication",
@@ -8862,6 +9108,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "f8d3f1d0-78f6-44e7-a104-8ae5ff8f27f0",
       "lexical_form": "performance",
       "normalised_form": "performance",
       "text": "performance",
@@ -8898,6 +9145,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "dc558869-d63d-4c3a-a377-ea51250e4118",
       "lexical_form": "precedence",
       "normalised_form": "precedence",
       "text": "precedence",
@@ -8934,6 +9182,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "3f69fdc6-7778-4036-b0b3-f621bfc85712",
       "lexical_form": "qualification",
       "normalised_form": "qualification",
       "text": "qualification",
@@ -8970,6 +9219,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "a9068d00-991c-4040-a0b4-9494a3ff066d",
       "lexical_form": "replacement",
       "normalised_form": "replacement",
       "text": "replacement",
@@ -9006,6 +9256,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "1e23ec8e-4bda-4158-8b87-7da0086ce96e",
       "lexical_form": "representation",
       "normalised_form": "representation",
       "text": "representation",
@@ -9042,6 +9293,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "6ed18e7e-dd6c-425b-b3d3-37734ab6e4e4",
       "lexical_form": "specification",
       "normalised_form": "specification",
       "text": "specification",
@@ -9078,6 +9330,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "7f826025-71ef-4154-8740-d002cb66245a",
       "lexical_form": "storage",
       "normalised_form": "storage",
       "text": "storage",
@@ -9114,6 +9367,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "d0a87225-894d-4f5d-9404-57cd7e28df66",
       "lexical_form": "subtraction",
       "normalised_form": "subtraction",
       "text": "subtraction",
@@ -9150,6 +9404,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "407b70ca-9098-4d4f-bd85-2d4c00f97ad9",
       "lexical_form": "idea",
       "normalised_form": "idea",
       "text": "idea",
@@ -9186,6 +9441,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "d9da7d86-c1e8-4edd-bf97-31073364a67b",
       "lexical_form": "group",
       "normalised_form": "group",
       "text": "group",
@@ -9222,6 +9478,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "bc08d9cb-ad18-4a6d-993a-5eb3d748ef70",
       "lexical_form": "statement",
       "normalised_form": "statement",
       "text": "statement",
@@ -9258,6 +9515,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "3fc88384-51e7-4131-84aa-ced6e9cc5589",
       "lexical_form": "command",
       "normalised_form": "command",
       "text": "command",
@@ -9294,6 +9552,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "ed8dd0b6-981f-4034-9c32-de1299860866",
       "lexical_form": "occurrence",
       "normalised_form": "occurrence",
       "text": "occurrence",
@@ -9330,6 +9589,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "a0b5c0d5-0d0a-41ab-b828-ae15d1953234",
       "lexical_form": "concept",
       "normalised_form": "concept",
       "text": "concept",
@@ -9366,6 +9626,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "17349e16-df15-4e19-a30a-07e67d25d400",
       "lexical_form": "category",
       "normalised_form": "category",
       "text": "category",
@@ -9402,6 +9663,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "b7f296db-c66a-4a75-a2f5-14cfb84de2b8",
       "lexical_form": "shape",
       "normalised_form": "shape",
       "text": "shape",
@@ -9438,6 +9700,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "71c6fb6c-cdf2-4a28-b25f-501170cb6c0b",
       "lexical_form": "distinction",
       "normalised_form": "distinction",
       "text": "distinction",
@@ -9474,6 +9737,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "70dce9b3-b247-435f-892b-cb1bbb95408b",
       "lexical_form": "speech",
       "normalised_form": "speech",
       "text": "speech",
@@ -9510,6 +9774,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "81cd24f2-efa5-4e0c-8c02-c90b4b58a9b5",
       "lexical_form": "utterance",
       "normalised_form": "utterance",
       "text": "utterance",
@@ -9546,6 +9811,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "e570938f-bff9-404a-85e3-33045baa7259",
       "lexical_form": "production",
       "normalised_form": "production",
       "text": "production",
@@ -9582,6 +9848,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "7f65fddf-8b8a-468e-9139-a1a705a3572b",
       "lexical_form": "introduction",
       "normalised_form": "introduction",
       "text": "introduction",
@@ -9618,6 +9885,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "a6bc3760-eff9-4a67-9a2c-80cabc42c975",
       "lexical_form": "containment",
       "normalised_form": "containment",
       "text": "containment",
@@ -9654,6 +9922,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "1bc0b6f4-0756-4aa5-9206-e763a58fa4bc",
       "lexical_form": "accompaniment",
       "normalised_form": "accompaniment",
       "text": "accompaniment",
@@ -9690,6 +9959,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "de248c2c-2a40-43ae-bc79-8a2155064386",
       "lexical_form": "reception",
       "normalised_form": "reception",
       "text": "reception",
@@ -9726,6 +9996,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "9aed96c7-9448-4eb0-8ed3-0f80b8811361",
       "lexical_form": "stand",
       "normalised_form": "stand",
       "text": "stand",
@@ -9762,6 +10033,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "c7c800e7-7ead-4f5d-848f-ed7dea03f466",
       "lexical_form": "contain",
       "normalised_form": "contain",
       "text": "contain",
@@ -9798,6 +10070,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "78a8db84-13c3-4803-9f9e-0ddd9937e08e",
       "lexical_form": "function",
       "normalised_form": "function",
       "text": "function",
@@ -9834,6 +10107,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "927cfc3f-180b-4f65-a3ce-6eb5dce24a8e",
       "lexical_form": "lack",
       "normalised_form": "lack",
       "text": "lack",
@@ -9870,6 +10144,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "5482596c-64d0-4e53-92f1-e650866ca0c2",
       "lexical_form": "introduce",
       "normalised_form": "introduce",
       "text": "introduce",
@@ -9906,6 +10181,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "71ea19d3-12c1-47ed-a01e-795d22d942c7",
       "lexical_form": "accompany",
       "normalised_form": "accompany",
       "text": "accompany",
@@ -9942,6 +10218,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "805f7a7a-7866-4a94-84c7-8b85491ad4c2",
       "lexical_form": "produce",
       "normalised_form": "produce",
       "text": "produce",
@@ -9978,6 +10255,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "70f5b895-7ca7-4d84-9766-47c1ef3997e8",
       "lexical_form": "receive",
       "normalised_form": "receive",
       "text": "receive",
@@ -10014,6 +10292,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "0277170a-0efa-4f73-9e2d-256592e717af",
       "lexical_form": "take",
       "normalised_form": "take",
       "text": "take",
@@ -10050,6 +10329,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "58dab4cb-9778-4aa8-a575-c8376fd76515",
       "lexical_form": "occur",
       "normalised_form": "occur",
       "text": "occur",
@@ -10086,6 +10366,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "76a37e9f-8a48-4854-9fa8-dcacb7deb041",
       "lexical_form": "name",
       "normalised_form": "name",
       "text": "name",
@@ -10122,6 +10403,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "518e5b3c-33d2-4edc-88d6-6ed450e15481",
       "lexical_form": "point",
       "normalised_form": "point",
       "text": "point",
@@ -10158,6 +10440,7 @@
       "reference_count": 4
     },
     {
+      "entry_id": "d82985e8-7adb-4bc2-af80-e079a49d1e7f",
       "lexical_form": "state",
       "normalised_form": "state",
       "text": "state",

@@ -26,8 +26,13 @@ see `examples/physics_domain_relationships.py`). Two hydrated words
 (`object`, `particle`) turned out to collide with unrelated Common
 metalinguistic senses of the same (text, part_of_speech) -- resolved
 via `DictionaryProcessor.register_conflicting_sense`, visible in the
-Words table as `object_2`/`particle_2`. See `examples/README.md` (repo
-root) for the full demonstration, including the network caveat (this
+Words table as two identical-looking `object`/`particle` rows (one
+Common, one Physics), distinguished by the Domain pill and by each
+row's own `entry_id`, shown in the detail panel (`assets/common/en/README.md`'s
+own Version section, `asset_version 1.14.0`, has the full story of why
+this no longer renders as `object_2`/`particle_2`). See
+`examples/README.md` (repo root) for the full demonstration, including
+the network caveat (this
 sandbox blocks live calls to `api.dictionaryapi.dev`, so the hydrated
 words came from curated fixture data in that API's real response
 shape, run through the otherwise-unmodified pipeline -- the generated
@@ -143,7 +148,10 @@ unaffected):
   hydrated (or conflict-resolved) words, filtering to "Common" the
   inherited 838.
 - A one-sentence plain-English gloss under each relationship row in
-  the detail panel, phrased per kind -- select `particle_2` to see
+  the detail panel, phrased per kind -- select the Physics-domain
+  `particle` row (there are two `particle` rows now that `entry_id`
+  replaced the old `particle_2` naming; pick the one with a Physics
+  Domain pill, or filter to Physics first) to see
   "particle is a type of matter" (HYPERNYM), "nucleus is part of atom"
   (MERONYM, select `nucleus`), "exert causes accelerate" (CAUSE, select
   `move`); select `be` (Common) to see the same treatment applied to

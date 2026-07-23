@@ -7,10 +7,15 @@ DemoteWord, ValidateAssets, LoadCache) to match this codebase's
 convention everywhere else.
 
 Each cache entry populates as much of Word's field set as the cache
-can respect responsibly (4.2): lexical_form, normalised_form, text,
-version, language_code, script_code, part_of_speech, definition,
+can respect responsibly (4.2): entry_id, lexical_form, normalised_form,
+text, version, language_code, script_code, part_of_speech, definition,
 gloss, usage_notes, register_codes, editorial_labels, dialect_codes,
-and source_references are always present. pronunciations,
+and source_references are always present. entry_id is the one field
+that is *never* generated fresh by loading -- unlike `uuid` (a
+per-Domain-graph-instance identity, regenerated on every copy), a
+cache entry's entry_id is read verbatim from its stored value and
+carried through unchanged, since it's the persistent Qualified Word
+Identity (see Word.entry_id's own docstring). pronunciations,
 syllable_representation, stress_pattern, frequency_value,
 frequency_scale, etymology_text, and first_recorded_use are left null
 in every mandatory entry -- this cache has no verified phonetic,
@@ -150,11 +155,12 @@ class WordSeeder:
             raise FileNotFoundError(f"no Common Vocabulary Cache for language '{self.language_code}' at {self.assets_dir}")
 
         seen_lexical_form_pos = set()
+        seen_entry_ids = set()
         file_counts: Dict[str, int] = {}
         computed_total = 0
 
         for filename in MANDATORY_FILES:
-            file_counts[filename] = self._validate_word_file(filename, seen_lexical_form_pos, required=True)
+            file_counts[filename] = self._validate_word_file(filename, seen_lexical_form_pos, seen_entry_ids, required=True)
             computed_total += file_counts[filename]
 
         for filename in SUPPLEMENTARY_FILES:
@@ -162,7 +168,7 @@ class WordSeeder:
             # checking against the same seen_lexical_form_pos set) but
             # excluded from computed_total -- these are open-class,
             # not part of the mandatory closed-class total.
-            file_counts[filename] = self._validate_word_file(filename, seen_lexical_form_pos, required=True)
+            file_counts[filename] = self._validate_word_file(filename, seen_lexical_form_pos, seen_entry_ids, required=True)
 
         promoted_path = self.assets_dir / PROMOTED_FILE
         if not promoted_path.is_file():
@@ -185,8 +191,14 @@ class WordSeeder:
             # first-seeded-wins default is unaffected either way.
             if key in seen_lexical_form_pos:
                 raise ValueError(f"promoted word '{lexical_form}' ({pos}) duplicates an existing (lexical_form, part_of_speech) pair")
+            entry_id = entry.get("entry_id")
+            if not entry_id:
+                raise ValueError(f"{PROMOTED_FILE}: '{lexical_form}' is missing entry_id")
+            if entry_id in seen_entry_ids:
+                raise ValueError(f"{PROMOTED_FILE}: '{lexical_form}' has entry_id '{entry_id}', which duplicates an earlier entry")
             self._validate_entry_enums(PROMOTED_FILE, entry)
             seen_lexical_form_pos.add(key)
+            seen_entry_ids.add(entry_id)
         file_counts[PROMOTED_FILE] = promoted_doc.get("count", 0)
 
         manifest_path = self.assets_dir / MANIFEST_FILE
@@ -200,13 +212,17 @@ class WordSeeder:
                     f"does not match the computed total ({computed_total})"
                 )
 
-    def _validate_word_file(self, filename: str, seen_lexical_form_pos: set, *, required: bool) -> int:
+    def _validate_word_file(self, filename: str, seen_lexical_form_pos: set, seen_entry_ids: set, *, required: bool) -> int:
         """Validates one word file's schema, per-entry language code,
-        normalised_form consistency, enum members, and
+        normalised_form consistency, enum members,
         (lexical_form, part_of_speech) uniqueness against
         `seen_lexical_form_pos` (shared across every file this is
         called for, so a duplicate is caught even across file
-        boundaries). Returns the file's word count."""
+        boundaries), and entry_id uniqueness against `seen_entry_ids`
+        (shared the same way -- entry_id is the persistent Qualified
+        Word Identity, Word 4.2, so it must be unique across the entire
+        cache, not just within one file). Returns the file's word
+        count."""
         path = self.assets_dir / filename
         if not path.is_file():
             if required:
@@ -228,8 +244,14 @@ class WordSeeder:
             key = (lexical_form, pos)
             if key in seen_lexical_form_pos:
                 raise ValueError(f"{filename}: duplicate lexical_form '{lexical_form}' with part_of_speech '{pos}' in the mandatory cache")
+            entry_id = entry.get("entry_id")
+            if not entry_id:
+                raise ValueError(f"{filename}: '{lexical_form}' is missing entry_id")
+            if entry_id in seen_entry_ids:
+                raise ValueError(f"{filename}: '{lexical_form}' has entry_id '{entry_id}', which duplicates an earlier entry")
             self._validate_entry_enums(filename, entry)
             seen_lexical_form_pos.add(key)
+            seen_entry_ids.add(entry_id)
         return doc["count"]
 
     @staticmethod
@@ -395,6 +417,7 @@ class WordSeeder:
 
         return Word(
             text=entry.get("text", entry["lexical_form"]),
+            entry_id=Identifier(value=entry["entry_id"]),
             part_of_speech=PartOfSpeech[entry["part_of_speech"]],
             version=opt_text(entry.get("version")) or Text(value="1.0"),
             language_code=Code(value=entry["language_code"]),
@@ -421,6 +444,7 @@ class WordSeeder:
     @staticmethod
     def _word_to_entry(word: Word) -> dict:
         return {
+            "entry_id": word.entry_id.value,
             "lexical_form": word.lexical_form.value,
             "normalised_form": word.normalised_form.value,
             "text": word.text,

@@ -6,6 +6,7 @@
   "count": 36,
   "words": [
     {
+      "entry_id": "a5d86125-ccba-4988-a956-0f39fd04cf19",
       "lexical_form": "be",
       "normalised_form": "be",
       "text": "be",
@@ -42,6 +43,7 @@
       ]
     },
     {
+      "entry_id": "91f4287e-e541-48ba-ae35-2b147203c115",
       "lexical_form": "am",
       "normalised_form": "am",
       "text": "am",
@@ -78,6 +80,7 @@
       ]
     },
     {
+      "entry_id": "e3f27213-f1a2-4db3-af46-a31b7fc534c5",
       "lexical_form": "is",
       "normalised_form": "is",
       "text": "is",
@@ -114,6 +117,7 @@
       ]
     },
     {
+      "entry_id": "17fc934f-8f40-4741-83bf-c04829ec1a24",
       "lexical_form": "are",
       "normalised_form": "are",
       "text": "are",
@@ -150,6 +154,7 @@
       ]
     },
     {
+      "entry_id": "067476d2-2251-4a9b-8f7e-dca670a5f8e5",
       "lexical_form": "was",
       "normalised_form": "was",
       "text": "was",
@@ -186,6 +191,7 @@
       ]
     },
     {
+      "entry_id": "f61d354d-e2c0-454a-97a0-5af3907bb0bf",
       "lexical_form": "were",
       "normalised_form": "were",
       "text": "were",
@@ -222,6 +228,7 @@
       ]
     },
     {
+      "entry_id": "3c7c023b-296a-4e6b-b5bc-37cabdd1bc29",
       "lexical_form": "been",
       "normalised_form": "been",
       "text": "been",
@@ -258,6 +265,7 @@
       ]
     },
     {
+      "entry_id": "35253878-be5f-4338-babe-b938d5b73ccc",
       "lexical_form": "being",
       "normalised_form": "being",
       "text": "being",
@@ -294,6 +302,7 @@
       ]
     },
     {
+      "entry_id": "8e23c7a0-0b72-4e36-9d13-dc75ffd22790",
       "lexical_form": "have",
       "normalised_form": "have",
       "text": "have",
@@ -330,6 +339,7 @@
       ]
     },
     {
+      "entry_id": "8849987c-7039-4d76-9689-9736cda5443d",
       "lexical_form": "has",
       "normalised_form": "has",
       "text": "has",
@@ -366,6 +376,7 @@
       ]
     },
     {
+      "entry_id": "86184d36-313c-4be5-8696-ab16b7a2306f",
       "lexical_form": "had",
       "normalised_form": "had",
       "text": "had",
@@ -402,6 +413,7 @@
       ]
     },
     {
+      "entry_id": "b21a9e8c-78b9-442b-89c0-136d202fc3f8",
       "lexical_form": "having",
       "normalised_form": "having",
       "text": "having",
@@ -438,6 +450,7 @@
       ]
     },
     {
+      "entry_id": "8d8ef25e-2424-472b-80ea-08df2f02ee56",
       "lexical_form": "do",
       "normalised_form": "do",
       "text": "do",
@@ -474,6 +487,7 @@
       ]
     },
     {
+      "entry_id": "d6c90b6f-88cb-4b70-8a3d-cc52299a3b05",
       "lexical_form": "does",
       "normalised_form": "does",
       "text": "does",
@@ -510,6 +524,7 @@
       ]
     },
     {
+      "entry_id": "5964f3a0-8572-4ea4-8f89-388254d1f6fb",
       "lexical_form": "did",
       "normalised_form": "did",
       "text": "did",
@@ -546,6 +561,7 @@
       ]
     },
     {
+      "entry_id": "20d00cd2-5528-44ca-800b-d19bbf6e14ee",
       "lexical_form": "will",
       "normalised_form": "will",
       "text": "will",
@@ -582,6 +598,7 @@
       ]
     },
     {
+      "entry_id": "7bee42a1-c2d5-4e52-9599-12ab74c39709",
       "lexical_form": "would",
       "normalised_form": "would",
       "text": "would",
@@ -618,6 +635,7 @@
       ]
     },
     {
+      "entry_id": "7a7a46cb-8ca1-42a6-98f3-177f9d85ba59",
       "lexical_form": "shall",
       "normalised_form": "shall",
       "text": "shall",
@@ -654,6 +672,7 @@
       ]
     },
     {
+      "entry_id": "64d8ef90-c463-4826-b5ee-19247cf5bc28",
       "lexical_form": "should",
       "normalised_form": "should",
       "text": "should",
@@ -690,6 +709,7 @@
       ]
     },
     {
+      "entry_id": "4f5bf243-f3c5-40f1-8433-038c30910a3e",
       "lexical_form": "can",
       "normalised_form": "can",
       "text": "can",
@@ -726,6 +746,7 @@
       ]
     },
     {
+      "entry_id": "4562b2a1-a7f8-424d-b367-0da5b35ebe00",
       "lexical_form": "could",
       "normalised_form": "could",
       "text": "could",
@@ -762,6 +783,7 @@
       ]
     },
     {
+      "entry_id": "b578a197-4279-4534-8047-ab66c9610335",
       "lexical_form": "may",
       "normalised_form": "may",
       "text": "may",
@@ -798,6 +820,7 @@
       ]
     },
     {
+      "entry_id": "b26abca8-986b-41d7-8fc6-57be8ec97097",
       "lexical_form": "might",
       "normalised_form": "might",
       "text": "might",
@@ -834,6 +857,7 @@
       ]
     },
     {
+      "entry_id": "48b14bf4-1ed6-4acc-8ca9-cd1c8bbd330a",
       "lexical_form": "must",
       "normalised_form": "must",
       "text": "must",
@@ -870,6 +894,7 @@
       ]
     },
     {
+      "entry_id": "2ec8a2cc-663c-451c-947b-57b99d023b6a",
       "lexical_form": "ought",
       "normalised_form": "ought",
       "text": "ought",
@@ -906,6 +931,7 @@
       ]
     },
     {
+      "entry_id": "dd0df66c-98c4-4d85-b8ec-6e3ed7f17ee1",
       "lexical_form": "need",
       "normalised_form": "need",
       "text": "need",
@@ -942,6 +968,7 @@
       ]
     },
     {
+      "entry_id": "69ae7042-9010-46df-a8b9-629de0a8ee3a",
       "lexical_form": "dare",
       "normalised_form": "dare",
       "text": "dare",
@@ -978,6 +1005,7 @@
       ]
     },
     {
+      "entry_id": "d8b9d2df-e0e3-429b-9f3c-847e143027a0",
       "lexical_form": "done",
       "normalised_form": "done",
       "text": "done",
@@ -1014,6 +1042,7 @@
       ]
     },
     {
+      "entry_id": "051526b6-d733-4266-8a05-9314067c2d7b",
       "lexical_form": "doing",
       "normalised_form": "doing",
       "text": "doing",
@@ -1050,6 +1079,7 @@
       ]
     },
     {
+      "entry_id": "3ffa3abc-221a-4b84-b2a5-4e146823ce23",
       "lexical_form": "don't",
       "normalised_form": "don't",
       "text": "don't",
@@ -1086,6 +1116,7 @@
       ]
     },
     {
+      "entry_id": "eadbdca8-a959-45bf-a396-f70247f5ef14",
       "lexical_form": "can't",
       "normalised_form": "can't",
       "text": "can't",
@@ -1122,6 +1153,7 @@
       ]
     },
     {
+      "entry_id": "1543f711-e9d8-453b-a9aa-5b7efe77bc7a",
       "lexical_form": "I'm",
       "normalised_form": "i'm",
       "text": "I'm",
@@ -1158,6 +1190,7 @@
       ]
     },
     {
+      "entry_id": "06352a19-d6ba-4582-b491-4ee5c7246961",
       "lexical_form": "it's",
       "normalised_form": "it's",
       "text": "it's",
@@ -1194,6 +1227,7 @@
       ]
     },
     {
+      "entry_id": "a8017f47-42db-4ef6-b813-1986a0bdc1c9",
       "lexical_form": "isn't",
       "normalised_form": "isn't",
       "text": "isn't",
@@ -1230,6 +1264,7 @@
       ]
     },
     {
+      "entry_id": "43ccef47-94df-4afd-a8a5-a9d74b5c6586",
       "lexical_form": "wasn't",
       "normalised_form": "wasn't",
       "text": "wasn't",
@@ -1266,6 +1301,7 @@
       ]
     },
     {
+      "entry_id": "f3d37c48-e2d9-49fa-bf49-8563cbb4c241",
       "lexical_form": "hadn't",
       "normalised_form": "hadn't",
       "text": "hadn't",

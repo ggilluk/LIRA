@@ -6,6 +6,7 @@
   "count": 7,
   "words": [
     {
+      "entry_id": "f9363c79-46cb-4c3a-bf78-ade8b27df308",
       "lexical_form": "for",
       "normalised_form": "for",
       "text": "for",
@@ -42,6 +43,7 @@
       ]
     },
     {
+      "entry_id": "dd9a22ee-2290-4d10-b27e-5b7c90b2e089",
       "lexical_form": "and",
       "normalised_form": "and",
       "text": "and",
@@ -78,6 +80,7 @@
       ]
     },
     {
+      "entry_id": "2bb15f2d-0798-41c6-a448-15662f5b80c7",
       "lexical_form": "nor",
       "normalised_form": "nor",
       "text": "nor",
@@ -114,6 +117,7 @@
       ]
     },
     {
+      "entry_id": "5492e408-c6de-4a03-85c4-4d351b42826e",
       "lexical_form": "but",
       "normalised_form": "but",
       "text": "but",
@@ -150,6 +154,7 @@
       ]
     },
     {
+      "entry_id": "db85153a-4b0e-4d79-b426-97880ae06b3b",
       "lexical_form": "or",
       "normalised_form": "or",
       "text": "or",
@@ -186,6 +191,7 @@
       ]
     },
     {
+      "entry_id": "423e5eb5-e290-4f60-a89a-935bfd89d53d",
       "lexical_form": "yet",
       "normalised_form": "yet",
       "text": "yet",
@@ -222,6 +228,7 @@
       ]
     },
     {
+      "entry_id": "8f86f56f-8fc5-4381-9b70-bcb1d5ff078a",
       "lexical_form": "so",
       "normalised_form": "so",
       "text": "so",

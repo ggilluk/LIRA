@@ -11,8 +11,6 @@ special case needed here."""
 
 from typing import Tuple
 
-from lira.value_objects import Text
-
 from ..data.dictionary import Dictionary
 from ..data.word import Word
 from ..data.word_identification import WordIdentification
@@ -75,18 +73,19 @@ class DictionaryProcessor:
     def register_conflicting_sense(self, word: Word) -> Word:
         """Registers `word` as a distinct sense of a lexical form already
         present in this Dictionary under a different meaning -- the
-        "modify the word's name" resolution path for a word-sense
-        conflict (see vocabulary/documentation/README.md, Cross-Domain
-        Vocabulary). `word.text` (the raw surface form a tokenizer would
-        produce) is left untouched; only `word.lexical_form` gets the
-        sense-numbered suffix, so the two senses are distinguishable by
-        identity even though `Dictionary.lookup` still only resolves to
-        one of them by default -- `Dictionary.lookup_all` returns every
-        coexisting sense. Deciding *whether* a conflict warrants
-        this treatment (versus identifying or creating another Domain
-        that already owns the other sense) is a judgement call for the
-        caller, not something this method infers."""
-        word.lexical_form = Text(value=self.dictionary.next_available_lexical_form(word.lexical_form.value))
+        "keep both, tell them apart by identity" resolution path for a
+        word-sense conflict (see vocabulary/documentation/README.md,
+        9.2). Neither `word.text` nor `word.lexical_form` is touched:
+        both senses keep the identical, unmangled lexical_form (no
+        "particle_2"-style suffix), and stay distinguishable by their
+        own `entry_id` (Word 4.2) instead -- `Dictionary.lookup` still
+        only resolves to one of them by default (whichever was appended
+        first), but `Dictionary.lookup_all` returns every coexisting
+        sense, and `word.entry_id` uniquely names this one. Deciding
+        *whether* a conflict warrants this treatment (versus identifying
+        or creating another Domain that already owns the other sense) is
+        a judgement call for the caller, not something this method
+        infers."""
         self.dictionary.append(word)
         return word
 

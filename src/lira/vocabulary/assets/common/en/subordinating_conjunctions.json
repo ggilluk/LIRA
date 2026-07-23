@@ -6,6 +6,7 @@
   "count": 36,
   "words": [
     {
+      "entry_id": "e11c6e86-9d94-442d-b7ae-2de5b8d805dd",
       "lexical_form": "although",
       "normalised_form": "although",
       "text": "although",
@@ -42,6 +43,7 @@
       ]
     },
     {
+      "entry_id": "2e6e343f-fbd4-48ee-91a0-5f19aebafef3",
       "lexical_form": "because",
       "normalised_form": "because",
       "text": "because",
@@ -78,6 +80,7 @@
       ]
     },
     {
+      "entry_id": "08e55d36-619e-466b-adee-aeecf2211a4e",
       "lexical_form": "if",
       "normalised_form": "if",
       "text": "if",
@@ -114,6 +117,7 @@
       ]
     },
     {
+      "entry_id": "df630752-5eac-4781-ba7b-17265729bc7e",
       "lexical_form": "in case",
       "normalised_form": "in case",
       "text": "in case",
@@ -150,6 +154,7 @@
       ]
     },
     {
+      "entry_id": "fbf1bf01-71d4-4074-b589-65ec67bf3045",
       "lexical_form": "in order that",
       "normalised_form": "in order that",
       "text": "in order that",
@@ -186,6 +191,7 @@
       ]
     },
     {
+      "entry_id": "23ef5fe9-a36b-4aa5-b0b6-82e972ef3cc4",
       "lexical_form": "in that",
       "normalised_form": "in that",
       "text": "in that",
@@ -222,6 +228,7 @@
       ]
     },
     {
+      "entry_id": "89b321a5-b1ef-4ae5-9349-bcbce5e73832",
       "lexical_form": "inasmuch as",
       "normalised_form": "inasmuch as",
       "text": "inasmuch as",
@@ -258,6 +265,7 @@
       ]
     },
     {
+      "entry_id": "49419c8d-c5f8-4fb7-8c65-f5f6899b71f5",
       "lexical_form": "insofar as",
       "normalised_form": "insofar as",
       "text": "insofar as",
@@ -294,6 +302,7 @@
       ]
     },
     {
+      "entry_id": "75ed18aa-fef0-4463-b274-d885a60cb7b6",
       "lexical_form": "lest",
       "normalised_form": "lest",
       "text": "lest",
@@ -330,6 +339,7 @@
       ]
     },
     {
+      "entry_id": "b03dede9-0a44-4853-aa69-c3f0cb77f6b8",
       "lexical_form": "now that",
       "normalised_form": "now that",
       "text": "now that",
@@ -366,6 +376,7 @@
       ]
     },
     {
+      "entry_id": "8df00834-8846-45a3-94b1-0b698ab699f1",
       "lexical_form": "once",
       "normalised_form": "once",
       "text": "once",
@@ -402,6 +413,7 @@
       ]
     },
     {
+      "entry_id": "2df8ab09-5c34-4bb9-8b12-d7ce52da2b8c",
       "lexical_form": "provided",
       "normalised_form": "provided",
       "text": "provided",
@@ -438,6 +450,7 @@
       ]
     },
     {
+      "entry_id": "3d1dc826-6524-486a-be53-fade252972a4",
       "lexical_form": "provided that",
       "normalised_form": "provided that",
       "text": "provided that",
@@ -474,6 +487,7 @@
       ]
     },
     {
+      "entry_id": "82e8f14d-676a-41dc-aba9-ae6e075ee621",
       "lexical_form": "providing",
       "normalised_form": "providing",
       "text": "providing",
@@ -510,6 +524,7 @@
       ]
     },
     {
+      "entry_id": "932694c7-21a0-4459-ae05-8869ff86ed18",
       "lexical_form": "rather than",
       "normalised_form": "rather than",
       "text": "rather than",
@@ -546,6 +561,7 @@
       ]
     },
     {
+      "entry_id": "4e50c65f-5e90-4c64-b01e-8febabdfa452",
       "lexical_form": "so long as",
       "normalised_form": "so long as",
       "text": "so long as",
@@ -582,6 +598,7 @@
       ]
     },
     {
+      "entry_id": "f37a700b-dd86-4d38-82c6-bbfe7775541f",
       "lexical_form": "so that",
       "normalised_form": "so that",
       "text": "so that",
@@ -618,6 +635,7 @@
       ]
     },
     {
+      "entry_id": "1781592b-f385-4f84-aad5-dd5181af7ee9",
       "lexical_form": "supposing",
       "normalised_form": "supposing",
       "text": "supposing",
@@ -654,6 +672,7 @@
       ]
     },
     {
+      "entry_id": "6e5e7218-db44-4437-9011-1e334b9e0091",
       "lexical_form": "though",
       "normalised_form": "though",
       "text": "though",
@@ -690,6 +709,7 @@
       ]
     },
     {
+      "entry_id": "c0b45b6c-d794-4c48-b54f-5647abf3383b",
       "lexical_form": "unless",
       "normalised_form": "unless",
       "text": "unless",
@@ -726,6 +746,7 @@
       ]
     },
     {
+      "entry_id": "d8bc6579-d517-472f-bebf-891ff92950c3",
       "lexical_form": "when",
       "normalised_form": "when",
       "text": "when",
@@ -762,6 +783,7 @@
       ]
     },
     {
+      "entry_id": "58b10ece-f81a-4fe5-ac33-41c7bf28e55a",
       "lexical_form": "whenever",
       "normalised_form": "whenever",
       "text": "whenever",
@@ -798,6 +820,7 @@
       ]
     },
     {
+      "entry_id": "3c129e92-e32f-4c2e-9d40-a346cde0e0de",
       "lexical_form": "where",
       "normalised_form": "where",
       "text": "where",
@@ -834,6 +857,7 @@
       ]
     },
     {
+      "entry_id": "109eece1-e131-4632-bb3f-033807cb5541",
       "lexical_form": "whereas",
       "normalised_form": "whereas",
       "text": "whereas",
@@ -870,6 +894,7 @@
       ]
     },
     {
+      "entry_id": "4a65ac05-6e5f-46a9-bcf2-30671b41cbb6",
       "lexical_form": "wherever",
       "normalised_form": "wherever",
       "text": "wherever",
@@ -906,6 +931,7 @@
       ]
     },
     {
+      "entry_id": "107fba3f-3e8b-4ad2-a8bb-4299509fe2b0",
       "lexical_form": "whether",
       "normalised_form": "whether",
       "text": "whether",
@@ -942,6 +968,7 @@
       ]
     },
     {
+      "entry_id": "9a606add-1b31-46c0-a9ac-5a4c4605f77c",
       "lexical_form": "while",
       "normalised_form": "while",
       "text": "while",
@@ -978,6 +1005,7 @@
       ]
     },
     {
+      "entry_id": "a8ad2414-6a16-40b6-b5fc-f07642472b7c",
       "lexical_form": "as if",
       "normalised_form": "as if",
       "text": "as if",
@@ -1014,6 +1042,7 @@
       ]
     },
     {
+      "entry_id": "8effe7fe-e4c9-42d6-8508-b0380f75e8f0",
       "lexical_form": "as long as",
       "normalised_form": "as long as",
       "text": "as long as",
@@ -1050,6 +1079,7 @@
       ]
     },
     {
+      "entry_id": "464c2930-1fdb-455e-b6a9-ce9274aabcd4",
       "lexical_form": "as much as",
       "normalised_form": "as much as",
       "text": "as much as",
@@ -1086,6 +1116,7 @@
       ]
     },
     {
+      "entry_id": "ad2f0ca8-870f-4fcb-a78d-41a61196f7e9",
       "lexical_form": "as soon as",
       "normalised_form": "as soon as",
       "text": "as soon as",
@@ -1122,6 +1153,7 @@
       ]
     },
     {
+      "entry_id": "0e841678-9d68-4fc5-9dce-7e75788c5cfd",
       "lexical_form": "as though",
       "normalised_form": "as though",
       "text": "as though",
@@ -1158,6 +1190,7 @@
       ]
     },
     {
+      "entry_id": "3055c52c-9cc2-4570-bc14-a7c47db8b355",
       "lexical_form": "even if",
       "normalised_form": "even if",
       "text": "even if",
@@ -1194,6 +1227,7 @@
       ]
     },
     {
+      "entry_id": "2fc2a75d-90a1-49b4-9141-bf3be3bde49f",
       "lexical_form": "even though",
       "normalised_form": "even though",
       "text": "even though",
@@ -1230,6 +1264,7 @@
       ]
     },
     {
+      "entry_id": "0c7ccee3-c7c8-44f0-bab0-80dc1088986a",
       "lexical_form": "every time",
       "normalised_form": "every time",
       "text": "every time",
@@ -1266,6 +1301,7 @@
       ]
     },
     {
+      "entry_id": "f2fff921-feec-4060-abc0-a04f513ec759",
       "lexical_form": "given that",
       "normalised_form": "given that",
       "text": "given that",

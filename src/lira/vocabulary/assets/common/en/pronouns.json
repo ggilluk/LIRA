@@ -6,6 +6,7 @@
   "count": 99,
   "words": [
     {
+      "entry_id": "0808cf58-5260-4aa2-bf3e-f6a6fd0ce5ba",
       "lexical_form": "I",
       "normalised_form": "i",
       "text": "I",
@@ -42,6 +43,7 @@
       ]
     },
     {
+      "entry_id": "00b6a315-d8f0-42e2-a8f7-5acf9d5f58d6",
       "lexical_form": "you",
       "normalised_form": "you",
       "text": "you",
@@ -78,6 +80,7 @@
       ]
     },
     {
+      "entry_id": "c3e36c36-f031-4df5-866e-583a380b8596",
       "lexical_form": "he",
       "normalised_form": "he",
       "text": "he",
@@ -114,6 +117,7 @@
       ]
     },
     {
+      "entry_id": "059079be-fc2e-47ec-8263-f8790085aa37",
       "lexical_form": "she",
       "normalised_form": "she",
       "text": "she",
@@ -150,6 +154,7 @@
       ]
     },
     {
+      "entry_id": "d8d84adb-39af-4f8c-a024-23b45a80883e",
       "lexical_form": "it",
       "normalised_form": "it",
       "text": "it",
@@ -186,6 +191,7 @@
       ]
     },
     {
+      "entry_id": "fae7180c-ea24-4d82-a58b-ad4a1fb1ed57",
       "lexical_form": "we",
       "normalised_form": "we",
       "text": "we",
@@ -222,6 +228,7 @@
       ]
     },
     {
+      "entry_id": "30274b4b-9df8-4f72-9514-47e34db0ca12",
       "lexical_form": "they",
       "normalised_form": "they",
       "text": "they",
@@ -258,6 +265,7 @@
       ]
     },
     {
+      "entry_id": "6e76c7f4-5ad3-414e-a6b9-6e6ec4fcd5b1",
       "lexical_form": "me",
       "normalised_form": "me",
       "text": "me",
@@ -294,6 +302,7 @@
       ]
     },
     {
+      "entry_id": "d09bc6c6-ccd9-4ff2-9750-b3c6c9b1eba3",
       "lexical_form": "him",
       "normalised_form": "him",
       "text": "him",
@@ -330,6 +339,7 @@
       ]
     },
     {
+      "entry_id": "b571f1ee-87cb-4085-bfd4-f76054e32c6b",
       "lexical_form": "us",
       "normalised_form": "us",
       "text": "us",
@@ -366,6 +376,7 @@
       ]
     },
     {
+      "entry_id": "b7848f7e-8b4d-42e5-bec1-75d1889b9209",
       "lexical_form": "them",
       "normalised_form": "them",
       "text": "them",
@@ -402,6 +413,7 @@
       ]
     },
     {
+      "entry_id": "491c6f85-cef4-4d05-84c4-b8399b6fbff6",
       "lexical_form": "mine",
       "normalised_form": "mine",
       "text": "mine",
@@ -438,6 +450,7 @@
       ]
     },
     {
+      "entry_id": "fc85616d-4470-4894-8598-5d4659eef1d6",
       "lexical_form": "yours",
       "normalised_form": "yours",
       "text": "yours",
@@ -474,6 +487,7 @@
       ]
     },
     {
+      "entry_id": "125a2d3b-1336-433f-a52a-9a7a089714e2",
       "lexical_form": "hers",
       "normalised_form": "hers",
       "text": "hers",
@@ -510,6 +524,7 @@
       ]
     },
     {
+      "entry_id": "41ff29fc-ae57-4922-85e8-24166c8349ee",
       "lexical_form": "ours",
       "normalised_form": "ours",
       "text": "ours",
@@ -546,6 +561,7 @@
       ]
     },
     {
+      "entry_id": "d5c6a5a4-39b4-4c00-a829-e910aeda47cb",
       "lexical_form": "theirs",
       "normalised_form": "theirs",
       "text": "theirs",
@@ -582,6 +598,7 @@
       ]
     },
     {
+      "entry_id": "62a70b23-2ac1-4dd7-86f7-d2c6fe63d51f",
       "lexical_form": "myself",
       "normalised_form": "myself",
       "text": "myself",
@@ -618,6 +635,7 @@
       ]
     },
     {
+      "entry_id": "5137a86d-9c2e-4823-993f-d49f3a0e3a7f",
       "lexical_form": "yourself",
       "normalised_form": "yourself",
       "text": "yourself",
@@ -654,6 +672,7 @@
       ]
     },
     {
+      "entry_id": "3d53834c-c4f8-462a-9fe1-a8512c882632",
       "lexical_form": "himself",
       "normalised_form": "himself",
       "text": "himself",
@@ -690,6 +709,7 @@
       ]
     },
     {
+      "entry_id": "f67a4cee-b05e-42fa-ae01-6914dbf2d071",
       "lexical_form": "herself",
       "normalised_form": "herself",
       "text": "herself",
@@ -726,6 +746,7 @@
       ]
     },
     {
+      "entry_id": "2745e786-810e-4d43-b180-d307028fcd34",
       "lexical_form": "itself",
       "normalised_form": "itself",
       "text": "itself",
@@ -762,6 +783,7 @@
       ]
     },
     {
+      "entry_id": "a354eaeb-ce02-453a-b879-baefce0411b1",
       "lexical_form": "oneself",
       "normalised_form": "oneself",
       "text": "oneself",
@@ -798,6 +820,7 @@
       ]
     },
     {
+      "entry_id": "ef4f2204-abb1-48fc-a5a8-9cddc1414709",
       "lexical_form": "ourselves",
       "normalised_form": "ourselves",
       "text": "ourselves",
@@ -834,6 +857,7 @@
       ]
     },
     {
+      "entry_id": "2651f511-3ed8-4e0e-a727-721bcd84532e",
       "lexical_form": "yourselves",
       "normalised_form": "yourselves",
       "text": "yourselves",
@@ -870,6 +894,7 @@
       ]
     },
     {
+      "entry_id": "3a941ec6-9c79-478b-96ee-5ee8aa47b622",
       "lexical_form": "themselves",
       "normalised_form": "themselves",
       "text": "themselves",
@@ -906,6 +931,7 @@
       ]
     },
     {
+      "entry_id": "2930707b-0c3b-4b2f-bc79-6ff2bd6adb9f",
       "lexical_form": "ourself",
       "normalised_form": "ourself",
       "text": "ourself",
@@ -944,6 +970,7 @@
       ]
     },
     {
+      "entry_id": "71ab17b3-25ba-491b-8ccd-87962a71bbb1",
       "lexical_form": "thyself",
       "normalised_form": "thyself",
       "text": "thyself",
@@ -982,6 +1009,7 @@
       ]
     },
     {
+      "entry_id": "e320b9d2-7f61-40fa-acb8-688bbe7b982d",
       "lexical_form": "who",
       "normalised_form": "who",
       "text": "who",
@@ -1018,6 +1046,7 @@
       ]
     },
     {
+      "entry_id": "22a1b1e7-30dc-4ba9-961b-f1e1b50e28dd",
       "lexical_form": "whom",
       "normalised_form": "whom",
       "text": "whom",
@@ -1054,6 +1083,7 @@
       ]
     },
     {
+      "entry_id": "f622a93a-2e02-4b27-a218-3e579e4909a6",
       "lexical_form": "whose",
       "normalised_form": "whose",
       "text": "whose",
@@ -1090,6 +1120,7 @@
       ]
     },
     {
+      "entry_id": "fd1e5555-8ec5-43e5-a674-b5327a4936f1",
       "lexical_form": "what",
       "normalised_form": "what",
       "text": "what",
@@ -1126,6 +1157,7 @@
       ]
     },
     {
+      "entry_id": "05ddb5a4-44b3-49fe-85d3-10f035b4fae4",
       "lexical_form": "what",
       "normalised_form": "what",
       "text": "what",
@@ -1162,6 +1194,7 @@
       ]
     },
     {
+      "entry_id": "877aa886-1443-42d9-b119-54d3d3639651",
       "lexical_form": "which",
       "normalised_form": "which",
       "text": "which",
@@ -1198,6 +1231,7 @@
       ]
     },
     {
+      "entry_id": "73bc8861-dd64-44fa-a422-bfd127e2d0bd",
       "lexical_form": "which",
       "normalised_form": "which",
       "text": "which",
@@ -1234,6 +1268,7 @@
       ]
     },
     {
+      "entry_id": "9c5ee481-51de-4a13-b941-d46920a54925",
       "lexical_form": "whoever",
       "normalised_form": "whoever",
       "text": "whoever",
@@ -1270,6 +1305,7 @@
       ]
     },
     {
+      "entry_id": "5711a1e1-fa35-4dfa-9327-cb8605c41036",
       "lexical_form": "whomever",
       "normalised_form": "whomever",
       "text": "whomever",
@@ -1306,6 +1342,7 @@
       ]
     },
     {
+      "entry_id": "b1f13c4c-e8e0-4294-92f5-f1b1976a54e8",
       "lexical_form": "whichever",
       "normalised_form": "whichever",
       "text": "whichever",
@@ -1342,6 +1379,7 @@
       ]
     },
     {
+      "entry_id": "198722ba-042d-4230-b9c2-e1247b4113b0",
       "lexical_form": "whoso",
       "normalised_form": "whoso",
       "text": "whoso",
@@ -1380,6 +1418,7 @@
       ]
     },
     {
+      "entry_id": "b1053e9a-c88b-4a36-8aa8-1afc185fc66c",
       "lexical_form": "each other",
       "normalised_form": "each other",
       "text": "each other",
@@ -1416,6 +1455,7 @@
       ]
     },
     {
+      "entry_id": "93a2c81b-69bb-49e8-9205-933cf1f8d852",
       "lexical_form": "one another",
       "normalised_form": "one another",
       "text": "one another",
@@ -1452,6 +1492,7 @@
       ]
     },
     {
+      "entry_id": "303b5c34-d4b0-4844-8586-5075fc5880c4",
       "lexical_form": "someone",
       "normalised_form": "someone",
       "text": "someone",
@@ -1488,6 +1529,7 @@
       ]
     },
     {
+      "entry_id": "a0dc64ab-7abc-4723-95e6-476e71affe81",
       "lexical_form": "somebody",
       "normalised_form": "somebody",
       "text": "somebody",
@@ -1524,6 +1566,7 @@
       ]
     },
     {
+      "entry_id": "7e92013a-de50-45ab-905a-f2a31959b903",
       "lexical_form": "anyone",
       "normalised_form": "anyone",
       "text": "anyone",
@@ -1560,6 +1603,7 @@
       ]
     },
     {
+      "entry_id": "2295e304-76ad-4b94-9f9d-9ad2a48d1cda",
       "lexical_form": "anybody",
       "normalised_form": "anybody",
       "text": "anybody",
@@ -1596,6 +1640,7 @@
       ]
     },
     {
+      "entry_id": "8a7f4590-6693-4153-aa6e-c9ad94b38c3c",
       "lexical_form": "everyone",
       "normalised_form": "everyone",
       "text": "everyone",
@@ -1632,6 +1677,7 @@
       ]
     },
     {
+      "entry_id": "075fc4b7-6c53-457b-8808-787b2f2a7056",
       "lexical_form": "everybody",
       "normalised_form": "everybody",
       "text": "everybody",
@@ -1668,6 +1714,7 @@
       ]
     },
     {
+      "entry_id": "8ab77207-866d-48c4-bd5a-4cd1917d9c3a",
       "lexical_form": "no one",
       "normalised_form": "no one",
       "text": "no one",
@@ -1704,6 +1751,7 @@
       ]
     },
     {
+      "entry_id": "f0400dd2-c89d-4dea-a6fc-d16843dfb230",
       "lexical_form": "nobody",
       "normalised_form": "nobody",
       "text": "nobody",
@@ -1740,6 +1788,7 @@
       ]
     },
     {
+      "entry_id": "9387a307-c7aa-4409-a843-d574d16f7240",
       "lexical_form": "something",
       "normalised_form": "something",
       "text": "something",
@@ -1776,6 +1825,7 @@
       ]
     },
     {
+      "entry_id": "9267bf9d-4ba4-4813-9636-7c6c027c5805",
       "lexical_form": "anything",
       "normalised_form": "anything",
       "text": "anything",
@@ -1812,6 +1862,7 @@
       ]
     },
     {
+      "entry_id": "80c21324-5052-4e48-8e0f-997860960c7e",
       "lexical_form": "everything",
       "normalised_form": "everything",
       "text": "everything",
@@ -1848,6 +1899,7 @@
       ]
     },
     {
+      "entry_id": "d9df208c-9559-42f4-aae0-c2b9423dc1dd",
       "lexical_form": "nothing",
       "normalised_form": "nothing",
       "text": "nothing",
@@ -1884,6 +1936,7 @@
       ]
     },
     {
+      "entry_id": "890f3cab-09f4-4d26-8106-84e3774e801c",
       "lexical_form": "somewhere",
       "normalised_form": "somewhere",
       "text": "somewhere",
@@ -1920,6 +1973,7 @@
       ]
     },
     {
+      "entry_id": "eaca21b4-68a0-4382-9c1b-f3e9419dd250",
       "lexical_form": "anywhere",
       "normalised_form": "anywhere",
       "text": "anywhere",
@@ -1956,6 +2010,7 @@
       ]
     },
     {
+      "entry_id": "d3cf1944-a8b8-4f2f-b80b-c349e39e7f8f",
       "lexical_form": "everywhere",
       "normalised_form": "everywhere",
       "text": "everywhere",
@@ -1992,6 +2047,7 @@
       ]
     },
     {
+      "entry_id": "d67da009-229a-49f3-bb09-d8fb74248939",
       "lexical_form": "nowhere",
       "normalised_form": "nowhere",
       "text": "nowhere",
@@ -2028,6 +2084,7 @@
       ]
     },
     {
+      "entry_id": "d5463ee8-4923-46ca-8db2-8b9d4b1561c4",
       "lexical_form": "someone else",
       "normalised_form": "someone else",
       "text": "someone else",
@@ -2064,6 +2121,7 @@
       ]
     },
     {
+      "entry_id": "35913e87-a159-40eb-a626-849cdcef9c62",
       "lexical_form": "somebody else",
       "normalised_form": "somebody else",
       "text": "somebody else",
@@ -2100,6 +2158,7 @@
       ]
     },
     {
+      "entry_id": "2dc1fc85-7dcc-4940-a7f7-a38849af366c",
       "lexical_form": "anyone else",
       "normalised_form": "anyone else",
       "text": "anyone else",
@@ -2136,6 +2195,7 @@
       ]
     },
     {
+      "entry_id": "8e01f9ba-775b-4347-9a8a-bf522c8f7755",
       "lexical_form": "anybody else",
       "normalised_form": "anybody else",
       "text": "anybody else",
@@ -2172,6 +2232,7 @@
       ]
     },
     {
+      "entry_id": "7ac66074-62d0-4f7b-8147-766486e3061e",
       "lexical_form": "everyone else",
       "normalised_form": "everyone else",
       "text": "everyone else",
@@ -2208,6 +2269,7 @@
       ]
     },
     {
+      "entry_id": "a6a17b56-e36d-43a0-92e1-2bc5f899ee3b",
       "lexical_form": "everybody else",
       "normalised_form": "everybody else",
       "text": "everybody else",
@@ -2244,6 +2306,7 @@
       ]
     },
     {
+      "entry_id": "272d2c43-a97c-4e18-8001-3fa2892a0f4b",
       "lexical_form": "no one else",
       "normalised_form": "no one else",
       "text": "no one else",
@@ -2280,6 +2343,7 @@
       ]
     },
     {
+      "entry_id": "ddbabd0e-4f03-44d4-a8dd-3602f62420c9",
       "lexical_form": "nobody else",
       "normalised_form": "nobody else",
       "text": "nobody else",
@@ -2316,6 +2380,7 @@
       ]
     },
     {
+      "entry_id": "7027291a-32ac-49cb-a0ec-432ffe465906",
       "lexical_form": "one",
       "normalised_form": "one",
       "text": "one",
@@ -2352,6 +2417,7 @@
       ]
     },
     {
+      "entry_id": "abf29424-f0c6-45aa-950a-b9ad45d2b703",
       "lexical_form": "ones",
       "normalised_form": "ones",
       "text": "ones",
@@ -2388,6 +2454,7 @@
       ]
     },
     {
+      "entry_id": "a1cc8dc1-810c-4e52-9169-41fa89adee26",
       "lexical_form": "one's",
       "normalised_form": "one's",
       "text": "one's",
@@ -2424,6 +2491,7 @@
       ]
     },
     {
+      "entry_id": "81f1e84a-df39-44d6-867c-b8c9a00c3ed5",
       "lexical_form": "none",
       "normalised_form": "none",
       "text": "none",
@@ -2460,6 +2528,7 @@
       ]
     },
     {
+      "entry_id": "ec191d5c-2d21-453a-a924-c0c04cf76774",
       "lexical_form": "others",
       "normalised_form": "others",
       "text": "others",
@@ -2496,6 +2565,7 @@
       ]
     },
     {
+      "entry_id": "87d4b70d-7ed8-4f72-9d7b-ebeb1fb11ec5",
       "lexical_form": "fewer",
       "normalised_form": "fewer",
       "text": "fewer",
@@ -2532,6 +2602,7 @@
       ]
     },
     {
+      "entry_id": "f96bbc3c-30f0-41d0-8d50-29b41ad75329",
       "lexical_form": "more",
       "normalised_form": "more",
       "text": "more",
@@ -2568,6 +2639,7 @@
       ]
     },
     {
+      "entry_id": "c741471f-43dd-434b-bce7-2834f178b2ed",
       "lexical_form": "less",
       "normalised_form": "less",
       "text": "less",
@@ -2604,6 +2676,7 @@
       ]
     },
     {
+      "entry_id": "1bbbeb1b-2016-4317-a942-3b8e9f0e26f1",
       "lexical_form": "same",
       "normalised_form": "same",
       "text": "same",
@@ -2640,6 +2713,7 @@
       ]
     },
     {
+      "entry_id": "5959b001-fbf8-4266-a0a4-fd2250beee0f",
       "lexical_form": "thou",
       "normalised_form": "thou",
       "text": "thou",
@@ -2678,6 +2752,7 @@
       ]
     },
     {
+      "entry_id": "bde2ffb5-6c9f-4cc0-bbde-792d5737bcb2",
       "lexical_form": "thee",
       "normalised_form": "thee",
       "text": "thee",
@@ -2716,6 +2791,7 @@
       ]
     },
     {
+      "entry_id": "f17d6d51-4422-4a4d-8820-757d1f461b7b",
       "lexical_form": "thy",
       "normalised_form": "thy",
       "text": "thy",
@@ -2754,6 +2830,7 @@
       ]
     },
     {
+      "entry_id": "a0b7666c-f914-4e63-84f2-951da9348ed6",
       "lexical_form": "thine",
       "normalised_form": "thine",
       "text": "thine",
@@ -2792,6 +2869,7 @@
       ]
     },
     {
+      "entry_id": "56eace43-6195-40bc-a91b-27595ee8e44f",
       "lexical_form": "ye",
       "normalised_form": "ye",
       "text": "ye",
@@ -2830,6 +2908,7 @@
       ]
     },
     {
+      "entry_id": "195a477b-4fcf-45e8-8f9e-2ed782961fb1",
       "lexical_form": "aught",
       "normalised_form": "aught",
       "text": "aught",
@@ -2868,6 +2947,7 @@
       ]
     },
     {
+      "entry_id": "3b2cb3ed-9148-45c8-875a-23357ea20634",
       "lexical_form": "naught",
       "normalised_form": "naught",
       "text": "naught",
@@ -2906,6 +2986,7 @@
       ]
     },
     {
+      "entry_id": "93f6ce5b-01ab-4fa0-91fe-40d20929529a",
       "lexical_form": "yon",
       "normalised_form": "yon",
       "text": "yon",
@@ -2944,6 +3025,7 @@
       ]
     },
     {
+      "entry_id": "aa1702bf-e355-4215-80df-aa0fdf94dfb4",
       "lexical_form": "yonder",
       "normalised_form": "yonder",
       "text": "yonder",
@@ -2982,6 +3064,7 @@
       ]
     },
     {
+      "entry_id": "cd8a4f05-7fbf-4715-abd6-55d4dda193d3",
       "lexical_form": "the former",
       "normalised_form": "the former",
       "text": "the former",
@@ -3018,6 +3101,7 @@
       ]
     },
     {
+      "entry_id": "a7e3b305-9d88-4a56-93ab-eeffbfbf5626",
       "lexical_form": "the latter",
       "normalised_form": "the latter",
       "text": "the latter",
@@ -3054,6 +3138,7 @@
       ]
     },
     {
+      "entry_id": "fa998c73-b861-420d-9091-6550e0d69ce1",
       "lexical_form": "y'all",
       "normalised_form": "y'all",
       "text": "y'all",
@@ -3094,6 +3179,7 @@
       ]
     },
     {
+      "entry_id": "e1c17ccd-d3ca-4731-b4e8-959d5f645c7d",
       "lexical_form": "youse",
       "normalised_form": "youse",
       "text": "youse",
@@ -3134,6 +3220,7 @@
       ]
     },
     {
+      "entry_id": "d958e52c-fe43-49b4-a3c6-21f5c2689427",
       "lexical_form": "a few",
       "normalised_form": "a few",
       "text": "a few",
@@ -3170,6 +3257,7 @@
       ]
     },
     {
+      "entry_id": "47bd2bce-1083-407c-88b5-17e2beaef98d",
       "lexical_form": "a little",
       "normalised_form": "a little",
       "text": "a little",
@@ -3206,6 +3294,7 @@
       ]
     },
     {
+      "entry_id": "331ebc7f-19a5-4e7f-b698-9d50ae5a882c",
       "lexical_form": "a lot",
       "normalised_form": "a lot",
       "text": "a lot",
@@ -3242,6 +3331,7 @@
       ]
     },
     {
+      "entry_id": "08c68e61-e52f-464d-8519-a7a98dbf5c94",
       "lexical_form": "a bit",
       "normalised_form": "a bit",
       "text": "a bit",
@@ -3278,6 +3368,7 @@
       ]
     },
     {
+      "entry_id": "c049c10f-becf-4090-b49b-725d11200562",
       "lexical_form": "half",
       "normalised_form": "half",
       "text": "half",
@@ -3314,6 +3405,7 @@
       ]
     },
     {
+      "entry_id": "cd3c1bb5-e48a-4556-a533-6b40f7d22648",
       "lexical_form": "plenty",
       "normalised_form": "plenty",
       "text": "plenty",
@@ -3350,6 +3442,7 @@
       ]
     },
     {
+      "entry_id": "8d44023c-7d67-4f71-a7a2-ca97d2d3e66f",
       "lexical_form": "whosoever",
       "normalised_form": "whosoever",
       "text": "whosoever",
@@ -3388,6 +3481,7 @@
       ]
     },
     {
+      "entry_id": "e69d6892-9efc-4a96-9e2b-d1fcc13a27ad",
       "lexical_form": "whatsoever",
       "normalised_form": "whatsoever",
       "text": "whatsoever",
@@ -3424,6 +3518,7 @@
       ]
     },
     {
+      "entry_id": "4c484fa6-49eb-4945-b411-7ff7e60b1caf",
       "lexical_form": "least",
       "normalised_form": "least",
       "text": "least",
@@ -3460,6 +3555,7 @@
       ]
     },
     {
+      "entry_id": "462745bf-4284-40fd-b862-92f0dcd4a91c",
       "lexical_form": "this",
       "normalised_form": "this",
       "text": "this",
@@ -3496,6 +3592,7 @@
       ]
     },
     {
+      "entry_id": "c3cac52e-b72e-46d5-bb80-7be7e34d5e03",
       "lexical_form": "that",
       "normalised_form": "that",
       "text": "that",
@@ -3532,6 +3629,7 @@
       ]
     },
     {
+      "entry_id": "1b0f2816-5007-4420-a4c8-1a47959dce20",
       "lexical_form": "these",
       "normalised_form": "these",
       "text": "these",
@@ -3568,6 +3666,7 @@
       ]
     },
     {
+      "entry_id": "fd10c16c-90b9-46ac-9d88-8477fad993a8",
       "lexical_form": "those",
       "normalised_form": "those",
       "text": "those",

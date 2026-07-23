@@ -6,6 +6,7 @@
   "count": 33,
   "words": [
     {
+      "entry_id": "444151b1-be8a-425a-894a-f7282e716122",
       "lexical_form": "zero",
       "normalised_form": "zero",
       "text": "zero",
@@ -42,6 +43,7 @@
       ]
     },
     {
+      "entry_id": "3f9d47a0-3212-44fd-9b8e-ca279e5abee5",
       "lexical_form": "one",
       "normalised_form": "one",
       "text": "one",
@@ -78,6 +80,7 @@
       ]
     },
     {
+      "entry_id": "f133656e-d57c-4b99-a9bb-ef1b3f6d1619",
       "lexical_form": "two",
       "normalised_form": "two",
       "text": "two",
@@ -114,6 +117,7 @@
       ]
     },
     {
+      "entry_id": "8720b6ce-e58e-42a2-a5eb-03158353a60f",
       "lexical_form": "three",
       "normalised_form": "three",
       "text": "three",
@@ -150,6 +154,7 @@
       ]
     },
     {
+      "entry_id": "e7fe1cdf-f75c-4083-b13b-668827bc50e4",
       "lexical_form": "four",
       "normalised_form": "four",
       "text": "four",
@@ -186,6 +191,7 @@
       ]
     },
     {
+      "entry_id": "0b9e56da-0b24-473c-a8b1-de7fe192c178",
       "lexical_form": "five",
       "normalised_form": "five",
       "text": "five",
@@ -222,6 +228,7 @@
       ]
     },
     {
+      "entry_id": "9835216d-1e03-40cc-a346-8403b0d66f51",
       "lexical_form": "six",
       "normalised_form": "six",
       "text": "six",
@@ -258,6 +265,7 @@
       ]
     },
     {
+      "entry_id": "e7309377-dc0f-482e-8a36-95eeb6570984",
       "lexical_form": "seven",
       "normalised_form": "seven",
       "text": "seven",
@@ -294,6 +302,7 @@
       ]
     },
     {
+      "entry_id": "2923540c-cf7f-41ae-9f46-5af33ce21ab7",
       "lexical_form": "eight",
       "normalised_form": "eight",
       "text": "eight",
@@ -330,6 +339,7 @@
       ]
     },
     {
+      "entry_id": "c2444f21-1990-4547-bb54-58d4c0010ec6",
       "lexical_form": "nine",
       "normalised_form": "nine",
       "text": "nine",
@@ -366,6 +376,7 @@
       ]
     },
     {
+      "entry_id": "2be5f6b3-f1f8-490e-8111-64fcdd7c913f",
       "lexical_form": "ten",
       "normalised_form": "ten",
       "text": "ten",
@@ -402,6 +413,7 @@
       ]
     },
     {
+      "entry_id": "22cfe4ec-0ce8-42f4-b5cc-7fe8c4e519fa",
       "lexical_form": "eleven",
       "normalised_form": "eleven",
       "text": "eleven",
@@ -438,6 +450,7 @@
       ]
     },
     {
+      "entry_id": "f53e02b2-7f66-40b4-b308-72a397e3ef53",
       "lexical_form": "twelve",
       "normalised_form": "twelve",
       "text": "twelve",
@@ -474,6 +487,7 @@
       ]
     },
     {
+      "entry_id": "30528d04-c218-45a4-9049-901ead2b8ec6",
       "lexical_form": "thirteen",
       "normalised_form": "thirteen",
       "text": "thirteen",
@@ -510,6 +524,7 @@
       ]
     },
     {
+      "entry_id": "13799568-35c7-4838-88fe-b111b5af8ca6",
       "lexical_form": "fourteen",
       "normalised_form": "fourteen",
       "text": "fourteen",
@@ -546,6 +561,7 @@
       ]
     },
     {
+      "entry_id": "3f3a891f-229c-45af-b37c-fecfa35b11be",
       "lexical_form": "fifteen",
       "normalised_form": "fifteen",
       "text": "fifteen",
@@ -582,6 +598,7 @@
       ]
     },
     {
+      "entry_id": "7ea0c1fc-99d2-44d3-992f-b6782162ed7d",
       "lexical_form": "sixteen",
       "normalised_form": "sixteen",
       "text": "sixteen",
@@ -618,6 +635,7 @@
       ]
     },
     {
+      "entry_id": "5906dd4f-dc83-4468-9a12-2a986820a913",
       "lexical_form": "seventeen",
       "normalised_form": "seventeen",
       "text": "seventeen",
@@ -654,6 +672,7 @@
       ]
     },
     {
+      "entry_id": "3ec5a1d1-7725-4b9d-b474-ac925ec41d92",
       "lexical_form": "eighteen",
       "normalised_form": "eighteen",
       "text": "eighteen",
@@ -690,6 +709,7 @@
       ]
     },
     {
+      "entry_id": "84c1425e-e736-4121-8be9-b6bc273698a9",
       "lexical_form": "nineteen",
       "normalised_form": "nineteen",
       "text": "nineteen",
@@ -726,6 +746,7 @@
       ]
     },
     {
+      "entry_id": "0fb0499f-78e0-4080-b0d1-170f266bd223",
       "lexical_form": "twenty",
       "normalised_form": "twenty",
       "text": "twenty",
@@ -762,6 +783,7 @@
       ]
     },
     {
+      "entry_id": "3929b67b-c797-4a95-96ca-a142ec5877d0",
       "lexical_form": "thirty",
       "normalised_form": "thirty",
       "text": "thirty",
@@ -798,6 +820,7 @@
       ]
     },
     {
+      "entry_id": "bd6e7efd-97ad-457a-885f-382f87fc802b",
       "lexical_form": "forty",
       "normalised_form": "forty",
       "text": "forty",
@@ -834,6 +857,7 @@
       ]
     },
     {
+      "entry_id": "41797027-f843-4ff4-875b-b1adce2701fe",
       "lexical_form": "fifty",
       "normalised_form": "fifty",
       "text": "fifty",
@@ -870,6 +894,7 @@
       ]
     },
     {
+      "entry_id": "1a609fad-1584-40e8-a30a-061e168e01f6",
       "lexical_form": "sixty",
       "normalised_form": "sixty",
       "text": "sixty",
@@ -906,6 +931,7 @@
       ]
     },
     {
+      "entry_id": "4a79ac2e-8394-473e-bc8c-c61c68d83b7e",
       "lexical_form": "seventy",
       "normalised_form": "seventy",
       "text": "seventy",
@@ -942,6 +968,7 @@
       ]
     },
     {
+      "entry_id": "67fea2fb-d305-4312-9882-26c83bb226f1",
       "lexical_form": "eighty",
       "normalised_form": "eighty",
       "text": "eighty",
@@ -978,6 +1005,7 @@
       ]
     },
     {
+      "entry_id": "526db72f-dcff-4f1b-9fda-9946c182f11a",
       "lexical_form": "ninety",
       "normalised_form": "ninety",
       "text": "ninety",
@@ -1014,6 +1042,7 @@
       ]
     },
     {
+      "entry_id": "0f8a4fce-059a-40c7-be04-91b916ef65c1",
       "lexical_form": "hundred",
       "normalised_form": "hundred",
       "text": "hundred",
@@ -1050,6 +1079,7 @@
       ]
     },
     {
+      "entry_id": "ed97bc90-cd83-4103-be74-a87bedf02b18",
       "lexical_form": "thousand",
       "normalised_form": "thousand",
       "text": "thousand",
@@ -1086,6 +1116,7 @@
       ]
     },
     {
+      "entry_id": "7153c55a-bb00-4d0f-be38-685af7d59230",
       "lexical_form": "million",
       "normalised_form": "million",
       "text": "million",
@@ -1122,6 +1153,7 @@
       ]
     },
     {
+      "entry_id": "aba25e68-e0a3-44c9-a950-4264edbd3d39",
       "lexical_form": "billion",
       "normalised_form": "billion",
       "text": "billion",
@@ -1158,6 +1190,7 @@
       ]
     },
     {
+      "entry_id": "01eac106-24a2-4d47-9aa6-f67146398087",
       "lexical_form": "trillion",
       "normalised_form": "trillion",
       "text": "trillion",

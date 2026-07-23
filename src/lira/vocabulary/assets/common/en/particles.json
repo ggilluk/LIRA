@@ -6,6 +6,7 @@
   "count": 16,
   "words": [
     {
+      "entry_id": "104808ae-a960-4e1a-82bd-bd1b6a1e25aa",
       "lexical_form": "not",
       "normalised_form": "not",
       "text": "not",
@@ -42,6 +43,7 @@
       ]
     },
     {
+      "entry_id": "7f67d4f5-d7c8-4214-9d80-3bb795ac01f6",
       "lexical_form": "there",
       "normalised_form": "there",
       "text": "there",
@@ -78,6 +80,7 @@
       ]
     },
     {
+      "entry_id": "cbf419cc-2bd8-4cff-84a7-858cbb5e9737",
       "lexical_form": "please",
       "normalised_form": "please",
       "text": "please",
@@ -114,6 +117,7 @@
       ]
     },
     {
+      "entry_id": "77dda9dd-9af1-4432-9037-6c3c37d01a03",
       "lexical_form": "also",
       "normalised_form": "also",
       "text": "also",
@@ -150,6 +154,7 @@
       ]
     },
     {
+      "entry_id": "0531e26d-5cea-40b4-a755-e95de3b220f9",
       "lexical_form": "too",
       "normalised_form": "too",
       "text": "too",
@@ -186,6 +191,7 @@
       ]
     },
     {
+      "entry_id": "42135e93-b277-4d95-bec4-101c68b1c354",
       "lexical_form": "only",
       "normalised_form": "only",
       "text": "only",
@@ -222,6 +228,7 @@
       ]
     },
     {
+      "entry_id": "4a720320-6eb4-46e1-8840-d40467af0957",
       "lexical_form": "just",
       "normalised_form": "just",
       "text": "just",
@@ -258,6 +265,7 @@
       ]
     },
     {
+      "entry_id": "e63cc3da-fa57-4817-a2cc-2520a24d9311",
       "lexical_form": "even",
       "normalised_form": "even",
       "text": "even",
@@ -294,6 +302,7 @@
       ]
     },
     {
+      "entry_id": "b40c5dc2-8367-4581-98b2-5365ff65e4ff",
       "lexical_form": "well",
       "normalised_form": "well",
       "text": "well",
@@ -330,6 +339,7 @@
       ]
     },
     {
+      "entry_id": "2ffde2d1-8637-438e-9147-fd4150ed17af",
       "lexical_form": "quite",
       "normalised_form": "quite",
       "text": "quite",
@@ -366,6 +376,7 @@
       ]
     },
     {
+      "entry_id": "a1a0033b-ee62-4026-823f-86c18daa9f73",
       "lexical_form": "rather",
       "normalised_form": "rather",
       "text": "rather",
@@ -402,6 +413,7 @@
       ]
     },
     {
+      "entry_id": "a2448e6e-fea5-4ee4-9876-5b2f86eb461a",
       "lexical_form": "n't",
       "normalised_form": "n't",
       "text": "n't",
@@ -438,6 +450,7 @@
       ]
     },
     {
+      "entry_id": "7dbbdd08-d4c1-4f44-8173-661256d50fc1",
       "lexical_form": "up",
       "normalised_form": "up",
       "text": "up",
@@ -474,6 +487,7 @@
       ]
     },
     {
+      "entry_id": "c347ee62-b1fc-43db-a69e-165833076f5c",
       "lexical_form": "off",
       "normalised_form": "off",
       "text": "off",
@@ -510,6 +524,7 @@
       ]
     },
     {
+      "entry_id": "74b6579c-72b0-4cb4-8038-9229aec29456",
       "lexical_form": "out",
       "normalised_form": "out",
       "text": "out",
@@ -546,6 +561,7 @@
       ]
     },
     {
+      "entry_id": "50e48a8a-8a80-44f9-90a5-76f2e67a3434",
       "lexical_form": "away",
       "normalised_form": "away",
       "text": "away",

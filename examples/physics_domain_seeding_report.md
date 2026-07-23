@@ -99,22 +99,22 @@ None in this run -- none of the Physics-specific content words in this source te
 
 ## Duplicate prevention (repeat-processing test)
 
-- Dictionary size after first run: 869
-- Dictionary size after second run: 869
+- Dictionary size after first run: 935
+- Dictionary size after second run: 935
 - Confirmed no duplicates created on reprocessing: **True**
 
 ## Hydrator telemetry
 
-- First run: {'successful_fetches': 77, 'failed_fetches': 1, 'deduplicated_calls': 14, 'created_words': 95}
-- Second run (cumulative): {'successful_fetches': 77, 'failed_fetches': 2, 'deduplicated_calls': 14, 'created_words': 95}
+- First run: {'successful_fetches': 77, 'failed_fetches': 1, 'deduplicated_calls': 10, 'created_words': 95}
+- Second run (cumulative): {'successful_fetches': 77, 'failed_fetches': 2, 'deduplicated_calls': 10, 'created_words': 95}
   (successful_fetches/created_words do not grow on the second run for anything already resolved; the deliberately-unresolved words are retried and fail again each pass, since nothing in this pipeline blacklists a word after one failed lookup.)
 
 ## Word-sense conflicts found and resolved
 
-Checking every fixture word against the Common seed directly found 4 collisions (`object`, `depend`, `position`, `particle`) -- identify_word() only queues hydration when *no* existing sense at all matches, so these never reached ExternalDictionaryAdapter. `depend`/`position` turned out to have compatible general-English definitions already in Common, fine as-is. `object`/`particle` are genuine conflicts -- Common's senses are the grammatical terms ("the noun that receives the action of a verb", "a function word that does not fit the main parts of speech"), not the physics ones this domain's own relationships need. Resolved via `DictionaryProcessor.register_conflicting_sense` -- the same, pre-existing conflict-resolution path a Domain owner would use for any other word-sense conflict (`vocabulary/documentation/README.md`, 9.2), not a new mechanism:
+Checking every fixture word against the Common seed directly found 4 collisions (`object`, `depend`, `position`, `particle`) -- identify_word() only queues hydration when *no* existing sense at all matches, so these never reached ExternalDictionaryAdapter. `depend`/`position` turned out to have compatible general-English definitions already in Common, fine as-is. `object`/`particle` are genuine conflicts -- Common's senses are the grammatical terms ("the noun that receives the action of a verb", "a function word that does not fit the main parts of speech"), not the physics ones this domain's own relationships need. Resolved via `DictionaryProcessor.register_conflicting_sense` -- the same, pre-existing conflict-resolution path a Domain owner would use for any other word-sense conflict (`vocabulary/documentation/README.md`, 9.2), not a new mechanism. Both senses keep the identical, unmangled `lexical_form` -- no `_2`-style suffix -- and are told apart by their own `entry_id` (Word 4.2) plus the Domain pill the UI already shows:
 
-- `object` (NOUN) registered as a second sense, `lexical_form="object_2"`
-- `particle` (NOUN) registered as a second sense, `lexical_form="particle_2"`
+- `object` (NOUN) registered as a second, Physics-domain sense, `entry_id="6904f387-a8c9-45a9-901e-b512d01cef16"`
+- `particle` (NOUN) registered as a second, Physics-domain sense, `entry_id="1c93b9af-a353-469e-8035-666f52c513b8"`
 
 ## Relationships among hydrated words
 
@@ -135,5 +135,5 @@ RelationshipSeeder only runs once, at Domain creation, against the static Common
 
 ## Final state
 
-- Total words in the Physics Dictionary: 869
-- Total relationships: 271 (196 inherited from Common + 75 hand-curated for this domain)
+- Total words in the Physics Dictionary: 935
+- Total relationships: 363 (288 inherited from Common + 75 hand-curated for this domain)

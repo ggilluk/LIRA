@@ -101,14 +101,15 @@ class AsyncDictionaryHydrator:
             if already_exists:
                 continue
 
-            # No sense-numbered lexical_form suffix here: that's only
+            # No conflict-registration path needed here: that's only
             # for a same-lexical_form/same-part_of_speech meaning
             # conflict (DictionaryProcessor.register_conflicting_sense).
             # Two candidates in this batch never share a part_of_speech
             # (ExternalDictionaryAdapter._deduplicate keeps one per
             # category), and `already_exists` just ruled out a
             # same-(text, part_of_speech) collision against the
-            # Dictionary -- so candidate.lexical_form is always free.
+            # Dictionary -- so this Word never needs a second, coexisting
+            # sense under the same (text, part_of_speech) pair.
             word = Word(
                 text=candidate.text,
                 lexical_form=Text(value=candidate.lexical_form),

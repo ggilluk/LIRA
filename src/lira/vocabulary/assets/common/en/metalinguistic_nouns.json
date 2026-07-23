@@ -6,6 +6,7 @@
   "count": 64,
   "words": [
     {
+      "entry_id": "598395ea-9606-4a92-b392-f6b31ee7f325",
       "lexical_form": "word",
       "normalised_form": "word",
       "text": "word",
@@ -42,6 +43,7 @@
       ]
     },
     {
+      "entry_id": "83abf814-db62-4f8f-9c14-f467fc4cb512",
       "lexical_form": "meaning",
       "normalised_form": "meaning",
       "text": "meaning",
@@ -78,6 +80,7 @@
       ]
     },
     {
+      "entry_id": "0120907f-a9a1-4364-be6e-f5f88453cd04",
       "lexical_form": "language",
       "normalised_form": "language",
       "text": "language",
@@ -114,6 +117,7 @@
       ]
     },
     {
+      "entry_id": "ba303df9-886b-4c40-a07a-5ec413ff085f",
       "lexical_form": "sentence",
       "normalised_form": "sentence",
       "text": "sentence",
@@ -150,6 +154,7 @@
       ]
     },
     {
+      "entry_id": "d4c798fe-e9a0-4d48-adb9-1a184a67ddbc",
       "lexical_form": "clause",
       "normalised_form": "clause",
       "text": "clause",
@@ -186,6 +191,7 @@
       ]
     },
     {
+      "entry_id": "28b63a05-36fa-4844-b706-41d061d8547d",
       "lexical_form": "phrase",
       "normalised_form": "phrase",
       "text": "phrase",
@@ -222,6 +228,7 @@
       ]
     },
     {
+      "entry_id": "419c0b0c-b027-4fe5-b2b4-46713fd23514",
       "lexical_form": "noun",
       "normalised_form": "noun",
       "text": "noun",
@@ -258,6 +265,7 @@
       ]
     },
     {
+      "entry_id": "2016a470-812c-4014-8747-5efe5d180ed4",
       "lexical_form": "verb",
       "normalised_form": "verb",
       "text": "verb",
@@ -294,6 +302,7 @@
       ]
     },
     {
+      "entry_id": "3ab15fd3-7ae9-482c-81fc-f3e8ef09d70d",
       "lexical_form": "adjective",
       "normalised_form": "adjective",
       "text": "adjective",
@@ -330,6 +339,7 @@
       ]
     },
     {
+      "entry_id": "64cfbf29-e0ab-4e51-8f4e-f05364e0353a",
       "lexical_form": "adverb",
       "normalised_form": "adverb",
       "text": "adverb",
@@ -366,6 +376,7 @@
       ]
     },
     {
+      "entry_id": "f1d5d85d-e66e-4414-8cad-0d5b7cbb7d1b",
       "lexical_form": "pronoun",
       "normalised_form": "pronoun",
       "text": "pronoun",
@@ -402,6 +413,7 @@
       ]
     },
     {
+      "entry_id": "d84ed899-c3ec-49a4-bfd5-c5d6ade7b6d8",
       "lexical_form": "determiner",
       "normalised_form": "determiner",
       "text": "determiner",
@@ -438,6 +450,7 @@
       ]
     },
     {
+      "entry_id": "afab79ee-8312-4454-a1f4-6fd0635933f5",
       "lexical_form": "preposition",
       "normalised_form": "preposition",
       "text": "preposition",
@@ -474,6 +487,7 @@
       ]
     },
     {
+      "entry_id": "fed3586b-de31-4c1a-9996-2873e9515334",
       "lexical_form": "conjunction",
       "normalised_form": "conjunction",
       "text": "conjunction",
@@ -510,6 +524,7 @@
       ]
     },
     {
+      "entry_id": "ce8e66ef-d75a-4c04-bae1-bbf6bb66974b",
       "lexical_form": "particle",
       "normalised_form": "particle",
       "text": "particle",
@@ -546,6 +561,7 @@
       ]
     },
     {
+      "entry_id": "b0edb324-de98-42a7-ab7f-3e451f266880",
       "lexical_form": "auxiliary",
       "normalised_form": "auxiliary",
       "text": "auxiliary",
@@ -582,6 +598,7 @@
       ]
     },
     {
+      "entry_id": "a5de05bf-ccc9-448b-b1b9-902fe6674bf6",
       "lexical_form": "subject",
       "normalised_form": "subject",
       "text": "subject",
@@ -618,6 +635,7 @@
       ]
     },
     {
+      "entry_id": "497d01ed-c9af-4edd-bb62-0967f8fc719a",
       "lexical_form": "object",
       "normalised_form": "object",
       "text": "object",
@@ -654,6 +672,7 @@
       ]
     },
     {
+      "entry_id": "91cbc290-b2f6-4c3a-b427-31dabf4072bb",
       "lexical_form": "person",
       "normalised_form": "person",
       "text": "person",
@@ -690,6 +709,7 @@
       ]
     },
     {
+      "entry_id": "f306968e-2cf6-4352-a806-81abbf5bb817",
       "lexical_form": "number",
       "normalised_form": "number",
       "text": "number",
@@ -726,6 +746,7 @@
       ]
     },
     {
+      "entry_id": "22b24247-caec-431c-98fa-85454fa68eba",
       "lexical_form": "tense",
       "normalised_form": "tense",
       "text": "tense",
@@ -762,6 +783,7 @@
       ]
     },
     {
+      "entry_id": "30cd72b0-f7ba-45c3-9217-fd9bb21a7de4",
       "lexical_form": "aspect",
       "normalised_form": "aspect",
       "text": "aspect",
@@ -798,6 +820,7 @@
       ]
     },
     {
+      "entry_id": "ca7f3f59-fa50-424b-b236-3ed47c19e470",
       "lexical_form": "form",
       "normalised_form": "form",
       "text": "form",
@@ -834,6 +857,7 @@
       ]
     },
     {
+      "entry_id": "6db11bea-d204-4b02-9503-76e4e4d1edcc",
       "lexical_form": "relationship",
       "normalised_form": "relationship",
       "text": "relationship",
@@ -870,6 +894,7 @@
       ]
     },
     {
+      "entry_id": "5ab9e973-e3f6-487b-bd68-bf7adbc824f1",
       "lexical_form": "reference",
       "normalised_form": "reference",
       "text": "reference",
@@ -906,6 +931,7 @@
       ]
     },
     {
+      "entry_id": "c6f09f19-4359-4bca-8bd5-71c0b1a2b171",
       "lexical_form": "speaker",
       "normalised_form": "speaker",
       "text": "speaker",
@@ -942,6 +968,7 @@
       ]
     },
     {
+      "entry_id": "918a4468-d59f-4e58-a4ca-d581d389e4c9",
       "lexical_form": "listener",
       "normalised_form": "listener",
       "text": "listener",
@@ -978,6 +1005,7 @@
       ]
     },
     {
+      "entry_id": "01c4be96-2518-4f55-b0e0-4490221e5126",
       "lexical_form": "entity",
       "normalised_form": "entity",
       "text": "entity",
@@ -1014,6 +1042,7 @@
       ]
     },
     {
+      "entry_id": "fd763693-569d-411d-9971-2e4edecd88e1",
       "lexical_form": "thing",
       "normalised_form": "thing",
       "text": "thing",
@@ -1050,6 +1079,7 @@
       ]
     },
     {
+      "entry_id": "288515f1-89f8-40a3-b90d-945129998f84",
       "lexical_form": "place",
       "normalised_form": "place",
       "text": "place",
@@ -1086,6 +1116,7 @@
       ]
     },
     {
+      "entry_id": "3c8bdf53-080f-4288-8378-e71c1bfaf7a8",
       "lexical_form": "time",
       "normalised_form": "time",
       "text": "time",
@@ -1122,6 +1153,7 @@
       ]
     },
     {
+      "entry_id": "104c87b1-e176-4223-b1d6-4d4b770ce2f5",
       "lexical_form": "direction",
       "normalised_form": "direction",
       "text": "direction",
@@ -1158,6 +1190,7 @@
       ]
     },
     {
+      "entry_id": "41d762b6-24cc-4d9e-9391-3788d6af166c",
       "lexical_form": "position",
       "normalised_form": "position",
       "text": "position",
@@ -1194,6 +1227,7 @@
       ]
     },
     {
+      "entry_id": "a27cbca8-67a5-470f-87ad-b69d6979e80e",
       "lexical_form": "quantity",
       "normalised_form": "quantity",
       "text": "quantity",
@@ -1230,6 +1264,7 @@
       ]
     },
     {
+      "entry_id": "edf6d4c6-a003-4cc4-9c1f-e55d23ac9702",
       "lexical_form": "condition",
       "normalised_form": "condition",
       "text": "condition",
@@ -1266,6 +1301,7 @@
       ]
     },
     {
+      "entry_id": "7f031313-7166-4268-8e82-3e472f6e9367",
       "lexical_form": "cause",
       "normalised_form": "cause",
       "text": "cause",
@@ -1302,6 +1338,7 @@
       ]
     },
     {
+      "entry_id": "75831ca3-d6fe-4701-b01b-143e0e5e3929",
       "lexical_form": "result",
       "normalised_form": "result",
       "text": "result",
@@ -1338,6 +1375,7 @@
       ]
     },
     {
+      "entry_id": "e4a860f4-2fd9-4627-a9f3-5269bba84e5c",
       "lexical_form": "lemma",
       "normalised_form": "lemma",
       "text": "lemma",
@@ -1374,6 +1412,7 @@
       ]
     },
     {
+      "entry_id": "2084a1b4-dc2c-493c-b5e0-ff0382462501",
       "lexical_form": "inflection",
       "normalised_form": "inflection",
       "text": "inflection",
@@ -1410,6 +1449,7 @@
       ]
     },
     {
+      "entry_id": "13154366-8375-4030-a04b-b6b8404ea5f8",
       "lexical_form": "participle",
       "normalised_form": "participle",
       "text": "participle",
@@ -1446,6 +1486,7 @@
       ]
     },
     {
+      "entry_id": "5e08de6b-3c52-4f7a-b1f6-601a79b6b7d5",
       "lexical_form": "derivation",
       "normalised_form": "derivation",
       "text": "derivation",
@@ -1482,6 +1523,7 @@
       ]
     },
     {
+      "entry_id": "3f50ea74-2904-4374-9e1d-b316eabb48fb",
       "lexical_form": "synonym",
       "normalised_form": "synonym",
       "text": "synonym",
@@ -1518,6 +1560,7 @@
       ]
     },
     {
+      "entry_id": "fed6492e-1daf-4d8e-9b13-fcfaa679876b",
       "lexical_form": "antonym",
       "normalised_form": "antonym",
       "text": "antonym",
@@ -1554,6 +1597,7 @@
       ]
     },
     {
+      "entry_id": "96868122-36ea-4a88-8092-21ca1722d44c",
       "lexical_form": "hypernym",
       "normalised_form": "hypernym",
       "text": "hypernym",
@@ -1590,6 +1634,7 @@
       ]
     },
     {
+      "entry_id": "5c280276-f3f2-4ae7-998a-d6ad10520b85",
       "lexical_form": "hyponym",
       "normalised_form": "hyponym",
       "text": "hyponym",
@@ -1626,6 +1671,7 @@
       ]
     },
     {
+      "entry_id": "31a1dbd5-c98b-4214-a894-0606f97c589a",
       "lexical_form": "meronym",
       "normalised_form": "meronym",
       "text": "meronym",
@@ -1662,6 +1708,7 @@
       ]
     },
     {
+      "entry_id": "b88edb4c-8580-4666-8d80-8a8d3936d515",
       "lexical_form": "holonym",
       "normalised_form": "holonym",
       "text": "holonym",
@@ -1698,6 +1745,7 @@
       ]
     },
     {
+      "entry_id": "0e33bd50-1f8e-41ca-a935-790975aa816f",
       "lexical_form": "troponym",
       "normalised_form": "troponym",
       "text": "troponym",
@@ -1734,6 +1782,7 @@
       ]
     },
     {
+      "entry_id": "68fe58b3-ae46-402b-9f24-5537feb03526",
       "lexical_form": "entailment",
       "normalised_form": "entailment",
       "text": "entailment",
@@ -1770,6 +1819,7 @@
       ]
     },
     {
+      "entry_id": "a1777b7b-cb61-4454-ba56-2d925d51effc",
       "lexical_form": "spelling",
       "normalised_form": "spelling",
       "text": "spelling",
@@ -1806,6 +1856,7 @@
       ]
     },
     {
+      "entry_id": "b3d113f6-bcb8-472d-a045-9db67f8de362",
       "lexical_form": "variant",
       "normalised_form": "variant",
       "text": "variant",
@@ -1842,6 +1893,7 @@
       ]
     },
     {
+      "entry_id": "80d832d6-6da8-4b45-824b-8be15cddd87a",
       "lexical_form": "abbreviation",
       "normalised_form": "abbreviation",
       "text": "abbreviation",
@@ -1878,6 +1930,7 @@
       ]
     },
     {
+      "entry_id": "d868efbf-c955-4c9f-a113-1c3a7d79dd21",
       "lexical_form": "acronym",
       "normalised_form": "acronym",
       "text": "acronym",
@@ -1914,6 +1967,7 @@
       ]
     },
     {
+      "entry_id": "45abe3a7-7bdd-4073-8000-4369c778ad94",
       "lexical_form": "initialism",
       "normalised_form": "initialism",
       "text": "initialism",
@@ -1950,6 +2004,7 @@
       ]
     },
     {
+      "entry_id": "28ac9ec7-2ce7-40b6-9e29-ef5efe813d09",
       "lexical_form": "contraction",
       "normalised_form": "contraction",
       "text": "contraction",
@@ -1986,6 +2041,7 @@
       ]
     },
     {
+      "entry_id": "7c511fbf-d27b-4e0e-bc15-3b9ae34c54b1",
       "lexical_form": "transliteration",
       "normalised_form": "transliteration",
       "text": "transliteration",
@@ -2022,6 +2078,7 @@
       ]
     },
     {
+      "entry_id": "1b2fc8a0-e3fe-448b-953e-ba8cbb76df0f",
       "lexical_form": "capitalisation",
       "normalised_form": "capitalisation",
       "text": "capitalisation",
@@ -2058,6 +2115,7 @@
       ]
     },
     {
+      "entry_id": "b32e6a03-3711-4bfe-b04c-c76296df5c95",
       "lexical_form": "diacritic",
       "normalised_form": "diacritic",
       "text": "diacritic",
@@ -2094,6 +2152,7 @@
       ]
     },
     {
+      "entry_id": "075b3dd8-256b-466e-8858-3caa6898a1eb",
       "lexical_form": "true",
       "normalised_form": "true",
       "text": "true",
@@ -2130,6 +2189,7 @@
       ]
     },
     {
+      "entry_id": "a31befc2-6549-4a36-a46a-25dab05e1a99",
       "lexical_form": "false",
       "normalised_form": "false",
       "text": "false",
@@ -2166,6 +2226,7 @@
       ]
     },
     {
+      "entry_id": "8499e781-2e37-4073-8555-f6a78fa1327e",
       "lexical_form": "null",
       "normalised_form": "null",
       "text": "null",
@@ -2202,6 +2263,7 @@
       ]
     },
     {
+      "entry_id": "364cf808-1704-4aed-b270-7fbde0e76f37",
       "lexical_form": "mood",
       "normalised_form": "mood",
       "text": "mood",
@@ -2238,6 +2300,7 @@
       ]
     },
     {
+      "entry_id": "9ce2b06b-8ab7-49f6-adb9-bddd6981afbe",
       "lexical_form": "voice",
       "normalised_form": "voice",
       "text": "voice",
@@ -2274,6 +2337,7 @@
       ]
     },
     {
+      "entry_id": "ffae15fc-78bf-4ed3-a454-f50900105d35",
       "lexical_form": "predicate",
       "normalised_form": "predicate",
       "text": "predicate",

@@ -6,6 +6,7 @@
   "count": 13,
   "words": [
     {
+      "entry_id": "3c76c982-0b96-476e-961b-a8faaa180070",
       "lexical_form": "yes",
       "normalised_form": "yes",
       "text": "yes",
@@ -42,6 +43,7 @@
       ]
     },
     {
+      "entry_id": "bd3b3353-f824-4b3c-b276-4b235e746544",
       "lexical_form": "no",
       "normalised_form": "no",
       "text": "no",
@@ -78,6 +80,7 @@
       ]
     },
     {
+      "entry_id": "f383d6ec-5c3c-41e3-880e-6002f86bbae6",
       "lexical_form": "please",
       "normalised_form": "please",
       "text": "please",
@@ -114,6 +117,7 @@
       ]
     },
     {
+      "entry_id": "2a732f2b-18c7-4e98-bf09-55582a37b628",
       "lexical_form": "alas",
       "normalised_form": "alas",
       "text": "alas",
@@ -150,6 +154,7 @@
       ]
     },
     {
+      "entry_id": "d336590c-7da4-438d-9d73-9d48a723c6ad",
       "lexical_form": "hurrah",
       "normalised_form": "hurrah",
       "text": "hurrah",
@@ -186,6 +191,7 @@
       ]
     },
     {
+      "entry_id": "2b38c8bb-322f-4b19-8367-3aa86abd806c",
       "lexical_form": "huzzah",
       "normalised_form": "huzzah",
       "text": "huzzah",
@@ -224,6 +230,7 @@
       ]
     },
     {
+      "entry_id": "5f554a0a-a871-4f10-8bad-3b5e4c846c50",
       "lexical_form": "oh",
       "normalised_form": "oh",
       "text": "oh",
@@ -260,6 +267,7 @@
       ]
     },
     {
+      "entry_id": "942536c8-d8c8-4a5f-a160-93011801e7c5",
       "lexical_form": "ah",
       "normalised_form": "ah",
       "text": "ah",
@@ -296,6 +304,7 @@
       ]
     },
     {
+      "entry_id": "78910a7e-f574-44f8-8677-0a6f4e1fa2e2",
       "lexical_form": "wow",
       "normalised_form": "wow",
       "text": "wow",
@@ -332,6 +341,7 @@
       ]
     },
     {
+      "entry_id": "8c1c3c19-e6b9-41c3-a604-c1af56354791",
       "lexical_form": "hey",
       "normalised_form": "hey",
       "text": "hey",
@@ -368,6 +378,7 @@
       ]
     },
     {
+      "entry_id": "aa36a36d-37d9-4d18-8950-cd14db681b6c",
       "lexical_form": "ouch",
       "normalised_form": "ouch",
       "text": "ouch",
@@ -404,6 +415,7 @@
       ]
     },
     {
+      "entry_id": "85b951f0-300b-40c6-92aa-e9a978725d63",
       "lexical_form": "hmm",
       "normalised_form": "hmm",
       "text": "hmm",
@@ -440,6 +452,7 @@
       ]
     },
     {
+      "entry_id": "d716e628-e951-4895-9a6f-081b27ca164a",
       "lexical_form": "well",
       "normalised_form": "well",
       "text": "well",

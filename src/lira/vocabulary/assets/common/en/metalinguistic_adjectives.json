@@ -6,6 +6,7 @@
   "count": 28,
   "words": [
     {
+      "entry_id": "3e68a5a5-5dc2-41b7-96f0-ad98c589ae57",
       "lexical_form": "lexical",
       "normalised_form": "lexical",
       "text": "lexical",
@@ -42,6 +43,7 @@
       ]
     },
     {
+      "entry_id": "08ccc16e-16db-4477-a931-6ec8c1ade092",
       "lexical_form": "grammatical",
       "normalised_form": "grammatical",
       "text": "grammatical",
@@ -78,6 +80,7 @@
       ]
     },
     {
+      "entry_id": "12938fb8-3bbe-4fd4-b20e-db4758c66ae3",
       "lexical_form": "semantic",
       "normalised_form": "semantic",
       "text": "semantic",
@@ -114,6 +117,7 @@
       ]
     },
     {
+      "entry_id": "0ff34dbd-9c5d-4a49-a082-1f5fdb20380b",
       "lexical_form": "syntactic",
       "normalised_form": "syntactic",
       "text": "syntactic",
@@ -150,6 +154,7 @@
       ]
     },
     {
+      "entry_id": "d2fcfa18-1ecf-4072-9eea-4091ce7e89d1",
       "lexical_form": "singular",
       "normalised_form": "singular",
       "text": "singular",
@@ -186,6 +191,7 @@
       ]
     },
     {
+      "entry_id": "f8a61024-b19f-43d5-a4bf-23511b5fcc85",
       "lexical_form": "plural",
       "normalised_form": "plural",
       "text": "plural",
@@ -222,6 +228,7 @@
       ]
     },
     {
+      "entry_id": "fe213640-d3fd-4885-8e78-c62c6f17d3b4",
       "lexical_form": "first",
       "normalised_form": "first",
       "text": "first",
@@ -258,6 +265,7 @@
       ]
     },
     {
+      "entry_id": "fea02168-bc76-4699-a227-c9219ebaa0df",
       "lexical_form": "second",
       "normalised_form": "second",
       "text": "second",
@@ -294,6 +302,7 @@
       ]
     },
     {
+      "entry_id": "e3e7c800-1524-4c1f-b6c8-0a01830e8a2b",
       "lexical_form": "third",
       "normalised_form": "third",
       "text": "third",
@@ -330,6 +339,7 @@
       ]
     },
     {
+      "entry_id": "61ac44bf-2de8-473c-88b3-536e06c9af8c",
       "lexical_form": "present",
       "normalised_form": "present",
       "text": "present",
@@ -366,6 +376,7 @@
       ]
     },
     {
+      "entry_id": "245ed7da-1df2-4cb5-b193-5023c2510721",
       "lexical_form": "past",
       "normalised_form": "past",
       "text": "past",
@@ -402,6 +413,7 @@
       ]
     },
     {
+      "entry_id": "f568c7e6-072b-4e91-aaa7-386ad8a5ab4e",
       "lexical_form": "comparative",
       "normalised_form": "comparative",
       "text": "comparative",
@@ -438,6 +450,7 @@
       ]
     },
     {
+      "entry_id": "3215908f-d74e-462b-95af-f2ed761fe429",
       "lexical_form": "superlative",
       "normalised_form": "superlative",
       "text": "superlative",
@@ -474,6 +487,7 @@
       ]
     },
     {
+      "entry_id": "f446171d-7be9-4ac2-88bb-2d7e1acd671c",
       "lexical_form": "possessive",
       "normalised_form": "possessive",
       "text": "possessive",
@@ -510,6 +524,7 @@
       ]
     },
     {
+      "entry_id": "7a8518dd-21cd-40d5-a662-25c26405a31c",
       "lexical_form": "reflexive",
       "normalised_form": "reflexive",
       "text": "reflexive",
@@ -546,6 +561,7 @@
       ]
     },
     {
+      "entry_id": "3870298e-8a3a-49ac-9e4c-a72f68f90817",
       "lexical_form": "reciprocal",
       "normalised_form": "reciprocal",
       "text": "reciprocal",
@@ -582,6 +598,7 @@
       ]
     },
     {
+      "entry_id": "e9b32555-9e93-4e06-8a53-6822a36147b5",
       "lexical_form": "relative",
       "normalised_form": "relative",
       "text": "relative",
@@ -618,6 +635,7 @@
       ]
     },
     {
+      "entry_id": "d6127b3e-0a48-4358-834b-8eb9c373529b",
       "lexical_form": "interrogative",
       "normalised_form": "interrogative",
       "text": "interrogative",
@@ -654,6 +672,7 @@
       ]
     },
     {
+      "entry_id": "699684f6-97ad-403a-a142-6818f660e717",
       "lexical_form": "demonstrative",
       "normalised_form": "demonstrative",
       "text": "demonstrative",
@@ -690,6 +709,7 @@
       ]
     },
     {
+      "entry_id": "b98be235-bffb-45e6-9a31-2b48a9eb1db6",
       "lexical_form": "indefinite",
       "normalised_form": "indefinite",
       "text": "indefinite",
@@ -726,6 +746,7 @@
       ]
     },
     {
+      "entry_id": "c856b997-774f-43fd-8251-8066e51461d9",
       "lexical_form": "definite",
       "normalised_form": "definite",
       "text": "definite",
@@ -762,6 +783,7 @@
       ]
     },
     {
+      "entry_id": "8d7b9f84-f93b-42b4-b2ab-86e1ba01754c",
       "lexical_form": "common",
       "normalised_form": "common",
       "text": "common",
@@ -798,6 +820,7 @@
       ]
     },
     {
+      "entry_id": "f5acd1b5-db9a-4da9-b2af-bf3ab5ca431e",
       "lexical_form": "qualified",
       "normalised_form": "qualified",
       "text": "qualified",
@@ -834,6 +857,7 @@
       ]
     },
     {
+      "entry_id": "e7d9ac83-70cc-4c47-9758-c88f6e2e4790",
       "lexical_form": "canonical",
       "normalised_form": "canonical",
       "text": "canonical",
@@ -870,6 +894,7 @@
       ]
     },
     {
+      "entry_id": "c2f8cc82-4159-4dca-8b85-2a9adde4ba8b",
       "lexical_form": "derived",
       "normalised_form": "derived",
       "text": "derived",
@@ -906,6 +931,7 @@
       ]
     },
     {
+      "entry_id": "bc8f29c4-2e86-4667-8e03-7fc9c2f55f62",
       "lexical_form": "related",
       "normalised_form": "related",
       "text": "related",
@@ -942,6 +968,7 @@
       ]
     },
     {
+      "entry_id": "70799af1-e7d9-41a8-9826-43fef09f65a6",
       "lexical_form": "equivalent",
       "normalised_form": "equivalent",
       "text": "equivalent",
@@ -978,6 +1005,7 @@
       ]
     },
     {
+      "entry_id": "008c3d5b-b22c-4ebc-b767-a533b96a546a",
       "lexical_form": "opposite",
       "normalised_form": "opposite",
       "text": "opposite",

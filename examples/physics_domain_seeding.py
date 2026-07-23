@@ -177,7 +177,7 @@ def _register_conflicting_senses(physics_domain) -> dict:
             is_fully_hydrated=True,
         )
         registered_word = dict_processor.register_conflicting_sense(word)
-        registered.append((word_text, pos_name, registered_word.lexical_form.value))
+        registered.append((word_text, pos_name, registered_word.entry_id.value))
 
     return {"registered": registered}
 
@@ -453,11 +453,13 @@ def _format_report(report: dict) -> str:
                   "the physics ones this domain's own relationships need. Resolved via "
                   "`DictionaryProcessor.register_conflicting_sense` -- the same, pre-existing conflict-"
                   "resolution path a Domain owner would use for any other word-sense conflict "
-                  "(`vocabulary/documentation/README.md`, 9.2), not a new mechanism:\n")
+                  "(`vocabulary/documentation/README.md`, 9.2), not a new mechanism. Both senses keep "
+                  "the identical, unmangled `lexical_form` -- no `_2`-style suffix -- and are told apart "
+                  "by their own `entry_id` (Word 4.2) plus the Domain pill the UI already shows:\n")
     conflicts = report["conflicting_senses"]["registered"]
     if conflicts:
-        for word_text, pos_name, lexical_form in conflicts:
-            lines.append(f"- `{word_text}` ({pos_name}) registered as a second sense, `lexical_form=\"{lexical_form}\"`")
+        for word_text, pos_name, entry_id in conflicts:
+            lines.append(f"- `{word_text}` ({pos_name}) registered as a second, Physics-domain sense, `entry_id=\"{entry_id}\"`")
     else:
         lines.append("- (already registered by a previous run of this script -- idempotent, nothing to do)")
     lines.append("")

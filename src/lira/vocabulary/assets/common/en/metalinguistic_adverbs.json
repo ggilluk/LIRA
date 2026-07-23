@@ -6,6 +6,7 @@
   "count": 17,
   "words": [
     {
+      "entry_id": "8400ba65-aa4f-4430-8857-c7aea671378b",
       "lexical_form": "grammatically",
       "normalised_form": "grammatically",
       "text": "grammatically",
@@ -42,6 +43,7 @@
       ]
     },
     {
+      "entry_id": "c68e3edf-5d9c-4497-bf80-3ba2c3d6494a",
       "lexical_form": "lexically",
       "normalised_form": "lexically",
       "text": "lexically",
@@ -78,6 +80,7 @@
       ]
     },
     {
+      "entry_id": "689df181-9bb2-4dc6-9a22-b17a4a6ada0c",
       "lexical_form": "semantically",
       "normalised_form": "semantically",
       "text": "semantically",
@@ -114,6 +117,7 @@
       ]
     },
     {
+      "entry_id": "aceeeacf-1a99-4a29-85fe-be693899efbb",
       "lexical_form": "syntactically",
       "normalised_form": "syntactically",
       "text": "syntactically",
@@ -150,6 +154,7 @@
       ]
     },
     {
+      "entry_id": "e30d9cdf-be96-4e16-bee9-340508407e4a",
       "lexical_form": "morphologically",
       "normalised_form": "morphologically",
       "text": "morphologically",
@@ -186,6 +191,7 @@
       ]
     },
     {
+      "entry_id": "e5f75ef5-307f-4ada-9b65-57617101f7e6",
       "lexical_form": "directly",
       "normalised_form": "directly",
       "text": "directly",
@@ -222,6 +228,7 @@
       ]
     },
     {
+      "entry_id": "b6c1fe06-6734-4ec0-a40f-f332c14ff81c",
       "lexical_form": "indirectly",
       "normalised_form": "indirectly",
       "text": "indirectly",
@@ -258,6 +265,7 @@
       ]
     },
     {
+      "entry_id": "267662aa-e6af-4b19-ac2c-d1f6a2d77da1",
       "lexical_form": "mutually",
       "normalised_form": "mutually",
       "text": "mutually",
@@ -294,6 +302,7 @@
       ]
     },
     {
+      "entry_id": "86de0346-43bc-4b93-8c9c-1786cbbe2bdb",
       "lexical_form": "typically",
       "normalised_form": "typically",
       "text": "typically",
@@ -330,6 +339,7 @@
       ]
     },
     {
+      "entry_id": "4bc597a3-c8c3-4819-94ea-a6664b94b99a",
       "lexical_form": "usually",
       "normalised_form": "usually",
       "text": "usually",
@@ -366,6 +376,7 @@
       ]
     },
     {
+      "entry_id": "34e310d8-9dab-4399-a6e4-9b3676177ff8",
       "lexical_form": "always",
       "normalised_form": "always",
       "text": "always",
@@ -402,6 +413,7 @@
       ]
     },
     {
+      "entry_id": "648e8c04-22d3-4681-9bcd-4b79686e31ae",
       "lexical_form": "sometimes",
       "normalised_form": "sometimes",
       "text": "sometimes",
@@ -438,6 +450,7 @@
       ]
     },
     {
+      "entry_id": "ba98b742-e8dd-4e7a-ab17-8291e2cd4a92",
       "lexical_form": "never",
       "normalised_form": "never",
       "text": "never",
@@ -474,6 +487,7 @@
       ]
     },
     {
+      "entry_id": "ca6fde4d-dcbd-4354-8bd7-b33993633cc9",
       "lexical_form": "however",
       "normalised_form": "however",
       "text": "however",
@@ -510,6 +524,7 @@
       ]
     },
     {
+      "entry_id": "d219092f-54a1-43c2-88c8-d14f5ae72aaa",
       "lexical_form": "therefore",
       "normalised_form": "therefore",
       "text": "therefore",
@@ -546,6 +561,7 @@
       ]
     },
     {
+      "entry_id": "32d5b39a-82b4-47d6-9ef6-d876aba80104",
       "lexical_form": "moreover",
       "normalised_form": "moreover",
       "text": "moreover",
@@ -582,6 +598,7 @@
       ]
     },
     {
+      "entry_id": "2622b1ea-fce5-4cbe-a7d4-45acc1ae326c",
       "lexical_form": "nevertheless",
       "normalised_form": "nevertheless",
       "text": "nevertheless",

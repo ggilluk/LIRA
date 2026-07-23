@@ -128,6 +128,7 @@ class DictionaryView:
             relationship_count = len(self.relationships.outgoing(word_id)) + len(self.relationships.incoming(word_id))
             records.append({
                 "id": word_id,
+                "entry_id": word.entry_id.value,
                 "lexical_form": word.lexical_form.value if word.lexical_form else word.text,
                 "text": word.text,
                 "pos": word.part_of_speech.name,
@@ -527,6 +528,16 @@ tbody tr[data-word-id].selected { background: color-mix(in srgb, var(--accent) 1
   font-family: var(--font-mono);
   font-weight: 700;
   font-size: 1.15rem;
+}
+.detail-entry-id {
+  margin-top: 4px;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--ink-muted);
+  user-select: all;
+}
+.detail-entry-id code {
+  font-family: inherit;
 }
 .detail-definition {
   color: var(--ink-muted);
@@ -930,6 +941,7 @@ function renderDetail() {
   content.innerHTML = `
     <div class="detail-word">${word.lexical_form}${word.is_common ? ' <span class="badge-common">common</span>' : ''}${word.is_fully_hydrated ? '' : ' <span class="badge-common" style="color:#C2544B;border-color:#C2544B">hydration pending</span>'}</div>
     <div style="margin-top:6px">${posPill(word.pos)} ${domainPill(word.domain)}</div>
+    <div class="detail-entry-id" title="Persistent Qualified Word Identity (domain + part of speech + word) -- stable across regenerations, unlike this word's transient graph id">Entry ID <code>${word.entry_id}</code></div>
     <div class="detail-definition">${renderDefinition(word)}</div>
     <div class="detail-section-title">Provenance</div>
     <div class="detail-definition" style="margin-top:0">${word.sources && word.sources.length ? word.sources.map(s => `<span class="tag">${s}</span>`).join('') : '<span style="opacity:.6">No source recorded.</span>'}</div>

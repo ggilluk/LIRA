@@ -6,6 +6,7 @@
   "count": 5,
   "words": [
     {
+      "entry_id": "ccbf395a-c398-4e28-b1c4-71d2d554c810",
       "lexical_form": ".",
       "normalised_form": ".",
       "text": ".",
@@ -42,6 +43,7 @@
       ]
     },
     {
+      "entry_id": "dbd50ef0-1d86-476d-896d-1a5d45ebf116",
       "lexical_form": "!",
       "normalised_form": "!",
       "text": "!",
@@ -78,6 +80,7 @@
       ]
     },
     {
+      "entry_id": "0ed4b5ad-a3d4-4876-b71c-1f41fafe4b9b",
       "lexical_form": "?",
       "normalised_form": "?",
       "text": "?",
@@ -114,6 +117,7 @@
       ]
     },
     {
+      "entry_id": "33f88dfc-1868-4473-b88b-7a779949a49c",
       "lexical_form": ";",
       "normalised_form": ";",
       "text": ";",
@@ -150,6 +154,7 @@
       ]
     },
     {
+      "entry_id": "0b6d3e72-b7fb-449b-ae8b-2f16457cf97b",
       "lexical_form": ",",
       "normalised_form": ",",
       "text": ",",

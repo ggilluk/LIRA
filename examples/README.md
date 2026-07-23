@@ -26,6 +26,7 @@ the pipeline exactly the way any other Domain is seeded (see
 | `common_core_vocabulary.py` | Classification data for a user-supplied audit of core words the Common Vocabulary Cache's own definitions repeatedly depend on but never seeded -- see Common core vocabulary below. |
 | `common_core_vocabulary_seeding.py` | The runnable seeding script for that classification -- adds genuine grammar terms directly to the metalinguistic files, promotes general vocabulary, wires relationships, and regenerates the example UI. `python3 examples/common_core_vocabulary_seeding.py` from the repo root (this is now the canonical way to regenerate `assets/example_ui/dictionary_view_example.html` -- see that directory's own README). |
 | `relationship_cache_homograph_fix.py` | Seeds the three relationships a part-of-speech blind spot in `RelationshipSeeder` previously made unsafe to add (`cause`/`causing`, `cause`/`causation`, `state`/`statement`) -- see Fixing the relationship cache's own POS blind spot below. `python3 examples/relationship_cache_homograph_fix.py` from the repo root. |
+| `word_entry_id_backfill.py` | One-time migration -- backfills a stable `entry_id` into every existing Common Vocabulary Cache word file -- see Adding a stable entry_id per vocabulary entry below. `python3 examples/word_entry_id_backfill.py` from the repo root. |
 
 ## Network caveat
 
@@ -117,9 +118,12 @@ resolution path (9.2) for exactly this situation, not a new mechanism.
 `physics_domain_seeding.py`'s `_register_conflicting_senses` builds the
 Word the normal way (`ExternalDictionaryAdapter.parse_api_payload` on
 the fixture data, same as any other hydration) and registers it as a
-second sense; `object`/`particle` now resolve to `object_2`/`particle_2`
-in the Physics Dictionary, `is_common=False`, alongside Common's
-original entries. Idempotent (checked directly): a second run
+second sense; `object`/`particle` are added to the Physics Dictionary,
+`is_common=False`, keeping the identical `lexical_form` as Common's
+original entries -- distinguished only by domain and by their own
+`entry_id` (see Adding a stable entry_id per vocabulary entry below;
+before that fix, this used to mangle `lexical_form` into `object_2`/
+`particle_2` instead). Idempotent (checked directly): a second run
 registers nothing new.
 
 ## Relationships among hydrated words
@@ -534,6 +538,68 @@ relationship at all. Idempotent: a second run adds nothing new.
 Common Vocabulary Cache: 838 words (unchanged), 282 -> 288
 relationships. Physics Domain: 981 words (unchanged), 405 -> 411
 relationships.
+
+## Adding a stable entry_id per vocabulary entry
+
+A user-facing usability problem, not a bug in any Vocabulary Layer
+guarantee: `register_conflicting_sense` (9.2's Strategy 3, used above
+for `object`/`particle`) told two coexisting senses of the same
+(text, part_of_speech) apart by mangling `lexical_form` into a
+sense-numbered suffix -- `particle` / `particle_2` -- functionally
+fine (`Dictionary.lookup_all` still finds both, `text` stayed
+untouched), but a confusing thing to actually show someone reading
+`DictionaryView`'s Words table, and the trigger for this batch: create
+a real, stable identifier for each distinct (domain, part_of_speech,
+lexical_form) vocabulary entry, store it in the asset files, and show
+it in the UI instead of leaning on the suffix.
+
+`Word` gains `entry_id` (`vocabulary/documentation/README.md`, 4.2) --
+deliberately distinct from the pre-existing `uuid` field, which is a
+per-Domain-graph-instance identity, regenerated every time a Word is
+copied into a new Domain's Dictionary (`Dictionary.seed_from`,
+`WordSeeder.seed_closed_class_words`) so that two Domains' independent
+copies of "be" are never confused as the same graph node. `entry_id`
+is the opposite: assigned once, when a Word is first authored, and
+left untouched by every later copy -- the persistent Qualified Word
+Identity a Common Vocabulary Cache entry keeps no matter how many
+Domains end up holding their own runtime copy of it.
+
+`WordSeeder` was extended to match: `_entry_to_word`/`_word_to_entry`
+read and write `entry_id` verbatim, and `validate_assets()` now
+requires it and checks it for global uniqueness across the entire
+cache (`seen_entry_ids`, the same discipline already applied to
+`(lexical_form, part_of_speech)`). `DictionaryProcessor.register_conflicting_sense`
+was simplified to stop touching `lexical_form` at all -- both senses
+now keep the identical, unmangled form, relying on `entry_id` (plus
+the Domain pill the UI already showed) to stay distinguishable.
+`Dictionary.next_available_lexical_form`/`find_by_lexical_form`,
+which existed only to serve the old suffix mechanism, were removed as
+dead code.
+
+`word_entry_id_backfill.py` is the one-time migration: walks every
+mandatory, supplementary, and promoted word file and adds a freshly
+generated UUID to any entry missing one, idempotent (a second run
+adds nothing). Physics Domain words don't need backfilling -- they're
+hydrated at runtime from fixture data standing in for an external API
+(`physics_domain_seeding_fixtures.py`), never loaded from a stored
+cache entry in the first place, so they get their `entry_id` the same
+way they already got their `uuid`: freshly generated by `Word`'s own
+`default_factory` at construction time.
+
+`DictionaryView` shows the new field directly: an "Entry ID" line in
+the detail panel, right under the Domain/part-of-speech pills. Verified
+directly, not assumed: loaded the full 838-word cache and confirmed
+exactly 838 unique `entry_id` values; re-ran the full seeding chain and
+checked the rendered UI in headless Chromium -- searching "particle"
+now shows two visually-identical `particle` rows (one Common, one
+Physics), each selectable, each showing its own distinct `entry_id` and
+Domain pill in the detail panel, with no console errors; same for
+`object`. Word and relationship counts are unchanged by this batch --
+it adds a field, not new vocabulary.
+
+Common Vocabulary Cache: 838 words (unchanged), 288 relationships
+(unchanged). Physics Domain: 981 words (unchanged), 411 relationships
+(unchanged).
 
 ## Known, pre-existing limitation surfaced (not fixed) by this exercise
 

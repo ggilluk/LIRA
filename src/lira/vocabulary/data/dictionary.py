@@ -31,13 +31,13 @@ class Dictionary:
         """Returns every Word whose surface text matches `text`
         (case-insensitive) -- every homograph, not just the first. A
         word with more than one legitimate part of speech (e.g. "run"
-        as NOUN vs VERB) is modelled as multiple Word entries (4.1: "one
-        lexical form in one language and one grammatical category"),
-        each with its own lexical_form but the same unmodified text --
-        the same mechanism 9.2's sense-numbered lexical_form suffix uses
-        (bank / bank_2), which also leaves text untouched on every
-        sense. lookup() only ever surfaced the first such entry; this is
-        how the rest become visible too."""
+        as NOUN vs VERB), or more than one meaning under the exact same
+        (text, part_of_speech) (a word-sense conflict, 9.2), is modelled
+        as multiple Word entries (4.1: "one lexical form in one language
+        and one grammatical category"), each sharing the same unmodified
+        `text` and `lexical_form` but each with its own `entry_id` --
+        lookup() only ever surfaced the first such entry; this is how
+        the rest become visible too."""
         with self._lock:
             return tuple(word for word in self.words if word.text.lower() == text.lower())
 
@@ -45,13 +45,6 @@ class Dictionary:
         with self._lock:
             for word in self.words:
                 if word.uuid.value == word_id:
-                    return word
-            return None
-
-    def find_by_lexical_form(self, lexical_form: str) -> Optional[Word]:
-        with self._lock:
-            for word in self.words:
-                if word.lexical_form.value.lower() == lexical_form.lower():
                     return word
             return None
 
@@ -71,9 +64,14 @@ class Dictionary:
         instance (independent hydration, independent tensor rows), and
         given a freshly generated uuid -- a shallow copy shares the
         *same* Identifier object (and so the same uuid.value) as the
-        original otherwise, which would silently violate Qualified Word
-        Identity (Domain + Lexical Form) by giving two different
-        Domains' copies of "be" the identical uuid."""
+        original otherwise, which would give two different Domains'
+        copies of "be" the identical per-Domain-graph identity. `entry_id`
+        is deliberately left untouched by the shallow copy: it's the
+        stable Qualified Word Identity (Word 4.2's `entry_id` field
+        docstring), the same underlying Common Vocabulary Cache entry
+        regardless of how many Domains hold their own runtime copy of
+        it, so every Domain's copy of "be" shares one `entry_id` even
+        though each has its own distinct `uuid`."""
         with other._lock:
             copied = []
             for word in other.words:
@@ -82,15 +80,3 @@ class Dictionary:
                 copied.append(new_word)
         with self._lock:
             self.words.extend(copied)
-
-    def next_available_lexical_form(self, base_lexical_form: str) -> str:
-        """Returns `base_lexical_form` if no existing Word already uses
-        it as its lexical_form, otherwise the next free sense-numbered
-        variant ("bank_2", "bank_3", ...) -- the naming half of
-        resolving a word-sense conflict by modifying the word's name."""
-        if self.find_by_lexical_form(base_lexical_form) is None:
-            return base_lexical_form
-        sense_number = 2
-        while self.find_by_lexical_form(f"{base_lexical_form}_{sense_number}") is not None:
-            sense_number += 1
-        return f"{base_lexical_form}_{sense_number}"

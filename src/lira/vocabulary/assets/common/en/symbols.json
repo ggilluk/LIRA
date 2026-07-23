@@ -6,6 +6,7 @@
   "count": 25,
   "words": [
     {
+      "entry_id": "c17a7d06-eb35-4c4a-a825-b7799d58fb42",
       "lexical_form": "$",
       "normalised_form": "$",
       "text": "$",
@@ -42,6 +43,7 @@
       ]
     },
     {
+      "entry_id": "afc8d6cf-8b53-4949-a066-210898a7c922",
       "lexical_form": "%",
       "normalised_form": "%",
       "text": "%",
@@ -78,6 +80,7 @@
       ]
     },
     {
+      "entry_id": "ce07950d-2be4-4005-84f1-d0e135904364",
       "lexical_form": "&",
       "normalised_form": "&",
       "text": "&",
@@ -114,6 +117,7 @@
       ]
     },
     {
+      "entry_id": "25ecec78-8d30-4349-b1f9-63216d9e54cb",
       "lexical_form": "@",
       "normalised_form": "@",
       "text": "@",
@@ -150,6 +154,7 @@
       ]
     },
     {
+      "entry_id": "4ca91279-e088-46ed-b97e-be75d00c1313",
       "lexical_form": "#",
       "normalised_form": "#",
       "text": "#",
@@ -186,6 +191,7 @@
       ]
     },
     {
+      "entry_id": "bf97d2f9-3938-4f48-8861-608f0fac354e",
       "lexical_form": "*",
       "normalised_form": "*",
       "text": "*",
@@ -222,6 +228,7 @@
       ]
     },
     {
+      "entry_id": "449ef7fe-6d14-44e3-ac6a-0dab291e4408",
       "lexical_form": "+",
       "normalised_form": "+",
       "text": "+",
@@ -258,6 +265,7 @@
       ]
     },
     {
+      "entry_id": "f2b201fc-4f40-42b0-8760-e0cff257db2b",
       "lexical_form": "-",
       "normalised_form": "-",
       "text": "-",
@@ -294,6 +302,7 @@
       ]
     },
     {
+      "entry_id": "ed8600a6-a8c2-4ded-bec3-641dd1ddcf7c",
       "lexical_form": "=",
       "normalised_form": "=",
       "text": "=",
@@ -330,6 +339,7 @@
       ]
     },
     {
+      "entry_id": "21adc7ef-0cca-4dc5-b7be-0a6865568abc",
       "lexical_form": "<",
       "normalised_form": "<",
       "text": "<",
@@ -366,6 +376,7 @@
       ]
     },
     {
+      "entry_id": "afa933fe-c8eb-46ac-b5e6-c855af201928",
       "lexical_form": ">",
       "normalised_form": ">",
       "text": ">",
@@ -402,6 +413,7 @@
       ]
     },
     {
+      "entry_id": "319abccd-d1d9-4ff3-9a22-8d566b2573aa",
       "lexical_form": "/",
       "normalised_form": "/",
       "text": "/",
@@ -438,6 +450,7 @@
       ]
     },
     {
+      "entry_id": "9192909a-b905-4812-b5d7-b4ecc72946b2",
       "lexical_form": "\\",
       "normalised_form": "\\",
       "text": "\\",
@@ -474,6 +487,7 @@
       ]
     },
     {
+      "entry_id": "e9e2e0fd-d098-439f-a480-0c2254f5fe51",
       "lexical_form": "|",
       "normalised_form": "|",
       "text": "|",
@@ -510,6 +524,7 @@
       ]
     },
     {
+      "entry_id": "5d27b170-0929-4473-a590-9db56a63b832",
       "lexical_form": "~",
       "normalised_form": "~",
       "text": "~",
@@ -546,6 +561,7 @@
       ]
     },
     {
+      "entry_id": "fdf52632-3a57-4c25-8e9b-29245baa7867",
       "lexical_form": "^",
       "normalised_form": "^",
       "text": "^",
@@ -582,6 +598,7 @@
       ]
     },
     {
+      "entry_id": "b78ba48e-75dd-40bf-8df9-ec7d049c08cd",
       "lexical_form": "_",
       "normalised_form": "_",
       "text": "_",
@@ -618,6 +635,7 @@
       ]
     },
     {
+      "entry_id": "2e0c8e70-c1bd-4e69-9d54-35e5fcd85bda",
       "lexical_form": "°",
       "normalised_form": "°",
       "text": "°",
@@ -654,6 +672,7 @@
       ]
     },
     {
+      "entry_id": "ab6b2a18-5342-4b7e-a3ac-4fbe6b5021f0",
       "lexical_form": "§",
       "normalised_form": "§",
       "text": "§",
@@ -690,6 +709,7 @@
       ]
     },
     {
+      "entry_id": "173b50db-2822-4e76-b7e8-184c429b11eb",
       "lexical_form": "©",
       "normalised_form": "©",
       "text": "©",
@@ -726,6 +746,7 @@
       ]
     },
     {
+      "entry_id": "19060134-c806-4423-a1ce-d120edac82ff",
       "lexical_form": "®",
       "normalised_form": "®",
       "text": "®",
@@ -762,6 +783,7 @@
       ]
     },
     {
+      "entry_id": "8f3c7375-1c7e-40f8-9387-e6777d6fc5de",
       "lexical_form": "™",
       "normalised_form": "™",
       "text": "™",
@@ -798,6 +820,7 @@
       ]
     },
     {
+      "entry_id": "823babe6-290a-423c-8c83-76311887a0dc",
       "lexical_form": "€",
       "normalised_form": "€",
       "text": "€",
@@ -834,6 +857,7 @@
       ]
     },
     {
+      "entry_id": "176fd5cb-fd4d-4587-9b18-ed5e35fd78d4",
       "lexical_form": "£",
       "normalised_form": "£",
       "text": "£",
@@ -870,6 +894,7 @@
       ]
     },
     {
+      "entry_id": "1c51ad55-ce33-424d-8f2b-3e8890c422ed",
       "lexical_form": "¥",
       "normalised_form": "¥",
       "text": "¥",
