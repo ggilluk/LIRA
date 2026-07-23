@@ -3,7 +3,7 @@
   "language_code": "en",
   "part_of_speech": null,
   "closed_class_kind": "promoted_open_class",
-  "count": 280,
+  "count": 283,
   "words": [
     {
       "lexical_form": "able",
@@ -10060,6 +10060,114 @@
       "closed_class": false,
       "definition": "To happen or take place; to exist or be found.",
       "gloss": "To happen or take place; to exist or be found.",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Definition-Gap Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "reference_count": 4
+    },
+    {
+      "lexical_form": "name",
+      "normalised_form": "name",
+      "text": "name",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "VERB",
+      "closed_class": false,
+      "definition": "To give a name to; to identify or refer to by name.",
+      "gloss": "To give a name to; to identify or refer to by name.",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Definition-Gap Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "reference_count": 4
+    },
+    {
+      "lexical_form": "point",
+      "normalised_form": "point",
+      "text": "point",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "VERB",
+      "closed_class": false,
+      "definition": "To direct someone's attention to something, especially by extending a finger; to face or indicate a particular direction.",
+      "gloss": "To direct someone's attention to something, especially by extending a finger; to face or indicate a particular direction.",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Definition-Gap Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "reference_count": 4
+    },
+    {
+      "lexical_form": "state",
+      "normalised_form": "state",
+      "text": "state",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "VERB",
+      "closed_class": false,
+      "definition": "To express something definitely or clearly in speech or writing.",
+      "gloss": "To express something definitely or clearly in speech or writing.",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"

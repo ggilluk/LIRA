@@ -164,20 +164,29 @@ class WordSeeder:
             # not part of the mandatory closed-class total.
             file_counts[filename] = self._validate_word_file(filename, seen_lexical_form_pos, required=True)
 
-        seen_lexical_forms = {lexical_form for lexical_form, _ in seen_lexical_form_pos}
         promoted_path = self.assets_dir / PROMOTED_FILE
         if not promoted_path.is_file():
             self._write_promoted_words([])
         promoted_doc = json.loads(promoted_path.read_text())
-        promoted_lexical_forms = set()
         for entry in promoted_doc.get("words", []):
             lexical_form = entry["lexical_form"]
-            if lexical_form in seen_lexical_forms:
-                raise ValueError(f"promoted word '{lexical_form}' duplicates a mandatory closed-class word")
-            if lexical_form in promoted_lexical_forms:
-                raise ValueError(f"duplicate promoted word '{lexical_form}'")
+            pos = entry["part_of_speech"]
+            key = (lexical_form, pos)
+            # Checked against the same seen_lexical_form_pos set
+            # MANDATORY_FILES/SUPPLEMENTARY_FILES already populated,
+            # then added to it here -- (lexical_form, part_of_speech)
+            # uniqueness, not lexical_form alone, the same discipline
+            # _validate_word_file already applies to every other file.
+            # A promoted word may legitimately share a lexical_form with
+            # an existing mandatory/supplementary/already-promoted word
+            # as long as its part_of_speech differs (the same "that"
+            # DETERMINER/PRONOUN homograph pattern) -- promoted words
+            # load last (load_cache()), so Dictionary.lookup()'s
+            # first-seeded-wins default is unaffected either way.
+            if key in seen_lexical_form_pos:
+                raise ValueError(f"promoted word '{lexical_form}' ({pos}) duplicates an existing (lexical_form, part_of_speech) pair")
             self._validate_entry_enums(PROMOTED_FILE, entry)
-            promoted_lexical_forms.add(lexical_form)
+            seen_lexical_form_pos.add(key)
         file_counts[PROMOTED_FILE] = promoted_doc.get("count", 0)
 
         manifest_path = self.assets_dir / MANIFEST_FILE
@@ -308,7 +317,19 @@ class WordSeeder:
         promotion_threshold. Returns whether it was added.
         reference_count is supplied by the caller -- this class has no
         visibility into how many Domains reference a Word; that
-        tracking doesn't exist yet elsewhere in this codebase."""
+        tracking doesn't exist yet elsewhere in this codebase.
+
+        Dedup is by (lexical_form, part_of_speech), not lexical_form
+        alone -- a second promoted sense of an already-promoted
+        lexical_form is a legitimate homograph as long as its
+        part_of_speech differs (e.g. promoting `state` VERB after
+        `state` NOUN is already promoted), matching validate_assets()'s
+        own uniqueness check and the mandatory/supplementary files'
+        long-standing "that" DETERMINER/PRONOUN convention. This method
+        does not check against mandatory/supplementary files itself
+        (it only reads promoted_words.json) -- a promotion that
+        collides with one of those is caught the next time
+        validate_assets() runs, not here."""
         if word.part_of_speech not in OPEN_CLASSES:
             return False
         if reference_count <= self.promotion_threshold:
@@ -316,7 +337,7 @@ class WordSeeder:
 
         promoted_path = self.assets_dir / PROMOTED_FILE
         doc = json.loads(promoted_path.read_text()) if promoted_path.is_file() else self._empty_promoted_doc()
-        if any(entry["lexical_form"] == word.lexical_form.value for entry in doc["words"]):
+        if any(entry["lexical_form"] == word.lexical_form.value and entry["part_of_speech"] == word.part_of_speech.name for entry in doc["words"]):
             return False
 
         entry = self._word_to_entry(word)

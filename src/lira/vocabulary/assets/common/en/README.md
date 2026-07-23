@@ -42,7 +42,7 @@ working vocabulary immediately, not to be a system of record.
 | `metalinguistic_adverbs.json` | Open-class `ADVERB` terms for grammar itself, plus four closed-class discourse markers (however, therefore, moreover, nevertheless -- see Discourse markers below) | 17 |
 | `metalinguistic_proper_nouns.json` | A single `PROPER_NOUN` entry, `English` -- see Supplementary files below | 1 |
 | `metalinguistic_interjections.json` | Open-class `INTERJECTION` terms (`yes`, `no`, `please`, `alas`, `hurrah`, `huzzah`, `oh`, `ah`, `wow`, `hey`, `ouch`, `hmm`, `well`) -- see Supplementary files below | 13 |
-| `promoted_words.json` | Open-class words promoted from Domain vocabularies (started empty; see Version below) | 280 |
+| `promoted_words.json` | Open-class words promoted from Domain vocabularies (started empty; see Version below) | 283 |
 
 Mandatory closed-class total: **388** (37 + 99 + 36 + 94 + 7 + 36 + 16 + 5 + 25 + 33).
 The six `metalinguistic_*.json` files and `promoted_words.json` are
@@ -53,7 +53,7 @@ figure `WordSeeder` asserts: it's whatever `determiners.json` through
 `numerals.json`'s counts actually sum to, cross-checked against
 `manifest.json`'s `total_lexical_forms` -- see
 `vocabulary/role/word_seeder.py`'s `validate_assets()`. A freshly
-seeded `Dictionary` currently ends up with 388 + 167 + 280 = **835**
+seeded `Dictionary` currently ends up with 388 + 167 + 283 = **838**
 `Word`s (mandatory + supplementary + promoted) -- unlike the mandatory
 and supplementary totals, the promoted total isn't manifest-enforced
 (`promote_word`/`demote_word` mutate `promoted_words.json` directly;
@@ -262,6 +262,7 @@ mandatory files:
 | `be`, `have`, `do` | `AUXILIARY` (`auxiliaries.json`) | `VERB` (`metalinguistic_verbs.json`) |
 | `cause`, `result` | `NOUN` (`metalinguistic_nouns.json`) | `VERB` (`metalinguistic_verbs.json`) |
 | `form` | `NOUN` (`metalinguistic_nouns.json`) | `VERB` (`metalinguistic_verbs.json`) |
+| `name`, `point`, `state` | `NOUN` (`promoted_words.json`) | `VERB` (`promoted_words.json`) |
 | `past`, `opposite` | `PREPOSITION` (`prepositions.json`) | `ADJECTIVE` (`metalinguistic_adjectives.json`) |
 | `plus`, `minus` | `PREPOSITION` (`prepositions.json`) | `VERB` (`metalinguistic_verbs.json`, math operator sense) |
 | `and`, `or`, `nor` | `CONJUNCTION` (`coordinating_conjunctions.json`) | `VERB` (`metalinguistic_verbs.json`, logic operator sense) |
@@ -290,6 +291,17 @@ incidental -- see the ordering comments above `MANDATORY_FILES` and
 `SUPPLEMENTARY_FILES` in `vocabulary/role/word_seeder.py`.
 `Dictionary.lookup_all(text)` returns every sense regardless of load
 order.
+
+`name`/`point`/`state` are a different case from every other row above:
+both senses live in the *same* file, `promoted_words.json`, added in
+two separate batches -- the `NOUN` sense first (definition-gap batch),
+the `VERB` sense later (common-core batch) -- so array order within
+that one file, not file-to-file ordering, decides that `NOUN` stays
+`Dictionary.lookup()`'s default. This is also why
+`RelationshipSeeder.seed_domain`, whose own `Dictionary.lookup()` call
+has no part-of-speech awareness at all, cannot safely relate `state`
+(`VERB`) to anything through the static relationship cache -- see
+`relationships/README.md`'s Version section.
 
 `asset_version 1.2.0` added seven words (`done`, `doing`, `little`,
 `fewest`, `least`, `owing to`, `n't`) that the original 300-word
@@ -430,7 +442,51 @@ authoritative Word in its owning Domain is never deleted or modified
 by promotion or demotion. Closed-class words are never promoted:
 they're already part of the mandatory cache.
 
+Uniqueness among promoted words is by `(lexical_form, part_of_speech)`,
+not `lexical_form` alone (`asset_version 1.13.0`) -- a word may be
+promoted more than once under the same lexical_form as long as its
+part_of_speech differs, the same "that" DETERMINER/PRONOUN homograph
+pattern the mandatory/supplementary files already use, checked against
+every mandatory, supplementary, *and* already-promoted
+`(lexical_form, part_of_speech)` pair in the cache. Promoted words load
+last (`WordSeeder.load_cache()`), so a promoted word sharing a
+lexical_form with an earlier-loaded sense never disturbs
+`Dictionary.lookup()`'s first-seeded-wins default.
+
 ## Version
+
+`v1` / `schema_version 2.0.0` / `asset_version 1.13.0` -- fixed a real
+bug `asset_version 1.12.0` surfaced but didn't fix: `WordSeeder`'s
+promoted-word uniqueness check (`validate_assets()` and
+`promote_word()`) compared `lexical_form` alone, so a second promoted
+sense of an already-promoted lexical_form was rejected even when its
+part_of_speech genuinely differed (`name`/`point`/`state` VERB were
+blocked by their own already-promoted NOUN senses). Fixed directly in
+`vocabulary/role/word_seeder.py`: both checks now use
+`(lexical_form, part_of_speech)`, reusing the exact set
+`_validate_word_file` already builds from `MANDATORY_FILES`/
+`SUPPLEMENTARY_FILES`, so a promoted word is only rejected when it
+truly duplicates an existing pair -- see Promotion policy above for
+the mechanics. Verified directly, not just by re-running the seeding
+script: promoting a second POS sense of an existing lexical_form now
+succeeds and stays `validate_assets()`-clean, promoting a genuine
+duplicate (same lexical_form *and* part_of_speech) still fails, and a
+hand-injected collision with an existing mandatory/supplementary
+`(lexical_form, part_of_speech)` pair is still rejected.
+`name`/`point`/`state` VERB (254 -> 257 -> `promoted_words.json`
+280 -> 283) are now seeded, completing `asset_version 1.12.0`'s batch.
+One relationship considered and deliberately not seeded: `state`
+(VERB) -> `NOMINALISATION` -> `statement` (already promoted) --
+`state` is now a Common homograph, and `RelationshipSeeder.seed_domain`
+still resolves a static cache entry via `Dictionary.lookup()`,
+first-seeded-wins by text alone, not part-of-speech-aware (this fix
+was scoped to `WordSeeder`'s own validation, not
+`RelationshipSeeder`'s resolution, a materially larger change).
+Checked directly before writing the entry, the same way the `cause`
+bug was found in `asset_version 1.11.0`: `Dictionary.lookup("state")`
+resolves to the `NOUN`, so the relationship would have silently
+attached to the wrong sense -- caught this time before shipping it.
+Every seeded Dictionary now carries 388 + 167 + 283 = **838** total.
 
 `v1` / `schema_version 2.0.0` / `asset_version 1.12.0` -- a user-supplied
 audit of words the Common Vocabulary Cache's own definitions repeatedly

@@ -36,17 +36,31 @@ used for definition-gap vocabulary:
   the natural next step for "all associated relationships for each
   word" applied to genuinely new verbs.
 
-Deliberately NOT added: a VERB sense for `form`/`name`/`point`/`state`
-via `promote_word` -- all four already have a promoted NOUN sense, and
-`WordSeeder.promote_word`/`validate_assets()` reject a second promoted
-entry sharing a lexical_form regardless of part_of_speech
-(`promoted_lexical_forms` is a flat set of lexical_form strings, unlike
-the mandatory/supplementary files' own `(lexical_form, part_of_speech)`
-uniqueness check). `form` VERB sidesteps this by going through
-`metalinguistic_verbs.json` instead (a different, POS-aware file); the
-other three don't have a metalinguistic-file home to fall back on, so
-their VERB senses are left unseeded -- surfaced, not fixed, the same
-discipline the `cause` homograph bug already got in the previous batch."""
+`form`/`name`/`point`/`state` all already had a promoted `NOUN` sense
+before this file added their `VERB` senses too. `form` VERB went
+straight into `metalinguistic_verbs.json` (a different, already
+part-of-speech-aware file). `name`/`point`/`state` VERB were initially
+left out: `WordSeeder.promote_word`/`validate_assets()` rejected a
+second promoted entry sharing a lexical_form regardless of
+part_of_speech (`promoted_lexical_forms` was a flat set of lexical_form
+strings, unlike the mandatory/supplementary files' own
+`(lexical_form, part_of_speech)` uniqueness check). Rather than route
+around it, the actual bug was fixed directly in
+`vocabulary/role/word_seeder.py` -- `validate_assets()`'s promoted-word
+check now reuses the same `(lexical_form, part_of_speech)`
+`seen_lexical_form_pos` set every mandatory/supplementary file is
+already checked against (a promoted word may legitimately share a
+lexical_form with an existing entry as long as its part_of_speech
+differs -- the same "that" DETERMINER/PRONOUN homograph pattern), and
+`promote_word`'s own pre-check got the identical fix. `name`/`point`/
+`state` VERB are seeded below (PROMOTED_VERBS_SECOND_SENSE) now that
+the mechanism supports it, completing the batch. `state` VERB and
+`statement` (NOUN, already promoted) are a genuine NOMINALISATION pair
+-- deliberately *not* wired as a relationship, though: "state" is now
+a Common homograph, and RelationshipSeeder.seed_domain's own
+resolution has the identical part-of-speech blind spot the `cause`
+bug already surfaced, unfixed here (see the comment above
+PROMOTED_VERBS_SECOND_SENSE)."""
 
 from typing import Dict, List, Tuple
 
@@ -127,3 +141,29 @@ THIRD_PERSON_FORM_PAIRS: List[Tuple[str, str]] = [
 SYNONYM_PAIRS: List[Tuple[str, str]] = [
     ("idea", "concept"),
 ]
+
+# A second, VERB sense for three lexical_forms that already have a
+# promoted NOUN sense -- only seedable now that WordSeeder's promoted-
+# word uniqueness check is part-of-speech-aware (see module docstring).
+PROMOTED_VERBS_SECOND_SENSE: Dict[str, str] = {
+    "name": "To give a name to; to identify or refer to by name.",
+    "point": "To direct someone's attention to something, especially by extending a finger; to face or indicate a particular direction.",
+    "state": "To express something definitely or clearly in speech or writing.",
+}
+
+# NOT seeded: (state, NOMINALISATION, statement) -- a real relationship
+# ("statement" already exists, PROMOTED_NOUNS above), but "state" is now
+# a Common homograph too (NOUN promoted first, VERB promoted in
+# PROMOTED_VERBS_SECOND_SENSE above), and RelationshipSeeder.seed_domain
+# resolves a static cache entry's source_lexical_form via
+# Dictionary.lookup() -- first-seeded-wins by text alone, still not
+# part-of-speech-aware (this batch fixed WordSeeder's promoted-word
+# uniqueness check, not RelationshipSeeder's resolution -- a
+# considerably larger change, threading a part-of-speech disambiguator
+# through the whole relationship-cache schema, not requested and not
+# made here). Checked directly before writing anything, the same way
+# the `cause` bug was found in the previous batch:
+# `dictionary.lookup("state")` resolves to the NOUN, so a cache entry
+# naming "state" as source would silently attach to the wrong sense --
+# caught this time before shipping it, not after. Surfaced, not fixed,
+# same as `cause`.

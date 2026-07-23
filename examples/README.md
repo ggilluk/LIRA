@@ -418,16 +418,17 @@ treatment as the Verb nominalisation batch above, a natural extension
 of "all associated relationships for each word" applied to genuinely
 new verbs.
 
-Not added: a `VERB` sense for `name`/`point`/`state`. All three already
-have a promoted `NOUN` sense, and `WordSeeder.promote_word`/
-`validate_assets()` reject a second promoted entry sharing a
-lexical_form regardless of part_of_speech
-(`promoted_lexical_forms` is a flat set of lexical_form strings, unlike
-the mandatory/supplementary files' own `(lexical_form, part_of_speech)`
-uniqueness check) -- `form` sidesteps this by going through a
-metalinguistic file instead, since it already had one; `name`/`point`/
-`state` don't. Surfaced, not fixed, the same discipline the `cause`
-homograph bug got above.
+Initially not added: a `VERB` sense for `name`/`point`/`state`. All
+three already have a promoted `NOUN` sense, and
+`WordSeeder.promote_word`/`validate_assets()` rejected a second
+promoted entry sharing a lexical_form regardless of part_of_speech
+(`promoted_lexical_forms` was a flat set of lexical_form strings,
+unlike the mandatory/supplementary files' own
+`(lexical_form, part_of_speech)` uniqueness check) -- `form` sidesteps
+this by going through a metalinguistic file instead, since it already
+had one; `name`/`point`/`state` don't. This was fixed for real
+immediately afterward -- see Fixing the promoted-word POS blind spot
+below -- rather than left as a documented gap.
 
 Relationships: 6 `NOMINALISATION` pairs (`occur`/`occurrence`,
 `produce`/`production`, `introduce`/`introduction`,
@@ -444,8 +445,50 @@ Idempotent and verified directly in headless Chromium: `occur` shows
 both the `NOMINALISATION` (to `occurrence`) and `THIRD_PERSON_FORM`
 (to `occurs`) relationships in both directions; `idea`/`concept` show
 the `SYNONYM` sentence; `mood` and `form` (`VERB`) correctly show none
-(no relationship was ever planned for either). Common Vocabulary Cache:
-805 -> 835 words, 266 -> 282 relationships. Physics Domain: 948 -> 978
+(no relationship was ever planned for either).
+
+## Fixing the promoted-word POS blind spot
+
+The `name`/`point`/`state` gap above turned out to be a genuine bug,
+not a schema constraint worth just documenting around --
+`WordSeeder.promote_word`'s own pre-check and `validate_assets()`'s
+promoted-word uniqueness check both compared `lexical_form` alone,
+never `part_of_speech`, unlike every other file in the cache. Fixed
+directly in `vocabulary/role/word_seeder.py`: both now reuse the exact
+`(lexical_form, part_of_speech)` `seen_lexical_form_pos` set
+`_validate_word_file` already builds from `MANDATORY_FILES`/
+`SUPPLEMENTARY_FILES`, extended to also accumulate promoted entries as
+they're validated -- the same discipline every other file in this
+cache already applies, not a new pattern. Promoted words load last
+(`WordSeeder.load_cache()`), so a promoted word sharing a lexical_form
+with an earlier-loaded sense never disturbs `Dictionary.lookup()`'s
+first-seeded-wins default.
+
+Verified directly before trusting it, not just by re-running the
+seeding script: promoting a second POS sense of an already-promoted
+lexical_form now succeeds and stays `validate_assets()`-clean;
+promoting a genuine duplicate (same lexical_form *and* part_of_speech)
+still correctly fails; and a hand-injected collision with an existing
+mandatory/supplementary `(lexical_form, part_of_speech)` pair is still
+correctly rejected by `validate_assets()`. `name`, `point`, and `state`
+`VERB` are now seeded (`examples/common_core_vocabulary.py`'s
+`PROMOTED_VERBS_SECOND_SENSE`), completing the batch above.
+
+One more relationship was considered and deliberately *not* seeded:
+`state` (`VERB`) -> `NOMINALISATION` -> `statement` (already promoted)
+is a genuine pair, but `state` is now a Common homograph, and
+`RelationshipSeeder.seed_domain`'s own resolution -- `Dictionary.lookup()`,
+first-seeded-wins by text, not part-of-speech-aware -- has the
+identical blind spot the `cause` bug already surfaced, just not fixed
+here (this fix was scoped to `WordSeeder`'s promoted-word validation,
+not `RelationshipSeeder`'s resolution, a materially larger change
+touching the whole relationship-cache schema). Checked directly before
+writing the entry: `Dictionary.lookup("state")` resolves to the
+`NOUN`, so the relationship would have silently attached to the wrong
+sense -- caught this time before shipping it, not after.
+
+Common Vocabulary Cache: 805 -> 838 words (835 from the audit itself,
++3 from this fix), 266 -> 282 relationships. Physics Domain: 948 -> 981
 words, 389 -> 405 relationships.
 
 ## Known, pre-existing limitation surfaced (not fixed) by this exercise

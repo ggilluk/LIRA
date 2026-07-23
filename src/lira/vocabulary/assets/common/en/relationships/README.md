@@ -222,6 +222,20 @@ adds these seven relationships -- all now present in
 
 ## Version
 
+No relationship count change alongside `../README.md`'s
+`asset_version 1.13.0` (the `WordSeeder` promoted-word POS-awareness
+fix): `state` (`VERB`) -> `NOMINALISATION` -> `statement` is a genuine
+pair, but `state` became a Common homograph in that same batch, and
+`RelationshipSeeder.seed_domain` still resolves a static cache entry's
+`source_lexical_form` via `Dictionary.lookup()`, first-seeded-wins by
+text alone -- `Dictionary.lookup("state")` resolves to the `NOUN`, so
+the entry would silently attach to the wrong sense, the identical
+`cause` bug below. Checked directly before writing it, so it was never
+added rather than shipped wrong and fixed later. Fixing this for real
+would mean giving `RelationshipSeeder` (or the cache schema itself) a
+part-of-speech disambiguator -- out of scope for the `WordSeeder` fix
+that prompted this check.
+
 `v1` / `schema_version 1.0.0` / `asset_version 1.7.0` (266 -> 282
 relationships, alongside `../README.md`'s `asset_version 1.12.0`
 common-core vocabulary batch: 6 more `NOMINALISATION` pairs

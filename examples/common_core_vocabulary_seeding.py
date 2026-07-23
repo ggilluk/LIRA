@@ -36,6 +36,7 @@ from common_core_vocabulary import (  # noqa: E402
     NOMINALISATION_PAIRS,
     PROMOTED_NOUNS,
     PROMOTED_VERBS,
+    PROMOTED_VERBS_SECOND_SENSE,
     SYNONYM_PAIRS,
     THIRD_PERSON_FORM_PAIRS,
 )
@@ -146,6 +147,13 @@ def promote_words() -> dict:
         added = seeder.promote_word(word, reference_count=seeder.promotion_threshold + 1)
         (promoted if added else already_present).append(lexical_form)
     for lexical_form, definition in PROMOTED_VERBS.items():
+        word = _build_word(lexical_form, "VERB", definition, source=COMMON_SOURCE)
+        added = seeder.promote_word(word, reference_count=seeder.promotion_threshold + 1)
+        (promoted if added else already_present).append(lexical_form)
+    # A second, VERB sense for lexical_forms that already have a
+    # promoted NOUN sense -- only possible now that WordSeeder's
+    # promoted-word uniqueness check is part-of-speech-aware.
+    for lexical_form, definition in PROMOTED_VERBS_SECOND_SENSE.items():
         word = _build_word(lexical_form, "VERB", definition, source=COMMON_SOURCE)
         added = seeder.promote_word(word, reference_count=seeder.promotion_threshold + 1)
         (promoted if added else already_present).append(lexical_form)

@@ -5,8 +5,8 @@
 it directly in a browser to see the UI without running any code.
 
 It now shows a **Physics Domain**, seeded from the Common Domain (now
-835 words: 388 mandatory closed-class + 167 supplementary
-metalinguistic terms + 280 promoted open-class words -- see below)
+838 words: 388 mandatory closed-class + 167 supplementary
+metalinguistic terms + 283 promoted open-class words -- see below)
 plus 143 lexical forms hydrated directly into the Physics Domain
 (95 `Word` records from a representative Physics source text, several
 with more than one part of speech, e.g. `charge` -> NOUN + VERB, plus
@@ -15,7 +15,7 @@ into its constituent words, plus 6 more abstract nouns for the
 NOMINALISATION relationship -- see Definition-gap vocabulary and Verb
 nominalisation below) via the Vocabulary Layer's domain-seeding
 pipeline (`DictionaryProcessor.identify_word`, `AsyncDictionaryHydrator`,
-`ExternalDictionaryAdapter`) -- 978 words, 405 relationships in total
+`ExternalDictionaryAdapter`) -- 981 words, 405 relationships in total
 (282 inherited from Common + 123 hand-curated or morphologically-linked
 among the hydrated Physics words, covering every
 `LexicalRelationshipType` Lexical Semantic kind with at least 5 real
@@ -105,9 +105,18 @@ as the batch above (`occur` -> `occurrence`, `produce` -> `production`,
 ("occurrence is the noun form of occur") and a `THIRD_PERSON_FORM` one
 ("occurs is the third-person form of occur") -- the latter
 retroactively links `occurs`, seeded unlinked in the definition-gap
-batch since its lemma didn't exist yet. See `examples/README.md`'s
-Common core vocabulary section for the full audit, including which
-words it flagged as missing that turned out already seeded.
+batch since its lemma didn't exist yet. The audit also surfaced a real
+bug in `WordSeeder`: promoting a second, `VERB` sense of an
+already-promoted lexical_form (`name`, `point`, `state`, which already
+had a promoted `NOUN` sense) was silently rejected regardless of
+part_of_speech. Fixed directly in `vocabulary/role/word_seeder.py`
+(both the promoted-word uniqueness check now compare
+`(lexical_form, part_of_speech)`, not `lexical_form` alone) -- select
+`state` (`VERB`) to see it now coexists cleanly with `state` (`NOUN`).
+See `examples/README.md`'s Common core vocabulary and Fixing the
+promoted-word POS blind spot sections for the full story, including
+one relationship (`state` -> `NOMINALISATION` -> `statement`)
+deliberately left unseeded for the same reason as `cause` above.
 
 It also demonstrates several `DictionaryView` display additions made
 for this exercise, all additive and optional (existing call sites
@@ -125,7 +134,7 @@ unaffected):
   Every word and relationship is labelled "Common" or "Physics"
   (`word.is_common`); filtering to "Physics" isolates exactly the 137
   hydrated (or conflict-resolved) words, filtering to "Common" the
-  inherited 835.
+  inherited 838.
 - A one-sentence plain-English gloss under each relationship row in
   the detail panel, phrased per kind -- select `particle_2` to see
   "particle is a type of matter" (HYPERNYM), "nucleus is part of atom"
