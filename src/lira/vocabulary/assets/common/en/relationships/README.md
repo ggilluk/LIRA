@@ -21,7 +21,7 @@ against a specific Domain's already-seeded `Word`s, not a store of
 
 | File | Category | Kinds seeded | Count |
 |------|----------|----------------|-------|
-| `morphological_relationships.json` | Morphological (6.2.1) | Person, tense, participle, and plural forms (`be`/`have`/`do` conjugations, `this`/`that` plurals); comparative/superlative forms (`few`/`many`/`much`/`little`); pronoun paradigm forms (`PRONOUN_OBJECT_FORM`, `PRONOUN_SUBJECT_FORM`, `PRONOUN_POSSESSIVE_DETERMINER_FORM`, `PRONOUN_POSSESSIVE_FORM`, `PRONOUN_REFLEXIVE_FORM`); `LEMMA_FORM` (every edge's materialised reverse -- see Symmetric and inverse edges); 25 base/derived pairs among the promoted words added in `asset_version 1.5.0`; 36 `NOMINALISATION` pairs added in `asset_version 1.6.0`; 6 more `NOMINALISATION` pairs plus 1 `THIRD_PERSON_FORM` pair (`occur`/`occurs`) added in `asset_version 1.7.0` (see Version below) | 232 |
+| `morphological_relationships.json` | Morphological (6.2.1) | Person, tense, participle, and plural forms (`be`/`have`/`do` conjugations, `this`/`that` plurals); comparative/superlative forms (`few`/`many`/`much`/`little`); pronoun paradigm forms (`PRONOUN_OBJECT_FORM`, `PRONOUN_SUBJECT_FORM`, `PRONOUN_POSSESSIVE_DETERMINER_FORM`, `PRONOUN_POSSESSIVE_FORM`, `PRONOUN_REFLEXIVE_FORM`); `LEMMA_FORM` (every edge's materialised reverse -- see Symmetric and inverse edges); 25 base/derived pairs among the promoted words added in `asset_version 1.5.0`; 36 `NOMINALISATION` pairs added in `asset_version 1.6.0`; 6 more `NOMINALISATION` pairs plus 1 `THIRD_PERSON_FORM` pair (`occur`/`occurs`) added in `asset_version 1.7.0`; 3 homograph-safe pairs (`cause`/`causing`, `cause`/`causation`, `state`/`statement`) added in `asset_version 1.8.0` using the new `source_part_of_speech`/`target_part_of_speech` disambiguator (see Version below) | 238 |
 | `semantic_relationships.json` | Lexical Semantic (6.2.2) | `ANTONYM` (spatial/temporal opposites: above/below, before/after, ...; discrete/continuous, high/low, push/pull, negative/positive among the promoted words) and `SYNONYM` (equivalent prepositions: beneath/under, amid/among, due to/owing to, ...; the discourse-marker pair however/nevertheless; idea/concept among the promoted words), each materialised in both directions | 34 |
 | `orthographic_relationships.json` | Orthographic and Naming (6.2.3) | `CONTRACTION` -- not/n't, plus each full contraction's component words (do/not -> don't, can/not -> can't, I/am -> I'm, it/is/has -> it's, is/not -> isn't, was/not -> wasn't, had/not -> hadn't) | 16 |
 
@@ -34,7 +34,7 @@ pronoun paradigms, and near-synonymy do.
 `PRONOUN_RECIPROCAL_FORM` is defined (6.2.1, Pronoun Form) but not
 currently seeded in either direction -- see Known gaps.
 
-Total relationships: **282**.
+Total relationships: **288**.
 
 ## Symmetric and inverse edges
 
@@ -136,6 +136,44 @@ Domain has its own distinct `Word` instances (Design: `Dictionary.seed_from`
 shallow-copies each Word, giving it a new identity). Relationships
 must be re-resolved and re-created fresh for every Domain.
 
+### Disambiguating a homograph endpoint
+
+`Dictionary + lexical form` alone isn't always a unique `Word` --
+a homograph (`vocabulary/assets/common/en/README.md`'s own Homographs
+table, e.g. `cause` `NOUN`/`VERB`, `state` `NOUN`/`VERB`) has more than
+one `Word` sharing one lexical form. Without more information,
+`RelationshipSeeder` resolves a JSON entry's `source_lexical_form`/
+`target_lexical_form` via `Dictionary.lookup()` -- first-seeded-wins by
+text, ignoring part_of_speech entirely -- which is exact and
+unambiguous for every closed-class/mandatory word (the load order
+`vocabulary/role/word_seeder.py`'s `MANDATORY_FILES`/
+`SUPPLEMENTARY_FILES` comments already document deliberately keeps it
+that way) but silently wrong whenever a relationship genuinely needs
+the *other* sense.
+
+An entry can name the sense explicitly instead: an optional
+`source_part_of_speech` and/or `target_part_of_speech` key, one of
+`PartOfSpeech`'s member names (`NOUN`, `VERB`, ...). When present,
+`RelationshipSeeder._resolve` resolves that endpoint via
+`Dictionary.lookup_all(lexical_form)` and picks the matching sense,
+ignoring load order entirely, instead of `Dictionary.lookup()`'s
+default:
+
+```json
+{
+  "source_lexical_form": "state",
+  "source_part_of_speech": "VERB",
+  "target_lexical_form": "statement",
+  "relationship_kind": "NOMINALISATION"
+}
+```
+
+Most entries never need this -- it exists purely for the rare case
+where an endpoint is a genuine homograph *and* the relationship must
+target a specific sense (`state` `VERB` -> `statement`, not `state`
+`NOUN` -> `statement`, which wouldn't mean anything). Omit both fields
+and behaviour is byte-for-byte what it always was.
+
 ## Relationship identity and duplicate prevention
 
 Every `LexicalRelationship` references a source Word UUID, a
@@ -157,6 +195,9 @@ legitimate relationships between the same pair of Words.
 - `count` matches the actual number of `relationships` entries
 - Every `relationship_kind` names a real `LexicalRelationshipType`
   member
+- Every present `source_part_of_speech`/`target_part_of_speech` (both
+  optional -- see Disambiguating a homograph endpoint above) names a
+  real `PartOfSpeech` member
 - `manifest.json`'s `relationship_count` matches the computed total
   across all three files
 - Mandatory file existence (all three category files plus the
@@ -222,19 +263,34 @@ adds these seven relationships -- all now present in
 
 ## Version
 
-No relationship count change alongside `../README.md`'s
-`asset_version 1.13.0` (the `WordSeeder` promoted-word POS-awareness
-fix): `state` (`VERB`) -> `NOMINALISATION` -> `statement` is a genuine
-pair, but `state` became a Common homograph in that same batch, and
-`RelationshipSeeder.seed_domain` still resolves a static cache entry's
-`source_lexical_form` via `Dictionary.lookup()`, first-seeded-wins by
-text alone -- `Dictionary.lookup("state")` resolves to the `NOUN`, so
-the entry would silently attach to the wrong sense, the identical
-`cause` bug below. Checked directly before writing it, so it was never
-added rather than shipped wrong and fixed later. Fixing this for real
-would mean giving `RelationshipSeeder` (or the cache schema itself) a
-part-of-speech disambiguator -- out of scope for the `WordSeeder` fix
-that prompted this check.
+`v1` / `schema_version 1.0.0` / `asset_version 1.8.0` (282 -> 288
+relationships). `RelationshipSeeder` gained the part-of-speech
+disambiguator described in Disambiguating a homograph endpoint above
+(`_resolve`, an optional `source_part_of_speech`/`target_part_of_speech`
+per entry) -- the fix that `asset_version 1.7.0` below explicitly held
+back as out of scope for the `WordSeeder` fix it was written alongside.
+With it, three relationships a part-of-speech blind spot had made
+unsafe were seeded correctly for the first time:
+`cause` (`VERB`) -> `PRESENT_PARTICIPLE_FORM` -> `causing` and
+`cause` (`VERB`) -> `NOMINALISATION` -> `causation` -- both removed
+from earlier batches after being found silently attached to the `NOUN`
+sense of `cause`; and `state` (`VERB`) -> `NOMINALISATION` ->
+`statement` -- the pair `asset_version 1.7.0` deliberately left
+unseeded, above. Each gets its reciprocal `LEMMA_FORM` edge too, an
+explicit `target_part_of_speech` on the reverse edge since the lemma
+being pointed back to is the ambiguous endpoint there
+(`morphological_relationships.json` 232 -> 238).
+
+Verified directly, not assumed: seeding a fresh Domain now attaches
+every edge to the `VERB` sense of `cause`/`state` and leaves the `NOUN`
+sense's own relationship list empty, confirmed both by inspecting the
+`LexicalRelationshipStore` directly and by checking the rendered UI in
+headless Chromium. Existing entries are untouched -- neither
+`source_part_of_speech` nor `target_part_of_speech` is set on any of
+them, so every one of them resolves exactly as it always did via
+`Dictionary.lookup()`'s first-seeded-wins default; a fresh Common
+Domain still seeds all 282 pre-existing relationships unchanged before
+these 6 new ones are added. See `examples/relationship_cache_homograph_fix.py`.
 
 `v1` / `schema_version 1.0.0` / `asset_version 1.7.0` (266 -> 282
 relationships, alongside `../README.md`'s `asset_version 1.12.0`

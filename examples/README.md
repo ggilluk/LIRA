@@ -25,6 +25,7 @@ the pipeline exactly the way any other Domain is seeded (see
 | `verb_nominalisation_seeding.py` | The runnable seeding script for that classification -- promotes/hydrates any missing nouns and wires the relationship. `python3 examples/verb_nominalisation_seeding.py` from the repo root. |
 | `common_core_vocabulary.py` | Classification data for a user-supplied audit of core words the Common Vocabulary Cache's own definitions repeatedly depend on but never seeded -- see Common core vocabulary below. |
 | `common_core_vocabulary_seeding.py` | The runnable seeding script for that classification -- adds genuine grammar terms directly to the metalinguistic files, promotes general vocabulary, wires relationships, and regenerates the example UI. `python3 examples/common_core_vocabulary_seeding.py` from the repo root (this is now the canonical way to regenerate `assets/example_ui/dictionary_view_example.html` -- see that directory's own README). |
+| `relationship_cache_homograph_fix.py` | Seeds the three relationships a part-of-speech blind spot in `RelationshipSeeder` previously made unsafe to add (`cause`/`causing`, `cause`/`causation`, `state`/`statement`) -- see Fixing the relationship cache's own POS blind spot below. `python3 examples/relationship_cache_homograph_fix.py` from the repo root. |
 
 ## Network caveat
 
@@ -474,22 +475,65 @@ correctly rejected by `validate_assets()`. `name`, `point`, and `state`
 `VERB` are now seeded (`examples/common_core_vocabulary.py`'s
 `PROMOTED_VERBS_SECOND_SENSE`), completing the batch above.
 
-One more relationship was considered and deliberately *not* seeded:
+One more relationship was considered and initially *not* seeded:
 `state` (`VERB`) -> `NOMINALISATION` -> `statement` (already promoted)
 is a genuine pair, but `state` is now a Common homograph, and
 `RelationshipSeeder.seed_domain`'s own resolution -- `Dictionary.lookup()`,
 first-seeded-wins by text, not part-of-speech-aware -- has the
-identical blind spot the `cause` bug already surfaced, just not fixed
-here (this fix was scoped to `WordSeeder`'s promoted-word validation,
-not `RelationshipSeeder`'s resolution, a materially larger change
-touching the whole relationship-cache schema). Checked directly before
-writing the entry: `Dictionary.lookup("state")` resolves to the
-`NOUN`, so the relationship would have silently attached to the wrong
-sense -- caught this time before shipping it, not after.
+identical blind spot the `cause` bug already surfaced. Checked
+directly before writing the entry: `Dictionary.lookup("state")`
+resolves to the `NOUN`, so the relationship would have silently
+attached to the wrong sense -- caught before shipping it, not after.
+Fixed for real immediately afterward, not left as a second documented
+gap -- see Fixing the relationship cache's own POS blind spot below.
 
-Common Vocabulary Cache: 805 -> 838 words (835 from the audit itself,
-+3 from this fix), 266 -> 282 relationships. Physics Domain: 948 -> 981
-words, 389 -> 405 relationships.
+Common Vocabulary Cache: 805 -> 838 words, 266 -> 282 relationships.
+Physics Domain: 948 -> 981 words, 389 -> 405 relationships.
+
+## Fixing the relationship cache's own POS blind spot
+
+`RelationshipSeeder.seed_domain` had the identical part-of-speech blind
+spot `WordSeeder` did, just one layer over: it resolves a JSON entry's
+`source_lexical_form`/`target_lexical_form` via `Dictionary.lookup()`,
+first-seeded-wins by text alone, with no way to say *which* sense of a
+homograph a relationship actually means. Fixed directly in
+`vocabulary/role/relationship_seeder.py`: each entry may now carry an
+optional `source_part_of_speech`/`target_part_of_speech`
+(`RelationshipSpec` grew from a 3-tuple to a 5-tuple; a new
+`_resolve` helper falls back to the old `Dictionary.lookup()` behaviour
+when the hint is absent, and resolves via `Dictionary.lookup_all()` +
+an exact `part_of_speech` match when it's present). Every existing
+entry in the cache omits both fields, so nothing about the existing
+282 relationships changes -- confirmed directly: a fresh Common Domain
+still seeds exactly 282 relationships before the new ones are added,
+and `validate_assets()` stays clean against the unmodified real assets.
+
+`examples/relationship_cache_homograph_fix.py` uses the new
+disambiguator to seed the three relationships this was really about:
+`cause` (`VERB`) -> `PRESENT_PARTICIPLE_FORM` -> `causing` and
+`cause` (`VERB`) -> `NOMINALISATION` -> `causation` (both removed from
+earlier batches after being found silently attached to the `NOUN`
+sense), and `state` (`VERB`) -> `NOMINALISATION` -> `statement` (held
+back above). Each gets its reciprocal `LEMMA_FORM` edge too, with an
+explicit `target_part_of_speech` on the reverse edge since the lemma
+being pointed back to (`cause`/`state`, `VERB`) is the ambiguous
+endpoint there -- 6 edges total, `morphological_relationships.json`
+232 -> 238.
+
+Verified directly, not assumed: seeding a fresh Domain now attaches
+every one of the 6 new edges to the `VERB` sense of `cause`/`state`,
+confirmed by inspecting the `LexicalRelationshipStore` directly (the
+`NOUN` sense's own outgoing relationship list stays empty) and by
+checking the rendered UI in headless Chromium -- select `cause`
+(`VERB`) to see "cause is the base (lemma) form of causing.", "cause
+is the base (lemma) form of causation.", "causation is the noun form
+of cause.", and "causing is the present-participle form of cause.";
+select `cause` (`NOUN`) or `state` (`NOUN`) to see neither has any
+relationship at all. Idempotent: a second run adds nothing new.
+
+Common Vocabulary Cache: 838 words (unchanged), 282 -> 288
+relationships. Physics Domain: 981 words (unchanged), 405 -> 411
+relationships.
 
 ## Known, pre-existing limitation surfaced (not fixed) by this exercise
 

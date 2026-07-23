@@ -15,8 +15,8 @@ into its constituent words, plus 6 more abstract nouns for the
 NOMINALISATION relationship -- see Definition-gap vocabulary and Verb
 nominalisation below) via the Vocabulary Layer's domain-seeding
 pipeline (`DictionaryProcessor.identify_word`, `AsyncDictionaryHydrator`,
-`ExternalDictionaryAdapter`) -- 981 words, 405 relationships in total
-(282 inherited from Common + 123 hand-curated or morphologically-linked
+`ExternalDictionaryAdapter`) -- 981 words, 411 relationships in total
+(288 inherited from Common + 123 hand-curated or morphologically-linked
 among the hydrated Physics words, covering every
 `LexicalRelationshipType` Lexical Semantic kind with at least 5 real
 examples each: `hot`<->`cold` ANTONYM, `matter` HYPERNYM `particle`,
@@ -82,12 +82,15 @@ form (`be`, `have`, `do`, `become`, `happen`, ...) were all left alone
 rather than forced. One planned pair, `cause` -> `causation`, surfaced
 a real pre-existing bug instead of a clean relationship: `cause` is a
 Common homograph (`NOUN` and `VERB`), and `RelationshipSeeder`'s
-homograph resolution isn't part-of-speech-aware, so both this new pair
-and an identical *existing* one (`cause` -> `causing`) had silently
-attached to the wrong (`NOUN`) sense -- both removed rather than left
-wrong; `causation` still exists as a Word, just without the formal
-edge. See `assets/common/en/relationships/README.md`'s own Version
-section for the full story.
+homograph resolution wasn't part-of-speech-aware at the time, so both
+this new pair and an identical *existing* one (`cause` -> `causing`)
+had silently attached to the wrong (`NOUN`) sense -- both removed
+rather than left wrong. `RelationshipSeeder` was later made
+part-of-speech-aware (see Common core vocabulary below and
+`examples/README.md`'s Fixing the relationship cache's own POS blind
+spot section), and both pairs were re-seeded correctly against the
+`VERB` sense of `cause`. See `assets/common/en/relationships/README.md`'s
+own Version section for the full story.
 
 ### Common core vocabulary
 
@@ -115,8 +118,12 @@ part_of_speech. Fixed directly in `vocabulary/role/word_seeder.py`
 `state` (`VERB`) to see it now coexists cleanly with `state` (`NOUN`).
 See `examples/README.md`'s Common core vocabulary and Fixing the
 promoted-word POS blind spot sections for the full story, including
-one relationship (`state` -> `NOMINALISATION` -> `statement`)
-deliberately left unseeded for the same reason as `cause` above.
+one relationship (`state` -> `NOMINALISATION` -> `statement`) that was
+initially left unseeded for the same reason as `cause` above -- and
+then fixed for real, along with `cause`'s two, once `RelationshipSeeder`
+itself was made part-of-speech-aware; see `examples/README.md`'s
+Fixing the relationship cache's own POS blind spot section and
+`assets/common/en/relationships/README.md`'s own Version section.
 
 It also demonstrates several `DictionaryView` display additions made
 for this exercise, all additive and optional (existing call sites

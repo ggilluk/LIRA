@@ -2,7 +2,7 @@
   "schema_version": "1.0.0",
   "language_code": "en",
   "relationship_category": "morphological",
-  "count": 232,
+  "count": 238,
   "relationships": [
     {
       "source_lexical_form": "be",
@@ -1163,6 +1163,42 @@
       "source_lexical_form": "occurs",
       "target_lexical_form": "occur",
       "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "cause",
+      "target_lexical_form": "causing",
+      "relationship_kind": "PRESENT_PARTICIPLE_FORM",
+      "source_part_of_speech": "VERB"
+    },
+    {
+      "source_lexical_form": "causing",
+      "target_lexical_form": "cause",
+      "relationship_kind": "LEMMA_FORM",
+      "target_part_of_speech": "VERB"
+    },
+    {
+      "source_lexical_form": "cause",
+      "target_lexical_form": "causation",
+      "relationship_kind": "NOMINALISATION",
+      "source_part_of_speech": "VERB"
+    },
+    {
+      "source_lexical_form": "causation",
+      "target_lexical_form": "cause",
+      "relationship_kind": "LEMMA_FORM",
+      "target_part_of_speech": "VERB"
+    },
+    {
+      "source_lexical_form": "state",
+      "target_lexical_form": "statement",
+      "relationship_kind": "NOMINALISATION",
+      "source_part_of_speech": "VERB"
+    },
+    {
+      "source_lexical_form": "statement",
+      "target_lexical_form": "state",
+      "relationship_kind": "LEMMA_FORM",
+      "target_part_of_speech": "VERB"
     }
   ]
 }

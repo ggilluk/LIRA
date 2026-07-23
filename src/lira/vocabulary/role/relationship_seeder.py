@@ -17,7 +17,9 @@ from lira.value_objects import Text
 from ..data.dictionary import Dictionary
 from ..data.lexical_relationship_store import LexicalRelationshipStore
 from ..data.lexical_relationship_type import LexicalRelationshipType
+from ..data.part_of_speech import PartOfSpeech
 from ..data.source_reference import SourceReference
+from ..data.word import Word
 
 CATEGORY_FILES = (
     "morphological_relationships.json",
@@ -42,7 +44,18 @@ CACHE_SOURCE_REFERENCE = SourceReference(
 # convention: certainty is never asserted as exactly 1.0.
 SEEDER_DEFAULT_WEIGHT = 0.9999
 
-RelationshipSpec = Tuple[str, str, LexicalRelationshipType]
+# (source_lexical_form, source_part_of_speech, target_lexical_form,
+# target_part_of_speech, relationship_type). The two part_of_speech
+# entries are usually None -- Dictionary.lookup()'s first-seeded-wins
+# default is exact and unambiguous for every closed-class/mandatory
+# word, which is all a spec ever needed to disambiguate until promoted
+# words started creating open-class homographs (e.g. "state" NOUN and
+# VERB both promoted -- vocabulary/assets/common/en/README.md's
+# Homographs table). A spec whose endpoint IS genuinely ambiguous names
+# an explicit part_of_speech instead of leaving it to load order --
+# see _resolve below and assets/common/en/relationships/README.md's own
+# schema section.
+RelationshipSpec = Tuple[str, Optional[PartOfSpeech], str, Optional[PartOfSpeech], LexicalRelationshipType]
 
 
 class RelationshipSeeder:
@@ -83,6 +96,10 @@ class RelationshipSeeder:
                     raise ValueError(f"{filename}: unknown relationship_kind '{kind}'")
                 if not entry.get("source_lexical_form") or not entry.get("target_lexical_form"):
                     raise ValueError(f"{filename}: relationship entry missing source_lexical_form or target_lexical_form")
+                for pos_field in ("source_part_of_speech", "target_part_of_speech"):
+                    pos_value = entry.get(pos_field)
+                    if pos_value is not None and pos_value not in PartOfSpeech.__members__:
+                        raise ValueError(f"{filename}: unknown {pos_field} '{pos_value}'")
             computed_total += doc["count"]
 
         if manifest["relationship_count"] != computed_total:
@@ -103,8 +120,7 @@ class RelationshipSeeder:
 
     def load_relationship_specs(self) -> List[RelationshipSpec]:
         """Validates the assets, then parses every category file into
-        (source_lexical_form, target_lexical_form, LexicalRelationshipType)
-        tuples. Cached after the first call."""
+        RelationshipSpec tuples. Cached after the first call."""
         if self._cache is not None:
             return list(self._cache)
 
@@ -113,9 +129,13 @@ class RelationshipSeeder:
         for filename in CATEGORY_FILES:
             doc = json.loads((self.assets_dir / filename).read_text())
             for entry in doc["relationships"]:
+                source_pos = entry.get("source_part_of_speech")
+                target_pos = entry.get("target_part_of_speech")
                 specs.append((
                     entry["source_lexical_form"],
+                    PartOfSpeech[source_pos] if source_pos else None,
                     entry["target_lexical_form"],
+                    PartOfSpeech[target_pos] if target_pos else None,
                     LexicalRelationshipType[entry["relationship_kind"]],
                 ))
         self._cache = specs
@@ -144,13 +164,15 @@ class RelationshipSeeder:
         processor = domain.vocabulary.lexical_relationship_processor
 
         resolved = []
-        for source_form, target_form, relationship_type in self.load_relationship_specs():
-            source_word = dictionary.lookup(source_form)
+        for source_form, source_pos, target_form, target_pos, relationship_type in self.load_relationship_specs():
+            source_word = self._resolve(dictionary, source_form, source_pos)
             if source_word is None:
-                raise ValueError(f"cannot resolve source Word '{source_form}' in Domain '{domain.name}'")
-            target_word = dictionary.lookup(target_form)
+                raise ValueError(f"cannot resolve source Word '{source_form}'"
+                                  f"{f' ({source_pos.name})' if source_pos else ''} in Domain '{domain.name}'")
+            target_word = self._resolve(dictionary, target_form, target_pos)
             if target_word is None:
-                raise ValueError(f"cannot resolve target Word '{target_form}' in Domain '{domain.name}'")
+                raise ValueError(f"cannot resolve target Word '{target_form}'"
+                                  f"{f' ({target_pos.name})' if target_pos else ''} in Domain '{domain.name}'")
             resolved.append((source_word, target_word, relationship_type))
 
         seeded = 0
@@ -170,6 +192,20 @@ class RelationshipSeeder:
             )
             seeded += 1
         return seeded
+
+    @staticmethod
+    def _resolve(dictionary: Dictionary, lexical_form: str, part_of_speech: Optional[PartOfSpeech]) -> Optional[Word]:
+        """Resolves one spec endpoint against `dictionary`. Without a
+        part_of_speech hint, defers to Dictionary.lookup()'s own
+        first-seeded-wins default, unchanged from before this method
+        existed -- every spec that doesn't need disambiguating keeps
+        behaving exactly as it always did. With one, resolves via
+        lookup_all() and picks the matching sense, ignoring load order
+        entirely -- the only way to correctly target the VERB sense of
+        a lexical_form whose NOUN sense loaded first (or vice versa)."""
+        if part_of_speech is None:
+            return dictionary.lookup(lexical_form)
+        return next((word for word in dictionary.lookup_all(lexical_form) if word.part_of_speech == part_of_speech), None)
 
     @staticmethod
     def _relationship_exists(store: LexicalRelationshipStore, source_word_id: str,

@@ -56,11 +56,15 @@ differs -- the same "that" DETERMINER/PRONOUN homograph pattern), and
 `state` VERB are seeded below (PROMOTED_VERBS_SECOND_SENSE) now that
 the mechanism supports it, completing the batch. `state` VERB and
 `statement` (NOUN, already promoted) are a genuine NOMINALISATION pair
--- deliberately *not* wired as a relationship, though: "state" is now
-a Common homograph, and RelationshipSeeder.seed_domain's own
-resolution has the identical part-of-speech blind spot the `cause`
-bug already surfaced, unfixed here (see the comment above
-PROMOTED_VERBS_SECOND_SENSE)."""
+-- initially left unseeded here, since "state" is now a Common
+homograph and RelationshipSeeder.seed_domain's own resolution had the
+identical part-of-speech blind spot the `cause` bug already surfaced
+(see the comment above PROMOTED_VERBS_SECOND_SENSE); fixed for real
+immediately afterward by making RelationshipSeeder itself
+part-of-speech-aware and seeded via examples/relationship_cache_homograph_fix.py,
+not through this file -- see that script and
+assets/common/en/relationships/README.md's own asset_version 1.8.0
+Version entry."""
 
 from typing import Dict, List, Tuple
 
@@ -151,19 +155,25 @@ PROMOTED_VERBS_SECOND_SENSE: Dict[str, str] = {
     "state": "To express something definitely or clearly in speech or writing.",
 }
 
-# NOT seeded: (state, NOMINALISATION, statement) -- a real relationship
-# ("statement" already exists, PROMOTED_NOUNS above), but "state" is now
-# a Common homograph too (NOUN promoted first, VERB promoted in
-# PROMOTED_VERBS_SECOND_SENSE above), and RelationshipSeeder.seed_domain
-# resolves a static cache entry's source_lexical_form via
-# Dictionary.lookup() -- first-seeded-wins by text alone, still not
-# part-of-speech-aware (this batch fixed WordSeeder's promoted-word
-# uniqueness check, not RelationshipSeeder's resolution -- a
-# considerably larger change, threading a part-of-speech disambiguator
-# through the whole relationship-cache schema, not requested and not
-# made here). Checked directly before writing anything, the same way
-# the `cause` bug was found in the previous batch:
-# `dictionary.lookup("state")` resolves to the NOUN, so a cache entry
-# naming "state" as source would silently attach to the wrong sense --
-# caught this time before shipping it, not after. Surfaced, not fixed,
-# same as `cause`.
+# NOT seeded here: (state, NOMINALISATION, statement) -- a real
+# relationship ("statement" already exists, PROMOTED_NOUNS above), but
+# "state" is now a Common homograph too (NOUN promoted first, VERB
+# promoted in PROMOTED_VERBS_SECOND_SENSE above), and, at the time this
+# batch was authored, RelationshipSeeder.seed_domain resolved a static
+# cache entry's source_lexical_form via plain Dictionary.lookup() --
+# first-seeded-wins by text alone, not part-of-speech-aware. Checked
+# directly before writing anything, the same way the `cause` bug was
+# found in the previous batch: `dictionary.lookup("state")` resolved to
+# the NOUN, so a cache entry naming "state" as source would have
+# silently attached to the wrong sense -- caught before shipping it,
+# not after.
+#
+# Fixed for real immediately afterward, not left as a documented
+# limitation: RelationshipSeeder gained an optional
+# source_part_of_speech/target_part_of_speech disambiguator (see
+# vocabulary/role/relationship_seeder.py and
+# assets/common/en/relationships/README.md's asset_version 1.8.0
+# Version entry), and (state VERB, NOMINALISATION, statement) was
+# seeded through that mechanism -- along with the two identical `cause`
+# cases -- via examples/relationship_cache_homograph_fix.py, not
+# through this file's own NOMINALISATION_PAIRS.

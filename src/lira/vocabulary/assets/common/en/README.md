@@ -487,6 +487,9 @@ bug was found in `asset_version 1.11.0`: `Dictionary.lookup("state")`
 resolves to the `NOUN`, so the relationship would have silently
 attached to the wrong sense -- caught this time before shipping it.
 Every seeded Dictionary now carries 388 + 167 + 283 = **838** total.
+(This relationship, and `cause`'s two, are seeded correctly as of
+`relationships/README.md`'s own `asset_version 1.8.0` -- see that
+file's Version section.)
 
 `v1` / `schema_version 2.0.0` / `asset_version 1.12.0` -- a user-supplied
 audit of words the Common Vocabulary Cache's own definitions repeatedly
