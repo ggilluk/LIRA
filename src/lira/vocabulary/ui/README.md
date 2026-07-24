@@ -6,13 +6,15 @@
 `LexicalRelationshipStore` as a single, self-contained HTML page: a
 sortable, searchable Words table with a master-detail layout -- select
 a word and its relationships (source → kind → target, both outgoing and
-incoming) appear inline in a side panel, no navigation away from the
-list. Each related word in that panel is itself clickable, pivoting the
-detail panel to it, so the relationship graph can be walked in place. A
-separate Relationships tab lists every edge in the domain, sortable and
-searchable on its own, each source/target word shown with its part of
-speech so grammatical category is visible without switching back to
-the Words tab.
+incoming) appear inline in a detail panel above the table, no
+navigation away from the list. Each related word in that panel is
+itself clickable, pivoting the detail panel to it, so the relationship
+graph can be walked in place. A separate Relationships tab lists every
+edge in the domain, sortable and searchable on its own, each
+source/target word shown with its part of speech so grammatical
+category is visible without switching back to the Words tab. A third
+Hierarchy tab renders the whole Dictionary as a tree for one chosen
+`LexicalRelationshipType` at a time -- see Hierarchy tab below.
 
 ```python
 from lira.vocabulary import DictionaryView
@@ -81,6 +83,48 @@ exactly as `word.definition` itself does. Popups are pure CSS
 (`opacity`/`pointer-events` on `:hover`/`:focus`), not JS-positioned, so
 they respect `prefers-reduced-motion` for free like everything else on
 this page.
+
+The Words tab's detail panel sits above the table, not beside it --
+selecting a word scrolls it into the same reading column the list is
+in, rather than off to a narrow sidebar competing for width with a
+wide Definition column. It stays `position: sticky` (capped at
+`min(52vh, 520px)`, its own scrollbar past that) so it stays in view
+while the list below it scrolls, and drops to normal (non-sticky) flow
+under the existing 860px mobile breakpoint.
+
+### Hierarchy tab
+
+Renders the *entire* Dictionary as a nested tree for one
+`LexicalRelationshipType` at a time, picked from a dropdown listing
+every kind actually present (with its edge count) -- not a per-word
+view like the detail panel's Relationships section, but the full
+structure a given kind traces across the whole Domain: pick `HYPONYM`
+to see the broad-to-narrow taxonomy `RelationshipSeeder`'s own
+NOUN/HYPERNYM data forms, `HOLONYM` for whole-to-part, `PLURAL_FORM`
+for every singular paired with its plural, and so on for any of the
+other `LexicalRelationshipType` members with edges seeded. Tree edges
+are the literal (source, kind, target) triple already shown in the
+Relationships tab -- source is the parent node, target the child --
+with no attempt to reorient a kind's direction to whatever "feels"
+hierarchical; picking the kind itself (`HYPONYM` instead of
+`HYPERNYM`, `HOLONYM` instead of `MERONYM`) is what controls which way
+the tree reads, the same pair of inverse edges the relationship cache
+already materialises for exactly this reason (`assets/common/en/
+relationships/README.md`'s Symmetric and inverse edges section).
+Roots are words with no incoming edge of the selected kind; a fully
+symmetric kind (`SYNONYM`, `ANTONYM` -- every word has both directions)
+has none, so every word becomes its own single-level root instead, and
+the panel says so explicitly rather than silently rendering an empty
+tree. Two independent guards keep the render finite even though the
+underlying graph isn't guaranteed to be a tree: a node reappearing
+within its own ancestor chain renders as a "(cycle)" leaf instead of
+recursing forever, and a node reached a second time via a *different*
+parent (a legitimate DAG shape -- one word with two hypernyms, say)
+renders as a plain cross-reference instead of duplicating its whole
+subtree again. Every node is clickable, pivoting to the Words tab with
+that word selected and scrolled into view, the same
+select-and-scroll-to interaction the detail panel's own related-word
+links already use.
 
 All Word and LexicalRelationship data is embedded as JSON in the page
 and searched/filtered/sorted client-side in vanilla JS -- there is no
