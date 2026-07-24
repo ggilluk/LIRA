@@ -122,26 +122,39 @@ the tree reads, the same pair of inverse edges the relationship cache
 already materialises for exactly this reason (`assets/common/en/
 relationships/README.md`'s Symmetric and inverse edges section).
 Roots are words with no incoming edge of the selected kind; a fully
-symmetric kind (`SYNONYM`, `ANTONYM` -- every word has both directions)
-has none, so every word becomes its own single-level root instead, and
-the panel says so explicitly rather than silently rendering an empty
-tree. Two independent guards keep the render finite even though the
-underlying graph isn't guaranteed to be a tree: a node reappearing
-within its own ancestor chain renders as a "(cycle)" leaf instead of
-recursing forever, and a node reached a second time via a *different*
-parent (a legitimate DAG shape -- one word with two hypernyms, say)
-renders as a plain cross-reference instead of duplicating its whole
-subtree again. Every node is clickable, selecting it in the Hierarchy
-tab's own detail panel above the tree (see the note on per-tab detail
-panels above) -- it never leaves the Hierarchy tab.
+symmetric kind (`SYNONYM`, `ANTONYM`, `RELATED` -- every edge's reverse
+is also stored, so every word has both an incoming and an outgoing
+edge) has none. Rather than fall back to one root per word -- which
+would render a whole forest of largely-redundant trees, since a mutual
+group's members would each show up as their own root with mostly the
+same other members as children -- this case clusters instead: every
+group of mutually-related words (a connected component of the kind's
+edge graph, 2+ words) becomes one flat cluster of chips, no nesting.
+Pick `SYNONYM` to see near-synonym groups clustered together this way
+rather than scattered across redundant roots. Two independent guards
+keep the *tree* render finite for every other (non-symmetric) kind,
+where the underlying graph still isn't guaranteed to be acyclic: a node
+reappearing within its own ancestor chain renders as a "(cycle)" leaf
+instead of recursing forever, and a node reached a second time via a
+*different* parent (a legitimate DAG shape -- one word with two
+hypernyms, say) renders as a plain cross-reference instead of
+duplicating its whole subtree again. Every node or chip is clickable,
+selecting it in the Hierarchy tab's own detail panel above (see the
+note on per-tab detail panels above) -- it never leaves the Hierarchy
+tab.
 
 ### Cyclic relations tab
 
 A tree, however deep, cannot represent a genuine cycle -- the Hierarchy
 tab above deliberately collapses one into a "(cycle)" leaf rather than
 recursing forever, which keeps that view finite but discards the
-cyclic structure itself. This tab is the complementary view: for one
-chosen `LexicalRelationshipType` kind (the same dropdown pattern as
+cyclic structure itself. Hierarchy's own clustering for symmetric kinds
+(the section above) already replaces a redundant tree with flat groups,
+but that's a *list*, not a graph -- it doesn't show which specific
+words within a cluster are directly connected to which. This tab is
+that complementary graphical view, sharing the same connected-
+components logic (`connectedComponents`) but applied more selectively:
+for one chosen `LexicalRelationshipType` kind (the same dropdown pattern as
 Hierarchy, defaulting to the first kind that actually has a cyclic
 cluster rather than whichever kind sorts first alphabetically, since
 most kinds -- anything tree-shaped, like `HYPERNYM` or the

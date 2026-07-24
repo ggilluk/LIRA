@@ -62,6 +62,11 @@ clusters are exactly the kind of tangled, non-hierarchical structure
 this tab exists for. The Hierarchy and Cyclic tabs each have their own
 detail panel above their own content now too -- selecting a node in
 either stays right there, it doesn't pivot back to the Words tab.
+Hierarchy itself now clusters `SYNONYM` (and any other symmetric kind
+-- `ANTONYM`, `RELATED`) into flat groups of mutually-related words
+instead of a redundant tree of near-identical per-word roots -- pick
+`SYNONYM` there too to see the difference from the graphical Cyclic
+view: a flat list of clustered chips rather than a drawn graph.
 
 ### Definition-gap vocabulary
 

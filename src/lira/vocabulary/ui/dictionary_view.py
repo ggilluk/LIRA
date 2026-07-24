@@ -666,6 +666,28 @@ select#hierarchy-kind {
   color: var(--ink-muted);
   font-style: italic;
 }
+.hierarchy-clusters {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.hierarchy-cluster {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 10px 12px;
+}
+.hierarchy-cluster-title {
+  font-size: 0.72rem;
+  color: var(--ink-muted);
+  margin-bottom: 6px;
+}
+.hierarchy-cluster-words {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 12px;
+}
+.hierarchy-cluster-chip { white-space: nowrap; }
 .cyclic-toolbar {
   display: flex;
   flex-wrap: wrap;
@@ -1133,6 +1155,58 @@ function renderDetailPanel(panel) {
   });
 }
 
+// Connected components of a relationship-edge list, treating every edge
+// as undirected -- shared by the Hierarchy tab's symmetric-kind
+// clustering below and the Cyclic tab's cycle-finding (buildCyclicComponents).
+function connectedComponents(edges) {
+  const undirected = new Map();
+  const nodeIds = new Set();
+  edges.forEach(r => {
+    nodeIds.add(r.source_id);
+    nodeIds.add(r.target_id);
+    if (!undirected.has(r.source_id)) undirected.set(r.source_id, new Set());
+    if (!undirected.has(r.target_id)) undirected.set(r.target_id, new Set());
+    undirected.get(r.source_id).add(r.target_id);
+    undirected.get(r.target_id).add(r.source_id);
+  });
+  const visited = new Set();
+  const components = [];
+  nodeIds.forEach(start => {
+    if (visited.has(start)) return;
+    const stack = [start];
+    const comp = new Set();
+    visited.add(start);
+    while (stack.length) {
+      const cur = stack.pop();
+      comp.add(cur);
+      (undirected.get(cur) || new Set()).forEach(next => {
+        if (!visited.has(next)) { visited.add(next); stack.push(next); }
+      });
+    }
+    components.push(comp);
+  });
+  return components;
+}
+
+// Every mutually-related group of words for a symmetric kind (SYNONYM,
+// ANTONYM, RELATED -- any kind where every edge's reverse is also
+// stored), used by buildHierarchy's fallback below: unlike
+// buildCyclicComponents, this keeps every component of 2+ words, not
+// just the ones that form a genuine cycle of 3+ -- a plain mutual pair
+// is still a real synonym cluster, just the smallest possible one, and
+// Hierarchy's job here is to replace the flat "every word its own root"
+// forest entirely, not to single out the more visually interesting
+// cases the way Cyclic's graphical view does.
+function buildClusters(kind) {
+  const wordById = new Map(WORDS.map(w => [w.id, w]));
+  const edges = RELS.filter(r => r.kind === kind && wordById.has(r.source_id) && wordById.has(r.target_id));
+  const clusters = connectedComponents(edges)
+    .filter(comp => comp.size >= 2)
+    .map(comp => [...comp].sort((a, b) => wordById.get(a).lexical_form.localeCompare(wordById.get(b).lexical_form)));
+  clusters.sort((a, b) => b.length - a.length);
+  return { clusters, wordById };
+}
+
 // Builds the full forest for one relationship kind: source_id becomes
 // the parent, target_id the child -- the same literal (source, kind,
 // target) triple the Relationships tab already shows, with no per-kind
@@ -1144,7 +1218,9 @@ function renderDetailPanel(panel) {
 // relationships/README.md's Symmetric and inverse edges section).
 // Roots are words with no incoming edge of this kind; a fully symmetric
 // kind (SYNONYM, ANTONYM -- every node has both directions) has none,
-// so every distinct source becomes its own root instead.
+// so this falls back to buildClusters instead of a forest of redundant
+// per-word roots (each of which would otherwise show largely the same
+// members as every other root in the same mutually-related group).
 function buildHierarchy(kind) {
   const edges = RELS.filter(r => r.kind === kind);
   const wordById = new Map(WORDS.map(w => [w.id, w]));
@@ -1162,10 +1238,24 @@ function buildHierarchy(kind) {
   const byLabel = id => (wordById.get(id) || {}).lexical_form || "";
   let roots = [...nodeIds].filter(id => !hasIncoming.has(id));
   const fellBack = roots.length === 0 && nodeIds.size > 0;
-  if (fellBack) roots = [...childrenOf.keys()];
-  roots.sort((a, b) => byLabel(a).localeCompare(byLabel(b)));
-  childrenOf.forEach(list => list.sort((a, b) => byLabel(a).localeCompare(byLabel(b))));
-  return { roots, childrenOf, wordById, edgeCount: edges.length, nodeCount: nodeIds.size, fellBack };
+  let clusters = null;
+  if (fellBack) {
+    clusters = buildClusters(kind).clusters;
+  } else {
+    roots.sort((a, b) => byLabel(a).localeCompare(byLabel(b)));
+    childrenOf.forEach(list => list.sort((a, b) => byLabel(a).localeCompare(byLabel(b))));
+  }
+  return { roots, childrenOf, wordById, edgeCount: edges.length, nodeCount: nodeIds.size, fellBack, clusters };
+}
+
+function hierarchyClusterHTML(cluster, wordById) {
+  const words = cluster.map(id => wordById.get(id)).filter(Boolean);
+  return `<div class="hierarchy-cluster">
+    <div class="hierarchy-cluster-title">${words.length} words clustered together</div>
+    <div class="hierarchy-cluster-words">${words.map(w =>
+      `<span class="hierarchy-cluster-chip"><button class="link-btn" data-pivot-id="${w.id}">${w.lexical_form}</button> ${posPill(w.pos)}</span>`
+    ).join('')}</div>
+  </div>`;
 }
 
 // Recursive tree HTML. Two independent guards keep this finite even
@@ -1206,13 +1296,39 @@ function renderHierarchy() {
     return;
   }
   const tree = buildHierarchy(state.hierarchyKind);
+
+  if (tree.fellBack) {
+    // Symmetric kind (every edge's reverse is also stored, e.g. SYNONYM)
+    // -- a tree of per-word roots would be almost entirely redundant
+    // (each root's children are largely the same mutually-related
+    // group as every other root's), so cluster instead: one group per
+    // set of mutually-related words.
+    const clusters = tree.clusters;
+    const totalWords = new Set(clusters.flat()).size;
+    const parts = [
+      `${tree.edgeCount} edge${tree.edgeCount === 1 ? '' : 's'}`,
+      `${clusters.length} cluster${clusters.length === 1 ? '' : 's'}`,
+      `${totalWords} word${totalWords === 1 ? '' : 's'}`,
+    ];
+    note.textContent = parts.join(" · ")
+      + " -- every word here has both an incoming and an outgoing edge of this kind (a symmetric relationship), so mutually related words are grouped into clusters instead of a tree of largely-redundant roots.";
+    if (!clusters.length) {
+      container.innerHTML = '<div class="detail-empty" style="padding:8px 0">No relationships of this kind yet.</div>';
+      return;
+    }
+    container.innerHTML = `<div class="hierarchy-clusters">${clusters.map(c => hierarchyClusterHTML(c, tree.wordById)).join('')}</div>`;
+    container.querySelectorAll("button[data-pivot-id]").forEach(btn => {
+      btn.addEventListener("click", () => selectWordIn("hierarchy", btn.dataset.pivotId));
+    });
+    return;
+  }
+
   const parts = [
     `${tree.edgeCount} edge${tree.edgeCount === 1 ? '' : 's'}`,
     `${tree.nodeCount} word${tree.nodeCount === 1 ? '' : 's'}`,
     `${tree.roots.length} root${tree.roots.length === 1 ? '' : 's'}`,
   ];
-  note.textContent = parts.join(" · ")
-    + (tree.fellBack ? " -- every word here has both an incoming and an outgoing edge of this kind (a symmetric relationship), so each is shown as its own root instead." : "");
+  note.textContent = parts.join(" · ");
   if (!tree.roots.length) {
     container.innerHTML = '<div class="detail-empty" style="padding:8px 0">No relationships of this kind yet.</div>';
     return;
@@ -1236,39 +1352,12 @@ function renderHierarchy() {
 // for a symmetric kind like SYNONYM) doesn't drown out the genuinely
 // interesting multi-word cycles.
 function buildCyclicComponents(kind) {
-  const edges = RELS.filter(r => r.kind === kind);
   const wordById = new Map(WORDS.map(w => [w.id, w]));
-  const undirected = new Map();
-  const nodeIds = new Set();
-  edges.forEach(r => {
-    if (!wordById.has(r.source_id) || !wordById.has(r.target_id)) return;
-    nodeIds.add(r.source_id);
-    nodeIds.add(r.target_id);
-    if (!undirected.has(r.source_id)) undirected.set(r.source_id, new Set());
-    if (!undirected.has(r.target_id)) undirected.set(r.target_id, new Set());
-    undirected.get(r.source_id).add(r.target_id);
-    undirected.get(r.target_id).add(r.source_id);
-  });
-
-  const visited = new Set();
-  const components = [];
-  nodeIds.forEach(start => {
-    if (visited.has(start)) return;
-    const stack = [start];
-    const comp = new Set();
-    visited.add(start);
-    while (stack.length) {
-      const cur = stack.pop();
-      comp.add(cur);
-      (undirected.get(cur) || new Set()).forEach(next => {
-        if (!visited.has(next)) { visited.add(next); stack.push(next); }
-      });
-    }
-    components.push(comp);
-  });
+  const edges = RELS.filter(r => r.kind === kind && wordById.has(r.source_id) && wordById.has(r.target_id));
+  const nodeIds = new Set(edges.flatMap(r => [r.source_id, r.target_id]));
 
   const results = [];
-  components.forEach(comp => {
+  connectedComponents(edges).forEach(comp => {
     if (comp.size < 3) return;
     const compEdges = edges.filter(r => comp.has(r.source_id) && comp.has(r.target_id));
     if (compEdges.length < comp.size) return;
