@@ -2,7 +2,7 @@
   "schema_version": "1.0.0",
   "language_code": "en",
   "relationship_category": "morphological",
-  "count": 238,
+  "count": 1020,
   "relationships": [
     {
       "source_lexical_form": "be",
@@ -1199,6 +1199,5480 @@
       "target_lexical_form": "state",
       "relationship_kind": "LEMMA_FORM",
       "target_part_of_speech": "VERB"
+    },
+    {
+      "source_lexical_form": "ability",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "abilities",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "PLURAL_FORM"
+    },
+    {
+      "source_lexical_form": "abilities",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "ability",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "accept",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "accepted",
+      "target_part_of_speech": "ADJECTIVE",
+      "relationship_kind": "PAST_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "accepted",
+      "source_part_of_speech": "ADJECTIVE",
+      "target_lexical_form": "accept",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "accompany",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "accompanied",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PAST_TENSE_FORM"
+    },
+    {
+      "source_lexical_form": "accompanied",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "accompany",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "accompany",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "accompanies",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "THIRD_PERSON_FORM"
+    },
+    {
+      "source_lexical_form": "accompanies",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "accompany",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "accomplish",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "accomplishes",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "THIRD_PERSON_FORM"
+    },
+    {
+      "source_lexical_form": "accomplishes",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "accomplish",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "achieve",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "achieving",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PRESENT_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "achieving",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "achieve",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "acquire",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "acquired",
+      "target_part_of_speech": "ADJECTIVE",
+      "relationship_kind": "PAST_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "acquired",
+      "source_part_of_speech": "ADJECTIVE",
+      "target_lexical_form": "acquire",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "acquire",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "acquiring",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PRESENT_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "acquiring",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "acquire",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "act",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "acting",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PRESENT_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "acting",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "act",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "action",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "actions",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "PLURAL_FORM"
+    },
+    {
+      "source_lexical_form": "actions",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "action",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "adapt",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "adapted",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PAST_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "adapted",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "adapt",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "add",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "added",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PAST_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "added",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "add",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "add",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "adding",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PRESENT_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "adding",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "add",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "address",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "addressed",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PAST_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "addressed",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "address",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "add",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "adds",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "THIRD_PERSON_FORM"
+    },
+    {
+      "source_lexical_form": "adds",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "add",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "advance",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "advanced",
+      "target_part_of_speech": "ADJECTIVE",
+      "relationship_kind": "PAST_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "advanced",
+      "source_part_of_speech": "ADJECTIVE",
+      "target_lexical_form": "advance",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "affect",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "affected",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PAST_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "affected",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "affect",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "affect",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "affecting",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PRESENT_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "affecting",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "affect",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "allow",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "allows",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "THIRD_PERSON_FORM"
+    },
+    {
+      "source_lexical_form": "allows",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "allow",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "alternative",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "alternatives",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "PLURAL_FORM"
+    },
+    {
+      "source_lexical_form": "alternatives",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "alternative",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "amount",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "amounts",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "PLURAL_FORM"
+    },
+    {
+      "source_lexical_form": "amounts",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "amount",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "animal",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "animals",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "PLURAL_FORM"
+    },
+    {
+      "source_lexical_form": "animals",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "animal",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "appear",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "appears",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "THIRD_PERSON_FORM"
+    },
+    {
+      "source_lexical_form": "appears",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "appear",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "apply",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "applied",
+      "target_part_of_speech": "ADJECTIVE",
+      "relationship_kind": "PAST_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "applied",
+      "source_part_of_speech": "ADJECTIVE",
+      "target_lexical_form": "apply",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "apply",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "applying",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PRESENT_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "applying",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "apply",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "area",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "areas",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "PLURAL_FORM"
+    },
+    {
+      "source_lexical_form": "areas",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "area",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "arrange",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "arranged",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PAST_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "arranged",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "arrange",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "art",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "arts",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "PLURAL_FORM"
+    },
+    {
+      "source_lexical_form": "arts",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "art",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "ascertain",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "ascertained",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PAST_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "ascertained",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "ascertain",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "ascertain",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "ascertaining",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PRESENT_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "ascertaining",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "ascertain",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "ask",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "asks",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "THIRD_PERSON_FORM"
+    },
+    {
+      "source_lexical_form": "asks",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "ask",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "assert",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "asserting",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PRESENT_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "asserting",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "assert",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "assess",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "assessed",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PAST_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "assessed",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "assess",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "assign",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "assigned",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PAST_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "assigned",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "assign",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "assign",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "assigning",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PRESENT_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "assigning",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "assign",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "associate",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "associated",
+      "target_part_of_speech": "ADJECTIVE",
+      "relationship_kind": "PAST_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "associated",
+      "source_part_of_speech": "ADJECTIVE",
+      "target_lexical_form": "associate",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "assume",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "assumed",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PAST_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "assumed",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "assume",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "attach",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "attached",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PAST_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "attached",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "attach",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "avoid",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "avoided",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PAST_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "avoided",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "avoid",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "await",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "awaiting",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PRESENT_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "awaiting",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "await",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "balance",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "balanced",
+      "target_part_of_speech": "ADJECTIVE",
+      "relationship_kind": "PAST_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "balanced",
+      "source_part_of_speech": "ADJECTIVE",
+      "target_lexical_form": "balance",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "base",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "based",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PAST_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "based",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "base",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "become",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "becomes",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "THIRD_PERSON_FORM"
+    },
+    {
+      "source_lexical_form": "becomes",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "become",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "become",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "becoming",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PRESENT_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "becoming",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "become",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "behave",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "behaves",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "THIRD_PERSON_FORM"
+    },
+    {
+      "source_lexical_form": "behaves",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "behave",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "bend",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "bending",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PRESENT_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "bending",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "bend",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "boundary",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "boundaries",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "PLURAL_FORM"
+    },
+    {
+      "source_lexical_form": "boundaries",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "boundary",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "bring",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "bringing",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PRESENT_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "bringing",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "bring",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "bring",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "brings",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "THIRD_PERSON_FORM"
+    },
+    {
+      "source_lexical_form": "brings",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "bring",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "calculate",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "calculated",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PAST_TENSE_FORM"
+    },
+    {
+      "source_lexical_form": "calculated",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "calculate",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "come",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "came",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PAST_TENSE_FORM"
+    },
+    {
+      "source_lexical_form": "came",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "come",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "carry",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "carried",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PAST_TENSE_FORM"
+    },
+    {
+      "source_lexical_form": "carried",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "carry",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "cause",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "caused",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PAST_TENSE_FORM"
+    },
+    {
+      "source_lexical_form": "caused",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "cause",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "cause",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "causes",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "THIRD_PERSON_FORM"
+    },
+    {
+      "source_lexical_form": "causes",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "cause",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "characteristic",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "characteristics",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "PLURAL_FORM"
+    },
+    {
+      "source_lexical_form": "characteristics",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "characteristic",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "choose",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "choosing",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PRESENT_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "choosing",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "choose",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "choose",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "chosen",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PAST_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "chosen",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "choose",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "circumstance",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "circumstances",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "PLURAL_FORM"
+    },
+    {
+      "source_lexical_form": "circumstances",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "circumstance",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "classify",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "classified",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PAST_TENSE_FORM"
+    },
+    {
+      "source_lexical_form": "classified",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "classify",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "clause",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "clauses",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "PLURAL_FORM"
+    },
+    {
+      "source_lexical_form": "clauses",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "clause",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "collide",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "colliding",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PRESENT_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "colliding",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "collide",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "combine",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "combining",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PRESENT_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "combining",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "combine",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "come",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "coming",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PRESENT_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "coming",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "come",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "compare",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "comparing",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PRESENT_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "comparing",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "compare",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "compete",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "competing",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PRESENT_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "competing",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "compete",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "complete",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "completed",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PAST_TENSE_FORM"
+    },
+    {
+      "source_lexical_form": "completed",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "complete",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "component",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "components",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "PLURAL_FORM"
+    },
+    {
+      "source_lexical_form": "components",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "component",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "concept",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "concepts",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "PLURAL_FORM"
+    },
+    {
+      "source_lexical_form": "concepts",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "concept",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "conclusion",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "conclusions",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "PLURAL_FORM"
+    },
+    {
+      "source_lexical_form": "conclusions",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "conclusion",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "condition",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "conditions",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "PLURAL_FORM"
+    },
+    {
+      "source_lexical_form": "conditions",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "condition",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "connect",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "connecting",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PRESENT_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "connecting",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "connect",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "contain",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "containing",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PRESENT_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "containing",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "contain",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "continue",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "continued",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PAST_TENSE_FORM"
+    },
+    {
+      "source_lexical_form": "continued",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "continue",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "continue",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "continuing",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PRESENT_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "continuing",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "continue",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "contract",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "contracted",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PAST_TENSE_FORM"
+    },
+    {
+      "source_lexical_form": "contracted",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "contract",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "contrast",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "contrasting",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PRESENT_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "contrasting",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "contrast",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "contrast",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "contrasts",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "THIRD_PERSON_FORM"
+    },
+    {
+      "source_lexical_form": "contrasts",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "contrast",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "contribute",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "contributed",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PAST_TENSE_FORM"
+    },
+    {
+      "source_lexical_form": "contributed",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "contribute",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "convey",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "conveyed",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PAST_TENSE_FORM"
+    },
+    {
+      "source_lexical_form": "conveyed",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "convey",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "convey",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "conveys",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "THIRD_PERSON_FORM"
+    },
+    {
+      "source_lexical_form": "conveys",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "convey",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "count",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "counting",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PRESENT_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "counting",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "count",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "cover",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "covered",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PAST_TENSE_FORM"
+    },
+    {
+      "source_lexical_form": "covered",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "cover",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "curve",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "curving",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PRESENT_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "curving",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "curve",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "date",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "dates",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "PLURAL_FORM"
+    },
+    {
+      "source_lexical_form": "dates",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "date",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "deal",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "dealt",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PAST_TENSE_FORM"
+    },
+    {
+      "source_lexical_form": "dealt",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "deal",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "define",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "defined",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PAST_TENSE_FORM"
+    },
+    {
+      "source_lexical_form": "defined",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "define",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "define",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "defining",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PRESENT_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "defining",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "define",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "degree",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "degrees",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "PLURAL_FORM"
+    },
+    {
+      "source_lexical_form": "degrees",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "degree",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "deliver",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "delivered",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PAST_TENSE_FORM"
+    },
+    {
+      "source_lexical_form": "delivered",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "deliver",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "denote",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "denotes",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "THIRD_PERSON_FORM"
+    },
+    {
+      "source_lexical_form": "denotes",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "denote",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "denote",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "denoting",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PRESENT_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "denoting",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "denote",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "describe",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "describes",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "THIRD_PERSON_FORM"
+    },
+    {
+      "source_lexical_form": "describes",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "describe",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "desire",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "desired",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PAST_TENSE_FORM"
+    },
+    {
+      "source_lexical_form": "desired",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "desire",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "detail",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "details",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "PLURAL_FORM"
+    },
+    {
+      "source_lexical_form": "details",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "detail",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "develop",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "developed",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PAST_TENSE_FORM"
+    },
+    {
+      "source_lexical_form": "developed",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "develop",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "develop",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "developing",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PRESENT_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "developing",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "develop",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "difference",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "differences",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "PLURAL_FORM"
+    },
+    {
+      "source_lexical_form": "differences",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "difference",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "differ",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "differing",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PRESENT_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "differing",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "differ",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "differ",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "differs",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "THIRD_PERSON_FORM"
+    },
+    {
+      "source_lexical_form": "differs",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "differ",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "discover",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "discovered",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PAST_TENSE_FORM"
+    },
+    {
+      "source_lexical_form": "discovered",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "discover",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "discuss",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "discussed",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PAST_TENSE_FORM"
+    },
+    {
+      "source_lexical_form": "discussed",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "discuss",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "distinguish",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "distinguishing",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PRESENT_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "distinguishing",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "distinguish",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "divide",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "divided",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PAST_TENSE_FORM"
+    },
+    {
+      "source_lexical_form": "divided",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "divide",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "divide",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "dividing",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PRESENT_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "dividing",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "divide",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "dollar",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "dollars",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "PLURAL_FORM"
+    },
+    {
+      "source_lexical_form": "dollars",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "dollar",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "early",
+      "source_part_of_speech": "ADJECTIVE",
+      "target_lexical_form": "earlier",
+      "target_part_of_speech": "ADVERB",
+      "relationship_kind": "COMPARATIVE_FORM"
+    },
+    {
+      "source_lexical_form": "earlier",
+      "source_part_of_speech": "ADVERB",
+      "target_lexical_form": "early",
+      "target_part_of_speech": "ADJECTIVE",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "element",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "elements",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "PLURAL_FORM"
+    },
+    {
+      "source_lexical_form": "elements",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "element",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "embody",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "embodies",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "THIRD_PERSON_FORM"
+    },
+    {
+      "source_lexical_form": "embodies",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "embody",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "emphasise",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "emphasises",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "THIRD_PERSON_FORM"
+    },
+    {
+      "source_lexical_form": "emphasises",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "emphasise",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "employ",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "employed",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PAST_TENSE_FORM"
+    },
+    {
+      "source_lexical_form": "employed",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "employ",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "employ",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "employing",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PRESENT_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "employing",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "employ",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "encircle",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "encircled",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PAST_TENSE_FORM"
+    },
+    {
+      "source_lexical_form": "encircled",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "encircle",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "enclose",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "enclosed",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PAST_TENSE_FORM"
+    },
+    {
+      "source_lexical_form": "enclosed",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "enclose",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "encounter",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "encountered",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PAST_TENSE_FORM"
+    },
+    {
+      "source_lexical_form": "encountered",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "encounter",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "engage",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "engaged",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PAST_TENSE_FORM"
+    },
+    {
+      "source_lexical_form": "engaged",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "engage",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "establish",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "established",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PAST_TENSE_FORM"
+    },
+    {
+      "source_lexical_form": "established",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "establish",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "establish",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "establishing",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PRESENT_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "establishing",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "establish",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "euro",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "euros",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "PLURAL_FORM"
+    },
+    {
+      "source_lexical_form": "euros",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "euro",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "exclude",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "excluded",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PAST_TENSE_FORM"
+    },
+    {
+      "source_lexical_form": "excluded",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "exclude",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "exclude",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "excluding",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PRESENT_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "excluding",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "exclude",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "exhibit",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "exhibited",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PAST_TENSE_FORM"
+    },
+    {
+      "source_lexical_form": "exhibited",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "exhibit",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "exist",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "existing",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PRESENT_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "existing",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "exist",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "exist",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "exists",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "THIRD_PERSON_FORM"
+    },
+    {
+      "source_lexical_form": "exists",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "exist",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "explain",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "explained",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PAST_TENSE_FORM"
+    },
+    {
+      "source_lexical_form": "explained",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "explain",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "express",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "expresses",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "THIRD_PERSON_FORM"
+    },
+    {
+      "source_lexical_form": "expresses",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "express",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "express",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "expressing",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PRESENT_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "expressing",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "express",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "expression",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "expressions",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "PLURAL_FORM"
+    },
+    {
+      "source_lexical_form": "expressions",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "expression",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "extend",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "extending",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PRESENT_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "extending",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "extend",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "extend",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "extends",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "THIRD_PERSON_FORM"
+    },
+    {
+      "source_lexical_form": "extends",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "extend",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "eye",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "eyes",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "PLURAL_FORM"
+    },
+    {
+      "source_lexical_form": "eyes",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "eye",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "face",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "facing",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PRESENT_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "facing",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "face",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "fact",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "facts",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "PLURAL_FORM"
+    },
+    {
+      "source_lexical_form": "facts",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "fact",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "far",
+      "source_part_of_speech": "ADVERB",
+      "target_lexical_form": "farther",
+      "target_part_of_speech": "ADVERB",
+      "relationship_kind": "COMPARATIVE_FORM"
+    },
+    {
+      "source_lexical_form": "farther",
+      "source_part_of_speech": "ADVERB",
+      "target_lexical_form": "far",
+      "target_part_of_speech": "ADVERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "feature",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "features",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "PLURAL_FORM"
+    },
+    {
+      "source_lexical_form": "features",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "feature",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "feeling",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "feelings",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "PLURAL_FORM"
+    },
+    {
+      "source_lexical_form": "feelings",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "feeling",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "foot",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "feet",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "PLURAL_FORM"
+    },
+    {
+      "source_lexical_form": "feet",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "foot",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "filament",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "filaments",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "PLURAL_FORM"
+    },
+    {
+      "source_lexical_form": "filaments",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "filament",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "firm",
+      "source_part_of_speech": "ADJECTIVE",
+      "target_lexical_form": "firmly",
+      "target_part_of_speech": "ADVERB",
+      "relationship_kind": "ADVERBIAL_DERIVATION"
+    },
+    {
+      "source_lexical_form": "firmly",
+      "source_part_of_speech": "ADVERB",
+      "target_lexical_form": "firm",
+      "target_part_of_speech": "ADJECTIVE",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "firm",
+      "source_part_of_speech": "ADJECTIVE",
+      "target_lexical_form": "firmness",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "NOMINALISATION"
+    },
+    {
+      "source_lexical_form": "firmness",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "firm",
+      "target_part_of_speech": "ADJECTIVE",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "fix",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "fixed",
+      "target_part_of_speech": "ADJECTIVE",
+      "relationship_kind": "PAST_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "fixed",
+      "source_part_of_speech": "ADJECTIVE",
+      "target_lexical_form": "fix",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "fluctuate",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "fluctuating",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PRESENT_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "fluctuating",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "fluctuate",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "follow",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "followed",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PAST_TENSE_FORM"
+    },
+    {
+      "source_lexical_form": "followed",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "follow",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "follow",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "follows",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "THIRD_PERSON_FORM"
+    },
+    {
+      "source_lexical_form": "follows",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "follow",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "forceful",
+      "source_part_of_speech": "ADJECTIVE",
+      "target_lexical_form": "forcefully",
+      "target_part_of_speech": "ADVERB",
+      "relationship_kind": "ADVERBIAL_DERIVATION"
+    },
+    {
+      "source_lexical_form": "forcefully",
+      "source_part_of_speech": "ADVERB",
+      "target_lexical_form": "forceful",
+      "target_part_of_speech": "ADJECTIVE",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "form",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "formed",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PAST_TENSE_FORM"
+    },
+    {
+      "source_lexical_form": "formed",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "form",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "form",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "forming",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PRESENT_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "forming",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "form",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "form",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "forms",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "PLURAL_FORM"
+    },
+    {
+      "source_lexical_form": "forms",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "form",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "fragment",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "fragmented",
+      "target_part_of_speech": "ADJECTIVE",
+      "relationship_kind": "PAST_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "fragmented",
+      "source_part_of_speech": "ADJECTIVE",
+      "target_lexical_form": "fragment",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "function",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "functioning",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PRESENT_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "functioning",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "function",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "function",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "functions",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "THIRD_PERSON_FORM"
+    },
+    {
+      "source_lexical_form": "functions",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "function",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "gather",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "gathered",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PAST_TENSE_FORM"
+    },
+    {
+      "source_lexical_form": "gathered",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "gather",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "give",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "gave",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PAST_TENSE_FORM"
+    },
+    {
+      "source_lexical_form": "gave",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "give",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "general",
+      "source_part_of_speech": "ADJECTIVE",
+      "target_lexical_form": "generally",
+      "target_part_of_speech": "ADVERB",
+      "relationship_kind": "ADVERBIAL_DERIVATION"
+    },
+    {
+      "source_lexical_form": "generally",
+      "source_part_of_speech": "ADVERB",
+      "target_lexical_form": "general",
+      "target_part_of_speech": "ADJECTIVE",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "give",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "giving",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PRESENT_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "giving",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "give",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "go",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "gone",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PAST_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "gone",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "go",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "govern",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "governing",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PRESENT_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "governing",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "govern",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "grade",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "grading",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PRESENT_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "grading",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "grade",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "graduate",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "graduated",
+      "target_part_of_speech": "ADJECTIVE",
+      "relationship_kind": "PAST_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "graduated",
+      "source_part_of_speech": "ADJECTIVE",
+      "target_lexical_form": "graduate",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "grasp",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "grasping",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PRESENT_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "grasping",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "grasp",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "great",
+      "source_part_of_speech": "ADJECTIVE",
+      "target_lexical_form": "greater",
+      "target_part_of_speech": "ADJECTIVE",
+      "relationship_kind": "COMPARATIVE_FORM"
+    },
+    {
+      "source_lexical_form": "greater",
+      "source_part_of_speech": "ADJECTIVE",
+      "target_lexical_form": "great",
+      "target_part_of_speech": "ADJECTIVE",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "great",
+      "source_part_of_speech": "ADJECTIVE",
+      "target_lexical_form": "greatest",
+      "target_part_of_speech": "ADJECTIVE",
+      "relationship_kind": "SUPERLATIVE_FORM"
+    },
+    {
+      "source_lexical_form": "greatest",
+      "source_part_of_speech": "ADJECTIVE",
+      "target_lexical_form": "great",
+      "target_part_of_speech": "ADJECTIVE",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "great",
+      "source_part_of_speech": "ADJECTIVE",
+      "target_lexical_form": "greatly",
+      "target_part_of_speech": "ADVERB",
+      "relationship_kind": "ADVERBIAL_DERIVATION"
+    },
+    {
+      "source_lexical_form": "greatly",
+      "source_part_of_speech": "ADVERB",
+      "target_lexical_form": "great",
+      "target_part_of_speech": "ADJECTIVE",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "guarantee",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "guarantees",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "THIRD_PERSON_FORM"
+    },
+    {
+      "source_lexical_form": "guarantees",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "guarantee",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "hand",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "hands",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "PLURAL_FORM"
+    },
+    {
+      "source_lexical_form": "hands",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "hand",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "happen",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "happens",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "THIRD_PERSON_FORM"
+    },
+    {
+      "source_lexical_form": "happens",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "happen",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "hear",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "heard",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PAST_TENSE_FORM"
+    },
+    {
+      "source_lexical_form": "heard",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "hear",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "high",
+      "source_part_of_speech": "ADJECTIVE",
+      "target_lexical_form": "higher",
+      "target_part_of_speech": "ADJECTIVE",
+      "relationship_kind": "COMPARATIVE_FORM"
+    },
+    {
+      "source_lexical_form": "higher",
+      "source_part_of_speech": "ADJECTIVE",
+      "target_lexical_form": "high",
+      "target_part_of_speech": "ADJECTIVE",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "high",
+      "source_part_of_speech": "ADJECTIVE",
+      "target_lexical_form": "highest",
+      "target_part_of_speech": "ADJECTIVE",
+      "relationship_kind": "SUPERLATIVE_FORM"
+    },
+    {
+      "source_lexical_form": "highest",
+      "source_part_of_speech": "ADJECTIVE",
+      "target_lexical_form": "high",
+      "target_part_of_speech": "ADJECTIVE",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "hit",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "hitting",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PRESENT_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "hitting",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "hit",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "hold",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "holds",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "THIRD_PERSON_FORM"
+    },
+    {
+      "source_lexical_form": "holds",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "hold",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "human",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "humans",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "PLURAL_FORM"
+    },
+    {
+      "source_lexical_form": "humans",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "human",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "idea",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "ideas",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "PLURAL_FORM"
+    },
+    {
+      "source_lexical_form": "ideas",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "idea",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "identifier",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "identifiers",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "PLURAL_FORM"
+    },
+    {
+      "source_lexical_form": "identifiers",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "identifier",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "identify",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "identifies",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "THIRD_PERSON_FORM"
+    },
+    {
+      "source_lexical_form": "identifies",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "identify",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "identify",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "identifying",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PRESENT_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "identifying",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "identify",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "imagine",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "imagined",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PAST_TENSE_FORM"
+    },
+    {
+      "source_lexical_form": "imagined",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "imagine",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "immediate",
+      "source_part_of_speech": "ADJECTIVE",
+      "target_lexical_form": "immediately",
+      "target_part_of_speech": "ADVERB",
+      "relationship_kind": "ADVERBIAL_DERIVATION"
+    },
+    {
+      "source_lexical_form": "immediately",
+      "source_part_of_speech": "ADVERB",
+      "target_lexical_form": "immediate",
+      "target_part_of_speech": "ADJECTIVE",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "imply",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "implied",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PAST_TENSE_FORM"
+    },
+    {
+      "source_lexical_form": "implied",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "imply",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "impossible",
+      "source_part_of_speech": "ADJECTIVE",
+      "target_lexical_form": "impossibility",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "NOMINALISATION"
+    },
+    {
+      "source_lexical_form": "impossibility",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "impossible",
+      "target_part_of_speech": "ADJECTIVE",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "unable",
+      "source_part_of_speech": "ADJECTIVE",
+      "target_lexical_form": "inability",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "NOMINALISATION"
+    },
+    {
+      "source_lexical_form": "inability",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "unable",
+      "target_part_of_speech": "ADJECTIVE",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "include",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "included",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PAST_TENSE_FORM"
+    },
+    {
+      "source_lexical_form": "included",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "include",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "include",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "includes",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "THIRD_PERSON_FORM"
+    },
+    {
+      "source_lexical_form": "includes",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "include",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "include",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "including",
+      "target_part_of_speech": "PREPOSITION",
+      "relationship_kind": "PRESENT_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "including",
+      "source_part_of_speech": "PREPOSITION",
+      "target_lexical_form": "include",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "indicate",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "indicated",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PAST_TENSE_FORM"
+    },
+    {
+      "source_lexical_form": "indicated",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "indicate",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "indicate",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "indicating",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PRESENT_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "indicating",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "indicate",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "individual",
+      "source_part_of_speech": "ADJECTIVE",
+      "target_lexical_form": "individually",
+      "target_part_of_speech": "ADVERB",
+      "relationship_kind": "ADVERBIAL_DERIVATION"
+    },
+    {
+      "source_lexical_form": "individually",
+      "source_part_of_speech": "ADVERB",
+      "target_lexical_form": "individual",
+      "target_part_of_speech": "ADJECTIVE",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "influence",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "influenced",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PAST_TENSE_FORM"
+    },
+    {
+      "source_lexical_form": "influenced",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "influence",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "informal",
+      "source_part_of_speech": "ADJECTIVE",
+      "target_lexical_form": "informally",
+      "target_part_of_speech": "ADVERB",
+      "relationship_kind": "ADVERBIAL_DERIVATION"
+    },
+    {
+      "source_lexical_form": "informally",
+      "source_part_of_speech": "ADVERB",
+      "target_lexical_form": "informal",
+      "target_part_of_speech": "ADJECTIVE",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "inhabitant",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "inhabitants",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "PLURAL_FORM"
+    },
+    {
+      "source_lexical_form": "inhabitants",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "inhabitant",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "intend",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "intended",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PAST_TENSE_FORM"
+    },
+    {
+      "source_lexical_form": "intended",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "intend",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "intensify",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "intensifies",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "THIRD_PERSON_FORM"
+    },
+    {
+      "source_lexical_form": "intensifies",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "intensify",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "interaction",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "interactions",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "PLURAL_FORM"
+    },
+    {
+      "source_lexical_form": "interactions",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "interaction",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "interlock",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "interlocked",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PAST_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "interlocked",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "interlock",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "intervene",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "intervening",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PRESENT_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "intervening",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "intervene",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "introduce",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "introduces",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "THIRD_PERSON_FORM"
+    },
+    {
+      "source_lexical_form": "introduces",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "introduce",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "introduce",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "introducing",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PRESENT_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "introducing",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "introduce",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "involve",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "involved",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PAST_TENSE_FORM"
+    },
+    {
+      "source_lexical_form": "involved",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "involve",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "involve",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "involves",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "THIRD_PERSON_FORM"
+    },
+    {
+      "source_lexical_form": "involves",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "involve",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "involve",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "involving",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PRESENT_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "involving",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "involve",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "item",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "items",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "PLURAL_FORM"
+    },
+    {
+      "source_lexical_form": "items",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "item",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "join",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "joining",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PRESENT_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "joining",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "join",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "join",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "joins",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "THIRD_PERSON_FORM"
+    },
+    {
+      "source_lexical_form": "joins",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "join",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "judge",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "judged",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PAST_TENSE_FORM"
+    },
+    {
+      "source_lexical_form": "judged",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "judge",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "keep",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "keeping",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PRESENT_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "keeping",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "keep",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "know",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "known",
+      "target_part_of_speech": "ADJECTIVE",
+      "relationship_kind": "PAST_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "known",
+      "source_part_of_speech": "ADJECTIVE",
+      "target_lexical_form": "know",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "label",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "labelling",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PRESENT_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "labelling",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "label",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "lack",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "lacking",
+      "target_part_of_speech": "ADJECTIVE",
+      "relationship_kind": "PRESENT_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "lacking",
+      "source_part_of_speech": "ADJECTIVE",
+      "target_lexical_form": "lack",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "lack",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "lacks",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "THIRD_PERSON_FORM"
+    },
+    {
+      "source_lexical_form": "lacks",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "lack",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "little",
+      "source_part_of_speech": "DETERMINER",
+      "target_lexical_form": "lesser",
+      "target_part_of_speech": "ADJECTIVE",
+      "relationship_kind": "COMPARATIVE_FORM"
+    },
+    {
+      "source_lexical_form": "lesser",
+      "source_part_of_speech": "ADJECTIVE",
+      "target_lexical_form": "little",
+      "target_part_of_speech": "DETERMINER",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "letter",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "letters",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "PLURAL_FORM"
+    },
+    {
+      "source_lexical_form": "letters",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "letter",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "limit",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "limited",
+      "target_part_of_speech": "ADJECTIVE",
+      "relationship_kind": "PAST_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "limited",
+      "source_part_of_speech": "ADJECTIVE",
+      "target_lexical_form": "limit",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "limit",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "limits",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "PLURAL_FORM"
+    },
+    {
+      "source_lexical_form": "limits",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "limit",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "link",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "linked",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PAST_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "linked",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "link",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "locate",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "located",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PAST_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "located",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "locate",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "locate",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "locating",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PRESENT_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "locating",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "locate",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "location",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "locations",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "PLURAL_FORM"
+    },
+    {
+      "source_lexical_form": "locations",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "location",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "long",
+      "source_part_of_speech": "ADJECTIVE",
+      "target_lexical_form": "longer",
+      "target_part_of_speech": "ADVERB",
+      "relationship_kind": "COMPARATIVE_FORM"
+    },
+    {
+      "source_lexical_form": "longer",
+      "source_part_of_speech": "ADVERB",
+      "target_lexical_form": "long",
+      "target_part_of_speech": "ADJECTIVE",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "look",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "looks",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "THIRD_PERSON_FORM"
+    },
+    {
+      "source_lexical_form": "looks",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "look",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "low",
+      "source_part_of_speech": "ADJECTIVE",
+      "target_lexical_form": "lower",
+      "target_part_of_speech": "ADJECTIVE",
+      "relationship_kind": "COMPARATIVE_FORM"
+    },
+    {
+      "source_lexical_form": "lower",
+      "source_part_of_speech": "ADJECTIVE",
+      "target_lexical_form": "low",
+      "target_part_of_speech": "ADJECTIVE",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "machine",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "machines",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "PLURAL_FORM"
+    },
+    {
+      "source_lexical_form": "machines",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "machine",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "make",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "made",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PAST_TENSE_FORM"
+    },
+    {
+      "source_lexical_form": "made",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "make",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "maintain",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "maintained",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PAST_TENSE_FORM"
+    },
+    {
+      "source_lexical_form": "maintained",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "maintain",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "make",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "making",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PRESENT_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "making",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "make",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "manipulate",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "manipulating",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PRESENT_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "manipulating",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "manipulate",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "mark",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "marked",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PAST_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "marked",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "mark",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "mark",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "marking",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PRESENT_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "marking",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "mark",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "mark",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "marks",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "THIRD_PERSON_FORM"
+    },
+    {
+      "source_lexical_form": "marks",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "mark",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "matter",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "mattering",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PRESENT_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "mattering",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "matter",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "meaning",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "meanings",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "PLURAL_FORM"
+    },
+    {
+      "source_lexical_form": "meanings",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "meaning",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "mean",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "means",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "THIRD_PERSON_FORM"
+    },
+    {
+      "source_lexical_form": "means",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "mean",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "measure",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "measures",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "THIRD_PERSON_FORM"
+    },
+    {
+      "source_lexical_form": "measures",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "measure",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "measure",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "measuring",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PRESENT_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "measuring",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "measure",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "medium",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "media",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "PLURAL_FORM"
+    },
+    {
+      "source_lexical_form": "media",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "medium",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "member",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "members",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "PLURAL_FORM"
+    },
+    {
+      "source_lexical_form": "members",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "member",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "mention",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "mentioned",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PAST_TENSE_FORM"
+    },
+    {
+      "source_lexical_form": "mentioned",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "mention",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "mix",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "mixing",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PRESENT_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "mixing",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "mix",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "moderate",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "moderates",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "THIRD_PERSON_FORM"
+    },
+    {
+      "source_lexical_form": "moderates",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "moderate",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "modify",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "modified",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PAST_TENSE_FORM"
+    },
+    {
+      "source_lexical_form": "modified",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "modify",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "modify",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "modifies",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "THIRD_PERSON_FORM"
+    },
+    {
+      "source_lexical_form": "modifies",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "modify",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "monitor",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "monitoring",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PRESENT_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "monitoring",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "monitor",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "move",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "moves",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "THIRD_PERSON_FORM"
+    },
+    {
+      "source_lexical_form": "moves",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "move",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "move",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "moving",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PRESENT_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "moving",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "move",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "multiply",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "multiplying",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PRESENT_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "multiplying",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "multiply",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "name",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "named",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PAST_TENSE_FORM"
+    },
+    {
+      "source_lexical_form": "named",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "name",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "name",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "names",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "THIRD_PERSON_FORM"
+    },
+    {
+      "source_lexical_form": "names",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "name",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "near",
+      "source_part_of_speech": "PREPOSITION",
+      "target_lexical_form": "nearer",
+      "target_part_of_speech": "ADJECTIVE",
+      "relationship_kind": "COMPARATIVE_FORM"
+    },
+    {
+      "source_lexical_form": "nearer",
+      "source_part_of_speech": "ADJECTIVE",
+      "target_lexical_form": "near",
+      "target_part_of_speech": "PREPOSITION",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "need",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "needed",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PAST_TENSE_FORM"
+    },
+    {
+      "source_lexical_form": "needed",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "need",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "negate",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "negates",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "THIRD_PERSON_FORM"
+    },
+    {
+      "source_lexical_form": "negates",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "negate",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "negative",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "negatives",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "PLURAL_FORM"
+    },
+    {
+      "source_lexical_form": "negatives",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "negative",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "notice",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "noticed",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PAST_TENSE_FORM"
+    },
+    {
+      "source_lexical_form": "noticed",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "notice",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "noun",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "nouns",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "PLURAL_FORM"
+    },
+    {
+      "source_lexical_form": "nouns",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "noun",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "number",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "numbered",
+      "target_part_of_speech": "ADJECTIVE",
+      "relationship_kind": "PAST_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "numbered",
+      "source_part_of_speech": "ADJECTIVE",
+      "target_lexical_form": "number",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "obey",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "obeyed",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PAST_TENSE_FORM"
+    },
+    {
+      "source_lexical_form": "obeyed",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "obey",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "object",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "objects",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "PLURAL_FORM"
+    },
+    {
+      "source_lexical_form": "objects",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "object",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "observe",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "observed",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PAST_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "observed",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "observe",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "obtain",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "obtained",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PAST_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "obtained",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "obtain",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "occasion",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "occasions",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "PLURAL_FORM"
+    },
+    {
+      "source_lexical_form": "occasions",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "occasion",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "occupy",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "occupied",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PAST_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "occupied",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "occupy",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "occur",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "occurring",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PRESENT_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "occurring",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "occur",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "omit",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "omitted",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PAST_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "omitted",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "omit",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "oppose",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "opposed",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PAST_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "opposed",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "oppose",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "originate",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "originating",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PRESENT_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "originating",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "originate",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "particle",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "particles",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "PLURAL_FORM"
+    },
+    {
+      "source_lexical_form": "particles",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "particle",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "party",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "parties",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "PLURAL_FORM"
+    },
+    {
+      "source_lexical_form": "parties",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "party",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "perceive",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "perceived",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PAST_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "perceived",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "perceive",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "perform",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "performing",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PRESENT_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "performing",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "perform",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "perform",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "performs",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "THIRD_PERSON_FORM"
+    },
+    {
+      "source_lexical_form": "performs",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "perform",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "period",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "periods",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "PLURAL_FORM"
+    },
+    {
+      "source_lexical_form": "periods",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "period",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "phrase",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "phrases",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "PLURAL_FORM"
+    },
+    {
+      "source_lexical_form": "phrases",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "phrase",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "piece",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "pieces",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "PLURAL_FORM"
+    },
+    {
+      "source_lexical_form": "pieces",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "piece",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "place",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "places",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "PLURAL_FORM"
+    },
+    {
+      "source_lexical_form": "places",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "place",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "point",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "pointed",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PAST_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "pointed",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "point",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "point",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "pointing",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PRESENT_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "pointing",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "point",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "point",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "points",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "PLURAL_FORM"
+    },
+    {
+      "source_lexical_form": "points",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "point",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "position",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "positioned",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PAST_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "positioned",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "position",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "possess",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "possessed",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PAST_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "possessed",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "possess",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "possibility",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "possibilities",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "PLURAL_FORM"
+    },
+    {
+      "source_lexical_form": "possibilities",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "possibility",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "pound",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "pounds",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "PLURAL_FORM"
+    },
+    {
+      "source_lexical_form": "pounds",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "pound",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "precede",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "preceded",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PAST_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "preceded",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "precede",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "precede",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "preceding",
+      "target_part_of_speech": "ADJECTIVE",
+      "relationship_kind": "PRESENT_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "preceding",
+      "source_part_of_speech": "ADJECTIVE",
+      "target_lexical_form": "precede",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "prevent",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "prevented",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PAST_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "prevented",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "prevent",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "produce",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "produced",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PAST_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "produced",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "produce",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "produce",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "produces",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "THIRD_PERSON_FORM"
+    },
+    {
+      "source_lexical_form": "produces",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "produce",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "pronounce",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "pronounced",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PAST_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "pronounced",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "pronounce",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "protect",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "protected",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PAST_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "protected",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "protect",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "prove",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "proved",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PAST_TENSE_FORM"
+    },
+    {
+      "source_lexical_form": "proved",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "prove",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "put",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "putting",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PRESENT_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "putting",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "put",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "qualify",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "qualifies",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "THIRD_PERSON_FORM"
+    },
+    {
+      "source_lexical_form": "qualifies",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "qualify",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "qualify",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "qualifying",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PRESENT_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "qualifying",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "qualify",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "quality",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "qualities",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "PLURAL_FORM"
+    },
+    {
+      "source_lexical_form": "qualities",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "quality",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "question",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "questions",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "PLURAL_FORM"
+    },
+    {
+      "source_lexical_form": "questions",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "question",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "reach",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "reached",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PAST_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "reached",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "reach",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "reach",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "reaches",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "THIRD_PERSON_FORM"
+    },
+    {
+      "source_lexical_form": "reaches",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "reach",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "receive",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "received",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PAST_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "received",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "receive",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "receive",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "receives",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "THIRD_PERSON_FORM"
+    },
+    {
+      "source_lexical_form": "receives",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "receive",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "receive",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "receiving",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PRESENT_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "receiving",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "receive",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "recognise",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "recognised",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PAST_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "recognised",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "recognise",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "refer",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "referred",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PAST_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "referred",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "refer",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "refer",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "referring",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PRESENT_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "referring",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "refer",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "refer",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "refers",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "THIRD_PERSON_FORM"
+    },
+    {
+      "source_lexical_form": "refers",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "refer",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "regard",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "regarded",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PAST_TENSE_FORM"
+    },
+    {
+      "source_lexical_form": "regarded",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "regard",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "register",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "registered",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PAST_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "registered",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "register",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "reinforce",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "reinforces",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "THIRD_PERSON_FORM"
+    },
+    {
+      "source_lexical_form": "reinforces",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "reinforce",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "reject",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "rejected",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PAST_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "rejected",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "reject",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "relate",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "relates",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "THIRD_PERSON_FORM"
+    },
+    {
+      "source_lexical_form": "relates",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "relate",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "rely",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "relying",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PRESENT_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "relying",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "rely",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "remove",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "removing",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PRESENT_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "removing",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "remove",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "replace",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "replaces",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "THIRD_PERSON_FORM"
+    },
+    {
+      "source_lexical_form": "replaces",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "replace",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "replace",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "replacing",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PRESENT_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "replacing",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "replace",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "represent",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "represented",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PAST_TENSE_FORM"
+    },
+    {
+      "source_lexical_form": "represented",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "represent",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "represent",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "representing",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PRESENT_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "representing",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "represent",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "request",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "requests",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "PLURAL_FORM"
+    },
+    {
+      "source_lexical_form": "requests",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "request",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "require",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "required",
+      "target_part_of_speech": "ADJECTIVE",
+      "relationship_kind": "PAST_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "required",
+      "source_part_of_speech": "ADJECTIVE",
+      "target_lexical_form": "require",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "requirement",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "requirements",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "PLURAL_FORM"
+    },
+    {
+      "source_lexical_form": "requirements",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "requirement",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "require",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "requiring",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PRESENT_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "requiring",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "require",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "reserve",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "reserved",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PAST_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "reserved",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "reserve",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "rest",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "resting",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PRESENT_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "resting",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "rest",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "restrict",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "restricts",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "THIRD_PERSON_FORM"
+    },
+    {
+      "source_lexical_form": "restricts",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "restrict",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "retain",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "retained",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PAST_TENSE_FORM"
+    },
+    {
+      "source_lexical_form": "retained",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "retain",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "rule",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "rules",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "PLURAL_FORM"
+    },
+    {
+      "source_lexical_form": "rules",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "rule",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "say",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "said",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PAST_TENSE_FORM"
+    },
+    {
+      "source_lexical_form": "said",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "say",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "satisfy",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "satisfied",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PAST_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "satisfied",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "satisfy",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "science",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "sciences",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "PLURAL_FORM"
+    },
+    {
+      "source_lexical_form": "sciences",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "science",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "segment",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "segments",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "PLURAL_FORM"
+    },
+    {
+      "source_lexical_form": "segments",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "segment",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "sentence",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "sentences",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "PLURAL_FORM"
+    },
+    {
+      "source_lexical_form": "sentences",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "sentence",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "separate",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "separated",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PAST_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "separated",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "separate",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "separate",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "separates",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "THIRD_PERSON_FORM"
+    },
+    {
+      "source_lexical_form": "separates",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "separate",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "separate",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "separating",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PRESENT_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "separating",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "separate",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "settle",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "settled",
+      "target_part_of_speech": "ADJECTIVE",
+      "relationship_kind": "PAST_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "settled",
+      "source_part_of_speech": "ADJECTIVE",
+      "target_lexical_form": "settle",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "shake",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "shaking",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PRESENT_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "shaking",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "shake",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "shape",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "shaping",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PRESENT_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "shaping",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "shape",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "share",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "shared",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PAST_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "shared",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "share",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "shorten",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "shortened",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PAST_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "shortened",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "shorten",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "show",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "shows",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "THIRD_PERSON_FORM"
+    },
+    {
+      "source_lexical_form": "shows",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "show",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "similarity",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "similarities",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "PLURAL_FORM"
+    },
+    {
+      "source_lexical_form": "similarities",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "similarity",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "small",
+      "source_part_of_speech": "ADJECTIVE",
+      "target_lexical_form": "smaller",
+      "target_part_of_speech": "ADJECTIVE",
+      "relationship_kind": "COMPARATIVE_FORM"
+    },
+    {
+      "source_lexical_form": "smaller",
+      "source_part_of_speech": "ADJECTIVE",
+      "target_lexical_form": "small",
+      "target_part_of_speech": "ADJECTIVE",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "small",
+      "source_part_of_speech": "ADJECTIVE",
+      "target_lexical_form": "smallest",
+      "target_part_of_speech": "ADJECTIVE",
+      "relationship_kind": "SUPERLATIVE_FORM"
+    },
+    {
+      "source_lexical_form": "smallest",
+      "source_part_of_speech": "ADJECTIVE",
+      "target_lexical_form": "small",
+      "target_part_of_speech": "ADJECTIVE",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "soften",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "softening",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PRESENT_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "softening",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "soften",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "soften",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "softens",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "THIRD_PERSON_FORM"
+    },
+    {
+      "source_lexical_form": "softens",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "soften",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "sound",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "sounds",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "PLURAL_FORM"
+    },
+    {
+      "source_lexical_form": "sounds",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "sound",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "speak",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "speaking",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PRESENT_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "speaking",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "speak",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "specialise",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "specialised",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PAST_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "specialised",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "specialise",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "specify",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "specifies",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "THIRD_PERSON_FORM"
+    },
+    {
+      "source_lexical_form": "specifies",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "specify",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "speak",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "spoken",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PAST_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "spoken",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "speak",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "standard",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "standards",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "PLURAL_FORM"
+    },
+    {
+      "source_lexical_form": "standards",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "standard",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "stand",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "standing",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PRESENT_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "standing",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "stand",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "stand",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "stands",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "THIRD_PERSON_FORM"
+    },
+    {
+      "source_lexical_form": "stands",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "stand",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "start",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "starting",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PRESENT_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "starting",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "start",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "state",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "stated",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PAST_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "stated",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "state",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "statement",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "statements",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "PLURAL_FORM"
+    },
+    {
+      "source_lexical_form": "statements",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "statement",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "state",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "states",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "THIRD_PERSON_FORM"
+    },
+    {
+      "source_lexical_form": "states",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "state",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "step",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "steps",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "PLURAL_FORM"
+    },
+    {
+      "source_lexical_form": "steps",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "step",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "store",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "storing",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PRESENT_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "storing",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "store",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "strong",
+      "source_part_of_speech": "ADJECTIVE",
+      "target_lexical_form": "stronger",
+      "target_part_of_speech": "ADJECTIVE",
+      "relationship_kind": "COMPARATIVE_FORM"
+    },
+    {
+      "source_lexical_form": "stronger",
+      "source_part_of_speech": "ADJECTIVE",
+      "target_lexical_form": "strong",
+      "target_part_of_speech": "ADJECTIVE",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "study",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "studied",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PAST_TENSE_FORM"
+    },
+    {
+      "source_lexical_form": "studied",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "study",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "subject",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "subjects",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "PLURAL_FORM"
+    },
+    {
+      "source_lexical_form": "subjects",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "subject",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "substance",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "substances",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "PLURAL_FORM"
+    },
+    {
+      "source_lexical_form": "substances",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "substance",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "substitute",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "substituted",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PAST_TENSE_FORM"
+    },
+    {
+      "source_lexical_form": "substituted",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "substitute",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "subtract",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "subtracted",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PAST_TENSE_FORM"
+    },
+    {
+      "source_lexical_form": "subtracted",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "subtract",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "suggest",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "suggests",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "THIRD_PERSON_FORM"
+    },
+    {
+      "source_lexical_form": "suggests",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "suggest",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "support",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "supported",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PAST_TENSE_FORM"
+    },
+    {
+      "source_lexical_form": "supported",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "support",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "suppose",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "supposed",
+      "target_part_of_speech": "ADJECTIVE",
+      "relationship_kind": "PAST_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "supposed",
+      "source_part_of_speech": "ADJECTIVE",
+      "target_lexical_form": "suppose",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "symbolise",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "symbolises",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "THIRD_PERSON_FORM"
+    },
+    {
+      "source_lexical_form": "symbolises",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "symbolise",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "symbol",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "symbols",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "PLURAL_FORM"
+    },
+    {
+      "source_lexical_form": "symbols",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "symbol",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "take",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "taken",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PAST_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "taken",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "take",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "take",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "takes",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "THIRD_PERSON_FORM"
+    },
+    {
+      "source_lexical_form": "takes",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "take",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "take",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "taking",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PRESENT_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "taking",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "take",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "tense",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "tenses",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "PLURAL_FORM"
+    },
+    {
+      "source_lexical_form": "tenses",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "tense",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "test",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "tests",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "THIRD_PERSON_FORM"
+    },
+    {
+      "source_lexical_form": "tests",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "test",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "thing",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "things",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "PLURAL_FORM"
+    },
+    {
+      "source_lexical_form": "things",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "thing",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "thought",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "thoughts",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "PLURAL_FORM"
+    },
+    {
+      "source_lexical_form": "thoughts",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "thought",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "thread",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "threads",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "PLURAL_FORM"
+    },
+    {
+      "source_lexical_form": "threads",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "thread",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "time",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "times",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PLURAL_FORM"
+    },
+    {
+      "source_lexical_form": "times",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "time",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "transform",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "transforming",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PRESENT_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "transforming",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "transform",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "travel",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "travelling",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PRESENT_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "travelling",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "travel",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "travel",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "travels",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "THIRD_PERSON_FORM"
+    },
+    {
+      "source_lexical_form": "travels",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "travel",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "trigger",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "triggers",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "THIRD_PERSON_FORM"
+    },
+    {
+      "source_lexical_form": "triggers",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "trigger",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "twist",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "twisted",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PAST_TENSE_FORM"
+    },
+    {
+      "source_lexical_form": "twisted",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "twist",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "unit",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "units",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "PLURAL_FORM"
+    },
+    {
+      "source_lexical_form": "units",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "unit",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "value",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "values",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "PLURAL_FORM"
+    },
+    {
+      "source_lexical_form": "values",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "value",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "vibration",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "vibrations",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "PLURAL_FORM"
+    },
+    {
+      "source_lexical_form": "vibrations",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "vibration",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "want",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "wanted",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PAST_TENSE_FORM"
+    },
+    {
+      "source_lexical_form": "wanted",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "want",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "watch",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "watching",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PRESENT_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "watching",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "watch",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "wave",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "waving",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PRESENT_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "waving",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "wave",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "way",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "ways",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "PLURAL_FORM"
+    },
+    {
+      "source_lexical_form": "ways",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "way",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "weak",
+      "source_part_of_speech": "ADJECTIVE",
+      "target_lexical_form": "weaker",
+      "target_part_of_speech": "ADJECTIVE",
+      "relationship_kind": "COMPARATIVE_FORM"
+    },
+    {
+      "source_lexical_form": "weaker",
+      "source_part_of_speech": "ADJECTIVE",
+      "target_lexical_form": "weak",
+      "target_part_of_speech": "ADJECTIVE",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "welcome",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "welcomed",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PAST_TENSE_FORM"
+    },
+    {
+      "source_lexical_form": "welcomed",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "welcome",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "word",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "worded",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PAST_TENSE_FORM"
+    },
+    {
+      "source_lexical_form": "worded",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "word",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "word",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "words",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "PLURAL_FORM"
+    },
+    {
+      "source_lexical_form": "words",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "word",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "write",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "writing",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PRESENT_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "writing",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "write",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "write",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "written",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "PAST_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "written",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "write",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "LEMMA_FORM"
     }
   ]
 }

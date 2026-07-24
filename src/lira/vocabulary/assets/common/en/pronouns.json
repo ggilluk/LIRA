@@ -3,7 +3,7 @@
   "language_code": "en",
   "part_of_speech": "PRONOUN",
   "closed_class_kind": "pronoun",
-  "count": 99,
+  "count": 100,
   "words": [
     {
       "entry_id": "0808cf58-5260-4aa2-bf3e-f6a6fd0ce5ba",
@@ -3695,6 +3695,43 @@
       "source_references": [
         {
           "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "entry_id": "ee646605-67c4-4649-8ff0-9dccb02a9ed9",
+      "lexical_form": "themself",
+      "normalised_form": "themself",
+      "text": "themself",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true,
+      "closed_class_kind": "pronoun",
+      "definition": "A gender-neutral reflexive pronoun referring back to a single person previously mentioned.",
+      "gloss": "A gender-neutral reflexive pronoun referring back to a single person previously mentioned.",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Definition-Gap Vocabulary v1",
           "source_version": "1.0.0",
           "external_identifier": null,
           "reference_uri": null,

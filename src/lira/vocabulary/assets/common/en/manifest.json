@@ -1,8 +1,8 @@
 {
   "schema_version": "2.0.0",
-  "asset_version": "1.14.0",
+  "asset_version": "1.15.0",
   "language_code": "en",
-  "total_lexical_forms": 388,
+  "total_lexical_forms": 391,
   "files": [
     {
       "file": "determiners.json",
@@ -10,7 +10,7 @@
     },
     {
       "file": "pronouns.json",
-      "count": 99
+      "count": 100
     },
     {
       "file": "auxiliaries.json",
@@ -18,7 +18,7 @@
     },
     {
       "file": "prepositions.json",
-      "count": 94
+      "count": 96
     },
     {
       "file": "coordinating_conjunctions.json",
@@ -70,7 +70,7 @@
     },
     {
       "file": "promoted_words.json",
-      "count": 283
+      "count": 1441
     }
   ]
 }

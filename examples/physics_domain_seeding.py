@@ -70,21 +70,35 @@ PUNCTUATION = {".", ",", ";", "!", "?"}
 DOMAIN_NAME = "Physics"
 
 # Words whose Physics-specific fixture sense never got a chance to
-# hydrate, because the Common seed already has a same-(text,
-# part_of_speech) entry with a genuinely different meaning --
-# identify_word() only queues hydration when NO existing sense at all
-# matches (see examples/README.md's "Known, pre-existing limitation"
-# section), so these were silently resolving to the wrong sense the
-# whole time (e.g. "particle" -> Common's grammatical-particle
-# metalinguistic term, not the subatomic-particle physics sense this
-# domain's relationships actually need). Discovered by checking every
-# PHYSICS_FIXTURES word against the Common seed directly: "depend" and
-# "position" also already exist in Common, but with compatible
-# general-English definitions that serve physics usage just as well --
-# only these two are genuine sense conflicts.
+# hydrate, because the Common seed already has *some* sense of the same
+# text -- identify_word() only queues hydration when NO existing sense
+# at all matches, regardless of part_of_speech (see examples/README.md's
+# "Known, pre-existing limitation" section), so these were silently
+# resolving to the wrong sense the whole time. Two ways this shows up:
+# object/particle share the *same* part_of_speech as Common's
+# conflicting sense (both NOUN -- "particle" -> Common's grammatical-
+# particle metalinguistic term, not the subatomic-particle physics
+# sense this domain's relationships need); wave/moving/flow share the
+# *text* but need a *different* part_of_speech than whatever Common
+# happens to have (Common's "wave" is VERB, Physics needs the NOUN
+# sense; Common's "moving" is VERB, Physics needs the ADJECTIVE sense;
+# Common's "flow" is NOUN, Physics needs the VERB sense) -- the
+# 1163-word Common definition-gap batch (examples/
+# common_definition_gap_vocabulary.py) added exactly those three Common
+# senses and immediately re-triggered this same limitation, caught by
+# re-running this script and watching ANTONYM/RELATED/MERONYM/HOLONYM/
+# TROPONYM/ENTAILMENT pairs that used to resolve start reporting "word
+# or sense not found". Discovered by checking every PHYSICS_FIXTURES
+# word against the Common seed directly: "depend" and "position" also
+# already exist in Common, but with compatible general-English
+# definitions that serve physics usage just as well -- those two are
+# not genuine conflicts.
 CONFLICTING_SENSE_WORDS = (
     ("object", "NOUN"),
     ("particle", "NOUN"),
+    ("wave", "NOUN"),
+    ("moving", "ADJECTIVE"),
+    ("flow", "VERB"),
 )
 
 
@@ -443,14 +457,20 @@ def _format_report(report: dict) -> str:
                   "nothing in this pipeline blacklists a word after one failed lookup.)\n")
 
     lines.append("## Word-sense conflicts found and resolved\n")
-    lines.append("Checking every fixture word against the Common seed directly found 4 collisions "
-                  "(`object`, `depend`, `position`, `particle`) -- identify_word() only queues hydration "
-                  "when *no* existing sense at all matches, so these never reached "
+    lines.append("Checking every fixture word against the Common seed directly found collisions "
+                  "(`object`, `depend`, `position`, `particle`, and -- once the 1163-word Common "
+                  "definition-gap batch added Common senses of its own for them -- `wave`, `moving`, "
+                  "`flow`) -- identify_word() only queues hydration when *no* existing sense at all "
+                  "matches, regardless of part_of_speech, so these never reached "
                   "ExternalDictionaryAdapter. `depend`/`position` turned out to have compatible general-"
-                  "English definitions already in Common, fine as-is. `object`/`particle` are genuine "
-                  "conflicts -- Common's senses are the grammatical terms (\"the noun that receives the "
-                  "action of a verb\", \"a function word that does not fit the main parts of speech\"), not "
-                  "the physics ones this domain's own relationships need. Resolved via "
+                  "English definitions already in Common, fine as-is. The rest are genuine "
+                  "conflicts -- `object`/`particle` because Common's senses are the grammatical terms "
+                  "(\"the noun that receives the action of a verb\", \"a function word that does not fit "
+                  "the main parts of speech\"); `wave`/`moving`/`flow` because Common's new sense is a "
+                  "different part_of_speech entirely (Common's `wave` is VERB, Physics needs NOUN; "
+                  "Common's `moving` is VERB, Physics needs ADJECTIVE; Common's `flow` is NOUN, Physics "
+                  "needs VERB) -- neither is the physics one this domain's own relationships need. "
+                  "Resolved via "
                   "`DictionaryProcessor.register_conflicting_sense` -- the same, pre-existing conflict-"
                   "resolution path a Domain owner would use for any other word-sense conflict "
                   "(`vocabulary/documentation/README.md`, 9.2), not a new mechanism. Both senses keep "

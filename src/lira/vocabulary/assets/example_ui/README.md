@@ -5,30 +5,39 @@
 it directly in a browser to see the UI without running any code.
 
 It now shows a **Physics Domain**, seeded from the Common Domain (now
-838 words: 388 mandatory closed-class + 167 supplementary
-metalinguistic terms + 283 promoted open-class words -- see below)
-plus 143 lexical forms hydrated directly into the Physics Domain
-(95 `Word` records from a representative Physics source text, several
-with more than one part of speech, e.g. `charge` -> NOUN + VERB, plus
-40 more found by breaking every hydrated word's own definition down
-into its constituent words, plus 6 more abstract nouns for the
-NOMINALISATION relationship -- see Definition-gap vocabulary and Verb
-nominalisation below) via the Vocabulary Layer's domain-seeding
-pipeline (`DictionaryProcessor.identify_word`, `AsyncDictionaryHydrator`,
-`ExternalDictionaryAdapter`) -- 981 words, 411 relationships in total
-(288 inherited from Common + 123 hand-curated or morphologically-linked
+**1999** words: 391 mandatory closed-class + 167 supplementary
+metalinguistic terms + 1441 promoted open-class words -- see below,
+and `assets/common/en/README.md`'s own `asset_version 1.15.0` Version
+entry for the 1163-word Common definition-gap batch that grew the
+promoted total from 283) plus 92 lexical forms hydrated directly into
+the Physics Domain via the Vocabulary Layer's domain-seeding pipeline
+(`DictionaryProcessor.identify_word`, `AsyncDictionaryHydrator`,
+`ExternalDictionaryAdapter`) -- 2091 words, 1191 relationships in total
+(1070 inherited from Common + 121 hand-curated or morphologically-linked
 among the hydrated Physics words, covering every
 `LexicalRelationshipType` Lexical Semantic kind with at least 5 real
 examples each: `hot`<->`cold` ANTONYM, `matter` HYPERNYM `particle`,
 `nucleus` MERONYM `atom`, `move` TROPONYM `flow`, `heat` CAUSE `melt`,
 and more -- `RelationshipSeeder` itself never relates a hydrated word;
-see `examples/physics_domain_relationships.py`). Two hydrated words
-(`object`, `particle`) turned out to collide with unrelated Common
-metalinguistic senses of the same (text, part_of_speech) -- resolved
-via `DictionaryProcessor.register_conflicting_sense`, visible in the
-Words table as two identical-looking `object`/`particle` rows (one
-Common, one Physics), distinguished by the Domain pill and by each
-row's own `entry_id`, shown in the detail panel (`assets/common/en/README.md`'s
+see `examples/physics_domain_relationships.py`). The Physics-specific
+count (92, down from 143 before the Common batch) is lower not because
+anything was removed, but because many words that used to need their
+own Physics-only hydration -- `charge`, `energy`, `force`, and dozens
+more -- are now inherited from Common instead, the direct effect of
+that same 1163-word batch; see Definition-gap vocabulary and Verb
+nominalisation below for how the *rest* of that original 143 broke
+down, a breakdown that predates and is no longer reflected exactly by
+the current 92. Five hydrated words (`object`, `particle`, `wave`,
+`moving`, `flow`) turned out to collide with unrelated Common senses of
+the same text -- `object`/`particle` share the exact same
+part_of_speech as their Common sense, `wave`/`moving`/`flow` need a
+*different* part_of_speech than whatever Common happens to have (the
+1163-word batch added Common senses for all three, retroactively
+reintroducing the same collision `object`/`particle` first found) --
+resolved via `DictionaryProcessor.register_conflicting_sense`, visible
+in the Words table as pairs of identical-looking rows (one Common, one
+Physics), distinguished by the Domain pill and by each row's own
+`entry_id`, shown in the detail panel (`assets/common/en/README.md`'s
 own Version section, `asset_version 1.14.0`, has the full story of why
 this no longer renders as `object_2`/`particle_2`). See
 `examples/README.md` (repo root) for the full demonstration, including
@@ -137,16 +146,17 @@ unaffected):
 - A **Provenance** line in the word detail panel, reading
   `Word.source_references` (previously computed but never shown).
 - An **Unresolved** panel listing words the pipeline could not resolve
-  (`branch`, `studies`) -- reported rather than guessed
-  (`DictionaryView(..., unresolved=(...))`, default `()`).
+  (`studies` -- `branch` used to be unresolved too, until the 1163-word
+  Common definition-gap batch seeded it) -- reported rather than
+  guessed (`DictionaryView(..., unresolved=(...))`, default `()`).
 - A **Domain** column in the Words table, a **Domain** filter dropdown
   alongside the part-of-speech one, and a domain pill next to every
   related word in the detail panel's relationship list --
   `DictionaryView(..., domain_name="Physics")`, default `"Domain"`.
   Every word and relationship is labelled "Common" or "Physics"
-  (`word.is_common`); filtering to "Physics" isolates exactly the 137
+  (`word.is_common`); filtering to "Physics" isolates exactly the 92
   hydrated (or conflict-resolved) words, filtering to "Common" the
-  inherited 838.
+  inherited 1999.
 - A one-sentence plain-English gloss under each relationship row in
   the detail panel, phrased per kind -- select the Physics-domain
   `particle` row (there are two `particle` rows now that `entry_id`
@@ -172,23 +182,55 @@ unaffected):
   4.4). See `examples/README.md`'s Definition-gap vocabulary section
   for the completeness numbers behind this.
 
+### Common definition-gap vocabulary
+
+The same `Word.definition_words()` technique Definition-gap vocabulary
+above applied to the Physics Domain's own hydrated words, run instead
+against the Common Vocabulary Cache's own 838 words, found 1011 more
+words Common's own definitions depended on but never seeded -- select
+`verb` to see its definition ("A word that expresses an action,
+occurrence, or state of being") with `expresses` now resolving, one of
+1163 words this batch promoted (1011 originally found, plus 129 base
+lemmas and 23 homograph senses discovered while wiring their
+relationships -- see `assets/common/en/README.md`'s own
+`asset_version 1.15.0` Version entry for the full count and reasoning,
+and `examples/common_definition_gap_vocabulary.py` for the complete
+classification). Common grew from 838 to **1999** words and from 288
+to **1070** relationships; because the Physics Domain inherits every
+Common word and relationship, this is by far the largest single jump
+in this file's own numbers of any batch here -- 981 -> 2091 words, 411
+-> 1191 relationships overall. Wiring those relationships surfaced a
+genuine Physics Domain regression: three of the new Common senses
+(`wave` VERB, `moving` VERB, `flow` NOUN) blocked `identify_word()`
+from ever hydrating Physics's own, different-part-of-speech senses of
+the same words, the identical gap `object`/`particle` first surfaced
+in the very first Physics seeding batch -- fixed the same way,
+`physics_domain_seeding.py`'s `CONFLICTING_SENSE_WORDS` growing from 2
+entries to 5; select `wave`, `moving`, or `flow` to see both the
+Common and Physics sense present and correctly related. See
+`examples/README.md`'s Common definition-gap vocabulary section for
+the full story.
+
 Regenerate with:
 
 ```
-python3 examples/common_core_vocabulary_seeding.py
+python3 examples/common_definition_gap_vocabulary_seeding.py
 ```
 
 run from the repository root, which seeds the Physics Domain
 (`physics_domain_seeding.run()`), promotes/hydrates the definition-gap
 vocabulary (`definition_gap_vocabulary_seeding.run()`), adds the
 NOMINALISATION pass (`verb_nominalisation_seeding.run()`), adds the
-common-core vocabulary pass on top of all three, and regenerates this
-file directly from the result. `python3 examples/physics_domain_seeding.py`,
-`python3 examples/definition_gap_vocabulary_seeding.py`, and
-`python3 examples/verb_nominalisation_seeding.py` still work and still
-write their own report files, but none of them regenerates this file
-any more -- each would only reflect an earlier, less complete state of
-the same Physics Domain.
+common-core vocabulary pass (`common_core_vocabulary_seeding.run()`),
+adds this file's own 1163-word Common definition-gap batch on top of
+all four, and regenerates this file directly from the result.
+`python3 examples/physics_domain_seeding.py`,
+`python3 examples/definition_gap_vocabulary_seeding.py`,
+`python3 examples/verb_nominalisation_seeding.py`, and
+`python3 examples/common_core_vocabulary_seeding.py` still work and
+still write their own report files, but none of them regenerates this
+file any more -- each would only reflect an earlier, less complete
+state of the same Physics Domain.
 
 To instead regenerate a plain Common-only snapshot (the previous
 content of this file):

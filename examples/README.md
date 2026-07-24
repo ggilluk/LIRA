@@ -24,9 +24,11 @@ the pipeline exactly the way any other Domain is seeded (see
 | `verb_nominalisation_vocabulary.py` | Classification data for the `NOMINALISATION` relationship (verb -> abstract noun, e.g. `generalise` -> `generalisation`) across every base-form verb already seeded -- see Verb nominalisation below. |
 | `verb_nominalisation_seeding.py` | The runnable seeding script for that classification -- promotes/hydrates any missing nouns and wires the relationship. `python3 examples/verb_nominalisation_seeding.py` from the repo root. |
 | `common_core_vocabulary.py` | Classification data for a user-supplied audit of core words the Common Vocabulary Cache's own definitions repeatedly depend on but never seeded -- see Common core vocabulary below. |
-| `common_core_vocabulary_seeding.py` | The runnable seeding script for that classification -- adds genuine grammar terms directly to the metalinguistic files, promotes general vocabulary, wires relationships, and regenerates the example UI. `python3 examples/common_core_vocabulary_seeding.py` from the repo root (this is now the canonical way to regenerate `assets/example_ui/dictionary_view_example.html` -- see that directory's own README). |
+| `common_core_vocabulary_seeding.py` | The runnable seeding script for that classification -- adds genuine grammar terms directly to the metalinguistic files, promotes general vocabulary, and wires relationships. `python3 examples/common_core_vocabulary_seeding.py` from the repo root -- no longer regenerates the example UI, see `common_definition_gap_vocabulary_seeding.py` below. |
 | `relationship_cache_homograph_fix.py` | Seeds the three relationships a part-of-speech blind spot in `RelationshipSeeder` previously made unsafe to add (`cause`/`causing`, `cause`/`causation`, `state`/`statement`) -- see Fixing the relationship cache's own POS blind spot below. `python3 examples/relationship_cache_homograph_fix.py` from the repo root. |
 | `word_entry_id_backfill.py` | One-time migration -- backfills a stable `entry_id` into every existing Common Vocabulary Cache word file -- see Adding a stable entry_id per vocabulary entry below. `python3 examples/word_entry_id_backfill.py` from the repo root. |
+| `common_definition_gap_vocabulary.py` | Classification, 391 `MORPHOLOGICAL_LINKS` relationship pairs, and full reasoning for the 1163-word Common definition-gap batch -- see Common definition-gap vocabulary below. |
+| `common_definition_gap_vocabulary_seeding.py` | The runnable seeding script for that classification -- hand-adds the 3 closed-class words, promotes the other 1158, wires relationships, and regenerates the example UI. `python3 examples/common_definition_gap_vocabulary_seeding.py` from the repo root (this is now the canonical way to regenerate `assets/example_ui/dictionary_view_example.html` -- see that directory's own README). |
 
 ## Network caveat
 
@@ -601,6 +603,121 @@ Common Vocabulary Cache: 838 words (unchanged), 288 relationships
 (unchanged). Physics Domain: 981 words (unchanged), 411 relationships
 (unchanged).
 
+## Common definition-gap vocabulary
+
+The same technique Definition-gap vocabulary (above) applied to the
+Physics Domain's own hydrated words -- breaking every word's
+`definition` down into its own constituent words
+(`Word.definition_words()`, 4.4) and checking which of those aren't
+themselves seeded -- run instead against the Common Vocabulary Cache's
+own 838 words, found 1011 distinct words Common's own definitions
+depend on but never seeded: `verb`'s own definition ("A word that
+expresses an action, occurrence, or state of being") references
+`expresses`, itself unseeded, one of 11 Common words hitting the exact
+same gap.
+
+Drafting an accurate, dictionary-style definition and part of speech
+for 1011 words at once doesn't parallelise well as a single pass, so
+the list was split into 8 roughly-equal chunks and handed to 8
+subagents running in parallel, each grounded with real context (up to
+3 existing Common definitions that used the word, pulled directly from
+the live Dictionary, not guessed) and the same style calibration
+(`measured`, `expressed`, `specified`, ...) already established in
+this cache. All 1011 were covered, no duplicates, no gaps, no invented
+meanings -- verified mechanically (a scripted diff against the
+original word list, not eyeballed) before any of it touched the real
+assets.
+
+Classifying and relating those 1011 words surfaced two further
+extensions, the same "found while relating the new words, not decided
+in advance" pattern `common_core_vocabulary.py`'s bonus NOMINALISATION
+nouns already established:
+
+- **129 base lemmas.** A derived word's own definition names its base
+  explicitly (`"denotes"` -> "Third person singular of **denote**"),
+  which is exactly how the 391 `MORPHOLOGICAL_LINKS` pairs below were
+  found -- by pattern-matching every one of the 1011 definitions for
+  this "X of Y" phrasing. 129 of the named bases turned out to be
+  missing too (e.g. `denote` itself), so they were promoted alongside
+  the batch that needed them.
+- **23 homograph senses.** A base already promoted under one
+  part_of_speech sometimes turned out to be the *wrong* one for the
+  relationship that needed it -- `mark` already existed as a `NOUN`,
+  but `marked`/`marking`/`marks` are plainly `VERB` forms, and Common
+  had no `VERB` sense of `mark` for them to derive from. Each of these
+  23 (`mark`, `matter`, `test`, `wave`, and 19 others) gained a second,
+  homograph sense the same way `name`/`point`/`state` did in the
+  common-core batch -- see `assets/common/en/README.md`'s Homographs
+  with existing entries section for the running list.
+
+1163 words in total (1011 + 129 + 23), all open-class except 3:
+`concerning`/`including` (`PREPOSITION`) and `themself` (`PRONOUN`)
+turned out to be genuinely closed-class, discovered the hard way --
+`WordSeeder.promote_word` categorically refuses anything outside
+`OPEN_CLASSES`, so the seeding script's first real run rejected all
+three outright. Hand-added directly to `prepositions.json`/
+`pronouns.json` instead (`common_definition_gap_vocabulary_seeding.py`'s
+own `add_mandatory_entries()`), the same "closed class needs its own
+file" discipline `common_core_vocabulary_seeding.py`'s metalinguistic
+step already established for supplementary files, now exercised for
+mandatory ones too. Two more candidates, `non`/`semi` (bound prefixes,
+`PartOfSpeech.OTHER`), were excluded outright rather than forced
+anywhere -- `OTHER` is deliberately never seeded in this cache
+(`word_seeder.py`'s own comment on the enum member), a policy this
+batch is the first to actually run into rather than just document.
+1158 words went through `WordSeeder.promote_word` (`promoted_words.json`
+283 -> 1441); `total_lexical_forms` grew from 388 to 391 for the 3
+mandatory additions.
+
+Wiring the 391 `MORPHOLOGICAL_LINKS` pairs into the relationship cache
+used the same `source_part_of_speech`/`target_part_of_speech`
+disambiguator `relationship_cache_homograph_fix.py` introduced, always
+explicit on both endpoints of both the specific edge and its
+reciprocal `LEMMA_FORM` edge, not just where a base happens to already
+be a homograph -- five of the 129 bases (`cause`, `form`, `name`,
+`point`, `state`) are exactly the pre-existing Common homographs that
+fix was written for. 782 edges added (`morphological_relationships.json`
+238 -> 1020). Two pattern-matched candidates were dropped rather than
+seeded: `"proportion"` (a false-positive text match -- its definition
+uses the word "comparative" descriptively, not as a morphological
+claim about "relation") and `"singles"` -> `"single"` (too idiomatic a
+`VERB` sense -- "to single out" -- to justify a fourth homograph sense
+of `single` for one relationship).
+
+Seeding this batch also broke three previously-working Physics Domain
+relationships -- not a bug in this batch's own logic, but the exact
+same identify_word limitation `object`/`particle` first surfaced,
+triggered for the first time by data added on the Common side rather
+than found up front. Common's new `wave` (`VERB`), `moving` (`VERB`),
+and `flow` (`NOUN`) senses made `identify_word()` stop queuing
+hydration for Physics's fixture-evidenced `wave` (`NOUN`), `moving`
+(`ADJECTIVE`), and `flow` (`VERB`) senses -- `identify_word` only
+queues hydration when *no* sense at all already matches, regardless of
+part_of_speech (see Known, pre-existing limitation below), so these
+three senses silently stopped hydrating the moment Common gained a
+same-text sense of its own. Caught by re-running
+`physics_domain_seeding.py` directly and watching previously-clean
+ANTONYM/RELATED/MERONYM-HOLONYM/TROPONYM/ENTAILMENT pairs start
+reporting "word or sense not found". Fixed the same way `object`/`particle`
+were: `physics_domain_seeding.py`'s `CONFLICTING_SENSE_WORDS` grew
+from 2 entries to 5, using the same `register_conflicting_sense` path,
+no new mechanism.
+
+Verified directly throughout, not assumed: a scripted diff confirmed
+all 1011 originally-drafted words matched exactly with no duplicates
+or omissions before any promotion happened; loaded the full cache
+after seeding and confirmed exactly 1999 unique `entry_id` values
+(1999 = 838 + 1158 + 3); re-ran the full seeding chain twice in a row
+and confirmed zero new words or relationships on the second run;
+re-ran `physics_domain_seeding.py` standalone and confirmed zero
+skipped relationship pairs after the `CONFLICTING_SENSE_WORDS` fix;
+Playwright-checked the rendered UI in headless Chromium -- `wave`,
+`moving`, and `flow` each show two rows (one Common, one Physics),
+both selectable with correct relationships, no console errors.
+
+Common Vocabulary Cache: 838 -> 1999 words, 288 -> 1070 relationships.
+Physics Domain: 981 -> 2091 words, 411 -> 1191 relationships.
+
 ## Known, pre-existing limitation surfaced (not fixed) by this exercise
 
 `DictionaryProcessor.identify_word` only queues hydration when a token
@@ -616,3 +733,14 @@ because every fixture word was checked against Common directly, by
 hand, before relying on it. Fixing the detection gap would be a small,
 targeted change to `identify_word`'s control flow (not a data-model
 change), left for a future task rather than folded into this one.
+
+The Common definition-gap batch above hit the same gap a second way:
+`wave`/`moving`/`flow` weren't checked against Physics up front (there
+was no reason to, until Common gained new senses of them), so this
+time the gap was caught retroactively -- by re-running
+`physics_domain_seeding.py` after the fact and noticing previously-clean
+relationship pairs start reporting "word or sense not found", not by
+checking ahead of time. That's strictly weaker than catching it before
+shipping (it depends on something downstream actually exercising the
+missing sense), reinforcing rather than closing the gap this section
+already describes.

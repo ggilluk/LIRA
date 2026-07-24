@@ -297,11 +297,21 @@ both senses live in the *same* file, `promoted_words.json`, added in
 two separate batches -- the `NOUN` sense first (definition-gap batch),
 the `VERB` sense later (common-core batch) -- so array order within
 that one file, not file-to-file ordering, decides that `NOUN` stays
-`Dictionary.lookup()`'s default. This is also why
-`RelationshipSeeder.seed_domain`, whose own `Dictionary.lookup()` call
-has no part-of-speech awareness at all, cannot safely relate `state`
-(`VERB`) to anything through the static relationship cache -- see
-`relationships/README.md`'s Version section.
+`Dictionary.lookup()`'s default. This used to also be why
+`RelationshipSeeder.seed_domain` couldn't safely relate `state`
+(`VERB`) to anything through the static relationship cache -- fixed by
+giving `RelationshipSeeder` an explicit `source_part_of_speech`/
+`target_part_of_speech` disambiguator, see `relationships/README.md`'s
+own `asset_version 1.8.0` Version entry. The 1163-word Common
+definition-gap batch (`asset_version 1.15.0` below) added 23 more
+promoted-words-only homographs following this exact same pattern
+(`mark`, `matter`, `test`, `wave`, and 19 others each gained a second
+sense sharing a lexical_form already promoted under a different
+part_of_speech) -- not tabulated individually above, since the table's
+purpose is documenting mandatory/supplementary load-order safety, which
+doesn't apply here; every one of them is resolved by explicit
+`part_of_speech` wherever a relationship needs a specific sense, the
+same as `name`/`point`/`state`.
 
 `asset_version 1.2.0` added seven words (`done`, `doing`, `little`,
 `fewest`, `least`, `owing to`, `n't`) that the original 300-word
@@ -456,6 +466,64 @@ lexical_form with an earlier-loaded sense never disturbs
 `Dictionary.lookup()`'s first-seeded-wins default.
 
 ## Version
+
+`v1` / `schema_version 2.0.0` / `asset_version 1.15.0` -- seeded the
+1163-word Common definition-gap batch (`examples/
+common_definition_gap_vocabulary.py` holds the full classification,
+every relationship, and the reasoning): every word a Common Vocabulary
+Cache word's own `definition` depended on but that wasn't itself
+seeded, found the same way `definition_gap_vocabulary.py` originally
+found Physics's own 262-word gap (`Word.definition_words()`, 4.4), run
+against Common's own 838 words this time instead of Physics's hydrated
+ones. 1158 open-class words promoted via `WordSeeder.promote_word`
+(`promoted_words.json` 283 -> 1441); 3 genuinely closed-class words
+(`concerning`, `including` as `PREPOSITION`; `themself` as `PRONOUN`)
+hand-added to `prepositions.json`/`pronouns.json` instead, once
+`promote_word` itself rejected them (`WordSeeder.OPEN_CLASSES` is
+open-class only) -- `total_lexical_forms` 388 -> 391. Two candidate
+words, `non`/`semi` (bound prefixes, `PartOfSpeech.OTHER`), were
+excluded outright rather than forced anywhere, matching `OTHER`'s
+long-standing "never seeded" policy (`vocabulary/role/word_seeder.py`'s
+own comment on the enum member). Every seeded Dictionary now carries
+391 mandatory + 167 supplementary + 1441 promoted = **1999** total.
+
+Wiring relationships for these words surfaced two further, smaller
+extensions rather than being left dangling: 129 base lemmas a derived
+word's own definition named (e.g. "denotes" -> "Third person singular
+of denote") turned out to be missing too, added the same way; and 23
+second, homograph senses an existing lexical_form needed once its
+existing sense turned out to be the wrong part_of_speech for a
+relationship to point at (e.g. `mark` existed only as a `NOUN`, but
+`marked`/`marking`/`marks` are plainly `VERB` forms) -- see
+Homographs with existing entries above for the full list and the
+same-pattern precedent (`name`/`point`/`state`). 391 `MORPHOLOGICAL_LINKS`
+pairs (782 edges with reciprocals) were added to the relationship
+cache with an explicit `source_part_of_speech`/`target_part_of_speech`
+on every edge, not just the five pre-existing homograph bases
+(`cause`, `form`, `name`, `point`, `state`) -- see
+`relationships/README.md`'s own `asset_version 1.9.0` Version entry
+for the relationship side of this batch.
+
+Seeding this batch also retroactively broke three previously-working
+Physics Domain relationships, discovered by re-running
+`physics_domain_seeding.py` directly and watching it start reporting
+skipped pairs: Common gained new senses of `wave` (`VERB`), `moving`
+(`VERB`), and `flow` (`NOUN`) that `identify_word()` now finds before
+ever queuing Physics's own fixture-hydrated `wave` (`NOUN`), `moving`
+(`ADJECTIVE`), and `flow` (`VERB`) senses -- the exact same "no sense
+at all matches, regardless of part_of_speech" gap that caused
+`object`/`particle` to need `DictionaryProcessor.register_conflicting_sense`
+in the very first Physics seeding batch (`examples/README.md`'s
+Word-sense conflicts section), now hit for the first time by data
+added on the Common side rather than discovered up front. Fixed the
+same way: `physics_domain_seeding.py`'s `CONFLICTING_SENSE_WORDS` grew
+from 2 entries to 5. Verified directly, not assumed: loaded the full
+1999-word cache and confirmed exactly 1999 unique `entry_id` values;
+re-ran the full seeding chain twice in a row and confirmed zero new
+words/relationships on the second run; Playwright-checked the
+rendered UI in headless Chromium -- `wave`, `moving`, and `flow` each
+show two rows (one Common, one Physics), both selectable, no console
+errors.
 
 `v1` / `schema_version 2.0.0` / `asset_version 1.14.0` -- added a
 persistent, stable `entry_id` to every entry in every word file (Word

@@ -21,7 +21,7 @@ against a specific Domain's already-seeded `Word`s, not a store of
 
 | File | Category | Kinds seeded | Count |
 |------|----------|----------------|-------|
-| `morphological_relationships.json` | Morphological (6.2.1) | Person, tense, participle, and plural forms (`be`/`have`/`do` conjugations, `this`/`that` plurals); comparative/superlative forms (`few`/`many`/`much`/`little`); pronoun paradigm forms (`PRONOUN_OBJECT_FORM`, `PRONOUN_SUBJECT_FORM`, `PRONOUN_POSSESSIVE_DETERMINER_FORM`, `PRONOUN_POSSESSIVE_FORM`, `PRONOUN_REFLEXIVE_FORM`); `LEMMA_FORM` (every edge's materialised reverse -- see Symmetric and inverse edges); 25 base/derived pairs among the promoted words added in `asset_version 1.5.0`; 36 `NOMINALISATION` pairs added in `asset_version 1.6.0`; 6 more `NOMINALISATION` pairs plus 1 `THIRD_PERSON_FORM` pair (`occur`/`occurs`) added in `asset_version 1.7.0`; 3 homograph-safe pairs (`cause`/`causing`, `cause`/`causation`, `state`/`statement`) added in `asset_version 1.8.0` using the new `source_part_of_speech`/`target_part_of_speech` disambiguator (see Version below) | 238 |
+| `morphological_relationships.json` | Morphological (6.2.1) | Person, tense, participle, and plural forms (`be`/`have`/`do` conjugations, `this`/`that` plurals); comparative/superlative forms (`few`/`many`/`much`/`little`); pronoun paradigm forms (`PRONOUN_OBJECT_FORM`, `PRONOUN_SUBJECT_FORM`, `PRONOUN_POSSESSIVE_DETERMINER_FORM`, `PRONOUN_POSSESSIVE_FORM`, `PRONOUN_REFLEXIVE_FORM`); `LEMMA_FORM` (every edge's materialised reverse -- see Symmetric and inverse edges); 25 base/derived pairs among the promoted words added in `asset_version 1.5.0`; 36 `NOMINALISATION` pairs added in `asset_version 1.6.0`; 6 more `NOMINALISATION` pairs plus 1 `THIRD_PERSON_FORM` pair (`occur`/`occurs`) added in `asset_version 1.7.0`; 3 homograph-safe pairs (`cause`/`causing`, `cause`/`causation`, `state`/`statement`) added in `asset_version 1.8.0` using the new `source_part_of_speech`/`target_part_of_speech` disambiguator (see Version below); 391 pairs (782 edges with reciprocals) for the 1163-word Common definition-gap batch added in `asset_version 1.9.0`, every edge carrying an explicit source/target `part_of_speech` | 1020 |
 | `semantic_relationships.json` | Lexical Semantic (6.2.2) | `ANTONYM` (spatial/temporal opposites: above/below, before/after, ...; discrete/continuous, high/low, push/pull, negative/positive among the promoted words) and `SYNONYM` (equivalent prepositions: beneath/under, amid/among, due to/owing to, ...; the discourse-marker pair however/nevertheless; idea/concept among the promoted words), each materialised in both directions | 34 |
 | `orthographic_relationships.json` | Orthographic and Naming (6.2.3) | `CONTRACTION` -- not/n't, plus each full contraction's component words (do/not -> don't, can/not -> can't, I/am -> I'm, it/is/has -> it's, is/not -> isn't, was/not -> wasn't, had/not -> hadn't) | 16 |
 
@@ -34,7 +34,7 @@ pronoun paradigms, and near-synonymy do.
 `PRONOUN_RECIPROCAL_FORM` is defined (6.2.1, Pronoun Form) but not
 currently seeded in either direction -- see Known gaps.
 
-Total relationships: **288**.
+Total relationships: **1070**.
 
 ## Symmetric and inverse edges
 
@@ -262,6 +262,43 @@ adds these seven relationships -- all now present in
 `orthographic_relationships.json` above.
 
 ## Version
+
+`v1` / `schema_version 1.0.0` / `asset_version 1.9.0` (288 -> 1070
+relationships). Wired the relationships for the 1163-word Common
+definition-gap batch (`assets/common/en/README.md`'s own
+`asset_version 1.15.0`, `examples/common_definition_gap_vocabulary.py`).
+391 `MORPHOLOGICAL_LINKS` pairs -- 129 base lemmas discovered while
+wiring (e.g. "denotes" -> `THIRD_PERSON_FORM` -> "denote"), plus 23
+homograph senses discovered the same way (e.g. `mark` needed a `VERB`
+sense to be the base of `marked`/`marking`/`marks`) -- each seeded as
+two edges (the specific kind plus its reciprocal `LEMMA_FORM`), always
+with an explicit `source_part_of_speech`/`target_part_of_speech` on
+both edges, not just where a base happens to already be a homograph:
+782 edges added to `morphological_relationships.json` (238 -> 1020).
+Five of the 129 bases (`cause`, `form`, `name`, `point`, `state`) are
+the same pre-existing Common homographs `asset_version 1.8.0` above
+fixed resolution for; the other 124, plus the 23 homograph senses, are
+new. Two pattern-matched candidate derivations were deliberately
+dropped rather than seeded: "proportion" (a false-positive text match
+-- its definition uses the word "comparative" descriptively, not as a
+morphological claim) and "singles" -> "single" (too idiomatic a `VERB`
+sense -- "to single out" -- to justify a fourth homograph sense of
+`single` for one relationship). Verified directly: re-seeding a fresh
+Domain resolves every one of the 391 pairs to the correct sense
+(confirmed for the five pre-existing homograph bases specifically,
+the same way `asset_version 1.8.0` verified `cause`/`state`), and a
+second run of the seeding script adds nothing new.
+
+Seeding this batch also exposed a real Physics Domain regression, not
+a relationship-cache bug as such: Common's own new `wave` (`VERB`),
+`moving` (`VERB`), and `flow` (`NOUN`) senses made `identify_word()`
+stop queuing hydration for Physics's fixture-evidenced `wave` (`NOUN`),
+`moving` (`ADJECTIVE`), and `flow` (`VERB`) senses -- `identify_word`
+only queues hydration when *no* sense at all already matches,
+regardless of part_of_speech, the same gap `object`/`particle` first
+surfaced (`examples/README.md`'s Word-sense conflicts section). Fixed
+in `physics_domain_seeding.py`: `CONFLICTING_SENSE_WORDS` grew from 2
+entries to 5, using the same `register_conflicting_sense` path.
 
 `v1` / `schema_version 1.0.0` / `asset_version 1.8.0` (282 -> 288
 relationships). `RelationshipSeeder` gained the part-of-speech
