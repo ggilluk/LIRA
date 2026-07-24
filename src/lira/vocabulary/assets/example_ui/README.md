@@ -12,8 +12,8 @@ entry for the morphology-completion batch that grew the promoted total
 from 1441) plus 84 lexical forms hydrated directly into
 the Physics Domain via the Vocabulary Layer's domain-seeding pipeline
 (`DictionaryProcessor.identify_word`, `AsyncDictionaryHydrator`,
-`ExternalDictionaryAdapter`) -- 3107 words, 3579 relationships in total
-(3470 inherited from Common + 109 hand-curated or morphologically-linked
+`ExternalDictionaryAdapter`) -- 3107 words, 6155 relationships in total
+(6111 inherited from Common + 44 hand-curated or morphologically-linked
 among the hydrated Physics words, covering every
 `LexicalRelationshipType` Lexical Semantic kind with at least 5 real
 examples each: `hot`<->`cold` ANTONYM, `matter` HYPERNYM `particle`,
@@ -254,7 +254,8 @@ way `common_definition_gap_vocabulary_seeding.py` did
 (`common_core_vocabulary_seeding.run()`, which itself chains through
 `physics_domain_seeding.run()`, `definition_gap_vocabulary_seeding.run()`,
 and `verb_nominalisation_seeding.run()`) and regenerates this file
-directly from the result. `python3 examples/physics_domain_seeding.py`,
+directly from the result -- no longer regenerates this file any more,
+see Common semantic completion below. `python3 examples/physics_domain_seeding.py`,
 `python3 examples/definition_gap_vocabulary_seeding.py`,
 `python3 examples/verb_nominalisation_seeding.py`,
 `python3 examples/common_core_vocabulary_seeding.py`, and
@@ -262,6 +263,35 @@ directly from the result. `python3 examples/physics_domain_seeding.py`,
 work and still write their own report files, but none of them
 regenerates this file any more -- each would only reflect an earlier,
 less complete state of the same Physics Domain.
+
+### Common semantic completion
+
+Completed Lexical Semantic (group 1) coverage for every base-form
+open-class word: 1307 relationships (`SYNONYM`/`ANTONYM`/`HYPERNYM`/
+`MERONYM`/`TROPONYM`/`ENTAILMENT`/`CAUSE`/`RELATED`) drafted by 14
+parallel subagents, each grounded only in a word's own definition --
+select `absence` (Common, Noun) to see `ANTONYM` -> `presence` (and
+`presence` shows the reciprocal edge back); select `acronym` to see
+`HYPERNYM` -> `abbreviation` ("acronym is a type of abbreviation");
+switch to the Hierarchy tab and pick "Hypernym" to see the largest
+semantic tree this batch produced (223 edges, 305 words). See
+`examples/README.md`'s Common semantic completion section for the full
+methodology (the drafting process, the validation pass, and the
+counts).
+
+Regenerate with:
+
+```
+python3 examples/common_semantic_completion_seeding.py
+```
+
+run from the repository root -- adds this batch's 2599 relationship
+edges (materialising every `HYPERNYM`->`HYPONYM`, `MERONYM`->`HOLONYM`,
+and symmetric-kind reciprocal) to the already-persisted Common
+relationship cache, seeds the Physics Domain the same way every batch
+above does, and regenerates this file directly from the result. None
+of the earlier scripts, including `common_morphology_completion_seeding.py`,
+regenerates this file any more.
 
 To instead regenerate a plain Common-only snapshot (the previous
 content of this file):

@@ -22,7 +22,7 @@ against a specific Domain's already-seeded `Word`s, not a store of
 | File | Category | Kinds seeded | Count |
 |------|----------|----------------|-------|
 | `morphological_relationships.json` | Morphological (6.2.1) | Person, tense, participle, and plural forms (`be`/`have`/`do` conjugations, `this`/`that` plurals); comparative/superlative forms (`few`/`many`/`much`/`little`); pronoun paradigm forms (`PRONOUN_OBJECT_FORM`, `PRONOUN_SUBJECT_FORM`, `PRONOUN_POSSESSIVE_DETERMINER_FORM`, `PRONOUN_POSSESSIVE_FORM`, `PRONOUN_REFLEXIVE_FORM`); `LEMMA_FORM` (every edge's materialised reverse -- see Symmetric and inverse edges); 25 base/derived pairs among the promoted words added in `asset_version 1.5.0`; 36 `NOMINALISATION` pairs added in `asset_version 1.6.0`; 6 more `NOMINALISATION` pairs plus 1 `THIRD_PERSON_FORM` pair (`occur`/`occurs`) added in `asset_version 1.7.0`; 3 homograph-safe pairs (`cause`/`causing`, `cause`/`causation`, `state`/`statement`) added in `asset_version 1.8.0` using the new `source_part_of_speech`/`target_part_of_speech` disambiguator (see Version below); 391 pairs (782 edges with reciprocals) for the 1163-word Common definition-gap batch added in `asset_version 1.9.0`, every edge carrying an explicit source/target `part_of_speech`; rule-based VERB conjugation, NOUN pluralisation, ADJECTIVE/ADVERB degree forms, remaining PRONOUN paradigm gaps, and a 39-pair self-documenting back-edge fix added in `asset_version 1.10.0` (see Version below) | 3462 |
-| `semantic_relationships.json` | Lexical Semantic (6.2.2) | `ANTONYM` (spatial/temporal opposites: above/below, before/after, ...; discrete/continuous, high/low, push/pull, negative/positive among the promoted words) and `SYNONYM` (equivalent prepositions: beneath/under, amid/among, due to/owing to, ...; the discourse-marker pair however/nevertheless; idea/concept among the promoted words), each materialised in both directions | 34 |
+| `semantic_relationships.json` | Lexical Semantic (6.2.2) | `ANTONYM` (spatial/temporal opposites: above/below, before/after, ...; discrete/continuous, high/low, push/pull, negative/positive among the promoted words) and `SYNONYM` (equivalent prepositions: beneath/under, amid/among, due to/owing to, ...; the discourse-marker pair however/nevertheless; idea/concept among the promoted words), each materialised in both directions; 1307 pairs (2599 edges with reciprocals) covering every open-class base word added in `asset_version 1.11.0` -- `SYNONYM`, `ANTONYM`, `HYPERNYM`/`HYPONYM`, `MERONYM`/`HOLONYM`, `TROPONYM`, `ENTAILMENT`, `CAUSE`, `RELATED` (see Version below) | 2633 |
 | `orthographic_relationships.json` | Orthographic and Naming (6.2.3) | `CONTRACTION` -- not/n't, plus each full contraction's component words (do/not -> don't, can/not -> can't, I/am -> I'm, it/is/has -> it's, is/not -> isn't, was/not -> wasn't, had/not -> hadn't) | 16 |
 
 No `HYPERNYM`, `MERONYM`, or `TROPONYM` relationships are seeded for
@@ -34,7 +34,7 @@ pronoun paradigms, and near-synonymy do.
 `PRONOUN_RECIPROCAL_FORM` is defined (6.2.1, Pronoun Form) but not
 currently seeded in either direction -- see Known gaps.
 
-Total relationships: **3470**.
+Total relationships: **6111**.
 
 ## Symmetric and inverse edges
 
@@ -262,6 +262,41 @@ adds these seven relationships -- all now present in
 `orthographic_relationships.json` above.
 
 ## Version
+
+`v1` / `schema_version 1.0.0` / `asset_version 1.11.0` (3470 -> 6111
+relationships). Seeded Lexical Semantic (group 1) coverage for every
+base-form open-class word in the Common Vocabulary Cache -- `../
+README.md`'s morphology-completion batch (`asset_version 1.16.0`)
+completed Group 0; this completes the group above it. 1095 base words
+(492 NOUN, 289 VERB, 240 ADJECTIVE, 74 ADVERB -- a base word being one
+with no outgoing `LEMMA_FORM` edge, i.e. not itself an inflected form;
+semantic relationships attach to a word's lemma, an inflected form
+inherits them via its own `LEMMA_FORM` edge). Drafted by 14 parallel
+subagents (`examples/common_semantic_completion.py`'s own module
+docstring has the full methodology), each grounded only in a word's
+own `definition` and restricted to a supplied list of the 1095 valid
+words -- never allowed to invent a target. 1498 raw proposals, 1307
+survived mechanical validation (191 dropped were exclusively cross-
+chunk duplicates -- an independent second chunk proposing the reverse
+direction of a symmetric pair a different chunk had already given;
+zero were dropped for an invalid word, part_of_speech, kind, or self-
+reference). 2599 edges added to `semantic_relationships.json` (34 ->
+2633): every `HYPERNYM` pair gets its reciprocal `HYPONYM` edge, every
+`MERONYM` pair its reciprocal `HOLONYM` edge, every `SYNONYM`/
+`ANTONYM`/`RELATED` pair its reverse-direction same-kind edge (all
+three are genuinely symmetric, this cache's own long-standing
+convention -- see Symmetric and inverse edges above); `TROPONYM`/
+`ENTAILMENT`/`CAUSE` get no reciprocal, one-directional by definition,
+matching the same convention `examples/physics_domain_relationships.py`
+documents for the Physics Domain's own hand-curated set. Kind
+breakdown of the 1307 given pairs: 481 `SYNONYM`, 451 `RELATED`, 214
+`HYPERNYM`, 122 `ANTONYM`, 24 `MERONYM`, 9 `TROPONYM`, 3 `CAUSE`, 3
+`ENTAILMENT`. Verified before seeding: no `HYPERNYM`/`MERONYM` pair had
+both directions proposed by different chunks (would have been a
+contradictory edge -- a word both broader and narrower than another),
+and no cycle exists in the `HYPERNYM` graph -- both checked
+programmatically, not assumed. Orthographic and Naming (group 2)
+relationship gaps are a separate, later batch.
 
 `v1` / `schema_version 1.0.0` / `asset_version 1.10.0` (1070 -> 3470
 relationships). Completed the Group 0 (Morphological) coverage gap a

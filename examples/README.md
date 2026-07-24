@@ -30,7 +30,9 @@ the pipeline exactly the way any other Domain is seeded (see
 | `common_definition_gap_vocabulary.py` | Classification, 391 `MORPHOLOGICAL_LINKS` relationship pairs, and full reasoning for the 1163-word Common definition-gap batch -- see Common definition-gap vocabulary below. |
 | `common_definition_gap_vocabulary_seeding.py` | The runnable seeding script for that classification -- hand-adds the 3 closed-class words, promotes the other 1158, wires relationships. `python3 examples/common_definition_gap_vocabulary_seeding.py` from the repo root -- no longer regenerates the example UI, see `common_morphology_completion_seeding.py` below. |
 | `common_morphology_completion.py` | The regular-inflection rule engine, curated irregular tables, and exclusion sets used to complete Group 0 (Morphological) relationship coverage -- see Common morphology completion below. |
-| `common_morphology_completion_seeding.py` | The runnable seeding script -- fixes 39 self-documenting back-edge pairs, conjugates every base verb, pluralises every countable base noun, adds degree forms to every gradable adjective/adverb, wires the remaining pronoun paradigm gaps, and regenerates the example UI. `python3 examples/common_morphology_completion_seeding.py` from the repo root (this is now the canonical way to regenerate `assets/example_ui/dictionary_view_example.html` -- see that directory's own README). |
+| `common_morphology_completion_seeding.py` | The runnable seeding script -- fixes 39 self-documenting back-edge pairs, conjugates every base verb, pluralises every countable base noun, adds degree forms to every gradable adjective/adverb, wires the remaining pronoun paradigm gaps. `python3 examples/common_morphology_completion_seeding.py` from the repo root -- no longer regenerates the example UI, see `common_semantic_completion_seeding.py` below. |
+| `common_semantic_completion.py` | 1307 Lexical Semantic relationship pairs (`SYNONYM`/`ANTONYM`/`HYPERNYM`/`MERONYM`/`TROPONYM`/`ENTAILMENT`/`CAUSE`/`RELATED`) covering every base-form open-class word in the Common Vocabulary Cache, drafted by 14 parallel subagents -- see Common semantic completion below. |
+| `common_semantic_completion_seeding.py` | The runnable seeding script for that data -- materialises every reciprocal edge and regenerates the example UI. `python3 examples/common_semantic_completion_seeding.py` from the repo root (this is now the canonical way to regenerate `assets/example_ui/dictionary_view_example.html` -- see that directory's own README). |
 
 ## Network caveat
 
@@ -796,6 +798,72 @@ a much larger scale and are separate, later batches.
 Common Vocabulary Cache: 1999 -> 3023 words, 1070 -> 3470
 relationships. Physics Domain inherits the same Common growth (its own
 75 hand-curated edges are unchanged).
+
+## Common semantic completion
+
+Completes Lexical Semantic (LexicalRelationshipType group 1) coverage
+for every base-form open-class word in the Common Vocabulary Cache:
+1095 words (492 NOUN, 289 VERB, 240 ADJECTIVE, 74 ADVERB) with no
+outgoing `LEMMA_FORM` edge -- a base word, not itself an inflected
+form, since semantic relationships attach to a word's lemma and an
+inflected form inherits them via its own `LEMMA_FORM` link.
+
+Unlike the mechanical morphology-completion batch, this one requires
+real per-word lexicographic judgement -- there's no rule engine for
+"is X a synonym of Y". Drafted by 14 parallel subagents, one per POS-
+and-alphabetical chunk (~75-150 words each), each given only its own
+chunk's words with their real seeded `definition` text, plus a
+reference list of all 1095 valid words it was allowed to use as a
+relationship target (or reject if nothing on the list genuinely fit --
+explicitly told that leaving a word with zero relationships is correct
+and expected, forcing one is not). Each agent was also given the exact
+stored direction convention for every kind (`HYPERNYM` is narrower-
+>broader, `MERONYM` is part->whole, `TROPONYM`/`ENTAILMENT`/`CAUSE` are
+one-directional, `SYNONYM`/`ANTONYM`/`RELATED` are symmetric -- give
+one direction only), verified beforehand against
+`examples/physics_domain_relationships.py`'s own documented
+conventions rather than re-derived from scratch.
+
+1498 raw proposals across the 14 chunks. A mechanical aggregation pass
+(`ast`-parsing every chunk file, checking every tuple's source and
+target against the *live* Common dictionary directly rather than
+trusting each agent's own self-report) found 191 that were exclusively
+cross-chunk duplicates -- an independent second chunk proposing the
+reverse direction of a symmetric pair a different chunk had already
+given (e.g. one chunk wrote "condition SYNONYM circumstance", another
+independently wrote "circumstance SYNONYM condition" -- both true, only
+one direction gets stored). Zero were dropped for an invalid word,
+part_of_speech, kind, or self-reference -- every one of the 14 agents'
+self-verification held up under independent re-checking. A further
+programmatic check confirmed no `HYPERNYM`/`MERONYM` pair had both
+directions proposed (which would be a contradictory edge -- a word
+both broader and narrower than another) and that the `HYPERNYM` graph
+has no cycle.
+
+1307 relationships survive into `examples/common_semantic_completion.py`:
+481 `SYNONYM`, 451 `RELATED`, 214 `HYPERNYM`, 122 `ANTONYM`, 24
+`MERONYM`, 9 `TROPONYM`, 3 `CAUSE`, 3 `ENTAILMENT`. `examples/
+common_semantic_completion_seeding.py` materialises every reciprocal
+edge this cache's own convention calls for (`HYPERNYM` -> `HYPONYM`,
+`MERONYM` -> `HOLONYM`, `SYNONYM`/`ANTONYM`/`RELATED` -> the reverse-
+direction same kind) and writes 2599 edges into
+`semantic_relationships.json` (34 -> 2633).
+
+Verified: idempotent on rerun (zero new edges); `WordSeeder.validate_assets()`
+passes; re-ran `physics_domain_seeding.py` standalone afterward and
+confirmed all 45 hand-curated Physics relationship pairs (64 edges)
+still resolve with zero skipped pairs -- no retroactive homograph
+regression; Playwright-checked the rendered UI, including the
+Hierarchy tab against `HYPERNYM` (223 edges, the largest semantic kind
+this batch produced), no console errors.
+
+Orthographic and Naming (group 2: `CONTRACTION`/`ABBREVIATION`/...)
+relationship gaps are NOT addressed by this batch -- a separate, later,
+much sparser pass (most words genuinely have none of these).
+
+Common Vocabulary Cache: 3470 -> 6111 relationships (no change in word
+count -- this batch adds relationships only). Physics Domain inherits
+the same growth (its own 64 hand-curated edges are unchanged).
 
 ## Known, pre-existing limitation surfaced (not fixed) by this exercise
 
