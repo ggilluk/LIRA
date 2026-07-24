@@ -28,7 +28,9 @@ the pipeline exactly the way any other Domain is seeded (see
 | `relationship_cache_homograph_fix.py` | Seeds the three relationships a part-of-speech blind spot in `RelationshipSeeder` previously made unsafe to add (`cause`/`causing`, `cause`/`causation`, `state`/`statement`) -- see Fixing the relationship cache's own POS blind spot below. `python3 examples/relationship_cache_homograph_fix.py` from the repo root. |
 | `word_entry_id_backfill.py` | One-time migration -- backfills a stable `entry_id` into every existing Common Vocabulary Cache word file -- see Adding a stable entry_id per vocabulary entry below. `python3 examples/word_entry_id_backfill.py` from the repo root. |
 | `common_definition_gap_vocabulary.py` | Classification, 391 `MORPHOLOGICAL_LINKS` relationship pairs, and full reasoning for the 1163-word Common definition-gap batch -- see Common definition-gap vocabulary below. |
-| `common_definition_gap_vocabulary_seeding.py` | The runnable seeding script for that classification -- hand-adds the 3 closed-class words, promotes the other 1158, wires relationships, and regenerates the example UI. `python3 examples/common_definition_gap_vocabulary_seeding.py` from the repo root (this is now the canonical way to regenerate `assets/example_ui/dictionary_view_example.html` -- see that directory's own README). |
+| `common_definition_gap_vocabulary_seeding.py` | The runnable seeding script for that classification -- hand-adds the 3 closed-class words, promotes the other 1158, wires relationships. `python3 examples/common_definition_gap_vocabulary_seeding.py` from the repo root -- no longer regenerates the example UI, see `common_morphology_completion_seeding.py` below. |
+| `common_morphology_completion.py` | The regular-inflection rule engine, curated irregular tables, and exclusion sets used to complete Group 0 (Morphological) relationship coverage -- see Common morphology completion below. |
+| `common_morphology_completion_seeding.py` | The runnable seeding script -- fixes 39 self-documenting back-edge pairs, conjugates every base verb, pluralises every countable base noun, adds degree forms to every gradable adjective/adverb, wires the remaining pronoun paradigm gaps, and regenerates the example UI. `python3 examples/common_morphology_completion_seeding.py` from the repo root (this is now the canonical way to regenerate `assets/example_ui/dictionary_view_example.html` -- see that directory's own README). |
 
 ## Network caveat
 
@@ -717,6 +719,83 @@ both selectable with correct relationships, no console errors.
 
 Common Vocabulary Cache: 838 -> 1999 words, 288 -> 1070 relationships.
 Physics Domain: 981 -> 2091 words, 411 -> 1191 relationships.
+
+## Common morphology completion
+
+A user-supplied relationship-coverage export -- an XLSX built from
+`build_relationship_tables.py` (not checked into this repo; a one-off
+analysis script), one sheet per `PartOfSpeech`, one column per
+`LexicalRelationshipType` kind, each cell either the related word or
+"X is missing" -- surfaced that most Group 0 (Morphological) coverage
+was still genuinely missing: verb conjugation, noun plurals, adjective/
+adverb degree forms. Most of that export's raw "is missing" cells,
+though, were a relationship kind that doesn't grammatically apply to
+that word's part of speech at all (a `NOUN` row has no `Past Tense
+Form` column to fill), so before writing anything this batch built an
+explicit POS x kind applicability model and re-counted: of ~84,900 raw
+"is missing" cells, ~20,300 were for a grammatically-applicable
+combination -- and even that overcounts, since it doesn't yet exclude
+already-inflected words from needing their *own* further inflection
+(`common_morphology_completion.py`'s rule engine does exclude those).
+
+`common_morphology_completion.py` holds the rule engine: regular verb
+conjugation (consonant doubling, e-drop, y->ie, British `-ll-`/`-ise`
+spelling) plus a curated ~40-entry irregular-verb table; regular noun
+pluralisation plus a curated irregular-plural table and a ~60-word
+uncountable-noun denylist; adjective/adverb degree forms gated by a
+syllable-count heuristic, an irregular-degree table, and an explicit
+denylist for categorical/absolute/periphrastic-only words the heuristic
+alone gets wrong (`direct`, `perfect`, `own`) plus a blanket exclusion
+for participial adjectives (`-ing`/`-ed`).
+
+Scanning every Common `definition` for a self-documenting inflection
+pattern ("Third person singular of single (out); ...") before touching
+the rule engine at all turned up 39 pairs (76 edges) where a word's own
+definition already announced it as an inflected form of another word,
+but the relationship was never actually wired -- including 4 cases
+(`accounted`, `controlled`, `using`, `singles`) whose named base
+(`account`, `control`, `use`, `single`) didn't exist as a `VERB` sense
+yet even though its `NOUN`/`ADJECTIVE` homograph did.
+
+Every newly created word (1,024 of them: 556 verb forms, 345 noun
+plurals, 119 degree forms, 4 new base `VERB` senses) gets a plain,
+mechanical definition ("Third person singular of denote.") rather than
+this dictionary's usual hand-tuned prose for inflected forms (compare
+the pre-existing `denotes`: "Third person singular of denote; is a sign
+or symbol of; indicates or signifies.") -- authoring a genuine per-word
+gloss at this volume isn't achievable without either fabricating
+content or an infeasible amount of manual review, confirmed by checking
+several already-correct dictionary entries and finding their gloss
+clause is genuinely hand-adapted prose, not a mechanical transform of
+the base word's own definition (`larger`: "Comparative of large;
+greater in size, extent, or amount." -- not `large`'s own definition
+verbatim).
+
+`common_morphology_completion_seeding.py` runs the whole batch: the
+self-documenting back-edge fix, the 4 new base verbs, then VERB
+conjugation, NOUN pluralisation, ADJECTIVE/ADVERB degree forms, and the
+remaining PRONOUN paradigm gaps (`he`/`it` standalone possessive,
+`who` object/possessive against the already-seeded, previously
+unlinked `whom`/`whose`) -- each step checking every candidate edge
+against the full existing relationship-tuple set before adding, so
+reruns are no-ops. Verified: re-ran the seeding script a second time
+and got zero new words, zero new edges; `WordSeeder.validate_assets()`
+passed; re-ran `physics_domain_seeding.py` standalone afterward and
+confirmed all 75 hand-curated Physics relationship edges still resolve
+with zero skipped pairs (no retroactive homograph regression this time
+-- none of the new base senses collided with a Physics fixture word);
+Playwright-checked the rendered UI in headless Chromium, including the
+Hierarchy tab against `LEMMA_FORM` (1588 edges, the single largest kind
+this batch produced) -- renders correctly, no console errors.
+
+Lexical-semantic (`SYNONYM`/`ANTONYM`/`HYPERNYM`/...) and orthographic
+(`CONTRACTION`/`ABBREVIATION`/...) relationship gaps are NOT addressed
+by this batch -- those require real per-word lexicographic judgement at
+a much larger scale and are separate, later batches.
+
+Common Vocabulary Cache: 1999 -> 3023 words, 1070 -> 3470
+relationships. Physics Domain inherits the same Common growth (its own
+75 hand-curated edges are unchanged).
 
 ## Known, pre-existing limitation surfaced (not fixed) by this exercise
 

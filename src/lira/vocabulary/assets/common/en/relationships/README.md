@@ -21,7 +21,7 @@ against a specific Domain's already-seeded `Word`s, not a store of
 
 | File | Category | Kinds seeded | Count |
 |------|----------|----------------|-------|
-| `morphological_relationships.json` | Morphological (6.2.1) | Person, tense, participle, and plural forms (`be`/`have`/`do` conjugations, `this`/`that` plurals); comparative/superlative forms (`few`/`many`/`much`/`little`); pronoun paradigm forms (`PRONOUN_OBJECT_FORM`, `PRONOUN_SUBJECT_FORM`, `PRONOUN_POSSESSIVE_DETERMINER_FORM`, `PRONOUN_POSSESSIVE_FORM`, `PRONOUN_REFLEXIVE_FORM`); `LEMMA_FORM` (every edge's materialised reverse -- see Symmetric and inverse edges); 25 base/derived pairs among the promoted words added in `asset_version 1.5.0`; 36 `NOMINALISATION` pairs added in `asset_version 1.6.0`; 6 more `NOMINALISATION` pairs plus 1 `THIRD_PERSON_FORM` pair (`occur`/`occurs`) added in `asset_version 1.7.0`; 3 homograph-safe pairs (`cause`/`causing`, `cause`/`causation`, `state`/`statement`) added in `asset_version 1.8.0` using the new `source_part_of_speech`/`target_part_of_speech` disambiguator (see Version below); 391 pairs (782 edges with reciprocals) for the 1163-word Common definition-gap batch added in `asset_version 1.9.0`, every edge carrying an explicit source/target `part_of_speech` | 1020 |
+| `morphological_relationships.json` | Morphological (6.2.1) | Person, tense, participle, and plural forms (`be`/`have`/`do` conjugations, `this`/`that` plurals); comparative/superlative forms (`few`/`many`/`much`/`little`); pronoun paradigm forms (`PRONOUN_OBJECT_FORM`, `PRONOUN_SUBJECT_FORM`, `PRONOUN_POSSESSIVE_DETERMINER_FORM`, `PRONOUN_POSSESSIVE_FORM`, `PRONOUN_REFLEXIVE_FORM`); `LEMMA_FORM` (every edge's materialised reverse -- see Symmetric and inverse edges); 25 base/derived pairs among the promoted words added in `asset_version 1.5.0`; 36 `NOMINALISATION` pairs added in `asset_version 1.6.0`; 6 more `NOMINALISATION` pairs plus 1 `THIRD_PERSON_FORM` pair (`occur`/`occurs`) added in `asset_version 1.7.0`; 3 homograph-safe pairs (`cause`/`causing`, `cause`/`causation`, `state`/`statement`) added in `asset_version 1.8.0` using the new `source_part_of_speech`/`target_part_of_speech` disambiguator (see Version below); 391 pairs (782 edges with reciprocals) for the 1163-word Common definition-gap batch added in `asset_version 1.9.0`, every edge carrying an explicit source/target `part_of_speech`; rule-based VERB conjugation, NOUN pluralisation, ADJECTIVE/ADVERB degree forms, remaining PRONOUN paradigm gaps, and a 39-pair self-documenting back-edge fix added in `asset_version 1.10.0` (see Version below) | 3462 |
 | `semantic_relationships.json` | Lexical Semantic (6.2.2) | `ANTONYM` (spatial/temporal opposites: above/below, before/after, ...; discrete/continuous, high/low, push/pull, negative/positive among the promoted words) and `SYNONYM` (equivalent prepositions: beneath/under, amid/among, due to/owing to, ...; the discourse-marker pair however/nevertheless; idea/concept among the promoted words), each materialised in both directions | 34 |
 | `orthographic_relationships.json` | Orthographic and Naming (6.2.3) | `CONTRACTION` -- not/n't, plus each full contraction's component words (do/not -> don't, can/not -> can't, I/am -> I'm, it/is/has -> it's, is/not -> isn't, was/not -> wasn't, had/not -> hadn't) | 16 |
 
@@ -34,7 +34,7 @@ pronoun paradigms, and near-synonymy do.
 `PRONOUN_RECIPROCAL_FORM` is defined (6.2.1, Pronoun Form) but not
 currently seeded in either direction -- see Known gaps.
 
-Total relationships: **1070**.
+Total relationships: **3470**.
 
 ## Symmetric and inverse edges
 
@@ -262,6 +262,27 @@ adds these seven relationships -- all now present in
 `orthographic_relationships.json` above.
 
 ## Version
+
+`v1` / `schema_version 1.0.0` / `asset_version 1.10.0` (1070 -> 3470
+relationships). Completed the Group 0 (Morphological) coverage gap a
+user-supplied per-part-of-speech relationship export surfaced (`../
+README.md`'s own `asset_version 1.16.0` Version entry has the full
+methodology and per-action counts; `examples/
+common_morphology_completion.py` holds the rule engine, irregular
+tables, and exclusion sets). 2442 edges added to
+`morphological_relationships.json` (1020 -> 3462): 76 edges from a
+39-pair self-documenting back-edge fix, 1416 from VERB conjugation, 704
+from NOUN pluralisation, 238 from ADJECTIVE/ADVERB degree forms, and 8
+from the remaining PRONOUN paradigm gaps (`he`/`it` standalone
+possessive, `who` object/possessive). Every edge, new or reciprocal,
+was checked against the full existing `(source_lexical_form,
+source_part_of_speech, relationship_kind, target_lexical_form,
+target_part_of_speech)` tuple set before being added, the same
+idempotency discipline `asset_version 1.9.0` below already used --
+confirmed by re-running the seeding script a second time and getting
+zero new words and zero new edges. `semantic_relationships.json` (34)
+and `orthographic_relationships.json` (16) are unchanged by this batch;
+those relationship groups are a separate, later batch.
 
 `v1` / `schema_version 1.0.0` / `asset_version 1.9.0` (288 -> 1070
 relationships). Wired the relationships for the 1163-word Common

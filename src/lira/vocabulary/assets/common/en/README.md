@@ -467,6 +467,86 @@ lexical_form with an earlier-loaded sense never disturbs
 
 ## Version
 
+`v1` / `schema_version 2.0.0` / `asset_version 1.16.0` -- completed the
+Group 0 (Morphological) relationship coverage this Vocabulary Cache was
+still missing, driven by a user-supplied per-part-of-speech relationship
+export (an XLSX built from `build_relationship_tables.py`, one sheet per
+`PartOfSpeech`, one column per `LexicalRelationshipType` kind, cell =
+related word or "X is missing"). Most of that export's raw "is missing"
+cells were a relationship kind that doesn't grammatically apply to that
+word's part of speech at all (a `NOUN` row has no `Past Tense Form`);
+this batch only ever fills a cell whose kind is genuinely applicable,
+per `examples/common_morphology_completion.py`'s rule engine and
+curated exclusion sets (irregular verb/plural/degree tables, an
+uncountable-noun denylist, a non-gradable-adjective denylist) rather
+than a blanket fill. Four actions, run via `examples/
+common_morphology_completion_seeding.py`:
+
+1. **Self-documenting back-edge fix** -- 39 pairs (76 edges) where a
+   word's own `definition` already announced it as an inflected form of
+   another word ("Third person singular of single (out); ..." on
+   `singles`) but the `LEMMA_FORM` edge back to that base, and the
+   base's own forward edge, were never actually wired -- found by
+   scanning every Common `definition` for this pattern. Four of these
+   (`accounted`, `controlled`, `using`, `singles`) named a base
+   (`account`, `control`, `use`, `single`) that didn't exist as a `VERB`
+   sense yet even though its `NOUN`/`ADJECTIVE` homograph did -- added
+   via `WordSeeder.promote_word` the same as any other new sense.
+2. **VERB conjugation** -- `THIRD_PERSON_FORM`/`PAST_TENSE_FORM`/
+   `PAST_PARTICIPLE_FORM`/`PRESENT_PARTICIPLE_FORM` for every base verb
+   (a `VERB` with no outgoing `LEMMA_FORM` edge, i.e. not itself an
+   inflected form), via a regular-conjugation rule engine (consonant
+   doubling, e-drop, y->ie, British `-ll-`/`-ise` spelling to match this
+   dictionary's existing convention) plus a curated ~40-entry irregular
+   table (`be`/`go`/`see`/`write`/... ) -- reusing an existing word as
+   the target where one already matches, creating a new one otherwise.
+   Nine invariant math/logic-operator `VERB` senses (`and`, `or`, `not`,
+   `plus`, ...) and `equals` (itself an invariant relation word, not a
+   conjugated "equal") are deliberately never conjugated.
+3. **NOUN pluralisation** -- `PLURAL_FORM` for every base noun, via a
+   regular-pluralisation rule engine plus a curated irregular-plural
+   table (`child`/`person`->`people` reusing the *existing* `people`
+   entry rather than seeding a redundant `persons`/`goose`/`analysis`/
+   ...). A ~60-word uncountable/mass-noun denylist (`advice`,
+   `knowledge`, `equipment`, `research`, ...) is excluded outright
+   rather than guessed, since a wrong plural here would seed a
+   genuinely non-English word (`advices`).
+4. **ADJECTIVE/ADVERB degree forms** -- `COMPARATIVE_FORM`/
+   `SUPERLATIVE_FORM` for gradable adjectives/adverbs only: a syllable-
+   count heuristic (<=2 syllables) plus an irregular table
+   (`good`/`bad`/`far`/...), with an explicit denylist for categorical,
+   absolute, or periphrastic-only words the heuristic alone would get
+   wrong (`direct`, `perfect`, `own`, `whole`, ...) and a blanket
+   exclusion for participial adjectives (`-ing`/`-ed`, always
+   periphrastic -- "more interesting", never "interestinger"). Regular
+   `-ly` manner adverbs are periphrastic-only by rule; only `fast`,
+   `soon`, `far`, `long`, `early`, `hard`, `close` take a single-word
+   comparative/superlative.
+5. **Remaining PRONOUN paradigm gaps** -- `he`/`it` were missing their
+   standalone possessive edge (English `his`/`its` are syncretic between
+   possessive-determiner and possessive-pronoun use, the same
+   syncretism the existing `she`->`her` edges already model); `who` was
+   missing its object/possessive edges to the already-seeded, previously
+   unlinked `whom`/`whose`.
+
+Every newly created word gets a plain, mechanical definition ("Third
+person singular of denote.", "Plural of context.", "Comparative of
+large.") rather than the hand-tuned prose this dictionary otherwise uses
+for inflected forms -- authoring a genuine per-word gloss at this volume
+(1,024 new words) isn't achievable without either fabricating content or
+an infeasible amount of manual review, so this batch is deliberately,
+visibly plainer instead; it's identifiable by that plainness alone, no
+separate provenance flag was added.
+
+1,024 new words promoted (`promoted_words.json` 1441 -> 2465): 556 verb
+forms, 345 noun plurals, 119 degree forms, 4 new `VERB` base senses.
+Every seeded Dictionary now carries 391 mandatory + 167 supplementary +
+2465 promoted = **3023** total. Lexical-semantic (`SYNONYM`/`ANTONYM`/
+`HYPERNYM`/...) and orthographic (`CONTRACTION`/`ABBREVIATION`/...)
+relationship gaps are a separate, later batch -- see `relationships/
+README.md`'s own `asset_version 1.10.0` Version entry for the
+relationship-side counts.
+
 `v1` / `schema_version 2.0.0` / `asset_version 1.15.0` -- seeded the
 1163-word Common definition-gap batch (`examples/
 common_definition_gap_vocabulary.py` holds the full classification,
