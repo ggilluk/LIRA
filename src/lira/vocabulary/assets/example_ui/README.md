@@ -46,16 +46,22 @@ shape, run through the otherwise-unmodified pipeline -- the generated
 page's title says so explicitly), the word-sense-conflict story, and
 the full seeding report.
 
-Two layout changes since the last regeneration, neither data-related --
-see `vocabulary/ui/README.md` for the full description of both: the
-Words tab's detail panel now sits above the table instead of beside it
-(still `position: sticky` while the list below it scrolls, dropping to
-normal flow under the existing mobile breakpoint); and a new Hierarchy
-tab renders the whole Dictionary as a nested tree for one
+Several layout changes since the last regeneration, none data-related --
+see `vocabulary/ui/README.md` for the full description of all of them:
+the Words tab's detail panel now sits above the table instead of beside
+it (still `position: sticky` while the list below it scrolls, dropping
+to normal flow under the existing mobile breakpoint); a Hierarchy tab
+renders the whole Dictionary as a nested tree for one
 `LexicalRelationshipType` at a time -- pick `HYPONYM` to see it, and
 select e.g. `matter` to see everything the relationship data hangs off
-it (`particle`, and whatever else has been seeded as its `HYPONYM`),
-each node clickable back into the Words tab.
+it (`particle`, and whatever else has been seeded as its `HYPONYM`); and
+a Cyclic tab renders the genuinely cyclic structure a tree can't show
+(a "(cycle)" leaf in the Hierarchy tree, drawn out as an actual SVG
+graph here instead) -- pick `SYNONYM` to see it, since near-synonym
+clusters are exactly the kind of tangled, non-hierarchical structure
+this tab exists for. The Hierarchy and Cyclic tabs each have their own
+detail panel above their own content now too -- selecting a node in
+either stays right there, it doesn't pivot back to the Words tab.
 
 ### Definition-gap vocabulary
 

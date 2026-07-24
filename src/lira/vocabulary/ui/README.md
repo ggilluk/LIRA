@@ -14,7 +14,17 @@ edge in the domain, sortable and searchable on its own, each
 source/target word shown with its part of speech so grammatical
 category is visible without switching back to the Words tab. A third
 Hierarchy tab renders the whole Dictionary as a tree for one chosen
-`LexicalRelationshipType` at a time -- see Hierarchy tab below.
+`LexicalRelationshipType` at a time (see Hierarchy tab below), and a
+fourth Cyclic tab renders the genuinely cyclic structure a tree can't
+represent, as an actual graph (see Cyclic relations tab below).
+
+The Words, Hierarchy, and Cyclic tabs each own a **separate** detail
+panel -- selecting a word in any one of them updates only that tab's
+own panel and stays right there; it never pivots you across tabs.
+Every related-word link, wherever it appears (a detail panel's own
+relationship list, a Hierarchy tree node, a Cyclic graph node), re-
+selects within its own tab, so walking the relationship graph from,
+say, the Hierarchy tab never drops you back into the Words list.
 
 ```python
 from lira.vocabulary import DictionaryView
@@ -121,10 +131,38 @@ within its own ancestor chain renders as a "(cycle)" leaf instead of
 recursing forever, and a node reached a second time via a *different*
 parent (a legitimate DAG shape -- one word with two hypernyms, say)
 renders as a plain cross-reference instead of duplicating its whole
-subtree again. Every node is clickable, pivoting to the Words tab with
-that word selected and scrolled into view, the same
-select-and-scroll-to interaction the detail panel's own related-word
-links already use.
+subtree again. Every node is clickable, selecting it in the Hierarchy
+tab's own detail panel above the tree (see the note on per-tab detail
+panels above) -- it never leaves the Hierarchy tab.
+
+### Cyclic relations tab
+
+A tree, however deep, cannot represent a genuine cycle -- the Hierarchy
+tab above deliberately collapses one into a "(cycle)" leaf rather than
+recursing forever, which keeps that view finite but discards the
+cyclic structure itself. This tab is the complementary view: for one
+chosen `LexicalRelationshipType` kind (the same dropdown pattern as
+Hierarchy, defaulting to the first kind that actually has a cyclic
+cluster rather than whichever kind sorts first alphabetically, since
+most kinds -- anything tree-shaped, like `HYPERNYM` or the
+morphological forms -- never have one), it finds every connected
+component (edges treated as undirected, since a cycle can mix edge
+directions) that both contains a real cycle (edge count at or above
+node count -- fewer edges than that is a tree, not a cycle) and has at
+least 3 words, so a plain mutual pair (the common case for a symmetric
+kind like `SYNONYM`, where every pair is trivially a 2-cycle by
+construction) doesn't drown out the genuinely interesting multi-word
+clusters. Up to the 40 largest clusters are drawn, each as its own
+small SVG graph: nodes placed evenly around a circle (the most legible
+layout for making a loop visually obvious, tracing any path around or
+across it -- not a force-directed simulation, which this page has no
+library for and wouldn't reliably keep a cycle visually obvious at this
+scale anyway), edges as lines with arrowheads (`marker-end`, plus
+`marker-start` too when both directions are present, drawn as one line
+rather than two overlapping ones), labels anchored outward on whichever
+side of the circle each node falls so text never runs back over its own
+node. Every node is clickable, the same select-within-this-tab
+interaction Hierarchy uses.
 
 All Word and LexicalRelationship data is embedded as JSON in the page
 and searched/filtered/sorted client-side in vanilla JS -- there is no
