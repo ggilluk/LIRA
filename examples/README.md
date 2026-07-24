@@ -865,6 +865,29 @@ Common Vocabulary Cache: 3470 -> 6111 relationships (no change in word
 count -- this batch adds relationships only). Physics Domain inherits
 the same growth (its own 64 hand-curated edges are unchanged).
 
+## Orthographic and Naming coverage check
+
+The third and final relationship group requested alongside morphology
+and semantics: checked, added nothing. A systematic scan across the
+whole Common Vocabulary Cache -- every word's `definition` checked for
+shortening language ("short for", "abbreviation of", "stands for",
+"acronym for", "contraction of"), every British spelling this
+dictionary uses checked for an American counterpart that would make a
+`SPELLING_VARIANT` pair, every word checked for a capitalised variant
+-- found nothing beyond what `orthographic_relationships.json` already
+had (16 `CONTRACTION` edges). No American-spelling counterpart exists
+for `colour`/`recognise`/`centre`/`behaviour`/etc. (only the British
+form was ever seeded), no acronyms or abbreviations exist in this
+grammar-and-general-vocabulary set, and no loanwords need
+transliteration or carry diacritics. See `assets/common/en/
+relationships/README.md`'s own "Orthographic and Naming (group 2)
+coverage check" section for the full verification. This closes out the
+XLSX-driven relationship-completion request: morphological (Common
+morphology completion above), lexical-semantic (Common semantic
+completion above), and orthographic (this section) have all now been
+checked against the live dictionary and completed where genuine gaps
+existed.
+
 ## Known, pre-existing limitation surfaced (not fixed) by this exercise
 
 `DictionaryProcessor.identify_word` only queues hydration when a token

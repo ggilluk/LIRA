@@ -261,6 +261,30 @@ adds these seven relationships -- all now present in
 `morphological_relationships.json`, `semantic_relationships.json`, and
 `orthographic_relationships.json` above.
 
+## Orthographic and Naming (group 2) coverage check
+
+Checked, added nothing: a systematic scan for `SPELLING_VARIANT`,
+`HISTORICAL_SPELLING`, `ABBREVIATION`, `ACRONYM`, `INITIALISM`,
+`TRANSLITERATION`, `CAPITALISATION`, and `DIACRITIC_VARIANT` candidates
+across the whole Common Vocabulary Cache (`CONTRACTION` was already
+fully covered -- the 16 relationships already in
+`orthographic_relationships.json`) found nothing left to add. Checked
+directly rather than assumed: every word whose own `definition`
+mentions "short for", "abbreviation of", "stands for", "acronym for",
+or "contraction of" already has its relationship seeded; no American-
+spelling counterpart exists for any of this dictionary's British
+spellings (`colour`, `recognise`, `centre`, `behaviour`, `emphasise`,
+`labelled`, `travelled`, ... -- only the British form was ever seeded,
+so there's no second word to link as a `SPELLING_VARIANT`); no
+capitalised-variant pairs exist beyond `I`/`I'm` (already `CONTRACTION`)
+and `English` (the sole `PROPER_NOUN`, with no lowercase common-word
+counterpart to relate it to); no loanword needs `TRANSLITERATION` or
+carries a `DIACRITIC_VARIANT`. This is a property of this vocabulary's
+current scope (grammar terms, closed-class words, and general-purpose
+open-class vocabulary -- no real-world titles, acronyms, or foreign
+loanwords), not a gap in the relationship cache; revisit if a future
+batch adds vocabulary of that kind.
+
 ## Version
 
 `v1` / `schema_version 1.0.0` / `asset_version 1.11.0` (3470 -> 6111
