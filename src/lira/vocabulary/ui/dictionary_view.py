@@ -1347,10 +1347,11 @@ function renderHierarchy() {
 // connected components (edges treated as undirected, since a cycle can
 // mix edge directions) of the selected kind's graph, keeping only
 // components that actually contain a cycle (edge count >= node count --
-// a connected graph with fewer edges than that is a tree, no cycle) and
-// have at least 3 words, so a plain mutual pair (A<->B, the common case
-// for a symmetric kind like SYNONYM) doesn't drown out the genuinely
-// interesting multi-word cycles.
+// a connected graph with fewer edges than that is a tree, no cycle).
+// A plain mutual pair (A<->B, the common case for a symmetric kind like
+// SYNONYM -- e.g. present<->current) already satisfies that on its own
+// (2 edges, 2 nodes) and is shown too, each in its own box -- the
+// smallest possible cluster is still a real one.
 function buildCyclicComponents(kind) {
   const wordById = new Map(WORDS.map(w => [w.id, w]));
   const edges = RELS.filter(r => r.kind === kind && wordById.has(r.source_id) && wordById.has(r.target_id));
@@ -1358,7 +1359,7 @@ function buildCyclicComponents(kind) {
 
   const results = [];
   connectedComponents(edges).forEach(comp => {
-    if (comp.size < 3) return;
+    if (comp.size < 2) return;
     const compEdges = edges.filter(r => comp.has(r.source_id) && comp.has(r.target_id));
     if (compEdges.length < comp.size) return;
     results.push({ nodeIds: [...comp].sort((a, b) => (wordById.get(a).lexical_form).localeCompare(wordById.get(b).lexical_form)), edges: compEdges });
@@ -1418,7 +1419,10 @@ function componentSVG(component, wordById) {
     + `${linesHTML}${nodesHTML}</svg></div>`;
 }
 
-const MAX_CYCLIC_CLUSTERS_SHOWN = 40;
+// A generous safety cap, not a curation choice -- every genuine cluster
+// (down to a simple mutual pair) is meant to be visible, this just
+// guards against a pathological kind with thousands of them.
+const MAX_CYCLIC_CLUSTERS_SHOWN = 400;
 
 function renderCyclic() {
   const note = document.getElementById("cyclic-note");
@@ -1430,14 +1434,14 @@ function renderCyclic() {
   }
   const { components, wordById } = buildCyclicComponents(state.cyclicKind);
   if (!components.length) {
-    note.textContent = "No cyclic clusters of 3+ words found for this kind -- see the Hierarchy tab for its tree/chain structure instead.";
+    note.textContent = "No cyclic clusters found for this kind -- see the Hierarchy tab for its tree/chain structure instead.";
     container.innerHTML = "";
     return;
   }
   const shown = components.slice(0, MAX_CYCLIC_CLUSTERS_SHOWN);
   const totalWords = new Set(components.flatMap(c => c.nodeIds)).size;
-  note.textContent = `${components.length} cyclic cluster${components.length === 1 ? '' : 's'} (3+ words each) `
-    + `covering ${totalWords} word${totalWords === 1 ? '' : 's'}`
+  note.textContent = `${components.length} cluster${components.length === 1 ? '' : 's'} `
+    + `covering ${totalWords} word${totalWords === 1 ? '' : 's'}, largest first`
     + (components.length > shown.length ? ` -- showing the ${shown.length} largest` : '') + '.';
   container.innerHTML = shown.map(comp => `
     <div class="cyclic-cluster">

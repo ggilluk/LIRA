@@ -153,20 +153,22 @@ cyclic structure itself. Hierarchy's own clustering for symmetric kinds
 but that's a *list*, not a graph -- it doesn't show which specific
 words within a cluster are directly connected to which. This tab is
 that complementary graphical view, sharing the same connected-
-components logic (`connectedComponents`) but applied more selectively:
-for one chosen `LexicalRelationshipType` kind (the same dropdown pattern as
+components logic (`connectedComponents`) but with its own filter: for
+one chosen `LexicalRelationshipType` kind (the same dropdown pattern as
 Hierarchy, defaulting to the first kind that actually has a cyclic
 cluster rather than whichever kind sorts first alphabetically, since
 most kinds -- anything tree-shaped, like `HYPERNYM` or the
 morphological forms -- never have one), it finds every connected
 component (edges treated as undirected, since a cycle can mix edge
-directions) that both contains a real cycle (edge count at or above
-node count -- fewer edges than that is a tree, not a cycle) and has at
-least 3 words, so a plain mutual pair (the common case for a symmetric
-kind like `SYNONYM`, where every pair is trivially a 2-cycle by
-construction) doesn't drown out the genuinely interesting multi-word
-clusters. Up to the 40 largest clusters are drawn, each as its own
-small SVG graph: nodes placed evenly around a circle (the most legible
+directions) that contains a real cycle (edge count at or above node
+count -- fewer edges than that is a tree, not a cycle). A plain mutual
+pair already satisfies that on its own (2 edges, 2 nodes -- e.g.
+`present`<->`current` under `SYNONYM`) and gets its own box exactly
+like a larger cluster does; every genuine cluster is drawn, not just
+the more visually striking multi-word ones (a generous 400-cluster cap
+guards only against a pathological kind with an unrealistic number of
+them, not a curation choice). Each cluster is its own small SVG graph:
+nodes placed evenly around a circle (the most legible
 layout for making a loop visually obvious, tracing any path around or
 across it -- not a force-directed simulation, which this page has no
 library for and wouldn't reliably keep a cycle visually obvious at this
