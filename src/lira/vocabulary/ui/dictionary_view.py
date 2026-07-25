@@ -1193,21 +1193,60 @@ function connectedComponents(edges) {
   return components;
 }
 
+// Groups words into genuine cliques of the given edges -- every word in
+// a group is directly connected to every other word in that same group,
+// not merely reachable through a chain of separate edges. Plain
+// connected components get this wrong for a symmetric kind: e.g.
+// keep-retain, retain-store, and store-reserve might each be a real,
+// direct SYNONYM edge, but that doesn't make "keep" and "reserve"
+// synonyms of each other, and a component would have silently merged
+// them (and everything else transitively reachable through the chain --
+// one real case in this dictionary chained 18 words into a single
+// component over just 19 direct edges out of 153 possible pairs, i.e.
+// mostly NOT directly related). Grown greedily instead: process words
+// alphabetically, start a group with the first unassigned one, then
+// keep adding any of its direct neighbours that are *also* directly
+// connected to every word already in the group, until no more
+// candidates qualify -- every resulting group is a real clique. (This
+// is a greedy approximation, not a guaranteed-maximum clique cover -- a
+// word already claimed by an earlier, alphabetically-prior group stays
+// there even if it would also fit a later one -- but every group it
+// produces is still fully, genuinely mutually connected, which is the
+// property that matters here.)
+function cliqueGroups(edges, wordById) {
+  const neighbors = new Map();
+  edges.forEach(r => {
+    if (!neighbors.has(r.source_id)) neighbors.set(r.source_id, new Set());
+    if (!neighbors.has(r.target_id)) neighbors.set(r.target_id, new Set());
+    neighbors.get(r.source_id).add(r.target_id);
+    neighbors.get(r.target_id).add(r.source_id);
+  });
+  const byLabel = (a, b) => wordById.get(a).lexical_form.localeCompare(wordById.get(b).lexical_form);
+  const assigned = new Set();
+  const groups = [];
+  [...neighbors.keys()].sort(byLabel).forEach(start => {
+    if (assigned.has(start)) return;
+    const group = [start];
+    [...neighbors.get(start)].filter(id => !assigned.has(id)).sort(byLabel).forEach(candidate => {
+      if (group.every(member => neighbors.get(member).has(candidate))) group.push(candidate);
+    });
+    groups.push(group);
+    group.forEach(w => assigned.add(w));
+  });
+  return { groups, neighbors };
+}
+
 // Every mutually-related group of words for a symmetric kind (SYNONYM,
 // ANTONYM, RELATED -- any kind where every edge's reverse is also
-// stored), used by buildHierarchy's fallback below: unlike
-// buildCyclicComponents, this keeps every component of 2+ words, not
-// just the ones that form a genuine cycle of 3+ -- a plain mutual pair
-// is still a real synonym cluster, just the smallest possible one, and
-// Hierarchy's job here is to replace the flat "every word its own root"
-// forest entirely, not to single out the more visually interesting
-// cases the way Cyclic's graphical view does.
+// stored), used by buildHierarchy's fallback below: keeps every clique
+// of 2+ words, not just the more visually interesting larger ones -- a
+// plain mutual pair is still a real cluster, just the smallest possible
+// one, and Hierarchy's job here is to replace the flat "every word its
+// own root" forest entirely, not to single out anything.
 function buildClusters(kind) {
   const wordById = new Map(WORDS.map(w => [w.id, w]));
   const edges = RELS.filter(r => r.kind === kind && wordById.has(r.source_id) && wordById.has(r.target_id));
-  const clusters = connectedComponents(edges)
-    .filter(comp => comp.size >= 2)
-    .map(comp => [...comp].sort((a, b) => wordById.get(a).lexical_form.localeCompare(wordById.get(b).lexical_form)));
+  const clusters = cliqueGroups(edges, wordById).groups.filter(g => g.length >= 2);
   clusters.sort((a, b) => b.length - a.length);
   return { clusters, wordById };
 }
@@ -1345,22 +1384,21 @@ function renderHierarchy() {
   });
 }
 
-// SYNONYM defines the boxes here -- every word that has at least one
-// SYNONYM edge is grouped with everything it's (transitively) a
-// synonym of, e.g. present and current end up in the same box, drawn
-// close together, since they mean the same thing. A word with no
-// SYNONYM edge at all still needs a box to be a valid line endpoint, so
-// it gets a box of its own (a "cluster" of one). Returns a word -> box
-// id map plus the box -> member-word-ids map, not yet filtered to any
-// particular kind -- buildClusterGraphs (below) does that per kind.
+// SYNONYM defines the boxes here -- via cliqueGroups above, so only
+// words that are ALL directly synonymous with EACH OTHER go in the same
+// box, not merely reachable from one another through a chain of
+// separate synonym pairs (see cliqueGroups' own comment for why that
+// distinction matters and a real example from this dictionary). A word
+// with no SYNONYM edge at all still needs a box to be a valid line
+// endpoint, so it gets a box of its own.
 function synonymBoxes(wordById) {
   const synEdges = RELS.filter(r => r.kind === "SYNONYM" && wordById.has(r.source_id) && wordById.has(r.target_id));
   const boxOfWord = new Map();
   const wordsOfBox = new Map();
-  connectedComponents(synEdges).forEach((comp, i) => {
+  cliqueGroups(synEdges, wordById).groups.forEach((box, i) => {
     const id = "syn" + i;
-    wordsOfBox.set(id, [...comp]);
-    comp.forEach(w => boxOfWord.set(w, id));
+    wordsOfBox.set(id, box);
+    box.forEach(w => boxOfWord.set(w, id));
   });
   function boxFor(wordId) {
     if (boxOfWord.has(wordId)) return boxOfWord.get(wordId);

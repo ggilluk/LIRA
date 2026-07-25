@@ -128,9 +128,13 @@ edge) has none. Rather than fall back to one root per word -- which
 would render a whole forest of largely-redundant trees, since a mutual
 group's members would each show up as their own root with mostly the
 same other members as children -- this case clusters instead: every
-group of mutually-related words (a connected component of the kind's
-edge graph, 2+ words) becomes one flat cluster of chips, no nesting.
-Pick `SYNONYM` to see near-synonym groups clustered together this way
+genuine clique in the kind's edge graph (`cliqueGroups` -- every word
+in a group directly connected to every other word in that same group,
+2+ words; not merely a connected component, which would silently chain
+together words that are only reachable through a run of separate edges
+and were never actually all related to each other -- see `cliqueGroups`'s
+own comment for a real example this dictionary produced) becomes one
+flat group of chips, no nesting. Pick `SYNONYM` to see near-synonym groups clustered together this way
 rather than scattered across redundant roots. Two independent guards
 keep the *tree* render finite for every other (non-symmetric) kind,
 where the underlying graph still isn't guaranteed to be acyclic: a node
@@ -153,11 +157,14 @@ cyclic structure itself. Hierarchy's own clustering for symmetric kinds
 but that's a *list*, not a graph -- it doesn't show which specific
 words within a cluster are directly connected to which, or what else
 that cluster connects to. This tab is that complementary graphical
-view: `SYNONYM` always defines the boxes (`synonymBoxes` -- every word
-transitively synonymous with another is grouped into one box, drawn
-close together, since they mean the same thing; a word with no
-`SYNONYM` edge at all still gets a box of its own, so every word is a
-valid line endpoint), and the dropdown picks *some other* kind whose
+view: `SYNONYM` always defines the boxes (`synonymBoxes`, built on the
+same `cliqueGroups` clique-finding Hierarchy's clustering uses above --
+every word *directly* synonymous with every other word in the same box
+is grouped together, drawn close since they mean the same thing, but a
+chain of separate synonym pairs never gets merged into one box just
+because it's transitively reachable; a word with no `SYNONYM` edge at
+all still gets a box of its own, so every word is a valid line
+endpoint), and the dropdown picks *some other* kind whose
 edges get drawn as lines *between* boxes. Two kinds are deliberately
 excluded from that dropdown, both for the same underlying reason (this
 whole tab's premise -- box the synonyms, draw lines for what a word
