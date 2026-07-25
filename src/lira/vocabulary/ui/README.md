@@ -157,11 +157,18 @@ view: `SYNONYM` always defines the boxes (`synonymBoxes` -- every word
 transitively synonymous with another is grouped into one box, drawn
 close together, since they mean the same thing; a word with no
 `SYNONYM` edge at all still gets a box of its own, so every word is a
-valid line endpoint), and the dropdown picks *some other*
-`LexicalRelationshipType` kind whose edges get drawn as lines
-*between* boxes (`SYNONYM` is deliberately excluded from this dropdown
--- every `SYNONYM` pair is, by definition, already inside one box
-together, so there's never a cross-box `SYNONYM` line to draw).
+valid line endpoint), and the dropdown picks *some other* kind whose
+edges get drawn as lines *between* boxes. Two kinds are deliberately
+excluded from that dropdown, both for the same underlying reason (this
+whole tab's premise -- box the synonyms, draw lines for what a word
+means in relation to others -- is itself a Lexical Semantic, group 1
+idea, so pairing it with a kind from a different group doesn't read as
+a meaningful combination): `SYNONYM` itself (every pair is, by
+definition, already inside one box together, so there's never a
+cross-box `SYNONYM` line to draw), and every Morphological or
+Orthographic kind (`LEMMA_FORM`, `PLURAL_FORM`, `CONTRACTION`, ...).
+The dropdown lists only group 1 -- `ANTONYM`, `HYPERNYM`/`HYPONYM`,
+`MERONYM`/`HOLONYM`, `TROPONYM`, `ENTAILMENT`, `CAUSE`, `RELATED`.
 Picking `ANTONYM`, say, draws `present` and `current` together in one
 box (they're synonyms) with lines fanning out from each of them to
 whichever other boxes hold their own antonyms (`missing`, `past`,
@@ -177,7 +184,14 @@ up sharing one drawing) default to the first kind, by edge count, that
 actually connects two or more boxes, rather than whichever kind sorts
 first alphabetically (most kinds are far more likely to land entirely
 within one box, or on a word with no synonyms, than to bridge two
-different boxes). Each group is its own small SVG: boxes placed evenly
+different boxes) -- except `RELATED`, deliberately pushed to the back
+of that ordering regardless of its edge count: it's this relationship
+group's own "unspecified" catch-all (`examples/
+physics_domain_relationships.py`'s module docstring: "never as a
+default when a more specific kind would apply"), and it usually *does*
+have the most edges of any kind here, so without that exception it
+would win the default almost every time -- exactly the outcome that
+convention exists to avoid. Each group is its own small SVG: boxes placed evenly
 around a circle (the same reasoning as this page's earlier word-level
 circular layout -- legible without a force-directed simulation this
 page has no library for), each word inside a box positioned along its

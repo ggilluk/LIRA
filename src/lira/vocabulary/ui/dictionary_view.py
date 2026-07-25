@@ -1511,10 +1511,21 @@ function renderCyclic() {
 // the boxes (synonymBoxes), not a kind you'd pick to draw lines between
 // them (every SYNONYM pair is, by definition, already inside one box
 // together, so there'd never be a cross-box SYNONYM line to draw).
+// Restricted to group 1 (Lexical Semantic -- ANTONYM, HYPERNYM/HYPONYM,
+// MERONYM/HOLONYM, TROPONYM, ENTAILMENT, CAUSE, RELATED), not every
+// kind in the Dictionary: this tab's whole premise -- box the synonyms,
+// draw lines for what they mean in relation to other words -- is itself
+// a Lexical Semantic idea (SYNONYM is group 1), so pairing it with a
+// Morphological kind (PLURAL_FORM, LEMMA_FORM, ...) or an Orthographic
+// one (CONTRACTION, ...) doesn't read as a meaningful combination -- and
+// in practice a high-volume morphological kind like LEMMA_FORM (every
+// inflected form has one) would otherwise win the "most edges" default
+// and bury the whole page under a wall of a thousand-plus tiny boxes
+// that doesn't illustrate what this view is for.
 function populateCyclicKindFilter() {
   const select = document.getElementById("cyclic-kind");
   const counts = {};
-  RELS.forEach(r => { if (r.kind !== "SYNONYM") counts[r.kind] = (counts[r.kind] || 0) + 1; });
+  RELS.forEach(r => { if (r.kind !== "SYNONYM" && r.group === 1) counts[r.kind] = (counts[r.kind] || 0) + 1; });
   const kinds = Object.keys(counts).sort();
   kinds.forEach(kind => {
     const opt = document.createElement("option");
@@ -1527,7 +1538,18 @@ function populateCyclicKindFilter() {
   // alphabetically -- most kinds never do (a HYPERNYM edge, say, is far
   // more likely to land entirely within one existing synonym box, or on
   // a word with no synonyms at all, than to bridge two different ones).
-  const byCount = [...kinds].sort((a, b) => counts[b] - counts[a]);
+  // RELATED is deliberately pushed to the back of that ordering even
+  // though it usually has the most edges of any kind here -- it's this
+  // whole relationship group's own "unspecified" catch-all (see
+  // examples/physics_domain_relationships.py's module docstring:
+  // "never as a default when a more specific kind would apply"), so
+  // raw edge count alone would make it win the default almost every
+  // time, which is exactly the outcome that convention exists to avoid.
+  const byCount = [...kinds].sort((a, b) => {
+    if (a === "RELATED") return 1;
+    if (b === "RELATED") return -1;
+    return counts[b] - counts[a];
+  });
   const withGroups = byCount.find(kind => buildClusterGraphs(kind).groups.length > 0);
   state.cyclicKind = withGroups || kinds[0] || null;
   if (state.cyclicKind) select.value = state.cyclicKind;
