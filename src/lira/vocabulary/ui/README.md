@@ -198,15 +198,22 @@ physics_domain_relationships.py`'s module docstring: "never as a
 default when a more specific kind would apply"), and it usually *does*
 have the most edges of any kind here, so without that exception it
 would win the default almost every time -- exactly the outcome that
-convention exists to avoid. Each group is its own small SVG: boxes placed evenly
-around a circle (the same reasoning as this page's earlier word-level
-circular layout -- legible without a force-directed simulation this
-page has no library for), each word inside a box positioned along its
-own small vertical stack so a line lands on the specific word it's
-from or to, not just the box's centre -- `present`'s antonym line and
-`current`'s antonym line are visually distinguishable even though both
-start inside the same box. Lines are drawn first, boxes and labels on
-top, so a line's visible end sits right at the box edge. Arrowheads
+convention exists to avoid. Each group is its own small SVG, laid out
+left to right rather than around a circle: `boxLevels` runs a BFS out
+from the group's highest-degree box (ties broken alphabetically),
+giving every box a hop-distance "level" from that hub; `clusterGraphSVG`
+then places level 0 in the leftmost column, level 1 in the next column
+over, and so on, stacking boxes within a column vertically and centring
+each column on the tallest one. Because most edges connect a box to a
+neighbouring level, most lines end up running from one column to the
+next -- left to right -- rather than in whatever direction a circular
+layout happened to put two connected boxes. Each word inside a box is
+positioned along its own small vertical stack so a line lands on the
+specific word it's from or to, not just the box's centre --
+`present`'s antonym line and `current`'s antonym line are visually
+distinguishable even though both start inside the same box. Lines are
+drawn first, boxes and labels on top, so a line's visible end sits
+right at the box edge. Arrowheads
 (`marker-end`, plus `marker-start` too when both directions are
 present, drawn as one line rather than two overlapping ones) show
 which kinds are one-directional (`ENTAILMENT`, `CAUSE`, `TROPONYM`)

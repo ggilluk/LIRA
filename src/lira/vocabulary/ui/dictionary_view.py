@@ -1446,27 +1446,78 @@ function buildClusterGraphs(kind) {
 // specific word it's from/to, not just the box's centre -- present's
 // antonym line and current's antonym line are visually distinguishable
 // even though both start inside the same box.
-function clusterGraphSVG(group, wordById) {
-  const n = group.clusters.length;
-  const R = Math.max(150, n * 55);
-  const margin = 130;
-  const size = 2 * (R + margin);
-  const cx = R + margin, cy = R + margin;
-  const lineHeight = 15;
+// Distance, in box-graph hops, from the group's most-connected box
+// (BFS, edges treated as undirected -- a box's actual line direction
+// under the selected kind doesn't determine which side of the layout
+// it belongs on, only how far it is from the hub). Ties for "most
+// connected" broken alphabetically by the box's first word, for
+// determinism. Used by clusterGraphSVG to place boxes in left-to-right
+// columns by level rather than scattering them around a circle -- most
+// lines then run from a column to the next one over, reading left to
+// right, rather than in whatever direction a circular layout happens
+// to put two connected boxes.
+function boxLevels(clusters, edges) {
+  const adjacency = new Map();
+  clusters.forEach(c => adjacency.set(c.id, new Set()));
+  edges.forEach(e => {
+    adjacency.get(e.sourceBox).add(e.targetBox);
+    adjacency.get(e.targetBox).add(e.sourceBox);
+  });
+  const byLabel = (a, b) => a.wordIds[0].localeCompare(b.wordIds[0]);
+  const root = clusters.slice().sort((a, b) => (adjacency.get(b.id).size - adjacency.get(a.id).size) || byLabel(a, b))[0];
 
-  const boxPos = new Map();
+  const level = new Map();
+  level.set(root.id, 0);
+  const queue = [root.id];
+  while (queue.length) {
+    const cur = queue.shift();
+    adjacency.get(cur).forEach(next => {
+      if (!level.has(next)) { level.set(next, level.get(cur) + 1); queue.push(next); }
+    });
+  }
+  clusters.forEach(c => { if (!level.has(c.id)) level.set(c.id, 0); });
+  return level;
+}
+
+function clusterGraphSVG(group, wordById) {
+  const lineHeight = 15;
   const boxDims = new Map();
-  const wordPos = new Map();
-  group.clusters.forEach((c, i) => {
-    const angle = (2 * Math.PI * i) / n - Math.PI / 2;
-    const pos = { x: cx + R * Math.cos(angle), y: cy + R * Math.sin(angle) };
-    boxPos.set(c.id, pos);
+  group.clusters.forEach(c => {
     const labels = c.wordIds.map(id => wordById.get(id).lexical_form);
     const width = Math.max(64, Math.max(...labels.map(l => l.length)) * 7.2 + 24);
     const height = c.wordIds.length * lineHeight + 14;
     boxDims.set(c.id, { width, height });
-    c.wordIds.forEach((wid, idx) => {
-      wordPos.set(wid, { x: pos.x, y: pos.y - height / 2 + 12 + idx * lineHeight });
+  });
+
+  const level = boxLevels(group.clusters, group.edges);
+  const maxLevel = Math.max(...group.clusters.map(c => level.get(c.id)));
+  const byLevel = [];
+  for (let i = 0; i <= maxLevel; i++) byLevel.push([]);
+  group.clusters.forEach(c => byLevel[level.get(c.id)].push(c));
+  byLevel.forEach(list => list.sort((a, b) => wordById.get(a.wordIds[0]).lexical_form.localeCompare(wordById.get(b.wordIds[0]).lexical_form)));
+
+  const rowGap = 22;
+  const marginX = 40, marginY = 30;
+  const maxBoxWidth = Math.max(...group.clusters.map(c => boxDims.get(c.id).width));
+  const columnStep = maxBoxWidth + 100;
+  const colHeights = byLevel.map(list => list.reduce((s, c) => s + boxDims.get(c.id).height, 0) + rowGap * Math.max(0, list.length - 1));
+  const maxColHeight = Math.max(...colHeights);
+  const width = marginX * 2 + maxBoxWidth + maxLevel * columnStep;
+  const height = marginY * 2 + maxColHeight;
+
+  const boxPos = new Map();
+  const wordPos = new Map();
+  byLevel.forEach((list, lvl) => {
+    let y = marginY + (maxColHeight - colHeights[lvl]) / 2;
+    const x = marginX + maxBoxWidth / 2 + lvl * columnStep;
+    list.forEach(c => {
+      const d = boxDims.get(c.id);
+      const pos = { x, y: y + d.height / 2 };
+      boxPos.set(c.id, pos);
+      c.wordIds.forEach((wid, idx) => {
+        wordPos.set(wid, { x: pos.x, y: pos.y - d.height / 2 + 12 + idx * lineHeight });
+      });
+      y += d.height + rowGap;
     });
   });
 
@@ -1503,7 +1554,7 @@ function clusterGraphSVG(group, wordById) {
     });
   });
 
-  return `<div class="cyclic-svg-wrap"><svg viewBox="0 0 ${size} ${size}" width="${size}" height="${size}" class="cyclic-graph">`
+  return `<div class="cyclic-svg-wrap"><svg viewBox="0 0 ${width} ${height}" width="${width}" height="${height}" class="cyclic-graph">`
     + `<defs><marker id="cyclic-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">`
     + `<path d="M0,0 L10,5 L0,10 z" class="cyclic-arrow" /></marker></defs>`
     + `${linesHTML}${boxesHTML}${wordsHTML}</svg></div>`;
