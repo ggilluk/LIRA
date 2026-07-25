@@ -151,33 +151,51 @@ recursing forever, which keeps that view finite but discards the
 cyclic structure itself. Hierarchy's own clustering for symmetric kinds
 (the section above) already replaces a redundant tree with flat groups,
 but that's a *list*, not a graph -- it doesn't show which specific
-words within a cluster are directly connected to which. This tab is
-that complementary graphical view, sharing the same connected-
-components logic (`connectedComponents`) but with its own filter: for
-one chosen `LexicalRelationshipType` kind (the same dropdown pattern as
-Hierarchy, defaulting to the first kind that actually has a cyclic
-cluster rather than whichever kind sorts first alphabetically, since
-most kinds -- anything tree-shaped, like `HYPERNYM` or the
-morphological forms -- never have one), it finds every connected
-component (edges treated as undirected, since a cycle can mix edge
-directions) that contains a real cycle (edge count at or above node
-count -- fewer edges than that is a tree, not a cycle). A plain mutual
-pair already satisfies that on its own (2 edges, 2 nodes -- e.g.
-`present`<->`current` under `SYNONYM`) and gets its own box exactly
-like a larger cluster does; every genuine cluster is drawn, not just
-the more visually striking multi-word ones (a generous 400-cluster cap
-guards only against a pathological kind with an unrealistic number of
-them, not a curation choice). Each cluster is its own small SVG graph:
-nodes placed evenly around a circle (the most legible
-layout for making a loop visually obvious, tracing any path around or
-across it -- not a force-directed simulation, which this page has no
-library for and wouldn't reliably keep a cycle visually obvious at this
-scale anyway), edges as lines with arrowheads (`marker-end`, plus
-`marker-start` too when both directions are present, drawn as one line
-rather than two overlapping ones), labels anchored outward on whichever
-side of the circle each node falls so text never runs back over its own
-node. Every node is clickable, the same select-within-this-tab
-interaction Hierarchy uses.
+words within a cluster are directly connected to which, or what else
+that cluster connects to. This tab is that complementary graphical
+view: `SYNONYM` always defines the boxes (`synonymBoxes` -- every word
+transitively synonymous with another is grouped into one box, drawn
+close together, since they mean the same thing; a word with no
+`SYNONYM` edge at all still gets a box of its own, so every word is a
+valid line endpoint), and the dropdown picks *some other*
+`LexicalRelationshipType` kind whose edges get drawn as lines
+*between* boxes (`SYNONYM` is deliberately excluded from this dropdown
+-- every `SYNONYM` pair is, by definition, already inside one box
+together, so there's never a cross-box `SYNONYM` line to draw).
+Picking `ANTONYM`, say, draws `present` and `current` together in one
+box (they're synonyms) with lines fanning out from each of them to
+whichever other boxes hold their own antonyms (`missing`, `past`,
+`archaic`) -- the synonym relationship itself is shown as physical
+proximity inside a box rather than as a drawn line, and the more
+informative relationships (the reason you picked a kind at all) are
+what the lines actually carry.
+
+Groups of boxes (independent connected sets, found via
+`connectedComponents` applied one level up -- boxes as the nodes, the
+selected kind's edges as the edges -- so two unrelated pairs don't end
+up sharing one drawing) default to the first kind, by edge count, that
+actually connects two or more boxes, rather than whichever kind sorts
+first alphabetically (most kinds are far more likely to land entirely
+within one box, or on a word with no synonyms, than to bridge two
+different boxes). Each group is its own small SVG: boxes placed evenly
+around a circle (the same reasoning as this page's earlier word-level
+circular layout -- legible without a force-directed simulation this
+page has no library for), each word inside a box positioned along its
+own small vertical stack so a line lands on the specific word it's
+from or to, not just the box's centre -- `present`'s antonym line and
+`current`'s antonym line are visually distinguishable even though both
+start inside the same box. Lines are drawn first, boxes and labels on
+top, so a line's visible end sits right at the box edge. Arrowheads
+(`marker-end`, plus `marker-start` too when both directions are
+present, drawn as one line rather than two overlapping ones) show
+which kinds are one-directional (`ENTAILMENT`, `CAUSE`, `TROPONYM`)
+versus symmetric (`ANTONYM`, `RELATED`) or paired inverses
+(`HYPERNYM`/`HYPONYM`, `MERONYM`/`HOLONYM`). Every word is clickable,
+the same select-within-this-tab interaction Hierarchy uses. A generous
+400-group cap guards only against a pathological kind with an
+unrealistic number of groups, not a curation choice -- every genuine
+group is meant to be visible, down to the smallest (two boxes, one
+line).
 
 All Word and LexicalRelationship data is embedded as JSON in the page
 and searched/filtered/sorted client-side in vanilla JS -- there is no

@@ -55,18 +55,20 @@ renders the whole Dictionary as a nested tree for one
 `LexicalRelationshipType` at a time -- pick `HYPONYM` to see it, and
 select e.g. `matter` to see everything the relationship data hangs off
 it (`particle`, and whatever else has been seeded as its `HYPONYM`); and
-a Cyclic tab renders the genuinely cyclic structure a tree can't show
-(a "(cycle)" leaf in the Hierarchy tree, drawn out as an actual SVG
-graph here instead) -- pick `SYNONYM` to see it, since near-synonym
-clusters are exactly the kind of tangled, non-hierarchical structure
-this tab exists for. The Hierarchy and Cyclic tabs each have their own
-detail panel above their own content now too -- selecting a node in
-either stays right there, it doesn't pivot back to the Words tab.
-Hierarchy itself now clusters `SYNONYM` (and any other symmetric kind
--- `ANTONYM`, `RELATED`) into flat groups of mutually-related words
-instead of a redundant tree of near-identical per-word roots -- pick
-`SYNONYM` there too to see the difference from the graphical Cyclic
-view: a flat list of clustered chips rather than a drawn graph.
+a Cyclic tab draws `SYNONYM` pairs boxed together (`present` and
+`current` land in the same box, drawn close together, since they mean
+the same thing) with lines for one *other* chosen
+`LexicalRelationshipType` kind fanning out between boxes -- pick
+`ANTONYM` to see `present`/`current`'s box connect to `missing`,
+`past`, and `archaic`, each its own box. The Hierarchy and Cyclic tabs
+each have their own detail panel above their own content now too --
+selecting a word in either stays right there, it doesn't pivot back to
+the Words tab. Hierarchy itself now clusters `SYNONYM` (and any other
+symmetric kind -- `ANTONYM`, `RELATED`) into flat groups of mutually-
+related words instead of a redundant tree of near-identical per-word
+roots -- pick `SYNONYM` there too to see the difference from the
+graphical Cyclic view: a flat list of clustered chips, no drawn lines
+to other relationship kinds.
 
 ### Definition-gap vocabulary
 

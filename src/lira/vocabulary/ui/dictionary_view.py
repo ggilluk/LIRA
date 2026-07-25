@@ -738,6 +738,11 @@ svg.cyclic-graph { display: block; }
   stroke-width: 1.4;
 }
 .cyclic-arrow { fill: var(--line-strong); }
+.cyclic-box {
+  fill: var(--ground);
+  stroke: var(--line-strong);
+  stroke-width: 1.2;
+}
 .cyclic-node { cursor: pointer; }
 .cyclic-node circle { stroke: var(--surface); stroke-width: 2; }
 .cyclic-node text {
@@ -1340,89 +1345,134 @@ function renderHierarchy() {
   });
 }
 
-// A tree (however deep) can't represent a true cycle -- the Hierarchy
-// tab above deliberately collapses one into a "(cycle)" leaf rather
-// than recursing forever, which is correct for keeping that view finite
-// but throws away the cyclic structure itself. This finds it instead:
-// connected components (edges treated as undirected, since a cycle can
-// mix edge directions) of the selected kind's graph, keeping only
-// components that actually contain a cycle (edge count >= node count --
-// a connected graph with fewer edges than that is a tree, no cycle).
-// A plain mutual pair (A<->B, the common case for a symmetric kind like
-// SYNONYM -- e.g. present<->current) already satisfies that on its own
-// (2 edges, 2 nodes) and is shown too, each in its own box -- the
-// smallest possible cluster is still a real one.
-function buildCyclicComponents(kind) {
-  const wordById = new Map(WORDS.map(w => [w.id, w]));
-  const edges = RELS.filter(r => r.kind === kind && wordById.has(r.source_id) && wordById.has(r.target_id));
-  const nodeIds = new Set(edges.flatMap(r => [r.source_id, r.target_id]));
-
-  const results = [];
-  connectedComponents(edges).forEach(comp => {
-    if (comp.size < 2) return;
-    const compEdges = edges.filter(r => comp.has(r.source_id) && comp.has(r.target_id));
-    if (compEdges.length < comp.size) return;
-    results.push({ nodeIds: [...comp].sort((a, b) => (wordById.get(a).lexical_form).localeCompare(wordById.get(b).lexical_form)), edges: compEdges });
+// SYNONYM defines the boxes here -- every word that has at least one
+// SYNONYM edge is grouped with everything it's (transitively) a
+// synonym of, e.g. present and current end up in the same box, drawn
+// close together, since they mean the same thing. A word with no
+// SYNONYM edge at all still needs a box to be a valid line endpoint, so
+// it gets a box of its own (a "cluster" of one). Returns a word -> box
+// id map plus the box -> member-word-ids map, not yet filtered to any
+// particular kind -- buildClusterGraphs (below) does that per kind.
+function synonymBoxes(wordById) {
+  const synEdges = RELS.filter(r => r.kind === "SYNONYM" && wordById.has(r.source_id) && wordById.has(r.target_id));
+  const boxOfWord = new Map();
+  const wordsOfBox = new Map();
+  connectedComponents(synEdges).forEach((comp, i) => {
+    const id = "syn" + i;
+    wordsOfBox.set(id, [...comp]);
+    comp.forEach(w => boxOfWord.set(w, id));
   });
-  results.sort((a, b) => b.nodeIds.length - a.nodeIds.length);
-  return { components: results, totalNodes: nodeIds.size, totalEdges: edges.length, wordById };
+  function boxFor(wordId) {
+    if (boxOfWord.has(wordId)) return boxOfWord.get(wordId);
+    const id = "single_" + wordId;
+    wordsOfBox.set(id, [wordId]);
+    boxOfWord.set(wordId, id);
+    return id;
+  }
+  return { boxFor, wordsOfBox };
 }
 
-// Circular layout: the standard, most legible way to draw a cycle --
-// tracing any path around or across the circle makes the loop visually
-// obvious, which a force-directed layout doesn't reliably guarantee for
-// a small graph like these. Labels are anchored outward (right half of
-// the circle reads left-to-right from the node, left half right-to-left)
-// so text never runs back over the node it belongs to.
-function componentSVG(component, wordById) {
-  const n = component.nodeIds.length;
-  const R = Math.max(60, n * 16);
-  const margin = 100;
+// For one chosen non-SYNONYM kind, draws the lines *between* synonym
+// boxes: an ANTONYM edge from present to missing becomes a line from
+// present's box (present + current) to missing's box, so you see the
+// synonym pair held together and its antonym relationships fanning out
+// from it, not scattered across separate unconnected views the way a
+// plain per-word graph would show them. Groups (independent connected
+// sets of boxes, so unrelated pairs don't share one giant drawing) are
+// found the same way buildCyclicComponents used to find word-level
+// cycles, just one level up -- boxes are the nodes here, not words.
+function buildClusterGraphs(kind) {
+  const wordById = new Map(WORDS.map(w => [w.id, w]));
+  const { boxFor, wordsOfBox } = synonymBoxes(wordById);
+  const kindEdges = RELS.filter(r => r.kind === kind && wordById.has(r.source_id) && wordById.has(r.target_id));
+  const boxEdges = kindEdges.map(r => ({ ...r, sourceBox: boxFor(r.source_id), targetBox: boxFor(r.target_id) }));
+  const boxGraphEdges = boxEdges.map(e => ({ source_id: e.sourceBox, target_id: e.targetBox }));
+
+  const groups = [];
+  connectedComponents(boxGraphEdges).forEach(boxIdSet => {
+    if (boxIdSet.size < 2) return;
+    const clusters = [...boxIdSet]
+      .map(id => ({ id, wordIds: wordsOfBox.get(id).slice().sort((a, b) => wordById.get(a).lexical_form.localeCompare(wordById.get(b).lexical_form)) }))
+      .sort((a, b) => wordById.get(a.wordIds[0]).lexical_form.localeCompare(wordById.get(b.wordIds[0]).lexical_form));
+    const edges = boxEdges.filter(e => boxIdSet.has(e.sourceBox) && boxIdSet.has(e.targetBox));
+    groups.push({ clusters, edges });
+  });
+  groups.sort((a, b) => b.clusters.length - a.clusters.length);
+  return { groups, wordById };
+}
+
+// Circular layout for the boxes themselves (the same reasoning as the
+// old word-level version: legible without a force-directed simulation
+// this page has no library for). Each word inside a box gets its own
+// position along a small vertical stack, so a line lands on the
+// specific word it's from/to, not just the box's centre -- present's
+// antonym line and current's antonym line are visually distinguishable
+// even though both start inside the same box.
+function clusterGraphSVG(group, wordById) {
+  const n = group.clusters.length;
+  const R = Math.max(150, n * 55);
+  const margin = 130;
   const size = 2 * (R + margin);
   const cx = R + margin, cy = R + margin;
-  const positions = new Map();
-  component.nodeIds.forEach((id, i) => {
+  const lineHeight = 15;
+
+  const boxPos = new Map();
+  const boxDims = new Map();
+  const wordPos = new Map();
+  group.clusters.forEach((c, i) => {
     const angle = (2 * Math.PI * i) / n - Math.PI / 2;
-    positions.set(id, { x: cx + R * Math.cos(angle), y: cy + R * Math.sin(angle), angle });
+    const pos = { x: cx + R * Math.cos(angle), y: cy + R * Math.sin(angle) };
+    boxPos.set(c.id, pos);
+    const labels = c.wordIds.map(id => wordById.get(id).lexical_form);
+    const width = Math.max(64, Math.max(...labels.map(l => l.length)) * 7.2 + 24);
+    const height = c.wordIds.length * lineHeight + 14;
+    boxDims.set(c.id, { width, height });
+    c.wordIds.forEach((wid, idx) => {
+      wordPos.set(wid, { x: pos.x, y: pos.y - height / 2 + 12 + idx * lineHeight });
+    });
   });
 
-  const edgeKeys = new Set(component.edges.map(r => `${r.source_id}|${r.target_id}`));
+  const edgeKeys = new Set(group.edges.map(r => `${r.source_id}|${r.target_id}`));
   const drawn = new Set();
   let linesHTML = "";
-  component.edges.forEach(r => {
+  group.edges.forEach(r => {
     const key = `${r.source_id}|${r.target_id}`;
     const revKey = `${r.target_id}|${r.source_id}`;
     if (drawn.has(key) || drawn.has(revKey)) return;
     drawn.add(key);
-    const p1 = positions.get(r.source_id), p2 = positions.get(r.target_id);
+    const p1 = wordPos.get(r.source_id), p2 = wordPos.get(r.target_id);
     if (!p1 || !p2) return;
     const bidirectional = edgeKeys.has(revKey);
     linesHTML += `<line x1="${p1.x.toFixed(1)}" y1="${p1.y.toFixed(1)}" x2="${p2.x.toFixed(1)}" y2="${p2.y.toFixed(1)}" class="cyclic-edge" marker-end="url(#cyclic-arrow)" ${bidirectional ? 'marker-start="url(#cyclic-arrow)"' : ''} />`;
   });
 
-  let nodesHTML = "";
-  component.nodeIds.forEach(id => {
-    const w = wordById.get(id);
-    const p = positions.get(id);
-    const color = POS_COLORS[w.pos] || "#7A7A7A";
-    const rightHalf = Math.cos(p.angle) >= 0;
-    const dx = rightHalf ? 10 : -10;
-    const anchor = rightHalf ? "start" : "end";
-    nodesHTML += `<g class="cyclic-node" data-pivot-id="${id}" tabindex="0" transform="translate(${p.x.toFixed(1)},${p.y.toFixed(1)})">`
-      + `<circle r="6" fill="${color}" />`
-      + `<text x="${dx}" y="4" text-anchor="${anchor}">${w.lexical_form}</text></g>`;
+  // Boxes drawn as a layer, word labels as the layer above -- so a
+  // line's visible end sits right at the box edge (the box fill
+  // occludes the segment inside it) while the label stays legible on top.
+  let boxesHTML = "";
+  let wordsHTML = "";
+  group.clusters.forEach(c => {
+    const pos = boxPos.get(c.id);
+    const dims = boxDims.get(c.id);
+    boxesHTML += `<rect x="${(pos.x - dims.width / 2).toFixed(1)}" y="${(pos.y - dims.height / 2).toFixed(1)}" width="${dims.width.toFixed(1)}" height="${dims.height.toFixed(1)}" rx="6" class="cyclic-box" />`;
+    c.wordIds.forEach(wid => {
+      const w = wordById.get(wid);
+      const wp = wordPos.get(wid);
+      const color = POS_COLORS[w.pos] || "#7A7A7A";
+      wordsHTML += `<g class="cyclic-node" data-pivot-id="${wid}" tabindex="0" transform="translate(${wp.x.toFixed(1)},${wp.y.toFixed(1)})">`
+        + `<circle r="4" fill="${color}" cx="${(-dims.width / 2 + 11).toFixed(1)}" />`
+        + `<text x="${(-dims.width / 2 + 19).toFixed(1)}" y="4" text-anchor="start">${w.lexical_form}</text></g>`;
+    });
   });
 
   return `<div class="cyclic-svg-wrap"><svg viewBox="0 0 ${size} ${size}" width="${size}" height="${size}" class="cyclic-graph">`
     + `<defs><marker id="cyclic-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">`
     + `<path d="M0,0 L10,5 L0,10 z" class="cyclic-arrow" /></marker></defs>`
-    + `${linesHTML}${nodesHTML}</svg></div>`;
+    + `${linesHTML}${boxesHTML}${wordsHTML}</svg></div>`;
 }
 
-// A generous safety cap, not a curation choice -- every genuine cluster
-// (down to a simple mutual pair) is meant to be visible, this just
-// guards against a pathological kind with thousands of them.
-const MAX_CYCLIC_CLUSTERS_SHOWN = 400;
+// A generous safety cap, not a curation choice.
+const MAX_CYCLIC_GROUPS_SHOWN = 400;
 
 function renderCyclic() {
   const note = document.getElementById("cyclic-note");
@@ -1432,21 +1482,22 @@ function renderCyclic() {
     container.innerHTML = "";
     return;
   }
-  const { components, wordById } = buildCyclicComponents(state.cyclicKind);
-  if (!components.length) {
-    note.textContent = "No cyclic clusters found for this kind -- see the Hierarchy tab for its tree/chain structure instead.";
+  const { groups, wordById } = buildClusterGraphs(state.cyclicKind);
+  if (!groups.length) {
+    note.textContent = `No ${titleCase(state.cyclicKind).toLowerCase()} relationships connect any synonym-clustered words for this kind.`;
     container.innerHTML = "";
     return;
   }
-  const shown = components.slice(0, MAX_CYCLIC_CLUSTERS_SHOWN);
-  const totalWords = new Set(components.flatMap(c => c.nodeIds)).size;
-  note.textContent = `${components.length} cluster${components.length === 1 ? '' : 's'} `
-    + `covering ${totalWords} word${totalWords === 1 ? '' : 's'}, largest first`
-    + (components.length > shown.length ? ` -- showing the ${shown.length} largest` : '') + '.';
-  container.innerHTML = shown.map(comp => `
+  const shown = groups.slice(0, MAX_CYCLIC_GROUPS_SHOWN);
+  const totalBoxes = groups.reduce((s, g) => s + g.clusters.length, 0);
+  const totalWords = new Set(groups.flatMap(g => g.clusters.flatMap(c => c.wordIds))).size;
+  note.textContent = `Synonyms boxed together, ${titleCase(state.cyclicKind).toLowerCase()} drawn between boxes: `
+    + `${groups.length} group${groups.length === 1 ? '' : 's'} &middot; ${totalBoxes} boxes &middot; ${totalWords} words`
+    + (groups.length > shown.length ? ` -- showing the ${shown.length} largest` : '') + '.';
+  container.innerHTML = shown.map(g => `
     <div class="cyclic-cluster">
-      <div class="cyclic-cluster-title">${comp.nodeIds.length} words &middot; ${comp.edges.length} edges</div>
-      ${componentSVG(comp, wordById)}
+      <div class="cyclic-cluster-title">${g.clusters.length} synonym boxes &middot; ${g.edges.length} ${titleCase(state.cyclicKind).toLowerCase()} edges</div>
+      ${clusterGraphSVG(g, wordById)}
     </div>`).join('');
   container.querySelectorAll(".cyclic-node[data-pivot-id]").forEach(node => {
     node.addEventListener("click", () => selectWordIn("cyclic", node.dataset.pivotId));
@@ -1456,10 +1507,14 @@ function renderCyclic() {
   });
 }
 
+// SYNONYM itself is excluded from this dropdown -- it's what defines
+// the boxes (synonymBoxes), not a kind you'd pick to draw lines between
+// them (every SYNONYM pair is, by definition, already inside one box
+// together, so there'd never be a cross-box SYNONYM line to draw).
 function populateCyclicKindFilter() {
   const select = document.getElementById("cyclic-kind");
   const counts = {};
-  RELS.forEach(r => { counts[r.kind] = (counts[r.kind] || 0) + 1; });
+  RELS.forEach(r => { if (r.kind !== "SYNONYM") counts[r.kind] = (counts[r.kind] || 0) + 1; });
   const kinds = Object.keys(counts).sort();
   kinds.forEach(kind => {
     const opt = document.createElement("option");
@@ -1467,14 +1522,14 @@ function populateCyclicKindFilter() {
     opt.textContent = `${titleCase(kind)} (${counts[kind]})`;
     select.appendChild(opt);
   });
-  // Default to the first kind (by edge count, most likely to have a
-  // real cyclic cluster) that actually has one, rather than whichever
-  // kind sorts first alphabetically -- most kinds (anything tree-shaped,
-  // like HYPERNYM or the morphological forms) never have a 3+ word cycle
-  // at all, so defaulting alphabetically would often land on an empty view.
+  // Default to the first kind (by edge count) that actually connects
+  // two or more synonym boxes, rather than whichever kind sorts first
+  // alphabetically -- most kinds never do (a HYPERNYM edge, say, is far
+  // more likely to land entirely within one existing synonym box, or on
+  // a word with no synonyms at all, than to bridge two different ones).
   const byCount = [...kinds].sort((a, b) => counts[b] - counts[a]);
-  const withCycles = byCount.find(kind => buildCyclicComponents(kind).components.length > 0);
-  state.cyclicKind = withCycles || kinds[0] || null;
+  const withGroups = byCount.find(kind => buildClusterGraphs(kind).groups.length > 0);
+  state.cyclicKind = withGroups || kinds[0] || null;
   if (state.cyclicKind) select.value = state.cyclicKind;
 }
 
