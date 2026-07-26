@@ -127,9 +127,9 @@ class WordSeeder:
         self._cache: Optional[List[Word]] = None
 
     def validate_assets(self) -> None:
-        """Validates JSON schema, duplicate (lexical_form, part_of_speech)
-        pairs, lexical counts, mandatory file existence, manifest
-        consistency, promoted word uniqueness, language codes,
+        """Validates JSON schema, duplicate (lexical_form, part_of_speech,
+        domain_tag) triples, lexical counts, mandatory file existence,
+        manifest consistency, promoted word uniqueness, language codes,
         normalised forms, and that every register_codes/editorial_labels/
         part_of_speech value names a real enum member. Creates
         promoted_words.json (starts empty) or manifest.json (recomputed
@@ -150,7 +150,10 @@ class WordSeeder:
         where its ... grammatical category ... differs") -- "that" as
         both DETERMINER and PRONOUN is legitimate; two entries with the
         same lexical_form *and* the same part_of_speech is still a real
-        duplicate and still rejected."""
+        duplicate and still rejected, *unless* they also carry different
+        `domain_tag`s -- genuine polysemy (Word.domain_tag's own
+        docstring), the one case where (lexical_form, part_of_speech)
+        alone is not enough to tell two cache entries apart."""
         if not self.assets_dir.is_dir():
             raise FileNotFoundError(f"no Common Vocabulary Cache for language '{self.language_code}' at {self.assets_dir}")
 
@@ -177,20 +180,23 @@ class WordSeeder:
         for entry in promoted_doc.get("words", []):
             lexical_form = entry["lexical_form"]
             pos = entry["part_of_speech"]
-            key = (lexical_form, pos)
+            key = (lexical_form, pos, entry.get("domain_tag"))
             # Checked against the same seen_lexical_form_pos set
             # MANDATORY_FILES/SUPPLEMENTARY_FILES already populated,
-            # then added to it here -- (lexical_form, part_of_speech)
-            # uniqueness, not lexical_form alone, the same discipline
-            # _validate_word_file already applies to every other file.
-            # A promoted word may legitimately share a lexical_form with
-            # an existing mandatory/supplementary/already-promoted word
-            # as long as its part_of_speech differs (the same "that"
-            # DETERMINER/PRONOUN homograph pattern) -- promoted words
-            # load last (load_cache()), so Dictionary.lookup()'s
-            # first-seeded-wins default is unaffected either way.
+            # then added to it here -- (lexical_form, part_of_speech,
+            # domain_tag) uniqueness, not (lexical_form, part_of_speech)
+            # alone, the same discipline _validate_word_file already
+            # applies to every other file. A promoted word may
+            # legitimately share a lexical_form with an existing
+            # mandatory/supplementary/already-promoted word as long as
+            # its part_of_speech differs (the same "that"
+            # DETERMINER/PRONOUN homograph pattern) or, for a genuine
+            # polyseme, its domain_tag differs instead (Word.domain_tag's
+            # docstring) -- promoted words load last (load_cache()), so
+            # Dictionary.lookup()'s first-seeded-wins default is
+            # unaffected either way.
             if key in seen_lexical_form_pos:
-                raise ValueError(f"promoted word '{lexical_form}' ({pos}) duplicates an existing (lexical_form, part_of_speech) pair")
+                raise ValueError(f"promoted word '{lexical_form}' ({pos}) duplicates an existing (lexical_form, part_of_speech, domain_tag) triple")
             entry_id = entry.get("entry_id")
             if not entry_id:
                 raise ValueError(f"{PROMOTED_FILE}: '{lexical_form}' is missing entry_id")
@@ -215,7 +221,7 @@ class WordSeeder:
     def _validate_word_file(self, filename: str, seen_lexical_form_pos: set, seen_entry_ids: set, *, required: bool) -> int:
         """Validates one word file's schema, per-entry language code,
         normalised_form consistency, enum members,
-        (lexical_form, part_of_speech) uniqueness against
+        (lexical_form, part_of_speech, domain_tag) uniqueness against
         `seen_lexical_form_pos` (shared across every file this is
         called for, so a duplicate is caught even across file
         boundaries), and entry_id uniqueness against `seen_entry_ids`
@@ -241,7 +247,7 @@ class WordSeeder:
                 raise ValueError(f"{filename}: '{lexical_form}' has language_code '{entry['language_code']}', expected '{self.language_code}'")
             if entry.get("normalised_form") != lexical_form.lower():
                 raise ValueError(f"{filename}: '{lexical_form}' has an inconsistent normalised_form")
-            key = (lexical_form, pos)
+            key = (lexical_form, pos, entry.get("domain_tag"))
             if key in seen_lexical_form_pos:
                 raise ValueError(f"{filename}: duplicate lexical_form '{lexical_form}' with part_of_speech '{pos}' in the mandatory cache")
             entry_id = entry.get("entry_id")
@@ -298,12 +304,16 @@ class WordSeeder:
         words; kept as one method rather than split, since a Domain's
         Dictionary is meant to end up with all of the Common Vocabulary
         Cache's content regardless of which file contributed it. Matched
-        by text AND part_of_speech,
-        not text alone -- a homograph like "that" (DETERMINER) and
-        "that" (PRONOUN) are two distinct cached Words sharing one
-        surface text, and dictionary.lookup(text) alone would find
-        whichever was seeded first and treat the second as already
-        present, silently dropping it). Returns the number actually
+        by text, part_of_speech, AND domain_tag,
+        not text and part_of_speech alone -- a homograph like "that"
+        (DETERMINER) and "that" (PRONOUN) are two distinct cached Words
+        sharing one surface text, and dictionary.lookup(text) alone
+        would find whichever was seeded first and treat the second as
+        already present, silently dropping it; a genuine polyseme
+        (Word.domain_tag's own docstring) shares both text and
+        part_of_speech too, so comparing domain_tag as well is what
+        keeps its second sense from being mistaken for the first and
+        dropped the same way. Returns the number actually
         appended -- idempotent, safe to call more than once against the
         same Dictionary. Each copy gets a freshly generated uuid:
         load_cache() is memoized, so calling this against more than one
@@ -313,8 +323,10 @@ class WordSeeder:
         discipline)."""
         seeded = 0
         for word in self.load_cache():
+            word_domain_tag = word.domain_tag.value if word.domain_tag else None
             already_present = any(
                 existing.part_of_speech == word.part_of_speech
+                and (existing.domain_tag.value if existing.domain_tag else None) == word_domain_tag
                 for existing in dictionary.lookup_all(word.text)
             )
             if already_present:
@@ -341,17 +353,20 @@ class WordSeeder:
         visibility into how many Domains reference a Word; that
         tracking doesn't exist yet elsewhere in this codebase.
 
-        Dedup is by (lexical_form, part_of_speech), not lexical_form
-        alone -- a second promoted sense of an already-promoted
-        lexical_form is a legitimate homograph as long as its
-        part_of_speech differs (e.g. promoting `state` VERB after
-        `state` NOUN is already promoted), matching validate_assets()'s
-        own uniqueness check and the mandatory/supplementary files'
-        long-standing "that" DETERMINER/PRONOUN convention. This method
-        does not check against mandatory/supplementary files itself
-        (it only reads promoted_words.json) -- a promotion that
-        collides with one of those is caught the next time
-        validate_assets() runs, not here."""
+        Dedup is by (lexical_form, part_of_speech, domain_tag), not
+        lexical_form alone -- a second promoted sense of an
+        already-promoted lexical_form is a legitimate homograph as long
+        as its part_of_speech differs (e.g. promoting `state` VERB
+        after `state` NOUN is already promoted), matching
+        validate_assets()'s own uniqueness check and the
+        mandatory/supplementary files' long-standing "that"
+        DETERMINER/PRONOUN convention -- or, for a genuine polyseme
+        (Word.domain_tag's own docstring), a legitimate second sense as
+        long as its domain_tag differs. This method does not check
+        against mandatory/supplementary files itself (it only reads
+        promoted_words.json) -- a promotion that collides with one of
+        those is caught the next time validate_assets() runs, not
+        here."""
         if word.part_of_speech not in OPEN_CLASSES:
             return False
         if reference_count <= self.promotion_threshold:
@@ -359,7 +374,9 @@ class WordSeeder:
 
         promoted_path = self.assets_dir / PROMOTED_FILE
         doc = json.loads(promoted_path.read_text()) if promoted_path.is_file() else self._empty_promoted_doc()
-        if any(entry["lexical_form"] == word.lexical_form.value and entry["part_of_speech"] == word.part_of_speech.name for entry in doc["words"]):
+        domain_tag = word.domain_tag.value if word.domain_tag else None
+        if any(entry["lexical_form"] == word.lexical_form.value and entry["part_of_speech"] == word.part_of_speech.name
+               and entry.get("domain_tag") == domain_tag for entry in doc["words"]):
             return False
 
         entry = self._word_to_entry(word)
@@ -439,12 +456,14 @@ class WordSeeder:
             first_recorded_use=opt_text(entry.get("first_recorded_use")),
             source_references=source_references,
             is_common=True,
+            domain_tag=opt_text(entry.get("domain_tag")),
         )
 
     @staticmethod
     def _word_to_entry(word: Word) -> dict:
         return {
             "entry_id": word.entry_id.value,
+            "domain_tag": word.domain_tag.value if word.domain_tag else None,
             "lexical_form": word.lexical_form.value,
             "normalised_form": word.normalised_form.value,
             "text": word.text,

@@ -138,7 +138,7 @@ class DictionaryView:
                 "dialect_codes": [code.value for code in word.dialect_codes],
                 "editorial_labels": [label.name for label in word.editorial_labels],
                 "is_common": word.is_common,
-                "domain": "Common" if word.is_common else self.domain_name,
+                "domain": self._domain_label(word),
                 "is_fully_hydrated": word.is_fully_hydrated,
                 "sources": [ref.source_name.value for ref in word.source_references],
                 "relationship_count": relationship_count,
@@ -209,7 +209,13 @@ class DictionaryView:
     def _domain_label(self, word: Optional[Word]) -> Optional[str]:
         if word is None:
             return None
-        return "Common" if word.is_common else self.domain_name
+        if not word.is_common:
+            return self.domain_name
+        # A genuine polyseme's domain_tag ("symbol.common") names its
+        # own sense-disambiguating subdomain (Word.domain_tag's own
+        # docstring); every other Common word reads as plain "Common",
+        # same as before this field existed.
+        return word.domain_tag.value if word.domain_tag else "Common"
 
 
 _PAGE_TEMPLATE = """<!DOCTYPE html>
@@ -907,7 +913,11 @@ function relPill(kind, group) {
 
 function domainPill(domain) {
   if (!domain) return "";
-  const color = DOMAIN_COLORS[domain] || "#7A7A7A";
+  // A polysemous Common word's domain reads as "<hypernym>.common"
+  // (Word.domain_tag) rather than plain "Common" -- still a Common
+  // word, so it keeps Common's own colour rather than falling through
+  // to the generic "unknown domain" grey.
+  const color = DOMAIN_COLORS[domain] || (domain.endsWith(".common") ? DOMAIN_COLORS["Common"] : "#7A7A7A");
   return `<span class="pill" style="background:${color}">${domain}</span>`;
 }
 

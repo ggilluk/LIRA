@@ -58,7 +58,15 @@ label as its own **Domain** column in the Words table, a **Domain**
 filter dropdown alongside the part-of-speech one, and a pill next to
 each related word in the detail panel's relationship list -- so a
 Domain-specific word's inherited-vs-own relationships are visible at a
-glance without leaving the panel.
+glance without leaving the panel. A genuinely polysemous Common word
+(`Word.domain_tag` set -- two senses sharing one lexical_form *and*
+part_of_speech, `vocabulary/assets/common/en/README.md`'s own
+Polysemous senses section) shows its own subdomain instead of plain
+"Common" -- `bar`'s symbol/mark sense reads `symbol.common`, its
+physical-rod sense reads `item.common` -- so the Words table, its
+Domain filter, and every relationship pill tell the two senses apart
+at a glance, the same way two homographs are already told apart by
+their Part of speech column.
 
 Each relationship row in that panel also carries a one-sentence plain-
 English gloss of what the edge actually means -- "particle is a type

@@ -44,18 +44,26 @@ CACHE_SOURCE_REFERENCE = SourceReference(
 # convention: certainty is never asserted as exactly 1.0.
 SEEDER_DEFAULT_WEIGHT = 0.9999
 
-# (source_lexical_form, source_part_of_speech, target_lexical_form,
-# target_part_of_speech, relationship_type). The two part_of_speech
-# entries are usually None -- Dictionary.lookup()'s first-seeded-wins
-# default is exact and unambiguous for every closed-class/mandatory
-# word, which is all a spec ever needed to disambiguate until promoted
-# words started creating open-class homographs (e.g. "state" NOUN and
-# VERB both promoted -- vocabulary/assets/common/en/README.md's
-# Homographs table). A spec whose endpoint IS genuinely ambiguous names
-# an explicit part_of_speech instead of leaving it to load order --
-# see _resolve below and assets/common/en/relationships/README.md's own
-# schema section.
-RelationshipSpec = Tuple[str, Optional[PartOfSpeech], str, Optional[PartOfSpeech], LexicalRelationshipType]
+# (source_lexical_form, source_part_of_speech, source_domain_tag,
+# target_lexical_form, target_part_of_speech, target_domain_tag,
+# relationship_type). The two part_of_speech entries are usually None
+# -- Dictionary.lookup()'s first-seeded-wins default is exact and
+# unambiguous for every closed-class/mandatory word, which is all a
+# spec ever needed to disambiguate until promoted words started
+# creating open-class homographs (e.g. "state" NOUN and VERB both
+# promoted -- vocabulary/assets/common/en/README.md's Homographs
+# table). A spec whose endpoint IS genuinely ambiguous names an
+# explicit part_of_speech instead of leaving it to load order -- see
+# _resolve below and assets/common/en/relationships/README.md's own
+# schema section. The two domain_tag entries are usually None for the
+# same reason, one level further: part_of_speech alone stops
+# disambiguating once a single (lexical_form, part_of_speech) pair
+# names more than one genuine sense (a polyseme, Word.domain_tag's own
+# docstring) -- "bar" (NOUN) the rod and "bar" (NOUN) the symbol both
+# match on part_of_speech, so an edge that means one specific sense
+# names its domain_tag too, exactly the same way an edge onto one
+# specific homograph names its part_of_speech.
+RelationshipSpec = Tuple[str, Optional[PartOfSpeech], Optional[str], str, Optional[PartOfSpeech], Optional[str], LexicalRelationshipType]
 
 
 class RelationshipSeeder:
@@ -100,6 +108,10 @@ class RelationshipSeeder:
                     pos_value = entry.get(pos_field)
                     if pos_value is not None and pos_value not in PartOfSpeech.__members__:
                         raise ValueError(f"{filename}: unknown {pos_field} '{pos_value}'")
+                for domain_tag_field in ("source_domain_tag", "target_domain_tag"):
+                    domain_tag_value = entry.get(domain_tag_field)
+                    if domain_tag_value is not None and not isinstance(domain_tag_value, str):
+                        raise ValueError(f"{filename}: {domain_tag_field} must be a string, got {domain_tag_value!r}")
             computed_total += doc["count"]
 
         if manifest["relationship_count"] != computed_total:
@@ -134,8 +146,10 @@ class RelationshipSeeder:
                 specs.append((
                     entry["source_lexical_form"],
                     PartOfSpeech[source_pos] if source_pos else None,
+                    entry.get("source_domain_tag"),
                     entry["target_lexical_form"],
                     PartOfSpeech[target_pos] if target_pos else None,
+                    entry.get("target_domain_tag"),
                     LexicalRelationshipType[entry["relationship_kind"]],
                 ))
         self._cache = specs
@@ -164,15 +178,17 @@ class RelationshipSeeder:
         processor = domain.vocabulary.lexical_relationship_processor
 
         resolved = []
-        for source_form, source_pos, target_form, target_pos, relationship_type in self.load_relationship_specs():
-            source_word = self._resolve(dictionary, source_form, source_pos)
+        for source_form, source_pos, source_domain_tag, target_form, target_pos, target_domain_tag, relationship_type in self.load_relationship_specs():
+            source_word = self._resolve(dictionary, source_form, source_pos, source_domain_tag)
             if source_word is None:
                 raise ValueError(f"cannot resolve source Word '{source_form}'"
-                                  f"{f' ({source_pos.name})' if source_pos else ''} in Domain '{domain.name}'")
-            target_word = self._resolve(dictionary, target_form, target_pos)
+                                  f"{f' ({source_pos.name})' if source_pos else ''}"
+                                  f"{f' [{source_domain_tag}]' if source_domain_tag else ''} in Domain '{domain.name}'")
+            target_word = self._resolve(dictionary, target_form, target_pos, target_domain_tag)
             if target_word is None:
                 raise ValueError(f"cannot resolve target Word '{target_form}'"
-                                  f"{f' ({target_pos.name})' if target_pos else ''} in Domain '{domain.name}'")
+                                  f"{f' ({target_pos.name})' if target_pos else ''}"
+                                  f"{f' [{target_domain_tag}]' if target_domain_tag else ''} in Domain '{domain.name}'")
             resolved.append((source_word, target_word, relationship_type))
 
         seeded = 0
@@ -194,7 +210,8 @@ class RelationshipSeeder:
         return seeded
 
     @staticmethod
-    def _resolve(dictionary: Dictionary, lexical_form: str, part_of_speech: Optional[PartOfSpeech]) -> Optional[Word]:
+    def _resolve(dictionary: Dictionary, lexical_form: str, part_of_speech: Optional[PartOfSpeech],
+                 domain_tag: Optional[str] = None) -> Optional[Word]:
         """Resolves one spec endpoint against `dictionary`. Without a
         part_of_speech hint, defers to Dictionary.lookup()'s own
         first-seeded-wins default, unchanged from before this method
@@ -202,10 +219,20 @@ class RelationshipSeeder:
         behaving exactly as it always did. With one, resolves via
         lookup_all() and picks the matching sense, ignoring load order
         entirely -- the only way to correctly target the VERB sense of
-        a lexical_form whose NOUN sense loaded first (or vice versa)."""
+        a lexical_form whose NOUN sense loaded first (or vice versa).
+        With a domain_tag too, also requires the candidate's own
+        domain_tag to match -- part_of_speech alone no longer
+        disambiguates once a (lexical_form, part_of_speech) pair names
+        more than one genuine sense (a polyseme, Word.domain_tag's own
+        docstring); domain_tag=None still means "the plain common
+        sense", not "any sense", so a spec that must hit the plain
+        sense of a polyseme still resolves correctly even though the
+        other sense loaded first."""
         if part_of_speech is None:
             return dictionary.lookup(lexical_form)
-        return next((word for word in dictionary.lookup_all(lexical_form) if word.part_of_speech == part_of_speech), None)
+        candidates = (word for word in dictionary.lookup_all(lexical_form) if word.part_of_speech == part_of_speech)
+        return next((word for word in candidates
+                     if (word.domain_tag.value if word.domain_tag else None) == domain_tag), None)
 
     @staticmethod
     def _relationship_exists(store: LexicalRelationshipStore, source_word_id: str,

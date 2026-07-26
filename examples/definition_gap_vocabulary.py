@@ -43,6 +43,18 @@ from typing import Dict, List, Tuple
 
 # lexical_form -> (part_of_speech, domain, definition)
 # domain is "common", "physics", or "exclude".
+#
+# "negative" and "positive" (ADJECTIVE) used to be entries here, both
+# merging a maths sense ("less/greater than zero") and a physics sense
+# ("electric charge opposite to...") into one definition -- fixed by
+# common_polysemy_split.py, which split each into its own KEEP/NEW
+# Word entries in promoted_words.json directly. Deleted here rather
+# than left with updated text: promote_word()'s duplicate check now
+# includes domain_tag (Word.domain_tag's own docstring), so this file's
+# WORD_ENTRIES tuple -- which has no domain_tag of its own and always
+# builds a fresh Word with domain_tag=None -- would keep matching only
+# the one split sense that happens to carry domain_tag=None (if any)
+# and re-promote a duplicate of every other sense on every run.
 WORD_ENTRIES: Dict[str, Tuple[str, str, str]] = {
     "measured": ("VERB", "common", "Determined by measurement; past participle of measure."),
     "physical": ("ADJECTIVE", "common", "Relating to the body or to material things, rather than the mind or spirit."),
@@ -218,7 +230,6 @@ WORD_ENTRIES: Dict[str, Tuple[str, str, str]] = {
     "moments": ("NOUN", "common", "Plural of moment; very brief periods of time, or particular points in time."),
     "name": ("NOUN", "common", "A word or set of words by which a person, animal, place, or thing is known, addressed, or referred to."),
     "natural": ("ADJECTIVE", "common", "Existing in or caused by nature; not made, caused, or influenced by humans."),
-    "negative": ("ADJECTIVE", "common", "Less than zero; relating to a type of electric charge opposite to positive."),
     "neutrons": ("NOUN", "physics", "Plural of neutron."),
     "now": ("ADVERB", "common", "At the present time or moment."),
     "numbers": ("NOUN", "common", "Plural of number; arithmetical values used for counting, measuring, or labelling."),
@@ -241,7 +252,6 @@ WORD_ENTRIES: Dict[str, Tuple[str, str, str]] = {
     "placed": ("VERB", "common", "Past participle of place; put something in a particular position."),
     "portion": ("NOUN", "common", "A part of a whole; a share or section."),
     "positions": ("NOUN", "common", "Plural of position; particular places or locations, or ways of being arranged."),
-    "positive": ("ADJECTIVE", "common", "Greater than zero; relating to a type of electric charge opposite to negative; constructive or optimistic."),
     "possesses": ("VERB", "physics", "Third person singular of possess; has as an attribute, quality, or characteristic."),
     "powered": ("VERB", "physics", "Past participle of power; supplied with mechanical or electrical energy."),
     "process": ("NOUN", "common", "A series of actions or steps taken in order to achieve a particular result."),

@@ -101,6 +101,24 @@ class Word(LinguisticUnit):
     # set True by hand. See vocabulary/documentation/README.md, 9.5.
     is_common: bool = field(default=False, kw_only=True)
 
+    # Only ever set on a Common Vocabulary Cache entry, and only when
+    # its (lexical_form, part_of_speech) pair is shared with another
+    # entry -- true dictionary polysemy (one spelling, one grammatical
+    # category, genuinely distinct senses), as opposed to a homograph
+    # (same spelling, different part_of_speech, already told apart by
+    # part_of_speech alone). None means the plain "common" domain, the
+    # same as every other Common word; a value like "symbol.common"
+    # names this sense's own HYPERNYM as a subdomain of "common",
+    # letting WordSeeder's (lexical_form, part_of_speech) uniqueness
+    # rule admit both senses as (lexical_form, part_of_speech,
+    # domain_tag) instead of rejecting the second as a duplicate, and
+    # letting DictionaryView show which sense is which instead of both
+    # reading as plain "Common". Left unset (not fabricated) when a
+    # split sense has no genuinely fitting hypernym already in the
+    # cache -- see assets/common/en/README.md's Polysemous senses
+    # section.
+    domain_tag: Optional[Text] = field(default=None, kw_only=True)
+
     # Implementation plumbing, not part of the documented field set:
     # tracks whether AsyncDictionaryHydrator has finished populating this
     # Word's meaning/part_of_speech from the external dictionary API yet.

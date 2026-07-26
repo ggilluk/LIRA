@@ -3,7 +3,7 @@
   "language_code": "en",
   "part_of_speech": null,
   "closed_class_kind": "promoted_open_class",
-  "count": 2465,
+  "count": 2481,
   "words": [
     {
       "entry_id": "f7d5d34d-506b-406c-b0f0-3e22c35ec007",
@@ -4492,8 +4492,8 @@
       "script_code": "Latn",
       "part_of_speech": "ADJECTIVE",
       "closed_class": false,
-      "definition": "Less than zero; relating to a type of electric charge opposite to positive.",
-      "gloss": "Less than zero; relating to a type of electric charge opposite to positive.",
+      "definition": "Less than zero.",
+      "gloss": "Less than zero.",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -4517,7 +4517,8 @@
           "licence_identifier": null
         }
       ],
-      "reference_count": 4
+      "reference_count": 4,
+      "domain_tag": "numerical.common"
     },
     {
       "entry_id": "26a11448-d65e-48e3-b051-19c1b9f3e155",
@@ -5454,8 +5455,8 @@
       "script_code": "Latn",
       "part_of_speech": "ADJECTIVE",
       "closed_class": false,
-      "definition": "Greater than zero; relating to a type of electric charge opposite to negative; constructive or optimistic.",
-      "gloss": "Greater than zero; relating to a type of electric charge opposite to negative; constructive or optimistic.",
+      "definition": "Constructive or optimistic.",
+      "gloss": "Constructive or optimistic.",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -5479,7 +5480,8 @@
           "licence_identifier": null
         }
       ],
-      "reference_count": 4
+      "reference_count": 4,
+      "domain_tag": null
     },
     {
       "entry_id": "91b2e15d-af25-40c9-b1e9-21fb26eeefaa",
@@ -15185,8 +15187,8 @@
       "script_code": "Latn",
       "part_of_speech": "NOUN",
       "closed_class": false,
-      "definition": "A rigid piece of material, or a symbol such as a line, used to mark, separate, or denote something.",
-      "gloss": "A rigid piece of material, or a symbol such as a line, used to mark, separate, or denote something.",
+      "definition": "A symbol, such as a line, used to mark, separate, or denote something.",
+      "gloss": "A symbol, such as a line, used to mark, separate, or denote something.",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -15210,7 +15212,8 @@
           "licence_identifier": null
         }
       ],
-      "reference_count": 4
+      "reference_count": 4,
+      "domain_tag": "symbol.common"
     },
     {
       "entry_id": "7b6e3905-ceca-4628-9af5-e23cc988c08f",
@@ -16369,8 +16372,8 @@
       "script_code": "Latn",
       "part_of_speech": "NOUN",
       "closed_class": false,
-      "definition": "A particular instance or situation, or a grammatical category marking a word's function in a sentence.",
-      "gloss": "A particular instance or situation, or a grammatical category marking a word's function in a sentence.",
+      "definition": "A particular instance or situation.",
+      "gloss": "A particular instance or situation.",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -16394,7 +16397,8 @@
           "licence_identifier": null
         }
       ],
-      "reference_count": 4
+      "reference_count": 4,
+      "domain_tag": null
     },
     {
       "entry_id": "c9a5c840-7491-4d4d-9fb5-d83ec4ebf483",
@@ -16628,8 +16632,8 @@
       "script_code": "Latn",
       "part_of_speech": "NOUN",
       "closed_class": false,
-      "definition": "The mental and moral qualities distinctive of an individual, or a symbol used in writing or printing.",
-      "gloss": "The mental and moral qualities distinctive of an individual, or a symbol used in writing or printing.",
+      "definition": "The mental and moral qualities distinctive of an individual.",
+      "gloss": "The mental and moral qualities distinctive of an individual.",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -16653,7 +16657,8 @@
           "licence_identifier": null
         }
       ],
-      "reference_count": 4
+      "reference_count": 4,
+      "domain_tag": "quality.common"
     },
     {
       "entry_id": "6e3cc9d0-e161-4a7e-aaa2-dc09be105e61",
@@ -16776,8 +16781,8 @@
       "script_code": "Latn",
       "part_of_speech": "NOUN",
       "closed_class": false,
-      "definition": "A property of matter that causes it to experience a force in an electric or magnetic field, or an accusation or price.",
-      "gloss": "A property of matter that causes it to experience a force in an electric or magnetic field, or an accusation or price.",
+      "definition": "A property of matter that causes it to experience a force in an electric or magnetic field.",
+      "gloss": "A property of matter that causes it to experience a force in an electric or magnetic field.",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -16801,7 +16806,8 @@
           "licence_identifier": null
         }
       ],
-      "reference_count": 4
+      "reference_count": 4,
+      "domain_tag": "property.common"
     },
     {
       "entry_id": "a0b0c63b-7ae1-48ee-91d7-5d23a769b913",
@@ -22474,8 +22480,8 @@
       "script_code": "Latn",
       "part_of_speech": "NOUN",
       "closed_class": false,
-      "definition": "A specified sphere of activity, knowledge, or ownership; a distinct part of a network identified by a name, as in an internet address.",
-      "gloss": "A specified sphere of activity, knowledge, or ownership; a distinct part of a network identified by a name, as in an internet address.",
+      "definition": "A specified sphere of activity, knowledge, or ownership.",
+      "gloss": "A specified sphere of activity, knowledge, or ownership.",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -22499,7 +22505,8 @@
           "licence_identifier": null
         }
       ],
-      "reference_count": 4
+      "reference_count": 4,
+      "domain_tag": null
     },
     {
       "entry_id": "7fd871d7-9783-44f8-93a4-6d956787ec60",
@@ -26359,8 +26366,8 @@
       "script_code": "Latn",
       "part_of_speech": "NOUN",
       "closed_class": false,
-      "definition": "A number or numeral; the shape or outline of something, especially a person's body; a diagram or illustration.",
-      "gloss": "A number or numeral; the shape or outline of something, especially a person's body; a diagram or illustration.",
+      "definition": "A number or numeral.",
+      "gloss": "A number or numeral.",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -26384,7 +26391,8 @@
           "licence_identifier": null
         }
       ],
-      "reference_count": 4
+      "reference_count": 4,
+      "domain_tag": "symbol.common"
     },
     {
       "entry_id": "13919790-19af-455b-adaf-d5a2ddc8b0f2",
@@ -36830,8 +36838,8 @@
       "script_code": "Latn",
       "part_of_speech": "NOUN",
       "closed_class": false,
-      "definition": "A negative word, statement, or response; a photographic image with light and dark, or colours, reversed.",
-      "gloss": "A negative word, statement, or response; a photographic image with light and dark, or colours, reversed.",
+      "definition": "A negative word, statement, or response.",
+      "gloss": "A negative word, statement, or response.",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -36855,7 +36863,8 @@
           "licence_identifier": null
         }
       ],
-      "reference_count": 4
+      "reference_count": 4,
+      "domain_tag": "response.common"
     },
     {
       "entry_id": "a76e4fd0-39b7-44df-b3ba-df4bb1244aa6",
@@ -38162,8 +38171,8 @@
       "script_code": "Latn",
       "part_of_speech": "NOUN",
       "closed_class": false,
-      "definition": "A person or thing that operates something; a symbol representing a mathematical or logical operation.",
-      "gloss": "A person or thing that operates something; a symbol representing a mathematical or logical operation.",
+      "definition": "A symbol representing a mathematical or logical operation.",
+      "gloss": "A symbol representing a mathematical or logical operation.",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -38187,7 +38196,8 @@
           "licence_identifier": null
         }
       ],
-      "reference_count": 4
+      "reference_count": 4,
+      "domain_tag": "symbol.common"
     },
     {
       "entry_id": "e10ddf2d-7564-4d84-8d24-a8ed8c410ae2",
@@ -39346,8 +39356,8 @@
       "script_code": "Latn",
       "part_of_speech": "NOUN",
       "closed_class": false,
-      "definition": "A length of time; also the punctuation mark that ends a declarative sentence.",
-      "gloss": "A length of time; also the punctuation mark that ends a declarative sentence.",
+      "definition": "A length of time.",
+      "gloss": "A length of time.",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -39371,7 +39381,8 @@
           "licence_identifier": null
         }
       ],
-      "reference_count": 4
+      "reference_count": 4,
+      "domain_tag": null
     },
     {
       "entry_id": "8949cedc-da1a-408a-865b-a995deed9ade",
@@ -45488,8 +45499,8 @@
       "script_code": "Latn",
       "part_of_speech": "NOUN",
       "closed_class": false,
-      "definition": "A particular meaning of a word or expression, or the faculty by which the body perceives external stimuli.",
-      "gloss": "A particular meaning of a word or expression, or the faculty by which the body perceives external stimuli.",
+      "definition": "A particular meaning of a word or expression.",
+      "gloss": "A particular meaning of a word or expression.",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -45513,7 +45524,8 @@
           "licence_identifier": null
         }
       ],
-      "reference_count": 4
+      "reference_count": 4,
+      "domain_tag": null
     },
     {
       "entry_id": "deacc86f-6771-4377-b189-1c417413ade5",
@@ -48152,8 +48164,8 @@
       "script_code": "Latn",
       "part_of_speech": "NOUN",
       "closed_class": false,
-      "definition": "The relative social, professional, or legal standing of a person or thing, or a current state of affairs.",
-      "gloss": "The relative social, professional, or legal standing of a person or thing, or a current state of affairs.",
+      "definition": "The relative social, professional, or legal standing of a person or thing.",
+      "gloss": "The relative social, professional, or legal standing of a person or thing.",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -48177,7 +48189,8 @@
           "licence_identifier": null
         }
       ],
-      "reference_count": 4
+      "reference_count": 4,
+      "domain_tag": null
     },
     {
       "entry_id": "c7c1f0da-2bef-4862-b526-31cb9348d46e",
@@ -50372,8 +50385,8 @@
       "script_code": "Latn",
       "part_of_speech": "VERB",
       "closed_class": false,
-      "definition": "Multiplies a number by another; also the plural of time, referring to occasions or instances.",
-      "gloss": "Multiplies a number by another; also the plural of time, referring to occasions or instances.",
+      "definition": "Multiplies a number by another.",
+      "gloss": "Multiplies a number by another.",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -91209,6 +91222,614 @@
         }
       ],
       "reference_count": 4
+    },
+    {
+      "entry_id": "afcf9aef-71bf-483f-bf0c-063a24c90080",
+      "lexical_form": "bar",
+      "normalised_form": "bar",
+      "text": "bar",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "NOUN",
+      "closed_class": false,
+      "definition": "A rigid piece of material, typically long and narrow, such as a length of metal or wood.",
+      "gloss": "A rigid piece of material, typically long and narrow, such as a length of metal or wood.",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Definition-Gap Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "reference_count": 4,
+      "domain_tag": "item.common"
+    },
+    {
+      "entry_id": "380cf183-3ed2-4356-8a57-de5c2208cdd3",
+      "lexical_form": "case",
+      "normalised_form": "case",
+      "text": "case",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "NOUN",
+      "closed_class": false,
+      "definition": "A grammatical category marking a word's function in a sentence, such as subject or object.",
+      "gloss": "A grammatical category marking a word's function in a sentence, such as subject or object.",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Definition-Gap Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "reference_count": 4,
+      "domain_tag": "category.common"
+    },
+    {
+      "entry_id": "a05db944-fa30-4e48-8d06-db112cd4a472",
+      "lexical_form": "character",
+      "normalised_form": "character",
+      "text": "character",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "NOUN",
+      "closed_class": false,
+      "definition": "A symbol used in writing or printing, such as a letter or numeral.",
+      "gloss": "A symbol used in writing or printing, such as a letter or numeral.",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 3,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Definition-Gap Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "reference_count": 4,
+      "domain_tag": "mark.common"
+    },
+    {
+      "entry_id": "8ded039f-b6c2-410b-8cf8-13bf1505d025",
+      "lexical_form": "charge",
+      "normalised_form": "charge",
+      "text": "charge",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "NOUN",
+      "closed_class": false,
+      "definition": "A formal accusation of wrongdoing, especially one made against someone in a legal proceeding.",
+      "gloss": "A formal accusation of wrongdoing, especially one made against someone in a legal proceeding.",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Definition-Gap Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "reference_count": 4,
+      "domain_tag": "statement.common"
+    },
+    {
+      "entry_id": "fec987df-302c-4c43-afe9-7cee09d3b2bd",
+      "lexical_form": "charge",
+      "normalised_form": "charge",
+      "text": "charge",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "NOUN",
+      "closed_class": false,
+      "definition": "The price asked for goods or a service.",
+      "gloss": "The price asked for goods or a service.",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Definition-Gap Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "reference_count": 4,
+      "domain_tag": null
+    },
+    {
+      "entry_id": "08a1fb72-4d65-4eb9-989f-cd3e59d6213c",
+      "lexical_form": "domain",
+      "normalised_form": "domain",
+      "text": "domain",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "NOUN",
+      "closed_class": false,
+      "definition": "A distinct part of a network identified by a name, as in an internet address.",
+      "gloss": "A distinct part of a network identified by a name, as in an internet address.",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Definition-Gap Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "reference_count": 4,
+      "domain_tag": "network.common"
+    },
+    {
+      "entry_id": "34fd06e0-b582-4887-8638-a63d20d9f362",
+      "lexical_form": "figure",
+      "normalised_form": "figure",
+      "text": "figure",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "NOUN",
+      "closed_class": false,
+      "definition": "The shape or outline of something, especially a person's body.",
+      "gloss": "The shape or outline of something, especially a person's body.",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 3,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Definition-Gap Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "reference_count": 4,
+      "domain_tag": null
+    },
+    {
+      "entry_id": "99028004-3dfb-438e-9ee2-cbd5c9afd8d6",
+      "lexical_form": "figure",
+      "normalised_form": "figure",
+      "text": "figure",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "NOUN",
+      "closed_class": false,
+      "definition": "A diagram or illustration, especially one accompanying and clarifying a piece of text.",
+      "gloss": "A diagram or illustration, especially one accompanying and clarifying a piece of text.",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 3,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Definition-Gap Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "reference_count": 4,
+      "domain_tag": "representation.common"
+    },
+    {
+      "entry_id": "9dd22068-1474-4767-9a6a-e794b9ff11f9",
+      "lexical_form": "negative",
+      "normalised_form": "negative",
+      "text": "negative",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "NOUN",
+      "closed_class": false,
+      "definition": "A photographic image with light and dark, or colours, reversed, from which positive prints can be made.",
+      "gloss": "A photographic image with light and dark, or colours, reversed, from which positive prints can be made.",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 4,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Definition-Gap Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "reference_count": 4,
+      "domain_tag": null
+    },
+    {
+      "entry_id": "f91efe02-cc03-4fe6-9dc3-f363b8ef6de2",
+      "lexical_form": "negative",
+      "normalised_form": "negative",
+      "text": "negative",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "ADJECTIVE",
+      "closed_class": false,
+      "definition": "Relating to a type of electric charge opposite to positive.",
+      "gloss": "Relating to a type of electric charge opposite to positive.",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 4,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Definition-Gap Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "reference_count": 4,
+      "domain_tag": "electric.common"
+    },
+    {
+      "entry_id": "2ed9b87f-03ee-43a3-9817-50e592b22edd",
+      "lexical_form": "operator",
+      "normalised_form": "operator",
+      "text": "operator",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "NOUN",
+      "closed_class": false,
+      "definition": "A person who operates or controls a machine or system.",
+      "gloss": "A person who operates or controls a machine or system.",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 4,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Definition-Gap Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "reference_count": 4,
+      "domain_tag": "human.common"
+    },
+    {
+      "entry_id": "53e440d4-fcba-4a39-97b9-19f180f1d8b3",
+      "lexical_form": "period",
+      "normalised_form": "period",
+      "text": "period",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "NOUN",
+      "closed_class": false,
+      "definition": "The punctuation mark that ends a declarative sentence; a full stop.",
+      "gloss": "The punctuation mark that ends a declarative sentence; a full stop.",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Definition-Gap Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "reference_count": 4,
+      "domain_tag": "mark.common"
+    },
+    {
+      "entry_id": "c7b36c38-784c-485c-a12c-eba3aaefdae3",
+      "lexical_form": "positive",
+      "normalised_form": "positive",
+      "text": "positive",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "ADJECTIVE",
+      "closed_class": false,
+      "definition": "Greater than zero.",
+      "gloss": "Greater than zero.",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 4,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Definition-Gap Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "reference_count": 4,
+      "domain_tag": "numerical.common"
+    },
+    {
+      "entry_id": "dd058ac9-efd5-4772-8695-8ee21fdbdbca",
+      "lexical_form": "positive",
+      "normalised_form": "positive",
+      "text": "positive",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "ADJECTIVE",
+      "closed_class": false,
+      "definition": "Relating to a type of electric charge opposite to negative.",
+      "gloss": "Relating to a type of electric charge opposite to negative.",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 4,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Definition-Gap Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "reference_count": 4,
+      "domain_tag": "electric.common"
+    },
+    {
+      "entry_id": "4d5d959b-a011-4bf5-a2a7-83ef75d9613b",
+      "lexical_form": "sense",
+      "normalised_form": "sense",
+      "text": "sense",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "NOUN",
+      "closed_class": false,
+      "definition": "The faculty by which the body perceives external stimuli, such as sight, hearing, smell, taste, or touch.",
+      "gloss": "The faculty by which the body perceives external stimuli, such as sight, hearing, smell, taste, or touch.",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Definition-Gap Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "reference_count": 4,
+      "domain_tag": "ability.common"
+    },
+    {
+      "entry_id": "4701c050-4b03-4ce9-b112-4a5d8a008b53",
+      "lexical_form": "status",
+      "normalised_form": "status",
+      "text": "status",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "NOUN",
+      "closed_class": false,
+      "definition": "A current state of affairs.",
+      "gloss": "A current state of affairs.",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Definition-Gap Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "reference_count": 4,
+      "domain_tag": "situation.common"
     }
   ]
 }

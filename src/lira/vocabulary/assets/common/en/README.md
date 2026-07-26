@@ -355,6 +355,66 @@ by lexical form (e.g. `that` → `those` `PLURAL_FORM`) continues to
 resolve to the correct sense either way. `Dictionary.lookup_all(text)`
 returns every sense regardless of file placement or load order.
 
+### Polysemous senses
+
+A homograph (the table above) shares a lexical_form with an existing
+entry but differs in `part_of_speech` -- `part_of_speech` alone tells
+the two apart. A polyseme is a stricter case: two genuinely distinct
+senses sharing *both* lexical_form and part_of_speech, found while
+inspecting the DictionaryView Cyclic tab, where an unrelated SYNONYM
+box and an unrelated HYPERNYM box would both point at the same word
+(e.g. "period" showing up under both a time-duration cluster and a
+punctuation-mark cluster) because one merged `definition` secretly
+described two senses at once -- "period" (`NOUN`) merged "a length of
+time" and "the punctuation mark that ends a declarative sentence" into
+one entry, "character" (`NOUN`) merged "personality" and "a written
+symbol", and so on for eleven more words.
+
+Word gained a `domain_tag` field for exactly this (see its own
+docstring): `None` for every ordinary Common word, or a string like
+`"symbol.common"` naming the sense's own HYPERNYM as a subdomain of
+`"common"` when it needs telling apart from another sense of the same
+(lexical_form, part_of_speech). `WordSeeder`'s uniqueness rule is
+`(lexical_form, part_of_speech, domain_tag)`, not `(lexical_form,
+part_of_speech)` alone, so two polysemous entries coexist the same way
+two homographs already did. `domain_tag` is left unset rather than
+fabricated when a split-off sense has no hypernym already in (or
+sensibly added to) the cache -- e.g. "figure"'s body-shape sense
+("the shape or outline of something, especially a person's body") has
+no fitting hypernym here and stays plain `Common`.
+
+`RelationshipSeeder` gained the matching `source_domain_tag`/
+`target_domain_tag` disambiguators on its own spec schema (see
+`relationships/README.md`), since an edge pointing at a polysemous word
+needs to say which sense it means the same way an edge onto a
+homograph already names its `part_of_speech`.
+
+`asset_version 1.17.0` split 13 combined-sense entries this way (12
+genuine splits, one 2-way and two 3-way): `bar`, `case`, `character`,
+`charge` (3-way: physics/legal/price), `domain`, `figure` (3-way:
+numeral/shape/diagram), `negative` (`NOUN`), `negative` (`ADJECTIVE`,
+2-way: numerical/electric), `operator`, `period`, `positive`
+(`ADJECTIVE`, 3-way: general/numerical/electric), `sense`, `status`.
+Each split kept its original `entry_id` for one sense (the KEEP entry,
+trimmed to just that sense's definition) and added a brand-new entry
+per additional sense; every relationship the original merged entry
+carried moved to whichever sense it actually describes (`case`'s
+`HYPERNYM -> category` moved to its grammar sense, not its
+instance/situation sense), and a HYPERNYM/HYPONYM pair was added for
+every sense whose `domain_tag` names one. `positive`/`negative`
+(`ADJECTIVE`)'s single ANTONYM pair was rebuilt as one pair per
+sense-family (`numerical.common` <-> `numerical.common`,
+`electric.common` <-> `electric.common`) -- `positive`'s general/
+optimistic sense keeps no ANTONYM edge, since this vocabulary never
+gave `negative` a matching general/pessimistic sense to pair it with.
+`times` (`VERB`) turned out not to be a genuine second sense at all --
+its "; also the plural of time..." clause just duplicated the sense
+`times` (`NOUN`) already has its own entry for, a leftover from
+whichever batch wrote it; fixed by deleting the clause, not by adding
+an entry. See `examples/common_polysemy_split.py` for the full
+per-word decisions and `examples/common_polysemy_split_seeding.py` for
+the migration itself.
+
 ## File format
 
 Every closed-class file uses this structure. Each word entry carries
@@ -466,6 +526,22 @@ lexical_form with an earlier-loaded sense never disturbs
 `Dictionary.lookup()`'s first-seeded-wins default.
 
 ## Version
+
+`v1` / `schema_version 2.0.0` / `asset_version 1.17.0` -- split 13
+combined-sense `promoted_words.json` entries into their real, separate
+senses, and fixed one stray leftover clause -- see Polysemous senses
+above for the full account and `examples/common_polysemy_split.py`/
+`examples/common_polysemy_split_seeding.py` for the data and the
+migration. Added `Word.domain_tag` (`None` for an ordinary Common word,
+a string like `"symbol.common"` for a sense that needs telling apart
+from a sibling sense sharing its lexical_form and part_of_speech) and
+widened `WordSeeder`'s uniqueness rule from `(lexical_form,
+part_of_speech)` to `(lexical_form, part_of_speech, domain_tag)`
+accordingly -- deliberately not a schema change to every entry: the
+~3000 entries that aren't part of any split keep `domain_tag` absent
+(reads as `None`), and only the 16 new entries this batch added carry
+an explicit value. `promoted_words.json`'s word count grew from 2465 to
+2481.
 
 `v1` / `schema_version 2.0.0` / `asset_version 1.16.0` -- completed the
 Group 0 (Morphological) relationship coverage this Vocabulary Cache was

@@ -888,6 +888,66 @@ completion above), and orthographic (this section) have all now been
 checked against the live dictionary and completed where genuine gaps
 existed.
 
+## Polysemy split
+
+Found while inspecting the DictionaryView Cyclic tab (`vocabulary/ui/
+README.md`): a word's SYNONYM box would draw lines to relationships
+that had nothing to do with the sense its synonym-neighbours shared,
+because the word's own `definition` had quietly merged two or three
+distinct dictionary senses into one Common Vocabulary Cache entry --
+`period` (NOUN) merged "a length of time" and "the punctuation mark
+that ends a declarative sentence"; `character` (NOUN) merged
+"personality" and "a written symbol used in writing or printing"; and
+eleven more words did the same, two of them ("charge", "positive")
+three ways at once (physics/legal/price; general/mathematical/
+electric).
+
+A `WordSeeder.validate_assets()` invariant already forbade this
+from being fixed by adding a second entry outright: two Common cache
+entries sharing (lexical_form, part_of_speech) are a rejected
+duplicate, on the (correct, still-true) theory that only
+part_of_speech legitimately tells two senses of one spelling apart
+(the `that` DETERMINER/PRONOUN pattern). A genuine polyseme -- same
+spelling, same part_of_speech, still two real senses -- has no such
+signal. `Word` gained a `domain_tag` field for exactly this case:
+`None` for every ordinary word, or a string like `"symbol.common"`
+naming a split-off sense's own HYPERNYM as a subdomain of `"common"`
+when (and only when) that sense already has a genuine hypernym in the
+cache -- left unset rather than invented for a sense with no fitting
+one. `WordSeeder`'s uniqueness rule widened from `(lexical_form,
+part_of_speech)` to `(lexical_form, part_of_speech, domain_tag)`
+accordingly, and `RelationshipSeeder` gained matching
+`source_domain_tag`/`target_domain_tag` spec fields (the same role
+`source_part_of_speech`/`target_part_of_speech` already played for
+homographs) so a relationship edge can say which specific sense it
+means.
+
+12 of the 13 words were genuine splits: one entry kept its original
+`entry_id`, trimmed to one sense's definition, and a brand-new entry
+was added per additional sense, with every relationship the original
+merged entry carried moved to whichever sense actually owns it (not
+duplicated onto both). `positive`/`negative` (ADJECTIVE)'s single
+ANTONYM edge was rebuilt as one pair per matching sense-family
+(numerical<->numerical, electric<->electric) instead. The 13th,
+`times` (VERB), turned out not to be a real second sense at all: its
+"; also the plural of time..." clause just duplicated the sense
+`times` (NOUN) already has its own separate entry for -- a stray
+leftover clause, fixed by deleting it rather than by creating a word
+that would only have duplicated an existing one.
+
+See `vocabulary/assets/common/en/README.md`'s Polysemous senses
+section for the complete per-word table, `examples/
+common_polysemy_split.py` for the drafted data (definitions, domain
+tags, which relationships move where), and `examples/
+common_polysemy_split_seeding.py` for the migration itself --
+idempotent, and wired into `common_semantic_completion_seeding.py`'s
+own `run()` as its first step (ahead of that script's own Physics
+Domain build, so the Domain and the regenerated example UI both
+reflect the split).
+
+Common Vocabulary Cache: 2465 -> 2481 words, 6111 -> 6187
+relationships.
+
 ## Known, pre-existing limitation surfaced (not fixed) by this exercise
 
 `DictionaryProcessor.identify_word` only queues hydration when a token

@@ -174,6 +174,39 @@ target a specific sense (`state` `VERB` -> `statement`, not `state`
 `NOUN` -> `statement`, which wouldn't mean anything). Omit both fields
 and behaviour is byte-for-byte what it always was.
 
+### Disambiguating a polysemous endpoint
+
+`part_of_speech` stops disambiguating once a single (lexical_form,
+part_of_speech) pair names more than one genuine sense -- a polyseme
+(`vocabulary/assets/common/en/README.md`'s own Polysemous senses
+section, e.g. `bar` `NOUN` the symbol/mark sense and `bar` `NOUN` the
+physical-rod sense), rather than a homograph told apart by differing
+`part_of_speech`. An entry names the specific sense the same way it
+names a homograph's `part_of_speech`: an optional
+`source_domain_tag`/`target_domain_tag` key, matching that sense's
+`Word.domain_tag` exactly (`None`/omitted means "the plain common
+sense", not "any sense" -- so a spec that must hit the untagged sense
+of a polyseme still resolves correctly even when a differently-tagged
+sibling sense loaded first):
+
+```json
+{
+  "source_lexical_form": "bar",
+  "source_part_of_speech": "NOUN",
+  "source_domain_tag": "item.common",
+  "target_lexical_form": "item",
+  "target_part_of_speech": "NOUN",
+  "relationship_kind": "HYPERNYM"
+}
+```
+
+Like `source_part_of_speech`/`target_part_of_speech`, most entries
+never need this -- only the handful of specs that touch one of the
+words split in `vocabulary/assets/common/en/README.md`'s Polysemous
+senses section, and even for those, only when the edge doesn't
+already resolve correctly by default (an edge meant for a polyseme's
+untagged sense needs no field at all).
+
 ## Relationship identity and duplicate prevention
 
 Every `LexicalRelationship` references a source Word UUID, a
@@ -286,6 +319,18 @@ loanwords), not a gap in the relationship cache; revisit if a future
 batch adds vocabulary of that kind.
 
 ## Version
+
+`v1` / `schema_version 1.0.0` / `asset_version 1.12.0` (6111 -> 6187
+relationships). Migrated relationships for the 13-word polysemy split
+(`../README.md`'s Polysemous senses section): every edge the original
+merged entry carried moved to whichever new sense it actually
+describes, plus a fresh HYPERNYM/HYPONYM pair for every sense whose
+`domain_tag` names a hypernym not already linked, plus PLURAL_FORM/
+LEMMA_FORM for every new sense's own plural. Also rebuilt `positive`/
+`negative` (`ADJECTIVE`)'s single ANTONYM pair as one pair per
+sense-family (see the polyseme section for why). Added the
+`source_domain_tag`/`target_domain_tag` schema fields this required --
+see Disambiguating a polysemous endpoint above.
 
 `v1` / `schema_version 1.0.0` / `asset_version 1.11.0` (3470 -> 6111
 relationships). Seeded Lexical Semantic (group 1) coverage for every

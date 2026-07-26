@@ -2,7 +2,7 @@
   "schema_version": "1.0.0",
   "language_code": "en",
   "relationship_category": "semantic",
-  "count": 2633,
+  "count": 2665,
   "relationships": [
     {
       "source_lexical_form": "above",
@@ -1103,14 +1103,16 @@
       "source_part_of_speech": "NOUN",
       "target_lexical_form": "symbol",
       "target_part_of_speech": "NOUN",
-      "relationship_kind": "HYPERNYM"
+      "relationship_kind": "HYPERNYM",
+      "source_domain_tag": "symbol.common"
     },
     {
       "source_lexical_form": "symbol",
       "source_part_of_speech": "NOUN",
       "target_lexical_form": "bar",
       "target_part_of_speech": "NOUN",
-      "relationship_kind": "HYPONYM"
+      "relationship_kind": "HYPONYM",
+      "target_domain_tag": "symbol.common"
     },
     {
       "source_lexical_form": "base",
@@ -1355,14 +1357,16 @@
       "source_part_of_speech": "NOUN",
       "target_lexical_form": "category",
       "target_part_of_speech": "NOUN",
-      "relationship_kind": "HYPERNYM"
+      "relationship_kind": "HYPERNYM",
+      "source_domain_tag": "category.common"
     },
     {
       "source_lexical_form": "category",
       "source_part_of_speech": "NOUN",
       "target_lexical_form": "case",
       "target_part_of_speech": "NOUN",
-      "relationship_kind": "HYPONYM"
+      "relationship_kind": "HYPONYM",
+      "target_domain_tag": "category.common"
     },
     {
       "source_lexical_form": "category",
@@ -1495,14 +1499,16 @@
       "source_part_of_speech": "NOUN",
       "target_lexical_form": "symbol",
       "target_part_of_speech": "NOUN",
-      "relationship_kind": "SYNONYM"
+      "relationship_kind": "SYNONYM",
+      "source_domain_tag": "mark.common"
     },
     {
       "source_lexical_form": "symbol",
       "source_part_of_speech": "NOUN",
       "target_lexical_form": "character",
       "target_part_of_speech": "NOUN",
-      "relationship_kind": "SYNONYM"
+      "relationship_kind": "SYNONYM",
+      "target_domain_tag": "mark.common"
     },
     {
       "source_lexical_form": "characteristic",
@@ -1523,28 +1529,32 @@
       "source_part_of_speech": "NOUN",
       "target_lexical_form": "property",
       "target_part_of_speech": "NOUN",
-      "relationship_kind": "HYPERNYM"
+      "relationship_kind": "HYPERNYM",
+      "source_domain_tag": "property.common"
     },
     {
       "source_lexical_form": "property",
       "source_part_of_speech": "NOUN",
       "target_lexical_form": "charge",
       "target_part_of_speech": "NOUN",
-      "relationship_kind": "HYPONYM"
+      "relationship_kind": "HYPONYM",
+      "target_domain_tag": "property.common"
     },
     {
       "source_lexical_form": "charge",
       "source_part_of_speech": "NOUN",
       "target_lexical_form": "force",
       "target_part_of_speech": "NOUN",
-      "relationship_kind": "RELATED"
+      "relationship_kind": "RELATED",
+      "source_domain_tag": "property.common"
     },
     {
       "source_lexical_form": "force",
       "source_part_of_speech": "NOUN",
       "target_lexical_form": "charge",
       "target_part_of_speech": "NOUN",
-      "relationship_kind": "RELATED"
+      "relationship_kind": "RELATED",
+      "target_domain_tag": "property.common"
     },
     {
       "source_lexical_form": "chemistry",
@@ -2615,14 +2625,16 @@
       "source_part_of_speech": "NOUN",
       "target_lexical_form": "character",
       "target_part_of_speech": "NOUN",
-      "relationship_kind": "SYNONYM"
+      "relationship_kind": "SYNONYM",
+      "target_domain_tag": "quality.common"
     },
     {
       "source_lexical_form": "character",
       "source_part_of_speech": "NOUN",
       "target_lexical_form": "disposition",
       "target_part_of_speech": "NOUN",
-      "relationship_kind": "SYNONYM"
+      "relationship_kind": "SYNONYM",
+      "source_domain_tag": "quality.common"
     },
     {
       "source_lexical_form": "disposition",
@@ -3497,14 +3509,16 @@
       "source_part_of_speech": "NOUN",
       "target_lexical_form": "number",
       "target_part_of_speech": "NOUN",
-      "relationship_kind": "SYNONYM"
+      "relationship_kind": "SYNONYM",
+      "source_domain_tag": "symbol.common"
     },
     {
       "source_lexical_form": "number",
       "source_part_of_speech": "NOUN",
       "target_lexical_form": "figure",
       "target_part_of_speech": "NOUN",
-      "relationship_kind": "SYNONYM"
+      "relationship_kind": "SYNONYM",
+      "target_domain_tag": "symbol.common"
     },
     {
       "source_lexical_form": "figure",
@@ -4421,14 +4435,16 @@
       "source_part_of_speech": "NOUN",
       "target_lexical_form": "case",
       "target_part_of_speech": "NOUN",
-      "relationship_kind": "RELATED"
+      "relationship_kind": "RELATED",
+      "target_domain_tag": "category.common"
     },
     {
       "source_lexical_form": "case",
       "source_part_of_speech": "NOUN",
       "target_lexical_form": "inflection",
       "target_part_of_speech": "NOUN",
-      "relationship_kind": "RELATED"
+      "relationship_kind": "RELATED",
+      "source_domain_tag": "category.common"
     },
     {
       "source_lexical_form": "influence",
@@ -5051,14 +5067,16 @@
       "source_part_of_speech": "NOUN",
       "target_lexical_form": "character",
       "target_part_of_speech": "NOUN",
-      "relationship_kind": "HYPERNYM"
+      "relationship_kind": "HYPERNYM",
+      "target_domain_tag": "mark.common"
     },
     {
       "source_lexical_form": "character",
       "source_part_of_speech": "NOUN",
       "target_lexical_form": "letter",
       "target_part_of_speech": "NOUN",
-      "relationship_kind": "HYPONYM"
+      "relationship_kind": "HYPONYM",
+      "source_domain_tag": "mark.common"
     },
     {
       "source_lexical_form": "letter",
@@ -5779,14 +5797,16 @@
       "source_part_of_speech": "NOUN",
       "target_lexical_form": "character",
       "target_part_of_speech": "NOUN",
-      "relationship_kind": "SYNONYM"
+      "relationship_kind": "SYNONYM",
+      "target_domain_tag": "quality.common"
     },
     {
       "source_lexical_form": "character",
       "source_part_of_speech": "NOUN",
       "target_lexical_form": "nature",
       "target_part_of_speech": "NOUN",
-      "relationship_kind": "SYNONYM"
+      "relationship_kind": "SYNONYM",
+      "source_domain_tag": "quality.common"
     },
     {
       "source_lexical_form": "necessity",
@@ -5807,14 +5827,16 @@
       "source_part_of_speech": "NOUN",
       "target_lexical_form": "negative",
       "target_part_of_speech": "NOUN",
-      "relationship_kind": "RELATED"
+      "relationship_kind": "RELATED",
+      "target_domain_tag": "response.common"
     },
     {
       "source_lexical_form": "negative",
       "source_part_of_speech": "NOUN",
       "target_lexical_form": "negation",
       "target_part_of_speech": "NOUN",
-      "relationship_kind": "RELATED"
+      "relationship_kind": "RELATED",
+      "source_domain_tag": "response.common"
     },
     {
       "source_lexical_form": "network",
@@ -6017,28 +6039,32 @@
       "source_part_of_speech": "NOUN",
       "target_lexical_form": "operation",
       "target_part_of_speech": "NOUN",
-      "relationship_kind": "RELATED"
+      "relationship_kind": "RELATED",
+      "source_domain_tag": "symbol.common"
     },
     {
       "source_lexical_form": "operation",
       "source_part_of_speech": "NOUN",
       "target_lexical_form": "operator",
       "target_part_of_speech": "NOUN",
-      "relationship_kind": "RELATED"
+      "relationship_kind": "RELATED",
+      "target_domain_tag": "symbol.common"
     },
     {
       "source_lexical_form": "operator",
       "source_part_of_speech": "NOUN",
       "target_lexical_form": "symbol",
       "target_part_of_speech": "NOUN",
-      "relationship_kind": "HYPERNYM"
+      "relationship_kind": "HYPERNYM",
+      "source_domain_tag": "symbol.common"
     },
     {
       "source_lexical_form": "symbol",
       "source_part_of_speech": "NOUN",
       "target_lexical_form": "operator",
       "target_part_of_speech": "NOUN",
-      "relationship_kind": "HYPONYM"
+      "relationship_kind": "HYPONYM",
+      "target_domain_tag": "symbol.common"
     },
     {
       "source_lexical_form": "opposition",
@@ -6353,14 +6379,16 @@
       "source_part_of_speech": "NOUN",
       "target_lexical_form": "mark",
       "target_part_of_speech": "NOUN",
-      "relationship_kind": "HYPERNYM"
+      "relationship_kind": "HYPERNYM",
+      "source_domain_tag": "mark.common"
     },
     {
       "source_lexical_form": "mark",
       "source_part_of_speech": "NOUN",
       "target_lexical_form": "period",
       "target_part_of_speech": "NOUN",
-      "relationship_kind": "HYPONYM"
+      "relationship_kind": "HYPONYM",
+      "target_domain_tag": "mark.common"
     },
     {
       "source_lexical_form": "permission",
@@ -7879,14 +7907,16 @@
       "source_part_of_speech": "NOUN",
       "target_lexical_form": "sight",
       "target_part_of_speech": "NOUN",
-      "relationship_kind": "RELATED"
+      "relationship_kind": "RELATED",
+      "source_domain_tag": "ability.common"
     },
     {
       "source_lexical_form": "sight",
       "source_part_of_speech": "NOUN",
       "target_lexical_form": "sense",
       "target_part_of_speech": "NOUN",
-      "relationship_kind": "RELATED"
+      "relationship_kind": "RELATED",
+      "target_domain_tag": "ability.common"
     },
     {
       "source_lexical_form": "sentence",
@@ -8075,14 +8105,16 @@
       "source_part_of_speech": "NOUN",
       "target_lexical_form": "sense",
       "target_part_of_speech": "NOUN",
-      "relationship_kind": "HYPERNYM"
+      "relationship_kind": "HYPERNYM",
+      "target_domain_tag": "ability.common"
     },
     {
       "source_lexical_form": "sense",
       "source_part_of_speech": "NOUN",
       "target_lexical_form": "sight",
       "target_part_of_speech": "NOUN",
-      "relationship_kind": "HYPONYM"
+      "relationship_kind": "HYPONYM",
+      "source_domain_tag": "ability.common"
     },
     {
       "source_lexical_form": "sight",
@@ -8355,14 +8387,16 @@
       "source_part_of_speech": "NOUN",
       "target_lexical_form": "character",
       "target_part_of_speech": "NOUN",
-      "relationship_kind": "RELATED"
+      "relationship_kind": "RELATED",
+      "target_domain_tag": "quality.common"
     },
     {
       "source_lexical_form": "character",
       "source_part_of_speech": "NOUN",
       "target_lexical_form": "spirit",
       "target_part_of_speech": "NOUN",
-      "relationship_kind": "RELATED"
+      "relationship_kind": "RELATED",
+      "source_domain_tag": "quality.common"
     },
     {
       "source_lexical_form": "spite",
@@ -8509,14 +8543,16 @@
       "source_part_of_speech": "NOUN",
       "target_lexical_form": "state",
       "target_part_of_speech": "NOUN",
-      "relationship_kind": "SYNONYM"
+      "relationship_kind": "SYNONYM",
+      "source_domain_tag": "situation.common"
     },
     {
       "source_lexical_form": "state",
       "source_part_of_speech": "NOUN",
       "target_lexical_form": "status",
       "target_part_of_speech": "NOUN",
-      "relationship_kind": "SYNONYM"
+      "relationship_kind": "SYNONYM",
+      "target_domain_tag": "situation.common"
     },
     {
       "source_lexical_form": "steel",
@@ -15974,20 +16010,6 @@
       "relationship_kind": "RELATED"
     },
     {
-      "source_lexical_form": "negative",
-      "source_part_of_speech": "ADJECTIVE",
-      "target_lexical_form": "positive",
-      "target_part_of_speech": "ADJECTIVE",
-      "relationship_kind": "ANTONYM"
-    },
-    {
-      "source_lexical_form": "positive",
-      "source_part_of_speech": "ADJECTIVE",
-      "target_lexical_form": "negative",
-      "target_part_of_speech": "ADJECTIVE",
-      "relationship_kind": "ANTONYM"
-    },
-    {
       "source_lexical_form": "new",
       "source_part_of_speech": "ADJECTIVE",
       "target_lexical_form": "archaic",
@@ -18366,6 +18388,282 @@
       "target_lexical_form": "widely",
       "target_part_of_speech": "ADVERB",
       "relationship_kind": "RELATED"
+    },
+    {
+      "source_lexical_form": "bar",
+      "source_part_of_speech": "NOUN",
+      "source_domain_tag": "item.common",
+      "target_lexical_form": "item",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "HYPERNYM"
+    },
+    {
+      "source_lexical_form": "item",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "bar",
+      "target_part_of_speech": "NOUN",
+      "target_domain_tag": "item.common",
+      "relationship_kind": "HYPONYM"
+    },
+    {
+      "source_lexical_form": "character",
+      "source_part_of_speech": "NOUN",
+      "source_domain_tag": "quality.common",
+      "target_lexical_form": "quality",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "HYPERNYM"
+    },
+    {
+      "source_lexical_form": "quality",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "character",
+      "target_part_of_speech": "NOUN",
+      "target_domain_tag": "quality.common",
+      "relationship_kind": "HYPONYM"
+    },
+    {
+      "source_lexical_form": "character",
+      "source_part_of_speech": "NOUN",
+      "source_domain_tag": "mark.common",
+      "target_lexical_form": "mark",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "HYPERNYM"
+    },
+    {
+      "source_lexical_form": "mark",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "character",
+      "target_part_of_speech": "NOUN",
+      "target_domain_tag": "mark.common",
+      "relationship_kind": "HYPONYM"
+    },
+    {
+      "source_lexical_form": "charge",
+      "source_part_of_speech": "NOUN",
+      "source_domain_tag": "statement.common",
+      "target_lexical_form": "statement",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "HYPERNYM"
+    },
+    {
+      "source_lexical_form": "statement",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "charge",
+      "target_part_of_speech": "NOUN",
+      "target_domain_tag": "statement.common",
+      "relationship_kind": "HYPONYM"
+    },
+    {
+      "source_lexical_form": "domain",
+      "source_part_of_speech": "NOUN",
+      "source_domain_tag": "network.common",
+      "target_lexical_form": "network",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "HYPERNYM"
+    },
+    {
+      "source_lexical_form": "network",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "domain",
+      "target_part_of_speech": "NOUN",
+      "target_domain_tag": "network.common",
+      "relationship_kind": "HYPONYM"
+    },
+    {
+      "source_lexical_form": "figure",
+      "source_part_of_speech": "NOUN",
+      "source_domain_tag": "symbol.common",
+      "target_lexical_form": "symbol",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "HYPERNYM"
+    },
+    {
+      "source_lexical_form": "symbol",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "figure",
+      "target_part_of_speech": "NOUN",
+      "target_domain_tag": "symbol.common",
+      "relationship_kind": "HYPONYM"
+    },
+    {
+      "source_lexical_form": "figure",
+      "source_part_of_speech": "NOUN",
+      "source_domain_tag": "representation.common",
+      "target_lexical_form": "representation",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "HYPERNYM"
+    },
+    {
+      "source_lexical_form": "representation",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "figure",
+      "target_part_of_speech": "NOUN",
+      "target_domain_tag": "representation.common",
+      "relationship_kind": "HYPONYM"
+    },
+    {
+      "source_lexical_form": "negative",
+      "source_part_of_speech": "NOUN",
+      "source_domain_tag": "response.common",
+      "target_lexical_form": "response",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "HYPERNYM"
+    },
+    {
+      "source_lexical_form": "response",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "negative",
+      "target_part_of_speech": "NOUN",
+      "target_domain_tag": "response.common",
+      "relationship_kind": "HYPONYM"
+    },
+    {
+      "source_lexical_form": "negative",
+      "source_part_of_speech": "ADJECTIVE",
+      "source_domain_tag": "numerical.common",
+      "target_lexical_form": "numerical",
+      "target_part_of_speech": "ADJECTIVE",
+      "relationship_kind": "HYPERNYM"
+    },
+    {
+      "source_lexical_form": "numerical",
+      "source_part_of_speech": "ADJECTIVE",
+      "target_lexical_form": "negative",
+      "target_part_of_speech": "ADJECTIVE",
+      "target_domain_tag": "numerical.common",
+      "relationship_kind": "HYPONYM"
+    },
+    {
+      "source_lexical_form": "negative",
+      "source_part_of_speech": "ADJECTIVE",
+      "source_domain_tag": "electric.common",
+      "target_lexical_form": "electric",
+      "target_part_of_speech": "ADJECTIVE",
+      "relationship_kind": "HYPERNYM"
+    },
+    {
+      "source_lexical_form": "electric",
+      "source_part_of_speech": "ADJECTIVE",
+      "target_lexical_form": "negative",
+      "target_part_of_speech": "ADJECTIVE",
+      "target_domain_tag": "electric.common",
+      "relationship_kind": "HYPONYM"
+    },
+    {
+      "source_lexical_form": "operator",
+      "source_part_of_speech": "NOUN",
+      "source_domain_tag": "human.common",
+      "target_lexical_form": "human",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "HYPERNYM"
+    },
+    {
+      "source_lexical_form": "human",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "operator",
+      "target_part_of_speech": "NOUN",
+      "target_domain_tag": "human.common",
+      "relationship_kind": "HYPONYM"
+    },
+    {
+      "source_lexical_form": "positive",
+      "source_part_of_speech": "ADJECTIVE",
+      "source_domain_tag": "numerical.common",
+      "target_lexical_form": "numerical",
+      "target_part_of_speech": "ADJECTIVE",
+      "relationship_kind": "HYPERNYM"
+    },
+    {
+      "source_lexical_form": "numerical",
+      "source_part_of_speech": "ADJECTIVE",
+      "target_lexical_form": "positive",
+      "target_part_of_speech": "ADJECTIVE",
+      "target_domain_tag": "numerical.common",
+      "relationship_kind": "HYPONYM"
+    },
+    {
+      "source_lexical_form": "positive",
+      "source_part_of_speech": "ADJECTIVE",
+      "source_domain_tag": "electric.common",
+      "target_lexical_form": "electric",
+      "target_part_of_speech": "ADJECTIVE",
+      "relationship_kind": "HYPERNYM"
+    },
+    {
+      "source_lexical_form": "electric",
+      "source_part_of_speech": "ADJECTIVE",
+      "target_lexical_form": "positive",
+      "target_part_of_speech": "ADJECTIVE",
+      "target_domain_tag": "electric.common",
+      "relationship_kind": "HYPONYM"
+    },
+    {
+      "source_lexical_form": "sense",
+      "source_part_of_speech": "NOUN",
+      "source_domain_tag": "ability.common",
+      "target_lexical_form": "ability",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "HYPERNYM"
+    },
+    {
+      "source_lexical_form": "ability",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "sense",
+      "target_part_of_speech": "NOUN",
+      "target_domain_tag": "ability.common",
+      "relationship_kind": "HYPONYM"
+    },
+    {
+      "source_lexical_form": "status",
+      "source_part_of_speech": "NOUN",
+      "source_domain_tag": "situation.common",
+      "target_lexical_form": "situation",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "HYPERNYM"
+    },
+    {
+      "source_lexical_form": "situation",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "status",
+      "target_part_of_speech": "NOUN",
+      "target_domain_tag": "situation.common",
+      "relationship_kind": "HYPONYM"
+    },
+    {
+      "source_lexical_form": "positive",
+      "source_part_of_speech": "ADJECTIVE",
+      "source_domain_tag": "numerical.common",
+      "target_lexical_form": "negative",
+      "target_part_of_speech": "ADJECTIVE",
+      "target_domain_tag": "numerical.common",
+      "relationship_kind": "ANTONYM"
+    },
+    {
+      "source_lexical_form": "negative",
+      "source_part_of_speech": "ADJECTIVE",
+      "source_domain_tag": "numerical.common",
+      "target_lexical_form": "positive",
+      "target_part_of_speech": "ADJECTIVE",
+      "target_domain_tag": "numerical.common",
+      "relationship_kind": "ANTONYM"
+    },
+    {
+      "source_lexical_form": "positive",
+      "source_part_of_speech": "ADJECTIVE",
+      "source_domain_tag": "electric.common",
+      "target_lexical_form": "negative",
+      "target_part_of_speech": "ADJECTIVE",
+      "target_domain_tag": "electric.common",
+      "relationship_kind": "ANTONYM"
+    },
+    {
+      "source_lexical_form": "negative",
+      "source_part_of_speech": "ADJECTIVE",
+      "source_domain_tag": "electric.common",
+      "target_lexical_form": "positive",
+      "target_part_of_speech": "ADJECTIVE",
+      "target_domain_tag": "electric.common",
+      "relationship_kind": "ANTONYM"
     }
   ]
 }

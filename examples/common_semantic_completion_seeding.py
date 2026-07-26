@@ -22,6 +22,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from common_semantic_completion import RELATIONSHIPS  # noqa: E402
 from common_core_vocabulary_seeding import run as seed_common_core_vocabulary  # noqa: E402
+from common_polysemy_split_seeding import run as seed_polysemy_split  # noqa: E402
 from definition_gap_vocabulary_seeding import (  # noqa: E402
     RELATIONSHIPS_DIR,
     _compute_checksum,
@@ -77,6 +78,14 @@ def add_semantic_relationships() -> dict:
 
 
 def run() -> dict:
+    # Runs first: edits the static Common Vocabulary Cache and
+    # relationship files that seed_common_core_vocabulary()'s own
+    # internal chain (definition_gap_vocabulary_seeding.run() ->
+    # physics_domain_seeding.run()) reads fresh from disk to build the
+    # Physics Domain returned below -- so that Domain, and the UI
+    # regenerated from it in __main__, both reflect the split.
+    polysemy_report = seed_polysemy_split()
+
     semantic_report = add_semantic_relationships()
 
     rel_manifest_path = RELATIONSHIPS_DIR / "manifest.json"
@@ -86,7 +95,7 @@ def run() -> dict:
             sem_doc = _load_json(RELATIONSHIPS_DIR / "semantic_relationships.json")
             file_entry["count"] = sem_doc["count"]
     rel_manifest["relationship_count"] = sum(fe["count"] for fe in rel_manifest["files"])
-    rel_manifest["asset_version"] = "1.11.0"
+    rel_manifest["asset_version"] = "1.12.0"
     rel_manifest["checksum"] = _compute_checksum()
     _save_json(rel_manifest_path, rel_manifest)
 
@@ -97,6 +106,7 @@ def run() -> dict:
     return {
         "semantic": semantic_report,
         "core_result": core_result,
+        "polysemy_split": polysemy_report,
         "physics_domain": core_result["physics_domain"],
         "sentence_unresolved_words": core_result["sentence_unresolved_words"],
     }
