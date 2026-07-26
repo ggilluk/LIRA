@@ -219,11 +219,20 @@ layout happened to put two connected boxes. `ANTONYM` (`DEPTH_CAPPED_KINDS`)
 caps this at two columns -- a box two hops from the hub isn't the
 hub's antonym at all, just something the hub's antonym happens to also
 oppose (two unrelated word pairs coincidentally sharing a box), so
-`boxLevels` takes an optional `maxDepth` and folds every level past it
-into the last column instead of drawing a hop-count that would imply a
-hierarchy `ANTONYM` doesn't have; a real hierarchy kind like `HYPERNYM`
-passes no cap and keeps its full depth, since depth *is* the meaning
-there. Each word inside a box is
+drawing it a full column further out would imply a hierarchy `ANTONYM`
+doesn't have. `boxLevels` takes an optional `flatten` flag that folds
+every box's level down to its BFS-distance *parity* (`level % 2`)
+instead of the raw hop count -- not a plain clamp to column 1: a
+clamp would put a two-hops-out box in the same column as the one-hop
+box it's actually connected to, drawing that edge vertically within
+one column instead of left to right. Parity avoids this -- the
+two-hops-out box lands back in column 0 (even), the one-hop box stays
+in column 1 (odd), so their edge still crosses columns like every
+other one, as long as the box graph is bipartite (true in practice for
+`ANTONYM`'s antonym-sharing chains, which alternate like a path rather
+than closing a cycle back on themselves). A real hierarchy kind like
+`HYPERNYM` passes `flatten: false` and keeps its full, unflattened
+depth, since depth *is* the meaning there. Each word inside a box is
 positioned along its own small vertical stack so a line lands on the
 specific word it's from or to, not just the box's centre --
 `present`'s antonym line and `current`'s antonym line are visually

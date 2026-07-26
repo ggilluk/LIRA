@@ -1463,16 +1463,27 @@ function buildClusterGraphs(kind) {
 // columns by level -- most lines then run from a column to the next
 // one over, reading left to right.
 //
-// maxDepth caps how many columns past the hub are ever used (a level-N
-// box renders in column min(N, maxDepth)) without dropping it or
-// re-splitting its group -- for a symmetric kind like ANTONYM, a box
-// two hops from the hub isn't the hub's antonym at all, just something
-// its antonym happens to also oppose (a coincidence of two unrelated
-// word pairs sharing one box), so drawing it a full column further out
-// would imply a hierarchy ANTONYM doesn't have. DEPTH_CAPPED_KINDS
-// below opts specific kinds into this; a real hierarchy kind like
-// HYPERNYM keeps unlimited depth, since there depth *is* the meaning.
-function boxLevels(clusters, edges, maxDepth) {
+// flatten folds every level down to its BFS-distance *parity*
+// (level % 2) instead of the raw hop count -- two columns only (the
+// hub's, and everything else's), same as a plain min(level, 1) clamp,
+// but clamping breaks the "lines read left to right" goal the moment
+// a box lands two-or-more hops out: box C, reachable only through
+// B (itself one hop from the hub), clamps to the same column as B,
+// so the real B-C edge is drawn within one column -- vertical, not
+// left-to-right. Parity avoids this: C is two hops out (even), same
+// parity as the hub (column 0), while B is one hop out (odd, column
+// 1) -- so the B-C edge still crosses from column 0 to column 1,
+// exactly like every other edge, as long as the box graph is
+// bipartite (true here: ANTONYM is symmetric with no inherent
+// hierarchy, so a chain of antonym-sharing boxes alternates like a
+// path, never closing an odd cycle back on itself in practice). Used
+// for a symmetric kind like ANTONYM, where a box two hops from the
+// hub isn't the hub's antonym at all, just something its antonym
+// happens to also oppose (a coincidence of two unrelated word pairs
+// sharing one box) -- DEPTH_CAPPED_KINDS below opts specific kinds
+// into this; a real hierarchy kind like HYPERNYM keeps unlimited
+// depth and no flattening, since there depth *is* the meaning.
+function boxLevels(clusters, edges, flatten) {
   const adjacency = new Map();
   clusters.forEach(c => adjacency.set(c.id, new Set()));
   edges.forEach(e => {
@@ -1492,8 +1503,8 @@ function boxLevels(clusters, edges, maxDepth) {
     });
   }
   clusters.forEach(c => { if (!level.has(c.id)) level.set(c.id, 0); });
-  if (maxDepth !== undefined) {
-    level.forEach((lvl, id) => { if (lvl > maxDepth) level.set(id, maxDepth); });
+  if (flatten) {
+    level.forEach((lvl, id) => level.set(id, lvl % 2));
   }
   return level;
 }
@@ -1514,8 +1525,7 @@ function clusterGraphSVG(group, wordById, kind) {
     boxDims.set(c.id, { width, height });
   });
 
-  const maxDepth = DEPTH_CAPPED_KINDS.has(kind) ? 1 : undefined;
-  const level = boxLevels(group.clusters, group.edges, maxDepth);
+  const level = boxLevels(group.clusters, group.edges, DEPTH_CAPPED_KINDS.has(kind));
   const maxLevel = Math.max(...group.clusters.map(c => level.get(c.id)));
   const byLevel = [];
   for (let i = 0; i <= maxLevel; i++) byLevel.push([]);
