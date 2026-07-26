@@ -2,7 +2,7 @@
   "schema_version": "1.0.0",
   "language_code": "en",
   "relationship_category": "morphological",
-  "count": 3512,
+  "count": 3488,
   "relationships": [
     {
       "source_lexical_form": "be",
@@ -4945,14 +4945,16 @@
       "source_part_of_speech": "NOUN",
       "target_lexical_form": "periods",
       "target_part_of_speech": "NOUN",
-      "relationship_kind": "PLURAL_FORM"
+      "relationship_kind": "PLURAL_FORM",
+      "source_domain_tag": null
     },
     {
       "source_lexical_form": "periods",
       "source_part_of_speech": "NOUN",
       "target_lexical_form": "period",
       "target_part_of_speech": "NOUN",
-      "relationship_kind": "LEMMA_FORM"
+      "relationship_kind": "LEMMA_FORM",
+      "target_domain_tag": null
     },
     {
       "source_lexical_form": "phrase",
@@ -17771,14 +17773,16 @@
       "source_part_of_speech": "NOUN",
       "target_lexical_form": "cases",
       "target_part_of_speech": "NOUN",
-      "relationship_kind": "PLURAL_FORM"
+      "relationship_kind": "PLURAL_FORM",
+      "source_domain_tag": null
     },
     {
       "source_lexical_form": "cases",
       "source_part_of_speech": "NOUN",
       "target_lexical_form": "case",
       "target_part_of_speech": "NOUN",
-      "relationship_kind": "LEMMA_FORM"
+      "relationship_kind": "LEMMA_FORM",
+      "target_domain_tag": null
     },
     {
       "source_lexical_form": "category",
@@ -18531,14 +18535,16 @@
       "source_part_of_speech": "NOUN",
       "target_lexical_form": "domains",
       "target_part_of_speech": "NOUN",
-      "relationship_kind": "PLURAL_FORM"
+      "relationship_kind": "PLURAL_FORM",
+      "source_domain_tag": null
     },
     {
       "source_lexical_form": "domains",
       "source_part_of_speech": "NOUN",
       "target_lexical_form": "domain",
       "target_part_of_speech": "NOUN",
-      "relationship_kind": "LEMMA_FORM"
+      "relationship_kind": "LEMMA_FORM",
+      "target_domain_tag": null
     },
     {
       "source_lexical_form": "doubt",
@@ -20999,14 +21005,16 @@
       "source_part_of_speech": "NOUN",
       "target_lexical_form": "senses",
       "target_part_of_speech": "NOUN",
-      "relationship_kind": "PLURAL_FORM"
+      "relationship_kind": "PLURAL_FORM",
+      "source_domain_tag": null
     },
     {
       "source_lexical_form": "senses",
       "source_part_of_speech": "NOUN",
       "target_lexical_form": "sense",
       "target_part_of_speech": "NOUN",
-      "relationship_kind": "LEMMA_FORM"
+      "relationship_kind": "LEMMA_FORM",
+      "target_domain_tag": null
     },
     {
       "source_lexical_form": "separation",
@@ -21363,14 +21371,16 @@
       "source_part_of_speech": "NOUN",
       "target_lexical_form": "statuses",
       "target_part_of_speech": "NOUN",
-      "relationship_kind": "PLURAL_FORM"
+      "relationship_kind": "PLURAL_FORM",
+      "source_domain_tag": null
     },
     {
       "source_lexical_form": "statuses",
       "source_part_of_speech": "NOUN",
       "target_lexical_form": "status",
       "target_part_of_speech": "NOUN",
-      "relationship_kind": "LEMMA_FORM"
+      "relationship_kind": "LEMMA_FORM",
+      "target_domain_tag": null
     },
     {
       "source_lexical_form": "strands",
@@ -23847,7 +23857,7 @@
     {
       "source_lexical_form": "charge",
       "source_part_of_speech": "NOUN",
-      "source_domain_tag": "property.common",
+      "source_domain_tag": null,
       "target_lexical_form": "charges",
       "target_part_of_speech": "NOUN",
       "relationship_kind": "PLURAL_FORM"
@@ -23857,7 +23867,7 @@
       "source_part_of_speech": "NOUN",
       "target_lexical_form": "charge",
       "target_part_of_speech": "NOUN",
-      "target_domain_tag": "property.common",
+      "target_domain_tag": null,
       "relationship_kind": "LEMMA_FORM"
     },
     {
@@ -23879,7 +23889,7 @@
     {
       "source_lexical_form": "figure",
       "source_part_of_speech": "NOUN",
-      "source_domain_tag": "symbol.common",
+      "source_domain_tag": null,
       "target_lexical_form": "figures",
       "target_part_of_speech": "NOUN",
       "relationship_kind": "PLURAL_FORM"
@@ -23889,7 +23899,7 @@
       "source_part_of_speech": "NOUN",
       "target_lexical_form": "figure",
       "target_part_of_speech": "NOUN",
-      "target_domain_tag": "symbol.common",
+      "target_domain_tag": null,
       "relationship_kind": "LEMMA_FORM"
     },
     {
@@ -23911,7 +23921,7 @@
     {
       "source_lexical_form": "negative",
       "source_part_of_speech": "NOUN",
-      "source_domain_tag": "response.common",
+      "source_domain_tag": null,
       "target_lexical_form": "negatives",
       "target_part_of_speech": "NOUN",
       "relationship_kind": "PLURAL_FORM"
@@ -23921,7 +23931,7 @@
       "source_part_of_speech": "NOUN",
       "target_lexical_form": "negative",
       "target_part_of_speech": "NOUN",
-      "target_domain_tag": "response.common",
+      "target_domain_tag": null,
       "relationship_kind": "LEMMA_FORM"
     },
     {
@@ -23986,198 +23996,6 @@
       "target_lexical_form": "status",
       "target_part_of_speech": "NOUN",
       "target_domain_tag": "situation.common",
-      "relationship_kind": "LEMMA_FORM"
-    },
-    {
-      "source_lexical_form": "charge",
-      "source_part_of_speech": "NOUN",
-      "source_domain_tag": "property.common",
-      "target_lexical_form": "charges",
-      "target_part_of_speech": "NOUN",
-      "relationship_kind": "PLURAL_FORM"
-    },
-    {
-      "source_lexical_form": "charges",
-      "source_part_of_speech": "NOUN",
-      "target_lexical_form": "charge",
-      "target_part_of_speech": "NOUN",
-      "target_domain_tag": "property.common",
-      "relationship_kind": "LEMMA_FORM"
-    },
-    {
-      "source_lexical_form": "figure",
-      "source_part_of_speech": "NOUN",
-      "source_domain_tag": "symbol.common",
-      "target_lexical_form": "figures",
-      "target_part_of_speech": "NOUN",
-      "relationship_kind": "PLURAL_FORM"
-    },
-    {
-      "source_lexical_form": "figures",
-      "source_part_of_speech": "NOUN",
-      "target_lexical_form": "figure",
-      "target_part_of_speech": "NOUN",
-      "target_domain_tag": "symbol.common",
-      "relationship_kind": "LEMMA_FORM"
-    },
-    {
-      "source_lexical_form": "negative",
-      "source_part_of_speech": "NOUN",
-      "source_domain_tag": "response.common",
-      "target_lexical_form": "negatives",
-      "target_part_of_speech": "NOUN",
-      "relationship_kind": "PLURAL_FORM"
-    },
-    {
-      "source_lexical_form": "negatives",
-      "source_part_of_speech": "NOUN",
-      "target_lexical_form": "negative",
-      "target_part_of_speech": "NOUN",
-      "target_domain_tag": "response.common",
-      "relationship_kind": "LEMMA_FORM"
-    },
-    {
-      "source_lexical_form": "charge",
-      "source_part_of_speech": "NOUN",
-      "source_domain_tag": "property.common",
-      "target_lexical_form": "charges",
-      "target_part_of_speech": "NOUN",
-      "relationship_kind": "PLURAL_FORM"
-    },
-    {
-      "source_lexical_form": "charges",
-      "source_part_of_speech": "NOUN",
-      "target_lexical_form": "charge",
-      "target_part_of_speech": "NOUN",
-      "target_domain_tag": "property.common",
-      "relationship_kind": "LEMMA_FORM"
-    },
-    {
-      "source_lexical_form": "figure",
-      "source_part_of_speech": "NOUN",
-      "source_domain_tag": "symbol.common",
-      "target_lexical_form": "figures",
-      "target_part_of_speech": "NOUN",
-      "relationship_kind": "PLURAL_FORM"
-    },
-    {
-      "source_lexical_form": "figures",
-      "source_part_of_speech": "NOUN",
-      "target_lexical_form": "figure",
-      "target_part_of_speech": "NOUN",
-      "target_domain_tag": "symbol.common",
-      "relationship_kind": "LEMMA_FORM"
-    },
-    {
-      "source_lexical_form": "negative",
-      "source_part_of_speech": "NOUN",
-      "source_domain_tag": "response.common",
-      "target_lexical_form": "negatives",
-      "target_part_of_speech": "NOUN",
-      "relationship_kind": "PLURAL_FORM"
-    },
-    {
-      "source_lexical_form": "negatives",
-      "source_part_of_speech": "NOUN",
-      "target_lexical_form": "negative",
-      "target_part_of_speech": "NOUN",
-      "target_domain_tag": "response.common",
-      "relationship_kind": "LEMMA_FORM"
-    },
-    {
-      "source_lexical_form": "charge",
-      "source_part_of_speech": "NOUN",
-      "source_domain_tag": "property.common",
-      "target_lexical_form": "charges",
-      "target_part_of_speech": "NOUN",
-      "relationship_kind": "PLURAL_FORM"
-    },
-    {
-      "source_lexical_form": "charges",
-      "source_part_of_speech": "NOUN",
-      "target_lexical_form": "charge",
-      "target_part_of_speech": "NOUN",
-      "target_domain_tag": "property.common",
-      "relationship_kind": "LEMMA_FORM"
-    },
-    {
-      "source_lexical_form": "figure",
-      "source_part_of_speech": "NOUN",
-      "source_domain_tag": "symbol.common",
-      "target_lexical_form": "figures",
-      "target_part_of_speech": "NOUN",
-      "relationship_kind": "PLURAL_FORM"
-    },
-    {
-      "source_lexical_form": "figures",
-      "source_part_of_speech": "NOUN",
-      "target_lexical_form": "figure",
-      "target_part_of_speech": "NOUN",
-      "target_domain_tag": "symbol.common",
-      "relationship_kind": "LEMMA_FORM"
-    },
-    {
-      "source_lexical_form": "negative",
-      "source_part_of_speech": "NOUN",
-      "source_domain_tag": "response.common",
-      "target_lexical_form": "negatives",
-      "target_part_of_speech": "NOUN",
-      "relationship_kind": "PLURAL_FORM"
-    },
-    {
-      "source_lexical_form": "negatives",
-      "source_part_of_speech": "NOUN",
-      "target_lexical_form": "negative",
-      "target_part_of_speech": "NOUN",
-      "target_domain_tag": "response.common",
-      "relationship_kind": "LEMMA_FORM"
-    },
-    {
-      "source_lexical_form": "charge",
-      "source_part_of_speech": "NOUN",
-      "source_domain_tag": null,
-      "target_lexical_form": "charges",
-      "target_part_of_speech": "NOUN",
-      "relationship_kind": "PLURAL_FORM"
-    },
-    {
-      "source_lexical_form": "charges",
-      "source_part_of_speech": "NOUN",
-      "target_lexical_form": "charge",
-      "target_part_of_speech": "NOUN",
-      "target_domain_tag": null,
-      "relationship_kind": "LEMMA_FORM"
-    },
-    {
-      "source_lexical_form": "figure",
-      "source_part_of_speech": "NOUN",
-      "source_domain_tag": null,
-      "target_lexical_form": "figures",
-      "target_part_of_speech": "NOUN",
-      "relationship_kind": "PLURAL_FORM"
-    },
-    {
-      "source_lexical_form": "figures",
-      "source_part_of_speech": "NOUN",
-      "target_lexical_form": "figure",
-      "target_part_of_speech": "NOUN",
-      "target_domain_tag": null,
-      "relationship_kind": "LEMMA_FORM"
-    },
-    {
-      "source_lexical_form": "negative",
-      "source_part_of_speech": "NOUN",
-      "source_domain_tag": null,
-      "target_lexical_form": "negatives",
-      "target_part_of_speech": "NOUN",
-      "relationship_kind": "PLURAL_FORM"
-    },
-    {
-      "source_lexical_form": "negatives",
-      "source_part_of_speech": "NOUN",
-      "target_lexical_form": "negative",
-      "target_part_of_speech": "NOUN",
-      "target_domain_tag": null,
       "relationship_kind": "LEMMA_FORM"
     }
   ]

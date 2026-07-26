@@ -1449,24 +1449,30 @@ function buildClusterGraphs(kind) {
   return { groups, wordById };
 }
 
-// Circular layout for the boxes themselves (the same reasoning as the
-// old word-level version: legible without a force-directed simulation
-// this page has no library for). Each word inside a box gets its own
-// position along a small vertical stack, so a line lands on the
-// specific word it's from/to, not just the box's centre -- present's
-// antonym line and current's antonym line are visually distinguishable
-// even though both start inside the same box.
+// Each word inside a box gets its own position along a small vertical
+// stack, so a line lands on the specific word it's from/to, not just
+// the box's centre -- present's antonym line and current's antonym
+// line are visually distinguishable even though both start inside the
+// same box.
 // Distance, in box-graph hops, from the group's most-connected box
 // (BFS, edges treated as undirected -- a box's actual line direction
 // under the selected kind doesn't determine which side of the layout
 // it belongs on, only how far it is from the hub). Ties for "most
 // connected" broken alphabetically by the box's first word, for
 // determinism. Used by clusterGraphSVG to place boxes in left-to-right
-// columns by level rather than scattering them around a circle -- most
-// lines then run from a column to the next one over, reading left to
-// right, rather than in whatever direction a circular layout happens
-// to put two connected boxes.
-function boxLevels(clusters, edges) {
+// columns by level -- most lines then run from a column to the next
+// one over, reading left to right.
+//
+// maxDepth caps how many columns past the hub are ever used (a level-N
+// box renders in column min(N, maxDepth)) without dropping it or
+// re-splitting its group -- for a symmetric kind like ANTONYM, a box
+// two hops from the hub isn't the hub's antonym at all, just something
+// its antonym happens to also oppose (a coincidence of two unrelated
+// word pairs sharing one box), so drawing it a full column further out
+// would imply a hierarchy ANTONYM doesn't have. DEPTH_CAPPED_KINDS
+// below opts specific kinds into this; a real hierarchy kind like
+// HYPERNYM keeps unlimited depth, since there depth *is* the meaning.
+function boxLevels(clusters, edges, maxDepth) {
   const adjacency = new Map();
   clusters.forEach(c => adjacency.set(c.id, new Set()));
   edges.forEach(e => {
@@ -1486,10 +1492,19 @@ function boxLevels(clusters, edges) {
     });
   }
   clusters.forEach(c => { if (!level.has(c.id)) level.set(c.id, 0); });
+  if (maxDepth !== undefined) {
+    level.forEach((lvl, id) => { if (lvl > maxDepth) level.set(id, maxDepth); });
+  }
   return level;
 }
 
-function clusterGraphSVG(group, wordById) {
+// ANTONYM has no inherent hierarchy -- a chain beyond one hop is
+// coincidence (two different word pairs sharing a box), not a real
+// multi-level structure, so its Cyclic view is capped at two columns
+// (the hub's column and everything else's).
+const DEPTH_CAPPED_KINDS = new Set(["ANTONYM"]);
+
+function clusterGraphSVG(group, wordById, kind) {
   const lineHeight = 15;
   const boxDims = new Map();
   group.clusters.forEach(c => {
@@ -1499,7 +1514,8 @@ function clusterGraphSVG(group, wordById) {
     boxDims.set(c.id, { width, height });
   });
 
-  const level = boxLevels(group.clusters, group.edges);
+  const maxDepth = DEPTH_CAPPED_KINDS.has(kind) ? 1 : undefined;
+  const level = boxLevels(group.clusters, group.edges, maxDepth);
   const maxLevel = Math.max(...group.clusters.map(c => level.get(c.id)));
   const byLevel = [];
   for (let i = 0; i <= maxLevel; i++) byLevel.push([]);
@@ -1596,7 +1612,7 @@ function renderCyclic() {
   container.innerHTML = shown.map(g => `
     <div class="cyclic-cluster">
       <div class="cyclic-cluster-title">${g.clusters.length} synonym boxes &middot; ${g.edges.length} ${titleCase(state.cyclicKind).toLowerCase()} edges</div>
-      ${clusterGraphSVG(g, wordById)}
+      ${clusterGraphSVG(g, wordById, state.cyclicKind)}
     </div>`).join('');
   container.querySelectorAll(".cyclic-node[data-pivot-id]").forEach(node => {
     node.addEventListener("click", () => selectWordIn("cyclic", node.dataset.pivotId));

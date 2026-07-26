@@ -1343,14 +1343,16 @@
       "source_part_of_speech": "NOUN",
       "target_lexical_form": "instance",
       "target_part_of_speech": "NOUN",
-      "relationship_kind": "SYNONYM"
+      "relationship_kind": "SYNONYM",
+      "source_domain_tag": null
     },
     {
       "source_lexical_form": "instance",
       "source_part_of_speech": "NOUN",
       "target_lexical_form": "case",
       "target_part_of_speech": "NOUN",
-      "relationship_kind": "SYNONYM"
+      "relationship_kind": "SYNONYM",
+      "target_domain_tag": null
     },
     {
       "source_lexical_form": "case",
@@ -2739,14 +2741,16 @@
       "source_part_of_speech": "NOUN",
       "target_lexical_form": "field",
       "target_part_of_speech": "NOUN",
-      "relationship_kind": "RELATED"
+      "relationship_kind": "RELATED",
+      "source_domain_tag": null
     },
     {
       "source_lexical_form": "field",
       "source_part_of_speech": "NOUN",
       "target_lexical_form": "domain",
       "target_part_of_speech": "NOUN",
-      "relationship_kind": "RELATED"
+      "relationship_kind": "RELATED",
+      "target_domain_tag": null
     },
     {
       "source_lexical_form": "doubt",
@@ -2781,14 +2785,16 @@
       "source_part_of_speech": "NOUN",
       "target_lexical_form": "period",
       "target_part_of_speech": "NOUN",
-      "relationship_kind": "RELATED"
+      "relationship_kind": "RELATED",
+      "target_domain_tag": null
     },
     {
       "source_lexical_form": "period",
       "source_part_of_speech": "NOUN",
       "target_lexical_form": "duration",
       "target_part_of_speech": "NOUN",
-      "relationship_kind": "RELATED"
+      "relationship_kind": "RELATED",
+      "source_domain_tag": null
     },
     {
       "source_lexical_form": "ear",
@@ -3495,14 +3501,16 @@
       "source_part_of_speech": "NOUN",
       "target_lexical_form": "domain",
       "target_part_of_speech": "NOUN",
-      "relationship_kind": "SYNONYM"
+      "relationship_kind": "SYNONYM",
+      "target_domain_tag": null
     },
     {
       "source_lexical_form": "domain",
       "source_part_of_speech": "NOUN",
       "target_lexical_form": "field",
       "target_part_of_speech": "NOUN",
-      "relationship_kind": "SYNONYM"
+      "relationship_kind": "SYNONYM",
+      "source_domain_tag": null
     },
     {
       "source_lexical_form": "figure",
@@ -3525,14 +3533,16 @@
       "source_part_of_speech": "NOUN",
       "target_lexical_form": "shape",
       "target_part_of_speech": "NOUN",
-      "relationship_kind": "SYNONYM"
+      "relationship_kind": "SYNONYM",
+      "source_domain_tag": null
     },
     {
       "source_lexical_form": "shape",
       "source_part_of_speech": "NOUN",
       "target_lexical_form": "figure",
       "target_part_of_speech": "NOUN",
-      "relationship_kind": "SYNONYM"
+      "relationship_kind": "SYNONYM",
+      "target_domain_tag": null
     },
     {
       "source_lexical_form": "filament",
@@ -4759,14 +4769,16 @@
       "source_part_of_speech": "NOUN",
       "target_lexical_form": "period",
       "target_part_of_speech": "NOUN",
-      "relationship_kind": "SYNONYM"
+      "relationship_kind": "SYNONYM",
+      "target_domain_tag": null
     },
     {
       "source_lexical_form": "period",
       "source_part_of_speech": "NOUN",
       "target_lexical_form": "interval",
       "target_part_of_speech": "NOUN",
-      "relationship_kind": "SYNONYM"
+      "relationship_kind": "SYNONYM",
+      "source_domain_tag": null
     },
     {
       "source_lexical_form": "interval",
@@ -5489,14 +5501,16 @@
       "source_part_of_speech": "NOUN",
       "target_lexical_form": "sense",
       "target_part_of_speech": "NOUN",
-      "relationship_kind": "SYNONYM"
+      "relationship_kind": "SYNONYM",
+      "target_domain_tag": null
     },
     {
       "source_lexical_form": "sense",
       "source_part_of_speech": "NOUN",
       "target_lexical_form": "meaning",
       "target_part_of_speech": "NOUN",
-      "relationship_kind": "SYNONYM"
+      "relationship_kind": "SYNONYM",
+      "source_domain_tag": null
     },
     {
       "source_lexical_form": "measurement",
@@ -5671,14 +5685,16 @@
       "source_part_of_speech": "NOUN",
       "target_lexical_form": "period",
       "target_part_of_speech": "NOUN",
-      "relationship_kind": "HYPERNYM"
+      "relationship_kind": "HYPERNYM",
+      "target_domain_tag": null
     },
     {
       "source_lexical_form": "period",
       "source_part_of_speech": "NOUN",
       "target_lexical_form": "moment",
       "target_part_of_speech": "NOUN",
-      "relationship_kind": "HYPONYM"
+      "relationship_kind": "HYPONYM",
+      "source_domain_tag": null
     },
     {
       "source_lexical_form": "moment",
@@ -6365,14 +6381,16 @@
       "source_part_of_speech": "NOUN",
       "target_lexical_form": "duration",
       "target_part_of_speech": "NOUN",
-      "relationship_kind": "SYNONYM"
+      "relationship_kind": "SYNONYM",
+      "source_domain_tag": null
     },
     {
       "source_lexical_form": "duration",
       "source_part_of_speech": "NOUN",
       "target_lexical_form": "period",
       "target_part_of_speech": "NOUN",
-      "relationship_kind": "SYNONYM"
+      "relationship_kind": "SYNONYM",
+      "target_domain_tag": null
     },
     {
       "source_lexical_form": "period",
@@ -8529,14 +8547,16 @@
       "source_part_of_speech": "NOUN",
       "target_lexical_form": "rank",
       "target_part_of_speech": "NOUN",
-      "relationship_kind": "SYNONYM"
+      "relationship_kind": "SYNONYM",
+      "source_domain_tag": null
     },
     {
       "source_lexical_form": "rank",
       "source_part_of_speech": "NOUN",
       "target_lexical_form": "status",
       "target_part_of_speech": "NOUN",
-      "relationship_kind": "SYNONYM"
+      "relationship_kind": "SYNONYM",
+      "target_domain_tag": null
     },
     {
       "source_lexical_form": "status",
@@ -16350,28 +16370,32 @@
       "source_part_of_speech": "ADJECTIVE",
       "target_lexical_form": "optimistic",
       "target_part_of_speech": "ADJECTIVE",
-      "relationship_kind": "SYNONYM"
+      "relationship_kind": "SYNONYM",
+      "source_domain_tag": null
     },
     {
       "source_lexical_form": "optimistic",
       "source_part_of_speech": "ADJECTIVE",
       "target_lexical_form": "positive",
       "target_part_of_speech": "ADJECTIVE",
-      "relationship_kind": "SYNONYM"
+      "relationship_kind": "SYNONYM",
+      "target_domain_tag": null
     },
     {
       "source_lexical_form": "positive",
       "source_part_of_speech": "ADJECTIVE",
       "target_lexical_form": "constructive",
       "target_part_of_speech": "ADJECTIVE",
-      "relationship_kind": "SYNONYM"
+      "relationship_kind": "SYNONYM",
+      "source_domain_tag": null
     },
     {
       "source_lexical_form": "constructive",
       "source_part_of_speech": "ADJECTIVE",
       "target_lexical_form": "positive",
       "target_part_of_speech": "ADJECTIVE",
-      "relationship_kind": "SYNONYM"
+      "relationship_kind": "SYNONYM",
+      "target_domain_tag": null
     },
     {
       "source_lexical_form": "possessive",
@@ -18390,6 +18414,42 @@
       "relationship_kind": "RELATED"
     },
     {
+      "source_lexical_form": "positive",
+      "source_part_of_speech": "ADJECTIVE",
+      "source_domain_tag": "numerical.common",
+      "target_lexical_form": "negative",
+      "target_part_of_speech": "ADJECTIVE",
+      "target_domain_tag": "numerical.common",
+      "relationship_kind": "ANTONYM"
+    },
+    {
+      "source_lexical_form": "negative",
+      "source_part_of_speech": "ADJECTIVE",
+      "source_domain_tag": "numerical.common",
+      "target_lexical_form": "positive",
+      "target_part_of_speech": "ADJECTIVE",
+      "target_domain_tag": "numerical.common",
+      "relationship_kind": "ANTONYM"
+    },
+    {
+      "source_lexical_form": "positive",
+      "source_part_of_speech": "ADJECTIVE",
+      "source_domain_tag": "electric.common",
+      "target_lexical_form": "negative",
+      "target_part_of_speech": "ADJECTIVE",
+      "target_domain_tag": "electric.common",
+      "relationship_kind": "ANTONYM"
+    },
+    {
+      "source_lexical_form": "negative",
+      "source_part_of_speech": "ADJECTIVE",
+      "source_domain_tag": "electric.common",
+      "target_lexical_form": "positive",
+      "target_part_of_speech": "ADJECTIVE",
+      "target_domain_tag": "electric.common",
+      "relationship_kind": "ANTONYM"
+    },
+    {
       "source_lexical_form": "bar",
       "source_part_of_speech": "NOUN",
       "source_domain_tag": "item.common",
@@ -18628,42 +18688,6 @@
       "target_part_of_speech": "NOUN",
       "target_domain_tag": "situation.common",
       "relationship_kind": "HYPONYM"
-    },
-    {
-      "source_lexical_form": "positive",
-      "source_part_of_speech": "ADJECTIVE",
-      "source_domain_tag": "numerical.common",
-      "target_lexical_form": "negative",
-      "target_part_of_speech": "ADJECTIVE",
-      "target_domain_tag": "numerical.common",
-      "relationship_kind": "ANTONYM"
-    },
-    {
-      "source_lexical_form": "negative",
-      "source_part_of_speech": "ADJECTIVE",
-      "source_domain_tag": "numerical.common",
-      "target_lexical_form": "positive",
-      "target_part_of_speech": "ADJECTIVE",
-      "target_domain_tag": "numerical.common",
-      "relationship_kind": "ANTONYM"
-    },
-    {
-      "source_lexical_form": "positive",
-      "source_part_of_speech": "ADJECTIVE",
-      "source_domain_tag": "electric.common",
-      "target_lexical_form": "negative",
-      "target_part_of_speech": "ADJECTIVE",
-      "target_domain_tag": "electric.common",
-      "relationship_kind": "ANTONYM"
-    },
-    {
-      "source_lexical_form": "negative",
-      "source_part_of_speech": "ADJECTIVE",
-      "source_domain_tag": "electric.common",
-      "target_lexical_form": "positive",
-      "target_part_of_speech": "ADJECTIVE",
-      "target_domain_tag": "electric.common",
-      "relationship_kind": "ANTONYM"
     }
   ]
 }

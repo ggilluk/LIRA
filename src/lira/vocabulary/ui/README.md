@@ -215,7 +215,15 @@ over, and so on, stacking boxes within a column vertically and centring
 each column on the tallest one. Because most edges connect a box to a
 neighbouring level, most lines end up running from one column to the
 next -- left to right -- rather than in whatever direction a circular
-layout happened to put two connected boxes. Each word inside a box is
+layout happened to put two connected boxes. `ANTONYM` (`DEPTH_CAPPED_KINDS`)
+caps this at two columns -- a box two hops from the hub isn't the
+hub's antonym at all, just something the hub's antonym happens to also
+oppose (two unrelated word pairs coincidentally sharing a box), so
+`boxLevels` takes an optional `maxDepth` and folds every level past it
+into the last column instead of drawing a hop-count that would imply a
+hierarchy `ANTONYM` doesn't have; a real hierarchy kind like `HYPERNYM`
+passes no cap and keeps its full depth, since depth *is* the meaning
+there. Each word inside a box is
 positioned along its own small vertical stack so a line lands on the
 specific word it's from or to, not just the box's centre --
 `present`'s antonym line and `current`'s antonym line are visually

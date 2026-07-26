@@ -91224,7 +91224,7 @@
       "reference_count": 4
     },
     {
-      "entry_id": "afcf9aef-71bf-483f-bf0c-063a24c90080",
+      "entry_id": "0eddfa3a-b541-43c4-8e12-7ebdf812ff4c",
       "lexical_form": "bar",
       "normalised_form": "bar",
       "text": "bar",
@@ -91262,7 +91262,7 @@
       "domain_tag": "item.common"
     },
     {
-      "entry_id": "380cf183-3ed2-4356-8a57-de5c2208cdd3",
+      "entry_id": "6ffafadc-130f-40f3-ad65-1e7d076812db",
       "lexical_form": "case",
       "normalised_form": "case",
       "text": "case",
@@ -91300,7 +91300,7 @@
       "domain_tag": "category.common"
     },
     {
-      "entry_id": "a05db944-fa30-4e48-8d06-db112cd4a472",
+      "entry_id": "cc1ecf4e-fc0c-47f4-8f92-a87f2c1fc136",
       "lexical_form": "character",
       "normalised_form": "character",
       "text": "character",
@@ -91338,7 +91338,7 @@
       "domain_tag": "mark.common"
     },
     {
-      "entry_id": "8ded039f-b6c2-410b-8cf8-13bf1505d025",
+      "entry_id": "72b28a88-35fa-4c03-ac8f-3fac9bc724d3",
       "lexical_form": "charge",
       "normalised_form": "charge",
       "text": "charge",
@@ -91376,7 +91376,7 @@
       "domain_tag": "statement.common"
     },
     {
-      "entry_id": "fec987df-302c-4c43-afe9-7cee09d3b2bd",
+      "entry_id": "a5a6a4e8-6ccd-43bb-becd-7c4890edefdd",
       "lexical_form": "charge",
       "normalised_form": "charge",
       "text": "charge",
@@ -91414,7 +91414,7 @@
       "domain_tag": null
     },
     {
-      "entry_id": "08a1fb72-4d65-4eb9-989f-cd3e59d6213c",
+      "entry_id": "53891a72-0ede-4165-b348-6e9607e919d2",
       "lexical_form": "domain",
       "normalised_form": "domain",
       "text": "domain",
@@ -91452,7 +91452,7 @@
       "domain_tag": "network.common"
     },
     {
-      "entry_id": "34fd06e0-b582-4887-8638-a63d20d9f362",
+      "entry_id": "28e099f6-6221-49fd-be1e-fdf89e3099a0",
       "lexical_form": "figure",
       "normalised_form": "figure",
       "text": "figure",
@@ -91490,7 +91490,7 @@
       "domain_tag": null
     },
     {
-      "entry_id": "99028004-3dfb-438e-9ee2-cbd5c9afd8d6",
+      "entry_id": "0a39356d-c759-4c38-bf65-61b88a13de93",
       "lexical_form": "figure",
       "normalised_form": "figure",
       "text": "figure",
@@ -91528,7 +91528,7 @@
       "domain_tag": "representation.common"
     },
     {
-      "entry_id": "9dd22068-1474-4767-9a6a-e794b9ff11f9",
+      "entry_id": "eb024813-38ef-4706-9073-94f7d67e74c0",
       "lexical_form": "negative",
       "normalised_form": "negative",
       "text": "negative",
@@ -91566,7 +91566,7 @@
       "domain_tag": null
     },
     {
-      "entry_id": "f91efe02-cc03-4fe6-9dc3-f363b8ef6de2",
+      "entry_id": "daa38a59-d3b1-49bd-9f2c-501326757ff6",
       "lexical_form": "negative",
       "normalised_form": "negative",
       "text": "negative",
@@ -91604,7 +91604,7 @@
       "domain_tag": "electric.common"
     },
     {
-      "entry_id": "2ed9b87f-03ee-43a3-9817-50e592b22edd",
+      "entry_id": "0e8981be-32c9-4e6e-b00e-23eecba36b73",
       "lexical_form": "operator",
       "normalised_form": "operator",
       "text": "operator",
@@ -91642,7 +91642,7 @@
       "domain_tag": "human.common"
     },
     {
-      "entry_id": "53e440d4-fcba-4a39-97b9-19f180f1d8b3",
+      "entry_id": "8730d7d1-04e5-494f-bb9e-2f8ad667f351",
       "lexical_form": "period",
       "normalised_form": "period",
       "text": "period",
@@ -91680,7 +91680,7 @@
       "domain_tag": "mark.common"
     },
     {
-      "entry_id": "c7b36c38-784c-485c-a12c-eba3aaefdae3",
+      "entry_id": "c8cb4f15-51f9-4a16-ba8b-cacbf1edae98",
       "lexical_form": "positive",
       "normalised_form": "positive",
       "text": "positive",
@@ -91718,7 +91718,7 @@
       "domain_tag": "numerical.common"
     },
     {
-      "entry_id": "dd058ac9-efd5-4772-8695-8ee21fdbdbca",
+      "entry_id": "b0c5b1c7-bffe-47c9-8893-df91ee050f9f",
       "lexical_form": "positive",
       "normalised_form": "positive",
       "text": "positive",
@@ -91756,7 +91756,7 @@
       "domain_tag": "electric.common"
     },
     {
-      "entry_id": "4d5d959b-a011-4bf5-a2a7-83ef75d9613b",
+      "entry_id": "7ea4b319-e4cd-4ba6-bcfb-c78b6222ef75",
       "lexical_form": "sense",
       "normalised_form": "sense",
       "text": "sense",
@@ -91794,7 +91794,7 @@
       "domain_tag": "ability.common"
     },
     {
-      "entry_id": "4701c050-4b03-4ce9-b112-4a5d8a008b53",
+      "entry_id": "2b997720-4a29-4ec4-ab0e-71782bd0aa79",
       "lexical_form": "status",
       "normalised_form": "status",
       "text": "status",

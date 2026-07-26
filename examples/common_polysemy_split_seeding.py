@@ -108,21 +108,33 @@ def _patch_relationship_file(path: Path) -> int:
     edge matching one of the word's `moves` gets the destination NEW
     sense's domain_tag (on whichever side is this word); every other
     unclaimed edge touching the word gets the KEEP sense's domain_tag
-    (same side). "Unclaimed" means that side has no domain_tag at all
-    yet -- once a side is tagged (whether by this pass, on an earlier
-    run, or because add_hypernym_edges/add_morphology_for_new_senses
-    added the edge fresh already carrying the right tag), it is never
-    touched again. Without that check, re-running this script would
-    re-scan a NEW sense's own freshly-tagged edges (they match the same
-    lexical_form/part_of_speech as every other sense of the word) and
-    blindly overwrite their correct tag with the KEEP sense's tag,
-    silently reassigning e.g. "bar"'s item.common sense's own
-    HYPERNYM -> "item" edge to the symbol.common sense instead. Either
-    is skipped when the destination/KEEP domain_tag is None -- an edge
-    that already resolves to a None-tagged sense by default needs no
-    field added. Positive/negative's ANTONYM edges are excluded here
-    (rebuilt separately, since both endpoints of those specific edges
-    are themselves split words -- see rebuild_antonyms below) -- every
+    (same side). "Unclaimed" means that side has no source_domain_tag/
+    target_domain_tag *key at all yet* -- checked with `"...tag" not in
+    entry`, deliberately not `entry.get("...tag") is None`, because a
+    sense can legitimately want a domain_tag of None (the plain
+    "common" sense), and once assigned that reads identically to
+    "never assigned" under a None check. Getting this wrong is exactly
+    what caused a real bug: on a second run, "charge"'s price sense
+    (domain_tag None, added fresh by add_morphology_for_new_senses with
+    the key explicitly set to null) looked "unclaimed" under a None
+    check the same as a genuinely-never-processed legacy edge, so this
+    method reassigned it to the KEEP sense's tag ("property.common"),
+    leaving two separate PLURAL_FORM edges both claiming
+    "property.common" -- and since the reassignment vacated the price
+    sense's None-tagged edge, add_morphology_for_new_senses' own
+    _has_edge check no longer found it and added a fresh replacement,
+    so the file grew a duplicate on every subsequent run. The key
+    check requires add_hypernym_edges/add_morphology_for_new_senses to
+    always write their domain_tag fields explicitly (even when the
+    value is None) -- see both functions -- so "key absent" reliably
+    means "genuinely never processed" and nothing else. Once a side
+    has a key (any value, including null), it is never touched again --
+    this is also what stops a NEW sense's own freshly-tagged edges
+    (matching the same lexical_form/part_of_speech as every other
+    sense of the word) from being reassigned to KEEP's tag on a later
+    run. Positive/negative's ANTONYM edges are excluded here (rebuilt
+    separately, since both endpoints of those specific edges are
+    themselves split words -- see rebuild_antonyms below) -- every
     other pair in WORD_SPLITS has exactly one split endpoint, so this
     method never has to arbitrate two splits' conflicting claims on the
     same edge. Returns the number of edges patched."""
@@ -142,22 +154,20 @@ def _patch_relationship_file(path: Path) -> int:
             if split.part_of_speech == "ADJECTIVE" and kind == "ANTONYM" and lf in ("positive", "negative"):
                 continue  # rebuilt separately -- see rebuild_antonyms.
 
-            if _matches(entry, "source", lf, pos) and entry.get("source_domain_tag") is None:
+            if _matches(entry, "source", lf, pos) and "source_domain_tag" not in entry:
                 other_form = entry.get("target_lexical_form")
                 other_pos = entry.get("target_part_of_speech")
                 key = (kind, other_form, other_pos, "outgoing")
                 tag = move_lookup[key] if key in move_lookup else keep.domain_tag
-                if tag is not None:
-                    entry["source_domain_tag"] = tag
-                    patched += 1
-            if _matches(entry, "target", lf, pos) and entry.get("target_domain_tag") is None:
+                entry["source_domain_tag"] = tag
+                patched += 1
+            if _matches(entry, "target", lf, pos) and "target_domain_tag" not in entry:
                 other_form = entry.get("source_lexical_form")
                 other_pos = entry.get("source_part_of_speech")
                 key = (kind, other_form, other_pos, "incoming")
                 tag = move_lookup[key] if key in move_lookup else keep.domain_tag
-                if tag is not None:
-                    entry["target_domain_tag"] = tag
-                    patched += 1
+                entry["target_domain_tag"] = tag
+                patched += 1
 
     doc["count"] = len(rels)
     _save_json(path, doc)
@@ -188,6 +198,12 @@ def rebuild_antonyms() -> int:
             and entry.get("source_part_of_speech") == "ADJECTIVE"
             and entry.get("target_part_of_speech") == "ADJECTIVE"
             and {entry.get("source_lexical_form"), entry.get("target_lexical_form")} == {"positive", "negative"}
+            # Only the untagged original pair -- not one of ANTONYM_PAIRS'
+            # own tagged replacements, so a second run doesn't delete and
+            # immediately recreate them (harmless, since _has_edge would
+            # just re-add the identical entry, but pointless churn and a
+            # spurious diff every run).
+            and "source_domain_tag" not in entry and "target_domain_tag" not in entry
         )
 
     rels[:] = [entry for entry in rels if not is_old_pair(entry)]
