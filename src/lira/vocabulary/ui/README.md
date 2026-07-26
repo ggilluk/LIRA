@@ -211,11 +211,24 @@ left to right rather than around a circle: `boxLevels` runs a BFS out
 from the group's highest-degree box (ties broken alphabetically),
 giving every box a hop-distance "level" from that hub; `clusterGraphSVG`
 then places level 0 in the leftmost column, level 1 in the next column
-over, and so on, stacking boxes within a column vertically and centring
-each column on the tallest one. Because most edges connect a box to a
-neighbouring level, most lines end up running from one column to the
-next -- left to right -- rather than in whatever direction a circular
-layout happened to put two connected boxes. `ANTONYM` (`DEPTH_CAPPED_KINDS`)
+over, and so on. Within a column, boxes aren't just stacked in
+whatever order `boxLevels` happened to produce -- `reduceCrossings`
+reorders them with the barycenter/median heuristic layered-graph tools
+use (Sugiyama-style): repeated left-to-right and right-to-left sweeps,
+each re-sorting a column by the average position, in the *adjacent*
+column, of the boxes it connects to, so two boxes that share a
+neighbour end up near each other instead of at arbitrary alphabetical
+positions. Doesn't guarantee zero crossings (that's NP-hard in
+general) but eliminates nearly all of them in practice -- measured
+against the plain alphabetical order it replaced, `ANTONYM` and
+`HYPERNYM` both go from dozens of crossings to zero, `RELATED` (this
+dictionary's densest, longest-chained kind) from 928 to 40. Each
+column's boxes are then stacked vertically and the whole column
+centred against the tallest one; because most edges connect a box to
+a neighbouring level, most lines end up running from one column to
+the next -- left to right -- rather than in whatever direction a
+circular layout happened to put two connected boxes. `ANTONYM`
+(`DEPTH_CAPPED_KINDS`)
 caps this at two columns -- a box two hops from the hub isn't the
 hub's antonym at all, just something the hub's antonym happens to also
 oppose (two unrelated word pairs coincidentally sharing a box), so

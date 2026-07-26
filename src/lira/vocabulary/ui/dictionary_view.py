@@ -1515,6 +1515,58 @@ function boxLevels(clusters, edges, flatten) {
 // (the hub's column and everything else's).
 const DEPTH_CAPPED_KINDS = new Set(["ANTONYM"]);
 
+// Reorders the boxes within each column to reduce edge crossings,
+// leaving which column a box is in (set by boxLevels) untouched --
+// only the vertical order within a column changes. Standard layered-
+// graph crossing reduction (the barycenter/median heuristic Sugiyama-
+// style layout tools use): repeatedly re-sort each column by the
+// average vertical position, in the adjacent column, of the boxes it
+// connects to, alternating left-to-right and right-to-left sweeps so
+// influence propagates across more than just one column pair per pass.
+// Doesn't guarantee zero crossings (that's NP-hard in general) but
+// noticeably untangles the small graphs this view actually draws.
+// Ties (no edge into the neighbouring column, or an identical average)
+// keep the incoming order, so the very first pass's alphabetical
+// ordering still acts as the deterministic tie-break it always did.
+function reduceCrossings(byLevel, edges) {
+  const adjacency = new Map();
+  byLevel.forEach(list => list.forEach(c => adjacency.set(c.id, [])));
+  edges.forEach(e => {
+    if (e.sourceBox === e.targetBox) return;
+    adjacency.get(e.sourceBox).push(e.targetBox);
+    adjacency.get(e.targetBox).push(e.sourceBox);
+  });
+
+  const indexOf = (list) => new Map(list.map((c, i) => [c.id, i]));
+
+  function reordered(list, neighbourIndex) {
+    const scored = list.map((c, i) => {
+      const positions = adjacency.get(c.id)
+        .filter(nb => neighbourIndex.has(nb))
+        .map(nb => neighbourIndex.get(nb));
+      const score = positions.length ? positions.reduce((a, b) => a + b, 0) / positions.length : null;
+      return { c, i, score };
+    });
+    scored.sort((a, b) => {
+      if (a.score === null || b.score === null) return a.i - b.i;
+      if (a.score !== b.score) return a.score - b.score;
+      return a.i - b.i;
+    });
+    return scored.map(s => s.c);
+  }
+
+  const columns = byLevel.map(list => list.slice());
+  const sweeps = 4;
+  for (let pass = 0; pass < sweeps; pass++) {
+    if (pass % 2 === 0) {
+      for (let k = 1; k < columns.length; k++) columns[k] = reordered(columns[k], indexOf(columns[k - 1]));
+    } else {
+      for (let k = columns.length - 2; k >= 0; k--) columns[k] = reordered(columns[k], indexOf(columns[k + 1]));
+    }
+  }
+  return columns;
+}
+
 function clusterGraphSVG(group, wordById, kind) {
   const lineHeight = 15;
   const boxDims = new Map();
@@ -1531,19 +1583,20 @@ function clusterGraphSVG(group, wordById, kind) {
   for (let i = 0; i <= maxLevel; i++) byLevel.push([]);
   group.clusters.forEach(c => byLevel[level.get(c.id)].push(c));
   byLevel.forEach(list => list.sort((a, b) => wordById.get(a.wordIds[0]).lexical_form.localeCompare(wordById.get(b.wordIds[0]).lexical_form)));
+  const orderedByLevel = reduceCrossings(byLevel, group.edges);
 
   const rowGap = 22;
   const marginX = 40, marginY = 30;
   const maxBoxWidth = Math.max(...group.clusters.map(c => boxDims.get(c.id).width));
   const columnStep = maxBoxWidth + 100;
-  const colHeights = byLevel.map(list => list.reduce((s, c) => s + boxDims.get(c.id).height, 0) + rowGap * Math.max(0, list.length - 1));
+  const colHeights = orderedByLevel.map(list => list.reduce((s, c) => s + boxDims.get(c.id).height, 0) + rowGap * Math.max(0, list.length - 1));
   const maxColHeight = Math.max(...colHeights);
   const width = marginX * 2 + maxBoxWidth + maxLevel * columnStep;
   const height = marginY * 2 + maxColHeight;
 
   const boxPos = new Map();
   const wordPos = new Map();
-  byLevel.forEach((list, lvl) => {
+  orderedByLevel.forEach((list, lvl) => {
     let y = marginY + (maxColHeight - colHeights[lvl]) / 2;
     const x = marginX + maxBoxWidth / 2 + lvl * columnStep;
     list.forEach(c => {
