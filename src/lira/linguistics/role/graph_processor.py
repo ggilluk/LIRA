@@ -43,25 +43,52 @@ class GraphProcessor:
         )
         return LinguisticSystemProperty(self.store, row)
 
-    def process_token(
-        self, text_token: str, absolute_seq_num: int, *,
+    def process_token_candidates(
+        self, text_token: str, *,
         sentence_index: int = 0, token_index: int = 0, is_sentence_start: bool = False,
         preceding_words: Tuple[str, ...] = (), following_words: Tuple[str, ...] = (),
-    ) -> "Word":
-        import copy
-
-        from lira.value_objects import Text
-        from lira.vocabulary import PartOfSpeech, Word
+    ) -> "TokenReading":
+        """Resolves `text_token` against the Vocabulary Layer and keeps
+        every seeded candidate identify_word returned -- the read
+        path's own entry point (role/token_resolver.py), which must not
+        collapse to one sense the way process_token's materialisation
+        step does. Allocates no tensor row: a TokenReading explored by
+        SequenceEngine and then discarded as a losing alternative must
+        leave nothing behind in the tensor (see data/token_reading.py's
+        own docstring)."""
+        from ..data.token_reading import TokenReading
 
         candidates = self.dict_processor.identify_word(
             text_token,
             sentence_index=sentence_index, token_index=token_index, is_sentence_start=is_sentence_start,
             preceding_words=preceding_words, following_words=following_words,
         )
+        return TokenReading(
+            text=text_token, token_index=token_index, sentence_index=sentence_index,
+            is_sentence_start=is_sentence_start, candidates=tuple(candidates),
+        )
 
-        if candidates:
-            # Highest-confidence candidate for this occurrence
-            # (DictionaryProcessor.identify_word already ranks them).
+    def materialise_token(
+        self, reading: "TokenReading", absolute_seq_num: int, *,
+        selected_candidate: "Optional[WordIdentification]" = None,
+    ) -> "Word":
+        """Turns one TokenReading occurrence into a tensor-backed Word
+        node -- the second half of what process_token used to do in one
+        step. `selected_candidate` lets a reader (PhraseReader et al.)
+        materialise the specific sense sequencing chose; omitted, this
+        defaults to `reading.candidates[0]` (identify_word's own
+        top-ranked candidate), which is what makes process_token below
+        byte-for-byte identical to its pre-split behaviour."""
+        import copy
+
+        from lira.value_objects import Text
+        from lira.vocabulary import PartOfSpeech, Word
+
+        candidate = selected_candidate if selected_candidate is not None else (
+            reading.candidates[0] if reading.candidates else None
+        )
+
+        if candidate is not None:
             # word is always the Dictionary's canonical Word (its
             # *type*, punctuation included -- see
             # dictionary_processor.py) -- copy it so this occurrence
@@ -72,7 +99,7 @@ class GraphProcessor:
             # occurrence-level orthographic evidence) is Linguistics
             # Layer work not yet built -- see
             # linguistics/documentation/README.md.
-            node = copy.copy(candidates[0].word)
+            node = copy.copy(candidate.word)
         else:
             # No seeded or previously-hydrated sense exists yet.
             # identify_word has already queued external hydration, but
@@ -82,7 +109,7 @@ class GraphProcessor:
             # Dictionary, since an unresolved occurrence must not enter
             # the authoritative vocabulary as a guess (vocabulary/data/word_identification.py).
             node = Word(
-                text=text_token,
+                text=reading.text,
                 part_of_speech=PartOfSpeech.OTHER,
                 definition=Text(value="Pending external hydration; part of speech not yet identified."),
                 is_common=False,
@@ -93,12 +120,28 @@ class GraphProcessor:
         # Clause/Sentence text is reconstructed from token text
         # (process_sentence below), so it must reflect what was
         # actually written, not the Dictionary's seed-data casing.
-        node.text = text_token
+        node.text = reading.text
 
         kind = LinguisticUnitKind.Punctuation if node.part_of_speech == PartOfSpeech.PUNCTUATION else LinguisticUnitKind.Word
 
         node.system_property = self.create_property_wrapper(node, kind, absolute_seq_num, "Lexer_TokenLayer")
         return node
+
+    def process_token(
+        self, text_token: str, absolute_seq_num: int, *,
+        sentence_index: int = 0, token_index: int = 0, is_sentence_start: bool = False,
+        preceding_words: Tuple[str, ...] = (), following_words: Tuple[str, ...] = (),
+    ) -> "Word":
+        """The write path's own entry point, unchanged in behaviour --
+        resolve, then materialise the top-ranked candidate. Composed
+        from process_token_candidates + materialise_token rather than
+        duplicating either."""
+        reading = self.process_token_candidates(
+            text_token,
+            sentence_index=sentence_index, token_index=token_index, is_sentence_start=is_sentence_start,
+            preceding_words=preceding_words, following_words=following_words,
+        )
+        return self.materialise_token(reading, absolute_seq_num)
 
     def process_sentence(self, raw_sentence_text: str, seq_num: int) -> Sentence:
         from lira.vocabulary import PartOfSpeech

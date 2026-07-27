@@ -29,21 +29,38 @@ punctuation mark is a Word with part_of_speech=PartOfSpeech.PUNCTUATION;
 GraphProcessor.process_token derives a token's LinguisticUnitKind (Word
 vs Punctuation) from that field instead of an isinstance check."""
 
+from .role.clause_reader import ClauseReader
 from .role.clause_segmentation import ClauseSegmentationUtility
 from .role.grammar_configurator import GrammarConfigurator
 from .role.graph_processor import GraphProcessor
 from .role.lexer import LinguisticLexer
 from .role.linguistic_controller import LinguisticController
+from .role.phrase_reader import PhraseReader
 from .role.prompt_tokenizer import PromptTokenizer
+from .role.reading_context import ReadingContext
+from .role.reading_scorer import ReadingScorer, ScoringFactors
+from .role.sentence_reader import SentenceReader
+from .role.sequence_engine import SequenceEngine
+from .role.token_resolver import TokenResolver
 from .data.system_property import LinguisticSystemProperty, SystemPropertyRef
 from .data.tensor import LinguisticSystemPropertyTensor
 from .data.clause import Clause
+from .data.clause_type import ClauseType
+from .data.interpretation import Interpretation
 from .data.linguistic_relation_type import LinguisticRelationType
+from .data.linguistic_scope import LinguisticScope
 from .data.linguistic_unit import LinguisticUnit
 from .data.linguistic_unit_kind import LinguisticUnitKind
 from .data.paragraph import Paragraph
+from .data.phrase import Phrase
+from .data.phrase_type import PhraseType
+from .data.reading_error import ReadingError, ReadingErrorKind
 from .data.sentence import Sentence
+from .data.sentence_type import SentenceType
+from .data.sequencing_obligation import ObligationKind, SequencingObligation
 from .data.subject import Subject
+from .data.token_reading import TokenReading
+from .data.validation_outcome import ValidationOutcome
 from .ui.user_prompt import UserPrompt
 
 __all__ = [
@@ -64,4 +81,25 @@ __all__ = [
     "Sentence",
     "Paragraph",
     "Subject",
+    # Read-only sentence sequencing (Phrase.read()/Clause.read()/Sentence.read())
+    "Phrase",
+    "PhraseType",
+    "ClauseType",
+    "SentenceType",
+    "LinguisticScope",
+    "ObligationKind",
+    "SequencingObligation",
+    "ValidationOutcome",
+    "ReadingError",
+    "ReadingErrorKind",
+    "TokenReading",
+    "Interpretation",
+    "ReadingContext",
+    "SequenceEngine",
+    "ReadingScorer",
+    "ScoringFactors",
+    "TokenResolver",
+    "PhraseReader",
+    "ClauseReader",
+    "SentenceReader",
 ]

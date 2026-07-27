@@ -35,3 +35,22 @@ class ClauseSegmentationUtility:
                 clause_buckets[-1].append(token)
 
         return [b for b in clause_buckets if b]
+
+    @staticmethod
+    def candidate_clause_boundaries(tokens: List["TokenReading"], config: GrammarConfigurator) -> List[int]:
+        """Candidate split points (token indices) a Phase 2 recursive
+        ClauseReader would confirm or reject via clause-level sequencing
+        -- unlike slice_tokens_into_clauses above (the write path's own
+        eager, unconditional split), this only *proposes* boundaries at
+        each clause_delimiters/coordinating_conjunctions token and never
+        splits anything itself. Phase 1's ClauseReader treats its whole
+        given span as one ClauseType.INDEPENDENT clause (plan: "one
+        independent clause per sentence, non-recursive" in this phase)
+        and does not act on these boundaries yet -- see
+        linguistics/documentation/README.md, Not Yet Built."""
+        boundaries = []
+        for index, token in enumerate(tokens):
+            text = token.text.lower()
+            if text in config.clause_delimiters or text in config.coordinating_conjunctions:
+                boundaries.append(index)
+        return boundaries

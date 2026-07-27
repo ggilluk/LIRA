@@ -20,3 +20,8 @@ class LinguisticUnitKind(Enum):
     Paragraph = 4
     Subject = 5
     UserPrompt = 6
+    # Appended, not inserted -- 0-6 above are already live tensor cell
+    # codes in any LinguisticSystemPropertyTensor built before this
+    # value existed; renumbering them would silently corrupt
+    # previously-allocated rows' kind_of() reads.
+    Phrase = 7
