@@ -17,7 +17,16 @@ shared sequencing engine" this layer's own spec requires
 (`http.server.HTTPServer`, not `ThreadingHTTPServer`) deliberately --
 this is a local, one-user-at-a-time debugging tool, and the underlying
 `LinguisticSystemPropertyTensor`/`Dictionary` a request reads and
-writes through are not designed for concurrent access."""
+writes through are not designed for concurrent access.
+
+The page itself (`_PAGE_TEMPLATE`/`render_page`) also backs the fully
+offline, static `SentenceReaderView` (sentence_reader_view.py) and the
+combined `LiraView` (knowledge/ui/lira_view.py): the *same* HTML/CSS/JS
+embeds a precomputed `EXAMPLES` array and falls back to it when
+`fetch("/api/read")` fails (no server reachable, or the page was opened
+as a bare `file://` document) -- one template, parameterised only by
+which examples are embedded, rather than two divergent copies of this
+page's markup and script."""
 
 import json
 from http.server import BaseHTTPRequestHandler, HTTPServer
@@ -43,6 +52,12 @@ POS_COLORS = {
 }
 
 VALIDATION_COLORS = {"VALID": "#2B6E63", "UNRESOLVED": "#B08900", "INVALID": "#B2542D"}
+
+DEFAULT_TITLE = "LIRA Sentence Reader"
+DEFAULT_SUBTITLE = (
+    "Paste a sentence and read it through the Linguistics Layer's state machine "
+    "(Phrase.read()/Clause.read()/Sentence.read()) against the seeded Dictionary."
+)
 
 
 def _error_to_json(error: ReadingError) -> dict:
@@ -109,6 +124,37 @@ def _sentence_to_json(sentence: Sentence) -> dict:
     }
 
 
+def build_examples(controller: LinguisticController, sentences: List[str]) -> List[dict]:
+    """Runs each sentence through the live read path once and returns
+    `{sentence, predicted, trace}` records in the exact shape `/api/read`
+    itself returns -- the offline example set `SentenceReaderView`
+    (sentence_reader_view.py) embeds, and what the page's own JS falls
+    back to matching against when no live server answers."""
+    examples = []
+    for text in sentences:
+        trace: List[dict] = []
+        sentence = controller.read_sentence(text, trace=trace)
+        examples.append({"sentence": text, "predicted": _sentence_to_json(sentence), "trace": trace})
+    return examples
+
+
+def render_page(examples: List[dict], *, title: str = DEFAULT_TITLE, subtitle: str = DEFAULT_SUBTITLE) -> str:
+    """The full standalone HTML document -- used directly by
+    `SentenceReaderServer` (with `examples=[]`, since a live server
+    always answers `/api/read` itself) and by `SentenceReaderView`
+    (with a precomputed `examples` list, for fully offline use)."""
+    html = _PAGE_TEMPLATE
+    for token, value in {
+        "TITLE": title,
+        "SUBTITLE": subtitle,
+        "POS_COLORS_JSON": json.dumps(POS_COLORS),
+        "VALIDATION_COLORS_JSON": json.dumps(VALIDATION_COLORS),
+        "EXAMPLES_JSON": json.dumps(examples),
+    }.items():
+        html = html.replace("@@%s@@" % token, value)
+    return html
+
+
 class SentenceReaderServer:
     """Construct with a live `LinguisticController` (typically
     `domain.linguistics` off an already-seeded `Domain`/`LIRAHost` --
@@ -122,7 +168,11 @@ class SentenceReaderServer:
 
     def serve_forever(self) -> None:
         controller = self.controller
-        page_bytes = _PAGE_HTML.encode("utf-8")
+        # A live server always answers /api/read itself, so it embeds no
+        # offline example set of its own (render_page's own docstring) --
+        # the page's fallback path only ever engages if this process
+        # stops answering mid-session.
+        page_bytes = render_page([]).encode("utf-8")
 
         class Handler(BaseHTTPRequestHandler):
             server_version = "LIRASentenceReader/1.0"
@@ -187,12 +237,12 @@ class SentenceReaderServer:
             server.server_close()
 
 
-_PAGE_HTML = """<!DOCTYPE html>
+_PAGE_TEMPLATE = """<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>LIRA Sentence Reader</title>
+<title>@@TITLE@@</title>
 <style>
 :root {
   --ground: #F4F5F1;
@@ -227,6 +277,12 @@ header.masthead {
 }
 h1 { font-family: var(--font-display); font-weight: 600; font-size: 1.7rem; margin: 0; text-wrap: balance; }
 .subtitle { color: var(--ink-muted); font-size: 0.9rem; max-width: 60ch; }
+/* Everything below, to the matching end marker, is this view's own
+   page-specific CSS -- render_fragment() (sentence_reader_view.py)
+   extracts it for embedding in a combined page (knowledge/ui/lira_view.py)
+   on top of the shared chrome (:root tokens, reset, masthead) above,
+   which such a page only needs once. */
+/*@@STYLE_FRAGMENT_START@@*/
 .input-card {
   background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
   box-shadow: var(--shadow); padding: 18px 20px; margin-bottom: 28px;
@@ -252,20 +308,25 @@ button.read-btn:not(:disabled):hover { filter: brightness(1.08); }
 }
 .example-links button:hover { border-color: var(--accent); color: var(--accent); }
 .error-banner {
-  background: color-mix(in srgb, var(--validation-invalid, #B2542D) 12%, var(--surface));
+  background: color-mix(in srgb, #B2542D 12%, var(--surface));
   border: 1px solid #B2542D; color: #B2542D; border-radius: var(--radius); padding: 10px 14px;
   margin-bottom: 20px; font-size: 0.9rem; display: none;
 }
-.panels { display: grid; grid-template-columns: 1fr; gap: 24px; }
-@media (min-width: 900px) { .panels { grid-template-columns: 1fr 1fr; } }
-.panel {
+.offline-note {
+  background: color-mix(in srgb, #B08900 12%, var(--surface));
+  border: 1px solid #B08900; color: #8A6900; border-radius: var(--radius); padding: 8px 14px;
+  margin-bottom: 16px; font-size: 0.84rem; display: none;
+}
+.sr-panels { display: grid; grid-template-columns: 1fr; gap: 24px; }
+@media (min-width: 900px) { .sr-panels { grid-template-columns: 1fr 1fr; } }
+.sr-panel {
   background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
   box-shadow: var(--shadow); padding: 18px 20px; min-height: 120px;
 }
-.panel h2 {
+.sr-panel h2 {
   font-family: var(--font-display); font-size: 1.05rem; margin: 0 0 4px; font-weight: 600;
 }
-.panel .panel-sub { color: var(--ink-muted); font-size: 0.8rem; margin-bottom: 14px; }
+.sr-panel .panel-sub { color: var(--ink-muted); font-size: 0.8rem; margin-bottom: 14px; }
 .placeholder { color: var(--ink-muted); font-size: 0.88rem; font-style: italic; }
 .badge {
   display: inline-flex; align-items: center; gap: 4px; padding: 1px 9px; border-radius: 999px;
@@ -293,7 +354,6 @@ button.read-btn:not(:disabled):hover { filter: brightness(1.08); }
 .position-head { padding: 8px 12px; background: color-mix(in srgb, var(--accent) 7%, var(--surface)); display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 .position-head .idx { font-family: var(--font-mono); font-size: 0.72rem; color: var(--ink-muted); }
 .attempt-row { padding: 8px 12px; border-top: 1px solid var(--line); font-size: 0.82rem; }
-.attempt-row.matched { }
 .attempt-row.rejected { opacity: 0.62; }
 .attempt-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .attempt-type { font-weight: 700; font-family: var(--font-mono); font-size: 0.78rem; }
@@ -306,16 +366,18 @@ button.read-btn:not(:disabled):hover { filter: brightness(1.08); }
 .completion .win-mark { color: var(--accent); font-weight: 700; margin-right: 6px; }
 .rejection-reason { color: var(--ink-muted); font-size: 0.78rem; margin-top: 4px; }
 footer { margin-top: 40px; color: var(--ink-muted); font-size: 0.78rem; text-align: center; }
+/*@@STYLE_FRAGMENT_END@@*/
 </style>
 </head>
 <body>
 <div class="page">
   <header class="masthead">
     <div>
-      <h1>LIRA Sentence Reader</h1>
-      <div class="subtitle">Paste a sentence and read it through the Linguistics Layer's state machine (Phrase.read()/Clause.read()/Sentence.read()) against the live seeded Dictionary.</div>
+      <h1>@@TITLE@@</h1>
+      <div class="subtitle">@@SUBTITLE@@</div>
     </div>
   </header>
+  <!--@@BODY_FRAGMENT_START@@-->
 
   <div class="input-card">
     <textarea id="sentence-input" placeholder="e.g. A meaning is a representation.">A meaning is a representation.</textarea>
@@ -327,27 +389,35 @@ footer { margin-top: 40px; color: var(--ink-muted); font-size: 0.78rem; text-ali
   </div>
 
   <div class="error-banner" id="error-banner"></div>
+  <div class="offline-note" id="offline-note">Showing a pre-computed offline result -- no live server answered this request.</div>
 
-  <div class="panels">
-    <section class="panel" id="predicted-panel">
+  <div class="sr-panels">
+    <section class="sr-panel" id="predicted-panel">
       <h2>Predicted structure</h2>
       <div class="panel-sub">The one interpretation the state machine ranked highest and materialised.</div>
       <div id="predicted-content"><div class="placeholder">Read a sentence to see its predicted structure.</div></div>
     </section>
-    <section class="panel" id="trace-panel">
+    <section class="sr-panel" id="trace-panel">
       <h2>Full trace</h2>
       <div class="panel-sub">Every phrase type attempted at every token position -- matched, completed, rejected, and why.</div>
       <div id="trace-content"><div class="placeholder">Read a sentence to see the full search trace.</div></div>
     </section>
   </div>
 
+  <!--@@BODY_FRAGMENT_END@@-->
   <footer>LIRA Linguistics Layer read path -- linguistics/documentation/README.md</footer>
 </div>
 
 <script>
+/*@@SCRIPT_FRAGMENT_START@@*/
 const POS_COLORS = @@POS_COLORS_JSON@@;
 const VALIDATION_COLORS = @@VALIDATION_COLORS_JSON@@;
-const EXAMPLES = [
+// Precomputed {sentence, predicted, trace} records -- [] for a live
+// server (render_page's own docstring), a real corpus for the fully
+// offline SentenceReaderView/LiraView. Both the "read a sentence"
+// fallback path and the quick-example chips below draw from this.
+const OFFLINE_EXAMPLES = @@EXAMPLES_JSON@@;
+const DEFAULT_QUICK_EXAMPLES = [
   "A meaning is a representation.",
   "The word over the meaning.",
   "The use is a state.",
@@ -491,6 +561,37 @@ function renderTrace(trace) {
   return container;
 }
 
+function renderResult(predicted, trace, offline) {
+  document.getElementById("predicted-content").replaceChildren(renderPredicted(predicted));
+  document.getElementById("trace-content").replaceChildren(renderTrace(trace));
+  document.getElementById("offline-note").style.display = offline ? "block" : "none";
+}
+
+function findOfflineExample(text) {
+  const needle = text.trim().toLowerCase();
+  return OFFLINE_EXAMPLES.find((example) => example.sentence.trim().toLowerCase() === needle);
+}
+
+function offlineFallback(text, banner) {
+  // No real /api/read answered -- e.g. this page was opened as a bare
+  // file, served by a generic static file server with no such route,
+  // or the local server isn't running. Fall back to whatever
+  // precomputed offline example set this page embeds, rather than
+  // failing outright (the whole point of "degrade gracefully").
+  const match = findOfflineExample(text);
+  if (match) {
+    renderResult(match.predicted, match.trace, true);
+    return;
+  }
+  if (OFFLINE_EXAMPLES.length) {
+    banner.textContent = "No live server reachable, and this sentence isn't in the built-in offline example set below. " +
+      "Pick one of those, or run the local server (python3 examples/linguistics_sentence_reader_ui.py) for free-text reading of any sentence.";
+  } else {
+    banner.textContent = "No live server reachable, and this page has no offline example set embedded.";
+  }
+  banner.style.display = "block";
+}
+
 async function readSentence() {
   const input = document.getElementById("sentence-input");
   const btn = document.getElementById("read-btn");
@@ -500,27 +601,36 @@ async function readSentence() {
   if (!text) return;
   btn.disabled = true;
   btn.textContent = "Reading…";
+
+  // A real /api/read is detected only by a JSON body shaped like its
+  // own contract ({predicted, trace} or {error}) -- a 404/500 HTML page
+  // from a generic static file server (e.g. `python3 -m http.server`
+  // serving this saved file) is treated the same as no server at all,
+  // not shown as a confusing parse-error message.
+  let data = null;
   try {
     const response = await fetch("/api/read", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ sentence: text }),
     });
-    const data = await response.json();
-    if (!response.ok) {
-      banner.textContent = data.error || `Request failed (${response.status})`;
-      banner.style.display = "block";
-      return;
-    }
-    document.getElementById("predicted-content").replaceChildren(renderPredicted(data.predicted));
-    document.getElementById("trace-content").replaceChildren(renderTrace(data.trace));
-  } catch (err) {
-    banner.textContent = "Could not reach the server: " + err;
-    banner.style.display = "block";
-  } finally {
-    btn.disabled = false;
-    btn.textContent = "Read sentence";
+    const parsed = await response.json().catch(() => null);
+    if (parsed && (parsed.predicted || parsed.error)) data = parsed;
+  } catch (networkErr) {
+    data = null;
   }
+
+  if (data && data.error) {
+    banner.textContent = data.error;
+    banner.style.display = "block";
+  } else if (data && data.predicted) {
+    renderResult(data.predicted, data.trace, false);
+  } else {
+    offlineFallback(text, banner);
+  }
+
+  btn.disabled = false;
+  btn.textContent = "Read sentence";
 }
 
 document.getElementById("read-btn").addEventListener("click", readSentence);
@@ -528,18 +638,17 @@ document.getElementById("sentence-input").addEventListener("keydown", (event) =>
   if ((event.metaKey || event.ctrlKey) && event.key === "Enter") readSentence();
 });
 
+const quickExamples = OFFLINE_EXAMPLES.length ? OFFLINE_EXAMPLES.map((e) => e.sentence) : DEFAULT_QUICK_EXAMPLES;
 const examplesRow = document.getElementById("examples");
-for (const example of EXAMPLES) {
+for (const example of quickExamples) {
   const btn = el("button", { text: example, type: "button" });
   btn.addEventListener("click", () => { document.getElementById("sentence-input").value = example; readSentence(); });
   examplesRow.appendChild(btn);
 }
 
 readSentence();
+/*@@SCRIPT_FRAGMENT_END@@*/
 </script>
 </body>
 </html>
 """
-
-_PAGE_HTML = _PAGE_HTML.replace("@@POS_COLORS_JSON@@", json.dumps(POS_COLORS))
-_PAGE_HTML = _PAGE_HTML.replace("@@VALIDATION_COLORS_JSON@@", json.dumps(VALIDATION_COLORS))
