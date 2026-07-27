@@ -312,7 +312,7 @@ class SequenceEngine:
                 kind = phrase_grammar.obligations_raised[pos]
                 remaining = remaining + (SequencingObligation(
                     kind=kind, scope=scope, raised_at_index=token_index,
-                    description=f"{pos} at token {token_index} raises {kind.name}",
+                    description=f"{pos.name} at token {token_index} raises {kind.name}",
                 ),)
         return remaining
 

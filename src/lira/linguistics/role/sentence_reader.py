@@ -41,7 +41,11 @@ class SentenceReader:
         *,
         grammar: Optional[GrammarConfigurator] = None,
         sequence_number: int = 0,
+        trace: Optional[List[dict]] = None,
     ) -> Sentence:
+        """`trace`, when a list is passed, is threaded straight through
+        to ClauseReader.read -- see PhraseReader.read's own docstring
+        for what gets recorded. Purely additive/observational."""
         active_grammar = grammar or self.grammar
         tokens = (
             self.token_resolver.resolve_sentence(text_or_tokens)
@@ -56,7 +60,7 @@ class SentenceReader:
         has_terminal_punctuation = punctuation_token.is_punctuation
         clause_end = len(tokens) - 1 if has_terminal_punctuation else len(tokens)
 
-        clause = self.clause_reader.read(tokens, start_index=0, end_index=clause_end, grammar=active_grammar)
+        clause = self.clause_reader.read(tokens, start_index=0, end_index=clause_end, grammar=active_grammar, trace=trace)
 
         punctuation_word = None
         if has_terminal_punctuation:

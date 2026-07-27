@@ -67,11 +67,15 @@ class LinguisticController:
     def tokenize_prompt(self, prompt: UserPrompt) -> Subject:
         return self.tokenizer.tokenize_prompt(prompt)
 
-    def read_sentence(self, text: str) -> Sentence:
+    def read_sentence(self, text: str, *, trace: Optional[List[dict]] = None) -> Sentence:
         """Reads `text` as exactly one sentence (spec 14.3) -- delegates
         to the shared SentenceReader via reading_context, never
-        re-implements sequencing here (spec 9)."""
-        return self.reading_context.sentence_reader.read(text, grammar=self.grammar_configurator)
+        re-implements sequencing here (spec 9). `trace`, when a list is
+        passed, is filled with one record per token position describing
+        every phrase type PhraseReader.read() attempted there -- see
+        that method's own docstring (role/phrase_reader.py) and
+        ui/sentence_reader_server.py, the one consumer of this."""
+        return self.reading_context.sentence_reader.read(text, grammar=self.grammar_configurator, trace=trace)
 
     def read_text(self, text: str) -> List[Sentence]:
         """Splits `text` into sentences the same way tokenize_prompt's

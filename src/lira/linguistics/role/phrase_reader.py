@@ -8,7 +8,7 @@ tensor-backed Words (GraphProcessor.materialise_token) -- every other
 candidate stays a lightweight Interpretation record (spec 15, 24),
 never a second tree of tensor rows for a reading nothing kept."""
 
-from typing import TYPE_CHECKING, List, Optional, Sequence, Tuple
+from typing import TYPE_CHECKING, Dict, List, Optional, Sequence, Tuple
 
 from ..data.clause import Clause
 from ..data.interpretation import Interpretation
@@ -55,33 +55,55 @@ class PhraseReader:
         end_index: Optional[int] = None,
         parent_clause: Optional[Clause] = None,
         grammar: Optional[GrammarConfigurator] = None,
+        trace: Optional[List[dict]] = None,
     ) -> Phrase:
+        """`trace`, when a list is passed, gets one JSON-safe dict
+        appended per call describing *every* PhraseType attempted at
+        this start position -- not just the winner (this is the "full
+        trace" the sentence reader UI's second panel renders, see
+        ui/sentence_reader_server.py). Purely observational: passing
+        `trace=None` (the default) is byte-for-byte the original
+        behaviour, since nothing about the search or ranking changes,
+        only what gets recorded about it."""
         active_grammar = grammar or self.grammar
         end_index = len(tokens) if end_index is None else end_index
 
         if start_index >= end_index:
-            return self._unreadable_phrase(tokens, start_index, parent_clause)
+            phrase = self._unreadable_phrase(tokens, start_index, parent_clause)
+            if trace is not None:
+                trace.append(self._position_trace(tokens, start_index, active_grammar, {}, None, phrase))
+            return phrase
 
+        per_type_candidates: Dict[PhraseType, List[SequencePath]] = {}
         candidates: List[SequencePath] = []
         for phrase_type in PhraseType:
             phrase_grammar = active_grammar.phrase_grammars[phrase_type]
             if phrase_grammar.nested_phrase_after:
-                candidates.extend(self._find_prepositional_paths(tokens, start_index, end_index, phrase_grammar))
+                found = self._find_prepositional_paths(tokens, start_index, end_index, phrase_grammar)
             else:
-                candidates.extend(self.engine.find_valid_sequences(tokens, start_index, phrase_type, end_index=end_index))
+                found = self.engine.find_valid_sequences(tokens, start_index, phrase_type, end_index=end_index)
+            per_type_candidates[phrase_type] = found
+            candidates.extend(found)
 
         if not candidates:
-            return self._unreadable_phrase(tokens, start_index, parent_clause)
+            phrase = self._unreadable_phrase(tokens, start_index, parent_clause)
+            if trace is not None:
+                trace.append(self._position_trace(tokens, start_index, active_grammar, per_type_candidates, None, phrase))
+            return phrase
 
         ranked = self.engine.rank_sequences(candidates, tokens)
-        winner_key = self.engine.scorer.rank_key(self.engine.scoring_factors(ranked[0], tokens))
+        winning_path = ranked[0]
+        winner_key = self.engine.scorer.rank_key(self.engine.scoring_factors(winning_path, tokens))
         tie_count = sum(
             1 for path in ranked if self.engine.scorer.rank_key(self.engine.scoring_factors(path, tokens)) == winner_key
         )
         alternatives = tuple(
             self._to_interpretation(path, tokens) for path in ranked[1 : 1 + active_grammar.max_alternative_interpretations]
         )
-        return self._build_phrase(ranked[0], tokens, active_grammar, parent_clause, alternatives, tie_count)
+        phrase = self._build_phrase(winning_path, tokens, active_grammar, parent_clause, alternatives, tie_count)
+        if trace is not None:
+            trace.append(self._position_trace(tokens, start_index, active_grammar, per_type_candidates, winning_path, phrase))
+        return phrase
 
     # --- PREPOSITIONAL_PHRASE composition (nested_phrase_after) --------
     # find_valid_sequences can't walk this one alone -- see its own
@@ -114,7 +136,7 @@ class PhraseReader:
                 if pos in phrase_grammar.obligations_raised:
                     open_obligations = (SequencingObligation(
                         kind=phrase_grammar.obligations_raised[pos], scope=scope, raised_at_index=start_index,
-                        description=f"{pos} at token {start_index} requires an object",
+                        description=f"{pos.name} at token {start_index} requires an object",
                     ),)
                 results.append(SequencePath(
                     phrase_type=phrase_grammar.phrase_type, start_index=start_index, end_index=start_index + 1,
@@ -266,6 +288,94 @@ class PhraseReader:
             confidence=self.engine.scorer.confidence(factors),
             rank_key=self.engine.scorer.rank_key(factors),
         )
+
+    # --- Trace (sentence reader UI's "full trace" panel) ------------------
+
+    def _path_text(self, path: SequencePath, tokens: Sequence[TokenReading]) -> str:
+        words = [tokens[step.token_index].text for step in path.steps]
+        for nested in path.nested_paths:
+            words.append(self._path_text(nested, tokens))
+        return " ".join(words)
+
+    def _position_trace(
+        self,
+        tokens: Sequence[TokenReading],
+        start_index: int,
+        grammar: GrammarConfigurator,
+        per_type_candidates: Dict[PhraseType, List[SequencePath]],
+        winning_path: Optional[SequencePath],
+        winning_phrase: Phrase,
+    ) -> dict:
+        """One JSON-safe record of everything PhraseReader.read() tried
+        at `start_index` -- every PhraseType, whether its start
+        requirement matched this token, every completed candidate found
+        (with the actual winner flagged), and a plain-language reason
+        when a type produced nothing at all. Not consulted by any
+        reading decision -- purely an observational record of decisions
+        already made elsewhere (SequenceEngine, ReadingScorer)."""
+        token = tokens[start_index] if start_index < len(tokens) else None
+        attempts = []
+
+        for phrase_type in PhraseType:
+            phrase_grammar = grammar.phrase_grammars[phrase_type]
+            paths = per_type_candidates.get(phrase_type, [])
+
+            if phrase_grammar.marker_forms:
+                required_start = sorted(phrase_grammar.marker_forms)
+                start_match = token is not None and token.text.lower() in phrase_grammar.marker_forms
+            else:
+                required_start = sorted(pos.name for pos in phrase_grammar.start_states)
+                start_match = (
+                    token is not None and token.is_known
+                    and any(pos in phrase_grammar.start_states for pos in token.candidate_parts_of_speech())
+                )
+
+            completions = [
+                {
+                    "text": self._path_text(path, tokens),
+                    "end_index": path.end_index,
+                    "validation": self.engine.validate_sequence(path).name,
+                    "confidence": round(self.engine.scorer.confidence(self.engine.scoring_factors(path, tokens)), 4),
+                    "is_winner": path is winning_path,
+                }
+                for path in paths
+            ]
+
+            if paths:
+                rejection_reason = None
+            elif token is None:
+                rejection_reason = "no token at this position"
+            elif phrase_grammar.marker_forms:
+                rejection_reason = 'token text does not match the required marker form(s) %s' % required_start
+            elif not token.is_known:
+                rejection_reason = '"%s" is unseeded -- no candidate part of speech to match a required start state' % token.text
+            elif not start_match:
+                seeded = [pos.name for pos in token.candidate_parts_of_speech()]
+                rejection_reason = "token's seeded part(s) of speech %s don't include a required start %s" % (seeded, required_start)
+            else:
+                rejection_reason = "start matched, but no valid completion could be found from here"
+
+            attempts.append({
+                "phrase_type": phrase_type.name,
+                "required_start": required_start,
+                "start_match": start_match,
+                "completions": completions,
+                "rejection_reason": rejection_reason,
+            })
+
+        return {
+            "start_index": start_index,
+            "token_text": token.text if token is not None else None,
+            "candidate_parts_of_speech": (
+                [pos.name for pos in token.candidate_parts_of_speech()] if token is not None else []
+            ),
+            "is_known": token.is_known if token is not None else None,
+            "attempts": attempts,
+            "winner_phrase_type": winning_phrase.phrase_type.name if winning_phrase.phrase_type else None,
+            "winner_text": winning_phrase.text,
+            "winner_validation": winning_phrase.validation.name,
+            "winner_end_index": winning_phrase.end_position,
+        }
 
     def _unreadable_phrase(
         self, tokens: Sequence[TokenReading], start_index: int, parent_clause: Optional[Clause],

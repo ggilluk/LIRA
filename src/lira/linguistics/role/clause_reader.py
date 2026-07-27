@@ -51,7 +51,11 @@ class ClauseReader:
         start_index: int = 0,
         end_index: Optional[int] = None,
         grammar: Optional[GrammarConfigurator] = None,
+        trace: Optional[List[dict]] = None,
     ) -> Clause:
+        """`trace`, when a list is passed, is threaded straight through
+        to every PhraseReader.read() call this clause makes -- see that
+        method's own docstring. Purely additive/observational."""
         active_grammar = grammar or self.grammar
         end_index = len(tokens) if end_index is None else end_index
         template = active_grammar.clause_element_templates.get(ClauseType.INDEPENDENT)
@@ -66,7 +70,9 @@ class ClauseReader:
             if token.is_punctuation:
                 index += 1
                 continue
-            phrase = self.phrase_reader.read(tokens, start_index=index, end_index=end_index, grammar=active_grammar)
+            phrase = self.phrase_reader.read(
+                tokens, start_index=index, end_index=end_index, grammar=active_grammar, trace=trace,
+            )
             phrases.append(phrase)
             index = phrase.end_position if phrase.end_position > index else index + 1
 
