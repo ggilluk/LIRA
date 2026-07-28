@@ -64,25 +64,25 @@ Source: 23 sentences, 117 unique tokens
 
 ## Duplicate prevention (repeat-processing test)
 
-- Dictionary size after first run: 3075
-- Dictionary size after second run: 3075
+- Dictionary size after first run: 3135
+- Dictionary size after second run: 3135
 - Confirmed no duplicates created on reprocessing: **True**
 
 ## Hydrator telemetry
 
-- First run: {'successful_fetches': 40, 'failed_fetches': 0, 'deduplicated_calls': 7, 'created_words': 47}
-- Second run (cumulative): {'successful_fetches': 40, 'failed_fetches': 0, 'deduplicated_calls': 7, 'created_words': 47}
+- First run: {'successful_fetches': 40, 'failed_fetches': 0, 'deduplicated_calls': 4, 'created_words': 47}
+- Second run (cumulative): {'successful_fetches': 40, 'failed_fetches': 0, 'deduplicated_calls': 4, 'created_words': 47}
   (successful_fetches/created_words do not grow on the second run for anything already resolved; the deliberately-unresolved words are retried and fail again each pass, since nothing in this pipeline blacklists a word after one failed lookup.)
 
 ## Word-sense conflicts found and resolved
 
 Checking every fixture word against the Common seed directly found collisions (`object`, `depend`, `position`, `particle`, and -- once the 1163-word Common definition-gap batch added Common senses of its own for them -- `wave`, `moving`, `flow`) -- identify_word() only queues hydration when *no* existing sense at all matches, regardless of part_of_speech, so these never reached ExternalDictionaryAdapter. `depend`/`position` turned out to have compatible general-English definitions already in Common, fine as-is. The rest are genuine conflicts -- `object`/`particle` because Common's senses are the grammatical terms ("the noun that receives the action of a verb", "a function word that does not fit the main parts of speech"); `wave`/`moving`/`flow` because Common's new sense is a different part_of_speech entirely (Common's `wave` is VERB, Physics needs NOUN; Common's `moving` is VERB, Physics needs ADJECTIVE; Common's `flow` is NOUN, Physics needs VERB) -- neither is the physics one this domain's own relationships need. Resolved via `DictionaryProcessor.register_conflicting_sense` -- the same, pre-existing conflict-resolution path a Domain owner would use for any other word-sense conflict (`vocabulary/documentation/README.md`, 9.2), not a new mechanism. Both senses keep the identical, unmangled `lexical_form` -- no `_2`-style suffix -- and are told apart by their own `entry_id` (Word 4.2) plus the Domain pill the UI already shows:
 
-- `object` (NOUN) registered as a second, Physics-domain sense, `entry_id="793df8a1-83ca-4ad7-b4d2-9998154c7201"`
-- `particle` (NOUN) registered as a second, Physics-domain sense, `entry_id="b31f6023-e0d5-4a74-8ead-ddb979ee855a"`
-- `wave` (NOUN) registered as a second, Physics-domain sense, `entry_id="f7391b22-2354-46d2-9cfd-00f7d9556655"`
-- `moving` (ADJECTIVE) registered as a second, Physics-domain sense, `entry_id="a9b18d6a-7876-4f03-b431-de1a2f9ca806"`
-- `flow` (VERB) registered as a second, Physics-domain sense, `entry_id="5361e00c-6cf1-4d9f-b876-a0ef3f609642"`
+- `object` (NOUN) registered as a second, Physics-domain sense, `entry_id="5a9cb382-3081-4c54-a7b3-a042b7985b99"`
+- `particle` (NOUN) registered as a second, Physics-domain sense, `entry_id="ef79ffb5-2ec5-4803-9f5d-29e0e2e7b947"`
+- `wave` (NOUN) registered as a second, Physics-domain sense, `entry_id="77df2f91-d92c-448a-800e-8f676e564d7a"`
+- `moving` (ADJECTIVE) registered as a second, Physics-domain sense, `entry_id="ef147160-99cf-4c30-af98-47a6f270a6cc"`
+- `flow` (VERB) registered as a second, Physics-domain sense, `entry_id="15fa0264-bc6a-40a0-9777-ece5f3474d3b"`
 
 ## Relationships among hydrated words
 
@@ -103,5 +103,5 @@ RelationshipSeeder only runs once, at Domain creation, against the static Common
 
 ## Final state
 
-- Total words in the Physics Dictionary: 3075
-- Total relationships: 6121 (6057 inherited from Common + 64 hand-curated for this domain)
+- Total words in the Physics Dictionary: 3135
+- Total relationships: 6181 (6117 inherited from Common + 64 hand-curated for this domain)

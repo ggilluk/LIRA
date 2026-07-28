@@ -1,8 +1,8 @@
 {
   "schema_version": "2.0.0",
-  "asset_version": "1.17.0",
+  "asset_version": "1.18.0",
   "language_code": "en",
-  "total_lexical_forms": 391,
+  "total_lexical_forms": 435,
   "files": [
     {
       "file": "determiners.json",
@@ -34,11 +34,11 @@
     },
     {
       "file": "punctuation.json",
-      "count": 5
+      "count": 28
     },
     {
       "file": "symbols.json",
-      "count": 25
+      "count": 46
     },
     {
       "file": "numerals.json",

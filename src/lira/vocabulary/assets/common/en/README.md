@@ -33,8 +33,8 @@ working vocabulary immediately, not to be a system of record.
 | `coordinating_conjunctions.json` | FANBOYS -- for, and, nor, but, or, yet, so | 7 |
 | `subordinating_conjunctions.json` | because, although, unless, while, ... | 36 |
 | `particles.json` | not, there, please, also, too, only, ..., plus verb-particle senses of up/off/out/away (see Phrasal-verb particles below) | 16 |
-| `punctuation.json` | `.`, `!`, `?`, `;`, `,` -- see Punctuation is a Word below | 5 |
-| `symbols.json` | `$`, `%`, `&`, `@`, `+`, `=`, ... -- common typographic/mathematical symbols | 25 |
+| `punctuation.json` | `.`, `!`, `?`, `‽`, `,`, `;`, `:`, brackets, quotes, `…`, `¡`/`¿`, ... -- see Punctuation is a Word below | 28 |
+| `symbols.json` | `$`, `%`, `&`, `@`, `+`, `=`, dashes, `°`, `§`, `©`, `®`, `™`, list bullets, ... -- common typographic/mathematical symbols | 46 |
 | `numerals.json` | `zero` through `trillion` -- the base numeral words all other numbers are compositionally built from | 33 |
 | `metalinguistic_nouns.json` | Open-class `NOUN` terms for grammar itself, including relationship-kind terms (`synonym`, `lemma`, `contraction`, ...), `true`/`false`/`null`, and `mood`/`voice`/`predicate` -- see Supplementary files below | 64 |
 | `metalinguistic_verbs.json` | Open-class `VERB` terms for grammar itself, including mathematics/logic operator verbs (`add`, `xor`, `nand`, ...) and `form` (a homograph of the `NOUN` sense, "to form a sentence") | 44 |
@@ -526,6 +526,37 @@ lexical_form with an earlier-loaded sense never disturbs
 `Dictionary.lookup()`'s first-seeded-wins default.
 
 ## Version
+
+`v1` / `schema_version 2.0.0` / `asset_version 1.18.0` -- expanded
+`punctuation.json` and `symbols.json` from a formal Unicode reference
+table (66 characters total, each with its own code point, Unicode
+name, and Unicode General Category -- Pc/Pd/Pe/Pf/Pi/Po/Ps/Sm/Sk/So/Lm)
+via `examples/unicode_symbol_punctuation_seeding.py`. The table's own
+semantic grouping (Terminator, Separator, Introducer, Grouping, Quote,
+Omission, Inverted) decided which entries went to `PUNCTUATION` --
+`SYMBOL`'s and `PUNCTUATION`'s own definitions (6.1: `SYMBOL` "a
+non-alphabetic mark used in place of a word", `PUNCTUATION` "a mark
+that structures or separates text") already draw exactly this line;
+everything else in the table (the dash family, `/`/`\`/`⁄`, `@`, `#`,
+`&`, `*`, `|`, `~`, `^`, `%`, `‰`/`‱`, `°`, `′`/`″`, `§`, `¶`, `†`/`‡`,
+`©`, `®`, `™`, list bullets, ideographic repeat marks) went to
+`SYMBOL`, matching the precedent the existing `-` (Hyphen-Minus) and
+`_` (Low Line) entries already set. `punctuation.json` grew 5 -> 28 (23
+new: `‽`, `:`, the eight bracket pairs, the ten quote marks, `…`, `¡`,
+`¿`); `symbols.json` grew 25 -> 46 (21 new: the six non-ASCII dash
+variants, `⁄`, `‰`, `‱`, `′`, `″`, `¶`, `†`, `‡`, the five list-bullet
+marks, `々`, `〃`). The 22 characters that were already seeded (5
+`PUNCTUATION`, 17 `SYMBOL`) keep their `entry_id` and every other field
+unchanged -- only `definition`/`gloss` was replaced, with the exact
+mechanical form requested: "A {Unicode Name} is a/an {Unicode Category
+name}." (e.g. "A Full Stop is an Other Punctuation.", "A Hyphen-Minus
+is a Dash Punctuation."), deliberately plainer than this cache's
+otherwise hand-tuned prose, the same visible-plainness convention
+`asset_version 1.16.0`'s mechanically generated inflected-form
+definitions already established. Eight existing `SYMBOL` entries not
+in the table (`$`, `+`, `=`, `<`, `>`, `€`, `£`, `¥`) are untouched.
+Mandatory total 391 -> 435. Every seeded Dictionary now carries 435
+mandatory + 167 supplementary + 2481 promoted = **3083** total.
 
 `v1` / `schema_version 2.0.0` / `asset_version 1.17.0` -- split 13
 combined-sense `promoted_words.json` entries into their real, separate

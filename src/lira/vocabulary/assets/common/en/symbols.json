@@ -3,7 +3,7 @@
   "language_code": "en",
   "part_of_speech": "SYMBOL",
   "closed_class_kind": "symbol",
-  "count": 25,
+  "count": 46,
   "words": [
     {
       "entry_id": "c17a7d06-eb35-4c4a-a825-b7799d58fb42",
@@ -53,8 +53,8 @@
       "part_of_speech": "SYMBOL",
       "closed_class": true,
       "closed_class_kind": "symbol",
-      "definition": "Percent sign: denotes a proportion out of one hundred",
-      "gloss": "Percent sign: denotes a proportion out of one hundred",
+      "definition": "A Percent Sign is an Other Punctuation.",
+      "gloss": "A Percent Sign is an Other Punctuation.",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -90,8 +90,8 @@
       "part_of_speech": "SYMBOL",
       "closed_class": true,
       "closed_class_kind": "symbol",
-      "definition": "Ampersand: represents the word 'and'",
-      "gloss": "Ampersand: represents the word 'and'",
+      "definition": "An Ampersand is an Other Punctuation.",
+      "gloss": "An Ampersand is an Other Punctuation.",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -127,8 +127,8 @@
       "part_of_speech": "SYMBOL",
       "closed_class": true,
       "closed_class_kind": "symbol",
-      "definition": "At sign: marks a location, rate, or the domain part of an email address",
-      "gloss": "At sign: marks a location, rate, or the domain part of an email address",
+      "definition": "A Commercial At is an Other Punctuation.",
+      "gloss": "A Commercial At is an Other Punctuation.",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -164,8 +164,8 @@
       "part_of_speech": "SYMBOL",
       "closed_class": true,
       "closed_class_kind": "symbol",
-      "definition": "Hash (or number) sign: marks a number, a code, or a social-media tag",
-      "gloss": "Hash (or number) sign: marks a number, a code, or a social-media tag",
+      "definition": "A Number Sign is an Other Punctuation.",
+      "gloss": "A Number Sign is an Other Punctuation.",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -201,8 +201,8 @@
       "part_of_speech": "SYMBOL",
       "closed_class": true,
       "closed_class_kind": "symbol",
-      "definition": "Asterisk: marks a footnote, an omission, or multiplication",
-      "gloss": "Asterisk: marks a footnote, an omission, or multiplication",
+      "definition": "An Asterisk is an Other Punctuation.",
+      "gloss": "An Asterisk is an Other Punctuation.",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -275,8 +275,8 @@
       "part_of_speech": "SYMBOL",
       "closed_class": true,
       "closed_class_kind": "symbol",
-      "definition": "Minus sign (or hyphen): denotes subtraction, a negative value, or joins compound words",
-      "gloss": "Minus sign (or hyphen): denotes subtraction, a negative value, or joins compound words",
+      "definition": "A Hyphen-Minus is a Dash Punctuation.",
+      "gloss": "A Hyphen-Minus is a Dash Punctuation.",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -423,8 +423,8 @@
       "part_of_speech": "SYMBOL",
       "closed_class": true,
       "closed_class_kind": "symbol",
-      "definition": "Slash: denotes division, alternatives, or a fraction",
-      "gloss": "Slash: denotes division, alternatives, or a fraction",
+      "definition": "A Solidus is an Other Punctuation.",
+      "gloss": "A Solidus is an Other Punctuation.",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -460,8 +460,8 @@
       "part_of_speech": "SYMBOL",
       "closed_class": true,
       "closed_class_kind": "symbol",
-      "definition": "Backslash: separates elements in a file path or introduces an escape sequence",
-      "gloss": "Backslash: separates elements in a file path or introduces an escape sequence",
+      "definition": "A Reverse Solidus is an Other Punctuation.",
+      "gloss": "A Reverse Solidus is an Other Punctuation.",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -497,8 +497,8 @@
       "part_of_speech": "SYMBOL",
       "closed_class": true,
       "closed_class_kind": "symbol",
-      "definition": "Vertical bar (pipe): denotes logical OR, alternatives, or separates values",
-      "gloss": "Vertical bar (pipe): denotes logical OR, alternatives, or separates values",
+      "definition": "A Vertical Line is a Mathematical Symbol.",
+      "gloss": "A Vertical Line is a Mathematical Symbol.",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -534,8 +534,8 @@
       "part_of_speech": "SYMBOL",
       "closed_class": true,
       "closed_class_kind": "symbol",
-      "definition": "Tilde: denotes approximation or negation",
-      "gloss": "Tilde: denotes approximation or negation",
+      "definition": "A Tilde is a Mathematical Symbol.",
+      "gloss": "A Tilde is a Mathematical Symbol.",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -571,8 +571,8 @@
       "part_of_speech": "SYMBOL",
       "closed_class": true,
       "closed_class_kind": "symbol",
-      "definition": "Caret: denotes exponentiation or logical XOR",
-      "gloss": "Caret: denotes exponentiation or logical XOR",
+      "definition": "A Circumflex Accent is a Modifier Symbol.",
+      "gloss": "A Circumflex Accent is a Modifier Symbol.",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -608,8 +608,8 @@
       "part_of_speech": "SYMBOL",
       "closed_class": true,
       "closed_class_kind": "symbol",
-      "definition": "Underscore: joins words in place of a space, especially in identifiers",
-      "gloss": "Underscore: joins words in place of a space, especially in identifiers",
+      "definition": "A Low Line is a Connector Punctuation.",
+      "gloss": "A Low Line is a Connector Punctuation.",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -645,8 +645,8 @@
       "part_of_speech": "SYMBOL",
       "closed_class": true,
       "closed_class_kind": "symbol",
-      "definition": "Degree sign: denotes degrees of temperature, angle, or arc",
-      "gloss": "Degree sign: denotes degrees of temperature, angle, or arc",
+      "definition": "A Degree Sign is an Other Symbol.",
+      "gloss": "A Degree Sign is an Other Symbol.",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -682,8 +682,8 @@
       "part_of_speech": "SYMBOL",
       "closed_class": true,
       "closed_class_kind": "symbol",
-      "definition": "Section sign: marks a numbered section of a document",
-      "gloss": "Section sign: marks a numbered section of a document",
+      "definition": "A Section Sign is an Other Punctuation.",
+      "gloss": "A Section Sign is an Other Punctuation.",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -719,8 +719,8 @@
       "part_of_speech": "SYMBOL",
       "closed_class": true,
       "closed_class_kind": "symbol",
-      "definition": "Copyright sign: denotes that a work is protected by copyright",
-      "gloss": "Copyright sign: denotes that a work is protected by copyright",
+      "definition": "A Copyright Sign is an Other Symbol.",
+      "gloss": "A Copyright Sign is an Other Symbol.",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -756,8 +756,8 @@
       "part_of_speech": "SYMBOL",
       "closed_class": true,
       "closed_class_kind": "symbol",
-      "definition": "Registered trademark sign: denotes a legally registered trademark",
-      "gloss": "Registered trademark sign: denotes a legally registered trademark",
+      "definition": "A Registered Sign is an Other Symbol.",
+      "gloss": "A Registered Sign is an Other Symbol.",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -793,8 +793,8 @@
       "part_of_speech": "SYMBOL",
       "closed_class": true,
       "closed_class_kind": "symbol",
-      "definition": "Trademark sign: denotes an unregistered trademark",
-      "gloss": "Trademark sign: denotes an unregistered trademark",
+      "definition": "A Trade Mark Sign is an Other Symbol.",
+      "gloss": "A Trade Mark Sign is an Other Symbol.",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -906,6 +906,783 @@
       "closed_class_kind": "symbol",
       "definition": "Yen sign: denotes an amount of money in Japanese yen",
       "gloss": "Yen sign: denotes an amount of money in Japanese yen",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": null,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "entry_id": "24450de7-41a1-43cf-ae2d-bd3b84e803d9",
+      "lexical_form": "‐",
+      "normalised_form": "‐",
+      "text": "‐",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "SYMBOL",
+      "closed_class": true,
+      "closed_class_kind": "symbol",
+      "definition": "A Hyphen is a Dash Punctuation.",
+      "gloss": "A Hyphen is a Dash Punctuation.",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": null,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "entry_id": "20dac186-29b6-4a20-aad7-2dc779efc367",
+      "lexical_form": "‑",
+      "normalised_form": "‑",
+      "text": "‑",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "SYMBOL",
+      "closed_class": true,
+      "closed_class_kind": "symbol",
+      "definition": "A Non-breaking Hyphen is a Dash Punctuation.",
+      "gloss": "A Non-breaking Hyphen is a Dash Punctuation.",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": null,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "entry_id": "c52068c1-e955-4b5b-a7e6-d4102675b86f",
+      "lexical_form": "‒",
+      "normalised_form": "‒",
+      "text": "‒",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "SYMBOL",
+      "closed_class": true,
+      "closed_class_kind": "symbol",
+      "definition": "A Figure Dash is a Dash Punctuation.",
+      "gloss": "A Figure Dash is a Dash Punctuation.",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": null,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "entry_id": "bb258e4e-a84a-400a-bb6e-ab4e9c80e659",
+      "lexical_form": "–",
+      "normalised_form": "–",
+      "text": "–",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "SYMBOL",
+      "closed_class": true,
+      "closed_class_kind": "symbol",
+      "definition": "An En Dash is a Dash Punctuation.",
+      "gloss": "An En Dash is a Dash Punctuation.",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": null,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "entry_id": "e459bb04-8e21-481c-89f2-fe927601c4e9",
+      "lexical_form": "—",
+      "normalised_form": "—",
+      "text": "—",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "SYMBOL",
+      "closed_class": true,
+      "closed_class_kind": "symbol",
+      "definition": "An Em Dash is a Dash Punctuation.",
+      "gloss": "An Em Dash is a Dash Punctuation.",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": null,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "entry_id": "98883cd3-27be-4d10-a1a0-e1d4c782b977",
+      "lexical_form": "―",
+      "normalised_form": "―",
+      "text": "―",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "SYMBOL",
+      "closed_class": true,
+      "closed_class_kind": "symbol",
+      "definition": "A Horizontal Bar is a Dash Punctuation.",
+      "gloss": "A Horizontal Bar is a Dash Punctuation.",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": null,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "entry_id": "02db0ebe-fc1a-4c19-9ae0-1ea3e1a78f11",
+      "lexical_form": "⁄",
+      "normalised_form": "⁄",
+      "text": "⁄",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "SYMBOL",
+      "closed_class": true,
+      "closed_class_kind": "symbol",
+      "definition": "A Fraction Slash is a Mathematical Symbol.",
+      "gloss": "A Fraction Slash is a Mathematical Symbol.",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": null,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "entry_id": "a35cc9ad-fd2b-40c8-b09b-81b408c12b9a",
+      "lexical_form": "‰",
+      "normalised_form": "‰",
+      "text": "‰",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "SYMBOL",
+      "closed_class": true,
+      "closed_class_kind": "symbol",
+      "definition": "A Per Mille Sign is an Other Punctuation.",
+      "gloss": "A Per Mille Sign is an Other Punctuation.",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": null,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "entry_id": "e0a1ace6-5a6a-436b-90bb-3f4eaba99366",
+      "lexical_form": "‱",
+      "normalised_form": "‱",
+      "text": "‱",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "SYMBOL",
+      "closed_class": true,
+      "closed_class_kind": "symbol",
+      "definition": "A Per Ten Thousand Sign is an Other Punctuation.",
+      "gloss": "A Per Ten Thousand Sign is an Other Punctuation.",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": null,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "entry_id": "bfc5a386-7922-472a-a522-fb8a4cdec1a8",
+      "lexical_form": "′",
+      "normalised_form": "′",
+      "text": "′",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "SYMBOL",
+      "closed_class": true,
+      "closed_class_kind": "symbol",
+      "definition": "A Prime is an Other Punctuation.",
+      "gloss": "A Prime is an Other Punctuation.",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": null,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "entry_id": "df397646-e122-48af-a35b-2f6f0b76f6cf",
+      "lexical_form": "″",
+      "normalised_form": "″",
+      "text": "″",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "SYMBOL",
+      "closed_class": true,
+      "closed_class_kind": "symbol",
+      "definition": "A Double Prime is an Other Punctuation.",
+      "gloss": "A Double Prime is an Other Punctuation.",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": null,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "entry_id": "773808d4-a2c4-4c7b-ba46-0aaf919c21cb",
+      "lexical_form": "¶",
+      "normalised_form": "¶",
+      "text": "¶",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "SYMBOL",
+      "closed_class": true,
+      "closed_class_kind": "symbol",
+      "definition": "A Pilcrow Sign is an Other Punctuation.",
+      "gloss": "A Pilcrow Sign is an Other Punctuation.",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": null,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "entry_id": "c8fc3128-b15f-4f97-b592-0299132fcef8",
+      "lexical_form": "†",
+      "normalised_form": "†",
+      "text": "†",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "SYMBOL",
+      "closed_class": true,
+      "closed_class_kind": "symbol",
+      "definition": "A Dagger is an Other Punctuation.",
+      "gloss": "A Dagger is an Other Punctuation.",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": null,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "entry_id": "5c50c6be-d41d-42b7-98bd-fa4853980a69",
+      "lexical_form": "‡",
+      "normalised_form": "‡",
+      "text": "‡",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "SYMBOL",
+      "closed_class": true,
+      "closed_class_kind": "symbol",
+      "definition": "A Double Dagger is an Other Punctuation.",
+      "gloss": "A Double Dagger is an Other Punctuation.",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": null,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "entry_id": "10d52473-4d46-403a-b424-2bf65b9faf1f",
+      "lexical_form": "•",
+      "normalised_form": "•",
+      "text": "•",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "SYMBOL",
+      "closed_class": true,
+      "closed_class_kind": "symbol",
+      "definition": "A Bullet is an Other Punctuation.",
+      "gloss": "A Bullet is an Other Punctuation.",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": null,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "entry_id": "19c1668c-878a-4d01-a23e-09cbe6a9a526",
+      "lexical_form": "◦",
+      "normalised_form": "◦",
+      "text": "◦",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "SYMBOL",
+      "closed_class": true,
+      "closed_class_kind": "symbol",
+      "definition": "A White Bullet is an Other Symbol.",
+      "gloss": "A White Bullet is an Other Symbol.",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": null,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "entry_id": "4857e7aa-c8b9-43c1-ad0e-1fadb306bf35",
+      "lexical_form": "▪",
+      "normalised_form": "▪",
+      "text": "▪",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "SYMBOL",
+      "closed_class": true,
+      "closed_class_kind": "symbol",
+      "definition": "A Black Small Square is an Other Symbol.",
+      "gloss": "A Black Small Square is an Other Symbol.",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": null,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "entry_id": "77ed774f-df56-4f13-9a46-d5e7da62302e",
+      "lexical_form": "▫",
+      "normalised_form": "▫",
+      "text": "▫",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "SYMBOL",
+      "closed_class": true,
+      "closed_class_kind": "symbol",
+      "definition": "A White Small Square is an Other Symbol.",
+      "gloss": "A White Small Square is an Other Symbol.",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": null,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "entry_id": "97ba8628-084d-441b-88ac-2cfc93d2e13e",
+      "lexical_form": "‣",
+      "normalised_form": "‣",
+      "text": "‣",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "SYMBOL",
+      "closed_class": true,
+      "closed_class_kind": "symbol",
+      "definition": "A Triangular Bullet is an Other Punctuation.",
+      "gloss": "A Triangular Bullet is an Other Punctuation.",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": null,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "entry_id": "52ba4d9f-34ed-4e8b-8961-3eec31c6b652",
+      "lexical_form": "々",
+      "normalised_form": "々",
+      "text": "々",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "SYMBOL",
+      "closed_class": true,
+      "closed_class_kind": "symbol",
+      "definition": "An Ideographic Iteration Mark is a Modifier Letter.",
+      "gloss": "An Ideographic Iteration Mark is a Modifier Letter.",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": null,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ]
+    },
+    {
+      "entry_id": "55d8336b-6f38-41e2-baeb-17b2cb3ee990",
+      "lexical_form": "〃",
+      "normalised_form": "〃",
+      "text": "〃",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "SYMBOL",
+      "closed_class": true,
+      "closed_class_kind": "symbol",
+      "definition": "A Ditto Mark is an Other Punctuation.",
+      "gloss": "A Ditto Mark is an Other Punctuation.",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
