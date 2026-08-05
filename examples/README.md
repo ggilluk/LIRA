@@ -39,6 +39,7 @@ the pipeline exactly the way any other Domain is seeded (see
 | `linguistics_sentence_reader_ui.py` | Starts a local, interactive Sentence Reader UI -- paste any sentence and see the predicted structure alongside a full trace of the state machine's search. `python3 examples/linguistics_sentence_reader_ui.py` from the repo root, then open `http://127.0.0.1:8765/` -- see Sentence Reader UI below. |
 | `lira_view_example.py` | Regenerates the combined, fully offline `LiraView` example artifact (Dictionary + Sentence Reader tabs) -- see Combined offline UI (LiraView) below. `python3 examples/lira_view_example.py` from the repo root. |
 | `unicode_symbol_punctuation_seeding.py` | One-time migration -- expands `punctuation.json`/`symbols.json` from a formal Unicode reference table -- see Unicode symbol and punctuation reference table below. `python3 examples/unicode_symbol_punctuation_seeding.py` from the repo root. |
+| `head_word_seeding.py` | Promotes `head` (NOUN and VERB, a genuine homograph missing from the cache entirely) and wires its HYPERNYM/HYPONYM relationships (`head` -> `part`, `head` -> `lead`, each with the reciprocal HYPONYM edge materialised) -- see `assets/common/en/README.md`'s `asset_version 1.19.0` and `assets/common/en/relationships/README.md`'s `asset_version 1.13.0` Version entries. `python3 examples/head_word_seeding.py` from the repo root. |
 
 ## Network caveat
 

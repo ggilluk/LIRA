@@ -3,7 +3,7 @@
   "language_code": "en",
   "part_of_speech": null,
   "closed_class_kind": "promoted_open_class",
-  "count": 2481,
+  "count": 2483,
   "words": [
     {
       "entry_id": "f7d5d34d-506b-406c-b0f0-3e22c35ec007",
@@ -91830,6 +91830,82 @@
       ],
       "reference_count": 4,
       "domain_tag": "situation.common"
+    },
+    {
+      "entry_id": "a61a5b79-e03b-4e18-910e-73c86ff7ae91",
+      "domain_tag": null,
+      "lexical_form": "head",
+      "normalised_form": "head",
+      "text": "head",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "NOUN",
+      "closed_class": false,
+      "definition": "The upper part of the human body, or the front or uppermost part of an animal's body, containing the brain, eyes, ears, nose, and mouth.",
+      "gloss": "The upper part of the human body, or the front or uppermost part of an animal's body, containing the brain, eyes, ears, nose, and mouth.",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Definition-Gap Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "reference_count": 4
+    },
+    {
+      "entry_id": "744862ee-6d67-450c-a860-b52c04cdbcdc",
+      "domain_tag": null,
+      "lexical_form": "head",
+      "normalised_form": "head",
+      "text": "head",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "VERB",
+      "closed_class": false,
+      "definition": "To be in charge of; to lead or direct.",
+      "gloss": "To be in charge of; to lead or direct.",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Definition-Gap Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "reference_count": 4
     }
   ]
 }

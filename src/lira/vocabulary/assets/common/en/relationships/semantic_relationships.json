@@ -2,7 +2,7 @@
   "schema_version": "1.0.0",
   "language_code": "en",
   "relationship_category": "semantic",
-  "count": 2665,
+  "count": 2669,
   "relationships": [
     {
       "source_lexical_form": "above",
@@ -18687,6 +18687,34 @@
       "target_lexical_form": "status",
       "target_part_of_speech": "NOUN",
       "target_domain_tag": "situation.common",
+      "relationship_kind": "HYPONYM"
+    },
+    {
+      "source_lexical_form": "head",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "part",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "HYPERNYM"
+    },
+    {
+      "source_lexical_form": "part",
+      "source_part_of_speech": "NOUN",
+      "target_lexical_form": "head",
+      "target_part_of_speech": "NOUN",
+      "relationship_kind": "HYPONYM"
+    },
+    {
+      "source_lexical_form": "head",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "lead",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "HYPERNYM"
+    },
+    {
+      "source_lexical_form": "lead",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "head",
+      "target_part_of_speech": "VERB",
       "relationship_kind": "HYPONYM"
     }
   ]

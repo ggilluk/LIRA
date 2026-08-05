@@ -527,6 +527,18 @@ lexical_form with an earlier-loaded sense never disturbs
 
 ## Version
 
+`v1` / `schema_version 2.0.0` / `asset_version 1.19.0` -- promoted
+`head` (NOUN, "The upper part of the human body, or the front or
+uppermost part of an animal's body, containing the brain, eyes, ears,
+nose, and mouth.") and `head` (VERB, "To be in charge of; to lead or
+direct.") via `WordSeeder.promote_word`, checked directly against the
+live Dictionary first: no `head` entry existed anywhere in this cache.
+`promoted_words.json` 2481 -> 2483. `total_lexical_forms` is unchanged
+(435) -- promoted words aren't counted in that mandatory-closed-class
+total. See `examples/head_word_seeding.py` and
+`relationships/README.md`'s own `asset_version 1.13.0` entry for the
+HYPERNYM/HYPONYM edges wired alongside this.
+
 `v1` / `schema_version 2.0.0` / `asset_version 1.18.0` -- expanded
 `punctuation.json` and `symbols.json` from a formal Unicode reference
 table (66 characters total, each with its own code point, Unicode

@@ -320,6 +320,16 @@ batch adds vocabulary of that kind.
 
 ## Version
 
+`v1` / `schema_version 1.0.0` / `asset_version 1.13.0` (6169 -> 6173
+relationships). Added `head` (`examples/head_word_seeding.py`, alongside
+`../README.md`'s `asset_version 1.19.0`): `head` (NOUN) -> HYPERNYM ->
+`part` and `head` (VERB) -> HYPERNYM -> `lead`, each with its reciprocal
+HYPONYM edge materialised (`part` -> HYPONYM -> `head`; `lead` ->
+HYPONYM -> `head`) -- the same "every HYPERNYM gets its reciprocal
+HYPONYM" discipline `asset_version 1.11.0` established. Both edges name
+an explicit `source_part_of_speech`/`target_part_of_speech` on `head`'s
+side since promoting both senses makes it a homograph.
+
 `v1` / `schema_version 1.0.0` / `asset_version 1.12.0` (6111 -> 6187
 relationships). Migrated relationships for the 13-word polysemy split
 (`../README.md`'s Polysemous senses section): every edge the original
