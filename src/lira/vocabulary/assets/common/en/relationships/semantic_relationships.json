@@ -2,7 +2,7 @@
   "schema_version": "1.0.0",
   "language_code": "en",
   "relationship_category": "semantic",
-  "count": 2669,
+  "count": 2595,
   "relationships": [
     {
       "source_lexical_form": "above",
@@ -653,20 +653,6 @@
     {
       "source_lexical_form": "answer",
       "source_part_of_speech": "NOUN",
-      "target_lexical_form": "question",
-      "target_part_of_speech": "NOUN",
-      "relationship_kind": "RELATED"
-    },
-    {
-      "source_lexical_form": "question",
-      "source_part_of_speech": "NOUN",
-      "target_lexical_form": "answer",
-      "target_part_of_speech": "NOUN",
-      "relationship_kind": "RELATED"
-    },
-    {
-      "source_lexical_form": "answer",
-      "source_part_of_speech": "NOUN",
       "target_lexical_form": "response",
       "target_part_of_speech": "NOUN",
       "relationship_kind": "SYNONYM"
@@ -691,20 +677,6 @@
       "target_lexical_form": "antonym",
       "target_part_of_speech": "NOUN",
       "relationship_kind": "HYPONYM"
-    },
-    {
-      "source_lexical_form": "antonym",
-      "source_part_of_speech": "NOUN",
-      "target_lexical_form": "synonym",
-      "target_part_of_speech": "NOUN",
-      "relationship_kind": "RELATED"
-    },
-    {
-      "source_lexical_form": "synonym",
-      "source_part_of_speech": "NOUN",
-      "target_lexical_form": "antonym",
-      "target_part_of_speech": "NOUN",
-      "relationship_kind": "RELATED"
     },
     {
       "source_lexical_form": "apostrophe",
@@ -1755,20 +1727,6 @@
       "relationship_kind": "RELATED"
     },
     {
-      "source_lexical_form": "communication",
-      "source_part_of_speech": "NOUN",
-      "target_lexical_form": "speech",
-      "target_part_of_speech": "NOUN",
-      "relationship_kind": "RELATED"
-    },
-    {
-      "source_lexical_form": "speech",
-      "source_part_of_speech": "NOUN",
-      "target_lexical_form": "communication",
-      "target_part_of_speech": "NOUN",
-      "relationship_kind": "RELATED"
-    },
-    {
       "source_lexical_form": "companion",
       "source_part_of_speech": "NOUN",
       "target_lexical_form": "accompany",
@@ -2737,22 +2695,6 @@
       "relationship_kind": "HYPONYM"
     },
     {
-      "source_lexical_form": "domain",
-      "source_part_of_speech": "NOUN",
-      "target_lexical_form": "field",
-      "target_part_of_speech": "NOUN",
-      "relationship_kind": "RELATED",
-      "source_domain_tag": null
-    },
-    {
-      "source_lexical_form": "field",
-      "source_part_of_speech": "NOUN",
-      "target_lexical_form": "domain",
-      "target_part_of_speech": "NOUN",
-      "relationship_kind": "RELATED",
-      "target_domain_tag": null
-    },
-    {
       "source_lexical_form": "doubt",
       "source_part_of_speech": "NOUN",
       "target_lexical_form": "hesitation",
@@ -2779,22 +2721,6 @@
       "target_lexical_form": "duration",
       "target_part_of_speech": "NOUN",
       "relationship_kind": "RELATED"
-    },
-    {
-      "source_lexical_form": "duration",
-      "source_part_of_speech": "NOUN",
-      "target_lexical_form": "period",
-      "target_part_of_speech": "NOUN",
-      "relationship_kind": "RELATED",
-      "target_domain_tag": null
-    },
-    {
-      "source_lexical_form": "period",
-      "source_part_of_speech": "NOUN",
-      "target_lexical_form": "duration",
-      "target_part_of_speech": "NOUN",
-      "relationship_kind": "RELATED",
-      "source_domain_tag": null
     },
     {
       "source_lexical_form": "ear",
@@ -2837,20 +2763,6 @@
       "target_lexical_form": "effort",
       "target_part_of_speech": "NOUN",
       "relationship_kind": "SYNONYM"
-    },
-    {
-      "source_lexical_form": "effort",
-      "source_part_of_speech": "NOUN",
-      "target_lexical_form": "attempt",
-      "target_part_of_speech": "NOUN",
-      "relationship_kind": "RELATED"
-    },
-    {
-      "source_lexical_form": "attempt",
-      "source_part_of_speech": "NOUN",
-      "target_lexical_form": "effort",
-      "target_part_of_speech": "NOUN",
-      "relationship_kind": "RELATED"
     },
     {
       "source_lexical_form": "element",
@@ -2979,20 +2891,6 @@
       "relationship_kind": "RELATED"
     },
     {
-      "source_lexical_form": "entity",
-      "source_part_of_speech": "NOUN",
-      "target_lexical_form": "thing",
-      "target_part_of_speech": "NOUN",
-      "relationship_kind": "SYNONYM"
-    },
-    {
-      "source_lexical_form": "thing",
-      "source_part_of_speech": "NOUN",
-      "target_lexical_form": "entity",
-      "target_part_of_speech": "NOUN",
-      "relationship_kind": "SYNONYM"
-    },
-    {
       "source_lexical_form": "environment",
       "source_part_of_speech": "NOUN",
       "target_lexical_form": "surroundings",
@@ -3029,20 +2927,6 @@
     },
     {
       "source_lexical_form": "occasion",
-      "source_part_of_speech": "NOUN",
-      "target_lexical_form": "event",
-      "target_part_of_speech": "NOUN",
-      "relationship_kind": "SYNONYM"
-    },
-    {
-      "source_lexical_form": "event",
-      "source_part_of_speech": "NOUN",
-      "target_lexical_form": "incident",
-      "target_part_of_speech": "NOUN",
-      "relationship_kind": "SYNONYM"
-    },
-    {
-      "source_lexical_form": "incident",
       "source_part_of_speech": "NOUN",
       "target_lexical_form": "event",
       "target_part_of_speech": "NOUN",
@@ -3201,20 +3085,6 @@
       "target_lexical_form": "explanation",
       "target_part_of_speech": "NOUN",
       "relationship_kind": "HYPONYM"
-    },
-    {
-      "source_lexical_form": "explanation",
-      "source_part_of_speech": "NOUN",
-      "target_lexical_form": "reason",
-      "target_part_of_speech": "NOUN",
-      "relationship_kind": "RELATED"
-    },
-    {
-      "source_lexical_form": "reason",
-      "source_part_of_speech": "NOUN",
-      "target_lexical_form": "explanation",
-      "target_part_of_speech": "NOUN",
-      "relationship_kind": "RELATED"
     },
     {
       "source_lexical_form": "explanation",
@@ -4345,20 +4215,6 @@
     {
       "source_lexical_form": "identifier",
       "source_part_of_speech": "NOUN",
-      "target_lexical_form": "name",
-      "target_part_of_speech": "NOUN",
-      "relationship_kind": "RELATED"
-    },
-    {
-      "source_lexical_form": "name",
-      "source_part_of_speech": "NOUN",
-      "target_lexical_form": "identifier",
-      "target_part_of_speech": "NOUN",
-      "relationship_kind": "RELATED"
-    },
-    {
-      "source_lexical_form": "identifier",
-      "source_part_of_speech": "NOUN",
       "target_lexical_form": "symbol",
       "target_part_of_speech": "NOUN",
       "relationship_kind": "RELATED"
@@ -4563,20 +4419,6 @@
     },
     {
       "source_lexical_form": "direction",
-      "source_part_of_speech": "NOUN",
-      "target_lexical_form": "instruction",
-      "target_part_of_speech": "NOUN",
-      "relationship_kind": "SYNONYM"
-    },
-    {
-      "source_lexical_form": "instruction",
-      "source_part_of_speech": "NOUN",
-      "target_lexical_form": "command",
-      "target_part_of_speech": "NOUN",
-      "relationship_kind": "SYNONYM"
-    },
-    {
-      "source_lexical_form": "command",
       "source_part_of_speech": "NOUN",
       "target_lexical_form": "instruction",
       "target_part_of_speech": "NOUN",
@@ -4895,20 +4737,6 @@
     {
       "source_lexical_form": "justification",
       "source_part_of_speech": "NOUN",
-      "target_lexical_form": "reason",
-      "target_part_of_speech": "NOUN",
-      "relationship_kind": "RELATED"
-    },
-    {
-      "source_lexical_form": "reason",
-      "source_part_of_speech": "NOUN",
-      "target_lexical_form": "justification",
-      "target_part_of_speech": "NOUN",
-      "relationship_kind": "RELATED"
-    },
-    {
-      "source_lexical_form": "justification",
-      "source_part_of_speech": "NOUN",
       "target_lexical_form": "fact",
       "target_part_of_speech": "NOUN",
       "relationship_kind": "RELATED"
@@ -5147,20 +4975,6 @@
       "relationship_kind": "SYNONYM"
     },
     {
-      "source_lexical_form": "limit",
-      "source_part_of_speech": "NOUN",
-      "target_lexical_form": "restriction",
-      "target_part_of_speech": "NOUN",
-      "relationship_kind": "RELATED"
-    },
-    {
-      "source_lexical_form": "restriction",
-      "source_part_of_speech": "NOUN",
-      "target_lexical_form": "limit",
-      "target_part_of_speech": "NOUN",
-      "relationship_kind": "RELATED"
-    },
-    {
       "source_lexical_form": "line",
       "source_part_of_speech": "NOUN",
       "target_lexical_form": "mark",
@@ -5343,20 +5157,6 @@
       "relationship_kind": "SYNONYM"
     },
     {
-      "source_lexical_form": "manner",
-      "source_part_of_speech": "NOUN",
-      "target_lexical_form": "style",
-      "target_part_of_speech": "NOUN",
-      "relationship_kind": "RELATED"
-    },
-    {
-      "source_lexical_form": "style",
-      "source_part_of_speech": "NOUN",
-      "target_lexical_form": "manner",
-      "target_part_of_speech": "NOUN",
-      "relationship_kind": "RELATED"
-    },
-    {
       "source_lexical_form": "manufacturing",
       "source_part_of_speech": "NOUN",
       "target_lexical_form": "process",
@@ -5397,20 +5197,6 @@
       "target_lexical_form": "mark",
       "target_part_of_speech": "NOUN",
       "relationship_kind": "SYNONYM"
-    },
-    {
-      "source_lexical_form": "mark",
-      "source_part_of_speech": "NOUN",
-      "target_lexical_form": "symbol",
-      "target_part_of_speech": "NOUN",
-      "relationship_kind": "RELATED"
-    },
-    {
-      "source_lexical_form": "symbol",
-      "source_part_of_speech": "NOUN",
-      "target_lexical_form": "mark",
-      "target_part_of_speech": "NOUN",
-      "relationship_kind": "RELATED"
     },
     {
       "source_lexical_form": "marker",
@@ -5595,20 +5381,6 @@
       "target_lexical_form": "meronym",
       "target_part_of_speech": "NOUN",
       "relationship_kind": "HYPONYM"
-    },
-    {
-      "source_lexical_form": "method",
-      "source_part_of_speech": "NOUN",
-      "target_lexical_form": "procedure",
-      "target_part_of_speech": "NOUN",
-      "relationship_kind": "SYNONYM"
-    },
-    {
-      "source_lexical_form": "procedure",
-      "source_part_of_speech": "NOUN",
-      "target_lexical_form": "method",
-      "target_part_of_speech": "NOUN",
-      "relationship_kind": "SYNONYM"
     },
     {
       "source_lexical_form": "mind",
@@ -6251,20 +6023,6 @@
       "relationship_kind": "SYNONYM"
     },
     {
-      "source_lexical_form": "part",
-      "source_part_of_speech": "NOUN",
-      "target_lexical_form": "segment",
-      "target_part_of_speech": "NOUN",
-      "relationship_kind": "SYNONYM"
-    },
-    {
-      "source_lexical_form": "segment",
-      "source_part_of_speech": "NOUN",
-      "target_lexical_form": "part",
-      "target_part_of_speech": "NOUN",
-      "relationship_kind": "SYNONYM"
-    },
-    {
       "source_lexical_form": "participle",
       "source_part_of_speech": "NOUN",
       "target_lexical_form": "verb",
@@ -6435,20 +6193,6 @@
       "target_lexical_form": "person",
       "target_part_of_speech": "NOUN",
       "relationship_kind": "HYPONYM"
-    },
-    {
-      "source_lexical_form": "person",
-      "source_part_of_speech": "NOUN",
-      "target_lexical_form": "speaker",
-      "target_part_of_speech": "NOUN",
-      "relationship_kind": "RELATED"
-    },
-    {
-      "source_lexical_form": "speaker",
-      "source_part_of_speech": "NOUN",
-      "target_lexical_form": "person",
-      "target_part_of_speech": "NOUN",
-      "relationship_kind": "RELATED"
     },
     {
       "source_lexical_form": "person",
@@ -6871,20 +6615,6 @@
       "relationship_kind": "HYPONYM"
     },
     {
-      "source_lexical_form": "problem",
-      "source_part_of_speech": "NOUN",
-      "target_lexical_form": "difficulty",
-      "target_part_of_speech": "NOUN",
-      "relationship_kind": "RELATED"
-    },
-    {
-      "source_lexical_form": "difficulty",
-      "source_part_of_speech": "NOUN",
-      "target_lexical_form": "problem",
-      "target_part_of_speech": "NOUN",
-      "relationship_kind": "RELATED"
-    },
-    {
       "source_lexical_form": "procedure",
       "source_part_of_speech": "NOUN",
       "target_lexical_form": "process",
@@ -6897,20 +6627,6 @@
       "target_lexical_form": "procedure",
       "target_part_of_speech": "NOUN",
       "relationship_kind": "SYNONYM"
-    },
-    {
-      "source_lexical_form": "procedure",
-      "source_part_of_speech": "NOUN",
-      "target_lexical_form": "method",
-      "target_part_of_speech": "NOUN",
-      "relationship_kind": "HYPERNYM"
-    },
-    {
-      "source_lexical_form": "method",
-      "source_part_of_speech": "NOUN",
-      "target_lexical_form": "procedure",
-      "target_part_of_speech": "NOUN",
-      "relationship_kind": "HYPONYM"
     },
     {
       "source_lexical_form": "process",
@@ -7053,20 +6769,6 @@
       "relationship_kind": "SYNONYM"
     },
     {
-      "source_lexical_form": "property",
-      "source_part_of_speech": "NOUN",
-      "target_lexical_form": "possession",
-      "target_part_of_speech": "NOUN",
-      "relationship_kind": "RELATED"
-    },
-    {
-      "source_lexical_form": "possession",
-      "source_part_of_speech": "NOUN",
-      "target_lexical_form": "property",
-      "target_part_of_speech": "NOUN",
-      "relationship_kind": "RELATED"
-    },
-    {
       "source_lexical_form": "proportion",
       "source_part_of_speech": "NOUN",
       "target_lexical_form": "share",
@@ -7075,20 +6777,6 @@
     },
     {
       "source_lexical_form": "share",
-      "source_part_of_speech": "NOUN",
-      "target_lexical_form": "proportion",
-      "target_part_of_speech": "NOUN",
-      "relationship_kind": "RELATED"
-    },
-    {
-      "source_lexical_form": "proportion",
-      "source_part_of_speech": "NOUN",
-      "target_lexical_form": "percent",
-      "target_part_of_speech": "NOUN",
-      "relationship_kind": "RELATED"
-    },
-    {
-      "source_lexical_form": "percent",
       "source_part_of_speech": "NOUN",
       "target_lexical_form": "proportion",
       "target_part_of_speech": "NOUN",
@@ -7219,20 +6907,6 @@
       "target_lexical_form": "rate",
       "target_part_of_speech": "NOUN",
       "relationship_kind": "HYPONYM"
-    },
-    {
-      "source_lexical_form": "rate",
-      "source_part_of_speech": "NOUN",
-      "target_lexical_form": "frequency",
-      "target_part_of_speech": "NOUN",
-      "relationship_kind": "RELATED"
-    },
-    {
-      "source_lexical_form": "frequency",
-      "source_part_of_speech": "NOUN",
-      "target_lexical_form": "rate",
-      "target_part_of_speech": "NOUN",
-      "relationship_kind": "RELATED"
     },
     {
       "source_lexical_form": "reading",
@@ -7387,20 +7061,6 @@
       "target_lexical_form": "regard",
       "target_part_of_speech": "NOUN",
       "relationship_kind": "SYNONYM"
-    },
-    {
-      "source_lexical_form": "region",
-      "source_part_of_speech": "NOUN",
-      "target_lexical_form": "area",
-      "target_part_of_speech": "NOUN",
-      "relationship_kind": "HYPERNYM"
-    },
-    {
-      "source_lexical_form": "area",
-      "source_part_of_speech": "NOUN",
-      "target_lexical_form": "region",
-      "target_part_of_speech": "NOUN",
-      "relationship_kind": "HYPONYM"
     },
     {
       "source_lexical_form": "region",
@@ -7921,36 +7581,6 @@
       "relationship_kind": "RELATED"
     },
     {
-      "source_lexical_form": "sense",
-      "source_part_of_speech": "NOUN",
-      "target_lexical_form": "sight",
-      "target_part_of_speech": "NOUN",
-      "relationship_kind": "RELATED",
-      "source_domain_tag": "ability.common"
-    },
-    {
-      "source_lexical_form": "sight",
-      "source_part_of_speech": "NOUN",
-      "target_lexical_form": "sense",
-      "target_part_of_speech": "NOUN",
-      "relationship_kind": "RELATED",
-      "target_domain_tag": "ability.common"
-    },
-    {
-      "source_lexical_form": "sentence",
-      "source_part_of_speech": "NOUN",
-      "target_lexical_form": "clause",
-      "target_part_of_speech": "NOUN",
-      "relationship_kind": "RELATED"
-    },
-    {
-      "source_lexical_form": "clause",
-      "source_part_of_speech": "NOUN",
-      "target_lexical_form": "sentence",
-      "target_part_of_speech": "NOUN",
-      "relationship_kind": "RELATED"
-    },
-    {
       "source_lexical_form": "separation",
       "source_part_of_speech": "NOUN",
       "target_lexical_form": "separate",
@@ -8205,20 +7835,6 @@
       "relationship_kind": "SYNONYM"
     },
     {
-      "source_lexical_form": "situation",
-      "source_part_of_speech": "NOUN",
-      "target_lexical_form": "state",
-      "target_part_of_speech": "NOUN",
-      "relationship_kind": "RELATED"
-    },
-    {
-      "source_lexical_form": "state",
-      "source_part_of_speech": "NOUN",
-      "target_lexical_form": "situation",
-      "target_part_of_speech": "NOUN",
-      "relationship_kind": "RELATED"
-    },
-    {
       "source_lexical_form": "size",
       "source_part_of_speech": "NOUN",
       "target_lexical_form": "extent",
@@ -8385,20 +8001,6 @@
       "target_lexical_form": "spirit",
       "target_part_of_speech": "NOUN",
       "relationship_kind": "ANTONYM"
-    },
-    {
-      "source_lexical_form": "spirit",
-      "source_part_of_speech": "NOUN",
-      "target_lexical_form": "mind",
-      "target_part_of_speech": "NOUN",
-      "relationship_kind": "RELATED"
-    },
-    {
-      "source_lexical_form": "mind",
-      "source_part_of_speech": "NOUN",
-      "target_lexical_form": "spirit",
-      "target_part_of_speech": "NOUN",
-      "relationship_kind": "RELATED"
     },
     {
       "source_lexical_form": "spirit",
@@ -8633,20 +8235,6 @@
     {
       "source_lexical_form": "sterling",
       "source_part_of_speech": "NOUN",
-      "target_lexical_form": "pound",
-      "target_part_of_speech": "NOUN",
-      "relationship_kind": "RELATED"
-    },
-    {
-      "source_lexical_form": "pound",
-      "source_part_of_speech": "NOUN",
-      "target_lexical_form": "sterling",
-      "target_part_of_speech": "NOUN",
-      "relationship_kind": "RELATED"
-    },
-    {
-      "source_lexical_form": "sterling",
-      "source_part_of_speech": "NOUN",
       "target_lexical_form": "money",
       "target_part_of_speech": "NOUN",
       "relationship_kind": "HYPERNYM"
@@ -8741,20 +8329,6 @@
       "target_lexical_form": "structure",
       "target_part_of_speech": "NOUN",
       "relationship_kind": "RELATED"
-    },
-    {
-      "source_lexical_form": "study",
-      "source_part_of_speech": "NOUN",
-      "target_lexical_form": "research",
-      "target_part_of_speech": "NOUN",
-      "relationship_kind": "SYNONYM"
-    },
-    {
-      "source_lexical_form": "research",
-      "source_part_of_speech": "NOUN",
-      "target_lexical_form": "study",
-      "target_part_of_speech": "NOUN",
-      "relationship_kind": "SYNONYM"
     },
     {
       "source_lexical_form": "study",
@@ -8883,20 +8457,6 @@
       "relationship_kind": "SYNONYM"
     },
     {
-      "source_lexical_form": "suggestion",
-      "source_part_of_speech": "NOUN",
-      "target_lexical_form": "advice",
-      "target_part_of_speech": "NOUN",
-      "relationship_kind": "RELATED"
-    },
-    {
-      "source_lexical_form": "advice",
-      "source_part_of_speech": "NOUN",
-      "target_lexical_form": "suggestion",
-      "target_part_of_speech": "NOUN",
-      "relationship_kind": "RELATED"
-    },
-    {
       "source_lexical_form": "sum",
       "source_part_of_speech": "NOUN",
       "target_lexical_form": "number",
@@ -8995,20 +8555,6 @@
       "relationship_kind": "RELATED"
     },
     {
-      "source_lexical_form": "system",
-      "source_part_of_speech": "NOUN",
-      "target_lexical_form": "network",
-      "target_part_of_speech": "NOUN",
-      "relationship_kind": "SYNONYM"
-    },
-    {
-      "source_lexical_form": "network",
-      "source_part_of_speech": "NOUN",
-      "target_lexical_form": "system",
-      "target_part_of_speech": "NOUN",
-      "relationship_kind": "SYNONYM"
-    },
-    {
       "source_lexical_form": "tag",
       "source_part_of_speech": "NOUN",
       "target_lexical_form": "identifier",
@@ -9105,20 +8651,6 @@
       "target_lexical_form": "test",
       "target_part_of_speech": "NOUN",
       "relationship_kind": "HYPONYM"
-    },
-    {
-      "source_lexical_form": "test",
-      "source_part_of_speech": "NOUN",
-      "target_lexical_form": "experiment",
-      "target_part_of_speech": "NOUN",
-      "relationship_kind": "RELATED"
-    },
-    {
-      "source_lexical_form": "experiment",
-      "source_part_of_speech": "NOUN",
-      "target_lexical_form": "test",
-      "target_part_of_speech": "NOUN",
-      "relationship_kind": "RELATED"
     },
     {
       "source_lexical_form": "texture",
@@ -10857,20 +10389,6 @@
       "relationship_kind": "SYNONYM"
     },
     {
-      "source_lexical_form": "change",
-      "source_part_of_speech": "VERB",
-      "target_lexical_form": "transform",
-      "target_part_of_speech": "VERB",
-      "relationship_kind": "SYNONYM"
-    },
-    {
-      "source_lexical_form": "transform",
-      "source_part_of_speech": "VERB",
-      "target_lexical_form": "change",
-      "target_part_of_speech": "VERB",
-      "relationship_kind": "SYNONYM"
-    },
-    {
       "source_lexical_form": "choose",
       "source_part_of_speech": "VERB",
       "target_lexical_form": "select",
@@ -10897,20 +10415,6 @@
       "target_lexical_form": "classify",
       "target_part_of_speech": "VERB",
       "relationship_kind": "RELATED"
-    },
-    {
-      "source_lexical_form": "classify",
-      "source_part_of_speech": "VERB",
-      "target_lexical_form": "grade",
-      "target_part_of_speech": "VERB",
-      "relationship_kind": "SYNONYM"
-    },
-    {
-      "source_lexical_form": "grade",
-      "source_part_of_speech": "VERB",
-      "target_lexical_form": "classify",
-      "target_part_of_speech": "VERB",
-      "relationship_kind": "SYNONYM"
     },
     {
       "source_lexical_form": "collect",
@@ -11394,20 +10898,6 @@
       "target_lexical_form": "demonstrate",
       "target_part_of_speech": "VERB",
       "relationship_kind": "HYPONYM"
-    },
-    {
-      "source_lexical_form": "demonstrate",
-      "source_part_of_speech": "VERB",
-      "target_lexical_form": "prove",
-      "target_part_of_speech": "VERB",
-      "relationship_kind": "RELATED"
-    },
-    {
-      "source_lexical_form": "prove",
-      "source_part_of_speech": "VERB",
-      "target_lexical_form": "demonstrate",
-      "target_part_of_speech": "VERB",
-      "relationship_kind": "RELATED"
     },
     {
       "source_lexical_form": "denote",
@@ -12185,20 +11675,6 @@
       "target_lexical_form": "give",
       "target_part_of_speech": "VERB",
       "relationship_kind": "ANTONYM"
-    },
-    {
-      "source_lexical_form": "go",
-      "source_part_of_speech": "VERB",
-      "target_lexical_form": "travel",
-      "target_part_of_speech": "VERB",
-      "relationship_kind": "SYNONYM"
-    },
-    {
-      "source_lexical_form": "travel",
-      "source_part_of_speech": "VERB",
-      "target_lexical_form": "go",
-      "target_part_of_speech": "VERB",
-      "relationship_kind": "SYNONYM"
     },
     {
       "source_lexical_form": "go",
@@ -13627,20 +13103,6 @@
       "target_lexical_form": "shorten",
       "target_part_of_speech": "VERB",
       "relationship_kind": "ANTONYM"
-    },
-    {
-      "source_lexical_form": "show",
-      "source_part_of_speech": "VERB",
-      "target_lexical_form": "demonstrate",
-      "target_part_of_speech": "VERB",
-      "relationship_kind": "SYNONYM"
-    },
-    {
-      "source_lexical_form": "demonstrate",
-      "source_part_of_speech": "VERB",
-      "target_lexical_form": "show",
-      "target_part_of_speech": "VERB",
-      "relationship_kind": "SYNONYM"
     },
     {
       "source_lexical_form": "single",
@@ -18716,6 +18178,20 @@
       "target_lexical_form": "head",
       "target_part_of_speech": "VERB",
       "relationship_kind": "HYPONYM"
+    },
+    {
+      "source_lexical_form": "method",
+      "target_lexical_form": "procedure",
+      "relationship_kind": "HYPERNYM",
+      "source_part_of_speech": "NOUN",
+      "target_part_of_speech": "NOUN"
+    },
+    {
+      "source_lexical_form": "procedure",
+      "target_lexical_form": "method",
+      "relationship_kind": "HYPONYM",
+      "source_part_of_speech": "NOUN",
+      "target_part_of_speech": "NOUN"
     }
   ]
 }

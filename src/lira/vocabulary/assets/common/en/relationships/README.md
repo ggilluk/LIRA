@@ -320,6 +320,32 @@ batch adds vocabulary of that kind.
 
 ## Version
 
+`v1` / `schema_version 1.0.0` / `asset_version 1.14.0` (6173 -> 6099
+relationships, net; `semantic_relationships.json` 2669 -> 2595).
+`examples/relationship_contradiction_audit.py` found 37 word pairs
+carrying more than one Lexical Semantic relationship kind at once (e.g.
+SYNONYM *and* HYPERNYM/HYPONYM between the same two words -- a pair
+can't both mean the same thing and be broader/narrower than each
+other), traced to the `common_semantic_completion.py` drafting pass's
+aggregation step never checking whether two subagents proposed a
+*different* kind for the same pair (only exact reverse-direction
+duplicates were caught). `examples/relationship_contradiction_fix.py`
+applied the reviewed correction list
+(`examples/relationship_contradiction_report.md`): 36 pairs had a
+redundant edge removed (usually RELATED dropped in favour of a more
+specific kind already seeded); one pair, `method`/`procedure`, had its
+HYPERNYM/HYPONYM direction corrected (`method`'s own definition, "a
+particular procedure...", makes `method` the narrower term, but the
+cache had it backwards) rather than just deduplicated. 76 edges
+removed, 2 added (the corrected `method`/`procedure` direction) -- net
+-74. The same 37 corrections were also applied to
+`examples/common_semantic_completion.py`'s own source `RELATIONSHIPS`
+list (1307 -> 1270 tuples) so that re-running the canonical seeding
+chain (`common_semantic_completion_seeding.py`) does not resurrect
+them -- confirmed directly: a fresh run after this fix added 0 new
+semantic edges. `assets/common/en/README.md` is unchanged by this
+batch (no words added or removed, relationships only).
+
 `v1` / `schema_version 1.0.0` / `asset_version 1.13.0` (6169 -> 6173
 relationships). Added `head` (`examples/head_word_seeding.py`, alongside
 `../README.md`'s `asset_version 1.19.0`): `head` (NOUN) -> HYPERNYM ->
