@@ -46,7 +46,17 @@ construction time, so every regenerated `dictionary_view_example.html`
 records the exact moment it was last written, not just what it
 contains.
 
-The word detail panel includes a **Provenance** line, reading each
+The word detail panel includes an **Affect (PAD, seeded)** section,
+reading each `Word`'s three Seeded Attributes for the PAD
+(Pleasure-Arousal-Dominance) affective framework
+(`seeded_pleasure_displeasure_weight`, `seeded_arousal_non_arousal_weight`,
+`seeded_dominance_submissive_weight` -- `vocabulary/documentation/README.md`,
+4.2) as three zero-centred meter rows, one per axis, filled from the
+centre toward the value's sign (positive: accent colour; negative: the
+palette's warning red) -- or a plain "No PAD value seeded yet" line
+when the selected `Word` has no PAD value assigned at all (`None`,
+distinct from the genuinely neutral `0.0` every closed-class word
+carries). It also includes a **Provenance** line, reading each
 `Word.source_references` (previously a populated field this view never
 displayed). The optional `unresolved` constructor argument -- a tuple
 of surface forms, default `()` -- renders a small **Unresolved** panel

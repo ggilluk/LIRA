@@ -124,6 +124,26 @@ class Word(LinguisticUnit):
     # Word's meaning/part_of_speech from the external dictionary API yet.
     is_fully_hydrated: bool = field(default=True, kw_only=True)
 
+    # Seeded Attributes: this Word's approximate, hand/heuristically
+    # assigned position in the PAD (Pleasure-Arousal-Dominance)
+    # affective space (Mehrabian & Russell) -- "Seeded" because, like
+    # is_common/entry_id above, these are populated by the Common
+    # Vocabulary Cache's seeding pipeline (WordSeeder), not derived at
+    # query time from a LexicalRelationshipStore the way the derived
+    # properties below are. Each is a signed weight, negative meaning
+    # the low/opposite pole named in its own field: Displeasure,
+    # Non-Arousal, and Submissive respectively. NOUN/VERB entries carry
+    # the base PAD value of the concept/action itself; every other part
+    # of speech (ADJECTIVE, ADVERB, INTERJECTION, ...) carries the
+    # weight it would apply to modify a base NOUN/VERB value when
+    # aggregated in the Linguistics layer (eventually -- no aggregation
+    # exists yet; these are seeded values only). None means no PAD
+    # value has been assigned yet, not "neutral" (0.0 is the seeded
+    # value for a genuinely neutral word).
+    seeded_pleasure_displeasure_weight: Optional[Number] = field(default=None, kw_only=True)
+    seeded_arousal_non_arousal_weight: Optional[Number] = field(default=None, kw_only=True)
+    seeded_dominance_submissive_weight: Optional[Number] = field(default=None, kw_only=True)
+
     def __post_init__(self):
         if self.lexical_form is None:
             self.lexical_form = Text(value=self.text)

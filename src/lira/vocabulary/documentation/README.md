@@ -183,6 +183,11 @@ There is no separate `Punctuation` class. A punctuation mark (".", "!", "?", ";"
 | `editorial_labels` | `tuple[EditorialLabel, ...]` | No | Editorial classifications |
 | `source_references` | `tuple[SourceReference, ...]` | Yes | Source provenance |
 | `is_common` | `bool` | Yes | `True` only for a `Word` loaded by `WordSeeder` from a Common Vocabulary Cache (9.4); defaults `False`, never set by hand |
+| `seeded_pleasure_displeasure_weight` | `Number` | No | Seeded Attribute -- this Word's position on the PAD (Pleasure-Arousal-Dominance, Mehrabian & Russell) framework's Pleasure axis; negative means Displeasure. `None` means not yet assigned, distinct from a genuinely neutral `0.0` |
+| `seeded_arousal_non_arousal_weight` | `Number` | No | Seeded Attribute -- this Word's position on PAD's Arousal axis; negative means Non-Arousal (calm) |
+| `seeded_dominance_submissive_weight` | `Number` | No | Seeded Attribute -- this Word's position on PAD's Dominance axis; negative means Submissive |
+
+The three Seeded PAD Attributes above are populated by `WordSeeder`'s Common Vocabulary Cache pipeline (`examples/pad_seeding.py` -- see `assets/common/en/README.md`'s `asset_version 1.20.0` Version entry), the same way `is_common` is: never set by hand. `NOUN`/`VERB`/`INTERJECTION` entries carry the base PAD value of the concept/action/expression itself; `ADJECTIVE`/`ADVERB` entries carry the (smaller-magnitude) weight they would apply to modify a base `NOUN`/`VERB` value once aggregated in the Linguistics layer -- no such aggregation exists yet, only the per-word weight is seeded; every closed-class part of speech is always `0.0`/`0.0`/`0.0`.
 
 `Word` has no `system_properties` field -- see Design Principle 8. This is not a gap: when a `Word` is used in Linguistics, in its *token* role (4.1), it draws confidence, activation, and the rest from the Linguistics tensor instead, via the `LinguisticUnit.system_property` (singular) it inherits -- a separate, Linguistics-owned mechanism, populated by `GraphProcessor` at the point the token is created. A `Word`-as-type (Vocabulary) has no tensor row of its own; a `Word`-as-token (Linguistics) does. Vocabulary-level confidence/provenance about the word itself, as opposed to its use in a sentence, only exists by way of a `LexicalRelationship`.
 

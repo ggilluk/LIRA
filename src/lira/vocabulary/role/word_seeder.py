@@ -457,6 +457,9 @@ class WordSeeder:
             source_references=source_references,
             is_common=True,
             domain_tag=opt_text(entry.get("domain_tag")),
+            seeded_pleasure_displeasure_weight=opt_number(entry.get("seeded_pleasure_displeasure_weight")),
+            seeded_arousal_non_arousal_weight=opt_number(entry.get("seeded_arousal_non_arousal_weight")),
+            seeded_dominance_submissive_weight=opt_number(entry.get("seeded_dominance_submissive_weight")),
         )
 
     @staticmethod
@@ -486,6 +489,9 @@ class WordSeeder:
             "frequency_scale": word.frequency_scale.value if word.frequency_scale else None,
             "etymology_text": word.etymology_text.value if word.etymology_text else None,
             "first_recorded_use": word.first_recorded_use.value if word.first_recorded_use else None,
+            "seeded_pleasure_displeasure_weight": float(word.seeded_pleasure_displeasure_weight.value) if word.seeded_pleasure_displeasure_weight else None,
+            "seeded_arousal_non_arousal_weight": float(word.seeded_arousal_non_arousal_weight.value) if word.seeded_arousal_non_arousal_weight else None,
+            "seeded_dominance_submissive_weight": float(word.seeded_dominance_submissive_weight.value) if word.seeded_dominance_submissive_weight else None,
             "source_references": [
                 {
                     "source_name": ref.source_name.value,

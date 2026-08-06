@@ -527,6 +527,37 @@ lexical_form with an earlier-loaded sense never disturbs
 
 ## Version
 
+`v1` / `schema_version 2.0.0` / `asset_version 1.20.0` -- added
+`Word`'s three new Seeded Attributes for the PAD (Pleasure-Arousal-
+Dominance, Mehrabian & Russell) affective framework --
+`seeded_pleasure_displeasure_weight`, `seeded_arousal_non_arousal_weight`,
+`seeded_dominance_submissive_weight`, each a signed float in roughly
+[-1.0, 1.0], negative meaning the low/opposite pole named in the
+field itself (Displeasure, Non-Arousal, Submissive) -- to every entry
+in every file this cache contains (3085 words total). Every entry now
+carries an explicit value, never `null`: `0.0` is the seeded value for
+a genuinely affect-neutral word (most of this vocabulary's grammar,
+mathematics, and metalinguistic terminology genuinely is), not "not
+yet assigned". `NOUN`/`VERB` entries carry the base PAD value of the
+concept/action itself; `INTERJECTION` entries carry their own PAD
+value the same way (an interjection expresses affect directly, it
+doesn't modify some other base word); `ADJECTIVE`/`ADVERB` entries
+carry a reduced-magnitude weight representing how they would modify a
+base `NOUN`/`VERB` value once the Linguistics layer aggregates them
+(no such aggregation pipeline exists yet -- this only seeds the
+per-word weight); every closed-class/structural part of speech
+(`DETERMINER`, `PRONOUN`, `PREPOSITION`, `CONJUNCTION`, `PARTICLE`,
+`PUNCTUATION`, `SYMBOL`, `NUMERAL`, `AUXILIARY`, `PROPER_NOUN`,
+`OTHER`) is always `0.0`/`0.0`/`0.0`, regardless of any lexicon match --
+these carry no affect of their own to modify or express. Values are
+approximate, assigned via a hand-curated ~110-concept affect lexicon
+(`examples/pad_seeding.py`'s `CONCEPT_LEXICON`) applied to every
+inflected surface form of each concept already present in the cache;
+229 words (across `metalinguistic_interjections.json` and
+`promoted_words.json`) received a non-neutral value, the rest default
+to neutral. See `examples/pad_seeding.py` for the full method and
+`vocabulary/data/word.py`'s own field docstrings.
+
 `v1` / `schema_version 2.0.0` / `asset_version 1.19.0` -- promoted
 `head` (NOUN, "The upper part of the human body, or the front or
 uppermost part of an animal's body, containing the brain, eyes, ears,

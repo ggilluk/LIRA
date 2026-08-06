@@ -188,9 +188,25 @@ class DictionaryView:
                 "sources": [ref.source_name.value for ref in word.source_references],
                 "relationship_count": relationship_count,
                 "definition_segments": self._definition_segments(word),
+                "pad": self._pad_record(word),
             })
         records.sort(key=lambda r: r["lexical_form"].lower())
         return records
+
+    def _pad_record(self, word: Word) -> Optional[dict]:
+        """This Word's Seeded Attributes for the PAD (Pleasure-Arousal-
+        Dominance) affective framework, or None if none has been
+        assigned yet (see Word's own field docstrings -- 0.0 is a
+        genuine "neutral" value, distinct from an unassigned None)."""
+        p, a, d = (word.seeded_pleasure_displeasure_weight, word.seeded_arousal_non_arousal_weight,
+                   word.seeded_dominance_submissive_weight)
+        if p is None or a is None or d is None:
+            return None
+        return {
+            "pleasure": float(p.value),
+            "arousal": float(a.value),
+            "dominance": float(d.value),
+        }
 
     def _definition_segments(self, word: Word) -> List[dict]:
         """Reconstructs word.definition's text as an ordered list of
@@ -628,6 +644,49 @@ tbody tr[data-word-id].selected { background: color-mix(in srgb, var(--accent) 1
   font-size: 0.8rem;
   line-height: 1.4;
 }
+.pad-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.78rem;
+  margin: 6px 0;
+}
+.pad-row .pad-label {
+  width: 118px;
+  flex: none;
+  color: var(--ink-muted);
+}
+.pad-row .pad-value {
+  width: 42px;
+  flex: none;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.pad-track {
+  position: relative;
+  flex: 1;
+  height: 8px;
+  background: var(--line);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.pad-track::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--ink-muted);
+  opacity: 0.5;
+}
+.pad-fill {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background: var(--accent);
+}
+.pad-fill.negative { background: #C2544B; }
 .def-text { line-height: 1.7; }
 .def-word {
   position: relative;
@@ -1230,6 +1289,37 @@ function selectWordIn(panel, wordId) {
   renderDetailPanel(panel);
 }
 
+// One PAD (Pleasure-Arousal-Dominance) meter row: a track centred on
+// zero, filled from the centre toward the value's sign -- accent
+// colour for the named positive pole, the palette's warning red for
+// the named negative pole (word.pad's own field docstrings: negative
+// means the *named* low/opposite pole, e.g. Displeasure, not just
+// "less").
+function padMeterRow(posLabel, negLabel, value) {
+  const clamped = Math.max(-1, Math.min(1, value));
+  const pct = Math.abs(clamped) * 50;
+  const negative = clamped < 0;
+  const left = negative ? (50 - pct) : 50;
+  return `
+    <div class="pad-row">
+      <span class="pad-label">${posLabel} / ${negLabel}</span>
+      <span class="pad-track"><span class="pad-fill${negative ? ' negative' : ''}" style="left:${left}%;width:${pct}%"></span></span>
+      <span class="pad-value">${clamped.toFixed(2)}</span>
+    </div>`;
+}
+
+function padSectionHTML(word) {
+  if (!word.pad) {
+    return '<div class="detail-section-title">Affect (PAD, seeded)</div><div class="detail-empty" style="padding:4px 0">No PAD value seeded yet.</div>';
+  }
+  return `
+    <div class="detail-section-title">Affect (PAD, seeded)</div>
+    ${padMeterRow('Pleasure', 'Displeasure', word.pad.pleasure)}
+    ${padMeterRow('Arousal', 'Non-Arousal', word.pad.arousal)}
+    ${padMeterRow('Dominance', 'Submissive', word.pad.dominance)}
+  `;
+}
+
 function renderDetailPanel(panel) {
   const empty = document.getElementById(`detail-empty-${panel}`);
   const content = document.getElementById(`detail-content-${panel}`);
@@ -1247,6 +1337,7 @@ function renderDetailPanel(panel) {
     <div style="margin-top:6px">${posPill(word.pos)} ${domainPill(word.domain)}</div>
     <div class="detail-entry-id" title="Persistent Qualified Word Identity (domain + part of speech + word) -- stable across regenerations, unlike this word's transient graph id">Entry ID <code>${word.entry_id}</code></div>
     <div class="detail-definition">${renderDefinition(word)}</div>
+    ${padSectionHTML(word)}
     <div class="detail-section-title">Provenance</div>
     <div class="detail-definition" style="margin-top:0">${word.sources && word.sources.length ? word.sources.map(s => `<span class="tag">${s}</span>`).join('') : '<span style="opacity:.6">No source recorded.</span>'}</div>
     <div class="detail-section-title">Relationships (${rels.length})</div>

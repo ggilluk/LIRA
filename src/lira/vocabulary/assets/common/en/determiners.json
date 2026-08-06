@@ -40,7 +40,10 @@
           "reference_uri": null,
           "licence_identifier": null
         }
-      ]
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
     },
     {
       "entry_id": "c3bb1d82-6695-40e8-9709-81c47764c4a3",
@@ -77,7 +80,10 @@
           "reference_uri": null,
           "licence_identifier": null
         }
-      ]
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
     },
     {
       "entry_id": "02a4a407-e14c-4ab7-a478-fa59b65600be",
@@ -114,7 +120,10 @@
           "reference_uri": null,
           "licence_identifier": null
         }
-      ]
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
     },
     {
       "entry_id": "a1c6fc07-73db-4dc7-bcb4-eea3cf47eaa7",
@@ -151,7 +160,10 @@
           "reference_uri": null,
           "licence_identifier": null
         }
-      ]
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
     },
     {
       "entry_id": "8692b033-9192-410f-811b-71375e9d94ce",
@@ -188,7 +200,10 @@
           "reference_uri": null,
           "licence_identifier": null
         }
-      ]
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
     },
     {
       "entry_id": "4af6ceec-dd64-4624-b525-07a9b2e01ce9",
@@ -225,7 +240,10 @@
           "reference_uri": null,
           "licence_identifier": null
         }
-      ]
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
     },
     {
       "entry_id": "7477c3a6-3bdc-4b23-95f7-fb11292526d9",
@@ -262,7 +280,10 @@
           "reference_uri": null,
           "licence_identifier": null
         }
-      ]
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
     },
     {
       "entry_id": "d568ec75-411f-4311-8fb9-bd64f3e38b3c",
@@ -299,7 +320,10 @@
           "reference_uri": null,
           "licence_identifier": null
         }
-      ]
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
     },
     {
       "entry_id": "c5b5dafc-60ac-424e-9ff0-57979e0fe632",
@@ -336,7 +360,10 @@
           "reference_uri": null,
           "licence_identifier": null
         }
-      ]
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
     },
     {
       "entry_id": "bc501dc4-350d-4e82-801b-7291f2ce9e7f",
@@ -373,7 +400,10 @@
           "reference_uri": null,
           "licence_identifier": null
         }
-      ]
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
     },
     {
       "entry_id": "98f17467-683a-42d6-8da6-51a556a52cb5",
@@ -410,7 +440,10 @@
           "reference_uri": null,
           "licence_identifier": null
         }
-      ]
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
     },
     {
       "entry_id": "5257f29e-92b5-4c07-b03e-bc9c134f73b8",
@@ -447,7 +480,10 @@
           "reference_uri": null,
           "licence_identifier": null
         }
-      ]
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
     },
     {
       "entry_id": "d10078e1-4038-4ebd-aa4c-3b713b5055d2",
@@ -484,7 +520,10 @@
           "reference_uri": null,
           "licence_identifier": null
         }
-      ]
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
     },
     {
       "entry_id": "2c91ce4b-742f-426f-bdba-6aefc5fd0739",
@@ -521,7 +560,10 @@
           "reference_uri": null,
           "licence_identifier": null
         }
-      ]
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
     },
     {
       "entry_id": "bf01366e-96a9-4815-9c66-ac96956cb981",
@@ -558,7 +600,10 @@
           "reference_uri": null,
           "licence_identifier": null
         }
-      ]
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
     },
     {
       "entry_id": "92d2c4f2-bcb8-4fbe-b175-03886d7dea09",
@@ -595,7 +640,10 @@
           "reference_uri": null,
           "licence_identifier": null
         }
-      ]
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
     },
     {
       "entry_id": "89c602ed-58d1-40e3-9eec-ef15269859ef",
@@ -632,7 +680,10 @@
           "reference_uri": null,
           "licence_identifier": null
         }
-      ]
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
     },
     {
       "entry_id": "7813b20e-7288-4134-9e58-06586b7c524a",
@@ -669,7 +720,10 @@
           "reference_uri": null,
           "licence_identifier": null
         }
-      ]
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
     },
     {
       "entry_id": "53b44ff9-9d3d-44ce-ab4f-0fb301dd2c1b",
@@ -706,7 +760,10 @@
           "reference_uri": null,
           "licence_identifier": null
         }
-      ]
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
     },
     {
       "entry_id": "ed3731e6-f8ef-4170-a15f-1319022e58a9",
@@ -743,7 +800,10 @@
           "reference_uri": null,
           "licence_identifier": null
         }
-      ]
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
     },
     {
       "entry_id": "eb8ee458-d7d7-4484-b349-9ec64a980874",
@@ -780,7 +840,10 @@
           "reference_uri": null,
           "licence_identifier": null
         }
-      ]
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
     },
     {
       "entry_id": "4144c220-317b-4632-8b65-03815d3d84a5",
@@ -817,7 +880,10 @@
           "reference_uri": null,
           "licence_identifier": null
         }
-      ]
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
     },
     {
       "entry_id": "62d41b72-f0d0-4afd-a2ca-ca4969ccf98a",
@@ -854,7 +920,10 @@
           "reference_uri": null,
           "licence_identifier": null
         }
-      ]
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
     },
     {
       "entry_id": "3f3381d5-1675-4cf3-8a01-96e751a7e3f6",
@@ -891,7 +960,10 @@
           "reference_uri": null,
           "licence_identifier": null
         }
-      ]
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
     },
     {
       "entry_id": "5f5929d5-e94b-481c-9f1a-f7b611361b1c",
@@ -928,7 +1000,10 @@
           "reference_uri": null,
           "licence_identifier": null
         }
-      ]
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
     },
     {
       "entry_id": "cc19adcc-b77d-4e83-a6f8-aa3b6160ef4c",
@@ -965,7 +1040,10 @@
           "reference_uri": null,
           "licence_identifier": null
         }
-      ]
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
     },
     {
       "entry_id": "38a567cf-c9a6-44a1-a28d-bef30c0f2cb9",
@@ -1002,7 +1080,10 @@
           "reference_uri": null,
           "licence_identifier": null
         }
-      ]
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
     },
     {
       "entry_id": "5356d6cd-2965-4d9a-a08c-d0e3b0c13231",
@@ -1039,7 +1120,10 @@
           "reference_uri": null,
           "licence_identifier": null
         }
-      ]
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
     },
     {
       "entry_id": "f3b496d4-4be2-4707-960c-553d8908a80a",
@@ -1076,7 +1160,10 @@
           "reference_uri": null,
           "licence_identifier": null
         }
-      ]
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
     },
     {
       "entry_id": "44f34bb1-5a96-4caa-a193-029715a10d59",
@@ -1113,7 +1200,10 @@
           "reference_uri": null,
           "licence_identifier": null
         }
-      ]
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
     },
     {
       "entry_id": "fa55ff72-9e2d-471a-9ac1-b035128f676a",
@@ -1150,7 +1240,10 @@
           "reference_uri": null,
           "licence_identifier": null
         }
-      ]
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
     },
     {
       "entry_id": "7163e2ae-7547-44cd-bba2-660aac28c0d5",
@@ -1187,7 +1280,10 @@
           "reference_uri": null,
           "licence_identifier": null
         }
-      ]
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
     },
     {
       "entry_id": "30b5feb6-10bf-4c79-b381-672a018a9967",
@@ -1224,7 +1320,10 @@
           "reference_uri": null,
           "licence_identifier": null
         }
-      ]
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
     },
     {
       "entry_id": "95841d99-986c-4685-9648-d2f925f4f246",
@@ -1261,7 +1360,10 @@
           "reference_uri": null,
           "licence_identifier": null
         }
-      ]
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
     },
     {
       "entry_id": "261302df-c7c1-4120-a9de-9e38be0a3c6d",
@@ -1298,7 +1400,10 @@
           "reference_uri": null,
           "licence_identifier": null
         }
-      ]
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
     },
     {
       "entry_id": "9b78438d-b90e-424e-96c6-cfcc99a2b6fb",
@@ -1335,7 +1440,10 @@
           "reference_uri": null,
           "licence_identifier": null
         }
-      ]
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
     },
     {
       "entry_id": "a7c3b5c9-9328-4004-90d5-b5597f946453",
@@ -1372,7 +1480,10 @@
           "reference_uri": null,
           "licence_identifier": null
         }
-      ]
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
     }
   ]
 }

@@ -40,7 +40,10 @@
           "reference_uri": null,
           "licence_identifier": null
         }
-      ]
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
     }
   ]
 }

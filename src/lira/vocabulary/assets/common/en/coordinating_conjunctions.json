@@ -40,7 +40,10 @@
           "reference_uri": null,
           "licence_identifier": null
         }
-      ]
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
     },
     {
       "entry_id": "dd9a22ee-2290-4d10-b27e-5b7c90b2e089",
@@ -77,7 +80,10 @@
           "reference_uri": null,
           "licence_identifier": null
         }
-      ]
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
     },
     {
       "entry_id": "2bb15f2d-0798-41c6-a448-15662f5b80c7",
@@ -114,7 +120,10 @@
           "reference_uri": null,
           "licence_identifier": null
         }
-      ]
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
     },
     {
       "entry_id": "5492e408-c6de-4a03-85c4-4d351b42826e",
@@ -151,7 +160,10 @@
           "reference_uri": null,
           "licence_identifier": null
         }
-      ]
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
     },
     {
       "entry_id": "db85153a-4b0e-4d79-b426-97880ae06b3b",
@@ -188,7 +200,10 @@
           "reference_uri": null,
           "licence_identifier": null
         }
-      ]
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
     },
     {
       "entry_id": "423e5eb5-e290-4f60-a89a-935bfd89d53d",
@@ -225,7 +240,10 @@
           "reference_uri": null,
           "licence_identifier": null
         }
-      ]
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
     },
     {
       "entry_id": "8f86f56f-8fc5-4381-9b70-bcb1d5ff078a",
@@ -262,7 +280,10 @@
           "reference_uri": null,
           "licence_identifier": null
         }
-      ]
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
     }
   ]
 }
