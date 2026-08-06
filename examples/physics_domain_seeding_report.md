@@ -70,38 +70,38 @@ Source: 23 sentences, 117 unique tokens
 
 ## Hydrator telemetry
 
-- First run: {'successful_fetches': 40, 'failed_fetches': 0, 'deduplicated_calls': 6, 'created_words': 47}
-- Second run (cumulative): {'successful_fetches': 40, 'failed_fetches': 0, 'deduplicated_calls': 6, 'created_words': 47}
+- First run: {'successful_fetches': 40, 'failed_fetches': 0, 'deduplicated_calls': 4, 'created_words': 47}
+- Second run (cumulative): {'successful_fetches': 40, 'failed_fetches': 0, 'deduplicated_calls': 4, 'created_words': 47}
   (successful_fetches/created_words do not grow on the second run for anything already resolved; the deliberately-unresolved words are retried and fail again each pass, since nothing in this pipeline blacklists a word after one failed lookup.)
 
 ## Word-sense conflicts found and resolved
 
 Checking every fixture word against the Common seed directly found collisions (`object`, `depend`, `position`, `particle`, and -- once the 1163-word Common definition-gap batch added Common senses of its own for them -- `wave`, `moving`, `flow`) -- identify_word() only queues hydration when *no* existing sense at all matches, regardless of part_of_speech, so these never reached ExternalDictionaryAdapter. `depend`/`position` turned out to have compatible general-English definitions already in Common, fine as-is. The rest are genuine conflicts -- `object`/`particle` because Common's senses are the grammatical terms ("the noun that receives the action of a verb", "a function word that does not fit the main parts of speech"); `wave`/`moving`/`flow` because Common's new sense is a different part_of_speech entirely (Common's `wave` is VERB, Physics needs NOUN; Common's `moving` is VERB, Physics needs ADJECTIVE; Common's `flow` is NOUN, Physics needs VERB) -- neither is the physics one this domain's own relationships need. Resolved via `DictionaryProcessor.register_conflicting_sense` -- the same, pre-existing conflict-resolution path a Domain owner would use for any other word-sense conflict (`vocabulary/documentation/README.md`, 9.2), not a new mechanism. Both senses keep the identical, unmangled `lexical_form` -- no `_2`-style suffix -- and are told apart by their own `entry_id` (Word 4.2) plus the Domain pill the UI already shows:
 
-- `object` (NOUN) registered as a second, Physics-domain sense, `entry_id="257b6a8f-c160-49df-aa94-e286ca504147"`
-- `particle` (NOUN) registered as a second, Physics-domain sense, `entry_id="f5724974-3dd4-4075-b8e0-ce13634402a9"`
-- `wave` (NOUN) registered as a second, Physics-domain sense, `entry_id="18b6de39-4a82-454c-862a-8ec22d497c8f"`
-- `moving` (ADJECTIVE) registered as a second, Physics-domain sense, `entry_id="89830e97-5956-4a0f-97ad-1ce6f934b0ec"`
-- `flow` (VERB) registered as a second, Physics-domain sense, `entry_id="27265ec8-69c9-4295-8857-0b6d694f3040"`
+- `object` (NOUN) registered as a second, Physics-domain sense, `entry_id="9255c3ca-efb3-46da-b9f9-6c0de22eba73"`
+- `particle` (NOUN) registered as a second, Physics-domain sense, `entry_id="6d36e3c2-9642-4b24-ab27-4845095fd197"`
+- `wave` (NOUN) registered as a second, Physics-domain sense, `entry_id="d37a67c8-9e55-4b76-83ef-e4c8b294829f"`
+- `moving` (ADJECTIVE) registered as a second, Physics-domain sense, `entry_id="d099bd00-58da-4bf8-9de9-1032df88c570"`
+- `flow` (VERB) registered as a second, Physics-domain sense, `entry_id="a35d1c4a-c73f-4957-a753-4557b640daf1"`
 
 ## Relationships among hydrated words
 
-RelationshipSeeder only runs once, at Domain creation, against the static Common relationship cache -- it never relates a word added later by hydration. 45 pairs hand-curated for this domain (examples/physics_domain_relationships.py), covering every Lexical Semantic kind with at least 5 real examples, RELATED kept deliberately smallest as the lowest-priority catch-all: **72 edges created**.
+RelationshipSeeder only runs once, at Domain creation, against the static Common relationship cache -- it never relates a word added later by hydration. 45 pairs hand-curated for this domain (examples/physics_domain_relationships.py), covering every Lexical Semantic kind with at least 5 real examples, RELATED kept deliberately smallest as the lowest-priority catch-all: **71 edges created**.
 
 | Kind | Edges created |
 |------|---------------|
 | SYNONYM | 4 |
 | ANTONYM | 10 |
 | HYPERNYM | 13 |
-| HYPONYM | 13 |
+| HYPONYM | 9 |
 | MERONYM | 6 |
 | HOLONYM | 6 |
-| TROPONYM | 5 |
-| ENTAILMENT | 5 |
+| TROPONYM | 4 |
+| ENTAILMENT | 9 |
 | CAUSE | 4 |
 | RELATED | 6 |
 
 ## Final state
 
 - Total words in the Physics Dictionary: 3137
-- Total relationships: 6137 (6065 inherited from Common + 72 hand-curated for this domain)
+- Total relationships: 6130 (6059 inherited from Common + 71 hand-curated for this domain)

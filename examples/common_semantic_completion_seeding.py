@@ -13,10 +13,19 @@ entry corrects an earlier version of this script that added a HYPONYM
 companion too, which made verbs incorrectly show up under the
 Hierarchy tab's Hyponym selector. TROPONYM itself stays a real, more
 specific edge (troponyms() still answers "specifically a manner of").
-ENTAILMENT/CAUSE get no reciprocal -- one-directional by definition,
-no inverse kind exists for them, and unlike TROPONYM neither is a
-hyponymy relation in disguise ("snore" entailing "sleep" isn't "snore
-is a type of sleep").
+
+CAUSE is a subtype of ENTAILMENT the same way TROPONYM is a subtype of
+HYPERNYM/HYPONYM: causation is a stronger claim than entailment (if X
+causes Y, X's occurrence logically entails Y's), but not every
+entailment is causal ("snore" entails "sleep" without snoring causing
+sleep) -- `assets/common/en/relationships/README.md`'s
+`asset_version 1.18.0` entry. So every CAUSE edge materialises the
+matching ENTAILMENT edge in the *same* direction (unlike TROPONYM's
+reversed HYPERNYM companion -- "kill" CAUSE "die" and "kill" ENTAILMENT
+"die" name the same two endpoints in the same order), and CAUSE itself
+stays the more specific edge. Pure ENTAILMENT pairs that aren't causal
+are untouched -- this is a one-way implication (cause -> entailment,
+not entailment -> cause), not a full reciprocal pair.
 
 Every word referenced already exists in the Common Vocabulary Cache
 (common_semantic_completion.py's own drafting process only ever used
@@ -49,10 +58,12 @@ RECIPROCAL_KIND = {
     "SYNONYM": "SYNONYM",
     "ANTONYM": "ANTONYM",
     "RELATED": "RELATED",
-    # ENTAILMENT/CAUSE: no reciprocal, one-directional by design.
+    # ENTAILMENT: no reciprocal, one-directional by design.
     # TROPONYM: handled separately below -- its reciprocal is HYPERNYM
     # (reverse direction, not the same kind), so it doesn't fit this
     # one-entry-per-kind map.
+    # CAUSE: also handled separately below -- its companion is
+    # ENTAILMENT in the *same* direction, not a reversed one.
 }
 
 
@@ -72,6 +83,10 @@ def add_semantic_relationships() -> dict:
             # HYPERNYM is the one kind shared between nouns and verbs;
             # HYPONYM stays noun-only, so no HYPONYM companion here.
             edges.append((target_form, target_pos, "HYPERNYM", source_form, source_pos))
+        elif kind == "CAUSE":
+            # Same direction, not reversed -- CAUSE is a subtype of
+            # ENTAILMENT, not its inverse.
+            edges.append((source_form, source_pos, "ENTAILMENT", target_form, target_pos))
         else:
             recip = RECIPROCAL_KIND.get(kind)
             if recip:

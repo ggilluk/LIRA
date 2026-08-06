@@ -58,8 +58,14 @@ properties, which is the authoritative reader of this data):
   "accelerate" ENTAILMENT "move" reads "to accelerate entails moving".
   One-directional, no inverse kind defined.
 - CAUSE edge is (causing_verb, CAUSE, caused_verb) -- "exert" CAUSE
-  "accelerate" reads "exerting (a force) causes accelerating".
-  One-directional, no inverse kind defined.
+  "accelerate" reads "exerting (a force) causes accelerating". CAUSE is
+  a subtype of ENTAILMENT (causation is a stronger claim -- if X causes
+  Y, X's occurrence logically entails Y's), so the seeding script also
+  materialises the matching ENTAILMENT edge in the *same* direction,
+  not reversed: (causing_verb, ENTAILMENT, caused_verb) alongside the
+  CAUSE edge itself. Pure ENTAILMENT pairs that aren't causal (e.g.
+  "accelerate" ENTAILMENT "move" above) are left alone -- this is a
+  one-way implication, not a full reciprocal pair.
 - SYNONYM/ANTONYM/RELATED are genuinely symmetric -- seeded in both
   directions, matching assets/common/en/relationships/README.md's
   "Symmetric and inverse edges" convention for the Common cache.
@@ -119,7 +125,9 @@ ENTAILMENT_PAIRS = (
 )
 
 # (causing_text, causing_pos, caused_text, caused_pos) -- one CAUSE
-# edge, not reversed.
+# edge plus the matching ENTAILMENT edge, same direction, not
+# reversed -- see the module docstring's Directional conventions
+# section.
 CAUSE_PAIRS = (
     ("heat", "VERB", "melt", "VERB"),
     ("heat", "VERB", "expand", "VERB"),

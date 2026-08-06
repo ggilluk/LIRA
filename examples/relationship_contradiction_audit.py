@@ -47,6 +47,20 @@ entry's own optional `source_part_of_speech`/`target_part_of_speech`
 fields, since most existing HYPERNYM entries predate that field and
 omit it.
 
+CAUSE is treated as part of the ENTAILMENT family too, for the same
+reason as TROPONYM above: CAUSE is a subtype of ENTAILMENT (if X causes
+Y, X's occurrence logically entails Y's -- a stronger claim, not a
+different one), so a CAUSE edge co-occurring with an ENTAILMENT edge on
+the same pair, *same direction*, is expected, not flagged
+(`assets/common/en/relationships/README.md`'s `asset_version 1.18.0`
+entry). `find_missing_cause_companions()` checks a CAUSE edge is
+*missing* its same-direction ENTAILMENT companion. Unlike TROPONYM's
+reversed HYPERNYM companion, this is same-direction -- "kill" CAUSE
+"die" and "kill" ENTAILMENT "die" name the same two endpoints in the
+same order -- and it is a one-way implication (cause -> entailment, not
+entailment -> cause), so a pure ENTAILMENT pair that isn't causal is
+never flagged as missing a CAUSE companion.
+
 Run: python3 examples/relationship_contradiction_audit.py
 """
 
@@ -79,8 +93,11 @@ FAMILY = {
     "TROPONYM": "HYPERNYM_HYPONYM",
     "MERONYM": "MERONYM_HOLONYM",
     "HOLONYM": "MERONYM_HOLONYM",
+    # CAUSE is a subtype of ENTAILMENT -- it's expected to co-occur
+    # (same direction) with an ENTAILMENT edge on the same pair, not a
+    # contradiction against it (see module docstring).
     "ENTAILMENT": "ENTAILMENT",
-    "CAUSE": "CAUSE",
+    "CAUSE": "ENTAILMENT",
 }
 
 
@@ -151,6 +168,7 @@ def find_contradictions() -> dict:
     edge_set = set()
     hyper_pairs, mero_pairs = set(), set()
     tropo_pairs = []
+    cause_pairs = []
 
     for r in rels:
         s = _endpoint(r["source_lexical_form"], r.get("source_part_of_speech"), r.get("source_domain_tag"))
@@ -166,6 +184,8 @@ def find_contradictions() -> dict:
             mero_pairs.add((s, t))
         if kind == "TROPONYM":
             tropo_pairs.append((s, t))
+        if kind == "CAUSE":
+            cause_pairs.append((s, t))
 
     duplicate_edges = [(s, t, k) for (s, t, k), n in exact_dupes.items() if n > 1]
     hypernym_2cycles = [(s, t) for (s, t) in hyper_pairs if (t, s) in hyper_pairs]
@@ -189,6 +209,14 @@ def find_contradictions() -> dict:
                 "missing_edges": [f"{specific} -HYPERNYM-> {general}"],
             })
 
+    missing_cause_companions = []
+    for causing, caused in cause_pairs:
+        if (causing, "ENTAILMENT", caused) not in edge_set:
+            missing_cause_companions.append({
+                "pair": [str(causing), str(caused)],
+                "missing_edges": [f"{causing} -ENTAILMENT-> {caused}"],
+            })
+
     verb_hypernym_without_troponym = find_verb_hypernym_without_troponym(rels)
     verb_hyponym_edges = find_verb_hyponym_edges(rels)
 
@@ -201,6 +229,7 @@ def find_contradictions() -> dict:
         "missing_troponym_companions": missing_troponym_companions,
         "verb_hypernym_without_troponym": verb_hypernym_without_troponym,
         "verb_hyponym_edges": verb_hyponym_edges,
+        "missing_cause_companions": missing_cause_companions,
     }
 
 
@@ -220,9 +249,13 @@ if __name__ == "__main__":
     print("Verb-verb HYPONYM edges (should never exist -- HYPONYM is noun-only):", len(result["verb_hyponym_edges"]))
     for m in result["verb_hyponym_edges"]:
         print(f"   {m['source']} -HYPONYM-> {m['target']}")
+    print("CAUSE edges missing their ENTAILMENT companion:", len(result["missing_cause_companions"]))
+    for m in result["missing_cause_companions"]:
+        print("  ", m["pair"], "missing:", m["missing_edges"])
     print()
     print("See examples/relationship_contradiction_report.md for the full, reviewed correction list "
           "(recommended fix + reasoning per pair) and "
           "examples/relationship_contradiction_corrections.json for the same data, structured. "
           "See examples/troponym_verb_backfill.py to fix any verb-verb HYPERNYM pairs missing a TROPONYM edge, "
-          "or examples/troponym_hyponym_removal_fix.py to remove any stray verb-verb HYPONYM edges.")
+          "examples/troponym_hyponym_removal_fix.py to remove any stray verb-verb HYPONYM edges, "
+          "or examples/cause_entailment_backfill.py to fix any CAUSE edges missing an ENTAILMENT companion.")

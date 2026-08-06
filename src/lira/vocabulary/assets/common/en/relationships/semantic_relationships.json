@@ -2,7 +2,7 @@
   "schema_version": "1.0.0",
   "language_code": "en",
   "relationship_category": "semantic",
-  "count": 2604,
+  "count": 2607,
   "relationships": [
     {
       "source_lexical_form": "above",
@@ -18255,6 +18255,27 @@
       "target_lexical_form": "head",
       "target_part_of_speech": "VERB",
       "relationship_kind": "TROPONYM"
+    },
+    {
+      "source_lexical_form": "acquire",
+      "target_lexical_form": "possess",
+      "relationship_kind": "ENTAILMENT",
+      "source_part_of_speech": "VERB",
+      "target_part_of_speech": "VERB"
+    },
+    {
+      "source_lexical_form": "attract",
+      "target_lexical_form": "move",
+      "relationship_kind": "ENTAILMENT",
+      "source_part_of_speech": "VERB",
+      "target_part_of_speech": "VERB"
+    },
+    {
+      "source_lexical_form": "trigger",
+      "target_lexical_form": "start",
+      "relationship_kind": "ENTAILMENT",
+      "source_part_of_speech": "VERB",
+      "target_part_of_speech": "VERB"
     }
   ]
 }

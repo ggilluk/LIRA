@@ -330,6 +330,42 @@ batch adds vocabulary of that kind.
 
 ## Version
 
+`v1` / `schema_version 1.0.0` / `asset_version 1.18.0` (6108 -> 6111
+relationships; `semantic_relationships.json` 2604 -> 2607). `CAUSE` is a
+subtype of `ENTAILMENT`, the same relationship TROPONYM has to
+HYPERNYM/HYPONYM: causation is a *stronger* claim than entailment -- if
+X causes Y, X's occurrence logically entails Y's -- but not every
+entailment is causal ("snore" entails "sleep" without snoring causing
+sleep). Unlike TROPONYM's reversed HYPERNYM companion, this is a
+*same-direction* pairing: "kill" `CAUSE` "die" and "kill" `ENTAILMENT`
+"die" name the same two endpoints in the same order. Checked directly
+against the live cache before writing anything: 3 `CAUSE` pairs
+existed with no matching `ENTAILMENT` edge --
+`acquire`/`possess` (`acquire`'s own definition: "to gain or come to
+**possess** something"), `attract`/`move`, `trigger`/`start`
+(`trigger`'s own definition: "to cause something to happen or
+**start**"). `examples/cause_entailment_backfill.py` added the 3
+missing `ENTAILMENT` edges; every existing `CAUSE`/`ENTAILMENT` edge is
+untouched. `common_semantic_completion_seeding.py`'s `add_semantic_relationships()`
+and `physics_domain_seeding.py`'s `_seed_physics_relationships` both
+changed to materialise the `ENTAILMENT` companion for every `CAUSE`
+edge going forward (5 Physics-domain `CAUSE_PAIRS`, same-direction, not
+yet backfilled into a static file since Physics is rebuilt fresh each
+run -- confirmed live: `acquire`/`attract`/`trigger` each carry exactly
+one `CAUSE` edge and one `ENTAILMENT` edge in a freshly seeded Common
+Domain). `examples/relationship_contradiction_audit.py`'s `FAMILY` map
+now groups `CAUSE` with `ENTAILMENT` (co-occurrence, same direction, is
+expected, not a contradiction) and gained
+`find_missing_cause_companions()` for the opposite failure mode -- a
+`CAUSE` edge missing its `ENTAILMENT` pair.
+
+Verified: re-ran the full canonical seeding chain and got 0 new
+semantic edges (the fix doesn't get silently undone the way the
+TROPONYM/HYPONYM bug did); re-ran the audit and got 0 on every check,
+including the new one; Playwright-confirmed the rendered UI shows both
+"X causes Y" and "X entails Y" sentences for `acquire`, `attract`, and
+`trigger`, no console errors.
+
 `v1` / `schema_version 1.0.0` / `asset_version 1.17.0` (6158 -> 6108
 relationships; `semantic_relationships.json` 2654 -> 2604). Corrects an
 over-application from `asset_version 1.15.0`/`1.16.0`: `HYPONYM` is a

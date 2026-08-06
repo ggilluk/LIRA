@@ -434,6 +434,17 @@ Connects a word to another word whose meaning it logically implies, or to a word
 | `ENTAILMENT` | 96 | Source lexically entails target | "snore" → "sleep" |
 | `CAUSE` | 97 | Source lexically causes target | "kill" → "die" |
 
+`CAUSE` is a subtype of `ENTAILMENT`: causation is a stronger claim
+than entailment (if X causes Y, X's occurrence logically entails Y's),
+so a seeded `CAUSE` edge always carries a matching `ENTAILMENT` edge
+alongside it, in the *same* direction ("kill" `CAUSE` "die" and "kill"
+`ENTAILMENT` "die" name the same two endpoints in the same order) --
+unlike `TROPONYM`'s reversed `HYPERNYM` companion above. Not every
+entailment is causal, though ("snore" entails "sleep" without snoring
+causing sleep), so this is a one-way implication (cause -> entailment),
+not a full reciprocal pair -- a pure `ENTAILMENT` edge never implies a
+`CAUSE` edge should exist too.
+
 ###### Unspecified (category 5)
 
 Connects two words known to be lexically related without specifying the exact nature of that relationship.
