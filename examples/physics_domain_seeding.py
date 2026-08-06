@@ -205,7 +205,7 @@ def _seed_physics_relationships(physics_domain) -> dict:
     Word.py's derived properties -- meronyms()/holonyms() read incoming
     edges, hypernyms()/hyponyms()/troponyms() read outgoing).
 
-    Five materialisation patterns, one per physics_domain_relationships.py
+    Four materialisation patterns, one per physics_domain_relationships.py
     list shape:
     - Symmetric, same kind both directions (SYNONYM_PAIRS, ANTONYM_PAIRS,
       RELATED_PAIRS): (text_a, pos_a, text_b, pos_b).
@@ -224,18 +224,15 @@ def _seed_physics_relationships(physics_domain) -> dict:
       Hierarchy tab's Hyponym selector). specific.hypernyms() finds
       general the same as any other hypernym pair; general.troponyms()
       finds specific.
-    - CAUSE is a subtype of ENTAILMENT -- causation is a stronger claim
-      than entailment (if X causes Y, X's occurrence logically entails
-      Y's), so every CAUSE edge also materialises the matching
-      ENTAILMENT edge, in the *same* direction, not reversed
+    - CAUSE and ENTAILMENT are required companions of each other, in
+      the *same* direction, not reversed
       (`assets/common/en/relationships/README.md`'s
-      `asset_version 1.18.0` entry): CAUSE_PAIRS materialises
-      (causing, CAUSE, caused) plus (causing, ENTAILMENT, caused).
-      CAUSE itself stays the more specific edge.
-    - One-directional, no inverse kind or subtype relationship defined
-      (ENTAILMENT_PAIRS only, now that CAUSE is handled above):
-      (source, pos, target, pos) -- matches the not-reversed
-      CONTRACTION precedent.
+      `asset_version 1.21.0` entry): both CAUSE_PAIRS and
+      ENTAILMENT_PAIRS materialise (source, CAUSE, target) plus
+      (source, ENTAILMENT, target) for every pair -- the two lists
+      exist separately only to keep the curated example sets
+      distinct (physics_domain_relationships.py's own docstring),
+      not because the two kinds are seeded any differently.
 
     Resolves every word by exact (text, part_of_speech), since several
     are homographs; skips (and reports) any pair where a word or the
@@ -341,6 +338,7 @@ def _seed_physics_relationships(physics_domain) -> dict:
         if resolved:
             entailing, entailed = resolved
             make_edge(entailing, LexicalRelationshipType.ENTAILMENT, entailed)
+            make_edge(entailing, LexicalRelationshipType.CAUSE, entailed)
 
     for causing_text, causing_pos, caused_text, caused_pos in CAUSE_PAIRS:
         attempted_pairs += 1

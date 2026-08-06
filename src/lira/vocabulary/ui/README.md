@@ -134,15 +134,18 @@ instead of a flat alphabetical list, wherever a Dictionary actually has
 both sides seeded: `Hypernym`/`Hyponym`/`Troponym` together (troponymy
 is verb-specific hyponymy -- `Troponym` shares its reciprocal,
 `Hypernym`, with the noun-side `Hyponym`, `assets/common/en/
-relationships/README.md`'s `asset_version 1.15.0`/`1.16.0` entries) and
-`Meronym`/`Holonym` together; every other kind (genuinely symmetric
-ones like `Synonym`, and every morphological/orthographic kind) stays
-in the flat alphabetical list below the groups, exactly as before this
-grouping existed. A group only appears once at least two of its kinds
-are actually present with at least one edge each -- a Dictionary with
-`Hypernym` but zero `Troponym`/`Hyponym` edges seeded falls straight
-through to the flat list, nothing to group. The Cyclic tab's kind
-dropdown (below) uses the same grouping.
+relationships/README.md`'s `asset_version 1.15.0`/`1.16.0` entries),
+`Meronym`/`Holonym` together, and `Cause`/`Entailment` together (fully
+reciprocal companions of each other, same direction -- `assets/
+common/en/relationships/README.md`'s `asset_version 1.19.0` entry);
+every other kind (genuinely symmetric ones like `Synonym`, and every
+morphological/orthographic kind) stays in the flat alphabetical list
+below the groups, exactly as before this grouping existed. A group
+only appears once at least two of its kinds are actually present with
+at least one edge each -- a Dictionary with `Hypernym` but zero
+`Troponym`/`Hyponym` edges seeded falls straight through to the flat
+list, nothing to group. The Cyclic tab's kind dropdown (below) uses the
+same grouping.
 
 Renders the *entire* Dictionary as a nested tree for one
 `LexicalRelationshipType` at a time, picked from a dropdown listing

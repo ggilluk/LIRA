@@ -330,6 +330,43 @@ batch adds vocabulary of that kind.
 
 ## Version
 
+`v1` / `schema_version 1.0.0` / `asset_version 1.19.0` (6111 -> 6114
+relationships; `semantic_relationships.json` 2607 -> 2610). Makes the
+`CAUSE`/`ENTAILMENT` pairing fully reciprocal: `asset_version 1.18.0`
+above only went one way (every `CAUSE` edge got a matching `ENTAILMENT`
+edge, but a pure `ENTAILMENT` pair was left alone, on the reasoning
+that not every entailment is causal). User feedback ("should be both
+ways") overrides that reasoning for this cache: `CAUSE` and
+`ENTAILMENT` are now treated as always-paired companions, the same way
+`HYPERNYM`/`HYPONYM` and `MERONYM`/`HOLONYM` are always paired, rather
+than modelling real-world entailment-without-causation as a distinct,
+rarer case. Checked directly against the live cache first: 3
+`ENTAILMENT`-only pairs existed with no matching `CAUSE` edge --
+`enclose`/`contain`, `lead`/`precede`, `rest`/`stop` -- the 3 `CAUSE`
+pairs from `asset_version 1.18.0` already had both edges and needed no
+change. `examples/cause_entailment_reciprocal_backfill.py` (supersedes
+`cause_entailment_backfill.py`) added the 3 missing `CAUSE` edges; no
+existing edge touched.
+`common_semantic_completion_seeding.py`'s `add_semantic_relationships()`
+now also materialises a `CAUSE` companion for every `ENTAILMENT` edge
+(previously only the reverse), and `physics_domain_seeding.py`'s
+`_seed_physics_relationships` now materialises both `CAUSE` and
+`ENTAILMENT` from *both* `CAUSE_PAIRS` and `ENTAILMENT_PAIRS` (the two
+lists exist only to keep the curated example sets distinct, not
+because the two kinds are seeded differently). `examples/
+relationship_contradiction_audit.py` gained the symmetric
+`find`-equivalent check, `missing_entailment_companions`, alongside
+the existing `missing_cause_companions`. Also updated the Hierarchy/
+Cyclic kind selector's `KIND_PAIR_GROUPS` to include a `Cause /
+Entailment` optgroup (`vocabulary/ui/dictionary_view.py`), matching
+`Hypernym / Hyponym / Troponym` and `Meronym / Holonym`.
+
+Verified: re-ran the full canonical seeding chain and got 0 new
+semantic edges; re-ran the audit and got 0 on every check, including
+both `CAUSE`- and `ENTAILMENT`-missing-companion checks; confirmed live
+that `CAUSE` and `ENTAILMENT` edge counts in `semantic_relationships.json`
+are now equal (6 each, up from 3 `CAUSE` / 6 `ENTAILMENT`).
+
 `v1` / `schema_version 1.0.0` / `asset_version 1.18.0` (6108 -> 6111
 relationships; `semantic_relationships.json` 2604 -> 2607). `CAUSE` is a
 subtype of `ENTAILMENT`, the same relationship TROPONYM has to

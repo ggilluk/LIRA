@@ -56,16 +56,17 @@ properties, which is the authoritative reader of this data):
   troponyms() still answers the more specific "manner of" question.
 - ENTAILMENT edge is (entailing_verb, ENTAILMENT, entailed_verb) --
   "accelerate" ENTAILMENT "move" reads "to accelerate entails moving".
-  One-directional, no inverse kind defined.
 - CAUSE edge is (causing_verb, CAUSE, caused_verb) -- "exert" CAUSE
-  "accelerate" reads "exerting (a force) causes accelerating". CAUSE is
-  a subtype of ENTAILMENT (causation is a stronger claim -- if X causes
-  Y, X's occurrence logically entails Y's), so the seeding script also
-  materialises the matching ENTAILMENT edge in the *same* direction,
-  not reversed: (causing_verb, ENTAILMENT, caused_verb) alongside the
-  CAUSE edge itself. Pure ENTAILMENT pairs that aren't causal (e.g.
-  "accelerate" ENTAILMENT "move" above) are left alone -- this is a
-  one-way implication, not a full reciprocal pair.
+  "accelerate" reads "exerting (a force) causes accelerating". CAUSE
+  and ENTAILMENT are required companions of each other, in the *same*
+  direction, not reversed: every CAUSE edge also materialises the
+  matching ENTAILMENT edge, and every ENTAILMENT edge also materialises
+  the matching CAUSE edge -- (causing_verb, ENTAILMENT, caused_verb)
+  alongside (causing_verb, CAUSE, caused_verb), always both
+  (`assets/common/en/relationships/README.md`'s `asset_version 1.21.0`
+  entry). ENTAILMENT_PAIRS and CAUSE_PAIRS exist as two separate lists
+  only to keep the curated example sets distinct, not because the two
+  kinds are seeded any differently.
 - SYNONYM/ANTONYM/RELATED are genuinely symmetric -- seeded in both
   directions, matching assets/common/en/relationships/README.md's
   "Symmetric and inverse edges" convention for the Common cache.
@@ -115,7 +116,9 @@ TROPONYM_PAIRS = (
 )
 
 # (entailing_text, entailing_pos, entailed_text, entailed_pos) -- one
-# ENTAILMENT edge, not reversed.
+# ENTAILMENT edge plus the matching CAUSE edge, same direction, not
+# reversed -- see the module docstring's Directional conventions
+# section.
 ENTAILMENT_PAIRS = (
     ("accelerate", "VERB", "move", "VERB"),
     ("flow", "VERB", "move", "VERB"),

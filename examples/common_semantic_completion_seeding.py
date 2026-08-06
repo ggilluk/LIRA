@@ -14,18 +14,19 @@ companion too, which made verbs incorrectly show up under the
 Hierarchy tab's Hyponym selector. TROPONYM itself stays a real, more
 specific edge (troponyms() still answers "specifically a manner of").
 
-CAUSE is a subtype of ENTAILMENT the same way TROPONYM is a subtype of
-HYPERNYM/HYPONYM: causation is a stronger claim than entailment (if X
-causes Y, X's occurrence logically entails Y's), but not every
-entailment is causal ("snore" entails "sleep" without snoring causing
-sleep) -- `assets/common/en/relationships/README.md`'s
-`asset_version 1.18.0` entry. So every CAUSE edge materialises the
-matching ENTAILMENT edge in the *same* direction (unlike TROPONYM's
-reversed HYPERNYM companion -- "kill" CAUSE "die" and "kill" ENTAILMENT
-"die" name the same two endpoints in the same order), and CAUSE itself
-stays the more specific edge. Pure ENTAILMENT pairs that aren't causal
-are untouched -- this is a one-way implication (cause -> entailment,
-not entailment -> cause), not a full reciprocal pair.
+CAUSE and ENTAILMENT are required companions of each other, in the
+*same* direction (unlike TROPONYM's reversed HYPERNYM companion --
+"kill" CAUSE "die" and "kill" ENTAILMENT "die" name the same two
+endpoints in the same order): every CAUSE edge materialises the
+matching ENTAILMENT edge, and every ENTAILMENT edge materialises the
+matching CAUSE edge -- `assets/common/en/relationships/README.md`'s
+`asset_version 1.21.0` entry. (An earlier version of this script only
+went CAUSE -> ENTAILMENT, on the reasoning that causation is a
+stronger claim than entailment and not every entailment is causal;
+this cache treats the two kinds as a single always-paired fact
+instead, the same way HYPERNYM/HYPONYM and MERONYM/HOLONYM are always
+paired, rather than modelling real-world entailment-without-causation
+as a distinct, rarer case.)
 
 Every word referenced already exists in the Common Vocabulary Cache
 (common_semantic_completion.py's own drafting process only ever used
@@ -58,12 +59,12 @@ RECIPROCAL_KIND = {
     "SYNONYM": "SYNONYM",
     "ANTONYM": "ANTONYM",
     "RELATED": "RELATED",
-    # ENTAILMENT: no reciprocal, one-directional by design.
     # TROPONYM: handled separately below -- its reciprocal is HYPERNYM
     # (reverse direction, not the same kind), so it doesn't fit this
     # one-entry-per-kind map.
-    # CAUSE: also handled separately below -- its companion is
-    # ENTAILMENT in the *same* direction, not a reversed one.
+    # CAUSE/ENTAILMENT: also handled separately below -- each is the
+    # other's required companion, in the *same* direction, not a
+    # reversed one (asset_version 1.21.0).
 }
 
 
@@ -84,9 +85,13 @@ def add_semantic_relationships() -> dict:
             # HYPONYM stays noun-only, so no HYPONYM companion here.
             edges.append((target_form, target_pos, "HYPERNYM", source_form, source_pos))
         elif kind == "CAUSE":
-            # Same direction, not reversed -- CAUSE is a subtype of
-            # ENTAILMENT, not its inverse.
+            # Same direction, not reversed -- CAUSE and ENTAILMENT are
+            # required companions of each other (asset_version 1.21.0).
             edges.append((source_form, source_pos, "ENTAILMENT", target_form, target_pos))
+        elif kind == "ENTAILMENT":
+            # Same direction, not reversed -- the other half of the
+            # CAUSE/ENTAILMENT pairing above.
+            edges.append((source_form, source_pos, "CAUSE", target_form, target_pos))
         else:
             recip = RECIPROCAL_KIND.get(kind)
             if recip:

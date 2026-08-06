@@ -2,7 +2,7 @@
   "schema_version": "1.0.0",
   "language_code": "en",
   "relationship_category": "semantic",
-  "count": 2607,
+  "count": 2610,
   "relationships": [
     {
       "source_lexical_form": "above",
@@ -18274,6 +18274,27 @@
       "source_lexical_form": "trigger",
       "target_lexical_form": "start",
       "relationship_kind": "ENTAILMENT",
+      "source_part_of_speech": "VERB",
+      "target_part_of_speech": "VERB"
+    },
+    {
+      "source_lexical_form": "enclose",
+      "target_lexical_form": "contain",
+      "relationship_kind": "CAUSE",
+      "source_part_of_speech": "VERB",
+      "target_part_of_speech": "VERB"
+    },
+    {
+      "source_lexical_form": "lead",
+      "target_lexical_form": "precede",
+      "relationship_kind": "CAUSE",
+      "source_part_of_speech": "VERB",
+      "target_part_of_speech": "VERB"
+    },
+    {
+      "source_lexical_form": "rest",
+      "target_lexical_form": "stop",
+      "relationship_kind": "CAUSE",
       "source_part_of_speech": "VERB",
       "target_part_of_speech": "VERB"
     }
