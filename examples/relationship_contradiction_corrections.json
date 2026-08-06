@@ -1,0 +1,3903 @@
+[
+  {
+    "pair": [
+      [
+        "advice",
+        "NOUN",
+        null
+      ],
+      [
+        "suggestion",
+        "NOUN",
+        null
+      ]
+    ],
+    "families": [
+      "RELATED",
+      "SYNONYM"
+    ],
+    "edges": [
+      {
+        "source": [
+          "advice",
+          "NOUN",
+          null
+        ],
+        "kind": "SYNONYM",
+        "target": [
+          "suggestion",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "suggestion",
+          "NOUN",
+          null
+        ],
+        "kind": "SYNONYM",
+        "target": [
+          "advice",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "suggestion",
+          "NOUN",
+          null
+        ],
+        "kind": "RELATED",
+        "target": [
+          "advice",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "advice",
+          "NOUN",
+          null
+        ],
+        "kind": "RELATED",
+        "target": [
+          "suggestion",
+          "NOUN",
+          null
+        ]
+      }
+    ],
+    "recommended_action": "drop_related_keep_synonym",
+    "reasoning": "RELATED is this cache's documented lowest-priority kind (\"kept out of RELATED and reclassified where a better fit existed\", examples/README.md's Common semantic completion section) -- a more specific kind is already seeded for this pair, so the RELATED edge is redundant and should be removed.",
+    "confidence": "high",
+    "edges_to_remove": [
+      {
+        "source": [
+          "suggestion",
+          "NOUN",
+          null
+        ],
+        "kind": "RELATED",
+        "target": [
+          "advice",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "advice",
+          "NOUN",
+          null
+        ],
+        "kind": "RELATED",
+        "target": [
+          "suggestion",
+          "NOUN",
+          null
+        ]
+      }
+    ],
+    "edges_to_add": []
+  },
+  {
+    "pair": [
+      [
+        "answer",
+        "NOUN",
+        null
+      ],
+      [
+        "question",
+        "NOUN",
+        null
+      ]
+    ],
+    "families": [
+      "ANTONYM",
+      "RELATED"
+    ],
+    "edges": [
+      {
+        "source": [
+          "answer",
+          "NOUN",
+          null
+        ],
+        "kind": "RELATED",
+        "target": [
+          "question",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "question",
+          "NOUN",
+          null
+        ],
+        "kind": "RELATED",
+        "target": [
+          "answer",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "question",
+          "NOUN",
+          null
+        ],
+        "kind": "ANTONYM",
+        "target": [
+          "answer",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "answer",
+          "NOUN",
+          null
+        ],
+        "kind": "ANTONYM",
+        "target": [
+          "question",
+          "NOUN",
+          null
+        ]
+      }
+    ],
+    "recommended_action": "drop_related_keep_antonym",
+    "reasoning": "RELATED is this cache's documented lowest-priority kind (\"kept out of RELATED and reclassified where a better fit existed\", examples/README.md's Common semantic completion section) -- a more specific kind is already seeded for this pair, so the RELATED edge is redundant and should be removed.",
+    "confidence": "high",
+    "edges_to_remove": [
+      {
+        "source": [
+          "answer",
+          "NOUN",
+          null
+        ],
+        "kind": "RELATED",
+        "target": [
+          "question",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "question",
+          "NOUN",
+          null
+        ],
+        "kind": "RELATED",
+        "target": [
+          "answer",
+          "NOUN",
+          null
+        ]
+      }
+    ],
+    "edges_to_add": []
+  },
+  {
+    "pair": [
+      [
+        "antonym",
+        "NOUN",
+        null
+      ],
+      [
+        "synonym",
+        "NOUN",
+        null
+      ]
+    ],
+    "families": [
+      "ANTONYM",
+      "RELATED"
+    ],
+    "edges": [
+      {
+        "source": [
+          "antonym",
+          "NOUN",
+          null
+        ],
+        "kind": "RELATED",
+        "target": [
+          "synonym",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "synonym",
+          "NOUN",
+          null
+        ],
+        "kind": "RELATED",
+        "target": [
+          "antonym",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "synonym",
+          "NOUN",
+          null
+        ],
+        "kind": "ANTONYM",
+        "target": [
+          "antonym",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "antonym",
+          "NOUN",
+          null
+        ],
+        "kind": "ANTONYM",
+        "target": [
+          "synonym",
+          "NOUN",
+          null
+        ]
+      }
+    ],
+    "recommended_action": "drop_related_keep_antonym",
+    "reasoning": "RELATED is this cache's documented lowest-priority kind (\"kept out of RELATED and reclassified where a better fit existed\", examples/README.md's Common semantic completion section) -- a more specific kind is already seeded for this pair, so the RELATED edge is redundant and should be removed.",
+    "confidence": "high",
+    "edges_to_remove": [
+      {
+        "source": [
+          "antonym",
+          "NOUN",
+          null
+        ],
+        "kind": "RELATED",
+        "target": [
+          "synonym",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "synonym",
+          "NOUN",
+          null
+        ],
+        "kind": "RELATED",
+        "target": [
+          "antonym",
+          "NOUN",
+          null
+        ]
+      }
+    ],
+    "edges_to_add": []
+  },
+  {
+    "pair": [
+      [
+        "area",
+        "NOUN",
+        null
+      ],
+      [
+        "region",
+        "NOUN",
+        null
+      ]
+    ],
+    "families": [
+      "HYPERNYM_HYPONYM",
+      "SYNONYM"
+    ],
+    "edges": [
+      {
+        "source": [
+          "area",
+          "NOUN",
+          null
+        ],
+        "kind": "SYNONYM",
+        "target": [
+          "region",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "region",
+          "NOUN",
+          null
+        ],
+        "kind": "SYNONYM",
+        "target": [
+          "area",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "region",
+          "NOUN",
+          null
+        ],
+        "kind": "HYPERNYM",
+        "target": [
+          "area",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "area",
+          "NOUN",
+          null
+        ],
+        "kind": "HYPONYM",
+        "target": [
+          "region",
+          "NOUN",
+          null
+        ]
+      }
+    ],
+    "recommended_action": "keep_synonym_drop_hypernym",
+    "reasoning": "Both definitions mutually gloss each other as near-equivalents (\"area: A region or particular part...\"; \"region: An area, especially part of a country...\") rather than one clearly nesting inside the other -- genuine synonym pair, not a broader/narrower one.",
+    "confidence": "medium",
+    "edges_to_remove": [
+      {
+        "source": [
+          "region",
+          "NOUN",
+          null
+        ],
+        "kind": "HYPERNYM",
+        "target": [
+          "area",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "area",
+          "NOUN",
+          null
+        ],
+        "kind": "HYPONYM",
+        "target": [
+          "region",
+          "NOUN",
+          null
+        ]
+      }
+    ],
+    "edges_to_add": []
+  },
+  {
+    "pair": [
+      [
+        "attempt",
+        "NOUN",
+        null
+      ],
+      [
+        "effort",
+        "NOUN",
+        null
+      ]
+    ],
+    "families": [
+      "RELATED",
+      "SYNONYM"
+    ],
+    "edges": [
+      {
+        "source": [
+          "attempt",
+          "NOUN",
+          null
+        ],
+        "kind": "SYNONYM",
+        "target": [
+          "effort",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "effort",
+          "NOUN",
+          null
+        ],
+        "kind": "SYNONYM",
+        "target": [
+          "attempt",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "effort",
+          "NOUN",
+          null
+        ],
+        "kind": "RELATED",
+        "target": [
+          "attempt",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "attempt",
+          "NOUN",
+          null
+        ],
+        "kind": "RELATED",
+        "target": [
+          "effort",
+          "NOUN",
+          null
+        ]
+      }
+    ],
+    "recommended_action": "drop_related_keep_synonym",
+    "reasoning": "RELATED is this cache's documented lowest-priority kind (\"kept out of RELATED and reclassified where a better fit existed\", examples/README.md's Common semantic completion section) -- a more specific kind is already seeded for this pair, so the RELATED edge is redundant and should be removed.",
+    "confidence": "high",
+    "edges_to_remove": [
+      {
+        "source": [
+          "effort",
+          "NOUN",
+          null
+        ],
+        "kind": "RELATED",
+        "target": [
+          "attempt",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "attempt",
+          "NOUN",
+          null
+        ],
+        "kind": "RELATED",
+        "target": [
+          "effort",
+          "NOUN",
+          null
+        ]
+      }
+    ],
+    "edges_to_add": []
+  },
+  {
+    "pair": [
+      [
+        "clause",
+        "NOUN",
+        null
+      ],
+      [
+        "sentence",
+        "NOUN",
+        null
+      ]
+    ],
+    "families": [
+      "MERONYM_HOLONYM",
+      "RELATED"
+    ],
+    "edges": [
+      {
+        "source": [
+          "clause",
+          "NOUN",
+          null
+        ],
+        "kind": "MERONYM",
+        "target": [
+          "sentence",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "sentence",
+          "NOUN",
+          null
+        ],
+        "kind": "HOLONYM",
+        "target": [
+          "clause",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "sentence",
+          "NOUN",
+          null
+        ],
+        "kind": "RELATED",
+        "target": [
+          "clause",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "clause",
+          "NOUN",
+          null
+        ],
+        "kind": "RELATED",
+        "target": [
+          "sentence",
+          "NOUN",
+          null
+        ]
+      }
+    ],
+    "recommended_action": "drop_related_keep_meronym_holonym",
+    "reasoning": "RELATED is this cache's documented lowest-priority kind (\"kept out of RELATED and reclassified where a better fit existed\", examples/README.md's Common semantic completion section) -- a more specific kind is already seeded for this pair, so the RELATED edge is redundant and should be removed.",
+    "confidence": "high",
+    "edges_to_remove": [
+      {
+        "source": [
+          "sentence",
+          "NOUN",
+          null
+        ],
+        "kind": "RELATED",
+        "target": [
+          "clause",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "clause",
+          "NOUN",
+          null
+        ],
+        "kind": "RELATED",
+        "target": [
+          "sentence",
+          "NOUN",
+          null
+        ]
+      }
+    ],
+    "edges_to_add": []
+  },
+  {
+    "pair": [
+      [
+        "command",
+        "NOUN",
+        null
+      ],
+      [
+        "instruction",
+        "NOUN",
+        null
+      ]
+    ],
+    "families": [
+      "HYPERNYM_HYPONYM",
+      "SYNONYM"
+    ],
+    "edges": [
+      {
+        "source": [
+          "command",
+          "NOUN",
+          null
+        ],
+        "kind": "HYPERNYM",
+        "target": [
+          "instruction",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "instruction",
+          "NOUN",
+          null
+        ],
+        "kind": "HYPONYM",
+        "target": [
+          "command",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "instruction",
+          "NOUN",
+          null
+        ],
+        "kind": "SYNONYM",
+        "target": [
+          "command",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "command",
+          "NOUN",
+          null
+        ],
+        "kind": "SYNONYM",
+        "target": [
+          "instruction",
+          "NOUN",
+          null
+        ]
+      }
+    ],
+    "recommended_action": "keep_hypernym_drop_synonym",
+    "reasoning": "command's own definition is \"An authoritative INSTRUCTION to do something\" -- command is a specific (authoritative) kind of instruction, matching the stored command->HYPERNYM->instruction direction.",
+    "confidence": "high",
+    "edges_to_remove": [
+      {
+        "source": [
+          "instruction",
+          "NOUN",
+          null
+        ],
+        "kind": "SYNONYM",
+        "target": [
+          "command",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "command",
+          "NOUN",
+          null
+        ],
+        "kind": "SYNONYM",
+        "target": [
+          "instruction",
+          "NOUN",
+          null
+        ]
+      }
+    ],
+    "edges_to_add": []
+  },
+  {
+    "pair": [
+      [
+        "communication",
+        "NOUN",
+        null
+      ],
+      [
+        "speech",
+        "NOUN",
+        null
+      ]
+    ],
+    "families": [
+      "HYPERNYM_HYPONYM",
+      "RELATED"
+    ],
+    "edges": [
+      {
+        "source": [
+          "communication",
+          "NOUN",
+          null
+        ],
+        "kind": "RELATED",
+        "target": [
+          "speech",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "speech",
+          "NOUN",
+          null
+        ],
+        "kind": "RELATED",
+        "target": [
+          "communication",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "speech",
+          "NOUN",
+          null
+        ],
+        "kind": "HYPERNYM",
+        "target": [
+          "communication",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "communication",
+          "NOUN",
+          null
+        ],
+        "kind": "HYPONYM",
+        "target": [
+          "speech",
+          "NOUN",
+          null
+        ]
+      }
+    ],
+    "recommended_action": "keep_hypernym_drop_related",
+    "reasoning": "RELATED is this cache's documented lowest-priority kind (\"kept out of RELATED and reclassified where a better fit existed\", examples/README.md's Common semantic completion section) -- a more specific kind is already seeded for this pair, so the RELATED edge is redundant and should be removed. (speech->HYPERNYM->communication is well-supported: speech is a specific mode of communication.)",
+    "confidence": "high",
+    "edges_to_remove": [
+      {
+        "source": [
+          "communication",
+          "NOUN",
+          null
+        ],
+        "kind": "RELATED",
+        "target": [
+          "speech",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "speech",
+          "NOUN",
+          null
+        ],
+        "kind": "RELATED",
+        "target": [
+          "communication",
+          "NOUN",
+          null
+        ]
+      }
+    ],
+    "edges_to_add": []
+  },
+  {
+    "pair": [
+      [
+        "difficulty",
+        "NOUN",
+        null
+      ],
+      [
+        "problem",
+        "NOUN",
+        null
+      ]
+    ],
+    "families": [
+      "RELATED",
+      "SYNONYM"
+    ],
+    "edges": [
+      {
+        "source": [
+          "difficulty",
+          "NOUN",
+          null
+        ],
+        "kind": "SYNONYM",
+        "target": [
+          "problem",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "problem",
+          "NOUN",
+          null
+        ],
+        "kind": "SYNONYM",
+        "target": [
+          "difficulty",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "problem",
+          "NOUN",
+          null
+        ],
+        "kind": "RELATED",
+        "target": [
+          "difficulty",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "difficulty",
+          "NOUN",
+          null
+        ],
+        "kind": "RELATED",
+        "target": [
+          "problem",
+          "NOUN",
+          null
+        ]
+      }
+    ],
+    "recommended_action": "drop_related_keep_synonym",
+    "reasoning": "RELATED is this cache's documented lowest-priority kind (\"kept out of RELATED and reclassified where a better fit existed\", examples/README.md's Common semantic completion section) -- a more specific kind is already seeded for this pair, so the RELATED edge is redundant and should be removed.",
+    "confidence": "high",
+    "edges_to_remove": [
+      {
+        "source": [
+          "problem",
+          "NOUN",
+          null
+        ],
+        "kind": "RELATED",
+        "target": [
+          "difficulty",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "difficulty",
+          "NOUN",
+          null
+        ],
+        "kind": "RELATED",
+        "target": [
+          "problem",
+          "NOUN",
+          null
+        ]
+      }
+    ],
+    "edges_to_add": []
+  },
+  {
+    "pair": [
+      [
+        "domain",
+        "NOUN",
+        null
+      ],
+      [
+        "field",
+        "NOUN",
+        null
+      ]
+    ],
+    "families": [
+      "RELATED",
+      "SYNONYM"
+    ],
+    "edges": [
+      {
+        "source": [
+          "domain",
+          "NOUN",
+          null
+        ],
+        "kind": "RELATED",
+        "target": [
+          "field",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "field",
+          "NOUN",
+          null
+        ],
+        "kind": "RELATED",
+        "target": [
+          "domain",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "field",
+          "NOUN",
+          null
+        ],
+        "kind": "SYNONYM",
+        "target": [
+          "domain",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "domain",
+          "NOUN",
+          null
+        ],
+        "kind": "SYNONYM",
+        "target": [
+          "field",
+          "NOUN",
+          null
+        ]
+      }
+    ],
+    "recommended_action": "drop_related_keep_synonym",
+    "reasoning": "RELATED is this cache's documented lowest-priority kind (\"kept out of RELATED and reclassified where a better fit existed\", examples/README.md's Common semantic completion section) -- a more specific kind is already seeded for this pair, so the RELATED edge is redundant and should be removed.",
+    "confidence": "high",
+    "edges_to_remove": [
+      {
+        "source": [
+          "domain",
+          "NOUN",
+          null
+        ],
+        "kind": "RELATED",
+        "target": [
+          "field",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "field",
+          "NOUN",
+          null
+        ],
+        "kind": "RELATED",
+        "target": [
+          "domain",
+          "NOUN",
+          null
+        ]
+      }
+    ],
+    "edges_to_add": []
+  },
+  {
+    "pair": [
+      [
+        "duration",
+        "NOUN",
+        null
+      ],
+      [
+        "period",
+        "NOUN",
+        null
+      ]
+    ],
+    "families": [
+      "RELATED",
+      "SYNONYM"
+    ],
+    "edges": [
+      {
+        "source": [
+          "duration",
+          "NOUN",
+          null
+        ],
+        "kind": "RELATED",
+        "target": [
+          "period",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "period",
+          "NOUN",
+          null
+        ],
+        "kind": "RELATED",
+        "target": [
+          "duration",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "period",
+          "NOUN",
+          null
+        ],
+        "kind": "SYNONYM",
+        "target": [
+          "duration",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "duration",
+          "NOUN",
+          null
+        ],
+        "kind": "SYNONYM",
+        "target": [
+          "period",
+          "NOUN",
+          null
+        ]
+      }
+    ],
+    "recommended_action": "drop_related_keep_synonym",
+    "reasoning": "RELATED is this cache's documented lowest-priority kind (\"kept out of RELATED and reclassified where a better fit existed\", examples/README.md's Common semantic completion section) -- a more specific kind is already seeded for this pair, so the RELATED edge is redundant and should be removed.",
+    "confidence": "high",
+    "edges_to_remove": [
+      {
+        "source": [
+          "duration",
+          "NOUN",
+          null
+        ],
+        "kind": "RELATED",
+        "target": [
+          "period",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "period",
+          "NOUN",
+          null
+        ],
+        "kind": "RELATED",
+        "target": [
+          "duration",
+          "NOUN",
+          null
+        ]
+      }
+    ],
+    "edges_to_add": []
+  },
+  {
+    "pair": [
+      [
+        "entity",
+        "NOUN",
+        null
+      ],
+      [
+        "thing",
+        "NOUN",
+        null
+      ]
+    ],
+    "families": [
+      "HYPERNYM_HYPONYM",
+      "SYNONYM"
+    ],
+    "edges": [
+      {
+        "source": [
+          "entity",
+          "NOUN",
+          null
+        ],
+        "kind": "SYNONYM",
+        "target": [
+          "thing",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "thing",
+          "NOUN",
+          null
+        ],
+        "kind": "SYNONYM",
+        "target": [
+          "entity",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "thing",
+          "NOUN",
+          null
+        ],
+        "kind": "HYPERNYM",
+        "target": [
+          "entity",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "entity",
+          "NOUN",
+          null
+        ],
+        "kind": "HYPONYM",
+        "target": [
+          "thing",
+          "NOUN",
+          null
+        ]
+      }
+    ],
+    "recommended_action": "keep_hypernym_drop_synonym",
+    "reasoning": "thing's own definition is \"An ENTITY that is not a person\" -- thing is entity minus the person case, narrower; matches the stored thing->HYPERNYM->entity direction.",
+    "confidence": "high",
+    "edges_to_remove": [
+      {
+        "source": [
+          "entity",
+          "NOUN",
+          null
+        ],
+        "kind": "SYNONYM",
+        "target": [
+          "thing",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "thing",
+          "NOUN",
+          null
+        ],
+        "kind": "SYNONYM",
+        "target": [
+          "entity",
+          "NOUN",
+          null
+        ]
+      }
+    ],
+    "edges_to_add": []
+  },
+  {
+    "pair": [
+      [
+        "event",
+        "NOUN",
+        null
+      ],
+      [
+        "incident",
+        "NOUN",
+        null
+      ]
+    ],
+    "families": [
+      "HYPERNYM_HYPONYM",
+      "SYNONYM"
+    ],
+    "edges": [
+      {
+        "source": [
+          "event",
+          "NOUN",
+          null
+        ],
+        "kind": "SYNONYM",
+        "target": [
+          "incident",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "incident",
+          "NOUN",
+          null
+        ],
+        "kind": "SYNONYM",
+        "target": [
+          "event",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "incident",
+          "NOUN",
+          null
+        ],
+        "kind": "HYPERNYM",
+        "target": [
+          "event",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "event",
+          "NOUN",
+          null
+        ],
+        "kind": "HYPONYM",
+        "target": [
+          "incident",
+          "NOUN",
+          null
+        ]
+      }
+    ],
+    "recommended_action": "keep_hypernym_drop_synonym",
+    "reasoning": "incident's own definition is \"An individual EVENT... especially one that is unusual/noteworthy/unpleasant\" -- incident is a specific kind of event, matching the stored incident->HYPERNYM->event direction.",
+    "confidence": "high",
+    "edges_to_remove": [
+      {
+        "source": [
+          "event",
+          "NOUN",
+          null
+        ],
+        "kind": "SYNONYM",
+        "target": [
+          "incident",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "incident",
+          "NOUN",
+          null
+        ],
+        "kind": "SYNONYM",
+        "target": [
+          "event",
+          "NOUN",
+          null
+        ]
+      }
+    ],
+    "edges_to_add": []
+  },
+  {
+    "pair": [
+      [
+        "experiment",
+        "NOUN",
+        null
+      ],
+      [
+        "test",
+        "NOUN",
+        null
+      ]
+    ],
+    "families": [
+      "RELATED",
+      "SYNONYM"
+    ],
+    "edges": [
+      {
+        "source": [
+          "experiment",
+          "NOUN",
+          null
+        ],
+        "kind": "SYNONYM",
+        "target": [
+          "test",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "test",
+          "NOUN",
+          null
+        ],
+        "kind": "SYNONYM",
+        "target": [
+          "experiment",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "test",
+          "NOUN",
+          null
+        ],
+        "kind": "RELATED",
+        "target": [
+          "experiment",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "experiment",
+          "NOUN",
+          null
+        ],
+        "kind": "RELATED",
+        "target": [
+          "test",
+          "NOUN",
+          null
+        ]
+      }
+    ],
+    "recommended_action": "drop_related_keep_synonym",
+    "reasoning": "RELATED is this cache's documented lowest-priority kind (\"kept out of RELATED and reclassified where a better fit existed\", examples/README.md's Common semantic completion section) -- a more specific kind is already seeded for this pair, so the RELATED edge is redundant and should be removed.",
+    "confidence": "high",
+    "edges_to_remove": [
+      {
+        "source": [
+          "test",
+          "NOUN",
+          null
+        ],
+        "kind": "RELATED",
+        "target": [
+          "experiment",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "experiment",
+          "NOUN",
+          null
+        ],
+        "kind": "RELATED",
+        "target": [
+          "test",
+          "NOUN",
+          null
+        ]
+      }
+    ],
+    "edges_to_add": []
+  },
+  {
+    "pair": [
+      [
+        "explanation",
+        "NOUN",
+        null
+      ],
+      [
+        "reason",
+        "NOUN",
+        null
+      ]
+    ],
+    "families": [
+      "RELATED",
+      "SYNONYM"
+    ],
+    "edges": [
+      {
+        "source": [
+          "explanation",
+          "NOUN",
+          null
+        ],
+        "kind": "RELATED",
+        "target": [
+          "reason",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "reason",
+          "NOUN",
+          null
+        ],
+        "kind": "RELATED",
+        "target": [
+          "explanation",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "reason",
+          "NOUN",
+          null
+        ],
+        "kind": "SYNONYM",
+        "target": [
+          "explanation",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "explanation",
+          "NOUN",
+          null
+        ],
+        "kind": "SYNONYM",
+        "target": [
+          "reason",
+          "NOUN",
+          null
+        ]
+      }
+    ],
+    "recommended_action": "drop_related_keep_synonym",
+    "reasoning": "RELATED is this cache's documented lowest-priority kind (\"kept out of RELATED and reclassified where a better fit existed\", examples/README.md's Common semantic completion section) -- a more specific kind is already seeded for this pair, so the RELATED edge is redundant and should be removed.",
+    "confidence": "high",
+    "edges_to_remove": [
+      {
+        "source": [
+          "explanation",
+          "NOUN",
+          null
+        ],
+        "kind": "RELATED",
+        "target": [
+          "reason",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "reason",
+          "NOUN",
+          null
+        ],
+        "kind": "RELATED",
+        "target": [
+          "explanation",
+          "NOUN",
+          null
+        ]
+      }
+    ],
+    "edges_to_add": []
+  },
+  {
+    "pair": [
+      [
+        "frequency",
+        "NOUN",
+        null
+      ],
+      [
+        "rate",
+        "NOUN",
+        null
+      ]
+    ],
+    "families": [
+      "RELATED",
+      "SYNONYM"
+    ],
+    "edges": [
+      {
+        "source": [
+          "frequency",
+          "NOUN",
+          null
+        ],
+        "kind": "SYNONYM",
+        "target": [
+          "rate",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "rate",
+          "NOUN",
+          null
+        ],
+        "kind": "SYNONYM",
+        "target": [
+          "frequency",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "rate",
+          "NOUN",
+          null
+        ],
+        "kind": "RELATED",
+        "target": [
+          "frequency",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "frequency",
+          "NOUN",
+          null
+        ],
+        "kind": "RELATED",
+        "target": [
+          "rate",
+          "NOUN",
+          null
+        ]
+      }
+    ],
+    "recommended_action": "drop_related_keep_synonym",
+    "reasoning": "RELATED is this cache's documented lowest-priority kind (\"kept out of RELATED and reclassified where a better fit existed\", examples/README.md's Common semantic completion section) -- a more specific kind is already seeded for this pair, so the RELATED edge is redundant and should be removed.",
+    "confidence": "high",
+    "edges_to_remove": [
+      {
+        "source": [
+          "rate",
+          "NOUN",
+          null
+        ],
+        "kind": "RELATED",
+        "target": [
+          "frequency",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "frequency",
+          "NOUN",
+          null
+        ],
+        "kind": "RELATED",
+        "target": [
+          "rate",
+          "NOUN",
+          null
+        ]
+      }
+    ],
+    "edges_to_add": []
+  },
+  {
+    "pair": [
+      [
+        "identifier",
+        "NOUN",
+        null
+      ],
+      [
+        "name",
+        "NOUN",
+        null
+      ]
+    ],
+    "families": [
+      "RELATED",
+      "SYNONYM"
+    ],
+    "edges": [
+      {
+        "source": [
+          "identifier",
+          "NOUN",
+          null
+        ],
+        "kind": "RELATED",
+        "target": [
+          "name",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "name",
+          "NOUN",
+          null
+        ],
+        "kind": "RELATED",
+        "target": [
+          "identifier",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "name",
+          "NOUN",
+          null
+        ],
+        "kind": "SYNONYM",
+        "target": [
+          "identifier",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "identifier",
+          "NOUN",
+          null
+        ],
+        "kind": "SYNONYM",
+        "target": [
+          "name",
+          "NOUN",
+          null
+        ]
+      }
+    ],
+    "recommended_action": "drop_related_keep_synonym",
+    "reasoning": "RELATED is this cache's documented lowest-priority kind (\"kept out of RELATED and reclassified where a better fit existed\", examples/README.md's Common semantic completion section) -- a more specific kind is already seeded for this pair, so the RELATED edge is redundant and should be removed.",
+    "confidence": "high",
+    "edges_to_remove": [
+      {
+        "source": [
+          "identifier",
+          "NOUN",
+          null
+        ],
+        "kind": "RELATED",
+        "target": [
+          "name",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "name",
+          "NOUN",
+          null
+        ],
+        "kind": "RELATED",
+        "target": [
+          "identifier",
+          "NOUN",
+          null
+        ]
+      }
+    ],
+    "edges_to_add": []
+  },
+  {
+    "pair": [
+      [
+        "justification",
+        "NOUN",
+        null
+      ],
+      [
+        "reason",
+        "NOUN",
+        null
+      ]
+    ],
+    "families": [
+      "RELATED",
+      "SYNONYM"
+    ],
+    "edges": [
+      {
+        "source": [
+          "justification",
+          "NOUN",
+          null
+        ],
+        "kind": "RELATED",
+        "target": [
+          "reason",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "reason",
+          "NOUN",
+          null
+        ],
+        "kind": "RELATED",
+        "target": [
+          "justification",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "reason",
+          "NOUN",
+          null
+        ],
+        "kind": "SYNONYM",
+        "target": [
+          "justification",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "justification",
+          "NOUN",
+          null
+        ],
+        "kind": "SYNONYM",
+        "target": [
+          "reason",
+          "NOUN",
+          null
+        ]
+      }
+    ],
+    "recommended_action": "drop_related_keep_synonym",
+    "reasoning": "RELATED is this cache's documented lowest-priority kind (\"kept out of RELATED and reclassified where a better fit existed\", examples/README.md's Common semantic completion section) -- a more specific kind is already seeded for this pair, so the RELATED edge is redundant and should be removed.",
+    "confidence": "high",
+    "edges_to_remove": [
+      {
+        "source": [
+          "justification",
+          "NOUN",
+          null
+        ],
+        "kind": "RELATED",
+        "target": [
+          "reason",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "reason",
+          "NOUN",
+          null
+        ],
+        "kind": "RELATED",
+        "target": [
+          "justification",
+          "NOUN",
+          null
+        ]
+      }
+    ],
+    "edges_to_add": []
+  },
+  {
+    "pair": [
+      [
+        "limit",
+        "NOUN",
+        null
+      ],
+      [
+        "restriction",
+        "NOUN",
+        null
+      ]
+    ],
+    "families": [
+      "RELATED",
+      "SYNONYM"
+    ],
+    "edges": [
+      {
+        "source": [
+          "limit",
+          "NOUN",
+          null
+        ],
+        "kind": "RELATED",
+        "target": [
+          "restriction",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "restriction",
+          "NOUN",
+          null
+        ],
+        "kind": "RELATED",
+        "target": [
+          "limit",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "restriction",
+          "NOUN",
+          null
+        ],
+        "kind": "SYNONYM",
+        "target": [
+          "limit",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "limit",
+          "NOUN",
+          null
+        ],
+        "kind": "SYNONYM",
+        "target": [
+          "restriction",
+          "NOUN",
+          null
+        ]
+      }
+    ],
+    "recommended_action": "drop_related_keep_synonym",
+    "reasoning": "RELATED is this cache's documented lowest-priority kind (\"kept out of RELATED and reclassified where a better fit existed\", examples/README.md's Common semantic completion section) -- a more specific kind is already seeded for this pair, so the RELATED edge is redundant and should be removed.",
+    "confidence": "high",
+    "edges_to_remove": [
+      {
+        "source": [
+          "limit",
+          "NOUN",
+          null
+        ],
+        "kind": "RELATED",
+        "target": [
+          "restriction",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "restriction",
+          "NOUN",
+          null
+        ],
+        "kind": "RELATED",
+        "target": [
+          "limit",
+          "NOUN",
+          null
+        ]
+      }
+    ],
+    "edges_to_add": []
+  },
+  {
+    "pair": [
+      [
+        "manner",
+        "NOUN",
+        null
+      ],
+      [
+        "style",
+        "NOUN",
+        null
+      ]
+    ],
+    "families": [
+      "RELATED",
+      "SYNONYM"
+    ],
+    "edges": [
+      {
+        "source": [
+          "manner",
+          "NOUN",
+          null
+        ],
+        "kind": "RELATED",
+        "target": [
+          "style",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "style",
+          "NOUN",
+          null
+        ],
+        "kind": "RELATED",
+        "target": [
+          "manner",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "style",
+          "NOUN",
+          null
+        ],
+        "kind": "SYNONYM",
+        "target": [
+          "manner",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "manner",
+          "NOUN",
+          null
+        ],
+        "kind": "SYNONYM",
+        "target": [
+          "style",
+          "NOUN",
+          null
+        ]
+      }
+    ],
+    "recommended_action": "drop_related_keep_synonym",
+    "reasoning": "RELATED is this cache's documented lowest-priority kind (\"kept out of RELATED and reclassified where a better fit existed\", examples/README.md's Common semantic completion section) -- a more specific kind is already seeded for this pair, so the RELATED edge is redundant and should be removed.",
+    "confidence": "high",
+    "edges_to_remove": [
+      {
+        "source": [
+          "manner",
+          "NOUN",
+          null
+        ],
+        "kind": "RELATED",
+        "target": [
+          "style",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "style",
+          "NOUN",
+          null
+        ],
+        "kind": "RELATED",
+        "target": [
+          "manner",
+          "NOUN",
+          null
+        ]
+      }
+    ],
+    "edges_to_add": []
+  },
+  {
+    "pair": [
+      [
+        "mark",
+        "NOUN",
+        null
+      ],
+      [
+        "symbol",
+        "NOUN",
+        null
+      ]
+    ],
+    "families": [
+      "RELATED",
+      "SYNONYM"
+    ],
+    "edges": [
+      {
+        "source": [
+          "mark",
+          "NOUN",
+          null
+        ],
+        "kind": "RELATED",
+        "target": [
+          "symbol",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "symbol",
+          "NOUN",
+          null
+        ],
+        "kind": "RELATED",
+        "target": [
+          "mark",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "symbol",
+          "NOUN",
+          null
+        ],
+        "kind": "SYNONYM",
+        "target": [
+          "mark",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "mark",
+          "NOUN",
+          null
+        ],
+        "kind": "SYNONYM",
+        "target": [
+          "symbol",
+          "NOUN",
+          null
+        ]
+      }
+    ],
+    "recommended_action": "drop_related_keep_synonym",
+    "reasoning": "RELATED is this cache's documented lowest-priority kind (\"kept out of RELATED and reclassified where a better fit existed\", examples/README.md's Common semantic completion section) -- a more specific kind is already seeded for this pair, so the RELATED edge is redundant and should be removed.",
+    "confidence": "high",
+    "edges_to_remove": [
+      {
+        "source": [
+          "mark",
+          "NOUN",
+          null
+        ],
+        "kind": "RELATED",
+        "target": [
+          "symbol",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "symbol",
+          "NOUN",
+          null
+        ],
+        "kind": "RELATED",
+        "target": [
+          "mark",
+          "NOUN",
+          null
+        ]
+      }
+    ],
+    "edges_to_add": []
+  },
+  {
+    "pair": [
+      [
+        "method",
+        "NOUN",
+        null
+      ],
+      [
+        "procedure",
+        "NOUN",
+        null
+      ]
+    ],
+    "families": [
+      "HYPERNYM_HYPONYM",
+      "SYNONYM"
+    ],
+    "edges": [
+      {
+        "source": [
+          "method",
+          "NOUN",
+          null
+        ],
+        "kind": "SYNONYM",
+        "target": [
+          "procedure",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "procedure",
+          "NOUN",
+          null
+        ],
+        "kind": "SYNONYM",
+        "target": [
+          "method",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "procedure",
+          "NOUN",
+          null
+        ],
+        "kind": "HYPERNYM",
+        "target": [
+          "method",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "method",
+          "NOUN",
+          null
+        ],
+        "kind": "HYPONYM",
+        "target": [
+          "procedure",
+          "NOUN",
+          null
+        ]
+      }
+    ],
+    "recommended_action": "fix_direction_drop_synonym",
+    "reasoning": "DIRECTION ERROR, not just a redundant edge: method's own definition is \"A particular PROCEDURE or way of doing something\" -- method is the narrower/specific term and procedure the broader one, but the cache currently stores it backwards (procedure->HYPERNYM->method, i.e. procedure isA method). Should be method->HYPERNYM->procedure / procedure->HYPONYM->method.",
+    "confidence": "high",
+    "edges_to_remove": [
+      {
+        "source": [
+          "method",
+          "NOUN",
+          null
+        ],
+        "kind": "SYNONYM",
+        "target": [
+          "procedure",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "procedure",
+          "NOUN",
+          null
+        ],
+        "kind": "SYNONYM",
+        "target": [
+          "method",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "procedure",
+          "NOUN",
+          null
+        ],
+        "kind": "HYPERNYM",
+        "target": [
+          "method",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "method",
+          "NOUN",
+          null
+        ],
+        "kind": "HYPONYM",
+        "target": [
+          "procedure",
+          "NOUN",
+          null
+        ]
+      }
+    ],
+    "edges_to_add": [
+      {
+        "source": [
+          "method",
+          "NOUN",
+          null
+        ],
+        "kind": "HYPERNYM",
+        "target": [
+          "procedure",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "procedure",
+          "NOUN",
+          null
+        ],
+        "kind": "HYPONYM",
+        "target": [
+          "method",
+          "NOUN",
+          null
+        ]
+      }
+    ]
+  },
+  {
+    "pair": [
+      [
+        "mind",
+        "NOUN",
+        null
+      ],
+      [
+        "spirit",
+        "NOUN",
+        null
+      ]
+    ],
+    "families": [
+      "RELATED",
+      "SYNONYM"
+    ],
+    "edges": [
+      {
+        "source": [
+          "mind",
+          "NOUN",
+          null
+        ],
+        "kind": "SYNONYM",
+        "target": [
+          "spirit",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "spirit",
+          "NOUN",
+          null
+        ],
+        "kind": "SYNONYM",
+        "target": [
+          "mind",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "spirit",
+          "NOUN",
+          null
+        ],
+        "kind": "RELATED",
+        "target": [
+          "mind",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "mind",
+          "NOUN",
+          null
+        ],
+        "kind": "RELATED",
+        "target": [
+          "spirit",
+          "NOUN",
+          null
+        ]
+      }
+    ],
+    "recommended_action": "drop_related_keep_synonym",
+    "reasoning": "RELATED is this cache's documented lowest-priority kind (\"kept out of RELATED and reclassified where a better fit existed\", examples/README.md's Common semantic completion section) -- a more specific kind is already seeded for this pair, so the RELATED edge is redundant and should be removed.",
+    "confidence": "high",
+    "edges_to_remove": [
+      {
+        "source": [
+          "spirit",
+          "NOUN",
+          null
+        ],
+        "kind": "RELATED",
+        "target": [
+          "mind",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "mind",
+          "NOUN",
+          null
+        ],
+        "kind": "RELATED",
+        "target": [
+          "spirit",
+          "NOUN",
+          null
+        ]
+      }
+    ],
+    "edges_to_add": []
+  },
+  {
+    "pair": [
+      [
+        "network",
+        "NOUN",
+        null
+      ],
+      [
+        "system",
+        "NOUN",
+        null
+      ]
+    ],
+    "families": [
+      "HYPERNYM_HYPONYM",
+      "SYNONYM"
+    ],
+    "edges": [
+      {
+        "source": [
+          "network",
+          "NOUN",
+          null
+        ],
+        "kind": "HYPERNYM",
+        "target": [
+          "system",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "system",
+          "NOUN",
+          null
+        ],
+        "kind": "HYPONYM",
+        "target": [
+          "network",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "system",
+          "NOUN",
+          null
+        ],
+        "kind": "SYNONYM",
+        "target": [
+          "network",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "network",
+          "NOUN",
+          null
+        ],
+        "kind": "SYNONYM",
+        "target": [
+          "system",
+          "NOUN",
+          null
+        ]
+      }
+    ],
+    "recommended_action": "keep_hypernym_drop_synonym",
+    "reasoning": "network's own definition is \"A group or SYSTEM of interconnected people, things, or parts\" -- network is a specific kind of system, matching the stored network->HYPERNYM->system direction.",
+    "confidence": "medium",
+    "edges_to_remove": [
+      {
+        "source": [
+          "system",
+          "NOUN",
+          null
+        ],
+        "kind": "SYNONYM",
+        "target": [
+          "network",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "network",
+          "NOUN",
+          null
+        ],
+        "kind": "SYNONYM",
+        "target": [
+          "system",
+          "NOUN",
+          null
+        ]
+      }
+    ],
+    "edges_to_add": []
+  },
+  {
+    "pair": [
+      [
+        "part",
+        "NOUN",
+        null
+      ],
+      [
+        "segment",
+        "NOUN",
+        null
+      ]
+    ],
+    "families": [
+      "HYPERNYM_HYPONYM",
+      "SYNONYM"
+    ],
+    "edges": [
+      {
+        "source": [
+          "part",
+          "NOUN",
+          null
+        ],
+        "kind": "SYNONYM",
+        "target": [
+          "segment",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "segment",
+          "NOUN",
+          null
+        ],
+        "kind": "SYNONYM",
+        "target": [
+          "part",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "segment",
+          "NOUN",
+          null
+        ],
+        "kind": "HYPERNYM",
+        "target": [
+          "part",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "part",
+          "NOUN",
+          null
+        ],
+        "kind": "HYPONYM",
+        "target": [
+          "segment",
+          "NOUN",
+          null
+        ]
+      }
+    ],
+    "recommended_action": "keep_hypernym_drop_synonym",
+    "reasoning": "segment's own definition is \"A PART into which something is... divided\" -- segment is a specific kind of part, matching the stored segment->HYPERNYM->part direction, and consistent with this cache's existing part hypernym siblings (rest, share, subdivision, head).",
+    "confidence": "high",
+    "edges_to_remove": [
+      {
+        "source": [
+          "part",
+          "NOUN",
+          null
+        ],
+        "kind": "SYNONYM",
+        "target": [
+          "segment",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "segment",
+          "NOUN",
+          null
+        ],
+        "kind": "SYNONYM",
+        "target": [
+          "part",
+          "NOUN",
+          null
+        ]
+      }
+    ],
+    "edges_to_add": []
+  },
+  {
+    "pair": [
+      [
+        "percent",
+        "NOUN",
+        null
+      ],
+      [
+        "proportion",
+        "NOUN",
+        null
+      ]
+    ],
+    "families": [
+      "HYPERNYM_HYPONYM",
+      "RELATED"
+    ],
+    "edges": [
+      {
+        "source": [
+          "percent",
+          "NOUN",
+          null
+        ],
+        "kind": "HYPERNYM",
+        "target": [
+          "proportion",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "proportion",
+          "NOUN",
+          null
+        ],
+        "kind": "HYPONYM",
+        "target": [
+          "percent",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "proportion",
+          "NOUN",
+          null
+        ],
+        "kind": "RELATED",
+        "target": [
+          "percent",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "percent",
+          "NOUN",
+          null
+        ],
+        "kind": "RELATED",
+        "target": [
+          "proportion",
+          "NOUN",
+          null
+        ]
+      }
+    ],
+    "recommended_action": "drop_related_keep_hypernym_hyponym",
+    "reasoning": "RELATED is this cache's documented lowest-priority kind (\"kept out of RELATED and reclassified where a better fit existed\", examples/README.md's Common semantic completion section) -- a more specific kind is already seeded for this pair, so the RELATED edge is redundant and should be removed.",
+    "confidence": "high",
+    "edges_to_remove": [
+      {
+        "source": [
+          "proportion",
+          "NOUN",
+          null
+        ],
+        "kind": "RELATED",
+        "target": [
+          "percent",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "percent",
+          "NOUN",
+          null
+        ],
+        "kind": "RELATED",
+        "target": [
+          "proportion",
+          "NOUN",
+          null
+        ]
+      }
+    ],
+    "edges_to_add": []
+  },
+  {
+    "pair": [
+      [
+        "person",
+        "NOUN",
+        null
+      ],
+      [
+        "speaker",
+        "NOUN",
+        null
+      ]
+    ],
+    "families": [
+      "HYPERNYM_HYPONYM",
+      "RELATED"
+    ],
+    "edges": [
+      {
+        "source": [
+          "person",
+          "NOUN",
+          null
+        ],
+        "kind": "RELATED",
+        "target": [
+          "speaker",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "speaker",
+          "NOUN",
+          null
+        ],
+        "kind": "RELATED",
+        "target": [
+          "person",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "speaker",
+          "NOUN",
+          null
+        ],
+        "kind": "HYPERNYM",
+        "target": [
+          "person",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "person",
+          "NOUN",
+          null
+        ],
+        "kind": "HYPONYM",
+        "target": [
+          "speaker",
+          "NOUN",
+          null
+        ]
+      }
+    ],
+    "recommended_action": "drop_related_keep_hypernym_hyponym",
+    "reasoning": "RELATED is this cache's documented lowest-priority kind (\"kept out of RELATED and reclassified where a better fit existed\", examples/README.md's Common semantic completion section) -- a more specific kind is already seeded for this pair, so the RELATED edge is redundant and should be removed.",
+    "confidence": "high",
+    "edges_to_remove": [
+      {
+        "source": [
+          "person",
+          "NOUN",
+          null
+        ],
+        "kind": "RELATED",
+        "target": [
+          "speaker",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "speaker",
+          "NOUN",
+          null
+        ],
+        "kind": "RELATED",
+        "target": [
+          "person",
+          "NOUN",
+          null
+        ]
+      }
+    ],
+    "edges_to_add": []
+  },
+  {
+    "pair": [
+      [
+        "possession",
+        "NOUN",
+        null
+      ],
+      [
+        "property",
+        "NOUN",
+        null
+      ]
+    ],
+    "families": [
+      "RELATED",
+      "SYNONYM"
+    ],
+    "edges": [
+      {
+        "source": [
+          "possession",
+          "NOUN",
+          null
+        ],
+        "kind": "SYNONYM",
+        "target": [
+          "property",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "property",
+          "NOUN",
+          null
+        ],
+        "kind": "SYNONYM",
+        "target": [
+          "possession",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "property",
+          "NOUN",
+          null
+        ],
+        "kind": "RELATED",
+        "target": [
+          "possession",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "possession",
+          "NOUN",
+          null
+        ],
+        "kind": "RELATED",
+        "target": [
+          "property",
+          "NOUN",
+          null
+        ]
+      }
+    ],
+    "recommended_action": "drop_related_keep_synonym",
+    "reasoning": "RELATED is this cache's documented lowest-priority kind (\"kept out of RELATED and reclassified where a better fit existed\", examples/README.md's Common semantic completion section) -- a more specific kind is already seeded for this pair, so the RELATED edge is redundant and should be removed.",
+    "confidence": "high",
+    "edges_to_remove": [
+      {
+        "source": [
+          "property",
+          "NOUN",
+          null
+        ],
+        "kind": "RELATED",
+        "target": [
+          "possession",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "possession",
+          "NOUN",
+          null
+        ],
+        "kind": "RELATED",
+        "target": [
+          "property",
+          "NOUN",
+          null
+        ]
+      }
+    ],
+    "edges_to_add": []
+  },
+  {
+    "pair": [
+      [
+        "pound",
+        "NOUN",
+        null
+      ],
+      [
+        "sterling",
+        "NOUN",
+        null
+      ]
+    ],
+    "families": [
+      "RELATED",
+      "SYNONYM"
+    ],
+    "edges": [
+      {
+        "source": [
+          "pound",
+          "NOUN",
+          null
+        ],
+        "kind": "SYNONYM",
+        "target": [
+          "sterling",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "sterling",
+          "NOUN",
+          null
+        ],
+        "kind": "SYNONYM",
+        "target": [
+          "pound",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "sterling",
+          "NOUN",
+          null
+        ],
+        "kind": "RELATED",
+        "target": [
+          "pound",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "pound",
+          "NOUN",
+          null
+        ],
+        "kind": "RELATED",
+        "target": [
+          "sterling",
+          "NOUN",
+          null
+        ]
+      }
+    ],
+    "recommended_action": "drop_related_keep_synonym",
+    "reasoning": "RELATED is this cache's documented lowest-priority kind (\"kept out of RELATED and reclassified where a better fit existed\", examples/README.md's Common semantic completion section) -- a more specific kind is already seeded for this pair, so the RELATED edge is redundant and should be removed.",
+    "confidence": "high",
+    "edges_to_remove": [
+      {
+        "source": [
+          "sterling",
+          "NOUN",
+          null
+        ],
+        "kind": "RELATED",
+        "target": [
+          "pound",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "pound",
+          "NOUN",
+          null
+        ],
+        "kind": "RELATED",
+        "target": [
+          "sterling",
+          "NOUN",
+          null
+        ]
+      }
+    ],
+    "edges_to_add": []
+  },
+  {
+    "pair": [
+      [
+        "research",
+        "NOUN",
+        null
+      ],
+      [
+        "study",
+        "NOUN",
+        null
+      ]
+    ],
+    "families": [
+      "HYPERNYM_HYPONYM",
+      "SYNONYM"
+    ],
+    "edges": [
+      {
+        "source": [
+          "research",
+          "NOUN",
+          null
+        ],
+        "kind": "HYPERNYM",
+        "target": [
+          "study",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "study",
+          "NOUN",
+          null
+        ],
+        "kind": "HYPONYM",
+        "target": [
+          "research",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "study",
+          "NOUN",
+          null
+        ],
+        "kind": "SYNONYM",
+        "target": [
+          "research",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "research",
+          "NOUN",
+          null
+        ],
+        "kind": "SYNONYM",
+        "target": [
+          "study",
+          "NOUN",
+          null
+        ]
+      }
+    ],
+    "recommended_action": "keep_hypernym_drop_synonym",
+    "reasoning": "study's own definition is \"...especially through reading or RESEARCH\" -- study is the broader activity, research a specific method within it, matching the stored research->HYPERNYM->study direction.",
+    "confidence": "medium",
+    "edges_to_remove": [
+      {
+        "source": [
+          "study",
+          "NOUN",
+          null
+        ],
+        "kind": "SYNONYM",
+        "target": [
+          "research",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "research",
+          "NOUN",
+          null
+        ],
+        "kind": "SYNONYM",
+        "target": [
+          "study",
+          "NOUN",
+          null
+        ]
+      }
+    ],
+    "edges_to_add": []
+  },
+  {
+    "pair": [
+      [
+        "sense",
+        "NOUN",
+        "ability.common"
+      ],
+      [
+        "sight",
+        "NOUN",
+        null
+      ]
+    ],
+    "families": [
+      "HYPERNYM_HYPONYM",
+      "RELATED"
+    ],
+    "edges": [
+      {
+        "source": [
+          "sense",
+          "NOUN",
+          "ability.common"
+        ],
+        "kind": "RELATED",
+        "target": [
+          "sight",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "sight",
+          "NOUN",
+          null
+        ],
+        "kind": "RELATED",
+        "target": [
+          "sense",
+          "NOUN",
+          "ability.common"
+        ]
+      },
+      {
+        "source": [
+          "sight",
+          "NOUN",
+          null
+        ],
+        "kind": "HYPERNYM",
+        "target": [
+          "sense",
+          "NOUN",
+          "ability.common"
+        ]
+      },
+      {
+        "source": [
+          "sense",
+          "NOUN",
+          "ability.common"
+        ],
+        "kind": "HYPONYM",
+        "target": [
+          "sight",
+          "NOUN",
+          null
+        ]
+      }
+    ],
+    "recommended_action": "drop_related_keep_hypernym_hyponym",
+    "reasoning": "RELATED is this cache's documented lowest-priority kind (\"kept out of RELATED and reclassified where a better fit existed\", examples/README.md's Common semantic completion section) -- a more specific kind is already seeded for this pair, so the RELATED edge is redundant and should be removed.",
+    "confidence": "high",
+    "edges_to_remove": [
+      {
+        "source": [
+          "sense",
+          "NOUN",
+          "ability.common"
+        ],
+        "kind": "RELATED",
+        "target": [
+          "sight",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "sight",
+          "NOUN",
+          null
+        ],
+        "kind": "RELATED",
+        "target": [
+          "sense",
+          "NOUN",
+          "ability.common"
+        ]
+      }
+    ],
+    "edges_to_add": []
+  },
+  {
+    "pair": [
+      [
+        "situation",
+        "NOUN",
+        null
+      ],
+      [
+        "state",
+        "NOUN",
+        null
+      ]
+    ],
+    "families": [
+      "RELATED",
+      "SYNONYM"
+    ],
+    "edges": [
+      {
+        "source": [
+          "situation",
+          "NOUN",
+          null
+        ],
+        "kind": "RELATED",
+        "target": [
+          "state",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "state",
+          "NOUN",
+          null
+        ],
+        "kind": "RELATED",
+        "target": [
+          "situation",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "state",
+          "NOUN",
+          null
+        ],
+        "kind": "SYNONYM",
+        "target": [
+          "situation",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "situation",
+          "NOUN",
+          null
+        ],
+        "kind": "SYNONYM",
+        "target": [
+          "state",
+          "NOUN",
+          null
+        ]
+      }
+    ],
+    "recommended_action": "drop_related_keep_synonym",
+    "reasoning": "RELATED is this cache's documented lowest-priority kind (\"kept out of RELATED and reclassified where a better fit existed\", examples/README.md's Common semantic completion section) -- a more specific kind is already seeded for this pair, so the RELATED edge is redundant and should be removed.",
+    "confidence": "high",
+    "edges_to_remove": [
+      {
+        "source": [
+          "situation",
+          "NOUN",
+          null
+        ],
+        "kind": "RELATED",
+        "target": [
+          "state",
+          "NOUN",
+          null
+        ]
+      },
+      {
+        "source": [
+          "state",
+          "NOUN",
+          null
+        ],
+        "kind": "RELATED",
+        "target": [
+          "situation",
+          "NOUN",
+          null
+        ]
+      }
+    ],
+    "edges_to_add": []
+  },
+  {
+    "pair": [
+      [
+        "change",
+        "VERB",
+        null
+      ],
+      [
+        "transform",
+        "VERB",
+        null
+      ]
+    ],
+    "families": [
+      "HYPERNYM_HYPONYM",
+      "SYNONYM"
+    ],
+    "edges": [
+      {
+        "source": [
+          "change",
+          "VERB",
+          null
+        ],
+        "kind": "SYNONYM",
+        "target": [
+          "transform",
+          "VERB",
+          null
+        ]
+      },
+      {
+        "source": [
+          "transform",
+          "VERB",
+          null
+        ],
+        "kind": "SYNONYM",
+        "target": [
+          "change",
+          "VERB",
+          null
+        ]
+      },
+      {
+        "source": [
+          "transform",
+          "VERB",
+          null
+        ],
+        "kind": "HYPERNYM",
+        "target": [
+          "change",
+          "VERB",
+          null
+        ]
+      },
+      {
+        "source": [
+          "change",
+          "VERB",
+          null
+        ],
+        "kind": "HYPONYM",
+        "target": [
+          "transform",
+          "VERB",
+          null
+        ]
+      }
+    ],
+    "recommended_action": "keep_hypernym_drop_synonym",
+    "reasoning": "transform's own definition says \"to make a marked CHANGE\" -- transform is a specific (marked) kind of change, matching the stored transform->HYPERNYM->change direction.",
+    "confidence": "high",
+    "edges_to_remove": [
+      {
+        "source": [
+          "change",
+          "VERB",
+          null
+        ],
+        "kind": "SYNONYM",
+        "target": [
+          "transform",
+          "VERB",
+          null
+        ]
+      },
+      {
+        "source": [
+          "transform",
+          "VERB",
+          null
+        ],
+        "kind": "SYNONYM",
+        "target": [
+          "change",
+          "VERB",
+          null
+        ]
+      }
+    ],
+    "edges_to_add": []
+  },
+  {
+    "pair": [
+      [
+        "classify",
+        "VERB",
+        null
+      ],
+      [
+        "grade",
+        "VERB",
+        null
+      ]
+    ],
+    "families": [
+      "HYPERNYM_HYPONYM",
+      "SYNONYM"
+    ],
+    "edges": [
+      {
+        "source": [
+          "classify",
+          "VERB",
+          null
+        ],
+        "kind": "SYNONYM",
+        "target": [
+          "grade",
+          "VERB",
+          null
+        ]
+      },
+      {
+        "source": [
+          "grade",
+          "VERB",
+          null
+        ],
+        "kind": "SYNONYM",
+        "target": [
+          "classify",
+          "VERB",
+          null
+        ]
+      },
+      {
+        "source": [
+          "grade",
+          "VERB",
+          null
+        ],
+        "kind": "HYPERNYM",
+        "target": [
+          "classify",
+          "VERB",
+          null
+        ]
+      },
+      {
+        "source": [
+          "classify",
+          "VERB",
+          null
+        ],
+        "kind": "HYPONYM",
+        "target": [
+          "grade",
+          "VERB",
+          null
+        ]
+      }
+    ],
+    "recommended_action": "keep_hypernym_drop_synonym",
+    "reasoning": "grade (\"arrange in order of quality/size/rank\") is a specific manner of classify (\"arrange into groups/categories\") -- narrower, not identical in meaning; matches the stored grade->HYPERNYM->classify direction.",
+    "confidence": "medium",
+    "edges_to_remove": [
+      {
+        "source": [
+          "classify",
+          "VERB",
+          null
+        ],
+        "kind": "SYNONYM",
+        "target": [
+          "grade",
+          "VERB",
+          null
+        ]
+      },
+      {
+        "source": [
+          "grade",
+          "VERB",
+          null
+        ],
+        "kind": "SYNONYM",
+        "target": [
+          "classify",
+          "VERB",
+          null
+        ]
+      }
+    ],
+    "edges_to_add": []
+  },
+  {
+    "pair": [
+      [
+        "demonstrate",
+        "VERB",
+        null
+      ],
+      [
+        "show",
+        "VERB",
+        null
+      ]
+    ],
+    "families": [
+      "HYPERNYM_HYPONYM",
+      "SYNONYM"
+    ],
+    "edges": [
+      {
+        "source": [
+          "demonstrate",
+          "VERB",
+          null
+        ],
+        "kind": "HYPERNYM",
+        "target": [
+          "show",
+          "VERB",
+          null
+        ]
+      },
+      {
+        "source": [
+          "show",
+          "VERB",
+          null
+        ],
+        "kind": "HYPONYM",
+        "target": [
+          "demonstrate",
+          "VERB",
+          null
+        ]
+      },
+      {
+        "source": [
+          "show",
+          "VERB",
+          null
+        ],
+        "kind": "SYNONYM",
+        "target": [
+          "demonstrate",
+          "VERB",
+          null
+        ]
+      },
+      {
+        "source": [
+          "demonstrate",
+          "VERB",
+          null
+        ],
+        "kind": "SYNONYM",
+        "target": [
+          "show",
+          "VERB",
+          null
+        ]
+      }
+    ],
+    "recommended_action": "keep_hypernym_drop_synonym",
+    "reasoning": "demonstrate's own definition is \"To SHOW clearly, especially by giving proof\" -- demonstrate is a specific (evidenced) kind of showing, matching the stored demonstrate->HYPERNYM->show direction.",
+    "confidence": "high",
+    "edges_to_remove": [
+      {
+        "source": [
+          "show",
+          "VERB",
+          null
+        ],
+        "kind": "SYNONYM",
+        "target": [
+          "demonstrate",
+          "VERB",
+          null
+        ]
+      },
+      {
+        "source": [
+          "demonstrate",
+          "VERB",
+          null
+        ],
+        "kind": "SYNONYM",
+        "target": [
+          "show",
+          "VERB",
+          null
+        ]
+      }
+    ],
+    "edges_to_add": []
+  },
+  {
+    "pair": [
+      [
+        "demonstrate",
+        "VERB",
+        null
+      ],
+      [
+        "prove",
+        "VERB",
+        null
+      ]
+    ],
+    "families": [
+      "RELATED",
+      "SYNONYM"
+    ],
+    "edges": [
+      {
+        "source": [
+          "demonstrate",
+          "VERB",
+          null
+        ],
+        "kind": "RELATED",
+        "target": [
+          "prove",
+          "VERB",
+          null
+        ]
+      },
+      {
+        "source": [
+          "prove",
+          "VERB",
+          null
+        ],
+        "kind": "RELATED",
+        "target": [
+          "demonstrate",
+          "VERB",
+          null
+        ]
+      },
+      {
+        "source": [
+          "prove",
+          "VERB",
+          null
+        ],
+        "kind": "SYNONYM",
+        "target": [
+          "demonstrate",
+          "VERB",
+          null
+        ]
+      },
+      {
+        "source": [
+          "demonstrate",
+          "VERB",
+          null
+        ],
+        "kind": "SYNONYM",
+        "target": [
+          "prove",
+          "VERB",
+          null
+        ]
+      }
+    ],
+    "recommended_action": "drop_related_keep_synonym",
+    "reasoning": "RELATED is this cache's documented lowest-priority kind (\"kept out of RELATED and reclassified where a better fit existed\", examples/README.md's Common semantic completion section) -- a more specific kind is already seeded for this pair, so the RELATED edge is redundant and should be removed.",
+    "confidence": "high",
+    "edges_to_remove": [
+      {
+        "source": [
+          "demonstrate",
+          "VERB",
+          null
+        ],
+        "kind": "RELATED",
+        "target": [
+          "prove",
+          "VERB",
+          null
+        ]
+      },
+      {
+        "source": [
+          "prove",
+          "VERB",
+          null
+        ],
+        "kind": "RELATED",
+        "target": [
+          "demonstrate",
+          "VERB",
+          null
+        ]
+      }
+    ],
+    "edges_to_add": []
+  },
+  {
+    "pair": [
+      [
+        "go",
+        "VERB",
+        null
+      ],
+      [
+        "travel",
+        "VERB",
+        null
+      ]
+    ],
+    "families": [
+      "HYPERNYM_HYPONYM",
+      "SYNONYM"
+    ],
+    "edges": [
+      {
+        "source": [
+          "go",
+          "VERB",
+          null
+        ],
+        "kind": "SYNONYM",
+        "target": [
+          "travel",
+          "VERB",
+          null
+        ]
+      },
+      {
+        "source": [
+          "travel",
+          "VERB",
+          null
+        ],
+        "kind": "SYNONYM",
+        "target": [
+          "go",
+          "VERB",
+          null
+        ]
+      },
+      {
+        "source": [
+          "travel",
+          "VERB",
+          null
+        ],
+        "kind": "HYPERNYM",
+        "target": [
+          "go",
+          "VERB",
+          null
+        ]
+      },
+      {
+        "source": [
+          "go",
+          "VERB",
+          null
+        ],
+        "kind": "HYPONYM",
+        "target": [
+          "travel",
+          "VERB",
+          null
+        ]
+      }
+    ],
+    "recommended_action": "keep_hypernym_drop_synonym",
+    "reasoning": "travel's own definition is \"To GO from one place to another, typically over a distance\" -- travel is a specific (distance) kind of going, matching the stored travel->HYPERNYM->go direction.",
+    "confidence": "high",
+    "edges_to_remove": [
+      {
+        "source": [
+          "go",
+          "VERB",
+          null
+        ],
+        "kind": "SYNONYM",
+        "target": [
+          "travel",
+          "VERB",
+          null
+        ]
+      },
+      {
+        "source": [
+          "travel",
+          "VERB",
+          null
+        ],
+        "kind": "SYNONYM",
+        "target": [
+          "go",
+          "VERB",
+          null
+        ]
+      }
+    ],
+    "edges_to_add": []
+  }
+]
