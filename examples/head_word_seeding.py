@@ -18,13 +18,18 @@ Common core vocabulary section, `assets/common/en/README.md`'s 9.4):
   person or thing to go with oneself to a place, especially by going
   in front.").
 
-Both HYPERNYM edges are seeded with their reciprocal HYPONYM edge
-materialised too (`part` -> HYPONYM -> `head`; `lead` -> HYPONYM ->
-`head`) -- the same "every HYPERNYM edge gets its reciprocal HYPONYM,
-not left to be inferred at query time" discipline
+`head` (NOUN) -> `part` gets its reciprocal HYPONYM edge materialised
+(`part` -> HYPONYM -> `head`) -- the same "every HYPERNYM edge gets its
+reciprocal HYPONYM, not left to be inferred at query time" discipline
 `common_semantic_completion_seeding.py` already established
 (`assets/common/en/relationships/README.md`'s Symmetric and inverse
-edges section). Without this, `part`/`lead` would show a HYPERNYM
+edges section). `head` (VERB) -> `lead` is seeded as TROPONYM, not
+HYPERNYM, with its reciprocal HYPERNYM edge materialised the reverse
+direction (`lead` -TROPONYM-> `head`; `head` -HYPERNYM-> `lead`) --
+HYPONYM is a noun-only kind (HYPERNYM/HYPONYM applies to nouns,
+TROPONYM/HYPERNYM applies to verbs, `assets/common/en/relationships/
+README.md`'s `asset_version 1.17.0` entry), so `lead`/`head` gets no
+HYPONYM edge at all. Without this, `part` would show a HYPERNYM
 sentence pointing at `head` but `head` itself would show no matching
 HYPONYM entry in its own detail panel or Hierarchy tab -- the exact
 kind of asymmetric edge this cache's own convention exists to prevent.
@@ -65,9 +70,17 @@ HEAD_SENSES = (
 # (source_lexical_form, source_pos, target_lexical_form, target_pos) --
 # always the (narrower, HYPERNYM, broader) direction this cache's own
 # README documents; the reciprocal HYPONYM edge is derived below, not
-# hand-written twice.
+# hand-written twice. Nouns only -- see TROPONYM_PAIRS below for verbs.
 HYPERNYM_PAIRS = (
     ("head", "NOUN", "part", "NOUN"),
+)
+
+# (specific_lexical_form, specific_pos, general_lexical_form, general_pos)
+# -- always the (specific, TROPONYM, general) direction (troponymy is
+# verb-specific hyponymy); the reciprocal HYPERNYM edge, reverse
+# direction, is derived below, not hand-written twice. No HYPONYM edge
+# -- HYPONYM is noun-only.
+TROPONYM_PAIRS = (
     ("head", "VERB", "lead", "VERB"),
 )
 
@@ -93,24 +106,27 @@ def add_head_relationships() -> dict:
     }
 
     added = 0
+    all_edges = []
     for src_form, src_pos, tgt_form, tgt_pos in HYPERNYM_PAIRS:
-        edges = (
-            (src_form, src_pos, "HYPERNYM", tgt_form, tgt_pos),
-            (tgt_form, tgt_pos, "HYPONYM", src_form, src_pos),
-        )
-        for source_form, source_pos, kind, target_form, target_pos in edges:
-            key = (source_form, source_pos, kind, target_form, target_pos)
-            if key in existing_keys:
-                continue
-            sem_doc["relationships"].append({
-                "source_lexical_form": source_form,
-                "source_part_of_speech": source_pos,
-                "target_lexical_form": target_form,
-                "target_part_of_speech": target_pos,
-                "relationship_kind": kind,
-            })
-            existing_keys.add(key)
-            added += 1
+        all_edges.append((src_form, src_pos, "HYPERNYM", tgt_form, tgt_pos))
+        all_edges.append((tgt_form, tgt_pos, "HYPONYM", src_form, src_pos))
+    for specific_form, specific_pos, general_form, general_pos in TROPONYM_PAIRS:
+        all_edges.append((general_form, general_pos, "TROPONYM", specific_form, specific_pos))
+        all_edges.append((specific_form, specific_pos, "HYPERNYM", general_form, general_pos))
+
+    for source_form, source_pos, kind, target_form, target_pos in all_edges:
+        key = (source_form, source_pos, kind, target_form, target_pos)
+        if key in existing_keys:
+            continue
+        sem_doc["relationships"].append({
+            "source_lexical_form": source_form,
+            "source_part_of_speech": source_pos,
+            "target_lexical_form": target_form,
+            "target_part_of_speech": target_pos,
+            "relationship_kind": kind,
+        })
+        existing_keys.add(key)
+        added += 1
 
     sem_doc["count"] = len(sem_doc["relationships"])
     _save_json(sem_path, sem_doc)
@@ -138,4 +154,5 @@ if __name__ == "__main__":
     result = run()
     print("head senses promoted:", result["promotion"]["promoted"])
     print("head senses already present (idempotent re-run):", result["promotion"]["already_present"])
-    print("Semantic edges added (HYPERNYM + reciprocal HYPONYM):", result["relationships"]["edges_added"])
+    print("Semantic edges added (HYPERNYM/HYPONYM for nouns, TROPONYM/HYPERNYM for verbs):",
+          result["relationships"]["edges_added"])

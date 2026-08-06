@@ -23,28 +23,29 @@ and genuine HYPERNYM/HYPERNYM or MERONYM/MERONYM 2-cycles (both found
 zero instances against the current cache).
 
 TROPONYM is treated as part of the HYPERNYM_HYPONYM family, not a
-contradiction against it: troponymy is verb-specific hyponymy (WordNet
-models it as the same hypernym/hyponym relation, just named "troponym"
-for the narrower verb), so `common_semantic_completion_seeding.py` and
-`physics_domain_seeding.py` both materialise a matching HYPONYM/HYPERNYM
-pair alongside every TROPONYM edge -- that co-occurrence is expected,
-not flagged. `find_missing_troponym_companions()` instead checks the
-opposite failure mode: a TROPONYM edge that is *missing* its companion
-HYPONYM/HYPERNYM pair (e.g. seeded before this convention existed, or
-added later by hand without it).
+contradiction against it: HYPERNYM is the one kind shared between nouns
+(HYPERNYM/HYPONYM) and verbs (TROPONYM/HYPERNYM), so a TROPONYM edge
+co-occurring with a HYPERNYM edge on the same pair is expected, not
+flagged. HYPONYM itself is noun-only -- a TROPONYM edge should *not*
+co-occur with a HYPONYM edge (a bug an earlier version of the seeding
+scripts introduced by over-applying "troponymy is verb-specific
+hyponymy" to also mean a literal HYPONYM edge; fixed in
+`examples/troponym_hyponym_removal_fix.py`, see
+`assets/common/en/relationships/README.md`'s `asset_version 1.17.0`
+entry). `find_missing_troponym_companions()` checks a TROPONYM edge is
+*missing* its HYPERNYM companion (reverse direction); `find_verb_hyponym_edges()`
+checks the opposite mistake -- any HYPONYM edge that shouldn't exist at
+all because both endpoints are verbs.
 
-`find_verb_hypernym_without_troponym()` checks the mirror-image failure
-mode at the *kind* level, not just the edge level: HYPERNYM/HYPONYM
-applies to nouns, MERONYM/HOLONYM applies to nouns, TROPONYM/HYPERNYM
-applies to verbs (`examples/troponym_verb_backfill.py`'s own module
-docstring) -- so a verb-verb HYPERNYM/HYPONYM pair with no TROPONYM
-edge at all is exactly the gap `examples/troponym_verb_backfill.py`
-found and fixed (41 pairs, predating the TROPONYM/HYPERNYM convention
-entirely). Resolves each endpoint's part of speech against the full
-word cache (mandatory + supplementary + promoted files), not just a
-relationship entry's own optional `source_part_of_speech`/
-`target_part_of_speech` fields, since most existing HYPERNYM entries
-predate that field and omit it.
+`find_verb_hypernym_without_troponym()` checks a different gap: a
+verb-verb HYPERNYM pair with no TROPONYM edge at all
+(`examples/troponym_verb_backfill.py`'s own module docstring; 41 pairs
+found, predating the TROPONYM/HYPERNYM convention entirely).
+Resolves each endpoint's part of speech against the full word cache
+(mandatory + supplementary + promoted files), not just a relationship
+entry's own optional `source_part_of_speech`/`target_part_of_speech`
+fields, since most existing HYPERNYM entries predate that field and
+omit it.
 
 Run: python3 examples/relationship_contradiction_audit.py
 """
@@ -94,6 +95,26 @@ def _pos_by_form() -> dict:
         for w in doc["words"]:
             pos_by_form.setdefault(w["lexical_form"], set()).add(w["part_of_speech"])
     return pos_by_form
+
+
+def find_verb_hyponym_edges(rels: list) -> list:
+    """HYPONYM is noun-only -- a verb-verb HYPONYM edge should never
+    exist (verbs use TROPONYM for their narrower form, not HYPONYM)."""
+    pos_by_form = _pos_by_form()
+
+    def resolve_pos(form, explicit):
+        return {explicit} if explicit else pos_by_form.get(form, set())
+
+    found = []
+    for r in rels:
+        if r["relationship_kind"] != "HYPONYM":
+            continue
+        s, t = r["source_lexical_form"], r["target_lexical_form"]
+        sp = resolve_pos(s, r.get("source_part_of_speech"))
+        tp = resolve_pos(t, r.get("target_part_of_speech"))
+        if sp == {"VERB"} and tp == {"VERB"}:
+            found.append({"source": s, "target": t})
+    return found
 
 
 def find_verb_hypernym_without_troponym(rels: list) -> list:
@@ -162,15 +183,14 @@ def find_contradictions() -> dict:
 
     missing_troponym_companions = []
     for general, specific in tropo_pairs:
-        missing = []
-        if (general, "HYPONYM", specific) not in edge_set:
-            missing.append(f"{general} -HYPONYM-> {specific}")
         if (specific, "HYPERNYM", general) not in edge_set:
-            missing.append(f"{specific} -HYPERNYM-> {general}")
-        if missing:
-            missing_troponym_companions.append({"pair": [str(general), str(specific)], "missing_edges": missing})
+            missing_troponym_companions.append({
+                "pair": [str(general), str(specific)],
+                "missing_edges": [f"{specific} -HYPERNYM-> {general}"],
+            })
 
     verb_hypernym_without_troponym = find_verb_hypernym_without_troponym(rels)
+    verb_hyponym_edges = find_verb_hyponym_edges(rels)
 
     return {
         "total_relationships": len(rels),
@@ -180,6 +200,7 @@ def find_contradictions() -> dict:
         "cross_family_contradictions": cross_family,
         "missing_troponym_companions": missing_troponym_companions,
         "verb_hypernym_without_troponym": verb_hypernym_without_troponym,
+        "verb_hyponym_edges": verb_hyponym_edges,
     }
 
 
@@ -190,14 +211,18 @@ if __name__ == "__main__":
     print("HYPERNYM/HYPERNYM 2-cycles:", len(result["hypernym_2cycles"]))
     print("MERONYM/MERONYM 2-cycles:", len(result["meronym_2cycles"]))
     print("Word pairs carrying more than one relationship kind:", len(result["cross_family_contradictions"]))
-    print("TROPONYM edges missing their HYPONYM/HYPERNYM companion:", len(result["missing_troponym_companions"]))
+    print("TROPONYM edges missing their HYPERNYM companion:", len(result["missing_troponym_companions"]))
     for m in result["missing_troponym_companions"]:
         print("  ", m["pair"], "missing:", m["missing_edges"])
     print("Verb-verb HYPERNYM pairs with no TROPONYM edge:", len(result["verb_hypernym_without_troponym"]))
     for m in result["verb_hypernym_without_troponym"]:
         print(f"   {m['specific']} -HYPERNYM-> {m['general']}  (expected {m['general']} -TROPONYM-> {m['specific']})")
+    print("Verb-verb HYPONYM edges (should never exist -- HYPONYM is noun-only):", len(result["verb_hyponym_edges"]))
+    for m in result["verb_hyponym_edges"]:
+        print(f"   {m['source']} -HYPONYM-> {m['target']}")
     print()
     print("See examples/relationship_contradiction_report.md for the full, reviewed correction list "
           "(recommended fix + reasoning per pair) and "
           "examples/relationship_contradiction_corrections.json for the same data, structured. "
-          "See examples/troponym_verb_backfill.py to fix any verb-verb HYPERNYM pairs missing a TROPONYM edge.")
+          "See examples/troponym_verb_backfill.py to fix any verb-verb HYPERNYM pairs missing a TROPONYM edge, "
+          "or examples/troponym_hyponym_removal_fix.py to remove any stray verb-verb HYPONYM edges.")

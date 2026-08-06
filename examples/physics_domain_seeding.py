@@ -212,16 +212,18 @@ def _seed_physics_relationships(physics_domain) -> dict:
     - Inverse-kind pairs, one conceptual fact producing two different
       kinds (HYPERNYM_HYPONYM_PAIRS, MERONYM_HOLONYM_PAIRS):
       (narrower/part, pos, broader/whole, pos).
-    - Troponymy is verb-specific hyponymy (WordNet models it as the same
-      hypernym/hyponym relation, just named "troponym" on the narrower
-      side for verbs) -- TROPONYM_PAIRS therefore also materialises the
-      HYPERNYM_HYPONYM_PAIRS pattern alongside the TROPONYM edge itself,
-      not just a bare one-directional edge: (general, TROPONYM, specific)
-      plus (general, HYPONYM, specific) plus (specific, HYPERNYM, general).
-      TROPONYM stays a real, distinct edge (so troponyms() still answers
-      "specifically a manner of", not just "narrower than"), but general.
-      hyponyms()/specific.hypernyms() now find it too, the same as any
-      other hyponym/hypernym pair.
+    - Troponymy is verb-specific hyponymy, but HYPONYM itself is a
+      noun-only kind -- HYPERNYM/HYPONYM applies to nouns, TROPONYM/
+      HYPERNYM applies to verbs, with HYPERNYM the one kind shared
+      between the two (`assets/common/en/relationships/README.md`'s
+      `asset_version 1.17.0` entry). TROPONYM_PAIRS therefore
+      materialises the TROPONYM edge itself plus its HYPERNYM reverse
+      only: (general, TROPONYM, specific) plus (specific, HYPERNYM,
+      general) -- no HYPONYM edge (an earlier version of this function
+      added one too, which made verbs incorrectly show up under the
+      Hierarchy tab's Hyponym selector). specific.hypernyms() finds
+      general the same as any other hypernym pair; general.troponyms()
+      finds specific.
     - One-directional, no inverse kind defined in LexicalRelationshipType
       (ENTAILMENT_PAIRS, CAUSE_PAIRS): (source, pos, target, pos) --
       matches the not-reversed CONTRACTION precedent. TROPONYM is no
@@ -323,7 +325,6 @@ def _seed_physics_relationships(physics_domain) -> dict:
         if resolved:
             general, specific = resolved
             make_edge(general, LexicalRelationshipType.TROPONYM, specific)
-            make_edge(general, LexicalRelationshipType.HYPONYM, specific)
             make_edge(specific, LexicalRelationshipType.HYPERNYM, general)
 
     for entailing_text, entailing_pos, entailed_text, entailed_pos in ENTAILMENT_PAIRS:

@@ -330,6 +330,62 @@ batch adds vocabulary of that kind.
 
 ## Version
 
+`v1` / `schema_version 1.0.0` / `asset_version 1.17.0` (6158 -> 6108
+relationships; `semantic_relationships.json` 2654 -> 2604). Corrects an
+over-application from `asset_version 1.15.0`/`1.16.0`: `HYPONYM` is a
+noun-only kind. The correct rule is `HYPERNYM`/`HYPONYM` applies to
+nouns, `TROPONYM`/`HYPERNYM` applies to verbs -- `HYPERNYM` is the one
+kind shared between the two, `HYPONYM` is not. `1.15.0` reasoned
+"troponymy is verb-specific hyponymy" and concluded a `TROPONYM` edge
+should materialise *both* a same-direction `HYPONYM` edge and a
+reverse-direction `HYPERNYM` edge; only the `HYPERNYM` reciprocal was
+ever correct. Surfaced directly by the rendered UI, not by re-reading
+the rule -- selecting `HYPONYM` in the Hierarchy tab was showing verbs
+(`move`, `travel`, `demonstrate`, ...) alongside nouns, when it should
+only ever show nouns.
+
+Removed all 50 verb-verb `HYPONYM` edges found (9 materialised as
+`TROPONYM` companions in `1.15.0`, 41 pre-existing from the original
+14-subagent drafting pass and the 37-pair contradiction fix, both of
+which predate `1.15.0` entirely) via
+`examples/troponym_hyponym_removal_fix.py` -- every corresponding
+`HYPERNYM` edge (broader, shared with nouns) and `TROPONYM` edge
+(narrower, verb-specific) is untouched, only the `HYPONYM` edge is
+gone. Fixed at the root too, not just the generated data: 40 of
+`examples/common_semantic_completion.py`'s own source `RELATIONSHIPS`
+tuples were still plain `HYPERNYM` entries for these verb pairs, so
+re-running `common_semantic_completion_seeding.py` was silently
+resurrecting the removed `HYPONYM` edges via the ordinary
+`HYPERNYM` -> reciprocal `HYPONYM` materialisation rule (caught by
+re-running the canonical seeding chain immediately after the JSON-level
+fix and finding it wasn't a no-op); those 40 tuples are now `TROPONYM`
+tuples instead, matching the correct pairing. `examples/head_word_seeding.py`
+had the identical gap for `head`/`lead` (`head`'s own promotion batch,
+`asset_version 1.19.0` in `../README.md`, seeded before `TROPONYM`/
+`HYPERNYM` existed) -- its `HYPERNYM_PAIRS` split into a noun-only
+`HYPERNYM_PAIRS` (`head`/`part`) and a new `TROPONYM_PAIRS`
+(`head`/`lead`).
+
+`common_semantic_completion_seeding.py`'s TROPONYM materialisation and
+`physics_domain_seeding.py`'s `_seed_physics_relationships` both
+changed to add only the `HYPERNYM` reciprocal, not `HYPONYM`.
+`examples/relationship_contradiction_audit.py` gained
+`find_verb_hyponym_edges()` (any verb-verb `HYPONYM` edge is now itself
+a finding) and `find_missing_troponym_companions()` narrowed to only
+check for the `HYPERNYM` companion.
+
+Verified directly, not assumed: re-ran the full canonical seeding chain
+after all three script fixes and got 0 new semantic edges (previously
+a no-op run had silently re-added 40); re-ran the audit and got 0 of
+every check (missing companions, verb `HYPERNYM` without `TROPONYM`,
+and the new verb-verb `HYPONYM` check); confirmed live against a seeded
+Domain that `move.hyponyms()` is now empty while `move.troponyms()`
+still lists every manner-specific verb, `travel.hypernyms()` still
+finds `go`/`move`, and noun hyponymy (`part.hyponyms()`) is unaffected;
+Playwright-checked the rendered UI in headless Chromium -- selecting
+`Hyponym` in the Hierarchy tab now shows 0 verbs (198 edges, all nouns,
+down from 252 when verbs were still included), no console errors.
+
 `v1` / `schema_version 1.0.0` / `asset_version 1.16.0` (6117 -> 6158
 relationships; `semantic_relationships.json` 2613 -> 2654). Backfilled
 the missing `TROPONYM` edge for every pre-existing verb-verb

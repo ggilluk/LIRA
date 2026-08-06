@@ -3,14 +3,16 @@ relationships (LexicalRelationshipType group 1) into the static Common
 relationship cache, materialising every reciprocal edge the same way
 this cache's own README documents: HYPERNYM -> reciprocal HYPONYM,
 MERONYM -> reciprocal HOLONYM, SYNONYM/ANTONYM/RELATED -> reciprocal
-same-kind edge in the reverse direction (they're symmetric). TROPONYM
-is verb-specific hyponymy (WordNet models it as the same hypernym/
-hyponym relation, just named "troponym" for the narrower verb), so
-each TROPONYM edge also materialises the matching HYPONYM (same
-direction) and HYPERNYM (reverse direction) pair, on top of the
-TROPONYM edge itself -- TROPONYM stays a real, more specific edge
-(troponyms() still answers "specifically a manner of"), it just no
-longer leaves the general hypernym/hyponym hierarchy blind to it.
+same-kind edge in the reverse direction (they're symmetric). HYPONYM
+is a noun-only kind (HYPERNYM/HYPONYM applies to nouns; TROPONYM/
+HYPERNYM applies to verbs -- HYPERNYM is the one kind shared between
+the two, HYPONYM is not), so each TROPONYM edge materialises only the
+matching HYPERNYM (reverse direction) edge, not a HYPONYM one --
+`assets/common/en/relationships/README.md`'s `asset_version 1.17.0`
+entry corrects an earlier version of this script that added a HYPONYM
+companion too, which made verbs incorrectly show up under the
+Hierarchy tab's Hyponym selector. TROPONYM itself stays a real, more
+specific edge (troponyms() still answers "specifically a manner of").
 ENTAILMENT/CAUSE get no reciprocal -- one-directional by definition,
 no inverse kind exists for them, and unlike TROPONYM neither is a
 hyponymy relation in disguise ("snore" entailing "sleep" isn't "snore
@@ -48,9 +50,9 @@ RECIPROCAL_KIND = {
     "ANTONYM": "ANTONYM",
     "RELATED": "RELATED",
     # ENTAILMENT/CAUSE: no reciprocal, one-directional by design.
-    # TROPONYM: handled separately below -- it materialises a
-    # HYPONYM/HYPERNYM pair, not a single same-or-symmetric-kind
-    # reciprocal, so it doesn't fit this one-entry-per-kind map.
+    # TROPONYM: handled separately below -- its reciprocal is HYPERNYM
+    # (reverse direction, not the same kind), so it doesn't fit this
+    # one-entry-per-kind map.
 }
 
 
@@ -67,11 +69,8 @@ def add_semantic_relationships() -> dict:
     for source_form, source_pos, kind, target_form, target_pos in RELATIONSHIPS:
         edges = [(source_form, source_pos, kind, target_form, target_pos)]
         if kind == "TROPONYM":
-            # Troponymy is verb-specific hyponymy -- (general, TROPONYM,
-            # specific) also means (general, HYPONYM, specific) and
-            # (specific, HYPERNYM, general), the same as any other
-            # hypernym/hyponym pair.
-            edges.append((source_form, source_pos, "HYPONYM", target_form, target_pos))
+            # HYPERNYM is the one kind shared between nouns and verbs;
+            # HYPONYM stays noun-only, so no HYPONYM companion here.
             edges.append((target_form, target_pos, "HYPERNYM", source_form, source_pos))
         else:
             recip = RECIPROCAL_KIND.get(kind)

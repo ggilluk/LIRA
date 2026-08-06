@@ -2,7 +2,7 @@
   "schema_version": "1.0.0",
   "language_code": "en",
   "relationship_category": "semantic",
-  "count": 2654,
+  "count": 2604,
   "relationships": [
     {
       "source_lexical_form": "above",
@@ -9703,25 +9703,11 @@
       "relationship_kind": "HYPERNYM"
     },
     {
-      "source_lexical_form": "calculate",
-      "source_part_of_speech": "VERB",
-      "target_lexical_form": "add",
-      "target_part_of_speech": "VERB",
-      "relationship_kind": "HYPONYM"
-    },
-    {
       "source_lexical_form": "address",
       "source_part_of_speech": "VERB",
       "target_lexical_form": "speak",
       "target_part_of_speech": "VERB",
       "relationship_kind": "HYPERNYM"
-    },
-    {
-      "source_lexical_form": "speak",
-      "source_part_of_speech": "VERB",
-      "target_lexical_form": "address",
-      "target_part_of_speech": "VERB",
-      "relationship_kind": "HYPONYM"
     },
     {
       "source_lexical_form": "address",
@@ -9743,13 +9729,6 @@
       "target_lexical_form": "move",
       "target_part_of_speech": "VERB",
       "relationship_kind": "HYPERNYM"
-    },
-    {
-      "source_lexical_form": "move",
-      "source_part_of_speech": "VERB",
-      "target_lexical_form": "advance",
-      "target_part_of_speech": "VERB",
-      "relationship_kind": "HYPONYM"
     },
     {
       "source_lexical_form": "affect",
@@ -9829,13 +9808,6 @@
       "relationship_kind": "HYPERNYM"
     },
     {
-      "source_lexical_form": "combine",
-      "source_part_of_speech": "VERB",
-      "target_lexical_form": "and",
-      "target_part_of_speech": "VERB",
-      "relationship_kind": "HYPONYM"
-    },
-    {
       "source_lexical_form": "and",
       "source_part_of_speech": "VERB",
       "target_lexical_form": "nand",
@@ -9899,13 +9871,6 @@
       "relationship_kind": "HYPERNYM"
     },
     {
-      "source_lexical_form": "divide",
-      "source_part_of_speech": "VERB",
-      "target_lexical_form": "apportion",
-      "target_part_of_speech": "VERB",
-      "relationship_kind": "HYPONYM"
-    },
-    {
       "source_lexical_form": "apportion",
       "source_part_of_speech": "VERB",
       "target_lexical_form": "distribute",
@@ -9939,13 +9904,6 @@
       "target_lexical_form": "happen",
       "target_part_of_speech": "VERB",
       "relationship_kind": "HYPERNYM"
-    },
-    {
-      "source_lexical_form": "happen",
-      "source_part_of_speech": "VERB",
-      "target_lexical_form": "arise",
-      "target_part_of_speech": "VERB",
-      "relationship_kind": "HYPONYM"
     },
     {
       "source_lexical_form": "arrange",
@@ -10340,13 +10298,6 @@
       "relationship_kind": "HYPERNYM"
     },
     {
-      "source_lexical_form": "determine",
-      "source_part_of_speech": "VERB",
-      "target_lexical_form": "calculate",
-      "target_part_of_speech": "VERB",
-      "relationship_kind": "HYPONYM"
-    },
-    {
       "source_lexical_form": "carry",
       "source_part_of_speech": "VERB",
       "target_lexical_form": "support",
@@ -10739,13 +10690,6 @@
       "relationship_kind": "HYPERNYM"
     },
     {
-      "source_lexical_form": "calculate",
-      "source_part_of_speech": "VERB",
-      "target_lexical_form": "count",
-      "target_part_of_speech": "VERB",
-      "relationship_kind": "HYPONYM"
-    },
-    {
       "source_lexical_form": "cover",
       "source_part_of_speech": "VERB",
       "target_lexical_form": "protect",
@@ -10779,13 +10723,6 @@
       "target_lexical_form": "move",
       "target_part_of_speech": "VERB",
       "relationship_kind": "HYPERNYM"
-    },
-    {
-      "source_lexical_form": "move",
-      "source_part_of_speech": "VERB",
-      "target_lexical_form": "curve",
-      "target_part_of_speech": "VERB",
-      "relationship_kind": "HYPONYM"
     },
     {
       "source_lexical_form": "deal",
@@ -10851,25 +10788,11 @@
       "relationship_kind": "HYPERNYM"
     },
     {
-      "source_lexical_form": "explain",
-      "source_part_of_speech": "VERB",
-      "target_lexical_form": "define",
-      "target_part_of_speech": "VERB",
-      "relationship_kind": "HYPONYM"
-    },
-    {
       "source_lexical_form": "deliver",
       "source_part_of_speech": "VERB",
       "target_lexical_form": "bring",
       "target_part_of_speech": "VERB",
       "relationship_kind": "HYPERNYM"
-    },
-    {
-      "source_lexical_form": "bring",
-      "source_part_of_speech": "VERB",
-      "target_lexical_form": "deliver",
-      "target_part_of_speech": "VERB",
-      "relationship_kind": "HYPONYM"
     },
     {
       "source_lexical_form": "deliver",
@@ -10891,13 +10814,6 @@
       "target_lexical_form": "show",
       "target_part_of_speech": "VERB",
       "relationship_kind": "HYPERNYM"
-    },
-    {
-      "source_lexical_form": "show",
-      "source_part_of_speech": "VERB",
-      "target_lexical_form": "demonstrate",
-      "target_part_of_speech": "VERB",
-      "relationship_kind": "HYPONYM"
     },
     {
       "source_lexical_form": "denote",
@@ -10961,13 +10877,6 @@
       "target_lexical_form": "explain",
       "target_part_of_speech": "VERB",
       "relationship_kind": "HYPERNYM"
-    },
-    {
-      "source_lexical_form": "explain",
-      "source_part_of_speech": "VERB",
-      "target_lexical_form": "describe",
-      "target_part_of_speech": "VERB",
-      "relationship_kind": "HYPONYM"
     },
     {
       "source_lexical_form": "desire",
@@ -11059,13 +10968,6 @@
       "target_lexical_form": "speak",
       "target_part_of_speech": "VERB",
       "relationship_kind": "HYPERNYM"
-    },
-    {
-      "source_lexical_form": "speak",
-      "source_part_of_speech": "VERB",
-      "target_lexical_form": "discuss",
-      "target_part_of_speech": "VERB",
-      "relationship_kind": "HYPONYM"
     },
     {
       "source_lexical_form": "display",
@@ -11194,25 +11096,11 @@
       "relationship_kind": "HYPERNYM"
     },
     {
-      "source_lexical_form": "produce",
-      "source_part_of_speech": "VERB",
-      "target_lexical_form": "draw",
-      "target_part_of_speech": "VERB",
-      "relationship_kind": "HYPONYM"
-    },
-    {
       "source_lexical_form": "elicit",
       "source_part_of_speech": "VERB",
       "target_lexical_form": "obtain",
       "target_part_of_speech": "VERB",
       "relationship_kind": "HYPERNYM"
-    },
-    {
-      "source_lexical_form": "obtain",
-      "source_part_of_speech": "VERB",
-      "target_lexical_form": "elicit",
-      "target_part_of_speech": "VERB",
-      "relationship_kind": "HYPONYM"
     },
     {
       "source_lexical_form": "embody",
@@ -11698,13 +11586,6 @@
       "relationship_kind": "HYPERNYM"
     },
     {
-      "source_lexical_form": "classify",
-      "source_part_of_speech": "VERB",
-      "target_lexical_form": "grade",
-      "target_part_of_speech": "VERB",
-      "relationship_kind": "HYPONYM"
-    },
-    {
       "source_lexical_form": "graduate",
       "source_part_of_speech": "VERB",
       "target_lexical_form": "complete",
@@ -11712,25 +11593,11 @@
       "relationship_kind": "HYPERNYM"
     },
     {
-      "source_lexical_form": "complete",
-      "source_part_of_speech": "VERB",
-      "target_lexical_form": "graduate",
-      "target_part_of_speech": "VERB",
-      "relationship_kind": "HYPONYM"
-    },
-    {
       "source_lexical_form": "grasp",
       "source_part_of_speech": "VERB",
       "target_lexical_form": "hold",
       "target_part_of_speech": "VERB",
       "relationship_kind": "HYPERNYM"
-    },
-    {
-      "source_lexical_form": "hold",
-      "source_part_of_speech": "VERB",
-      "target_lexical_form": "grasp",
-      "target_part_of_speech": "VERB",
-      "relationship_kind": "HYPONYM"
     },
     {
       "source_lexical_form": "grow",
@@ -11796,13 +11663,6 @@
       "relationship_kind": "HYPERNYM"
     },
     {
-      "source_lexical_form": "perceive",
-      "source_part_of_speech": "VERB",
-      "target_lexical_form": "hear",
-      "target_part_of_speech": "VERB",
-      "relationship_kind": "HYPONYM"
-    },
-    {
       "source_lexical_form": "hold",
       "source_part_of_speech": "VERB",
       "target_lexical_form": "carry",
@@ -11836,13 +11696,6 @@
       "target_lexical_form": "form",
       "target_part_of_speech": "VERB",
       "relationship_kind": "HYPERNYM"
-    },
-    {
-      "source_lexical_form": "form",
-      "source_part_of_speech": "VERB",
-      "target_lexical_form": "imagine",
-      "target_part_of_speech": "VERB",
-      "relationship_kind": "HYPONYM"
     },
     {
       "source_lexical_form": "imply",
@@ -11936,25 +11789,11 @@
       "relationship_kind": "HYPERNYM"
     },
     {
-      "source_lexical_form": "act",
-      "source_part_of_speech": "VERB",
-      "target_lexical_form": "intervene",
-      "target_part_of_speech": "VERB",
-      "relationship_kind": "HYPONYM"
-    },
-    {
       "source_lexical_form": "introduce",
       "source_part_of_speech": "VERB",
       "target_lexical_form": "begin",
       "target_part_of_speech": "VERB",
       "relationship_kind": "HYPERNYM"
-    },
-    {
-      "source_lexical_form": "begin",
-      "source_part_of_speech": "VERB",
-      "target_lexical_form": "introduce",
-      "target_part_of_speech": "VERB",
-      "relationship_kind": "HYPONYM"
     },
     {
       "source_lexical_form": "involve",
@@ -12004,13 +11843,6 @@
       "target_lexical_form": "cause",
       "target_part_of_speech": "VERB",
       "relationship_kind": "HYPERNYM"
-    },
-    {
-      "source_lexical_form": "cause",
-      "source_part_of_speech": "VERB",
-      "target_lexical_form": "kill",
-      "target_part_of_speech": "VERB",
-      "relationship_kind": "HYPONYM"
     },
     {
       "source_lexical_form": "know",
@@ -12088,13 +11920,6 @@
       "target_lexical_form": "move",
       "target_part_of_speech": "VERB",
       "relationship_kind": "HYPERNYM"
-    },
-    {
-      "source_lexical_form": "move",
-      "source_part_of_speech": "VERB",
-      "target_lexical_form": "lead",
-      "target_part_of_speech": "VERB",
-      "relationship_kind": "HYPONYM"
     },
     {
       "source_lexical_form": "lead",
@@ -12214,13 +12039,6 @@
       "target_lexical_form": "make",
       "target_part_of_speech": "VERB",
       "relationship_kind": "HYPERNYM"
-    },
-    {
-      "source_lexical_form": "make",
-      "source_part_of_speech": "VERB",
-      "target_lexical_form": "manufacture",
-      "target_part_of_speech": "VERB",
-      "relationship_kind": "HYPONYM"
     },
     {
       "source_lexical_form": "manufacture",
@@ -12566,13 +12384,6 @@
       "relationship_kind": "HYPERNYM"
     },
     {
-      "source_lexical_form": "move",
-      "source_part_of_speech": "VERB",
-      "target_lexical_form": "pass",
-      "target_part_of_speech": "VERB",
-      "relationship_kind": "HYPONYM"
-    },
-    {
       "source_lexical_form": "perceive",
       "source_part_of_speech": "VERB",
       "target_lexical_form": "regard",
@@ -12636,13 +12447,6 @@
       "relationship_kind": "HYPERNYM"
     },
     {
-      "source_lexical_form": "speak",
-      "source_part_of_speech": "VERB",
-      "target_lexical_form": "pronounce",
-      "target_part_of_speech": "VERB",
-      "relationship_kind": "HYPONYM"
-    },
-    {
       "source_lexical_form": "prove",
       "source_part_of_speech": "VERB",
       "target_lexical_form": "demonstrate",
@@ -12692,13 +12496,6 @@
       "relationship_kind": "HYPERNYM"
     },
     {
-      "source_lexical_form": "exert",
-      "source_part_of_speech": "VERB",
-      "target_lexical_form": "push",
-      "target_part_of_speech": "VERB",
-      "relationship_kind": "HYPONYM"
-    },
-    {
       "source_lexical_form": "qualify",
       "source_part_of_speech": "VERB",
       "target_lexical_form": "limit",
@@ -12718,13 +12515,6 @@
       "target_lexical_form": "acquire",
       "target_part_of_speech": "VERB",
       "relationship_kind": "HYPERNYM"
-    },
-    {
-      "source_lexical_form": "acquire",
-      "source_part_of_speech": "VERB",
-      "target_lexical_form": "receive",
-      "target_part_of_speech": "VERB",
-      "relationship_kind": "HYPONYM"
     },
     {
       "source_lexical_form": "refer",
@@ -12776,25 +12566,11 @@
       "relationship_kind": "HYPERNYM"
     },
     {
-      "source_lexical_form": "support",
-      "source_part_of_speech": "VERB",
-      "target_lexical_form": "reinforce",
-      "target_part_of_speech": "VERB",
-      "relationship_kind": "HYPONYM"
-    },
-    {
       "source_lexical_form": "reject",
       "source_part_of_speech": "VERB",
       "target_lexical_form": "oppose",
       "target_part_of_speech": "VERB",
       "relationship_kind": "HYPERNYM"
-    },
-    {
-      "source_lexical_form": "oppose",
-      "source_part_of_speech": "VERB",
-      "target_lexical_form": "reject",
-      "target_part_of_speech": "VERB",
-      "relationship_kind": "HYPONYM"
     },
     {
       "source_lexical_form": "relate",
@@ -13007,13 +12783,6 @@
       "relationship_kind": "HYPERNYM"
     },
     {
-      "source_lexical_form": "perceive",
-      "source_part_of_speech": "VERB",
-      "target_lexical_form": "see",
-      "target_part_of_speech": "VERB",
-      "relationship_kind": "HYPONYM"
-    },
-    {
       "source_lexical_form": "see",
       "source_part_of_speech": "VERB",
       "target_lexical_form": "watch",
@@ -13054,13 +12823,6 @@
       "target_lexical_form": "move",
       "target_part_of_speech": "VERB",
       "relationship_kind": "HYPERNYM"
-    },
-    {
-      "source_lexical_form": "move",
-      "source_part_of_speech": "VERB",
-      "target_lexical_form": "shake",
-      "target_part_of_speech": "VERB",
-      "relationship_kind": "HYPONYM"
     },
     {
       "source_lexical_form": "shape",
@@ -13329,25 +13091,11 @@
       "relationship_kind": "HYPERNYM"
     },
     {
-      "source_lexical_form": "change",
-      "source_part_of_speech": "VERB",
-      "target_lexical_form": "transform",
-      "target_part_of_speech": "VERB",
-      "relationship_kind": "HYPONYM"
-    },
-    {
       "source_lexical_form": "travel",
       "source_part_of_speech": "VERB",
       "target_lexical_form": "go",
       "target_part_of_speech": "VERB",
       "relationship_kind": "HYPERNYM"
-    },
-    {
-      "source_lexical_form": "go",
-      "source_part_of_speech": "VERB",
-      "target_lexical_form": "travel",
-      "target_part_of_speech": "VERB",
-      "relationship_kind": "HYPONYM"
     },
     {
       "source_lexical_form": "trigger",
@@ -13378,13 +13126,6 @@
       "relationship_kind": "HYPERNYM"
     },
     {
-      "source_lexical_form": "move",
-      "source_part_of_speech": "VERB",
-      "target_lexical_form": "turn",
-      "target_part_of_speech": "VERB",
-      "relationship_kind": "HYPONYM"
-    },
-    {
       "source_lexical_form": "turn",
       "source_part_of_speech": "VERB",
       "target_lexical_form": "twist",
@@ -13411,13 +13152,6 @@
       "target_lexical_form": "move",
       "target_part_of_speech": "VERB",
       "relationship_kind": "HYPERNYM"
-    },
-    {
-      "source_lexical_form": "move",
-      "source_part_of_speech": "VERB",
-      "target_lexical_form": "wave",
-      "target_part_of_speech": "VERB",
-      "relationship_kind": "HYPONYM"
     },
     {
       "source_lexical_form": "welcome",
@@ -13455,13 +13189,6 @@
       "relationship_kind": "HYPERNYM"
     },
     {
-      "source_lexical_form": "mark",
-      "source_part_of_speech": "VERB",
-      "target_lexical_form": "write",
-      "target_part_of_speech": "VERB",
-      "relationship_kind": "HYPONYM"
-    },
-    {
       "source_lexical_form": "xnor",
       "source_part_of_speech": "VERB",
       "target_lexical_form": "xor",
@@ -13481,13 +13208,6 @@
       "target_lexical_form": "or",
       "target_part_of_speech": "VERB",
       "relationship_kind": "HYPERNYM"
-    },
-    {
-      "source_lexical_form": "or",
-      "source_part_of_speech": "VERB",
-      "target_lexical_form": "xor",
-      "target_part_of_speech": "VERB",
-      "relationship_kind": "HYPONYM"
     },
     {
       "source_lexical_form": "able",
@@ -18173,13 +17893,6 @@
       "relationship_kind": "HYPERNYM"
     },
     {
-      "source_lexical_form": "lead",
-      "source_part_of_speech": "VERB",
-      "target_lexical_form": "head",
-      "target_part_of_speech": "VERB",
-      "relationship_kind": "HYPONYM"
-    },
-    {
       "source_lexical_form": "method",
       "target_lexical_form": "procedure",
       "relationship_kind": "HYPERNYM",
@@ -18194,25 +17907,11 @@
       "target_part_of_speech": "NOUN"
     },
     {
-      "source_lexical_form": "compare",
-      "source_part_of_speech": "VERB",
-      "target_lexical_form": "contrast",
-      "target_part_of_speech": "VERB",
-      "relationship_kind": "HYPONYM"
-    },
-    {
       "source_lexical_form": "contrast",
       "source_part_of_speech": "VERB",
       "target_lexical_form": "compare",
       "target_part_of_speech": "VERB",
       "relationship_kind": "HYPERNYM"
-    },
-    {
-      "source_lexical_form": "divide",
-      "source_part_of_speech": "VERB",
-      "target_lexical_form": "fragment",
-      "target_part_of_speech": "VERB",
-      "relationship_kind": "HYPONYM"
     },
     {
       "source_lexical_form": "fragment",
@@ -18222,25 +17921,11 @@
       "relationship_kind": "HYPERNYM"
     },
     {
-      "source_lexical_form": "express",
-      "source_part_of_speech": "VERB",
-      "target_lexical_form": "write",
-      "target_part_of_speech": "VERB",
-      "relationship_kind": "HYPONYM"
-    },
-    {
       "source_lexical_form": "write",
       "source_part_of_speech": "VERB",
       "target_lexical_form": "express",
       "target_part_of_speech": "VERB",
       "relationship_kind": "HYPERNYM"
-    },
-    {
-      "source_lexical_form": "look",
-      "source_part_of_speech": "VERB",
-      "target_lexical_form": "watch",
-      "target_part_of_speech": "VERB",
-      "relationship_kind": "HYPONYM"
     },
     {
       "source_lexical_form": "watch",
@@ -18250,25 +17935,11 @@
       "relationship_kind": "HYPERNYM"
     },
     {
-      "source_lexical_form": "move",
-      "source_part_of_speech": "VERB",
-      "target_lexical_form": "travel",
-      "target_part_of_speech": "VERB",
-      "relationship_kind": "HYPONYM"
-    },
-    {
       "source_lexical_form": "travel",
       "source_part_of_speech": "VERB",
       "target_lexical_form": "move",
       "target_part_of_speech": "VERB",
       "relationship_kind": "HYPERNYM"
-    },
-    {
-      "source_lexical_form": "negate",
-      "source_part_of_speech": "VERB",
-      "target_lexical_form": "not",
-      "target_part_of_speech": "VERB",
-      "relationship_kind": "HYPONYM"
     },
     {
       "source_lexical_form": "not",
@@ -18278,13 +17949,6 @@
       "relationship_kind": "HYPERNYM"
     },
     {
-      "source_lexical_form": "see",
-      "source_part_of_speech": "VERB",
-      "target_lexical_form": "watch",
-      "target_part_of_speech": "VERB",
-      "relationship_kind": "HYPONYM"
-    },
-    {
       "source_lexical_form": "watch",
       "source_part_of_speech": "VERB",
       "target_lexical_form": "see",
@@ -18292,25 +17956,11 @@
       "relationship_kind": "HYPERNYM"
     },
     {
-      "source_lexical_form": "touch",
-      "source_part_of_speech": "VERB",
-      "target_lexical_form": "strike",
-      "target_part_of_speech": "VERB",
-      "relationship_kind": "HYPONYM"
-    },
-    {
       "source_lexical_form": "strike",
       "source_part_of_speech": "VERB",
       "target_lexical_form": "touch",
       "target_part_of_speech": "VERB",
       "relationship_kind": "HYPERNYM"
-    },
-    {
-      "source_lexical_form": "turn",
-      "source_part_of_speech": "VERB",
-      "target_lexical_form": "twist",
-      "target_part_of_speech": "VERB",
-      "relationship_kind": "HYPONYM"
     },
     {
       "source_lexical_form": "twist",
