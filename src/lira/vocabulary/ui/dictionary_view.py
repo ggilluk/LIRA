@@ -9,6 +9,7 @@ embedded webfont) so the output stays a single dependency-free file."""
 
 import json
 import re
+from datetime import datetime, timezone
 from html import escape
 from typing import Dict, List, Optional, Tuple
 
@@ -93,6 +94,14 @@ class DictionaryView:
         # here (vocabulary/documentation/README.md, 9.6).
         self.unresolved = tuple(unresolved)
 
+    @staticmethod
+    def _compiled_at() -> str:
+        """The moment render() is actually called, not construction time
+        -- so re-running a seeding script's save() always stamps the
+        instant the file was written, even if the DictionaryView object
+        itself was built earlier in the same script."""
+        return datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+
     def render(self) -> str:
         words = self._word_records()
         rels = self._relationship_records()
@@ -112,6 +121,7 @@ class DictionaryView:
         html = _PAGE_TEMPLATE
         for token, value in {
             "TITLE": escape(self.title),
+            "COMPILED_AT": escape(self._compiled_at()),
             "WORD_COUNT": str(len(words)),
             "RELATIONSHIP_COUNT": str(len(rels)),
             "COMMON_COUNT": str(common_count),
@@ -258,7 +268,7 @@ _PAGE_TEMPLATE = """<!DOCTYPE html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>@@TITLE@@</title>
+<title>@@TITLE@@ -- compiled @@COMPILED_AT@@</title>
 <style>
 :root {
   --ground: #F4F5F1;
@@ -815,7 +825,7 @@ footer {
 <div class="page">
   <header class="masthead">
     <h1>@@TITLE@@</h1>
-    <div class="subtitle">@@WORD_COUNT@@ words &middot; @@RELATIONSHIP_COUNT@@ relationships</div>
+    <div class="subtitle">@@WORD_COUNT@@ words &middot; @@RELATIONSHIP_COUNT@@ relationships &middot; compiled @@COMPILED_AT@@</div>
   </header>
   <!--@@BODY_FRAGMENT_START@@-->
 

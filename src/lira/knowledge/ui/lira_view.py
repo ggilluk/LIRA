@@ -19,6 +19,8 @@ its own IIFE -- both views independently declare top-level names like
 `const POS_COLORS` that would be a JS SyntaxError (redeclaration) if
 concatenated unscoped into one global `<script>` block."""
 
+from datetime import datetime, timezone
+
 from ...linguistics.ui.sentence_reader_view import SentenceReaderView
 from ...vocabulary.ui.dictionary_view import DictionaryView
 
@@ -45,6 +47,12 @@ class LiraView:
         self.title = title
         self.subtitle = subtitle
 
+    @staticmethod
+    def _compiled_at() -> str:
+        """The moment render() is actually called, not construction time
+        -- matches DictionaryView._compiled_at()'s own reasoning."""
+        return datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+
     def render(self) -> str:
         dict_style, dict_body, dict_script = self.dictionary_view.render_fragment()
         sr_style, sr_body, sr_script = self.sentence_reader_view.render_fragment()
@@ -52,6 +60,7 @@ class LiraView:
         for token, value in {
             "TITLE": self.title,
             "SUBTITLE": self.subtitle,
+            "COMPILED_AT": self._compiled_at(),
             "DICTIONARY_STYLE": dict_style,
             "SENTENCE_READER_STYLE": sr_style,
             "DICTIONARY_BODY": dict_body,
@@ -72,7 +81,7 @@ _PAGE_TEMPLATE = """<!DOCTYPE html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>@@TITLE@@</title>
+<title>@@TITLE@@ -- compiled @@COMPILED_AT@@</title>
 <style>
 :root {
   --ground: #F4F5F1;
@@ -205,7 +214,7 @@ footer.lira-footer {
   <header class="masthead">
     <div>
       <h1>@@TITLE@@</h1>
-      <div class="subtitle">@@SUBTITLE@@</div>
+      <div class="subtitle">@@SUBTITLE@@ &middot; compiled @@COMPILED_AT@@</div>
     </div>
     <nav class="tab-switcher" role="tablist">
       <button class="lira-tab-btn active" type="button" data-tab="dictionary" role="tab" aria-selected="true">Dictionary</button>

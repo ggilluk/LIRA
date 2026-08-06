@@ -39,6 +39,13 @@ view = DictionaryView(
 view.save("dictionary.html")
 ```
 
+The masthead's `<title>` (browser tab) and page heading both append
+"-- compiled `<UTC timestamp>`", and the subtitle line under the `<h1>`
+shows it a second time -- stamped at `render()`/`save()` time, not
+construction time, so every regenerated `dictionary_view_example.html`
+records the exact moment it was last written, not just what it
+contains.
+
 The word detail panel includes a **Provenance** line, reading each
 `Word.source_references` (previously a populated field this view never
 displayed). The optional `unresolved` constructor argument -- a tuple
