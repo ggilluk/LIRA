@@ -1186,3 +1186,34 @@ idempotent -- diffs each entry's definition before writing, so a
 second run changes nothing. Mandatory total 391 -> 435; see
 `assets/common/en/README.md`'s own `asset_version 1.18.0` Version
 entry for the full character-by-character accounting.
+
+## TROPONYM now materialises its HYPONYM/HYPERNYM companion
+
+`TROPONYM` was documented and seeded as one-directional with no
+inverse kind, the same category as `ENTAILMENT`/`CAUSE`. That was
+wrong: troponymy is verb-specific hyponymy (WordNet models it as the
+same hypernym/hyponym relation, just named "troponym" for the narrower
+verb) -- "stroll" genuinely *is a type of* "walk", unlike "snore"
+entailing "sleep" (not "snoring is a type of sleeping").
+
+Every seeded `TROPONYM` edge (general, `TROPONYM`, specific) now also
+materialises (general, `HYPONYM`, specific) and (specific, `HYPERNYM`,
+general) -- no new `LexicalRelationshipType` member needed, this reuses
+the existing `HYPERNYM`/`HYPONYM` values. `TROPONYM` itself is kept
+too: `troponyms()` still answers "specifically a manner of", narrower
+than plain `hyponyms()`. `common_semantic_completion_seeding.py` and
+`physics_domain_seeding.py` both changed to materialise the pair;
+`relationship_contradiction_audit.py` now treats `TROPONYM` as part of
+the `HYPERNYM`/`HYPONYM` family (co-occurring is expected, not a
+contradiction) and gained a check for the opposite failure mode -- a
+`TROPONYM` edge missing its companion pair.
+
+Applied to all 9 existing Common `TROPONYM` pairs and the 5
+Physics-domain hand-curated ones (18 + up to 10 new edges; several of
+the Physics companions turned out already present, inherited from
+Common). Verified: `move.hyponyms()` now includes `travel` alongside
+its existing hyponyms, `travel.hypernyms()` now includes `move`
+alongside `go`, both seeding scripts are idempotent on rerun, and the
+audit finds 0 missing companions and 0 cross-family contradictions.
+See `assets/common/en/relationships/README.md`'s `asset_version
+1.15.0` Version entry for the full accounting.

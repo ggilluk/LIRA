@@ -45,10 +45,15 @@ properties, which is the authoritative reader of this data):
   HOLONYM edges, so "wheel".holonyms() finds "car".
 - TROPONYM edge is (general_word, TROPONYM, specific_manner_word) --
   X.troponyms() reads outgoing TROPONYM edges, so "move".troponyms()
-  should find "flow"/"spin"/etc. No inverse kind is materialised (none
-  is defined in LexicalRelationshipType for this), matching the
-  existing CONTRACTION precedent in
-  assets/common/en/relationships/README.md.
+  should find "flow"/"spin"/etc. Troponymy is verb-specific hyponymy
+  (WordNet treats it as the same hypernym/hyponym relation, just named
+  "troponym" for the narrower verb), so the seeding script also
+  materialises the matching HYPERNYM_HYPONYM_PAIRS pattern alongside
+  the TROPONYM edge itself: (general_word, HYPONYM, specific_manner_word)
+  plus (specific_manner_word, HYPERNYM, general_word) -- so "flow".
+  hypernyms() finds "move" and "move".hyponyms() finds "flow", the same
+  as any other hypernym/hyponym pair, while "move".troponyms() still
+  answers the more specific "manner of" question on its own.
 - ENTAILMENT edge is (entailing_verb, ENTAILMENT, entailed_verb) --
   "accelerate" ENTAILMENT "move" reads "to accelerate entails moving".
   One-directional, no inverse kind defined.
@@ -92,7 +97,9 @@ MERONYM_HOLONYM_PAIRS = (
 )
 
 # (general_text, general_pos, specific_text, specific_pos) -- one
-# TROPONYM edge (general -> specific), not reversed.
+# TROPONYM edge (general -> specific), plus the matching HYPONYM
+# (general -> specific) and HYPERNYM (specific -> general) edges --
+# see the module docstring's Directional conventions section.
 TROPONYM_PAIRS = (
     ("move", "VERB", "flow", "VERB"),
     ("move", "VERB", "spin", "VERB"),

@@ -2,7 +2,7 @@
   "schema_version": "1.0.0",
   "language_code": "en",
   "relationship_category": "semantic",
-  "count": 2595,
+  "count": 2613,
   "relationships": [
     {
       "source_lexical_form": "above",
@@ -18192,6 +18192,132 @@
       "relationship_kind": "HYPONYM",
       "source_part_of_speech": "NOUN",
       "target_part_of_speech": "NOUN"
+    },
+    {
+      "source_lexical_form": "compare",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "contrast",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "HYPONYM"
+    },
+    {
+      "source_lexical_form": "contrast",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "compare",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "HYPERNYM"
+    },
+    {
+      "source_lexical_form": "divide",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "fragment",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "HYPONYM"
+    },
+    {
+      "source_lexical_form": "fragment",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "divide",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "HYPERNYM"
+    },
+    {
+      "source_lexical_form": "express",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "write",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "HYPONYM"
+    },
+    {
+      "source_lexical_form": "write",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "express",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "HYPERNYM"
+    },
+    {
+      "source_lexical_form": "look",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "watch",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "HYPONYM"
+    },
+    {
+      "source_lexical_form": "watch",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "look",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "HYPERNYM"
+    },
+    {
+      "source_lexical_form": "move",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "travel",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "HYPONYM"
+    },
+    {
+      "source_lexical_form": "travel",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "move",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "HYPERNYM"
+    },
+    {
+      "source_lexical_form": "negate",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "not",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "HYPONYM"
+    },
+    {
+      "source_lexical_form": "not",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "negate",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "HYPERNYM"
+    },
+    {
+      "source_lexical_form": "see",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "watch",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "HYPONYM"
+    },
+    {
+      "source_lexical_form": "watch",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "see",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "HYPERNYM"
+    },
+    {
+      "source_lexical_form": "touch",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "strike",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "HYPONYM"
+    },
+    {
+      "source_lexical_form": "strike",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "touch",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "HYPERNYM"
+    },
+    {
+      "source_lexical_form": "turn",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "twist",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "HYPONYM"
+    },
+    {
+      "source_lexical_form": "twist",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "turn",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "HYPERNYM"
     }
   ]
 }

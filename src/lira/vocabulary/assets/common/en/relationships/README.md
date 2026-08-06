@@ -47,6 +47,16 @@ edge -- not left to be inferred at query time:
   -- if `above` is the `ANTONYM` of `below`, `below` is the `ANTONYM`
   of `above` just as much, so both directions are stored (`above` →
   `below` and `below` → `above`, each `ANTONYM`).
+- **Semantic, `TROPONYM`**: troponymy is verb-specific hyponymy
+  (WordNet models it as the same hypernym/hyponym relation, just named
+  "troponym" for the narrower verb) -- a `TROPONYM` edge (general,
+  `TROPONYM`, specific) materialises *two* companion edges, not one:
+  (general, `HYPONYM`, specific) in the same direction, and (specific,
+  `HYPERNYM`, general) reversed, exactly the pattern any other
+  `HYPERNYM`/`HYPONYM` pair follows. The `TROPONYM` edge itself is kept
+  too -- `troponyms()` still answers the more specific "manner of"
+  question, `hypernyms()`/`hyponyms()` answer the general one, and
+  after this both read the same pair. (`asset_version 1.15.0`.)
 - **Morphological, `PRONOUN_OBJECT_FORM` pairs**: the reverse of `I` →
   `me` (`PRONOUN_OBJECT_FORM`) is `me` → `I`, seeded as
   `PRONOUN_SUBJECT_FORM` -- the enum's own defined inverse of
@@ -319,6 +329,42 @@ loanwords), not a gap in the relationship cache; revisit if a future
 batch adds vocabulary of that kind.
 
 ## Version
+
+`v1` / `schema_version 1.0.0` / `asset_version 1.15.0` (6099 -> 6117
+relationships; `semantic_relationships.json` 2595 -> 2613). `TROPONYM`
+previously had no reciprocal at all -- documented (and verified against
+`Word.py`) as "one-directional, no inverse kind defined", the same
+category as `ENTAILMENT`/`CAUSE`. That was wrong: troponymy is
+verb-specific hyponymy, not an implicational relation like entailment
+or causation ("stroll" genuinely *is a type of* "walk", the same "is a"
+relationship `HYPERNYM`/`HYPONYM` already models for nouns -- unlike
+"snore" entailing "sleep", which isn't "snoring is a type of
+sleeping"). Every `TROPONYM` edge now also materialises the matching
+`HYPONYM` (same direction) and `HYPERNYM` (reverse direction) pair, the
+same "Symmetric and inverse edges" discipline every other kind here
+already follows -- see that section above. No new
+`LexicalRelationshipType` member was needed; this reuses the existing
+`HYPERNYM`/`HYPONYM` values. `examples/common_semantic_completion_seeding.py`'s
+`add_semantic_relationships()` and `examples/physics_domain_seeding.py`'s
+`_seed_physics_relationships()` both changed to materialise the pair;
+`examples/relationship_contradiction_audit.py` now treats `TROPONYM` as
+part of the `HYPERNYM`/`HYPONYM` family (co-occurring is expected, not
+a contradiction) and gained a new check,
+`find_missing_troponym_companions()`, for the opposite failure mode --
+a `TROPONYM` edge without its companion pair. Applied to all 9 existing
+Common `TROPONYM` pairs (18 new edges: `compare`/`contrast`,
+`divide`/`fragment`, `express`/`write`, `look`/`watch`, `move`/`travel`,
+`negate`/`not`, `see`/`watch`, `touch`/`strike`, `turn`/`twist`) and the
+5 Physics-domain hand-curated `TROPONYM_PAIRS` (`move`/`flow`,
+`move`/`spin`, `move`/`wave`, `move`/`transfer`, `move`/`accelerate` --
+3 of the 5 companion pairs turned out already present, inherited from
+Common's own `wave`/`move` hypernym pair, so only new edges were
+created, none duplicated). Verified directly, not assumed: re-ran the
+audit after seeding and got 0 missing companions and 0 cross-family
+contradictions; confirmed `move.hyponyms()` now includes `travel`
+alongside its existing hyponyms and `travel.hypernyms()` now includes
+`move` alongside `go`; re-ran both seeding scripts a second time and
+got 0 new edges (idempotent).
 
 `v1` / `schema_version 1.0.0` / `asset_version 1.14.0` (6173 -> 6099
 relationships, net; `semantic_relationships.json` 2669 -> 2595).

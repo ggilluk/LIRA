@@ -205,16 +205,27 @@ def _seed_physics_relationships(physics_domain) -> dict:
     Word.py's derived properties -- meronyms()/holonyms() read incoming
     edges, hypernyms()/hyponyms()/troponyms() read outgoing).
 
-    Three materialisation patterns, one per physics_domain_relationships.py
+    Four materialisation patterns, one per physics_domain_relationships.py
     list shape:
     - Symmetric, same kind both directions (SYNONYM_PAIRS, ANTONYM_PAIRS,
       RELATED_PAIRS): (text_a, pos_a, text_b, pos_b).
     - Inverse-kind pairs, one conceptual fact producing two different
       kinds (HYPERNYM_HYPONYM_PAIRS, MERONYM_HOLONYM_PAIRS):
       (narrower/part, pos, broader/whole, pos).
+    - Troponymy is verb-specific hyponymy (WordNet models it as the same
+      hypernym/hyponym relation, just named "troponym" on the narrower
+      side for verbs) -- TROPONYM_PAIRS therefore also materialises the
+      HYPERNYM_HYPONYM_PAIRS pattern alongside the TROPONYM edge itself,
+      not just a bare one-directional edge: (general, TROPONYM, specific)
+      plus (general, HYPONYM, specific) plus (specific, HYPERNYM, general).
+      TROPONYM stays a real, distinct edge (so troponyms() still answers
+      "specifically a manner of", not just "narrower than"), but general.
+      hyponyms()/specific.hypernyms() now find it too, the same as any
+      other hyponym/hypernym pair.
     - One-directional, no inverse kind defined in LexicalRelationshipType
-      (TROPONYM_PAIRS, ENTAILMENT_PAIRS, CAUSE_PAIRS): (source, pos,
-      target, pos) -- matches the not-reversed CONTRACTION precedent.
+      (ENTAILMENT_PAIRS, CAUSE_PAIRS): (source, pos, target, pos) --
+      matches the not-reversed CONTRACTION precedent. TROPONYM is no
+      longer in this group -- see above.
 
     Resolves every word by exact (text, part_of_speech), since several
     are homographs; skips (and reports) any pair where a word or the
@@ -312,6 +323,8 @@ def _seed_physics_relationships(physics_domain) -> dict:
         if resolved:
             general, specific = resolved
             make_edge(general, LexicalRelationshipType.TROPONYM, specific)
+            make_edge(general, LexicalRelationshipType.HYPONYM, specific)
+            make_edge(specific, LexicalRelationshipType.HYPERNYM, general)
 
     for entailing_text, entailing_pos, entailed_text, entailed_pos in ENTAILMENT_PAIRS:
         attempted_pairs += 1

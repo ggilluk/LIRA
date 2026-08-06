@@ -1,11 +1,20 @@
-"""Seeds common_semantic_completion.py's 1307 Lexical Semantic
+"""Seeds common_semantic_completion.py's 1270 Lexical Semantic
 relationships (LexicalRelationshipType group 1) into the static Common
 relationship cache, materialising every reciprocal edge the same way
 this cache's own README documents: HYPERNYM -> reciprocal HYPONYM,
 MERONYM -> reciprocal HOLONYM, SYNONYM/ANTONYM/RELATED -> reciprocal
-same-kind edge in the reverse direction (they're symmetric).
-TROPONYM/ENTAILMENT/CAUSE get no reciprocal -- one-directional by
-definition, no inverse kind exists for them.
+same-kind edge in the reverse direction (they're symmetric). TROPONYM
+is verb-specific hyponymy (WordNet models it as the same hypernym/
+hyponym relation, just named "troponym" for the narrower verb), so
+each TROPONYM edge also materialises the matching HYPONYM (same
+direction) and HYPERNYM (reverse direction) pair, on top of the
+TROPONYM edge itself -- TROPONYM stays a real, more specific edge
+(troponyms() still answers "specifically a manner of"), it just no
+longer leaves the general hypernym/hyponym hierarchy blind to it.
+ENTAILMENT/CAUSE get no reciprocal -- one-directional by definition,
+no inverse kind exists for them, and unlike TROPONYM neither is a
+hyponymy relation in disguise ("snore" entailing "sleep" isn't "snore
+is a type of sleep").
 
 Every word referenced already exists in the Common Vocabulary Cache
 (common_semantic_completion.py's own drafting process only ever used
@@ -38,7 +47,10 @@ RECIPROCAL_KIND = {
     "SYNONYM": "SYNONYM",
     "ANTONYM": "ANTONYM",
     "RELATED": "RELATED",
-    # TROPONYM/ENTAILMENT/CAUSE: no reciprocal, one-directional by design.
+    # ENTAILMENT/CAUSE: no reciprocal, one-directional by design.
+    # TROPONYM: handled separately below -- it materialises a
+    # HYPONYM/HYPERNYM pair, not a single same-or-symmetric-kind
+    # reciprocal, so it doesn't fit this one-entry-per-kind map.
 }
 
 
@@ -54,9 +66,17 @@ def add_semantic_relationships() -> dict:
     added = 0
     for source_form, source_pos, kind, target_form, target_pos in RELATIONSHIPS:
         edges = [(source_form, source_pos, kind, target_form, target_pos)]
-        recip = RECIPROCAL_KIND.get(kind)
-        if recip:
-            edges.append((target_form, target_pos, recip, source_form, source_pos))
+        if kind == "TROPONYM":
+            # Troponymy is verb-specific hyponymy -- (general, TROPONYM,
+            # specific) also means (general, HYPONYM, specific) and
+            # (specific, HYPERNYM, general), the same as any other
+            # hypernym/hyponym pair.
+            edges.append((source_form, source_pos, "HYPONYM", target_form, target_pos))
+            edges.append((target_form, target_pos, "HYPERNYM", source_form, source_pos))
+        else:
+            recip = RECIPROCAL_KIND.get(kind)
+            if recip:
+                edges.append((target_form, target_pos, recip, source_form, source_pos))
 
         for src_f, src_p, rel_kind, tgt_f, tgt_p in edges:
             key = (src_f, src_p, rel_kind, tgt_f, tgt_p)

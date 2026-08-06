@@ -414,6 +414,17 @@ Connects a general action to a word describing a more specific way of performing
 |------|-------|---------|----------------------|
 | `TROPONYM` | 88 | Target expresses a specific manner | "walk" → "stroll" |
 
+Troponymy is verb-specific hyponymy (WordNet models it as the same
+hypernym/hyponym relation, just named "troponym" for the narrower
+verb), so a seeded `TROPONYM` edge (general, `TROPONYM`, specific)
+always carries a matching `HYPONYM`/`HYPERNYM` pair alongside it:
+(general, `HYPONYM`, specific) and (specific, `HYPERNYM`, general).
+`TROPONYM` stays its own, more specific edge (`troponyms()` still
+answers "specifically a manner of", narrower than plain `hyponyms()`),
+it just no longer leaves the general hypernym/hyponym hierarchy blind
+to it -- "stroll".hypernyms() finds "walk", and "walk".hyponyms() finds
+"stroll", the same as any other hypernym/hyponym pair.
+
 ###### Entailment / Causation (category 4)
 
 Connects a word to another word whose meaning it logically implies, or to a word describing what it brings about -- for example, "snore" entails "sleep", and "kill" causes "die".
