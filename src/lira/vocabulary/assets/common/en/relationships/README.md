@@ -330,6 +330,39 @@ batch adds vocabulary of that kind.
 
 ## Version
 
+`v1` / `schema_version 1.0.0` / `asset_version 1.16.0` (6117 -> 6158
+relationships; `semantic_relationships.json` 2613 -> 2654). Backfilled
+the missing `TROPONYM` edge for every pre-existing verb-verb
+`HYPERNYM`/`HYPONYM` pair: `asset_version 1.15.0` fixed `TROPONYM`
+edges that were missing their `HYPERNYM`/`HYPONYM` companion, but never
+checked the mirror-image gap -- a verb-verb hyponymy pair seeded as
+plain `HYPERNYM`/`HYPONYM` with no `TROPONYM` edge at all, because it
+predates `TROPONYM`/`HYPERNYM` being modelled as the verb-specific
+pairing (most of these came from the original 14-subagent drafting
+pass and the 37-pair contradiction fix, both of which predate
+`asset_version 1.15.0`). Checked directly, not assumed: resolving
+every `HYPERNYM` edge's two endpoints against the full word cache found
+41 such pairs (`add`/`calculate`, `advance`/`move`, `demonstrate`/`show`,
+`grade`/`classify`, `head`/`lead`, `transform`/`change`, `travel`/`go`,
+and 34 more) -- every existing `HYPERNYM`/`HYPONYM` edge for these pairs
+is untouched (direction already correct); only the one missing
+`TROPONYM` edge per pair was added
+(`examples/troponym_verb_backfill.py`). `examples/
+relationship_contradiction_audit.py` gained a permanent check for this,
+`find_verb_hypernym_without_troponym()`, resolving part of speech
+against the full word cache rather than trusting the relationship
+entry's own optional `source_part_of_speech`/`target_part_of_speech`
+fields (most pre-`asset_version 1.8.0` entries omit them). Verified:
+re-ran the audit after seeding and got 0 verb-verb `HYPERNYM` pairs
+without a `TROPONYM` edge, 0 missing `TROPONYM` companions, and 0
+cross-family contradictions; re-ran `troponym_verb_backfill.py` a
+second time and got 0 new edges (idempotent).
+
+The Hierarchy and Cyclic tab kind selectors in `DictionaryView`
+(`vocabulary/ui/dictionary_view.py`) now group `Hypernym`/`Hyponym`/
+`Troponym` under one `<optgroup>` and `Meronym`/`Holonym` under another,
+instead of a flat alphabetical list -- see `vocabulary/ui/README.md`.
+
 `v1` / `schema_version 1.0.0` / `asset_version 1.15.0` (6099 -> 6117
 relationships; `semantic_relationships.json` 2595 -> 2613). `TROPONYM`
 previously had no reciprocal at all -- documented (and verified against

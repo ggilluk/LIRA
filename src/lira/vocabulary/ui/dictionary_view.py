@@ -956,6 +956,52 @@ function titleCase(s) {
   return s.toLowerCase().split("_").map(w => w[0].toUpperCase() + w.slice(1)).join(" ");
 }
 
+// Reciprocal-kind groupings for the Hierarchy/Cyclic kind selectors --
+// shown together under one <optgroup> rather than scattered across a
+// flat alphabetical list, so a reciprocal pair (or, for TROPONYM, the
+// verb-specific hyponymy triple sharing HYPERNYM) reads as one unit.
+// HYPERNYM/HYPONYM/TROPONYM applies to nouns (HYPERNYM/HYPONYM) and
+// verbs (TROPONYM/HYPERNYM, troponymy being verb-specific hyponymy --
+// examples/troponym_verb_backfill.py's own module docstring);
+// MERONYM/HOLONYM applies to nouns. A kind not listed here (SYNONYM,
+// ANTONYM, RELATED, every morphological/orthographic kind) has no
+// distinct reciprocal-kind partner of its own -- either genuinely
+// symmetric (stored both directions under the same kind) or paired
+// with LEMMA_FORM generically -- so it stays in the ungrouped list.
+const KIND_PAIR_GROUPS = [
+  { label: "Hypernym / Hyponym / Troponym", kinds: ["HYPERNYM", "HYPONYM", "TROPONYM"] },
+  { label: "Meronym / Holonym", kinds: ["MERONYM", "HOLONYM"] },
+];
+
+// Builds <option>s for every kind in `counts`, grouping any kind listed
+// in KIND_PAIR_GROUPS under its own <optgroup> (kinds sorted within the
+// group in the order declared, not alphabetically, so e.g. Hypernym
+// reads before Hyponym) and appending every remaining kind afterward,
+// alphabetically, exactly as before this grouping existed.
+function appendKindOptions(select, counts) {
+  const remaining = new Set(Object.keys(counts));
+  KIND_PAIR_GROUPS.forEach(({ label, kinds }) => {
+    const present = kinds.filter(k => remaining.has(k));
+    if (present.length < 2) return; // nothing to pair here in this Dictionary
+    const group = document.createElement("optgroup");
+    group.label = label;
+    present.forEach(kind => {
+      const opt = document.createElement("option");
+      opt.value = kind;
+      opt.textContent = `${titleCase(kind)} (${counts[kind]})`;
+      group.appendChild(opt);
+      remaining.delete(kind);
+    });
+    select.appendChild(group);
+  });
+  [...remaining].sort().forEach(kind => {
+    const opt = document.createElement("option");
+    opt.value = kind;
+    opt.textContent = `${titleCase(kind)} (${counts[kind]})`;
+    select.appendChild(opt);
+  });
+}
+
 function posPill(pos) {
   const color = POS_COLORS[pos] || "#7A7A7A";
   return `<span class="pill" style="background:${color}">${titleCase(pos)}</span>`;
@@ -1105,12 +1151,7 @@ function populateHierarchyKindFilter() {
   const counts = {};
   RELS.forEach(r => { counts[r.kind] = (counts[r.kind] || 0) + 1; });
   const kinds = Object.keys(counts).sort();
-  kinds.forEach(kind => {
-    const opt = document.createElement("option");
-    opt.value = kind;
-    opt.textContent = `${titleCase(kind)} (${counts[kind]})`;
-    select.appendChild(opt);
-  });
+  appendKindOptions(select, counts);
   state.hierarchyKind = kinds[0] || null;
   if (state.hierarchyKind) select.value = state.hierarchyKind;
 }
@@ -1760,12 +1801,7 @@ function populateCyclicKindFilter() {
   const counts = {};
   RELS.forEach(r => { if (r.kind !== "SYNONYM" && r.group === 1) counts[r.kind] = (counts[r.kind] || 0) + 1; });
   const kinds = Object.keys(counts).sort();
-  kinds.forEach(kind => {
-    const opt = document.createElement("option");
-    opt.value = kind;
-    opt.textContent = `${titleCase(kind)} (${counts[kind]})`;
-    select.appendChild(opt);
-  });
+  appendKindOptions(select, counts);
   // Default to the first kind (by edge count) that actually connects
   // two or more synonym boxes, rather than whichever kind sorts first
   // alphabetically -- most kinds never do (a HYPERNYM edge, say, is far

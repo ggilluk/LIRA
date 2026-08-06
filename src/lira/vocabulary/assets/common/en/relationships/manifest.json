@@ -1,8 +1,8 @@
 {
   "schema_version": "1.0.0",
-  "asset_version": "1.15.0",
+  "asset_version": "1.16.0",
   "language_code": "en",
-  "relationship_count": 6117,
+  "relationship_count": 6158,
   "files": [
     {
       "file": "morphological_relationships.json",
@@ -10,12 +10,12 @@
     },
     {
       "file": "semantic_relationships.json",
-      "count": 2613
+      "count": 2654
     },
     {
       "file": "orthographic_relationships.json",
       "count": 16
     }
   ],
-  "checksum": "bb4a74d2d5c9cf2c3435bf029736eb4b1fd8cd5310d368445188ac8eb632cf8c"
+  "checksum": "19cd06268232d7acaf802cdf9555820ca5250003778b3d3b3aa01c815725c37b"
 }

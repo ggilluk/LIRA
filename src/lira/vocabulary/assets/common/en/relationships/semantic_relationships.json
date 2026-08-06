@@ -2,7 +2,7 @@
   "schema_version": "1.0.0",
   "language_code": "en",
   "relationship_category": "semantic",
-  "count": 2613,
+  "count": 2654,
   "relationships": [
     {
       "source_lexical_form": "above",
@@ -18318,6 +18318,293 @@
       "target_lexical_form": "turn",
       "target_part_of_speech": "VERB",
       "relationship_kind": "HYPERNYM"
+    },
+    {
+      "source_lexical_form": "calculate",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "add",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "TROPONYM"
+    },
+    {
+      "source_lexical_form": "speak",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "address",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "TROPONYM"
+    },
+    {
+      "source_lexical_form": "move",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "advance",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "TROPONYM"
+    },
+    {
+      "source_lexical_form": "combine",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "and",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "TROPONYM"
+    },
+    {
+      "source_lexical_form": "divide",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "apportion",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "TROPONYM"
+    },
+    {
+      "source_lexical_form": "happen",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "arise",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "TROPONYM"
+    },
+    {
+      "source_lexical_form": "determine",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "calculate",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "TROPONYM"
+    },
+    {
+      "source_lexical_form": "calculate",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "count",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "TROPONYM"
+    },
+    {
+      "source_lexical_form": "move",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "curve",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "TROPONYM"
+    },
+    {
+      "source_lexical_form": "explain",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "define",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "TROPONYM"
+    },
+    {
+      "source_lexical_form": "bring",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "deliver",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "TROPONYM"
+    },
+    {
+      "source_lexical_form": "show",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "demonstrate",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "TROPONYM"
+    },
+    {
+      "source_lexical_form": "explain",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "describe",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "TROPONYM"
+    },
+    {
+      "source_lexical_form": "speak",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "discuss",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "TROPONYM"
+    },
+    {
+      "source_lexical_form": "produce",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "draw",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "TROPONYM"
+    },
+    {
+      "source_lexical_form": "obtain",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "elicit",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "TROPONYM"
+    },
+    {
+      "source_lexical_form": "classify",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "grade",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "TROPONYM"
+    },
+    {
+      "source_lexical_form": "complete",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "graduate",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "TROPONYM"
+    },
+    {
+      "source_lexical_form": "hold",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "grasp",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "TROPONYM"
+    },
+    {
+      "source_lexical_form": "perceive",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "hear",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "TROPONYM"
+    },
+    {
+      "source_lexical_form": "form",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "imagine",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "TROPONYM"
+    },
+    {
+      "source_lexical_form": "act",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "intervene",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "TROPONYM"
+    },
+    {
+      "source_lexical_form": "begin",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "introduce",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "TROPONYM"
+    },
+    {
+      "source_lexical_form": "cause",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "kill",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "TROPONYM"
+    },
+    {
+      "source_lexical_form": "move",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "lead",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "TROPONYM"
+    },
+    {
+      "source_lexical_form": "make",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "manufacture",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "TROPONYM"
+    },
+    {
+      "source_lexical_form": "move",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "pass",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "TROPONYM"
+    },
+    {
+      "source_lexical_form": "speak",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "pronounce",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "TROPONYM"
+    },
+    {
+      "source_lexical_form": "exert",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "push",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "TROPONYM"
+    },
+    {
+      "source_lexical_form": "acquire",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "receive",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "TROPONYM"
+    },
+    {
+      "source_lexical_form": "support",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "reinforce",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "TROPONYM"
+    },
+    {
+      "source_lexical_form": "oppose",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "reject",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "TROPONYM"
+    },
+    {
+      "source_lexical_form": "perceive",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "see",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "TROPONYM"
+    },
+    {
+      "source_lexical_form": "move",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "shake",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "TROPONYM"
+    },
+    {
+      "source_lexical_form": "change",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "transform",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "TROPONYM"
+    },
+    {
+      "source_lexical_form": "go",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "travel",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "TROPONYM"
+    },
+    {
+      "source_lexical_form": "move",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "turn",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "TROPONYM"
+    },
+    {
+      "source_lexical_form": "move",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "wave",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "TROPONYM"
+    },
+    {
+      "source_lexical_form": "mark",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "write",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "TROPONYM"
+    },
+    {
+      "source_lexical_form": "or",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "xor",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "TROPONYM"
+    },
+    {
+      "source_lexical_form": "lead",
+      "source_part_of_speech": "VERB",
+      "target_lexical_form": "head",
+      "target_part_of_speech": "VERB",
+      "relationship_kind": "TROPONYM"
     }
   ]
 }
