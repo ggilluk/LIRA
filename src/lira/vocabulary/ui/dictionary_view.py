@@ -1022,14 +1022,20 @@ function titleCase(s) {
 // HYPERNYM/HYPONYM/TROPONYM applies to nouns (HYPERNYM/HYPONYM) and
 // verbs (TROPONYM/HYPERNYM, troponymy being verb-specific hyponymy --
 // examples/troponym_verb_backfill.py's own module docstring);
-// MERONYM/HOLONYM applies to nouns. A kind not listed here (SYNONYM,
-// ANTONYM, RELATED, every morphological/orthographic kind) has no
-// distinct reciprocal-kind partner of its own -- either genuinely
-// symmetric (stored both directions under the same kind) or paired
-// with LEMMA_FORM generically -- so it stays in the ungrouped list.
+// MERONYM/HOLONYM applies to nouns. CAUSE/ENTAILMENT applies to verbs --
+// CAUSE is a subtype of ENTAILMENT (if X causes Y, X's occurrence
+// logically entails Y's), materialised as a same-direction companion
+// edge rather than TROPONYM's reversed one (examples/
+// cause_entailment_backfill.py's own module docstring). A kind not
+// listed here (SYNONYM, ANTONYM, RELATED, every morphological/
+// orthographic kind) has no distinct reciprocal-kind partner of its
+// own -- either genuinely symmetric (stored both directions under the
+// same kind) or paired with LEMMA_FORM generically -- so it stays in
+// the ungrouped list.
 const KIND_PAIR_GROUPS = [
   { label: "Hypernym / Hyponym / Troponym", kinds: ["HYPERNYM", "HYPONYM", "TROPONYM"] },
   { label: "Meronym / Holonym", kinds: ["MERONYM", "HOLONYM"] },
+  { label: "Cause / Entailment", kinds: ["CAUSE", "ENTAILMENT"] },
 ];
 
 // Builds <option>s for every kind in `counts`, grouping any kind listed
