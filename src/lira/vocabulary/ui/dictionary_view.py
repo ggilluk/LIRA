@@ -1550,6 +1550,26 @@ function buildClusterGraphs(kind) {
 // the box's centre -- present's antonym line and current's antonym
 // line are visually distinguishable even though both start inside the
 // same box.
+
+// Which side of a raw (source, kind, target) edge names the *broader*
+// term, for every kind with a genuine broader/narrower direction
+// ("type of", "part of") -- as opposed to a symmetric kind like
+// ANTONYM, which has no broader side at all. Matches each kind's own
+// stored direction convention (assets/common/en/relationships/README.md,
+// examples/physics_domain_relationships.py's Directional conventions):
+// HYPERNYM is (narrower, HYPERNYM, broader) -- broader is the target;
+// HYPONYM is (broader, HYPONYM, narrower) -- broader is the source;
+// MERONYM is (part, MERONYM, whole) -- the whole is broader, the target;
+// HOLONYM is (whole, HOLONYM, part) -- the whole is broader, the source;
+// TROPONYM is (general, TROPONYM, specific) -- the general verb is
+// broader, the source (troponymy is verb-specific hyponymy, so its
+// "broader" side reads the same way HYPERNYM's does for nouns).
+const HIERARCHY_BROADER_SIDE = {
+  HYPERNYM: "target", HYPONYM: "source",
+  MERONYM: "target", HOLONYM: "source",
+  TROPONYM: "source",
+};
+
 // Distance, in box-graph hops, from the group's most-connected box
 // (BFS, edges treated as undirected -- a box's actual line direction
 // under the selected kind doesn't determine which side of the layout
@@ -1558,6 +1578,12 @@ function buildClusterGraphs(kind) {
 // determinism. Used by clusterGraphSVG to place boxes in left-to-right
 // columns by level -- most lines then run from a column to the next
 // one over, reading left to right.
+//
+// For a kind in HIERARCHY_BROADER_SIDE, this undirected/most-connected
+// approach is skipped entirely in favour of hierarchyLevels() below --
+// broader-than-narrower has a real meaning for these kinds, so the
+// broadest box always belongs at column 0 (left), not whichever box
+// happens to have the most edges.
 //
 // flatten folds every level down to its BFS-distance *parity*
 // (level % 2) instead of the raw hop count -- two columns only (the
@@ -1577,9 +1603,8 @@ function buildClusterGraphs(kind) {
 // hub isn't the hub's antonym at all, just something its antonym
 // happens to also oppose (a coincidence of two unrelated word pairs
 // sharing one box) -- DEPTH_CAPPED_KINDS below opts specific kinds
-// into this; a real hierarchy kind like HYPERNYM keeps unlimited
-// depth and no flattening, since there depth *is* the meaning.
-function boxLevels(clusters, edges, flatten) {
+// into this.
+function undirectedLevels(clusters, edges, flatten) {
   const adjacency = new Map();
   clusters.forEach(c => adjacency.set(c.id, new Set()));
   edges.forEach(e => {
@@ -1605,10 +1630,58 @@ function boxLevels(clusters, edges, flatten) {
   return level;
 }
 
+// Column 0 (left) is always the broadest term for a hierarchy kind --
+// a box's level is the length of its longest directed path, along the
+// narrower-to-broader edges HIERARCHY_BROADER_SIDE derives from the
+// raw edges, up to a box with no broader term of its own within this
+// group (a "root" of the hierarchy: nothing here is broader than it).
+// Plain memoised recursion over that DAG, broadest boxes (out-degree 0
+// in the narrower->broader direction) hitting the base case first.
+// `visiting` breaks a cycle defensively (two boxes each claiming to be
+// broader than the other, e.g. from two different word-level edges
+// landing on the same box pair in opposite directions) by treating the
+// back-edge's target as already resolved at level 0 rather than
+// recursing forever -- the same guard style hierarchyNodeHTML uses for
+// the Hierarchy tab's own tree. Multiple broader terms (e.g. "aircraft"
+// having both "machine" and "vehicle" as hypernyms) place the box one
+// column to the right of *all* of them, via the max() below, so every
+// broader-to-narrower edge still reads strictly left to right.
+function hierarchyLevels(clusters, edges, kind) {
+  const broaderSide = HIERARCHY_BROADER_SIDE[kind];
+  const narrowerToBroader = new Map();
+  clusters.forEach(c => narrowerToBroader.set(c.id, new Set()));
+  edges.forEach(e => {
+    const broader = broaderSide === "source" ? e.sourceBox : e.targetBox;
+    const narrower = broaderSide === "source" ? e.targetBox : e.sourceBox;
+    if (narrower !== broader) narrowerToBroader.get(narrower).add(broader);
+  });
+
+  const level = new Map();
+  const visiting = new Set();
+  function resolve(id) {
+    if (level.has(id)) return level.get(id);
+    if (visiting.has(id)) return 0; // cycle guard -- see docstring above
+    visiting.add(id);
+    const broaderTargets = [...narrowerToBroader.get(id)];
+    const result = broaderTargets.length ? 1 + Math.max(...broaderTargets.map(resolve)) : 0;
+    visiting.delete(id);
+    level.set(id, result);
+    return result;
+  }
+  clusters.forEach(c => resolve(c.id));
+  return level;
+}
+
+function boxLevels(clusters, edges, kind) {
+  if (kind in HIERARCHY_BROADER_SIDE) return hierarchyLevels(clusters, edges, kind);
+  return undirectedLevels(clusters, edges, DEPTH_CAPPED_KINDS.has(kind));
+}
+
 // ANTONYM has no inherent hierarchy -- a chain beyond one hop is
 // coincidence (two different word pairs sharing a box), not a real
 // multi-level structure, so its Cyclic view is capped at two columns
-// (the hub's column and everything else's).
+// (the hub's column and everything else's). Only applies to kinds not
+// already handled by HIERARCHY_BROADER_SIDE above.
 const DEPTH_CAPPED_KINDS = new Set(["ANTONYM"]);
 
 // Reorders the boxes within each column to reduce edge crossings,
@@ -1673,7 +1746,7 @@ function clusterGraphSVG(group, wordById, kind) {
     boxDims.set(c.id, { width, height });
   });
 
-  const level = boxLevels(group.clusters, group.edges, DEPTH_CAPPED_KINDS.has(kind));
+  const level = boxLevels(group.clusters, group.edges, kind);
   const maxLevel = Math.max(...group.clusters.map(c => level.get(c.id)));
   const byLevel = [];
   for (let i = 0; i <= maxLevel; i++) byLevel.push([]);

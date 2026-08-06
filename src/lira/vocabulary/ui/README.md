@@ -229,12 +229,33 @@ default when a more specific kind would apply"), and it usually *does*
 have the most edges of any kind here, so without that exception it
 would win the default almost every time -- exactly the outcome that
 convention exists to avoid. Each group is its own small SVG, laid out
-left to right rather than around a circle: `boxLevels` runs a BFS out
-from the group's highest-degree box (ties broken alphabetically),
-giving every box a hop-distance "level" from that hub; `clusterGraphSVG`
-then places level 0 in the leftmost column, level 1 in the next column
-over, and so on. Within a column, boxes aren't just stacked in
-whatever order `boxLevels` happened to produce -- `reduceCrossings`
+left to right rather than around a circle: `boxLevels` gives every box
+a "level", and `clusterGraphSVG` places level 0 in the leftmost column,
+level 1 in the next column over, and so on.
+
+For a kind with a genuine broader/narrower direction -- "type of"
+(`HYPERNYM`/`HYPONYM`, `TROPONYM`) or "part of" (`MERONYM`/`HOLONYM`) --
+`boxLevels` delegates to `hierarchyLevels`, which always puts the
+*broadest* term at column 0, not just whichever box has the most edges:
+a box's level is the length of its longest directed path, along the
+narrower-to-broader direction each kind's own storage convention
+defines (`HIERARCHY_BROADER_SIDE`), up to a box with no broader term of
+its own within the group. Picking `HYPERNYM` and selecting `atom` (via
+`MERONYM`) shows `atom` in column 0, `nucleus`/`electron` (its direct
+parts) in column 1, and `proton`/`neutron` (parts of the nucleus, two
+hops from atom) in column 2 -- the physical containment reads left to
+right exactly like the real hierarchy, not by coincidence of which box
+happened to have the most connections. `ANTONYM` has no broader side at
+all (opposites, not a hierarchy) and keeps the older, undirected
+behaviour below unchanged.
+
+For every other kind (`ANTONYM`, `RELATED`, `ENTAILMENT`, `CAUSE`),
+`boxLevels` still runs a BFS out from the group's highest-degree box
+(ties broken alphabetically), giving every box a hop-distance level
+from that hub -- there's no broader/narrower side to orient by, so the
+most-connected box is the most reasonable anchor. Within a column,
+boxes aren't just stacked in whatever order `boxLevels` happened to
+produce -- `reduceCrossings`
 reorders them with the barycenter/median heuristic layered-graph tools
 use (Sugiyama-style): repeated left-to-right and right-to-left sweeps,
 each re-sorting a column by the average position, in the *adjacent*
@@ -255,8 +276,8 @@ caps this at two columns -- a box two hops from the hub isn't the
 hub's antonym at all, just something the hub's antonym happens to also
 oppose (two unrelated word pairs coincidentally sharing a box), so
 drawing it a full column further out would imply a hierarchy `ANTONYM`
-doesn't have. `boxLevels` takes an optional `flatten` flag that folds
-every box's level down to its BFS-distance *parity* (`level % 2`)
+doesn't have. `undirectedLevels` takes an optional `flatten` flag that
+folds every box's level down to its BFS-distance *parity* (`level % 2`)
 instead of the raw hop count -- not a plain clamp to column 1: a
 clamp would put a two-hops-out box in the same column as the one-hop
 box it's actually connected to, drawing that edge vertically within
@@ -266,8 +287,10 @@ in column 1 (odd), so their edge still crosses columns like every
 other one, as long as the box graph is bipartite (true in practice for
 `ANTONYM`'s antonym-sharing chains, which alternate like a path rather
 than closing a cycle back on themselves). A real hierarchy kind like
-`HYPERNYM` passes `flatten: false` and keeps its full, unflattened
-depth, since depth *is* the meaning there. Each word inside a box is
+`HYPERNYM` never reaches this function at all any more -- it goes
+through `hierarchyLevels` above instead, keeping its full, unflattened
+depth (broadest at column 0), since depth *is* the meaning there. Each
+word inside a box is
 positioned along its own small vertical stack so a line lands on the
 specific word it's from or to, not just the box's centre --
 `present`'s antonym line and `current`'s antonym line are visually
