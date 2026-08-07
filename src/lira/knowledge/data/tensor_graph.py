@@ -95,6 +95,20 @@ DEFAULT_EPSILON_MERGE = 0.05
 DEFAULT_EPSILON_REVIEW = 0.15
 
 
+def fractional_midpoint(parent_z: float, gap_bound: float) -> float:
+    """Spec 41.9's fractional/gap indexing primitive -- shared by every
+    Knowledge Vector Space tree that uses it (D1/D2/D3 below; D5/D6 in
+    knowledge/data/hosted_domains.py, at Domain scale rather than
+    Concept scale). The new child's z is the midpoint between its
+    parent's z and the closest-to-parent boundary already claimed by
+    one of the parent's other children (`gap_bound` -- D1_D2_BOTTOM if
+    this is the parent's first child), so each successive child packs
+    progressively closer to the parent, leaving every child the
+    largest possible remaining span toward Bottom for its own
+    descendants."""
+    return (parent_z + gap_bound) / 2
+
+
 class ValueTypeKind(Enum):
     Measure = "Measure"
     Quantity = "Quantity"
@@ -582,7 +596,7 @@ class TensorLiraGraph:
         else already read."""
         parent_z = z_array[parent_idx]
         bound = next_gap_bound.get(parent_idx, D1_D2_BOTTOM)
-        new_z = (parent_z + bound) / 2
+        new_z = fractional_midpoint(parent_z, bound)
         next_gap_bound[parent_idx] = new_z
         return new_z
 

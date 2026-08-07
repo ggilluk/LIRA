@@ -28,7 +28,12 @@ Section 41 is authoritative.
 | Relationship structural identity (12.2, 41.3) | **Built** -- `TensorLiraGraph.relationship_structural_distance`/`classify_relationship_identity` |
 | Worked example (D3/D4) | **Built** -- `examples/knowledge_vector_space_d3_d4.py` (move/walk/stroll for D3; the spec's own Section 41.4 Birth/Live/Die/Resurrect closed causal chain for D4, verified to close: `Sum(Delta-theta) = 2*pi`) |
 | Operator-function state enumeration (9.5) | Storage only (`set_operator_state`/`operator_state`, caller-defined value) -- the state enumeration/transition mechanics are explicitly out of this spec's own scope (9.5: "defined independently by the Relationship execution model") |
-| D5/D6 (Domain generalisation/composition) | Not yet implemented |
+| D5 (Domain Generalisation) | **Built** -- `HostedDomains._domain_d5_z` (`knowledge/data/hosted_domains.py`), the Domain-scale mirror of D1, since D5/D6 are inherently cross-Domain (a single Domain's own `TensorLiraGraph` can't see other Domains) -- `register_domain_generalisation`, explicit like D1/D2/D3's own registration |
+| D6 (Domain Composition) | **Built** -- `HostedDomains._domain_d6_z`, mirrors D2 the same way D5 mirrors D1 -- `register_domain_composition` |
+| Common Domain as the D5/D6 outer boundary (4.1, 14, 15) | **Built** -- the "Common" Domain every `LIRAHost` already auto-creates (`host.py`) stays at `D1_D2_ROOT` permanently; `register_domain_generalisation`/`register_domain_composition` raise if asked to give Common a parent |
+| Combined Domain structure + identity (15.1, 41.3) | **Built** -- `HostedDomains.domain_structural_position`/`domain_structural_distance`/`classify_domain_identity`, mirroring `noun_structural_*` |
+| Worked example (D5/D6) | **Built** -- `examples/knowledge_vector_space_d5_d6.py` (the spec's own Section 5 Figure 5/6 example, Common -> Science -> NaturalScience -> Physics -> ParticlePhysics, against a real `LIRAHost`) |
+| Domain Naming Convention <-> D5 segment mapping (41.6) | Not yet implemented -- `register_domain_generalisation` is explicit (a caller states each step), not derived automatically from a dotted `python.programming.language.common`-style name |
 | Synonym/Antonym Side/Sign geometry (10, 41.8) | Not yet implemented |
 | NaN storage separation (41.7) | Not yet implemented |
 | Companion vector-space audit (41.10) | Not yet implemented |
