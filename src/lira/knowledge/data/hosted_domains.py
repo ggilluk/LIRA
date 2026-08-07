@@ -81,6 +81,37 @@ class HostedDomains:
     def d5_z(self, domain) -> float:
         return self._domain_d5_z[domain.name]
 
+    def register_domain_hierarchy_from_name(self, host, dotted_name: str):
+        """spec 41.6: "python.programming.language.common <=> common ->
+        language -> programming -> python". Splits a DNC-001
+        reverse-hierarchy dotted Domain name and D5-registers every
+        missing intermediate Domain along the path, using the FULL
+        cumulative dotted path as each intermediate's own Domain name
+        (DNC-003: each component specialises the one to its right --
+        "language.common" is what actually identifies that
+        specialisation step; the bare "language" segment alone could
+        collide across unrelated hierarchies). Returns the final
+        (leftmost/most specific) segment's Domain. `host` is required,
+        not just this registry, because a missing intermediate Domain
+        must be created via LIRAHost.get_or_create_domain, not
+        fabricated here. "common" itself (DNC-002) resolves to the
+        Host's own real Common Domain, never a separately created
+        Domain literally named "common"."""
+        segments = dotted_name.split(".")
+        if not segments or segments[-1].lower() != "common":
+            raise ValueError(f"domain name {dotted_name!r} does not end with the common root (DNC-002)")
+
+        parent_domain = self.get(COMMON_DOMAIN_NAME)
+        cumulative = []
+        for segment in reversed(segments[:-1]):
+            cumulative.insert(0, segment)
+            name = ".".join(cumulative + ["common"])
+            child_domain = host.get_or_create_domain(name)
+            if self._domain_d5_parent.get(child_domain.name) is None:
+                self.register_domain_generalisation(child_domain, parent_domain)
+            parent_domain = child_domain
+        return parent_domain
+
     # -- Knowledge Vector Space D6: Domain composition (spec 15) --
 
     def register_domain_composition(self, part, whole) -> float:

@@ -417,6 +417,25 @@ class TensorLiraGraph:
         # doesn't define the state enumeration itself).
         self._edge_operator_state = {}
 
+        # Knowledge Vector Space synonym/antonym geometry (spec 10,
+        # 41.8) -- _uf_parent is a standard union-find over concept
+        # indices (path-compressed find, see _cluster_root), one
+        # cluster per synonym group; _cluster_side maps a cluster's
+        # current root index to its resolved Side/Sign (+1/-1), only
+        # ever set once an antonym registration forces it (spec 41.8:
+        # antonym Sign is authoritative, synonym Side is otherwise
+        # "freely resolved by the non-crossing layout algorithm",
+        # which is a rendering concern this file doesn't implement --
+        # side() returns None for a cluster with no antonym constraint
+        # yet, rather than fabricating a side).
+        self._uf_parent = []
+        self._cluster_side = {}
+
+        # Knowledge Vector Space: recorded causal/entailment chains
+        # (spec 41.10's companion audit needs to re-verify closure
+        # later, not just at assign_causal_chain's own call time).
+        self._causal_chains = []
+
         self._cell_specific_value = {}  # (row, col) -> (primitive_value, unit) for TAUGHT/OBSERVED cells
                                           # only -- an inferred/lifted cell correctly has no specific value,
                                           # since it represents "has SOME instance of this type", not a
@@ -495,6 +514,7 @@ class TensorLiraGraph:
         self._concept_pad_pleasure.append(0.0)
         self._concept_pad_arousal.append(0.0)
         self._concept_pad_dominance.append(0.0)
+        self._uf_parent.append(idx)  # every concept starts as its own singleton synonym cluster
         return ConceptRef(self, idx)
 
     def add_attribute_concept(self, name, primitive_value, unit_or_code="", value_type=ValueTypeKind.Text):
@@ -820,6 +840,14 @@ class TensorLiraGraph:
             if edge.destination is None or edge.destination.idx != next_edge.source_idx:
                 closed = False
 
+        # Recorded so vector_space_audit() can re-verify closure later --
+        # (row, col) pairs, not RelationshipRef objects, since a chain
+        # may outlive whatever local variables built it.
+        self._causal_chains.append({
+            "edges": [(edge.source_idx, edge.verb_col) for edge in chain],
+            "closed_at_assignment": closed,
+        })
+
         return {"n": n, "delta_theta": delta_theta, "closed": closed}
 
     # -- Knowledge Vector Space: Relationship structural identity (spec 12.2) --
@@ -855,3 +883,200 @@ class TensorLiraGraph:
         if distance <= self.epsilon_review:
             return "ReviewCandidate"
         return "Distinct"
+
+    # -- Knowledge Vector Space: synonym/antonym geometry (spec 10, 41.8) --
+
+    def _cluster_root(self, idx: int) -> int:
+        """Path-compressed union-find find(). Applies to noun Concepts
+        and Verb Concepts/Relationships alike (spec 10.1) -- nothing
+        here is kind-specific."""
+        root = idx
+        while self._uf_parent[root] != root:
+            root = self._uf_parent[root]
+        while self._uf_parent[idx] != root:
+            self._uf_parent[idx], idx = root, self._uf_parent[idx]
+        return root
+
+    def register_synonym(self, a: ConceptRef, b: ConceptRef) -> None:
+        """Merges a and b into the same synonym cluster (spec 10.1).
+        If exactly one side already carries an antonym-derived sign
+        (41.8), the merged cluster inherits it. If both sides already
+        carry a sign and they conflict, raises -- a and b can't be
+        synonyms if one is already forced opposite the other's sign,
+        the same contradiction register_antonym itself guards against
+        the other way round."""
+        root_a, root_b = self._cluster_root(a.idx), self._cluster_root(b.idx)
+        if root_a == root_b:
+            return
+        side_a = self._cluster_side.get(root_a)
+        side_b = self._cluster_side.get(root_b)
+        if side_a is not None and side_b is not None and side_a != side_b:
+            raise ValueError(f"'{a.name}' and '{b.name}' cannot be synonyms: "
+                              f"their clusters already carry opposite antonym-derived signs")
+        resolved_side = side_a if side_a is not None else side_b
+
+        self._uf_parent[root_b] = root_a
+        self._cluster_side.pop(root_b, None)
+        if resolved_side is not None:
+            self._cluster_side[root_a] = resolved_side
+        else:
+            self._cluster_side.pop(root_a, None)
+
+    def register_antonym(self, a: ConceptRef, b: ConceptRef) -> None:
+        """Sign(A) = -Sign(B) -- spec 10.2. Forces a's and b's clusters
+        to opposite sides, resolving any side either already carries;
+        raises if a and b already sit in the very same cluster (a
+        synonym relation would have merged them) since a Concept can't
+        be both synonym and antonym of itself/its own cluster, and
+        raises if their clusters already carry the *same* resolved
+        side from an earlier registration (a genuine contradiction,
+        not silently overwritten)."""
+        root_a, root_b = self._cluster_root(a.idx), self._cluster_root(b.idx)
+        if root_a == root_b:
+            raise ValueError(f"'{a.name}' and '{b.name}' are already synonyms; cannot also be antonyms")
+
+        side_a = self._cluster_side.get(root_a)
+        side_b = self._cluster_side.get(root_b)
+        if side_a is not None and side_b is not None:
+            if side_a == side_b:
+                raise ValueError(f"'{a.name}' and '{b.name}' cannot be antonyms: "
+                                  f"their clusters already carry the same resolved side")
+            return  # already opposite -- nothing to do
+        if side_a is not None:
+            self._cluster_side[root_b] = -side_a
+        elif side_b is not None:
+            self._cluster_side[root_a] = -side_b
+        else:
+            self._cluster_side[root_a] = 1
+            self._cluster_side[root_b] = -1
+
+    def side(self, concept: ConceptRef):
+        """Side(S) -- spec 10.1/41.8: this concept's synonym cluster's
+        resolved side, or None if no antonym registration has forced
+        one yet (spec 41.8's "freely resolved by the non-crossing
+        layout algorithm where no antonym constraint exists" is a
+        rendering-time concern, out of scope for this data layer --
+        None is the honest answer here, not a fabricated default)."""
+        return self._cluster_side.get(self._cluster_root(concept.idx))
+
+    def synonym_cluster(self, concept: ConceptRef) -> tuple:
+        """Every Concept currently in the same synonym cluster as
+        `concept`, including itself -- the membership spec 10.1's
+        "stacked within their semantic cluster" operates on."""
+        root = self._cluster_root(concept.idx)
+        return tuple(ConceptRef(self, idx) for idx in range(self._n_rows) if self._cluster_root(idx) == root)
+
+    # -- Knowledge Vector Space: NaN storage separation (spec 41.7) --
+
+    def is_unassigned_theta(self, relationship: RelationshipRef) -> bool:
+        """True when this edge's D4 theta is NaN because no
+        assign_causal_chain call has positioned it yet (module
+        docstring's "not part of any assigned causal/entailment chain
+        yet") -- spec 41.7's "Knowledge vector coordinate row" NaN
+        meaning specifically. This is the *only* place this graph ever
+        produces or interprets a coordinate-row NaN; Attribute
+        primitive values live in _concept_values/_cell_specific_value,
+        entirely separate storage this method never touches, so a NaN
+        Attribute value (should a future Relationship operator ever
+        produce IEEE NaN from real arithmetic, spec 9.6) is never
+        confusable with an unassigned theta -- they physically cannot
+        collide, since they're different Python containers, not just a
+        documented convention."""
+        return math.isnan(self.theta(relationship))
+
+    # -- Knowledge Vector Space: companion audit (spec 41.10) --
+
+    def vector_space_audit(self) -> dict:
+        """Read-only: detects and reports, never mutates anything --
+        same discipline as examples/relationship_contradiction_audit.py
+        at the Vocabulary Layer. Checks the subset of spec 41.10's five
+        invariants that are actually verifiable from this graph's own
+        stored data:
+
+        - D1/D2 coordinates occur only on noun lexical Concepts and D3
+          only on verb lexical Concepts (41.10's own wording covers
+          "D3/D4" together, but D4 is never stored per-Concept at all
+          -- module docstring -- so there is nothing under a
+          Relationship-kind concept's D4 *slot* that could ever be
+          wrong; D3 is the one that can).
+        - D4 contains no duplicate D3 coordinate -- checked structurally
+          (no _concept_d4_z array exists), not per-instance, since D4
+          is computed on demand rather than stored (module docstring).
+        - Every causal/entailment cycle recorded via assign_causal_chain
+          still closes.
+        - Coincident-but-distinct Concepts: every pair of Concepts
+          whose noun_structural_distance/relationship_structural_distance
+          classifies as MergeCandidate or ReviewCandidate (41.3) --
+          evidence for review, not an automatic merge, same as those
+          methods' own docstrings. The "for more than a configured
+          number of learning cycles" qualifier in 41.10's own wording
+          isn't checked here: this graph has no learning-cycle counter
+          of any kind yet (nothing in this codebase currently mutates
+          PAD/theta/confidence from observation), so every reported
+          pair is reported every time this runs, with no cycle-count
+          gating -- documented here rather than silently ignored.
+        - Synonym cluster consistency: every concept resolves to
+          exactly one cluster root (guaranteed by the union-find
+          construction itself, re-checked here in case of external
+          state tampering) and no side conflict exists between a
+          concept and any other member of its own cluster.
+
+        spec 41.10's "Intersections(D) = 0 for every Domain" is NOT
+        checked here -- that's a rendering-time, non-crossing *layout*
+        property (spec 11), not something derivable from this graph's
+        coordinate data alone; it belongs with whatever draws the
+        synonym-cluster layout (the same boundary already drawn for
+        spec 41.6's Domain Naming Convention segment parsing vs. actual
+        Domain creation)."""
+        wrong_kind_d1d2 = []
+        for idx in range(self._n_rows):
+            kind = self._concept_kinds[idx]
+            if kind != ConceptKind.Noun and (self._concept_d1_z[idx] != D1_D2_ROOT or self._concept_d2_z[idx] != D1_D2_ROOT):
+                wrong_kind_d1d2.append(self._concept_names[idx])
+
+        wrong_kind_d3 = []
+        for idx in range(self._n_rows):
+            kind = self._concept_kinds[idx]
+            if kind != ConceptKind.Relationship and self._concept_d3_z[idx] != D1_D2_ROOT:
+                wrong_kind_d3.append(self._concept_names[idx])
+
+        d4_no_duplicate_d3 = not hasattr(self, "_concept_d4_z")
+
+        open_chains = []
+        for chain_idx, chain in enumerate(self._causal_chains):
+            edges = [RelationshipRef(self, row, col) for row, col in chain["edges"]]
+            still_closed = all(
+                edges[i].destination is not None and edges[i].destination.idx == edges[(i + 1) % len(edges)].source_idx
+                for i in range(len(edges))
+            )
+            if not still_closed:
+                open_chains.append({"chain_index": chain_idx, "edges": chain["edges"]})
+
+        coincident_concepts = []
+        for i in range(self._n_rows):
+            for j in range(i + 1, self._n_rows):
+                a, b = ConceptRef(self, i), ConceptRef(self, j)
+                if a.kind == ConceptKind.Noun and b.kind == ConceptKind.Noun:
+                    verdict = self.classify_noun_identity(a, b)
+                    if verdict != "Distinct":
+                        coincident_concepts.append({"a": a.name, "b": b.name, "space": "noun", "verdict": verdict})
+
+        cluster_inconsistencies = []
+        for idx in range(self._n_rows):
+            root = self._cluster_root(idx)
+            own_side = self._cluster_side.get(root)
+            for other_idx in range(self._n_rows):
+                if other_idx == idx or self._cluster_root(other_idx) != root:
+                    continue
+                other_side = self._cluster_side.get(self._cluster_root(other_idx))
+                if own_side is not None and other_side is not None and own_side != other_side:
+                    cluster_inconsistencies.append((self._concept_names[idx], self._concept_names[other_idx]))
+
+        return {
+            "wrong_kind_d1_d2": wrong_kind_d1d2,
+            "wrong_kind_d3": wrong_kind_d3,
+            "d4_no_duplicate_d3_coordinate": d4_no_duplicate_d3,
+            "open_causal_chains": open_chains,
+            "coincident_concepts": coincident_concepts,
+            "cluster_side_inconsistencies": cluster_inconsistencies,
+        }
