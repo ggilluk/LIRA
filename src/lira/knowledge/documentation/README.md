@@ -18,7 +18,13 @@ amplitude and operator state (D3/D4), Domain generalisation/composition
 (D5/D6), synonym/antonym geometry, Euclidean semantic distance and identity
 evidence, completeness rules, and the runtime evolution loop (seeding,
 incremental re-indexing, and Unknown-placeholder recovery for open
-causal/entailment chains).
+causal/entailment chains). Its Section 41 (v2) makes the model
+implementable: D3/D4 orthogonality, PAD-magnitude radius derivation,
+configurable identity thresholds, worked numeric examples, part-of-speech
+scoping, the Domain Naming Convention -> D5/D6 mapping, NaN storage
+separation, antonym-over-synonym placement precedence, fractional
+hierarchy indexing, a companion audit checklist, and an explicit
+`LexicalRelationshipType` -> dimension mapping table.
 
 ## Layout
 

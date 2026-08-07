@@ -2,8 +2,14 @@
 
 **Semantic and Mathematical Definition**
 
-Status: Working Architecture Specification
+Status: Working Architecture Specification (v2)
 Scope: LIRA Knowledge Layer -- combined Concept, Relationship and Domain geometry
+
+Revision note: Section 41 (Mathematical and Implementation Corrections)
+refines the dimensional model set out in Sections 1-40 -- where it
+conflicts with an earlier section (most notably D4's tuple definition in
+Section 9 and the unqualified "D4 = 5-tuple" framing in Section 18),
+Section 41 is authoritative.
 
 | Core model |
 |---|
@@ -35,6 +41,7 @@ Scope: LIRA Knowledge Layer -- combined Concept, Relationship and Domain geometr
 19. [Semantic Interpretation](#19-semantic-interpretation)
 20. [Core Principle](#20-core-principle)
 40. [Runtime Evolution, Seeded Mechanics, and Open-Chain Recovery](#40-runtime-evolution-seeded-mechanics-and-open-chain-recovery)
+41. [Mathematical and Implementation Corrections](#41-mathematical-and-implementation-corrections)
 
 ## 1. Purpose and Scope
 
@@ -740,3 +747,203 @@ This loop converts the Knowledge Vector Space from a static representation
 into a self-updating semantic runtime while preserving bounded computation,
 lexical initialization, geometric validity, and explicit representation of
 incomplete knowledge.
+
+## 41. Mathematical and Implementation Corrections
+
+This section refines the dimensional model so that its mathematical
+vocabulary, runtime indexing, lexical relationship types, PAD mechanics,
+identity resolution, and storage semantics are explicit and implementable.
+
+### 41.1 D3/D4 Orthogonality and Composite D4
+
+D3 owns the scalar Hypernym-to-Troponym specificity coordinate for verb
+Concepts. D4 must not duplicate that coordinate. D4 is therefore defined
+explicitly as a composite Relationship-mechanics dimension rather than a
+peer scalar axis.
+
+```
+K = (D1, D2, D3, [D4 composite], D5, D6)
+D4(R) = (Qc, θ, r, s)
+```
+
+`Qc` is source-Concept composition, `θ` is causal/entailment angular
+position, `r` is PAD-derived amplitude, and `s` is mathematical
+operator-function state. Wherever Relationship identity requires
+specificity, `D3(R)` is referenced separately.
+
+```
+PR(R) = (D3(R), Qc(R), θ(R), r(R), s(R))
+```
+
+### 41.2 PAD Source and Radius
+
+PAD is authored/seeded on the lexical Word/Concept. A Relationship reads
+PAD from its source Concept; PAD is not independently assigned to the
+Relationship edge. D4 uses the Euclidean magnitude of the source PAD
+vector as its radial amplitude while preserving the original P, A and D
+components in their owning tensor properties.
+
+```
+PAD(Source(R)) = (P, A, D)
+r = ||PAD(Source(R))||₂ = √(P² + A² + D²)
+```
+
+### 41.3 Operational Identity Thresholds
+
+Each applicable semantic-distance function defines two configurable
+thresholds: `ε_merge` and `ε_review`. Their values are empirically
+calibrated against the seeded vocabulary/cache and stored as
+configuration/System Properties rather than fixed architectural
+constants.
+
+```
+d ≤ ε_merge              ⇒  MergeCandidate
+ε_merge < d ≤ ε_review    ⇒  ReviewCandidate
+d > ε_review              ⇒  Distinct
+```
+
+### 41.4 Worked Numeric Examples
+
+Noun example: `dog → animal → organism → Concept`. Using an illustrative
+already-indexed branch, Concept occupies the root boundary 1.0, organism
+0.75, animal 0.50 and dog 0.25. These values demonstrate ordering only;
+runtime insertion uses fractional indexing rather than recomputing from a
+global depth N.
+
+| Concept | D1 z | Meaning |
+|---|---|---|
+| Concept | 1.00 | Root; semantic +Infinity boundary |
+| organism | 0.75 | General noun Concept |
+| animal | 0.50 | Specialisation of organism |
+| dog | 0.25 | Specialisation of animal |
+
+Relationship example: `birth → live → die → resurrect`. Four distinct
+semantic Relationship positions produce an angular interval of 90
+degrees. The D3 specificity coordinate is independent of D4. Each D4
+radius is read from the PAD magnitude of the Relationship source
+Concept.
+
+```
+n = 4  ⇒  Δθ = 360° / 4 = 90°
+```
+
+| Relationship | θ | D3 z | D4 representation |
+|---|---|---|---|
+| birth | 0° | z_birth | (Qc, 0°, r, s) |
+| live | 90° | z_live | (Qc, 90°, r, s) |
+| die | 180° | z_die | (Qc, 180°, r, s) |
+| resurrect | 270° | z_resurrect | (Qc, 270°, r, s) |
+
+### 41.5 Part-of-Speech Scope
+
+D1/D2 apply to noun lexical Concepts. D3/D4 apply to verb lexical
+Concepts. Relationship specialising Concept does not imply that the verb
+sense automatically receives a noun D1/D2 coordinate. A nominalised verb
+sense is a distinct lexical Concept.
+
+```
+(lexical_form, POS=NOUN) → D1 + D2
+(lexical_form, POS=VERB) → D3 + D4
+```
+
+For example, `move` as a verb and `move` as a noun are distinct
+Word/Concept senses. This preserves the convention that HYPONYM is
+noun-specific, TROPONYM is verb-specific, and HYPERNYM is shared but
+interpreted according to part of speech.
+
+### 41.6 Domain Naming Convention Mapping to D5/D6
+
+The dotted Domain Naming Convention and D5/D6 geometry are two
+representations of the same Domain topology. Domain names are written
+leaf-to-root; geometric traversal is interpreted root-to-leaf. Each
+reverse-hierarchy name segment represents one structural specialisation
+step.
+
+```
+python.programming.language.common  ⇔  common → language → programming → python
+```
+
+The example has three hierarchy steps from common to python. The segment
+structure supplies the topology. D5/D6 supply geometric positions using
+the runtime indexing algorithm below; the segment count is not itself
+used to globally recompute z.
+
+### 41.7 NaN Storage Separation
+
+Vector-coordinate NaN and Attribute ValueType arithmetic NaN are
+physically separated. Coordinate axes and vector-space validity live in
+the Knowledge/System tensor rows for D1-D6. Attribute primitive values
+live in their ValueType storage. The same IEEE bit pattern may therefore
+be interpreted differently without ambiguity because its tensor/storage
+context is explicit.
+
+| Storage context | NaN meaning | Treatment |
+|---|---|---|
+| Knowledge vector coordinate row | Not a Valid Concept / vector result | Vector validity and incompleteness mechanics |
+| Attribute ValueType storage | Native primitive arithmetic NaN | Relationship operator / ValueType arithmetic |
+
+### 41.8 Antonym Sign and Synonym Side Precedence
+
+Antonym polarity `Sign()` is authoritative. If any member of a synonym
+cluster has an antonym-derived sign, the entire synonym cluster inherits
+that sign. Synonym `Side()` is only freely resolved by the non-crossing
+layout algorithm where no antonym constraint exists.
+
+```
+Antonym Sign > Synonym Side
+```
+
+### 41.9 Fractional Hierarchy Indexing and Rebalancing
+
+The previous global-depth formula `z = 1 - d/N` is not the runtime
+insertion algorithm. Hierarchical coordinates use gap/fractional indexing
+so that inserting a new Concept changes only the affected branch. For a
+new node inserted between an already indexed parent p and child c:
+
+```
+z_new = (z_p + z_c) / 2
+```
+
+The root boundary remains 1.0 (semantic +Infinity in vector-space
+interpretation) and Bottom remains 0.0. Repeated insertions consume
+numeric headroom locally. When representable headroom becomes
+insufficient, LIRA performs an explicit, rare branch-local rebalance.
+Unrelated branches and Domains are not re-indexed.
+
+### 41.10 Companion Vector-Space Audit
+
+The implementation must provide a companion audit analogous to existing
+contradiction audits. At minimum it checks the following invariants:
+
+- `Intersections(D) = 0` for every Domain, except deliberate shared
+  semantic endpoints.
+- Every causal/entailment cycle marked complete closes geometrically.
+- No two distinct Concepts remain unresolved at coincident coordinates
+  within `ε_review` for more than a configured number of learning
+  cycles.
+- D1/D2 coordinates occur only on noun lexical Concepts and D3/D4
+  coordinates only on verb lexical Concepts.
+- D4 contains no duplicate D3 specificity coordinate.
+
+### 41.11 LexicalRelationshipType Mapping
+
+The vector-space model is a reinterpretation layer over the existing
+lexical semantic relationships rather than a requirement to replace the
+seeded `semantic_relationships` data model.
+
+| LexicalRelationshipType | Vector-space mapping | Rule |
+|---|---|---|
+| HYPERNYM / HYPONYM | D1 | Noun generalisation/specialisation |
+| MERONYM / HOLONYM | D2 | Noun composition |
+| HYPERNYM / TROPONYM | D3 | Verb generalisation/specificity |
+| CAUSE / ENTAILMENT | D4 θ | Relationship dependency topology |
+| SYNONYM | Synonym cluster / Side | Cluster placement; inherits authoritative antonym sign where present |
+| ANTONYM | Sign | Authoritative semantic polarity |
+| RELATED | Unclassified | No dimensional placement implied until semantically classified |
+
+### 41.12 Numbering Note
+
+Sections 21-39 in the earlier specification sequence are reserved for
+future dimensions and mechanics. Section 40 defines runtime evolution;
+Section 41 records the mathematical and implementation refinements
+above.
