@@ -1004,17 +1004,26 @@ class TensorLiraGraph:
           is computed on demand rather than stored (module docstring).
         - Every causal/entailment cycle recorded via assign_causal_chain
           still closes.
-        - Coincident-but-distinct Concepts: every pair of Concepts
-          whose noun_structural_distance/relationship_structural_distance
-          classifies as MergeCandidate or ReviewCandidate (41.3) --
-          evidence for review, not an automatic merge, same as those
-          methods' own docstrings. The "for more than a configured
-          number of learning cycles" qualifier in 41.10's own wording
-          isn't checked here: this graph has no learning-cycle counter
-          of any kind yet (nothing in this codebase currently mutates
-          PAD/theta/confidence from observation), so every reported
-          pair is reported every time this runs, with no cycle-count
-          gating -- documented here rather than silently ignored.
+        - Coincident-but-distinct Concepts: every pair of noun Concepts,
+          each with at least one real (non-default) D1/D2 axis, whose
+          noun_structural_distance classifies as MergeCandidate or
+          ReviewCandidate (41.3) -- evidence for review, not an
+          automatic merge, same as those methods' own docstrings. Two
+          concepts that are BOTH still fully unpositioned
+          (D1_D2_ROOT, D1_D2_ROOT) are excluded -- that's missing
+          hierarchy data, not structural coincidence (spec 12's own
+          premise only applies once there's real structure to
+          coincide on); on a partially-seeded graph (e.g. a Dictionary
+          seeded via DictionarySeeder, most of whose adjectives/
+          closed-class words never get a Concept at all) including
+          them would flood this list with noise. The "for more than a
+          configured number of learning cycles" qualifier in 41.10's
+          own wording isn't checked here: this graph has no
+          learning-cycle counter of any kind yet (nothing in this
+          codebase currently mutates PAD/theta/confidence from
+          observation), so every reported pair is reported every time
+          this runs, with no cycle-count gating -- documented here
+          rather than silently ignored.
         - Synonym cluster consistency: every concept resolves to
           exactly one cluster root (guaranteed by the union-find
           construction itself, re-checked here in case of external
@@ -1052,14 +1061,25 @@ class TensorLiraGraph:
             if not still_closed:
                 open_chains.append({"chain_index": chain_idx, "edges": chain["edges"]})
 
+        # A concept still sitting at (D1_D2_ROOT, D1_D2_ROOT) simply has
+        # no hierarchy information yet (module docstring's "nothing
+        # broader known yet" convention) -- two such concepts trivially
+        # "coincide" with every other unpositioned concept, which is
+        # missing data, not identity evidence (spec 12's own "structural
+        # coincidence increases the likelihood..." only means something
+        # once there's real structure to coincide on). Only concepts
+        # with at least one real axis positioned are compared.
+        positioned_nouns = [
+            ConceptRef(self, idx) for idx in range(self._n_rows)
+            if self._concept_kinds[idx] == ConceptKind.Noun
+            and (self._concept_d1_z[idx] != D1_D2_ROOT or self._concept_d2_z[idx] != D1_D2_ROOT)
+        ]
         coincident_concepts = []
-        for i in range(self._n_rows):
-            for j in range(i + 1, self._n_rows):
-                a, b = ConceptRef(self, i), ConceptRef(self, j)
-                if a.kind == ConceptKind.Noun and b.kind == ConceptKind.Noun:
-                    verdict = self.classify_noun_identity(a, b)
-                    if verdict != "Distinct":
-                        coincident_concepts.append({"a": a.name, "b": b.name, "space": "noun", "verdict": verdict})
+        for i, a in enumerate(positioned_nouns):
+            for b in positioned_nouns[i + 1:]:
+                verdict = self.classify_noun_identity(a, b)
+                if verdict != "Distinct":
+                    coincident_concepts.append({"a": a.name, "b": b.name, "space": "noun", "verdict": verdict})
 
         cluster_inconsistencies = []
         for idx in range(self._n_rows):
