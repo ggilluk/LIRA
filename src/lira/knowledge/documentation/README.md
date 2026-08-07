@@ -41,5 +41,14 @@ hierarchy indexing, a companion audit checklist, and an explicit
   (`BindAgent`, `InferAgent`, `TrainAgent`, `EvaluateAgent`,
   `PromoteAgent`, `CompartmentaliseAgent`); `DomainAgent`.
 - `role/` -- `DomainController`, `HostController` (LIRA's own class for
-  talking to the Kubernetes/WASI substrate).
-- `api/`, `ui/`, `assets/` -- none yet.
+  talking to the Kubernetes/WASI substrate); `DictionarySeeder`
+  (materialises a Vocabulary Layer Dictionary/LexicalRelationshipStore
+  into a `TensorLiraGraph`'s Concepts/edges, spec 41.11).
+- `ui/` -- `LiraView` (combines `DictionaryView` and
+  `SentenceReaderView` into one tabbed offline page); `KnowledgeView`
+  (draws a seeded `TensorLiraGraph`'s own D1-D6 Knowledge Vector Space
+  geometry graphically, with an embedded `DictionaryView` tab a Concept
+  node can pivot straight to for its backing Word).
+- `assets/example_ui/` -- pre-generated `LiraView`/`KnowledgeView`
+  output, open directly in a browser.
+- `api/` -- none yet.

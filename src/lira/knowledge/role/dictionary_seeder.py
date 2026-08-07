@@ -85,6 +85,7 @@ class DictionarySeeder:
         self.causes = graph.add_concept("causes", ConceptKind.Relationship)
         self.entails = graph.add_concept("entails", ConceptKind.Relationship)
         self._concept_for_word_uuid: Dict[str, ConceptRef] = {}
+        self._word_uuid_for_concept_idx: Dict[int, str] = {}
 
     def seed_word(self, word) -> Optional[ConceptRef]:
         """Creates (or returns the already-seeded) Concept for `word`,
@@ -111,7 +112,19 @@ class DictionarySeeder:
             self.graph.set_pad(concept, pleasure=pleasure, arousal=arousal, dominance=dominance)
 
         self._concept_for_word_uuid[word.uuid.value] = concept
+        self._word_uuid_for_concept_idx[concept.idx] = word.uuid.value
         return concept
+
+    def word_uuid_for_concept(self, concept_idx: int) -> Optional[str]:
+        """The Word.uuid.value backing the Concept at `concept_idx`, or
+        None for a Concept this seeder created itself rather than seeded
+        from a Word -- `is_a`/`part_of`/`causes`/`entails` (the reified
+        verb Concepts every edge is written against, __init__ above).
+        Reverse of `_concept_for_word_uuid` -- Concept-to-word lookups
+        for graphical rendering (knowledge/ui/knowledge_view.py), which
+        only ever has a Concept (a graph row index) in hand, never the
+        Word it came from."""
+        return self._word_uuid_for_concept_idx.get(concept_idx)
 
     def seed_dictionary(self, dictionary, relationships) -> DictionarySeedingReport:
         """Seeds every Word in `dictionary` as a Concept, then every

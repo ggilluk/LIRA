@@ -2102,6 +2102,25 @@ populateDomainFilter();
 populateHierarchyKindFilter();
 populateCyclicKindFilter();
 renderAll();
+
+// Additive external hook (knowledge/ui/knowledge_view.py) -- lets a
+// combined page embedding this fragment as its own "Vocabulary" tab
+// pivot straight to one word's detail panel from outside this script's
+// own IIFE scope, the same way selectTab/selectWordIn do it internally.
+// window-scoped since render_fragment()'s IIFE wrapping (module
+// docstring) otherwise hides every name here from a sibling script.
+// Returns false (a no-op) rather than throwing when wordId isn't in
+// WORDS -- a Concept the caller holds may have no Word behind it at all
+// (e.g. a reified "is-a"/"causes" verb Concept, knowledge/role/dictionary_seeder.py).
+// Existing call sites (every current DictionaryView.save()/render()
+// caller) are unaffected -- this only adds a global, it changes no
+// existing behaviour.
+window.liraDictionaryGoToWord = function (wordId) {
+  if (!WORDS.some(w => w.id === wordId)) return false;
+  selectTab("words");
+  selectWordIn("words", wordId);
+  return true;
+};
 /*@@SCRIPT_FRAGMENT_END@@*/
 </script>
 </body>

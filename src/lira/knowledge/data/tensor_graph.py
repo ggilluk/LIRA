@@ -603,6 +603,29 @@ class TensorLiraGraph:
 
         return RelationshipRef(self, row, col)
 
+    def all_concepts(self) -> List[ConceptRef]:
+        """Every Concept currently in this graph, row (creation) order --
+        node enumeration for graphical rendering (knowledge/ui/knowledge_view.py)
+        that no other public method previously provided."""
+        return [ConceptRef(self, idx) for idx in range(self._n_rows)]
+
+    def edges_by_verb(self, verb: ConceptRef) -> List["RelationshipRef"]:
+        """Every edge recorded against `verb` (e.g. a reified is-a/part-of/
+        causes/entails Concept) as (source, destination) pairs -- edge
+        enumeration for graphical rendering (knowledge/ui/knowledge_view.py);
+        no other public method previously walked _col_key_to_idx/_M_confidence
+        this way. A column that exists (its (verb, dest) key was allocated)
+        but was never actually written a fact into has all-zero confidence
+        and is correctly skipped -- same "zero means absent" convention
+        every other read here already relies on."""
+        results = []
+        for col in range(self._n_cols):
+            if self._col_verb_uuid[col] != verb.uuid:
+                continue
+            for row in np.nonzero(self._M_confidence[:self._n_rows, col])[0]:
+                results.append(RelationshipRef(self, int(row), col))
+        return results
+
     def _position_below(self, parent_idx: int, next_gap_bound: dict, z_array: list) -> float:
         """Fractional/gap indexing (spec 41.9): the new child's z is the
         midpoint between its parent's z and the closest-to-parent

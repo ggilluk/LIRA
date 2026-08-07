@@ -81,6 +81,14 @@ class HostedDomains:
     def d5_z(self, domain) -> float:
         return self._domain_d5_z[domain.name]
 
+    def d5_parent(self, domain):
+        """This Domain's D5 parent (a Domain, per register_domain_generalisation
+        above), or None if unregistered/Common -- tree-edge enumeration for
+        graphical rendering (knowledge/ui/knowledge_view.py) that no other
+        public method previously provided."""
+        name = self._domain_d5_parent.get(domain.name)
+        return self.get(name) if name else None
+
     def register_domain_hierarchy_from_name(self, host, dotted_name: str):
         """spec 41.6: "python.programming.language.common <=> common ->
         language -> programming -> python". Splits a DNC-001
@@ -130,6 +138,13 @@ class HostedDomains:
 
     def d6_z(self, domain) -> float:
         return self._domain_d6_z[domain.name]
+
+    def d6_whole(self, domain):
+        """This Domain's D6 whole (a Domain, per register_domain_composition
+        above), or None if unregistered/Common -- mirrors d5_parent above,
+        same reason."""
+        name = self._domain_d6_whole.get(domain.name)
+        return self.get(name) if name else None
 
     # -- Combined Domain structure (spec 15.1) --
 
