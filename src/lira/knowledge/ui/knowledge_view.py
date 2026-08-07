@@ -24,13 +24,38 @@ theta *is* assigned, on a hand-built closed causal chain. Every drawn
 edge still reports its own r (PAD amplitude) and theta-or-"unassigned"
 so the honest, incomplete state is visible rather than hidden.
 
-Only Concepts/Domains that actually participate in at least one edge for
-a given dimension are drawn -- every fresh Concept/Domain defaults to
-D1_D2_ROOT until explicitly positioned (tensor_graph.py's own module
-docstring), and a forest of thousands of same-point roots would be
-noise, not a diagram (the same filtering reasoning
-TensorLiraGraph.vector_space_audit()'s own coincident_concepts check
-already applies to this graph's data).
+Meant to be generated only after a graph has been through *both*
+seeding (DictionarySeeder) and the follow-up Knowledge Vector Space
+passes over the seeded result (knowledge/role/vector_space_passes.py's
+own `run_vector_space_passes` -- causal/entailment chain detection,
+then a closing vector_space_audit) -- see
+examples/knowledge_view_example.py for that ordering made explicit.
+Rendering straight off a freshly-seeded graph still works (every field
+this view reads has a defined default), it just shows D4's theta as
+100% unassigned, since DictionarySeeder alone never calls
+assign_causal_chain.
+
+D1/D2/D3 Concepts are grouped and boxed by Domain (the same Domain
+label DictionaryView.word_domain_labels() already reports for a
+Concept's own backing Word -- Common vs. a Domain's own words, see
+that method's docstring) -- one box per Domain when every Domain is
+being shown at once, collapsing to that one Domain's box alone when a
+specific Domain is selected via this page's own Domain filter. Within
+a Domain's box, a dashed sub-box additionally groups any Concepts that
+share a synonym cluster (TensorLiraGraph.synonym_cluster, spec 10/41.8)
+-- the same "boxed together" visual language DictionaryView's own
+Cyclic tab already uses for a SYNONYM cluster, reused here rather than
+reinvented.
+
+Every Concept of the relevant kind is shown, not just the ones this
+dimension has actually positioned -- a Concept with no recorded is-a/
+part-of edge for this dimension gets this *view's own* z = -5.0
+sentinel (UNPOSITIONABLE_Z below) rather than being silently left out
+or shown at the ambiguous D1_D2_ROOT = 1.0 (which genuinely means "a
+positioned root of a real subtree", not "unknown"). This sentinel is
+this view's own display-layer convention -- it is never written back
+into the graph's real _concept_d1_z/_concept_d2_z/_concept_d3_z arrays,
+which stay exactly as tensor_graph.py's own module docstring specifies.
 
 Every Concept node that traces back to a seeded Word (DictionarySeeder's
 own Concept-per-Word materialisation) is clickable -- selecting it pivots
@@ -41,8 +66,9 @@ opens that Word's detail panel there, via a small additive hook
 DictionaryView's own script now exposes (window.liraDictionaryGoToWord,
 dictionary_view.py's own render_fragment() output). The four reified
 verb Concepts DictionarySeeder itself creates to write edges against
-(is-a/part-of/causes/entails) have no Word behind them and render as
-plain, non-clickable nodes."""
+(is-a/part-of/causes/entails) have no Word behind them, are excluded
+from D1/D2/D3 entirely (not shown even as "unpositioned"), and render
+as plain, non-clickable, non-Domain-boxed nodes wherever D4 shows them."""
 
 import json
 from datetime import datetime, timezone
@@ -58,6 +84,23 @@ DEFAULT_TITLE = "LIRA Knowledge"
 DEFAULT_SUBTITLE = "Knowledge Vector Space -- Dimensions 1-6"
 
 _EMPTY_TREE = {"nodes": {}, "children": {}, "roots": []}
+
+# This view's own display-layer sentinel for "this dimension has no
+# recorded position for this Concept at all" -- module docstring.
+# Deliberately outside the real [D1_D2_BOTTOM, D1_D2_ROOT] = [0.0, 1.0]
+# range (tensor_graph.py's own module docstring) so it can never be
+# confused with a genuine coordinate; never written into the graph
+# itself, only into this view's own generated JSON payload.
+UNPOSITIONABLE_Z = -5.0
+
+# A Concept whose backing Word this view can't resolve a Domain label
+# for (module docstring's own domain-boxing) -- practically, only the
+# reified is-a/part-of/causes/entails Concepts DictionarySeeder itself
+# creates, which are excluded from D1/D2/D3 entirely before this label
+# would ever be used; kept as an explicit fallback rather than a raised
+# KeyError so a future caller that seeds Concepts some other way still
+# gets a labelled box instead of a crash.
+_UNKNOWN_DOMAIN = "Unknown"
 
 
 class KnowledgeView:
@@ -87,16 +130,27 @@ class KnowledgeView:
 
     def render(self) -> str:
         dict_style, dict_body, dict_script = self.dictionary_view.render_fragment()
+        word_domain = self.dictionary_view.word_domain_labels()
+        excluded = {self.seeder.is_a.idx, self.seeder.part_of.idx, self.seeder.causes.idx, self.seeder.entails.idx}
 
-        d1 = self._concept_tree(self._isa_edges(ConceptKind.Noun), lambda c: c.d1_z)
-        d2 = self._concept_tree(self.graph.edges_by_verb(self.seeder.part_of), lambda c: c.d2_z)
-        d3 = self._concept_tree(self._isa_edges(ConceptKind.Relationship), lambda c: c.d3_z)
-        d4 = self._d4_edges()
+        d1 = self._dimension_payload(ConceptKind.Noun, self._isa_edges(ConceptKind.Noun),
+                                      lambda c: c.d1_z, word_domain, excluded)
+        d2 = self._dimension_payload(ConceptKind.Noun, self.graph.edges_by_verb(self.seeder.part_of),
+                                      lambda c: c.d2_z, word_domain, excluded)
+        d3 = self._dimension_payload(ConceptKind.Relationship, self._isa_edges(ConceptKind.Relationship),
+                                      lambda c: c.d3_z, word_domain, excluded)
+        d4 = self._d4_payload(word_domain)
         if self.hosted_domains is not None:
             d5 = self._domain_tree(self.hosted_domains.d5_z, self.hosted_domains.d5_parent)
             d6 = self._domain_tree(self.hosted_domains.d6_z, self.hosted_domains.d6_whole)
         else:
             d5 = d6 = _EMPTY_TREE
+
+        def node_count(payload: dict) -> int:
+            return sum(len(bucket["nodes"]) for bucket in payload.values())
+
+        def edge_count(payload: dict) -> int:
+            return sum(len(rows) for rows in payload.values())
 
         html = _PAGE_TEMPLATE
         for token, value in {
@@ -104,10 +158,10 @@ class KnowledgeView:
             "SUBTITLE": escape(self.subtitle),
             "COMPILED_AT": escape(self._compiled_at()),
             "CONCEPT_COUNT": str(len(self.graph.all_concepts())),
-            "D1_COUNT": str(len(d1["nodes"])),
-            "D2_COUNT": str(len(d2["nodes"])),
-            "D3_COUNT": str(len(d3["nodes"])),
-            "D4_COUNT": str(len(d4)),
+            "D1_COUNT": str(node_count(d1)),
+            "D2_COUNT": str(node_count(d2)),
+            "D3_COUNT": str(node_count(d3)),
+            "D4_COUNT": str(edge_count(d4)),
             "D5_COUNT": str(len(d5["nodes"])),
             "D6_COUNT": str(len(d6["nodes"])),
             "DICTIONARY_STYLE": dict_style,
@@ -149,65 +203,119 @@ class KnowledgeView:
         name = concept.name
         return name.split("::", 1)[0] if "::" in name else name
 
-    def _concept_tree(self, edges: List[RelationshipRef], z_getter) -> dict:
-        """Builds a {nodes, children, roots} forest payload (string-keyed
-        throughout, by Concept row index, so every id round-trips through
-        JSON/JS property access identically) from a flat is-a/part-of edge
-        list -- a node with no incoming parent_of entry is a root of its
-        own subtree, not necessarily D1_D2_ROOT itself (a subtree can be
-        rooted at any already-positioned Concept that itself has no
-        further recorded parent)."""
-        nodes: Dict[str, dict] = {}
+    def _dimension_payload(self, kind: ConceptKind, tree_edges: List[RelationshipRef], z_getter,
+                            word_domain: Dict[str, str], excluded: set) -> Dict[str, dict]:
+        """Every Concept of `kind` (minus the reified is-a/part-of/causes/
+        entails Concepts in `excluded`), grouped into one {nodes, children,
+        roots, unpositioned, synonym_clusters} payload per Domain -- module
+        docstring's own Domain-boxing, unpositioned-sentinel, and
+        synonym-cluster-boxing rules, all decided here rather than in JS
+        so the rendering script only ever lays out what this method
+        already decided."""
         parent_of: Dict[str, str] = {}
-
-        def register(concept: ConceptRef) -> None:
-            key = str(concept.idx)
-            if key in nodes:
-                return
-            nodes[key] = {
-                "id": key,
-                "label": self._label(concept),
-                "z": round(float(z_getter(concept)), 6),
-                "word_id": self.seeder.word_uuid_for_concept(concept.idx),
-            }
-
-        for edge in edges:
+        for edge in tree_edges:
             destination = edge.destination
             if destination is None:
                 continue
-            register(edge.source)
-            register(destination)
             parent_of[str(edge.source.idx)] = str(destination.idx)
+        positioned_keys = set(parent_of) | set(parent_of.values())
 
-        children: Dict[str, List[str]] = {}
+        home_domain: Dict[str, str] = {}
+        domains: Dict[str, dict] = {}
+
+        def bucket(name: str) -> dict:
+            return domains.setdefault(name, {"nodes": {}, "children": {}, "roots": [],
+                                              "unpositioned": [], "synonym_clusters": []})
+
+        def node_record(concept: ConceptRef, key: str) -> dict:
+            positioned = key in positioned_keys
+            return {
+                "id": key,
+                "label": self._label(concept),
+                "z": round(float(z_getter(concept)), 6) if positioned else UNPOSITIONABLE_Z,
+                "word_id": self.seeder.word_uuid_for_concept(concept.idx),
+                "positioned": positioned,
+            }
+
+        for concept in self.graph.all_concepts():
+            if concept.kind != kind or concept.idx in excluded:
+                continue
+            key = str(concept.idx)
+            word_id = self.seeder.word_uuid_for_concept(concept.idx)
+            domain = word_domain.get(word_id, _UNKNOWN_DOMAIN) if word_id else _UNKNOWN_DOMAIN
+            home_domain[key] = domain
+            record = node_record(concept, key)
+            bucket(domain)["nodes"][key] = record
+            if not record["positioned"]:
+                bucket(domain)["unpositioned"].append(key)
+
         for child_key, parent_key in parent_of.items():
-            children.setdefault(parent_key, []).append(child_key)
-        roots = [key for key in nodes if key not in parent_of]
-        return {"nodes": nodes, "children": children, "roots": roots}
+            child_domain = home_domain.get(child_key)
+            if child_domain is None:
+                continue
+            child_bucket = bucket(child_domain)
+            child_bucket["children"].setdefault(parent_key, []).append(child_key)
+            if parent_key not in child_bucket["nodes"]:
+                # The parent lives in a different Domain's own box (a
+                # real, common case -- e.g. a Domain-specific word's
+                # HYPERNYM parent inherited from Common) -- copied in so
+                # this box's own tree stays self-contained and
+                # renderable; the copy carries its own true domain, not
+                # this box's, so the frontend can still label it
+                # distinctly rather than silently mislabel it.
+                parent_concept = ConceptRef(self.graph, int(parent_key))
+                child_bucket["nodes"][parent_key] = {
+                    **node_record(parent_concept, parent_key),
+                    "foreign_domain": home_domain.get(parent_key, _UNKNOWN_DOMAIN),
+                }
 
-    def _d4_edges(self) -> List[dict]:
-        """Every seeded CAUSE/ENTAILMENT edge as a flat (source, target)
-        record carrying its own r (D4's PAD amplitude) and theta-or-None
-        (module docstring's "honest, incomplete state") -- the arrow
-        diagram's own data, not a tree (D4 isn't a hierarchy)."""
-        records = []
+        for data in domains.values():
+            child_keys = {child for kids in data["children"].values() for child in kids}
+            data["roots"] = [key for key, record in data["nodes"].items()
+                              if key not in child_keys and record["positioned"]]
+            seen_clusters = set()
+            for key in data["nodes"]:
+                cluster = self.graph.synonym_cluster(ConceptRef(self.graph, int(key)))
+                member_keys = frozenset(str(c.idx) for c in cluster if str(c.idx) in data["nodes"])
+                if len(member_keys) < 2 or member_keys in seen_clusters:
+                    continue
+                seen_clusters.add(member_keys)
+                data["synonym_clusters"].append(sorted(member_keys, key=int))
+
+        return domains
+
+    def _d4_payload(self, word_domain: Dict[str, str]) -> Dict[str, list]:
+        """Every seeded CAUSE/ENTAILMENT edge, grouped by its own source
+        Concept's Domain (module docstring's Domain-boxing, applied to
+        D4's flat edge list rather than a tree) -- carrying its own r
+        (D4's PAD amplitude) and theta-or-None (module docstring's
+        "honest, incomplete state"). A target Concept in a different
+        Domain still renders -- the arrow simply reaches across that
+        Domain's own box, the same honest cross-Domain signal
+        _dimension_payload's own foreign_domain copies carry for D1/D2/D3."""
+        domains: Dict[str, list] = {}
         for kind_name, verb in (("CAUSE", self.seeder.causes), ("ENTAILMENT", self.seeder.entails)):
             for edge in self.graph.edges_by_verb(verb):
                 destination = edge.destination
                 if destination is None:
                     continue
-                records.append({
+                source_word_id = self.seeder.word_uuid_for_concept(edge.source.idx)
+                target_word_id = self.seeder.word_uuid_for_concept(destination.idx)
+                source_domain = word_domain.get(source_word_id, _UNKNOWN_DOMAIN) if source_word_id else _UNKNOWN_DOMAIN
+                target_domain = word_domain.get(target_word_id, _UNKNOWN_DOMAIN) if target_word_id else _UNKNOWN_DOMAIN
+                domains.setdefault(source_domain, []).append({
                     "source_id": edge.source.idx,
                     "source_label": self._label(edge.source),
-                    "source_word_id": self.seeder.word_uuid_for_concept(edge.source.idx),
+                    "source_word_id": source_word_id,
                     "target_id": destination.idx,
                     "target_label": self._label(destination),
-                    "target_word_id": self.seeder.word_uuid_for_concept(destination.idx),
+                    "target_word_id": target_word_id,
+                    "target_domain": target_domain,
                     "kind": kind_name,
                     "r": round(float(self.graph.d4_pad_amplitude(edge)), 6),
                     "theta": None if self.graph.is_unassigned_theta(edge) else round(float(self.graph.theta(edge)), 6),
                 })
-        return records
+        return domains
 
     def _domain_tree(self, z_getter, parent_getter) -> dict:
         """Mirrors _concept_tree above at Domain scale (HostedDomains'
@@ -409,6 +517,23 @@ h1 {
   margin-bottom: 14px;
   line-height: 1.45;
 }
+.kv-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+  font-size: 0.82rem;
+  color: var(--ink-muted);
+}
+.kv-toolbar select {
+  padding: 6px 10px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+}
 .kv-svg-wrap {
   border: 1px solid var(--line);
   border-radius: var(--radius);
@@ -449,11 +574,51 @@ h1 {
 .kv-node-clickable:hover circle, .kv-node-clickable:focus circle { fill: var(--accent); }
 .kv-node-clickable:hover text.kv-node-label, .kv-node-clickable:focus text.kv-node-label { fill: var(--accent); text-decoration: underline; }
 .kv-node:focus { outline: none; }
+.kv-node-unpositioned circle {
+  stroke-dasharray: 2 2;
+  opacity: 0.6;
+}
+.kv-node-foreign text.kv-node-label { font-style: italic; }
 .kv-arrowhead { fill: var(--line-strong); }
 .kv-d4-label {
   font-family: var(--font-mono);
   font-size: 10px;
   fill: var(--ink-muted);
+}
+.kv-domain-box {
+  fill: none;
+  stroke: var(--line-strong);
+  stroke-width: 1.4;
+  rx: 8;
+}
+.kv-domain-label {
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 12px;
+  fill: var(--ink);
+}
+.kv-domain-sublabel {
+  font-family: var(--font-body);
+  font-size: 10px;
+  fill: var(--ink-muted);
+}
+.kv-synonym-box {
+  fill: color-mix(in srgb, var(--accent) 8%, transparent);
+  stroke: var(--accent);
+  stroke-width: 1;
+  stroke-dasharray: 3 3;
+  rx: 6;
+}
+.kv-synonym-label {
+  font-family: var(--font-body);
+  font-size: 9px;
+  fill: var(--accent);
+}
+.kv-unpositioned-box {
+  fill: none;
+  stroke: var(--line);
+  stroke-width: 1;
+  stroke-dasharray: 4 3;
 }
 footer.lira-footer {
   margin-top: 28px;
@@ -497,14 +662,16 @@ footer.lira-footer {
       <button data-subtab="d2" aria-selected="false">D2 &middot; Composition</button>
     </div>
     <div class="kv-panel active" id="kv-panel-d1">
-      <div class="kv-note">Noun Concept generalisation (Hypernym &rarr; Hyponym, spec &sect;7). Depth = distance below Root; each node's own z is shown beneath it. Click a Concept that traces back to a seeded Word to see it in the Vocabulary tab.</div>
+      <div class="kv-note">Noun Concept generalisation (Hypernym &rarr; Hyponym, spec &sect;7). Depth = distance below Root; each node's own z is shown beneath it. One box per Domain (dashed sub-boxes group synonym clusters within it); a Concept this dimension has no recorded position for still shows, dimmed, at z=-5. Click a Concept that traces back to a seeded Word to see it in the Vocabulary tab.</div>
+      <div class="kv-toolbar"><label>Domain <select class="kv-domain-filter" data-target="d1"></select></label></div>
       <div class="kv-svg-wrap"><svg id="kv-svg-d1"></svg></div>
-      <div class="kv-empty" id="kv-empty-d1">No D1-positioned Concepts yet -- every Concept defaults to Root until an is-a edge is recorded against it.</div>
+      <div class="kv-empty" id="kv-empty-d1">No Concepts of this kind yet.</div>
     </div>
     <div class="kv-panel" id="kv-panel-d2">
       <div class="kv-note">Noun Concept composition (Holonym &rarr; Meronym, spec &sect;8), an entirely independent tree from D1 over the same Concepts.</div>
+      <div class="kv-toolbar"><label>Domain <select class="kv-domain-filter" data-target="d2"></select></label></div>
       <div class="kv-svg-wrap"><svg id="kv-svg-d2"></svg></div>
-      <div class="kv-empty" id="kv-empty-d2">No D2-positioned Concepts yet -- every Concept defaults to Root until a part-of edge is recorded against it.</div>
+      <div class="kv-empty" id="kv-empty-d2">No Concepts of this kind yet.</div>
     </div>
   </div>
 
@@ -515,11 +682,13 @@ footer.lira-footer {
     </div>
     <div class="kv-panel active" id="kv-panel-d3">
       <div class="kv-note">Relationship/Verb Concept generalisation (Hypernym &rarr; Troponym, spec &sect;41.5), same is-a tree as D1, scoped to Relationship-kind Concepts.</div>
+      <div class="kv-toolbar"><label>Domain <select class="kv-domain-filter" data-target="d3"></select></label></div>
       <div class="kv-svg-wrap"><svg id="kv-svg-d3"></svg></div>
-      <div class="kv-empty" id="kv-empty-d3">No D3-positioned Concepts yet -- every Relationship Concept defaults to Root until an is-a edge is recorded against it.</div>
+      <div class="kv-empty" id="kv-empty-d3">No Concepts of this kind yet.</div>
     </div>
     <div class="kv-panel" id="kv-panel-d4">
-      <div class="kv-note">Relationship composition and mechanics (D4 = (Qc, &theta;, r, s), spec &sect;9/41.1) -- every seeded CAUSE/ENTAILMENT edge, with its own r (source Concept's PAD amplitude). &theta; only exists once a caller groups edges into a closed causal chain (assign_causal_chain) -- this seeder never does, so it reads "unassigned" here rather than a fabricated angle; see examples/knowledge_vector_space_d3_d4.py for a worked example with &theta; assigned.</div>
+      <div class="kv-note">Relationship composition and mechanics (D4 = (Qc, &theta;, r, s), spec &sect;9/41.1) -- every seeded CAUSE/ENTAILMENT edge, grouped into a box per source Domain, with its own r (source Concept's PAD amplitude). &theta; only exists once edges have been grouped into a chain (assign_causal_chain, run as a second pass after seeding -- see examples/knowledge_view_example.py) -- an edge no pass has grouped yet reads "unassigned" here rather than a fabricated angle.</div>
+      <div class="kv-toolbar"><label>Domain <select class="kv-domain-filter" data-target="d4"></select></label></div>
       <div class="kv-svg-wrap"><svg id="kv-svg-d4"></svg></div>
       <div class="kv-empty" id="kv-empty-d4">No CAUSE/ENTAILMENT edges seeded yet.</div>
     </div>
@@ -566,6 +735,8 @@ footer.lira-footer {
   const COL_WIDTH = 92;
   const ROW_HEIGHT = 66;
   const MARGIN = 44;
+  const GRID_SPACING = 26;
+  const GRID_MARGIN = 20;
 
   function escapeHtml(s) {
     return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -651,43 +822,227 @@ footer.lira-footer {
     });
   }
 
-  function renderD4(svgId, emptyId, edges) {
-    const svg = document.getElementById(svgId);
-    const emptyEl = document.getElementById(emptyId);
-    if (!edges.length) {
+  // Lays out one Domain box's own content: the real is-a/part-of tree
+  // (computeLayout, as before) plus, below it, a compact grid of every
+  // Concept this dimension has no recorded position for at all --
+  // KnowledgeView's own UNPOSITIONABLE_Z = -5 sentinel, shown rather
+  // than hidden (module docstring). Returns pixel positions for every
+  // node id (tree AND grid) in this box's own local coordinate space,
+  // so the caller can draw edges and synonym-cluster bounding boxes
+  // against real coordinates regardless of which area a node landed in.
+  function layoutDomainContent(data) {
+    const childIds = new Set();
+    Object.values(data.children).forEach(kids => kids.forEach(id => childIds.add(id)));
+    const treeIds = [...new Set([...data.roots, ...childIds])];
+    const { posOf, depthOf, leafCount } = computeLayout({ children: data.children, roots: data.roots });
+    const maxDepth = Math.max(0, ...treeIds.map(id => depthOf[id] || 0));
+    const treeWidth = treeIds.length ? MARGIN * 2 + Math.max(leafCount - 1, 0) * COL_WIDTH : 0;
+    const treeHeight = treeIds.length ? MARGIN + maxDepth * ROW_HEIGHT + 30 : 0;
+
+    const positions = {};
+    treeIds.forEach(id => {
+      positions[id] = { x: MARGIN + (posOf[id] || 0) * COL_WIDTH, y: MARGIN + (depthOf[id] || 0) * ROW_HEIGHT };
+    });
+
+    const gridIds = data.unpositioned || [];
+    const gridTop = treeHeight + (treeIds.length ? 20 : MARGIN);
+    const cols = Math.max(1, Math.min(18, Math.ceil(Math.sqrt(gridIds.length * 2.2))));
+    gridIds.forEach((id, i) => {
+      positions[id] = {
+        x: GRID_MARGIN + (i % cols) * GRID_SPACING,
+        y: gridTop + GRID_MARGIN + Math.floor(i / cols) * GRID_SPACING,
+      };
+    });
+    const gridRows = Math.ceil(gridIds.length / cols);
+    const gridWidth = gridIds.length ? GRID_MARGIN * 2 + cols * GRID_SPACING : 0;
+    const gridHeight = gridIds.length ? GRID_MARGIN + gridRows * GRID_SPACING + 20 : 0;
+
+    return {
+      width: Math.max(treeWidth, gridWidth, 160),
+      height: treeHeight + gridHeight + (gridIds.length ? 0 : 10),
+      positions, treeIds, gridIds, gridTop,
+    };
+  }
+
+  // Draws one Domain's own box: a labelled outer rect containing its
+  // tree + unpositioned grid (layoutDomainContent above), with a dashed
+  // sub-box behind every synonym cluster this Domain bucket actually
+  // has two or more members of present (module docstring's own
+  // synonym-cluster boxing, the same "boxed together" language
+  // DictionaryView's own Cyclic tab already uses for a SYNONYM cluster).
+  function renderDomainBox(domainName, data, offsetY) {
+    const layout = layoutDomainContent(data);
+    const headerHeight = 34;
+    const contentX = 16, contentY = headerHeight + 6;
+    const boxWidth = layout.width + 32;
+    const boxHeight = layout.height + headerHeight + 20;
+
+    let svg = `<g transform="translate(0,${offsetY})">`;
+    svg += `<rect class="kv-domain-box" x="0" y="0" width="${boxWidth}" height="${boxHeight}"></rect>`;
+    svg += `<text class="kv-domain-label" x="14" y="20">${escapeHtml(domainName)}</text>`;
+    svg += `<text class="kv-domain-sublabel" x="14" y="32">${Object.keys(data.nodes).length} concepts &middot; ${layout.gridIds.length} unpositioned (z=-5) &middot; ${data.synonym_clusters.length} synonym cluster(s)</text>`;
+
+    data.synonym_clusters.forEach(memberIds => {
+      const pts = memberIds.map(id => layout.positions[id]).filter(Boolean);
+      if (pts.length < 2) return;
+      const minX = Math.min(...pts.map(p => p.x)) - 14, maxX = Math.max(...pts.map(p => p.x)) + 14;
+      const minY = Math.min(...pts.map(p => p.y)) - 20, maxY = Math.max(...pts.map(p => p.y)) + 14;
+      svg += `<rect class="kv-synonym-box" x="${contentX + minX}" y="${contentY + minY}" width="${maxX - minX}" height="${maxY - minY}"></rect>`;
+      svg += `<text class="kv-synonym-label" x="${contentX + minX + 4}" y="${contentY + minY + 10}">synonyms</text>`;
+    });
+
+    if (layout.gridIds.length) {
+      svg += `<rect class="kv-unpositioned-box" x="${contentX - 6}" y="${contentY + layout.gridTop - 6}" width="${layout.width + 12}" height="${layout.height - layout.gridTop + 12}"></rect>`;
+    }
+
+    Object.keys(data.children).forEach(parentId => {
+      data.children[parentId].forEach(childId => {
+        const p = layout.positions[parentId], c = layout.positions[childId];
+        if (!p || !c) return;
+        svg += `<line class="kv-edge" x1="${contentX + p.x}" y1="${contentY + p.y}" x2="${contentX + c.x}" y2="${contentY + c.y}"></line>`;
+      });
+    });
+
+    [...layout.treeIds, ...layout.gridIds].forEach(id => {
+      const node = data.nodes[id];
+      const pos = layout.positions[id];
+      if (!node || !pos) return;
+      const classes = ["kv-node"];
+      if (node.word_id) classes.push("kv-node-clickable");
+      if (!node.positioned) classes.push("kv-node-unpositioned");
+      if (node.foreign_domain) classes.push("kv-node-foreign");
+      const r = node.positioned ? 7 : 4;
+      const titleBits = [`${node.label} · z=${node.z.toFixed(3)}`];
+      if (node.foreign_domain) titleBits.push(`from ${node.foreign_domain}`);
+      if (!node.positioned) titleBits.push("unpositioned");
+      svg += `<g class="${classes.join(' ')}" tabindex="0" data-word-id="${node.word_id || ''}" transform="translate(${contentX + pos.x},${contentY + pos.y})">`;
+      svg += `<title>${escapeHtml(titleBits.join(' · '))}</title><circle r="${r}"></circle>`;
+      if (node.positioned) {
+        svg += `<text class="kv-node-label" y="-12" text-anchor="middle">${escapeHtml(node.label)}</text>`;
+        svg += `<text class="kv-node-z" y="20" text-anchor="middle">z=${node.z.toFixed(3)}</text>`;
+      }
+      svg += `</g>`;
+    });
+
+    svg += `</g>`;
+    return { svg, width: boxWidth, height: boxHeight };
+  }
+
+  function bindNodeClicks(svg) {
+    svg.querySelectorAll(".kv-node-clickable").forEach(g => {
+      g.addEventListener("click", () => goToWord(g.dataset.wordId));
+      g.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); goToWord(g.dataset.wordId); } });
+    });
+  }
+
+  function populateDomainFilter(prefix, domainNames, onChange) {
+    const select = document.querySelector(`.kv-domain-filter[data-target="${prefix}"]`);
+    if (!select || select.dataset.populated) return select;
+    select.innerHTML = `<option value="">All Domains</option>` +
+      domainNames.map(name => `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`).join('');
+    select.dataset.populated = "1";
+    select.addEventListener("change", onChange);
+    return select;
+  }
+
+  // D1/D2/D3: one Domain-boxed tree per Domain (or just the selected
+  // one), stacked vertically -- module docstring's own Domain-boxing.
+  function renderDimensionTab(prefix, payload) {
+    const svg = document.getElementById(`kv-svg-${prefix}`);
+    const emptyEl = document.getElementById(`kv-empty-${prefix}`);
+    const domainNames = Object.keys(payload).sort();
+    const select = populateDomainFilter(prefix, domainNames, () => renderDimensionTab(prefix, payload));
+    const selected = select ? select.value : "";
+    const domainsToShow = (selected ? [selected] : domainNames).filter(name => Object.keys(payload[name].nodes).length);
+
+    if (domainsToShow.length === 0) {
       svg.style.display = "none";
       emptyEl.style.display = "block";
       return;
     }
     svg.style.display = "block";
     emptyEl.style.display = "none";
+
+    let offsetY = 0, maxWidth = 0, body = "";
+    domainsToShow.forEach(name => {
+      const { svg: boxSvg, width, height } = renderDomainBox(name, payload[name], offsetY);
+      body += boxSvg;
+      offsetY += height + 24;
+      maxWidth = Math.max(maxWidth, width);
+    });
+    const totalHeight = Math.max(offsetY - 24, 40);
+    svg.setAttribute("viewBox", `0 0 ${maxWidth} ${totalHeight}`);
+    svg.setAttribute("width", maxWidth);
+    svg.setAttribute("height", totalHeight);
+    svg.innerHTML = body;
+    bindNodeClicks(svg);
+  }
+
+  // D4: one Domain-boxed stack of CAUSE/ENTAILMENT arrow-rows per
+  // source Domain (or just the selected one) -- a target Concept in a
+  // different Domain still renders, labelled, the arrow simply reaching
+  // across that Domain's own box (module docstring's own cross-Domain
+  // honesty, mirroring _dimension_payload's foreign_domain copies).
+  function renderD4Box(domainName, edges, offsetY) {
     const rowHeight = 52;
+    const headerHeight = 34;
     const width = 680;
-    const height = rowHeight * edges.length + 24;
-    svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
-    svg.setAttribute("width", width);
-    svg.setAttribute("height", height);
-    let body = `<defs><marker id="kv-arrowhead" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" class="kv-arrowhead"></path></marker></defs>`;
+    const height = rowHeight * edges.length + headerHeight + 20;
+    let svg = `<g transform="translate(0,${offsetY})">`;
+    svg += `<rect class="kv-domain-box" x="0" y="0" width="${width}" height="${height}"></rect>`;
+    svg += `<text class="kv-domain-label" x="14" y="20">${escapeHtml(domainName)}</text>`;
+    svg += `<text class="kv-domain-sublabel" x="14" y="32">${edges.length} edge(s)</text>`;
     edges.forEach((e, i) => {
-      const cy = 30 + i * rowHeight;
+      const cy = headerHeight + 26 + i * rowHeight;
       const thetaLabel = e.theta === null ? "&theta; unassigned" : `&theta;=${e.theta.toFixed(3)}`;
-      body += `
+      const crossDomain = e.target_domain && e.target_domain !== domainName;
+      svg += `
         <g class="kv-node${e.source_word_id ? ' kv-node-clickable' : ''}" tabindex="0" data-word-id="${e.source_word_id || ''}" transform="translate(64,${cy})">
           <circle r="7"></circle>
           <text class="kv-node-label" y="-12" text-anchor="middle">${escapeHtml(e.source_label)}</text>
         </g>
         <line class="kv-edge" x1="84" y1="${cy}" x2="${width - 104}" y2="${cy}" marker-end="url(#kv-arrowhead)"></line>
         <text class="kv-d4-label" x="${width / 2}" y="${cy - 10}" text-anchor="middle">${e.kind} &middot; r=${e.r.toFixed(2)} &middot; ${thetaLabel}</text>
-        <g class="kv-node${e.target_word_id ? ' kv-node-clickable' : ''}" tabindex="0" data-word-id="${e.target_word_id || ''}" transform="translate(${width - 64},${cy})">
+        <g class="kv-node${e.target_word_id ? ' kv-node-clickable' : ''}${crossDomain ? ' kv-node-foreign' : ''}" tabindex="0" data-word-id="${e.target_word_id || ''}" transform="translate(${width - 64},${cy})">
+          <title>${escapeHtml(e.target_label)}${crossDomain ? ' · ' + escapeHtml(e.target_domain) : ''}</title>
           <circle r="7"></circle>
-          <text class="kv-node-label" y="-12" text-anchor="middle">${escapeHtml(e.target_label)}</text>
+          <text class="kv-node-label" y="-12" text-anchor="middle">${escapeHtml(e.target_label)}${crossDomain ? ` (${escapeHtml(e.target_domain)})` : ''}</text>
         </g>`;
     });
-    svg.innerHTML = body;
-    svg.querySelectorAll(".kv-node-clickable").forEach(g => {
-      g.addEventListener("click", () => goToWord(g.dataset.wordId));
-      g.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); goToWord(g.dataset.wordId); } });
+    svg += `</g>`;
+    return { svg, width, height };
+  }
+
+  function renderD4Tab(payload) {
+    const svg = document.getElementById("kv-svg-d4");
+    const emptyEl = document.getElementById("kv-empty-d4");
+    const domainNames = Object.keys(payload).sort();
+    const select = populateDomainFilter("d4", domainNames, () => renderD4Tab(payload));
+    const selected = select ? select.value : "";
+    const domainsToShow = (selected ? [selected] : domainNames).filter(name => (payload[name] || []).length);
+
+    if (domainsToShow.length === 0) {
+      svg.style.display = "none";
+      emptyEl.style.display = "block";
+      return;
+    }
+    svg.style.display = "block";
+    emptyEl.style.display = "none";
+
+    let offsetY = 0, maxWidth = 0;
+    let body = `<defs><marker id="kv-arrowhead" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" class="kv-arrowhead"></path></marker></defs>`;
+    domainsToShow.forEach(name => {
+      const { svg: boxSvg, width, height } = renderD4Box(name, payload[name], offsetY);
+      body += boxSvg;
+      offsetY += height + 24;
+      maxWidth = Math.max(maxWidth, width);
     });
+    const totalHeight = Math.max(offsetY - 24, 40);
+    svg.setAttribute("viewBox", `0 0 ${maxWidth} ${totalHeight}`);
+    svg.setAttribute("width", maxWidth);
+    svg.setAttribute("height", totalHeight);
+    svg.innerHTML = body;
+    bindNodeClicks(svg);
   }
 
   function selectOuterTab(tab) {
@@ -718,10 +1073,10 @@ footer.lira-footer {
     });
   });
 
-  renderVectorTree("kv-svg-d1", "kv-empty-d1", D1);
-  renderVectorTree("kv-svg-d2", "kv-empty-d2", D2);
-  renderVectorTree("kv-svg-d3", "kv-empty-d3", D3);
-  renderD4("kv-svg-d4", "kv-empty-d4", D4);
+  renderDimensionTab("d1", D1);
+  renderDimensionTab("d2", D2);
+  renderDimensionTab("d3", D3);
+  renderD4Tab(D4);
   renderVectorTree("kv-svg-d5", "kv-empty-d5", D5);
   renderVectorTree("kv-svg-d6", "kv-empty-d6", D6);
 })();

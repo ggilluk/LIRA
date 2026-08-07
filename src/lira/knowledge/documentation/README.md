@@ -43,7 +43,10 @@ hierarchy indexing, a companion audit checklist, and an explicit
 - `role/` -- `DomainController`, `HostController` (LIRA's own class for
   talking to the Kubernetes/WASI substrate); `DictionarySeeder`
   (materialises a Vocabulary Layer Dictionary/LexicalRelationshipStore
-  into a `TensorLiraGraph`'s Concepts/edges, spec 41.11).
+  into a `TensorLiraGraph`'s Concepts/edges, spec 41.11);
+  `run_vector_space_passes` (`vector_space_passes.py` -- causal/
+  entailment chain detection and assignment, then a closing audit, run
+  once over an already-seeded graph, before any view renders it).
 - `ui/` -- `LiraView` (combines `DictionaryView` and
   `SentenceReaderView` into one tabbed offline page); `KnowledgeView`
   (draws a seeded `TensorLiraGraph`'s own D1-D6 Knowledge Vector Space

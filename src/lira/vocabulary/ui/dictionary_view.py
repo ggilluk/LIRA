@@ -166,6 +166,15 @@ class DictionaryView:
         with open(path, "w", encoding="utf-8") as handle:
             handle.write(self.render())
 
+    def word_domain_labels(self) -> Dict[str, str]:
+        """word.uuid.value -> domain label (word.is_common's own
+        "Common"/domain_tag, or this view's own domain_name), for every
+        Word in this Dictionary -- Concept-to-Domain lookups for a page
+        composing this view with another (knowledge/ui/knowledge_view.py),
+        without duplicating _domain_label's own is_common/domain_tag
+        logic."""
+        return {word.uuid.value: self._domain_label(word) for word in self.dictionary.all()}
+
     def _word_records(self) -> List[dict]:
         records = []
         for word in self.dictionary.all():
