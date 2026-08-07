@@ -11,6 +11,22 @@ conflicts with an earlier section (most notably D4's tuple definition in
 Section 9 and the unqualified "D4 = 5-tuple" framing in Section 18),
 Section 41 is authoritative.
 
+## Implementation Status
+
+| Piece | Status |
+|---|---|
+| D1 (Noun Concept Generalisation) | **Built** -- `TensorLiraGraph._concept_d1_z`, computed automatically inside `add_relationship`'s existing `isA_uuid` path (`knowledge/data/tensor_graph.py`) |
+| D2 (Noun Concept Composition) | **Built** -- `TensorLiraGraph._concept_d2_z`, a new `partOf_uuid` path mirroring D1's, entirely independent tree |
+| Fractional/gap indexing (41.9) | **Built** -- `TensorLiraGraph._position_below` |
+| Noun structural identity + `ε_merge`/`ε_review` (12.1, 41.3) | **Built** -- `TensorLiraGraph.noun_structural_distance`/`classify_noun_identity`, configurable via the constructor |
+| Worked example | **Built** -- `examples/knowledge_vector_space_d1_d2.py` (the exact Concept/organism/animal/dog and vehicle/engine/wheel/chassis examples from Section 41.4, against a real graph, not hand-typed numbers) |
+| D3/D4 (Relationship generalisation/composition/mechanics) | Not yet implemented |
+| D5/D6 (Domain generalisation/composition) | Not yet implemented |
+| Synonym/Antonym Side/Sign geometry (10, 41.8) | Not yet implemented |
+| NaN storage separation (41.7) | Not yet implemented |
+| Companion vector-space audit (41.10) | Not yet implemented |
+| `LexicalRelationshipType` mapping (41.11) | Not yet implemented at the Knowledge Layer (Vocabulary's own `LexicalRelationshipType` enum and this Concept-level `is-a`/`part-of` tree are two distinct layers -- see D1/D2's own code comments) |
+
 | Core model |
 |---|
 | `K = (D1, D2, D3, D4, D5, D6)` |

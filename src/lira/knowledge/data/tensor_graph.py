@@ -13,10 +13,58 @@ that version rebuilt the dense matrices from scratch (an O(E) or worse
 scan) on every single call to find_missing_attributes_tensor. Here,
 "building" never happens -- the matrices are always already up to date,
 because every add_relationship call updates them directly.
+
+Knowledge Vector Space (knowledge/documentation/knowledge_vector_space_specification.md,
+sections 6/7/41.1/41.9) Dimensions 1 and 2 -- noun Concept generalisation
+and composition -- are implemented here as a *reinterpretation* of this
+graph's own existing is-a bookkeeping (Section 41.11's own mapping:
+HYPERNYM/HYPONYM -> D1), not a parallel structure: D1's z coordinate is
+computed automatically, in the same O(1) amortized add_relationship call
+that already threads isA_uuid through for Band 1/3/5 attribute
+inheritance, the moment an edge's relationship concept matches isA_uuid.
+D2 (composition, HOLONYM/MERONYM -> D2) mirrors this exactly for a
+second, independent tree, keyed off a new partOf_uuid parameter -- no
+existing behaviour changes for a caller that never passes it.
+
+Both trees use fractional/gap indexing (spec 41.9), not the superseded
+global-depth z = 1 - d/N formula: a new child's z is the midpoint
+between its parent's z and the closest-to-parent boundary any of that
+parent's *other* children have already claimed so far (or
+D1_D2_BOTTOM if this is the parent's first child). Each successive
+sibling is therefore packed progressively closer to the parent, which
+is a deliberate property, not an accident: it leaves each sibling the
+*largest* possible remaining span down to Bottom for that sibling's
+own descendants, rather than shrinking a shared, ever-narrower band
+toward Bottom that later-added siblings would inherit a worse share
+of. Sibling order/relative position carries no meaning of its own --
+only "parent.z > child.z" is guaranteed, for every child. This means
+inserting a new child only ever touches that one new row -- no
+existing concept's z is ever recomputed -- at the cost of consuming
+representable floating-point headroom after enough successive
+siblings under one busy parent; an explicit, rare rebalance is a
+documented future op (spec 41.9), not implemented here since nothing
+has exercised that limit yet.
 """
+import math
 import numpy as np
 from enum import Enum
 from typing import NamedTuple
+
+# Knowledge Vector Space, section 5: 1.0 is the Root boundary (semantic
+# +Infinity), 0.0 is Bottom. A concept with no is-a/part-of parent yet
+# stays at D1_D2_ROOT by convention -- not because it's confirmed to be
+# a root of the whole hierarchy, but because nothing broader is known
+# yet; the first is-a/part-of edge added for it repositions it below
+# its new parent, same as every other concept.
+D1_D2_ROOT = 1.0
+D1_D2_BOTTOM = 0.0
+
+# Section 41.3: identity-distance thresholds are configurable, empirically
+# calibrated System Properties, not fixed architectural constants -- these
+# are provisional defaults (TensorLiraGraph.__init__ accepts overrides),
+# not values calibrated against any real corpus yet.
+DEFAULT_EPSILON_MERGE = 0.05
+DEFAULT_EPSILON_REVIEW = 0.15
 
 
 class ValueTypeKind(Enum):
@@ -88,6 +136,27 @@ class ConceptRef(NamedTuple):
     @property
     def value_type(self):
         return self.graph._concept_value_types[self.idx]
+
+    @property
+    def d1_z(self) -> float:
+        """Knowledge Vector Space Dimension 1 -- noun Concept
+        generalisation (Hypernym -> Hyponym). D1_D2_ROOT until this
+        concept's first is-a edge is recorded."""
+        return self.graph._concept_d1_z[self.idx]
+
+    @property
+    def d2_z(self) -> float:
+        """Knowledge Vector Space Dimension 2 -- noun Concept
+        composition (Holonym -> Meronym). D1_D2_ROOT until this
+        concept's first part-of edge is recorded."""
+        return self.graph._concept_d2_z[self.idx]
+
+    @property
+    def noun_structural_position(self):
+        """N(C) = (D1(C), D2(C)) -- spec section 7.1. Combined identity
+        position; neither coordinate alone establishes noun structural
+        identity (section 12.1)."""
+        return (self.d1_z, self.d2_z)
 
 
 class SystemPropertyRef:
@@ -184,7 +253,7 @@ class TensorLiraGraph:
     O(1) per addition, not O(E) every call.
     """
 
-    def __init__(self, initial_capacity=16):
+    def __init__(self, initial_capacity=16, epsilon_merge=DEFAULT_EPSILON_MERGE, epsilon_review=DEFAULT_EPSILON_REVIEW):
         self._concept_uuids = []
         self._concept_names = []
         self._concept_kinds = []
@@ -193,6 +262,11 @@ class TensorLiraGraph:
         self._concept_value_types = []
         self._concept_uuid_to_idx = {}
         self._name_kind_to_idx = {}  # O(1) dedup lookup -- the fix for the bug found via benchmarking
+
+        # Knowledge Vector Space D1/D2 (module docstring) -- configurable
+        # per spec 41.3, not hardcoded.
+        self.epsilon_merge = epsilon_merge
+        self.epsilon_review = epsilon_review
 
         self._col_key_to_idx = {}   # (verb_uuid, dest_key) -> column index
         self._col_verb_uuid = []
@@ -215,6 +289,23 @@ class TensorLiraGraph:
         self._parent_of = []   # sparse: child_idx -> parent_idx (-1 = none), replaces dense ISA matrix
         self._parent_col = []  # child_idx -> which column holds its own is-a edge (for lineage)
         self._lineage = {}     # (row, col) -> list of ((parent_row, parent_col), local_partial_derivative)
+
+        # Knowledge Vector Space D1 (generalisation) -- reuses the is-a
+        # bookkeeping above; _concept_d1_z holds each concept's own
+        # fractional z, _d1_next_gap_bound tracks the closest-to-parent
+        # boundary claimed so far per parent (module docstring's
+        # gap-indexing scheme -- each new child packs in above that
+        # boundary, toward the parent, not toward Bottom).
+        self._concept_d1_z = []
+        self._d1_next_gap_bound = {}  # parent_idx -> closest-to-parent z claimed so far
+
+        # Knowledge Vector Space D2 (composition) -- an independent
+        # part-of tree, same shape as the is-a tree above but keyed off
+        # partOf_uuid instead of isA_uuid.
+        self._concept_d2_z = []
+        self._whole_of = []      # sparse: part_idx -> whole_idx (-1 = none)
+        self._whole_of_col = []  # part_idx -> which column holds its own part-of edge
+        self._d2_next_gap_bound = {}  # whole_idx -> closest-to-parent z claimed so far
         self._cell_specific_value = {}  # (row, col) -> (primitive_value, unit) for TAUGHT/OBSERVED cells
                                           # only -- an inferred/lifted cell correctly has no specific value,
                                           # since it represents "has SOME instance of this type", not a
@@ -276,6 +367,8 @@ class TensorLiraGraph:
         self._concept_value_types.append(value_type)
         self._concept_uuid_to_idx[self._concept_uuids[-1]] = idx
         self._name_kind_to_idx[dedup_key] = idx
+        self._concept_d1_z.append(D1_D2_ROOT)
+        self._concept_d2_z.append(D1_D2_ROOT)
         return ConceptRef(self, idx)
 
     def add_attribute_concept(self, name, primitive_value, unit_or_code="", value_type=ValueTypeKind.Text):
@@ -302,13 +395,17 @@ class TensorLiraGraph:
     def add_relationship(self, source: ConceptRef, relationship: ConceptRef, destination: ConceptRef,
                           confidence, provenance, temporal, activation,
                           inference_depth=0, origin=FactOrigin.Taught, isA_uuid=None,
-                          band=Band.AttributeRelationshipCompletion):
+                          partOf_uuid=None, band=Band.AttributeRelationshipCompletion):
         """O(1) amortized: writes directly into the persistent matrices.
         No rebuild, no scan -- this IS the storage, updated in place.
 
         If this edge IS an is-a edge (isA_uuid matches), also updates the
         persistent SPARSE parent-index array -- O(1), not the O(C^2) dense
-        matrix this replaced. Assumes single inheritance (a tree).
+        matrix this replaced -- and this concept's own Knowledge Vector
+        Space D1 z coordinate (module docstring). Assumes single
+        inheritance (a tree). Symmetrically, if this edge IS a part-of
+        edge (partOf_uuid matches), updates the sparse whole-of array and
+        this concept's D2 z coordinate, on an entirely independent tree.
         """
         if source.kind == ConceptKind.Attribute:
             raise ValueError(f"'{source.name}' is Attribute-kind and cannot be a relationship source.")
@@ -337,8 +434,35 @@ class TensorLiraGraph:
                 self._parent_col.extend([0] * pad)
             self._parent_of[row] = dest_key
             self._parent_col[row] = col
+            self._concept_d1_z[row] = self._position_below(dest_key, self._d1_next_gap_bound, self._concept_d1_z)
+
+        if partOf_uuid is not None and relationship.uuid == partOf_uuid and isinstance(dest_key, int):
+            if row >= len(self._whole_of):
+                pad = row - len(self._whole_of) + 1
+                self._whole_of.extend([-1] * pad)
+                self._whole_of_col.extend([0] * pad)
+            self._whole_of[row] = dest_key
+            self._whole_of_col[row] = col
+            self._concept_d2_z[row] = self._position_below(dest_key, self._d2_next_gap_bound, self._concept_d2_z)
 
         return RelationshipRef(self, row, col)
+
+    def _position_below(self, parent_idx: int, next_gap_bound: dict, z_array: list) -> float:
+        """Fractional/gap indexing (spec 41.9): the new child's z is the
+        midpoint between its parent's z and the closest-to-parent
+        boundary already claimed by one of that parent's other children
+        (D1_D2_BOTTOM if this is the first child) -- so each successive
+        child packs in progressively closer to the parent, leaving every
+        child the largest possible remaining span down to Bottom for its
+        own descendants (module docstring). Only this one row's z is
+        ever written -- no sibling or ancestor is touched, so inserting
+        a new child is O(1) and never invalidates a coordinate anyone
+        else already read."""
+        parent_z = z_array[parent_idx]
+        bound = next_gap_bound.get(parent_idx, D1_D2_BOTTOM)
+        new_z = (parent_z + bound) / 2
+        next_gap_bound[parent_idx] = new_z
+        return new_z
 
     def find_missing_attributes(self, isA: ConceptRef, threshold: float):
         """PURE QUERY against the ALREADY-CURRENT persistent matrices --
@@ -439,3 +563,29 @@ class TensorLiraGraph:
 
     def _isa_col(self, isA: ConceptRef, dest_idx: int):
         return self._col_key_to_idx[(isA.uuid, dest_idx)]
+
+    # -- Knowledge Vector Space: noun structural identity (spec 12.1) --
+
+    def noun_structural_distance(self, a: ConceptRef, b: ConceptRef) -> float:
+        """dN(A,B) = sqrt((D1(A)-D1(B))^2 + (D2(A)-D2(B))^2) -- spec
+        12.1. Coincidence in only D1 or only D2 is deliberately not
+        enough on its own to suggest identity; both axes are combined
+        into the one Euclidean distance here rather than compared
+        separately, which is what keeps a caller from accidentally
+        checking just one."""
+        return math.sqrt((a.d1_z - b.d1_z) ** 2 + (a.d2_z - b.d2_z) ** 2)
+
+    def classify_noun_identity(self, a: ConceptRef, b: ConceptRef) -> str:
+        """Spec 41.3's three-way identity classification, applied to
+        noun_structural_distance: "MergeCandidate" (at or below
+        epsilon_merge), "ReviewCandidate" (above epsilon_merge, at or
+        below epsilon_review), or "Distinct" (above epsilon_review).
+        This never merges or mutates anything itself -- a classification
+        is evidence for a caller to act on (spec 12's "identity
+        hypothesis"), not an automatic merge."""
+        distance = self.noun_structural_distance(a, b)
+        if distance <= self.epsilon_merge:
+            return "MergeCandidate"
+        if distance <= self.epsilon_review:
+            return "ReviewCandidate"
+        return "Distinct"
