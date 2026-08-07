@@ -6,6 +6,17 @@ and relationship extraction. Contains language structure only (Rule 18).
 See the repository root's `ARCHITECTURE.md` for the full component tree
 and design rules.
 
+See `sentence_reading_state_machine_specification.md` for the
+Sentence Reading State Machine's own dedicated specification --
+per-`PhraseType` deterministic grammars, obligation-based validity,
+the bounded multi-path beam search + `ReadingScorer` ranking algorithm,
+`ValidationOutcome`/`ReadingErrorKind` alignment, current clause/sentence
+scope, and the scoped future learning phase (persistent lexical
+transition evidence feeding `ScoringFactors.lexical_evidence_sum` --
+see this README's own section 15 below). Every section is tagged
+`[Built]`, `[Proposed]`, or `[Deferred]` so it's clear which parts
+describe the reader as it exists today.
+
 ## Layout
 
 - `data/` -- the `Phrase`/`Clause`/`Sentence`/`Paragraph`/`Subject` tree,
@@ -582,6 +593,18 @@ this change:
   `TokenReading.candidate_parts_of_speech()` deliberately deduplicates by
   part of speech precisely because sequencing operates at that
   granularity and no finer.
+- **Persistent learned lexical transition evidence** -- a scoped future
+  phase (`sentence_reading_state_machine_specification.md`, sections
+  15-24): observed, independently-validated support (`w_ij`) for a
+  linguistically relevant transition or candidate association, held
+  wherever it's ultimately stored (tensor-backed or otherwise) and fed
+  into the *existing* `ScoringFactors.lexical_evidence_sum` field
+  (declared now, always `0.0` -- 8.4), not a second competing ranker.
+  Reinforced only by validated observations, never by raw frequency
+  alone; may inform a grammar-change *hypothesis* under repeated,
+  independently validated evidence, but must never mutate
+  `GrammarConfigurator` on its own. Not built, not stubbed, no
+  persistence mechanism exists yet.
 
 Both semantic items above are prerequisites for treating this layer's
 output as meaningful input elsewhere, not incremental improvements to
