@@ -44,11 +44,39 @@ representable floating-point headroom after enough successive
 siblings under one busy parent; an explicit, rare rebalance is a
 documented future op (spec 41.9), not implemented here since nothing
 has exercised that limit yet.
+
+Dimensions 3 and 4 -- Relationship/Verb Concept generalisation and
+composition/mechanics (spec 8, 9, 41.1, 41.2) -- split the same way
+the spec's own Dimension Summary table (2) frames them: D3 is a
+per-Concept property, exactly like D1, just for `ConceptKind.Relationship`
+concepts (a verb like "kill" is more specific than "harm", regardless
+of who's doing the killing) -- so it reuses the *same* is-a bookkeeping
+and isA_uuid parameter D1 does, branching only on `source.kind` to
+decide which z array gets written (spec 41.5's part-of-speech scoping
+falls out of that branch automatically, not as a separate check). D4
+is *not* stored per-Concept at all: `Qc` (source composition), `r`
+(PAD amplitude) and, ultimately, the Cartesian position they produce
+via `theta`, genuinely depend on *which* (source, verb, destination)
+edge a verb concept is being used in -- "kill" used from "predator"
+and "kill" used from "assassin" have different Qc/r -- so D4 is
+computed on demand for a specific `RelationshipRef` (an edge instance,
+the same granularity `SystemPropertyRef` already uses for confidence/
+provenance/etc.), not cached as a fourth per-Concept array. Only
+`theta` (causal/entailment angular position, spec 9.2) and `s`
+(operator-function state, spec 9.5) need persistent per-edge storage,
+since they can't be recomputed from anything else -- `_M_theta`
+mirrors the existing per-edge dense matrices (default NaN, spec 5's
+"Incomplete vector state rule": a NaN theta means "not part of any
+assigned causal/entailment chain yet", not an error), and
+`_edge_operator_state` is a sparse dict beside `_edge_uuid`, since an
+operator's state is caller-defined (spec 9.5: "defined independently
+by the Relationship execution model", out of this file's scope) and
+doesn't tensorize cleanly the way a plain float does.
 """
 import math
 import numpy as np
 from enum import Enum
-from typing import NamedTuple
+from typing import List, NamedTuple
 
 # Knowledge Vector Space, section 5: 1.0 is the Root boundary (semantic
 # +Infinity), 0.0 is Bottom. A concept with no is-a/part-of parent yet
@@ -158,6 +186,29 @@ class ConceptRef(NamedTuple):
         identity (section 12.1)."""
         return (self.d1_z, self.d2_z)
 
+    @property
+    def d3_z(self) -> float:
+        """Knowledge Vector Space Dimension 3 -- Relationship/Verb
+        Concept generalisation (Hypernym -> Troponym). D1_D2_ROOT until
+        this (ConceptKind.Relationship) concept's first is-a edge is
+        recorded -- see module docstring's D3/D4 section for why this
+        reuses the same is-a bookkeeping D1 does."""
+        return self.graph._concept_d3_z[self.idx]
+
+    @property
+    def pad(self):
+        """This concept's own seeded Pleasure/Arousal/Dominance triple
+        (spec 41.2 -- "PAD is authored/seeded on the lexical Word/
+        Concept"), (0.0, 0.0, 0.0) until set_pad() is called. A
+        Relationship reads PAD from its *source* Concept, never
+        assigned to the Relationship/edge itself (module docstring)."""
+        idx = self.idx
+        return (
+            self.graph._concept_pad_pleasure[idx],
+            self.graph._concept_pad_arousal[idx],
+            self.graph._concept_pad_dominance[idx],
+        )
+
 
 class SystemPropertyRef:
     """A VIEW, not a value holder. Every property reads/writes a specific
@@ -243,6 +294,28 @@ class RelationshipRef(NamedTuple):
     def destination_key(self):
         return self.graph._col_dest_key[self.verb_col]
 
+    @property
+    def relationship_concept(self) -> "ConceptRef":
+        """The verb Concept this edge's relationship column is keyed
+        by (e.g. the "kill" ConceptRef, distinct from any specific use
+        of it) -- spec 3's "Relationship <subclass> Concept": this
+        edge instance is one *use* of that Concept, carrying its own
+        Dimension 4 (module docstring), while the Concept itself
+        carries Dimension 3."""
+        return ConceptRef(self.graph, self.graph._concept_uuid_to_idx[self.relationship_uuid])
+
+    @property
+    def destination(self):
+        """The destination ConceptRef, or None when this edge's
+        destination is Attribute-kind (an ("attr", name) key, not a
+        Concept another edge could chain through -- spec 4's
+        destination Concept only applies to a genuine Concept
+        destination)."""
+        key = self.destination_key
+        if isinstance(key, int):
+            return ConceptRef(self.graph, key)
+        return None
+
 
 class TensorLiraGraph:
     """
@@ -284,6 +357,11 @@ class TensorLiraGraph:
         self._M_inference_depth = np.zeros((self._capacity_rows, self._capacity_cols), dtype=int)
         self._M_origin = np.zeros((self._capacity_rows, self._capacity_cols), dtype=int)
         self._M_band = np.zeros((self._capacity_rows, self._capacity_cols), dtype=int)  # which Band produced this cell
+        # Knowledge Vector Space D4's theta (causal/entailment angular
+        # position, spec 9.2) -- per edge, like the matrices above; NaN
+        # means "not part of any assigned causal/entailment chain yet"
+        # (module docstring), not an error.
+        self._M_theta = np.full((self._capacity_rows, self._capacity_cols), np.nan)
 
         self._edge_uuid = {}  # (row, col) -> uuid string, for identity/backprop lookups
         self._parent_of = []   # sparse: child_idx -> parent_idx (-1 = none), replaces dense ISA matrix
@@ -306,6 +384,25 @@ class TensorLiraGraph:
         self._whole_of = []      # sparse: part_idx -> whole_idx (-1 = none)
         self._whole_of_col = []  # part_idx -> which column holds its own part-of edge
         self._d2_next_gap_bound = {}  # whole_idx -> closest-to-parent z claimed so far
+
+        # Knowledge Vector Space D3 (Relationship/Verb Concept
+        # generalisation) -- shares the SAME _parent_of/_parent_col is-a
+        # tree D1 uses (module docstring); this is only the z array a
+        # ConceptKind.Relationship concept's own is-a edge writes into.
+        self._concept_d3_z = []
+        self._d3_next_gap_bound = {}  # parent_idx -> closest-to-parent z claimed so far
+
+        # Seeded PAD (spec 41.2), per Concept -- read by D4's r for
+        # whichever Concept is a given edge's source.
+        self._concept_pad_pleasure = []
+        self._concept_pad_arousal = []
+        self._concept_pad_dominance = []
+
+        # Knowledge Vector Space D4's s (operator-function state, spec
+        # 9.5) -- sparse per edge, caller-defined value (this file
+        # doesn't define the state enumeration itself).
+        self._edge_operator_state = {}
+
         self._cell_specific_value = {}  # (row, col) -> (primitive_value, unit) for TAUGHT/OBSERVED cells
                                           # only -- an inferred/lifted cell correctly has no specific value,
                                           # since it represents "has SOME instance of this type", not a
@@ -320,24 +417,35 @@ class TensorLiraGraph:
 
     # -- growth (amortized O(1), the actual fix for the earlier bottleneck) --
 
+    # _M_theta's fill value is NaN (unassigned causal/entailment position,
+    # module docstring), not 0 like every other matrix's default -- grown
+    # separately so a freshly grown region reads as "unassigned", not as
+    # a spuriously real theta=0.0.
+    _ZERO_FILLED_MATRICES = ("_M_confidence", "_M_provenance", "_M_temporal",
+                              "_M_activation", "_M_inference_depth", "_M_origin", "_M_band")
+
     def _grow_rows(self):
         new_capacity = self._capacity_rows * 2
-        for attr in ("_M_confidence", "_M_provenance", "_M_temporal",
-                     "_M_activation", "_M_inference_depth", "_M_origin", "_M_band"):
+        for attr in self._ZERO_FILLED_MATRICES:
             old = getattr(self, attr)
             new = np.zeros((new_capacity, self._capacity_cols), dtype=old.dtype)
             new[:self._n_rows, :self._n_cols] = old[:self._n_rows, :self._n_cols]
             setattr(self, attr, new)
+        new_theta = np.full((new_capacity, self._capacity_cols), np.nan)
+        new_theta[:self._n_rows, :self._n_cols] = self._M_theta[:self._n_rows, :self._n_cols]
+        self._M_theta = new_theta
         self._capacity_rows = new_capacity
 
     def _grow_cols(self):
         new_capacity = self._capacity_cols * 2
-        for attr in ("_M_confidence", "_M_provenance", "_M_temporal",
-                     "_M_activation", "_M_inference_depth", "_M_origin", "_M_band"):
+        for attr in self._ZERO_FILLED_MATRICES:
             old = getattr(self, attr)
             new = np.zeros((self._capacity_rows, new_capacity), dtype=old.dtype)
             new[:self._n_rows, :self._n_cols] = old[:self._n_rows, :self._n_cols]
             setattr(self, attr, new)
+        new_theta = np.full((self._capacity_rows, new_capacity), np.nan)
+        new_theta[:self._n_rows, :self._n_cols] = self._M_theta[:self._n_rows, :self._n_cols]
+        self._M_theta = new_theta
         self._capacity_cols = new_capacity
 
     # -- concept / relationship creation --
@@ -369,6 +477,10 @@ class TensorLiraGraph:
         self._name_kind_to_idx[dedup_key] = idx
         self._concept_d1_z.append(D1_D2_ROOT)
         self._concept_d2_z.append(D1_D2_ROOT)
+        self._concept_d3_z.append(D1_D2_ROOT)
+        self._concept_pad_pleasure.append(0.0)
+        self._concept_pad_arousal.append(0.0)
+        self._concept_pad_dominance.append(0.0)
         return ConceptRef(self, idx)
 
     def add_attribute_concept(self, name, primitive_value, unit_or_code="", value_type=ValueTypeKind.Text):
@@ -434,7 +546,17 @@ class TensorLiraGraph:
                 self._parent_col.extend([0] * pad)
             self._parent_of[row] = dest_key
             self._parent_col[row] = col
-            self._concept_d1_z[row] = self._position_below(dest_key, self._d1_next_gap_bound, self._concept_d1_z)
+            # Which Dimension this is-a edge positions is decided purely
+            # by the source's own kind (spec 41.5's part-of-speech
+            # scoping, module docstring's D3/D4 section) -- D1 for a
+            # noun, D3 for a verb/Relationship concept; HYPERNYM (this
+            # same is-a edge) is genuinely the one kind shared between
+            # the two, so no separate parameter is needed to tell them
+            # apart.
+            if source.kind == ConceptKind.Noun:
+                self._concept_d1_z[row] = self._position_below(dest_key, self._d1_next_gap_bound, self._concept_d1_z)
+            elif source.kind == ConceptKind.Relationship:
+                self._concept_d3_z[row] = self._position_below(dest_key, self._d3_next_gap_bound, self._concept_d3_z)
 
         if partOf_uuid is not None and relationship.uuid == partOf_uuid and isinstance(dest_key, int):
             if row >= len(self._whole_of):
@@ -584,6 +706,136 @@ class TensorLiraGraph:
         is evidence for a caller to act on (spec 12's "identity
         hypothesis"), not an automatic merge."""
         distance = self.noun_structural_distance(a, b)
+        if distance <= self.epsilon_merge:
+            return "MergeCandidate"
+        if distance <= self.epsilon_review:
+            return "ReviewCandidate"
+        return "Distinct"
+
+    # -- Knowledge Vector Space: PAD (spec 41.2) --
+
+    def set_pad(self, concept: ConceptRef, pleasure: float, arousal: float, dominance: float) -> None:
+        """Seeds/authors this Concept's own PAD triple. Never called
+        automatically -- unlike D1/D2/D3, PAD isn't derived from any
+        relationship this graph already records, so a caller (a
+        seeding script, e.g. mirroring vocabulary/'s pad_seeding.py)
+        must supply it explicitly."""
+        idx = concept.idx
+        self._concept_pad_pleasure[idx] = pleasure
+        self._concept_pad_arousal[idx] = arousal
+        self._concept_pad_dominance[idx] = dominance
+
+    # -- Knowledge Vector Space D4: Relationship composition and mechanics (spec 9, 41.1) --
+
+    def d4_source_composition(self, relationship: RelationshipRef) -> float:
+        """Qc(R) = Composition(Source(R)) = D2(Source(R)) -- spec 9.1,
+        41.1. No storage of its own: this edge's source Concept's own
+        D2 z already IS Qc, read fresh every call so it's never stale
+        against a source whose own composition position changes later."""
+        return relationship.source.d2_z
+
+    def d4_pad_amplitude(self, relationship: RelationshipRef) -> float:
+        """r = ||PAD(Source(R))||_2 -- spec 41.2. Reads the edge's
+        source Concept's own seeded PAD triple (set_pad), not a
+        separate per-edge value."""
+        pleasure, arousal, dominance = relationship.source.pad
+        return math.sqrt(pleasure ** 2 + arousal ** 2 + dominance ** 2)
+
+    def theta(self, relationship: RelationshipRef) -> float:
+        """theta(R) -- this edge's causal/entailment angular position
+        (spec 9.2). NaN until assign_causal_chain places it in a
+        chain (module docstring's "unassigned", not an error)."""
+        return self._M_theta[relationship.source_idx, relationship.verb_col]
+
+    def d4_cartesian(self, relationship: RelationshipRef):
+        """(x, y) = (r cos theta, r sin theta) -- spec 9.4/41.4's
+        polar-to-Cartesian derivation, used for Euclidean distance
+        (12.2). (nan, nan) if theta hasn't been assigned yet -- a
+        genuinely undefined position, not a fabricated (0, 0)."""
+        r = self.d4_pad_amplitude(relationship)
+        th = self.theta(relationship)
+        return (r * math.cos(th), r * math.sin(th))
+
+    def set_operator_state(self, relationship: RelationshipRef, state) -> None:
+        """s(R) -- spec 9.5. `state` is caller-defined (this file
+        doesn't enumerate operator states, spec 9.5's own "defined
+        independently by the Relationship execution model")."""
+        self._edge_operator_state[(relationship.source_idx, relationship.verb_col)] = state
+
+    def operator_state(self, relationship: RelationshipRef):
+        return self._edge_operator_state.get((relationship.source_idx, relationship.verb_col))
+
+    def d4(self, relationship: RelationshipRef) -> tuple:
+        """D4(R) = (Qc, theta, r, s) -- spec 41.1, computed fresh, not
+        stored (module docstring)."""
+        return (
+            self.d4_source_composition(relationship),
+            self.theta(relationship),
+            self.d4_pad_amplitude(relationship),
+            self.operator_state(relationship),
+        )
+
+    # -- Knowledge Vector Space: causal/entailment chains (spec 9.2, 40.4) --
+
+    def assign_causal_chain(self, chain: List[RelationshipRef]) -> dict:
+        """Assigns theta_i = i * (2*pi/n) to each of n edges in `chain`,
+        spec 9.2's Delta-theta = 2*pi/n. `chain` is given in sequence
+        order (chain[0] -> chain[1] -> ... -> chain[n-1]); this method
+        does not reorder or deduplicate it -- a caller that wants
+        synonymous relationship positions collapsed into one semantic
+        step (spec 9.2's own "synonyms... do not independently increase
+        chain length") must have already done that before calling.
+
+        Returns whether the chain actually CLOSES (spec 9.2's own
+        completeness rule, R0 -> ... -> Rn-1 -> R0): every step's
+        destination must equal the next step's source, and the last
+        step's destination must equal the first step's source. Theta is
+        still assigned even when it doesn't close -- an open chain is
+        valid incomplete knowledge (spec 40.4/40.5), not rejected, just
+        reported as open so a caller can decide whether to insert an
+        Unknown placeholder (not implemented here, spec 40.5)."""
+        n = len(chain)
+        if n == 0:
+            return {"n": 0, "delta_theta": None, "closed": False}
+        delta_theta = 2 * math.pi / n
+
+        closed = True
+        for i, edge in enumerate(chain):
+            self._M_theta[edge.source_idx, edge.verb_col] = i * delta_theta
+            next_edge = chain[(i + 1) % n]
+            if edge.destination is None or edge.destination.idx != next_edge.source_idx:
+                closed = False
+
+        return {"n": n, "delta_theta": delta_theta, "closed": closed}
+
+    # -- Knowledge Vector Space: Relationship structural identity (spec 12.2) --
+
+    def relationship_structural_distance(self, a: RelationshipRef, b: RelationshipRef) -> float:
+        """dR(A,B) -- spec 12.2: D3 (the two edges' own verb Concepts'
+        generalisation/specificity) combined with D4's numeric
+        coordinates (Qc and the Cartesian position r/theta produce,
+        spec 12.2's own "Dimension 4 expands into its applicable
+        numeric coordinates"). s (operator state) is categorical, not
+        a Euclidean coordinate, so it's deliberately excluded from this
+        distance rather than forced into it -- two edges with the same
+        D3/Qc/x/y but different operator state are still geometrically
+        coincident here; a caller that also cares about operator state
+        compares it separately via operator_state()."""
+        a_x, a_y = self.d4_cartesian(a)
+        b_x, b_y = self.d4_cartesian(b)
+        return math.sqrt(
+            (a.relationship_concept.d3_z - b.relationship_concept.d3_z) ** 2
+            + (self.d4_source_composition(a) - self.d4_source_composition(b)) ** 2
+            + (a_x - b_x) ** 2
+            + (a_y - b_y) ** 2
+        )
+
+    def classify_relationship_identity(self, a: RelationshipRef, b: RelationshipRef) -> str:
+        """Spec 41.3's three-way identity classification, applied to
+        relationship_structural_distance -- same thresholds, same
+        "evidence, not an automatic merge" discipline as
+        classify_noun_identity."""
+        distance = self.relationship_structural_distance(a, b)
         if distance <= self.epsilon_merge:
             return "MergeCandidate"
         if distance <= self.epsilon_review:

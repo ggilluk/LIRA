@@ -19,8 +19,15 @@ Section 41 is authoritative.
 | D2 (Noun Concept Composition) | **Built** -- `TensorLiraGraph._concept_d2_z`, a new `partOf_uuid` path mirroring D1's, entirely independent tree |
 | Fractional/gap indexing (41.9) | **Built** -- `TensorLiraGraph._position_below` |
 | Noun structural identity + `ε_merge`/`ε_review` (12.1, 41.3) | **Built** -- `TensorLiraGraph.noun_structural_distance`/`classify_noun_identity`, configurable via the constructor |
-| Worked example | **Built** -- `examples/knowledge_vector_space_d1_d2.py` (the exact Concept/organism/animal/dog and vehicle/engine/wheel/chassis examples from Section 41.4, against a real graph, not hand-typed numbers) |
-| D3/D4 (Relationship generalisation/composition/mechanics) | Not yet implemented |
+| Worked example (D1/D2) | **Built** -- `examples/knowledge_vector_space_d1_d2.py` (the exact Concept/organism/animal/dog and vehicle/engine/wheel/chassis examples from Section 41.4, against a real graph, not hand-typed numbers) |
+| D3 (Relationship/Verb Concept Generalisation) | **Built** -- `TensorLiraGraph._concept_d3_z`, reuses D1's own is-a bookkeeping, branching on the source Concept's `kind` (Section 41.5's part-of-speech scoping) |
+| D4 (Relationship Composition and Mechanics) | **Built** -- `Qc`/`theta`/`r`/`s` (Section 41.1's 4-tuple) computed per edge instance, not stored per-Concept (`d4_source_composition`, `theta`, `d4_pad_amplitude`, `operator_state`, `d4`) |
+| PAD authored on the Concept, read by D4 (41.2) | **Built** -- `TensorLiraGraph.set_pad`/`ConceptRef.pad`, `d4_pad_amplitude` = Euclidean magnitude of the *source* Concept's PAD |
+| Causal/entailment angular positioning + closure check (9.2, 40.4) | **Built** -- `TensorLiraGraph.assign_causal_chain` |
+| Polar-to-Cartesian derivation (9.4/41.4) | **Built** -- `TensorLiraGraph.d4_cartesian` |
+| Relationship structural identity (12.2, 41.3) | **Built** -- `TensorLiraGraph.relationship_structural_distance`/`classify_relationship_identity` |
+| Worked example (D3/D4) | **Built** -- `examples/knowledge_vector_space_d3_d4.py` (move/walk/stroll for D3; the spec's own Section 41.4 Birth/Live/Die/Resurrect closed causal chain for D4, verified to close: `Sum(Delta-theta) = 2*pi`) |
+| Operator-function state enumeration (9.5) | Storage only (`set_operator_state`/`operator_state`, caller-defined value) -- the state enumeration/transition mechanics are explicitly out of this spec's own scope (9.5: "defined independently by the Relationship execution model") |
 | D5/D6 (Domain generalisation/composition) | Not yet implemented |
 | Synonym/Antonym Side/Sign geometry (10, 41.8) | Not yet implemented |
 | NaN storage separation (41.7) | Not yet implemented |
