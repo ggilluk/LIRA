@@ -907,7 +907,9 @@ footer {
   </div>
 
   <div class="toolbar">
-    <div class="search-field"><input id="search" type="text" placeholder="Search word, gloss, or definition&hellip;" autocomplete="off"></div>
+    <div class="search-field"><input id="search-word" type="text" placeholder="Search word&hellip;" aria-label="Search word" autocomplete="off"></div>
+    <div class="search-field"><input id="search-gloss" type="text" placeholder="Search gloss&hellip;" aria-label="Search gloss" autocomplete="off"></div>
+    <div class="search-field"><input id="search-definition" type="text" placeholder="Search definition&hellip;" aria-label="Search definition" autocomplete="off"></div>
     <select id="pos-filter"><option value="">All parts of speech</option></select>
     <select id="domain-filter"><option value="">All domains</option></select>
     <div class="tabs" role="tablist">
@@ -1014,7 +1016,7 @@ const GROUP_NAMES = @@GROUP_NAMES_JSON@@;
 const DOMAIN_COLORS = @@DOMAIN_COLORS_JSON@@;
 
 const state = {
-  tab: "words", query: "", pos: "", domain: "",
+  tab: "words", search: { word: "", gloss: "", definition: "" }, pos: "", domain: "",
   selected: { words: null, hierarchy: null, cyclic: null },
   hierarchyKind: null, cyclicKind: null,
   sort: { words: ["lexical_form", 1], rels: ["source_text", 1] },
@@ -1230,12 +1232,17 @@ function populateHierarchyKindFilter() {
   if (state.hierarchyKind) select.value = state.hierarchyKind;
 }
 
+// Three independent substring filters (AND'd together, each one a
+// no-op while empty) rather than one combined "word, gloss, or
+// definition" box -- a search for a gloss term no longer also surfaces
+// unrelated words whose *definition* happens to share that substring,
+// and vice versa.
 function matchesQuery(word) {
-  if (!state.query) return true;
-  const q = state.query.toLowerCase();
-  return word.lexical_form.toLowerCase().includes(q)
-    || word.definition.toLowerCase().includes(q)
-    || word.gloss.toLowerCase().includes(q);
+  const { word: wordQuery, gloss: glossQuery, definition: definitionQuery } = state.search;
+  if (wordQuery && !word.lexical_form.toLowerCase().includes(wordQuery.toLowerCase())) return false;
+  if (glossQuery && !word.gloss.toLowerCase().includes(glossQuery.toLowerCase())) return false;
+  if (definitionQuery && !word.definition.toLowerCase().includes(definitionQuery.toLowerCase())) return false;
+  return true;
 }
 
 function filteredWords() {
@@ -1244,9 +1251,10 @@ function filteredWords() {
 
 function filteredRels() {
   return RELS.filter(r => {
-    if (!state.query) return true;
-    const q = state.query.toLowerCase();
-    return r.source_text.toLowerCase().includes(q) || r.target_text.toLowerCase().includes(q) || r.kind.toLowerCase().includes(q);
+    const q = state.search.word;
+    if (!q) return true;
+    const ql = q.toLowerCase();
+    return r.source_text.toLowerCase().includes(ql) || r.target_text.toLowerCase().includes(ql) || r.kind.toLowerCase().includes(ql);
   });
 }
 
@@ -2068,8 +2076,18 @@ document.getElementById("cyclic-kind").addEventListener("change", (e) => {
   renderCyclic();
 });
 
-document.getElementById("search").addEventListener("input", (e) => {
-  state.query = e.target.value;
+document.getElementById("search-word").addEventListener("input", (e) => {
+  state.search.word = e.target.value;
+  renderAll();
+});
+
+document.getElementById("search-gloss").addEventListener("input", (e) => {
+  state.search.gloss = e.target.value;
+  renderAll();
+});
+
+document.getElementById("search-definition").addEventListener("input", (e) => {
+  state.search.definition = e.target.value;
   renderAll();
 });
 
