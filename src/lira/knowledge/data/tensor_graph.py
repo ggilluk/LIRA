@@ -124,6 +124,15 @@ class ConceptKind(Enum):
     Noun = "Noun"
     Relationship = "Relationship"
     Attribute = "Attribute"
+    # Spec 40.5: "UnknownRelationship ⊂ UnknownConcept ⊂ Concept" -- a
+    # Concept LIRA has structurally inferred must exist (a real row,
+    # participating in real edges with a real theta) but whose semantic
+    # identity is still Null, distinct from a resolved Noun/Relationship/
+    # Attribute Concept and distinct from NaN (spec 40.5's own table:
+    # NaN means indeterminate/invalid, Unknown means "valid but
+    # incomplete knowledge"). See vector_space_passes.py's own
+    # close_open_causal_chains for the one place this graph creates one.
+    Unknown = "Unknown"
 
 
 class FactOrigin(Enum):

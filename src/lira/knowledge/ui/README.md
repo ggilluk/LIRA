@@ -11,10 +11,12 @@
   Knowledge Vector Space logic (`../role/vector_space_passes.py`).
   D1/D2/D3 Concepts are grouped into one box per Domain (selectable via
   a Domain filter), with synonym clusters boxed within a Domain's own
-  box and a Concept this dimension has no recorded position for still
-  shown, dimmed, at a z=-5 sentinel rather than left out. An embedded
-  `DictionaryView` tab is where a Concept node's own seeded Word pivots
-  straight to when selected.
+  box (a checkbox next to the Domain filter switches that off);
+  D4 additionally shows every structural closing edge the vector space
+  passes inserted for a chain that didn't close on its own (spec
+  40.4/40.5), drawn dashed and distinct from a genuine seeded
+  CAUSE/ENTAILMENT edge. An embedded `DictionaryView` tab is where a
+  Concept node's own seeded Word pivots straight to when selected.
 
 Both are static, self-contained, dependency-free HTML: all data is
 embedded as JSON and rendered client-side in vanilla JS, no server, no

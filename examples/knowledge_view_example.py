@@ -22,10 +22,14 @@ Pipeline, in order:
    as a D1/D2/D3/D4-theta edge or Synonym/Antonym Side-Sign registration.
 2. Vector Space passes -- `run_vector_space_passes` (`knowledge/role/
    vector_space_passes.py`). Walks the freshly-seeded CAUSE/ENTAILMENT
-   edges as a directed graph, threads each connected run into a chain,
-   and calls `assign_causal_chain` on it (D4's own theta, otherwise
-   100% unassigned -- DictionarySeeder alone never calls it); then runs
-   a closing `vector_space_audit` over the result.
+   edges as a directed graph and threads each connected run into a
+   chain; a chain that doesn't already close gets a real
+   `ConceptKind.Unknown` Concept inserted at its own geometrically
+   implied position (spec 40.4/40.5) rather than left open, so
+   `assign_causal_chain` closes and assigns theta to every edge --
+   DictionarySeeder alone never calls it, so skipping this pass leaves
+   D4's theta 100% unassigned. Then runs a closing `vector_space_audit`
+   over the result.
 3. Render -- `KnowledgeView`, only after both passes above have run.
 
 Also registers one real, true D5 fact this codebase's own README
