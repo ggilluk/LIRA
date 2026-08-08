@@ -3,7 +3,7 @@
   "language_code": "en",
   "part_of_speech": "VERB",
   "closed_class_kind": "metalinguistic_term",
-  "count": 44,
+  "count": 45,
   "words": [
     {
       "entry_id": "9a7562ae-7058-43eb-9ddf-89cff578d4f8",
@@ -1764,6 +1764,43 @@
       "seeded_pleasure_displeasure_weight": 0.0,
       "seeded_arousal_non_arousal_weight": 0.0,
       "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "lexical_form": "interact",
+      "normalised_form": "interact",
+      "text": "interact",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "VERB",
+      "closed_class": false,
+      "closed_class_kind": "metalinguistic_term",
+      "definition": "To act in such a way as to have an effect on each other; to communicate or work reciprocally.",
+      "gloss": "To act in such a way as to have an effect on each other; to communicate or work reciprocally.",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 3,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Metalinguistic Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "entry_id": "2cc20767-ad2f-4f9c-967e-04adf9905f77"
     }
   ]
 }

@@ -330,6 +330,46 @@ batch adds vocabulary of that kind.
 
 ## Version
 
+`v1` / `schema_version 1.0.0` / `asset_version 1.20.0` (6114 -> 6128
+relationships; `morphological_relationships.json` 3488 -> 3506,
+`semantic_relationships.json` 2610 -> 2606). Relationship-cache side of
+the root ontology batch (`assets/common/en/README.md`'s own
+`asset_version 1.21.0` entry has the Vocabulary side --
+`examples/root_ontology.py`/`root_ontology_seeding.py`). Two kinds of
+change:
+- 18 new `morphological_relationships.json` edges: standard
+  inflected-form pairs for the three genuinely new words (`being`,
+  `contribution`, `interact`), plus four new `NOMINALISATION` "Verb
+  Basis" links the root ontology table itself specifies --
+  `be -> being`, `operate -> operation`, `contribute -> contribution`,
+  `interact -> interaction` (`cause -> causation` already existed,
+  `asset_version 1.15.0`'s own verb nominalisation batch) -- each with
+  its reciprocal `LEMMA_FORM` edge, this cache's own established
+  convention.
+- 4 `semantic_relationships.json` edges **removed**, not added:
+  `member --MERONYM--> group` and its reciprocal
+  `group --HOLONYM--> member`, and `operation --HYPERNYM--> process`
+  and its reciprocal `process --HYPONYM--> operation`. Both pairs
+  predate this batch (the 1307-relationship Common semantic completion
+  pass, `asset_version 1.16.0`) and were individually true, ordinary
+  facts -- but the root ontology table now assigns `Member` and
+  `Operation` root status (the Meronym ceiling for Who? and the
+  Hypernym ceiling for How?, respectively), and a root cannot also be a
+  part of something else or a hyponym of something else without
+  contradicting that status. Nothing else about `group`/`process`
+  themselves changes -- only the one edge that reached up from the
+  would-be root is gone. `examples/common_semantic_completion.py`'s own
+  source data table has both original tuples left in place, commented
+  out with the same explanation, so a future re-run of that batch
+  script doesn't silently reintroduce them.
+
+Verified against a real seeded `TensorLiraGraph`
+(`examples/root_ontology_seeding.py`'s own verification step, not just
+checked for existence on disk): all twelve root Concepts and all five
+Verb Basis anchor Concepts land exactly where the table says they
+should -- a genuine, unparented `D1_D2_ROOT` position on the axis each
+one claims.
+
 `v1` / `schema_version 1.0.0` / `asset_version 1.19.0` (6111 -> 6114
 relationships; `semantic_relationships.json` 2607 -> 2610). Makes the
 `CAUSE`/`ENTAILMENT` pairing fully reciprocal: `asset_version 1.18.0`

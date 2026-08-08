@@ -3,7 +3,7 @@
   "language_code": "en",
   "part_of_speech": "NOUN",
   "closed_class_kind": "metalinguistic_term",
-  "count": 64,
+  "count": 66,
   "words": [
     {
       "entry_id": "598395ea-9606-4a92-b392-f6b31ee7f325",
@@ -2564,6 +2564,80 @@
       "seeded_pleasure_displeasure_weight": 0.0,
       "seeded_arousal_non_arousal_weight": 0.0,
       "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "lexical_form": "being",
+      "normalised_form": "being",
+      "text": "being",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "NOUN",
+      "closed_class": false,
+      "closed_class_kind": "metalinguistic_term",
+      "definition": "A living or conscious individual; the fact or state of existing.",
+      "gloss": "A living or conscious individual; the fact or state of existing.",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Metalinguistic Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "entry_id": "a3cd50fa-457b-48f9-8f90-de6544f831e1"
+    },
+    {
+      "lexical_form": "contribution",
+      "normalised_form": "contribution",
+      "text": "contribution",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "NOUN",
+      "closed_class": false,
+      "closed_class_kind": "metalinguistic_term",
+      "definition": "A part given or added to a larger whole, especially one that helps bring about a shared result.",
+      "gloss": "A part given or added to a larger whole, especially one that helps bring about a shared result.",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 4,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Metalinguistic Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "entry_id": "862befbe-d80f-48b3-8c94-7f6e740a9f9d"
     }
   ]
 }

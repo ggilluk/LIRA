@@ -527,6 +527,41 @@ lexical_form with an earlier-loaded sense never disturbs
 
 ## Version
 
+`v1` / `schema_version 2.0.0` / `asset_version 1.21.0` -- seeded the
+root ontology: the closed set of Concepts every other Common Concept's
+D1 (noun generalisation) and D2 (noun composition) tree should
+ultimately trace back to, rather than a Concept silently sitting at
+`D1_D2_ROOT` by accident of incomplete seeding rather than by design.
+Six WH-questions, each with a Hypernym root and a Meronym root
+(`examples/root_ontology.py` holds the full table and reasoning):
+`Entity`/`Part` (What?), `Place`/`Place` (Where? -- the same Concept
+serves both, a place composed of places), `Time`/`Period` (When?),
+`Being`/`Member` (Who?), `Causation`/`Contribution` (Why?),
+`Operation`/`Interaction` (How?), five of which also anchor a "Verb
+Basis" via `NOMINALISATION` (`be`, `cause` -- already existed --
+`operate`, `contribute`, `interact`). Ten of the twelve words already
+existed in this cache; only three were genuinely new -- `being` (NOUN,
+`metalinguistic_nouns.json` -- it only existed as `be`'s own
+present-participle form before), `contribution` (NOUN,
+`metalinguistic_nouns.json`), and `interact` (VERB,
+`metalinguistic_verbs.json`), each hand-added the same way
+`entity`/`place`/`time`/`cause` already were, not via
+`WordSeeder.promote_word` -- these are foundational ontology, not
+vocabulary a Domain's own definitions happened to need. Their five
+inflected forms (`beings`, `contributions`, `interacts`, `interacted`,
+`interacting`) were promoted the ordinary way, matching every other
+lemma's own inflected forms. `metalinguistic_nouns.json` 64 -> 66,
+`metalinguistic_verbs.json` 44 -> 45, `promoted_words.json` +5.
+`total_lexical_forms` is unchanged -- none of these are mandatory
+closed-class words. See `relationships/README.md`'s own
+`asset_version 1.20.0` entry for the relationship-cache side of this
+(the new `NOMINALISATION`/morphological edges, and two pre-existing
+edges removed because they disqualified a would-be root from actually
+being unparented) and `examples/root_ontology_seeding.py` for the
+seeding script and its own verification step (every root confirmed to
+land at a real, unparented `D1_D2_ROOT` position against a live seeded
+`TensorLiraGraph`, not just checked for existence on disk).
+
 `v1` / `schema_version 2.0.0` / `asset_version 1.20.0` -- added
 `Word`'s three new Seeded Attributes for the PAD (Pleasure-Arousal-
 Dominance, Mehrabian & Russell) affective framework --

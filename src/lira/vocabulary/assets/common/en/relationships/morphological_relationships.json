@@ -2,7 +2,7 @@
   "schema_version": "1.0.0",
   "language_code": "en",
   "relationship_category": "morphological",
-  "count": 3488,
+  "count": 3506,
   "relationships": [
     {
       "source_lexical_form": "be",
@@ -23996,6 +23996,96 @@
       "target_lexical_form": "status",
       "target_part_of_speech": "NOUN",
       "target_domain_tag": "situation.common",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "being",
+      "target_lexical_form": "beings",
+      "relationship_kind": "PLURAL_FORM"
+    },
+    {
+      "source_lexical_form": "beings",
+      "target_lexical_form": "being",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "contribution",
+      "target_lexical_form": "contributions",
+      "relationship_kind": "PLURAL_FORM"
+    },
+    {
+      "source_lexical_form": "contributions",
+      "target_lexical_form": "contribution",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "interact",
+      "target_lexical_form": "interacts",
+      "relationship_kind": "THIRD_PERSON_FORM"
+    },
+    {
+      "source_lexical_form": "interacts",
+      "target_lexical_form": "interact",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "interact",
+      "target_lexical_form": "interacted",
+      "relationship_kind": "PAST_TENSE_FORM"
+    },
+    {
+      "source_lexical_form": "interacted",
+      "target_lexical_form": "interact",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "interact",
+      "target_lexical_form": "interacted",
+      "relationship_kind": "PAST_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "interact",
+      "target_lexical_form": "interacting",
+      "relationship_kind": "PRESENT_PARTICIPLE_FORM"
+    },
+    {
+      "source_lexical_form": "interacting",
+      "target_lexical_form": "interact",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "be",
+      "target_lexical_form": "being",
+      "relationship_kind": "NOMINALISATION"
+    },
+    {
+      "source_lexical_form": "operate",
+      "target_lexical_form": "operation",
+      "relationship_kind": "NOMINALISATION"
+    },
+    {
+      "source_lexical_form": "operation",
+      "target_lexical_form": "operate",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "contribute",
+      "target_lexical_form": "contribution",
+      "relationship_kind": "NOMINALISATION"
+    },
+    {
+      "source_lexical_form": "contribution",
+      "target_lexical_form": "contribute",
+      "relationship_kind": "LEMMA_FORM"
+    },
+    {
+      "source_lexical_form": "interact",
+      "target_lexical_form": "interaction",
+      "relationship_kind": "NOMINALISATION"
+    },
+    {
+      "source_lexical_form": "interaction",
+      "target_lexical_form": "interact",
       "relationship_kind": "LEMMA_FORM"
     }
   ]

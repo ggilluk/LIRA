@@ -2,7 +2,7 @@
   "schema_version": "1.0.0",
   "language_code": "en",
   "relationship_category": "semantic",
-  "count": 2610,
+  "count": 2606,
   "relationships": [
     {
       "source_lexical_form": "above",
@@ -5355,20 +5355,6 @@
       "relationship_kind": "RELATED"
     },
     {
-      "source_lexical_form": "member",
-      "source_part_of_speech": "NOUN",
-      "target_lexical_form": "group",
-      "target_part_of_speech": "NOUN",
-      "relationship_kind": "MERONYM"
-    },
-    {
-      "source_lexical_form": "group",
-      "source_part_of_speech": "NOUN",
-      "target_lexical_form": "member",
-      "target_part_of_speech": "NOUN",
-      "relationship_kind": "HOLONYM"
-    },
-    {
       "source_lexical_form": "meronym",
       "source_part_of_speech": "NOUN",
       "target_lexical_form": "word",
@@ -5805,20 +5791,6 @@
       "source_lexical_form": "action",
       "source_part_of_speech": "NOUN",
       "target_lexical_form": "omission",
-      "target_part_of_speech": "NOUN",
-      "relationship_kind": "HYPONYM"
-    },
-    {
-      "source_lexical_form": "operation",
-      "source_part_of_speech": "NOUN",
-      "target_lexical_form": "process",
-      "target_part_of_speech": "NOUN",
-      "relationship_kind": "HYPERNYM"
-    },
-    {
-      "source_lexical_form": "process",
-      "source_part_of_speech": "NOUN",
-      "target_lexical_form": "operation",
       "target_part_of_speech": "NOUN",
       "relationship_kind": "HYPONYM"
     },

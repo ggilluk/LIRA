@@ -421,7 +421,13 @@ RELATIONSHIPS: List[Tuple[str, str, str, str, str]] = [
     ('measurement', 'NOUN', 'RELATED', 'amount', 'NOUN'),
     ('medium', 'NOUN', 'HYPERNYM', 'substance', 'NOUN'),
     ('medium', 'NOUN', 'RELATED', 'channel', 'NOUN'),
-    ('member', 'NOUN', 'MERONYM', 'group', 'NOUN'),
+    # ('member', 'NOUN', 'MERONYM', 'group', 'NOUN'),  -- removed by
+    # examples/root_ontology_seeding.py: "Member" is the root ontology's
+    # own D2 (composition) ceiling for Who? (examples/root_ontology.py),
+    # so it cannot also be a part of "group" without disqualifying it
+    # from being a root. Left commented rather than deleted so a future
+    # re-run of this file's own seeding script doesn't silently
+    # reintroduce it.
     ('meronym', 'NOUN', 'HYPERNYM', 'word', 'NOUN'),
     ('mind', 'NOUN', 'SYNONYM', 'spirit', 'NOUN'),
     ('mind', 'NOUN', 'RELATED', 'thought', 'NOUN'),
@@ -453,7 +459,13 @@ RELATIONSHIPS: List[Tuple[str, str, str, str, str]] = [
     ('observation', 'NOUN', 'HYPERNYM', 'process', 'NOUN'),
     ('observation', 'NOUN', 'RELATED', 'remark', 'NOUN'),
     ('omission', 'NOUN', 'HYPERNYM', 'action', 'NOUN'),
-    ('operation', 'NOUN', 'HYPERNYM', 'process', 'NOUN'),
+    # ('operation', 'NOUN', 'HYPERNYM', 'process', 'NOUN'),  -- removed by
+    # examples/root_ontology_seeding.py: "Operation" is the root
+    # ontology's own D1 (generalisation) ceiling for How? (examples/
+    # root_ontology.py), so it cannot also be a hyponym of "process"
+    # without disqualifying it from being a root. Left commented rather
+    # than deleted so a future re-run of this file's own seeding script
+    # doesn't silently reintroduce it.
     ('operator', 'NOUN', 'RELATED', 'operation', 'NOUN'),
     ('operator', 'NOUN', 'HYPERNYM', 'symbol', 'NOUN'),
     ('opposition', 'NOUN', 'ANTONYM', 'agreement', 'NOUN'),

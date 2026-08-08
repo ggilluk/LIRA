@@ -3,7 +3,7 @@
   "language_code": "en",
   "part_of_speech": null,
   "closed_class_kind": "promoted_open_class",
-  "count": 2483,
+  "count": 2488,
   "words": [
     {
       "entry_id": "f7d5d34d-506b-406c-b0f0-3e22c35ec007",
@@ -99355,6 +99355,211 @@
       "seeded_pleasure_displeasure_weight": 0.0,
       "seeded_arousal_non_arousal_weight": 0.0,
       "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "69d1946f-d9ad-493b-927b-99e2ebb601a3",
+      "domain_tag": null,
+      "lexical_form": "beings",
+      "normalised_form": "beings",
+      "text": "beings",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "NOUN",
+      "closed_class": false,
+      "definition": "Plural of being.",
+      "gloss": "Plural of being.",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "seeded_pleasure_displeasure_weight": null,
+      "seeded_arousal_non_arousal_weight": null,
+      "seeded_dominance_submissive_weight": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Definition-Gap Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "reference_count": 4
+    },
+    {
+      "entry_id": "bded6f97-195d-4e48-8c71-8c53d227ac71",
+      "domain_tag": null,
+      "lexical_form": "contributions",
+      "normalised_form": "contributions",
+      "text": "contributions",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "NOUN",
+      "closed_class": false,
+      "definition": "Plural of contribution.",
+      "gloss": "Plural of contribution.",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 4,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "seeded_pleasure_displeasure_weight": null,
+      "seeded_arousal_non_arousal_weight": null,
+      "seeded_dominance_submissive_weight": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Definition-Gap Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "reference_count": 4
+    },
+    {
+      "entry_id": "e7bad763-c7c2-40ff-a68e-d00f185fe282",
+      "domain_tag": null,
+      "lexical_form": "interacts",
+      "normalised_form": "interacts",
+      "text": "interacts",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "VERB",
+      "closed_class": false,
+      "definition": "Third-person singular present of interact.",
+      "gloss": "Third-person singular present of interact.",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 3,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "seeded_pleasure_displeasure_weight": null,
+      "seeded_arousal_non_arousal_weight": null,
+      "seeded_dominance_submissive_weight": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Definition-Gap Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "reference_count": 4
+    },
+    {
+      "entry_id": "26228657-1137-4945-ba3f-86c647ba1418",
+      "domain_tag": null,
+      "lexical_form": "interacted",
+      "normalised_form": "interacted",
+      "text": "interacted",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "VERB",
+      "closed_class": false,
+      "definition": "Past tense and past participle of interact.",
+      "gloss": "Past tense and past participle of interact.",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 4,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "seeded_pleasure_displeasure_weight": null,
+      "seeded_arousal_non_arousal_weight": null,
+      "seeded_dominance_submissive_weight": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Definition-Gap Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "reference_count": 4
+    },
+    {
+      "entry_id": "7ac3fb7c-2595-43b1-a8cd-723c5ac7321b",
+      "domain_tag": null,
+      "lexical_form": "interacting",
+      "normalised_form": "interacting",
+      "text": "interacting",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "VERB",
+      "closed_class": false,
+      "definition": "Present participle of interact.",
+      "gloss": "Present participle of interact.",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 4,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "seeded_pleasure_displeasure_weight": null,
+      "seeded_arousal_non_arousal_weight": null,
+      "seeded_dominance_submissive_weight": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Definition-Gap Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "reference_count": 4
     }
   ]
 }
