@@ -3,7 +3,7 @@
 **Semantic and Mathematical Definition**
 
 Status: Working Architecture Specification (v2)
-Scope: LIRA Knowledge Layer -- combined Concept, Relationship and Domain geometry
+Scope: LIRA Knowledge Layer -- combined Concept, SemanticNeuralRelationship and Domain geometry
 
 Revision note: Section 41 (Mathematical and Implementation Corrections)
 refines the dimensional model set out in Sections 1-40 -- where it
@@ -20,14 +20,14 @@ Section 41 is authoritative.
 | Fractional/gap indexing (41.9) | **Built** -- `TensorLiraGraph._position_below` |
 | Noun structural identity + `ε_merge`/`ε_review` (12.1, 41.3) | **Built** -- `TensorLiraGraph.noun_structural_distance`/`classify_noun_identity`, configurable via the constructor |
 | Worked example (D1/D2) | **Built** -- `examples/knowledge_vector_space_d1_d2.py` (the exact Concept/organism/animal/dog and vehicle/engine/wheel/chassis examples from Section 41.4, against a real graph, not hand-typed numbers) |
-| D3 (Relationship/Verb Concept Generalisation) | **Built** -- `TensorLiraGraph._concept_d3_z`, reuses D1's own is-a bookkeeping, branching on the source Concept's `kind` (Section 41.5's part-of-speech scoping) |
-| D4 (Relationship Composition and Mechanics) | **Built** -- `Qc`/`theta`/`r`/`s` (Section 41.1's 4-tuple) computed per edge instance, not stored per-Concept (`d4_source_composition`, `theta`, `d4_pad_amplitude`, `operator_state`, `d4`) |
+| D3 (SemanticNeuralRelationship/Verb Concept Generalisation) | **Built** -- `TensorLiraGraph._concept_d3_z`, reuses D1's own is-a bookkeeping, branching on the source Concept's `kind` (Section 41.5's part-of-speech scoping) |
+| D4 (SemanticNeuralRelationship Composition and Mechanics) | **Built** -- `Qc`/`theta`/`r`/`s` (Section 41.1's 4-tuple) computed per edge instance, not stored per-Concept (`d4_source_composition`, `theta`, `d4_pad_amplitude`, `operator_state`, `d4`) |
 | PAD authored on the Concept, read by D4 (41.2) | **Built** -- `TensorLiraGraph.set_pad`/`ConceptRef.pad`, `d4_pad_amplitude` = Euclidean magnitude of the *source* Concept's PAD |
 | Causal/entailment angular positioning + closure check (9.2, 40.4) | **Built** -- `TensorLiraGraph.assign_causal_chain` |
 | Polar-to-Cartesian derivation (9.4/41.4) | **Built** -- `TensorLiraGraph.d4_cartesian` |
-| Relationship structural identity (12.2, 41.3) | **Built** -- `TensorLiraGraph.relationship_structural_distance`/`classify_relationship_identity` |
+| SemanticNeuralRelationship structural identity (12.2, 41.3) | **Built** -- `TensorLiraGraph.relationship_structural_distance`/`classify_relationship_identity` |
 | Worked example (D3/D4) | **Built** -- `examples/knowledge_vector_space_d3_d4.py` (move/walk/stroll for D3; the spec's own Section 41.4 Birth/Live/Die/Resurrect closed causal chain for D4, verified to close: `Sum(Delta-theta) = 2*pi`) |
-| Operator-function state enumeration (9.5) | Storage only (`set_operator_state`/`operator_state`, caller-defined value) -- the state enumeration/transition mechanics are explicitly out of this spec's own scope (9.5: "defined independently by the Relationship execution model") |
+| Operator-function state enumeration (9.5) | Storage only (`set_operator_state`/`operator_state`, caller-defined value) -- the state enumeration/transition mechanics are explicitly out of this spec's own scope (9.5: "defined independently by the SemanticNeuralRelationship execution model") |
 | D5 (Domain Generalisation) | **Built** -- `HostedDomains._domain_d5_z` (`knowledge/data/hosted_domains.py`), the Domain-scale mirror of D1, since D5/D6 are inherently cross-Domain (a single Domain's own `TensorLiraGraph` can't see other Domains) -- `register_domain_generalisation`, explicit like D1/D2/D3's own registration |
 | D6 (Domain Composition) | **Built** -- `HostedDomains._domain_d6_z`, mirrors D2 the same way D5 mirrors D1 -- `register_domain_composition` |
 | Common Domain as the D5/D6 outer boundary (4.1, 14, 15) | **Built** -- the "Common" Domain every `LIRAHost` already auto-creates (`host.py`) stays at `D1_D2_ROOT` permanently; `register_domain_generalisation`/`register_domain_composition` raise if asked to give Common a parent |
@@ -48,7 +48,7 @@ Section 41 is authoritative.
 |---|
 | `K = (D1, D2, D3, D4, D5, D6)` |
 | `D1 + D2 = Noun Structure` |
-| `D3 + D4 = Relationship Structure and Mechanics` |
+| `D3 + D4 = SemanticNeuralRelationship Structure and Mechanics` |
 | `D5 + D6 = Domain Structure` |
 
 ## Contents
@@ -60,8 +60,8 @@ Section 41 is authoritative.
 5. [Hierarchical Coordinate System](#5-hierarchical-coordinate-system)
 6. [Dimension 1 -- Noun Concept Generalisation](#6-dimension-1--noun-concept-generalisation)
 7. [Dimension 2 -- Noun Concept Composition](#7-dimension-2--noun-concept-composition)
-8. [Dimension 3 -- Relationship Generalisation](#8-dimension-3--relationship-generalisation)
-9. [Dimension 4 -- Relationship Composition and Mechanics](#9-dimension-4--relationship-composition-and-mechanics)
+8. [Dimension 3 -- SemanticNeuralRelationship Generalisation](#8-dimension-3--semanticneuralrelationship-generalisation)
+9. [Dimension 4 -- SemanticNeuralRelationship Composition and Mechanics](#9-dimension-4--semanticneuralrelationship-composition-and-mechanics)
 10. [Synonym and Antonym Geometry](#10-synonym-and-antonym-geometry)
 11. [Domain-Global Layout Rules](#11-domain-global-layout-rules)
 12. [Concept and Cluster Identity](#12-concept-and-cluster-identity)
@@ -85,8 +85,8 @@ identity evidence, and completeness directly derivable from a tensor
 representation rather than maintained as unrelated metadata.
 
 - Noun Concept structure.
-- Verb Concept / Relationship structure.
-- Relationship execution mechanics.
+- Verb Concept / SemanticNeuralRelationship structure.
+- SemanticNeuralRelationship execution mechanics.
 - Domain structure.
 - Semantic similarity and identity evidence.
 - Structural, causal and layout completeness.
@@ -94,7 +94,7 @@ representation rather than maintained as unrelated metadata.
 ```
 K = (D1, D2, D3, D4, D5, D6)
 (D1, D2) = Noun Structure
-(D3, D4) = Relationship Structure and Mechanics
+(D3, D4) = SemanticNeuralRelationship Structure and Mechanics
 (D5, D6) = Domain Structure
 ```
 
@@ -104,31 +104,54 @@ K = (D1, D2, D3, D4, D5, D6)
 |---|---|---|---|---|
 | D1 | Noun Concept | Concept Generalisation | Hypernym → Hyponym | Owning Domain |
 | D2 | Noun Concept | Concept Composition | Holonym → Meronym | Owning Domain |
-| D3 | Relationship / Verb Concept | Relationship Generalisation | Hypernym → Troponym | Owning Domain |
-| D4 | Relationship / Verb Concept | Relationship Composition and Mechanics | Source Composition + Causal/Entailment + PAD + Operator State | Owning Domain |
+| D3 | SemanticNeuralRelationship / Verb Concept | SemanticNeuralRelationship Generalisation | Hypernym → Troponym | Owning Domain |
+| D4 | SemanticNeuralRelationship / Verb Concept | SemanticNeuralRelationship Composition and Mechanics | Source Composition + Causal/Entailment + PAD + Operator State | Owning Domain |
 | D5 | Domain | Domain Generalisation | Domain Hypernym → Domain Hyponym | Common Domain |
 | D6 | Domain | Domain Composition | Domain Holonym → Domain Meronym | Common Domain |
 
 ## 3. Fundamental Semantic Objects
 
-A noun is represented as a Concept. A Relationship is represented as a Verb
-Concept. A Relationship is therefore not merely an anonymous graph edge; it is
+A noun is represented as a Concept. A SemanticNeuralRelationship is represented as a Verb
+Concept. A SemanticNeuralRelationship is therefore not merely an anonymous graph edge; it is
 itself a semantic object with its own identity and mechanics.
 
 ```
-Relationship ⊂ Concept
+SemanticNeuralRelationship ⊂ Concept
 ```
 
-A Relationship may carry a Verb Concept, source Concept, destination Concept,
-mathematical operator/function, PAD weight, operator state,
-generalisation/specificity, and causal/entailment position. Because a
-Relationship is itself a Concept, Relationships may participate in further
-Relationships.
+A SemanticNeuralRelationship may carry a Verb Concept, mathematical
+operator/function, PAD weight, operator state, generalisation/specificity,
+and causal/entailment position. Because a SemanticNeuralRelationship is
+itself a Concept, SemanticNeuralRelationships may participate in further
+SemanticNeuralRelationships.
+
+A SemanticNeuralRelationship's source and destination are not restricted
+to a single Concept each. A SemanticNeuralRelationship may optionally
+carry multiple Source Concepts and multiple Destination Concepts, and
+each Source Concept and each Destination Concept may itself carry one or
+more of its own Attributes, specific to that Concept's own participation
+in the SemanticNeuralRelationship (not necessarily true of that Concept
+in general).
+
+```
+SemanticNeuralRelationship = (Verb, SourceConcepts, DestinationConcepts, ...)
+SourceConcepts    = {SourceConcept_1, SourceConcept_2, ...}         (one or more)
+DestinationConcepts = {DestinationConcept_1, DestinationConcept_2, ...} (one or more)
+Attributes(SourceConcept_i)      ⊇ {Attribute_i,1, ...}  (one or more, per Source Concept)
+Attributes(DestinationConcept_j) ⊇ {Attribute_j,1, ...}  (one or more, per Destination Concept)
+```
+
+> **Rule (SemanticNeuralRelationship arity):** A SemanticNeuralRelationship
+> is not restricted to one Source Concept and one Destination Concept. It
+> may bind several Source Concepts and several Destination Concepts at
+> once, and every Concept it binds -- source or destination -- carries at
+> least one Attribute of its own describing that Concept's specific role
+> in this SemanticNeuralRelationship.
 
 ## 4. Domain Boundaries and Common
 
 Dimensions D1 through D4 operate within the owning Domain. The owning Domain
-establishes the outer boundary of the local Concept and Relationship vector
+establishes the outer boundary of the local Concept and SemanticNeuralRelationship vector
 space. The same lexical or semantic Concept may therefore acquire different
 structural positions in different Domains where its domain-specific meaning
 differs.
@@ -142,7 +165,7 @@ R ∈ Domain(R)
 
 All specialised Domains exist within the Common Domain. Common acts as LIRA's
 shared semantic library and as the outer boundary for Dimensions D5 and D6. It
-may contain reusable Concept definitions, Relationship definitions and
+may contain reusable Concept definitions, SemanticNeuralRelationship definitions and
 mathematical operator definitions.
 
 ```
@@ -239,38 +262,38 @@ N(C) = (D1(C), D2(C))
 Noun Structure = Generalisation + Composition
 ```
 
-## 8. Dimension 3 -- Relationship Generalisation
+## 8. Dimension 3 -- SemanticNeuralRelationship Generalisation
 
-Dimension 3 applies to Relationships, which are Verb Concepts. Its vertical
+Dimension 3 applies to SemanticNeuralRelationships, which are Verb Concepts. Its vertical
 semantic relationship is Verb Hypernym to Troponym. The vertical coordinate
-represents Relationship specificity.
+represents SemanticNeuralRelationship specificity.
 
-![Figure 3. Dimension 3 -- Relationship Generalisation](images/d3-relationship-generalisation.png)
+![Figure 3. Dimension 3 -- SemanticNeuralRelationship Generalisation](images/d3-relationship-generalisation.png)
 
-*Figure 3. Dimension 3 -- Relationship Generalisation. Verb Hypernym →
+*Figure 3. Dimension 3 -- SemanticNeuralRelationship Generalisation. Verb Hypernym →
 Troponym.*
 
-Broad or process-level Relationships gravitate toward the top of the
+Broad or process-level SemanticNeuralRelationships gravitate toward the top of the
 hierarchy. Increasingly specific or task-level troponyms gravitate toward the
 bottom.
 
 ```
-z → 1  ⇒  broader process-level Relationship
-z → 0  ⇒  more specific task-level Relationship
+z → 1  ⇒  broader process-level SemanticNeuralRelationship
+z → 0  ⇒  more specific task-level SemanticNeuralRelationship
 ```
 
-> **Rule (Semantic question):** What kind of Relationship is this and how
+> **Rule (Semantic question):** What kind of SemanticNeuralRelationship is this and how
 > specific is it?
 
-## 9. Dimension 4 -- Relationship Composition and Mechanics
+## 9. Dimension 4 -- SemanticNeuralRelationship Composition and Mechanics
 
 Dimension 4 represents the compositional context and executable mechanics of
-a Relationship. It combines source composition with Relationship specificity,
+a SemanticNeuralRelationship. It combines source composition with SemanticNeuralRelationship specificity,
 causal/entailment position, PAD amplitude and mathematical operator state.
 
-![Figure 4. Dimension 4 -- Relationship Composition and Mechanics](images/d4-relationship-composition-mechanics.png)
+![Figure 4. Dimension 4 -- SemanticNeuralRelationship Composition and Mechanics](images/d4-relationship-composition-mechanics.png)
 
-*Figure 4. Dimension 4 -- Relationship Composition and Mechanics. Source noun
+*Figure 4. Dimension 4 -- SemanticNeuralRelationship Composition and Mechanics. Source noun
 composition qualifies the verb; angle = causal/entailment position; radius =
 PAD amplitude; state = operator-function state.*
 
@@ -280,16 +303,16 @@ D4(R) = (Qc, z, θ, r, s)
 
 | Symbol | Meaning | Semantic / Mechanical Role |
 |---|---|---|
-| `Qc` | Source noun Concept composition | Composition supplied by the Relationship source |
-| `z` | Hypernym→Troponym specificity | Specificness of the Relationship |
+| `Qc` | Source noun Concept composition | Composition supplied by the SemanticNeuralRelationship source |
+| `z` | Hypernym→Troponym specificity | Specificness of the SemanticNeuralRelationship |
 | `θ` | Causal/entailment position | Position in a behavioural chain |
-| `r` | Aggregate PAD | Relationship weight / amplitude |
+| `r` | Aggregate PAD | SemanticNeuralRelationship weight / amplitude |
 | `s` | Operator-function state | Current state of the mathematical operator/function |
 
 ### 9.1 Source Concept Qualification and Composition
 
-Every Relationship has a source Concept. The source Concept qualifies the
-Relationship and provides composition. The qualifier is not merely the
+Every SemanticNeuralRelationship has a source Concept. The source Concept qualifies the
+SemanticNeuralRelationship and provides composition. The qualifier is not merely the
 isolated noun identity of the source; its Dimension 2 Holonym-to-Meronym
 context contributes directly to Dimension 4.
 
@@ -298,14 +321,14 @@ Qc(R) = Composition(Source(R))
 D2 → D4
 ```
 
-> **Rule (Semantic question):** How does this Relationship behave in the
+> **Rule (Semantic question):** How does this SemanticNeuralRelationship behave in the
 > compositional context of the noun Concept that originates it?
 
 ### 9.2 Causal and Entailment Geometry
 
-Relationships participating in causal and entailment structures are arranged
-angularly. Chain length is determined by distinct semantic Relationship
-positions; synonyms occupying the same semantic Relationship cluster do not
+SemanticNeuralRelationships participating in causal and entailment structures are arranged
+angularly. Chain length is determined by distinct semantic SemanticNeuralRelationship
+positions; synonyms occupying the same semantic SemanticNeuralRelationship cluster do not
 independently increase chain length.
 
 ```
@@ -321,15 +344,15 @@ R0 → R1 → … → Rn−1 → R0
 ΣΔθ = 2π
 ```
 
-### 9.3 PAD Relationship Amplitude
+### 9.3 PAD SemanticNeuralRelationship Amplitude
 
-PAD is the weight of the Relationship. The aggregate PAD value determines the
-radial amplitude of the Relationship. Radius does not determine semantic
-meaning or specificity; it represents Relationship weight/amplitude.
+PAD is the weight of the SemanticNeuralRelationship. The aggregate PAD value determines the
+radial amplitude of the SemanticNeuralRelationship. Radius does not determine semantic
+meaning or specificity; it represents SemanticNeuralRelationship weight/amplitude.
 
 ```
 r = PADaggregate(R)
-Radius = Relationship Weight = Amplitude
+Radius = SemanticNeuralRelationship Weight = Amplitude
 ```
 
 ### 9.4 Polar-to-Cartesian Derivation
@@ -347,9 +370,9 @@ y = PADaggregate(R) sin θ
 
 ### 9.5 Mathematical Operator State
 
-Every Relationship carries a mathematical operator/function. Colour
+Every SemanticNeuralRelationship carries a mathematical operator/function. Colour
 represents the current state of that mathematical operator/function. It does
-not represent grammatical tense, verb morphology, PAD, or Relationship
+not represent grammatical tense, verb morphology, PAD, or SemanticNeuralRelationship
 specificity.
 
 ```
@@ -360,12 +383,12 @@ Colour = Mathematical Operator State
 ```
 
 The finite operator-state enumeration and state-transition mechanics are
-defined independently by the Relationship execution model.
+defined independently by the SemanticNeuralRelationship execution model.
 
-### 9.6 Relationship Operator Primitive Arithmetic
+### 9.6 SemanticNeuralRelationship Operator Primitive Arithmetic
 
 The semantic infinity convention used by the Knowledge Vector Space does not
-redefine arithmetic performed by a Relationship operator. A Relationship
+redefine arithmetic performed by a SemanticNeuralRelationship operator. A SemanticNeuralRelationship
 operator acts on the ValueType value of a source Concept Attribute (and,
 where applicable, produces or writes a destination Attribute value). The
 operator may use the native semantics of that Attribute primitive type.
@@ -381,14 +404,14 @@ SemanticVector(1.0) = +∞    while    OperatorFloat(1.0) = 1.0
 ```
 
 This separation allows LIRA to keep its Knowledge Vector Space finite and
-geometrically stable while allowing Relationship operators to exploit the
+geometrically stable while allowing SemanticNeuralRelationship operators to exploit the
 full primitive numerical model appropriate to the source Attribute.
 
-### 9.7 Combined Relationship Structure
+### 9.7 Combined SemanticNeuralRelationship Structure
 
 Dimensions D3 and D4 must be interpreted simultaneously. D3 establishes
-Relationship generalisation/specificity; D4 establishes source composition
-and Relationship mechanics.
+SemanticNeuralRelationship generalisation/specificity; D4 establishes source composition
+and SemanticNeuralRelationship mechanics.
 
 ```
 V(R) = (D3(R), D4(R))
@@ -399,7 +422,7 @@ V(R) = (D3(R), D4(R))
 ### 10.1 Synonym Clusters
 
 Synonymous Concepts form synonym clusters. This applies to noun Concepts and
-Verb Concepts/Relationships. Synonyms are stacked within their semantic
+Verb Concepts/SemanticNeuralRelationships. Synonyms are stacked within their semantic
 cluster and a synonym cluster occupies one lateral side.
 
 ```
@@ -422,7 +445,7 @@ polarity alone.
 ## 11. Domain-Global Layout Rules
 
 Synonym stacking is resolved across the complete Domain rather than
-independently within each local cluster. Relationship lines created by
+independently within each local cluster. SemanticNeuralRelationship lines created by
 synonym placement must not overlap or cross unnecessarily.
 
 ```
@@ -468,9 +491,9 @@ dN(A,B) → 0  ⇒  P(A ≡ B) ↑
 Coincidence in only D1 or only D2 is insufficient. Generalisation and
 composition must converge simultaneously.
 
-### 12.2 Relationship Identity Geometry
+### 12.2 SemanticNeuralRelationship Identity Geometry
 
-For Relationships, structural coincidence is evaluated across Dimensions 3
+For SemanticNeuralRelationships, structural coincidence is evaluated across Dimensions 3
 and 4 simultaneously.
 
 ```
@@ -479,9 +502,9 @@ dR(A,B) → 0  ⇒  P(A ≡ B) ↑
 ```
 
 Dimension 4 expands into its applicable numeric coordinates for Euclidean
-distance. Two Relationships at the same Hypernym-to-Troponym level are
+distance. Two SemanticNeuralRelationships at the same Hypernym-to-Troponym level are
 therefore not necessarily identical; their source composition and
-Relationship mechanics must also converge.
+SemanticNeuralRelationship mechanics must also converge.
 
 ## 13. Euclidean Semantic Distance
 
@@ -540,11 +563,11 @@ scales.
 ## 16. Nested Knowledge Geometry
 
 The complete space is recursively nested. Common contains specialised
-Domains; each specialised Domain contains the local Concept and Relationship
+Domains; each specialised Domain contains the local Concept and SemanticNeuralRelationship
 geometry of Dimensions D1 through D4.
 
 ```
-Common ⊃ Domains ⊃ Concepts / Relationships
+Common ⊃ Domains ⊃ Concepts / SemanticNeuralRelationships
 ```
 
 > **Rule (Library/execution separation):** Common provides global semantic
@@ -574,8 +597,8 @@ rejected identity/separation.
 
 ### 17.4 Layout Completeness
 
-Synonym stacking must allow the complete Domain Relationship structure to be
-represented without avoidable Relationship-line intersections. A crossing
+Synonym stacking must allow the complete Domain SemanticNeuralRelationship structure to be
+represented without avoidable SemanticNeuralRelationship-line intersections. A crossing
 caused by synonym placement indicates incorrect stacking/order.
 
 ## 18. Consolidated Mathematical Model
@@ -585,13 +608,13 @@ K = (D1, D2, D3, D4, D5, D6)
 
 D1 = Noun Generalisation
 D2 = Noun Composition
-D3 = Relationship Generalisation
-D4 = Relationship Composition + Mechanics
+D3 = SemanticNeuralRelationship Generalisation
+D4 = SemanticNeuralRelationship Composition + Mechanics
 D5 = Domain Generalisation
 D6 = Domain Composition
 
 Noun Structure = D1 ⊕ D2
-Relationship Structure = D3 ⊕ D4
+SemanticNeuralRelationship Structure = D3 ⊕ D4
 Domain Structure = D5 ⊕ D6
 
 D4(R) = (Source Composition, Specificity, Causal Position, PAD Amplitude, Operator State)
@@ -601,15 +624,15 @@ D4(R) = (Source Composition, Specificity, Causal Position, PAD Amplitude, Operat
 
 - Generalisation determines what something is.
 - Composition determines where something belongs structurally.
-- Relationship specificity determines how broad or specific an action or
+- SemanticNeuralRelationship specificity determines how broad or specific an action or
   behaviour is.
 - The source noun Concept provides the compositional qualification of a
-  Relationship.
-- Causal and entailment geometry determines where a Relationship
+  SemanticNeuralRelationship.
+- Causal and entailment geometry determines where a SemanticNeuralRelationship
   participates in a behavioural chain.
-- PAD determines Relationship weight and amplitude.
+- PAD determines SemanticNeuralRelationship weight and amplitude.
 - Colour represents the state of the mathematical operator/function carried
-  by the Relationship.
+  by the SemanticNeuralRelationship.
 - The owning Domain determines semantic context and bounds Dimensions D1
   through D4.
 - The Common Domain acts as the non-executing semantic library and bounds
@@ -636,7 +659,7 @@ Specialised Domain → Contextualised Executable Knowledge
 Vector-space semantic infinity is a coordinate interpretation: +1.0
 represents +∞ and -1.0 represents -∞ where polarity is used.
 
-Relationship operator arithmetic is ValueType-native: IEEE-754 +∞, -∞ and NaN
+SemanticNeuralRelationship operator arithmetic is ValueType-native: IEEE-754 +∞, -∞ and NaN
 may be used independently when the operated Attribute primitive supports
 them.
 
@@ -648,14 +671,14 @@ properties.
 ## 40. Runtime Evolution, Seeded Mechanics, and Open-Chain Recovery
 
 The Knowledge Vector Space is a dynamic runtime structure. Its geometry is
-updated incrementally as linguistic semantics, Relationship observations,
+updated incrementally as linguistic semantics, SemanticNeuralRelationship observations,
 inference results, and Domain knowledge evolve. Runtime mutation must
 preserve Domain boundaries, seeded lexical anchors, and the completeness
 rules defined by the vector-space topology.
 
 ### 40.1 Bounded Domain Updates and Linguistic Feedforward
 
-Updates to Concepts and Relationships in Dimensions D1 through D4 are scoped
+Updates to Concepts and SemanticNeuralRelationships in Dimensions D1 through D4 are scoped
 to the affected owning Domain. A change learned by the Linguistics Layer
 therefore feeds forward into the relevant Domain rather than causing an
 immediate global re-index of the complete Knowledge Vector Space.
@@ -668,7 +691,7 @@ The local update rule is:
 
 Local mutation may require recalculation of Concept coordinates, synonym
 stacking, structural-distance measures, identity hypotheses, and
-Relationship-line intersection validation within that Domain.
+SemanticNeuralRelationship-line intersection validation within that Domain.
 
 ```
 Intersections(D) = 0
@@ -695,19 +718,19 @@ Reindex(Daffected) ≪ Reindex(Kglobal)
 ### 40.3 Seeded PAD Mechanics and Lemma-Linked Operator State
 
 During vocabulary seeding or hydration, a known verb lemma may provide the
-deterministic initial mechanics for a Relationship. The lemma acts as the
+deterministic initial mechanics for a SemanticNeuralRelationship. The lemma acts as the
 lexical anchor from which the initial PAD weight and mathematical operator
 state are hydrated.
 
 ```
-Lemma → Hydrate(PAD₀, OperatorState₀) → Relationship(PADₜ, OperatorStateₜ)
+Lemma → Hydrate(PAD₀, OperatorState₀) → SemanticNeuralRelationship(PADₜ, OperatorStateₜ)
 ```
 
 The seeded values establish a predictable initial condition. Once a
-Relationship instance exists in a specialised Domain, its runtime PAD and
-operator state belong to that Relationship instance and may mutate through
+SemanticNeuralRelationship instance exists in a specialised Domain, its runtime PAD and
+operator state belong to that SemanticNeuralRelationship instance and may mutate through
 observation, inference, execution, learning, or other runtime mechanics. The
-lexical lemma remains the anchor; it does not force all Relationships
+lexical lemma remains the anchor; it does not force all SemanticNeuralRelationships
 sharing the lemma to share the same mutable runtime state.
 
 ### 40.4 Open Causal/Entailment Chain Detection
@@ -728,12 +751,12 @@ rather than terminating inference.
 
 When the missing semantic element cannot yet be resolved, LIRA instantiates
 an Unknown Concept at the geometrically implied position. Where the missing
-element is specifically a Relationship, the placeholder is an Unknown
-Relationship, which remains a Concept because Relationship specialises
+element is specifically a SemanticNeuralRelationship, the placeholder is an Unknown
+SemanticNeuralRelationship, which remains a Concept because SemanticNeuralRelationship specialises
 Concept.
 
 ```
-UnknownRelationship ⊂ UnknownConcept ⊂ Concept
+UnknownSemanticNeuralRelationship ⊂ UnknownConcept ⊂ Concept
 ```
 
 For an open sequence Ri → ? → Ri+1, the placeholder occupies the expected
@@ -750,7 +773,7 @@ state under the vector-space validity rules.
 
 | State | Semantic Meaning | Runtime Treatment |
 |---|---|---|
-| Resolved | Known Concept/Relationship | Normal vector-space participation |
+| Resolved | Known Concept/SemanticNeuralRelationship | Normal vector-space participation |
 | Null / Unknown | Valid but incomplete knowledge | Preserve position; continue inference and learning |
 | NaN | Not a Valid Concept / indeterminate result | Trigger validity handling rather than identity resolution |
 
@@ -759,7 +782,7 @@ state under the vector-space validity rules.
 Unknown insertion preserves the causal/entailment topology and allows
 inference to continue while explicitly recording the missing semantic link.
 Subsequent evidence may resolve the Unknown into an existing Concept or
-Relationship, promote a newly discovered one, or cause a merge where
+SemanticNeuralRelationship, promote a newly discovered one, or cause a merge where
 structural coincidence demonstrates identity.
 
 ```
@@ -791,7 +814,7 @@ identity resolution, and storage semantics are explicit and implementable.
 
 D3 owns the scalar Hypernym-to-Troponym specificity coordinate for verb
 Concepts. D4 must not duplicate that coordinate. D4 is therefore defined
-explicitly as a composite Relationship-mechanics dimension rather than a
+explicitly as a composite SemanticNeuralRelationship-mechanics dimension rather than a
 peer scalar axis.
 
 ```
@@ -801,7 +824,7 @@ D4(R) = (Qc, θ, r, s)
 
 `Qc` is source-Concept composition, `θ` is causal/entailment angular
 position, `r` is PAD-derived amplitude, and `s` is mathematical
-operator-function state. Wherever Relationship identity requires
+operator-function state. Wherever SemanticNeuralRelationship identity requires
 specificity, `D3(R)` is referenced separately.
 
 ```
@@ -810,9 +833,9 @@ PR(R) = (D3(R), Qc(R), θ(R), r(R), s(R))
 
 ### 41.2 PAD Source and Radius
 
-PAD is authored/seeded on the lexical Word/Concept. A Relationship reads
+PAD is authored/seeded on the lexical Word/Concept. A SemanticNeuralRelationship reads
 PAD from its source Concept; PAD is not independently assigned to the
-Relationship edge. D4 uses the Euclidean magnitude of the source PAD
+SemanticNeuralRelationship edge. D4 uses the Euclidean magnitude of the source PAD
 vector as its radial amplitude while preserving the original P, A and D
 components in their owning tensor properties.
 
@@ -850,17 +873,17 @@ global depth N.
 | animal | 0.50 | Specialisation of organism |
 | dog | 0.25 | Specialisation of animal |
 
-Relationship example: `birth → live → die → resurrect`. Four distinct
-semantic Relationship positions produce an angular interval of 90
+SemanticNeuralRelationship example: `birth → live → die → resurrect`. Four distinct
+semantic SemanticNeuralRelationship positions produce an angular interval of 90
 degrees. The D3 specificity coordinate is independent of D4. Each D4
-radius is read from the PAD magnitude of the Relationship source
+radius is read from the PAD magnitude of the SemanticNeuralRelationship source
 Concept.
 
 ```
 n = 4  ⇒  Δθ = 360° / 4 = 90°
 ```
 
-| Relationship | θ | D3 z | D4 representation |
+| SemanticNeuralRelationship | θ | D3 z | D4 representation |
 |---|---|---|---|
 | birth | 0° | z_birth | (Qc, 0°, r, s) |
 | live | 90° | z_live | (Qc, 90°, r, s) |
@@ -870,7 +893,7 @@ n = 4  ⇒  Δθ = 360° / 4 = 90°
 ### 41.5 Part-of-Speech Scope
 
 D1/D2 apply to noun lexical Concepts. D3/D4 apply to verb lexical
-Concepts. Relationship specialising Concept does not imply that the verb
+Concepts. SemanticNeuralRelationship specialising Concept does not imply that the verb
 sense automatically receives a noun D1/D2 coordinate. A nominalised verb
 sense is a distinct lexical Concept.
 
@@ -913,7 +936,7 @@ context is explicit.
 | Storage context | NaN meaning | Treatment |
 |---|---|---|
 | Knowledge vector coordinate row | Not a Valid Concept / vector result | Vector validity and incompleteness mechanics |
-| Attribute ValueType storage | Native primitive arithmetic NaN | Relationship operator / ValueType arithmetic |
+| Attribute ValueType storage | Native primitive arithmetic NaN | SemanticNeuralRelationship operator / ValueType arithmetic |
 
 ### 41.8 Antonym Sign and Synonym Side Precedence
 
@@ -969,7 +992,7 @@ seeded `semantic_relationships` data model.
 | HYPERNYM / HYPONYM | D1 | Noun generalisation/specialisation |
 | MERONYM / HOLONYM | D2 | Noun composition |
 | HYPERNYM / TROPONYM | D3 | Verb generalisation/specificity |
-| CAUSE / ENTAILMENT | D4 θ | Relationship dependency topology |
+| CAUSE / ENTAILMENT | D4 θ | SemanticNeuralRelationship dependency topology |
 | SYNONYM | Synonym cluster / Side | Cluster placement; inherits authoritative antonym sign where present |
 | ANTONYM | Sign | Authoritative semantic polarity |
 | RELATED | Unclassified | No dimensional placement implied until semantically classified |

@@ -1,7 +1,7 @@
 # Knowledge Layer
 
 The only layer that assigns semantic meaning (Rule 20) -- qualifies
-Value Objects through Concepts, Attributes and Relationships. Also the
+Value Objects through Concepts, Attributes and SemanticNeuralRelationships. Also the
 repository's home for core Host and Domain artefacts generally, not
 just Knowledge-layer-specific ones (see ARCHITECTURE.md's Repository
 Layout section).
@@ -12,8 +12,8 @@ and design rules.
 See `knowledge_vector_space_specification.md` for the full semantic and
 mathematical definition of the Knowledge Vector Space -- the six-dimension
 tensor geometry (`K = (D1, D2, D3, D4, D5, D6)`) underlying Concept,
-Relationship and Domain structure: noun generalisation/composition (D1/D2),
-Relationship generalisation/composition and mechanics including PAD
+SemanticNeuralRelationship and Domain structure: noun generalisation/composition (D1/D2),
+SemanticNeuralRelationship generalisation/composition and mechanics including PAD
 amplitude and operator state (D3/D4), Domain generalisation/composition
 (D5/D6), synonym/antonym geometry, Euclidean semantic distance and identity
 evidence, completeness rules, and the runtime evolution loop (seeding,

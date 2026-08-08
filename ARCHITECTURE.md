@@ -423,7 +423,7 @@ reference.
 | Correctness | Vocabulary Layer | Contains lexical inventory only. | Separates words, symbols and identifiers from meaning. |
 | Correctness | Linguistics Layer | Contains language structure only. | Separates grammar from semantics. |
 | Correctness | Value Objects Layer | Contains typed value objects without semantic qualification. | Ensures data remains independent of knowledge. |
-| Explainability | Knowledge Layer | Qualifies Value Objects through Concepts, Attributes and Relationships. | Makes reasoning explicit, inspectable and traceable. |
+| Explainability | Knowledge Layer | Qualifies Value Objects through Concepts, Attributes and SemanticNeuralRelationships. | Makes reasoning explicit, inspectable and traceable. |
 | Extensibility | Agents | Agents exist within the layer whose artefacts they manipulate. | Keeps behaviour close to data while avoiding an unnecessary agent framework. |
 | Specialisation | Domain Agents | Domains may introduce specialist agents. | Enables domain expertise without modifying the LIRA core. |
 | Consistency | Root Components | Every root component follows Object -> SystemProperties -> SystemTensor. | Provides one uniform execution model across the entire platform. |
@@ -438,7 +438,7 @@ reference.
 | Vocabulary Layer | Words, identifiers, symbols, language codes, currency codes | Lexical inventory | Seed, lookup, hydrate, normalise vocabulary |
 | Linguistics Layer | Tokens, phrases, syntax, sentence structures | Language analysis | Tokenise, parse, classify, structure language (implemented as `LinguisticLexer`, `ClauseSegmentationUtility` and `GraphProcessor`, not `*Agent` classes -- see Component notes) |
 | Value Objects Layer | Numbers, strings, dates, measurements, units, currencies, coordinates and other unqualified value types | Typed data representation | Parse, validate, convert, normalise values |
-| Knowledge Layer | Concepts, Attributes, Relationships, Generalisations | Semantic representation and reasoning | Bind, infer, train, evaluate, promote, compartmentalise |
+| Knowledge Layer | Concepts, Attributes, SemanticNeuralRelationships, Generalisations | Semantic representation and reasoning | Bind, infer, train, evaluate, promote, compartmentalise |
 
 Each "Typical Agent" for Vocabulary, Value Objects and Knowledge is
 stubbed as a concrete `*Agent` subclass in its layer's `agents/` folder
