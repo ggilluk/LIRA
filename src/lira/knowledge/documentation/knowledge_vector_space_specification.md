@@ -15,6 +15,7 @@ Section 41 is authoritative.
 
 | Piece | Status |
 |---|---|
+| SemanticNeuralRelationship multi-source/multi-destination arity (3) | **Specified, not built.** `TensorLiraGraph`'s entire storage model is one source row and one (verb, destination) column per edge (`RelationshipRef` is `(graph, source_idx, verb_col)`, singular on both sides) -- representing several Source Concepts and several Destination Concepts, each with its own Attributes, on one SemanticNeuralRelationship is a different data structure, not a missing method. D3/D4's own math (`Qc = D2(source)`) also currently assumes exactly one source. Prototyping stage: written down as the target shape before anything is built toward it, not a regression from a prior "Built" state |
 | D1 (Noun Concept Generalisation) | **Built** -- `TensorLiraGraph._concept_d1_z`, computed automatically inside `add_relationship`'s existing `isA_uuid` path (`knowledge/data/tensor_graph.py`) |
 | D2 (Noun Concept Composition) | **Built** -- `TensorLiraGraph._concept_d2_z`, a new `partOf_uuid` path mirroring D1's, entirely independent tree |
 | Fractional/gap indexing (41.9) | **Built** -- `TensorLiraGraph._position_below` |
