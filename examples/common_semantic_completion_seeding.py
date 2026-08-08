@@ -134,7 +134,14 @@ def run() -> dict:
             sem_doc = _load_json(RELATIONSHIPS_DIR / "semantic_relationships.json")
             file_entry["count"] = sem_doc["count"]
     rel_manifest["relationship_count"] = sum(fe["count"] for fe in rel_manifest["files"])
-    rel_manifest["asset_version"] = "1.12.0"
+    # asset_version intentionally untouched -- it was previously hardcoded
+    # to a stale "1.12.0" here, silently reverting whatever version had
+    # actually been bumped by a later batch (caught when
+    # root_ontology_seeding.py's own 1.20.0 bump got stomped by this line
+    # on the next run of this script). Bumping the version is each
+    # batch's own explicit, deliberate act (assets/common/en/relationships/README.md's
+    # own Version entries) -- this generic recount/rechecksum step has no
+    # business overwriting it.
     rel_manifest["checksum"] = _compute_checksum()
     _save_json(rel_manifest_path, rel_manifest)
 

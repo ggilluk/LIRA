@@ -323,7 +323,9 @@ def _recompute_relationship_manifest() -> None:
         doc = _load_json(RELATIONSHIPS_DIR / file_entry["file"])
         file_entry["count"] = doc["count"]
     manifest["relationship_count"] = sum(fe["count"] for fe in manifest["files"])
-    manifest["asset_version"] = "1.12.0"
+    # asset_version intentionally untouched -- see
+    # common_semantic_completion_seeding.py's own identical fix; this
+    # function had the same stale hardcoded "1.12.0" overwrite bug.
     manifest["checksum"] = _compute_checksum()
     _save_json(manifest_path, manifest)
 
