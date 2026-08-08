@@ -32,12 +32,13 @@ Pipeline, in order:
    over the result.
 3. Render -- `KnowledgeView`, only after both passes above have run.
 
-Also registers one real, true D5 fact this codebase's own README
-already states in prose (every Domain inherits Common's vocabulary,
-i.e. Physics generalises from Common) so the Domains tab has something
-genuine to draw rather than an empty placeholder -- not a fabricated
-hierarchy, just this one fact made explicit via
-`register_domain_generalisation`.
+Also registers one real, true D6 fact so the Domains tab has something
+genuine to draw rather than an empty placeholder: Physics is a Domain
+Meronym of Common (register_domain_composition, spec 15) -- Physics is
+one part of Common's overall knowledge, alongside every other Domain
+Common could host, not a specialisation/hyponym of Common (which
+register_domain_generalisation, D5, would have meant instead -- the
+earlier revision of this script used that, incorrectly).
 
 Run: python3 examples/knowledge_view_example.py
 """
@@ -81,7 +82,7 @@ def run() -> dict:
     common_domain = Domain(name="Common")
     hosted_domains.add(common_domain)
     hosted_domains.add(physics_domain)
-    hosted_domains.register_domain_generalisation(physics_domain, common_domain)
+    hosted_domains.register_domain_composition(physics_domain, common_domain)
 
     dictionary_view = DictionaryView(
         dictionary, relationships,
