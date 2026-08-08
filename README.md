@@ -1,6 +1,10 @@
 # LIRA
 
-LIRA is a tensor-native knowledge graph platform. Dense weight tensors
+LIRA is a evolving prototype of a Nuero Symbolic AI approach that I am workimg on.
+
+Its for.my personal interest and4learnimg.
+
+tensor-native knowledge graph platform. Dense weight tensors
 (confidence, provenance, temporal, activation) are the persistent,
 canonical storage for a Domain's knowledge -- not a snapshot rebuilt from
 an object graph -- so every read sees live state and every write is O(1).
