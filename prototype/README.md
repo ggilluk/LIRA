@@ -194,7 +194,47 @@ Linguistics / Knowledge) once both worker Services report ready; type or
 paste any text, or pick one of five quick examples (the same worked
 examples `sentence_reader_server.py`'s own `DEFAULT_QUICK_EXAMPLES`
 ships, chosen there to exercise a spread of outcomes), and see the
-predicted structure plus the full trace update live.
+predicted structure plus the full trace update live. A "Learning"
+checkbox next to the Read button (on by default) controls whether that
+read reinforces the state machine's own learned lexical evidence -- see
+below.
+
+#### Learned lexical transition evidence (spec 15-24)
+
+`linguistics/documentation/sentence_reading_state_machine_specification.md`
+describes a `[Proposed]` future phase -- persistent learned evidence
+`w_ij` for one observed `(phraseType, fromState -> toState)` transition,
+feeding the existing `ScoringFactors.lexicalEvidenceSum` field (declared
+since the initial Linguistics Service port, but always `0` at phrase
+level until this). `role/lexical_evidence_store.ts`'s `LexicalEvidenceStore`
+is a first, deliberately scoped implementation of that design: an
+in-memory `Map` (no cross-session persistence -- out of scope for what
+this UI needs to demonstrate), positive-only evidence (spec 18's decay
+is explicitly future "learning-policy", not this phase), one store per
+`LinguisticController`, always constructed but functionally inert
+(every `weightFor()` call returns `0`, identical to pre-learning
+behaviour) until something actually calls `recordObservedReading()`.
+
+`LinguisticController.recordObservedReading(sentence)` is gated on the
+whole sentence's `ValidationOutcome.VALID` (spec 17: "Only validated
+observations may reinforce lexical evidence") and walks every phrase's
+materialised words, recording each real POS-to-POS transition. Reading
+the same or a similarly-structured sentence again feeds those counts
+into `SequenceEngine.scoringFactors()`'s own `lexicalEvidenceSum` for
+every future candidate path with a matching transition -- a tie-break
+signal only (`ReadingScorer.rankKey` still ranks `validation` first, so
+learned evidence can never make an `INVALID` reading outrank a `VALID`
+one, spec 15's own invariant), which is exactly what lets repetition
+shift preference among candidates that stay grammatically admissible
+without ever touching `GrammarConfigurator` itself.
+
+The Sentence Reader UI's "Learning" checkbox (default on) is sent fresh
+with every `read()` call (`ReadRequest.learningEnabled`); the worker
+reports back real accumulated state (`ReadResult.learning` --
+`totalObservations`, this read's own `recordedThisRead`) rather than
+the UI just echoing the checkbox, so the panel's "Learning: N
+observations" indicator reflects genuine state, not a decorative
+toggle.
 
 ### Portal shell (knowledge/ui/portal_shell.ts)
 

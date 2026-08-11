@@ -51,12 +51,17 @@ export class LinguisticsWorkerClient {
   /** Reads one sentence's worth of text through the worker's
    * LinguisticController and resolves with its predicted structure plus
    * the full search trace -- the same `{predicted, trace}` shape
-   * sentence_reader_server.py's own `/api/read` returns. */
-  read(text: string): Promise<ReadResult> {
+   * sentence_reader_server.py's own `/api/read` returns, plus `words`
+   * and `learning` (this port's own additions). `learningEnabled`
+   * mirrors the Sentence Reader UI's own checkbox at the moment this
+   * call was made -- see linguistics_worker_protocol.ts's own
+   * `ReadRequest.learningEnabled` docstring for why it's sent fresh per
+   * call rather than toggled as separate worker state. */
+  read(text: string, learningEnabled: boolean): Promise<ReadResult> {
     const requestId = `read-${Math.random().toString(36).slice(2)}`;
     return new Promise((resolve, reject) => {
       this.pendingReads.set(requestId, { resolve, reject });
-      this.post({ type: "read", requestId, text });
+      this.post({ type: "read", requestId, text, learningEnabled });
     });
   }
 

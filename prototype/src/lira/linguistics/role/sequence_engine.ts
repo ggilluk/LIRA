@@ -5,6 +5,7 @@ import { ObligationKind, type SequencingObligation } from "../data/sequencing_ob
 import { candidatePartsOfSpeech, isKnown, type TokenReading } from "../data/token_reading";
 import { ValidationOutcome } from "../data/validation_outcome";
 import type { GrammarConfigurator, PhraseGrammar } from "./grammar_configurator";
+import type { LexicalEvidenceStore } from "./lexical_evidence_store";
 import { createScoringFactors, ReadingScorer, type ScoringFactors } from "./reading_scorer";
 
 /** SequenceEngine: the one shared sequencing engine behind
@@ -86,9 +87,16 @@ interface PartialPath {
 export class SequenceEngine {
   readonly scorer: ReadingScorer;
 
+  /** Optional -- unset by default, which keeps `lexicalEvidenceSum`
+   * exactly `0` for every candidate (createScoringFactors's own
+   * default), the same "declared but currently remains 0.0" state the
+   * Proposed learning phase describes until a caller actually opts in
+   * (LinguisticController's own `evidenceStore` constructor param,
+   * threaded through from here). */
   constructor(
     public readonly grammar: GrammarConfigurator,
     scorer?: ReadingScorer,
+    private readonly evidenceStore?: LexicalEvidenceStore,
   ) {
     this.scorer = scorer ?? new ReadingScorer();
   }
@@ -345,6 +353,35 @@ export class SequenceEngine {
       phraseCount: 1 + path.nestedPaths.length,
       spanLength: path.endIndex - path.startIndex,
       candidateRankIndexSum: rankIndexSum,
+      lexicalEvidenceSum: this.pathLexicalEvidence(path),
     });
+  }
+
+  /** spec 15's `w_ij -> lexical_evidence_sum` wiring -- sums this
+   * store's recorded evidence for every genuine POS-to-POS transition
+   * `path` (and, recursively, each of its own nestedPaths -- a
+   * PREPOSITIONAL_PHRASE's nested NOUN_PHRASE has its own transitions,
+   * scored under its own phraseType, not the parent's) actually walks.
+   * `0` throughout when no evidenceStore was ever given to this engine
+   * -- unchanged behaviour from before this store existed. A marker or
+   * unknown-absorbed step has no real fromState/toState transition to
+   * look up, so it contributes nothing and also breaks the chain (the
+   * step after it starts counting again from "phrase start", since
+   * whatever came before an absorbed unknown token isn't a reliable
+   * predictor of what follows it). */
+  private pathLexicalEvidence(path: SequencePath): number {
+    if (!this.evidenceStore) return 0;
+    let sum = 0;
+    let fromState: PartOfSpeech | undefined;
+    for (const step of path.steps) {
+      if (step.isUnknown || step.isMarker || step.partOfSpeech === undefined) {
+        fromState = undefined;
+        continue;
+      }
+      sum += this.evidenceStore.weightFor(path.phraseType, fromState, step.partOfSpeech);
+      fromState = step.partOfSpeech;
+    }
+    for (const nested of path.nestedPaths) sum += this.pathLexicalEvidence(nested);
+    return sum;
   }
 }

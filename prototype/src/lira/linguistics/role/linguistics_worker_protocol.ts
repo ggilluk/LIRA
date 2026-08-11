@@ -23,6 +23,14 @@ export interface ReadRequest {
   type: "read";
   requestId: string;
   text: string;
+  /** Whether this read should reinforce the worker's own
+   * LexicalEvidenceStore (role/lexical_evidence_store.ts, spec 15-24's
+   * "Learned Lexical Transition Evidence") if the sentence validates --
+   * the Sentence Reader UI's own "Learning" checkbox, sent fresh with
+   * every request rather than toggled as separate worker state, since a
+   * read call is otherwise already a complete, self-contained unit of
+   * work. */
+  learningEnabled: boolean;
 }
 
 export type LinguisticsWorkerRequest = InitRequest | ReadRequest;
@@ -179,6 +187,25 @@ export interface PredictedWord {
   confidence: number | null;
 }
 
+/** Reports what this one `read` call actually did to the worker's
+ * LexicalEvidenceStore, so the UI can show genuine accumulated state
+ * (an honest "Learning: N observations" indicator) rather than just
+ * echoing back the checkbox it was sent. */
+export interface LearningStatus {
+  /** Echoes the request's own `learningEnabled` -- false whenever the
+   * checkbox was off, regardless of whether the sentence would have
+   * validated. */
+  enabled: boolean;
+  /** Transitions this specific read reinforced -- always 0 when
+   * `enabled` is false or the sentence didn't validate
+   * (LinguisticController.recordObservedReading's own gate). */
+  recordedThisRead: number;
+  /** The worker's LexicalEvidenceStore.totalObservations after this
+   * read -- accumulated across every learning-enabled read since the
+   * Service started, not just this one. */
+  totalObservations: number;
+}
+
 export interface ReadResult {
   predicted: JsonSentence;
   /** The predicted sentence as a flat, in-order word array -- see
@@ -186,6 +213,7 @@ export interface ReadResult {
    * rendering, the thing this field exists for. */
   words: readonly PredictedWord[];
   trace: readonly TracePosition[];
+  learning: LearningStatus;
 }
 
 export interface ReadResultMessage {

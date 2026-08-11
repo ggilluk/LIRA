@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { Dictionary } from "../vocabulary/data/dictionary";
+import { PartOfSpeech } from "../vocabulary/data/part_of_speech";
 import { AsyncDictionaryHydrator } from "../vocabulary/role/dictionary_hydrator";
 import { DictionaryProcessor } from "../vocabulary/role/dictionary_processor";
 import { WordSeeder } from "../vocabulary/role/word_seeder";
@@ -75,5 +76,51 @@ describe("LinguisticController against the bundled Common Vocabulary Cache", () 
     const sentence = controller.readSentence("The zorbnax is here.");
     expect(sentence.validation).not.toBe(ValidationOutcome.VALID);
     expect(sentence.errors.some((error) => error.tokenText === "zorbnax")).toBe(true);
+  });
+});
+
+describe("Learned lexical transition evidence (spec 15-24, Proposed)", () => {
+  it("never records anything on its own -- reading a sentence alone leaves evidenceStore empty", () => {
+    const controller = seededController();
+    controller.readSentence("A meaning is a representation.");
+    expect(controller.evidenceStore.totalObservations).toBe(0);
+  });
+
+  it("recordObservedReading is a no-op for a sentence that didn't validate (spec 17: only validated observations reinforce)", () => {
+    const controller = seededController();
+    const sentence = controller.readSentence("The fox over the dog.");
+    expect(sentence.validation).toBe(ValidationOutcome.INVALID);
+
+    const recorded = controller.recordObservedReading(sentence);
+    expect(recorded).toBe(0);
+    expect(controller.evidenceStore.totalObservations).toBe(0);
+  });
+
+  it("recordObservedReading reinforces every real transition in a VALID reading, and that evidence feeds a later scoringFactors call", () => {
+    const controller = seededController();
+    const sentence = controller.readSentence("A meaning is a representation.");
+    expect(sentence.validation).toBe(ValidationOutcome.VALID);
+
+    const recorded = controller.recordObservedReading(sentence);
+    expect(recorded).toBeGreaterThan(0);
+    expect(controller.evidenceStore.totalObservations).toBe(recorded);
+
+    // Both "A meaning" (subject) and "a representation" (complement)
+    // are NOUN_PHRASEs starting with a DETERMINER, so phrase-start (no
+    // fromState) -> DETERMINER is a transition this one reading walked
+    // twice -- it must have been reinforced.
+    const firstWeight = controller.evidenceStore.weightFor(PhraseType.NOUN_PHRASE, undefined, PartOfSpeech.DETERMINER);
+    expect(firstWeight).toBeGreaterThan(0);
+    // A transition this reading never walked stays at 0 -- recording is
+    // specific to what was actually observed, not a blanket bump.
+    expect(controller.evidenceStore.weightFor(PhraseType.VERB_PHRASE, undefined, PartOfSpeech.NOUN)).toBe(0);
+
+    // Reading the identical sentence again reinforces the same
+    // transitions further -- spec 19's "repeated observations ...
+    // changes lexicalEvidenceSum".
+    const secondReading = controller.readSentence("A meaning is a representation.");
+    const secondRecorded = controller.recordObservedReading(secondReading);
+    expect(controller.evidenceStore.totalObservations).toBe(recorded + secondRecorded);
+    expect(controller.evidenceStore.weightFor(PhraseType.NOUN_PHRASE, undefined, PartOfSpeech.DETERMINER)).toBe(firstWeight * 2);
   });
 });

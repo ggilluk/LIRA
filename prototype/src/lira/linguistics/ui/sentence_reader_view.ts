@@ -127,15 +127,21 @@ export class SentenceReaderView {
     });
   }
 
+  private isLearningEnabled(): boolean {
+    const checkbox = this.container?.querySelector<HTMLInputElement>(".lira-sr-learning-toggle");
+    return checkbox?.checked ?? true;
+  }
+
   private async read(text: string): Promise<void> {
     const trimmed = text.trim();
     if (!trimmed || this.reading) return;
     const token = ++this.requestToken;
+    const learningEnabled = this.isLearningEnabled();
     this.reading = true;
     this.setBusy(true);
     this.setError(undefined);
     try {
-      const result = await this.client.read(trimmed);
+      const result = await this.client.read(trimmed, learningEnabled);
       if (token !== this.requestToken || !this.container) return;
       this.renderResult(result);
     } catch (error) {
@@ -153,7 +159,22 @@ export class SentenceReaderView {
     const button = this.container?.querySelector<HTMLButtonElement>(".lira-sr-read-btn");
     if (!button) return;
     button.disabled = busy;
-    button.textContent = busy ? "Reading…" : "Read sentence";
+    button.textContent = busy ? "Reading…" : "Read";
+  }
+
+  /** Reflects the worker's own reported learning state back next to the
+   * checkbox -- genuine accumulated evidence (`LexicalEvidenceStore.
+   * totalObservations`), not a client-side guess, so the checkbox's
+   * effect is visibly real rather than merely claimed. */
+  private setLearningStatus(status: ReadResult["learning"] | undefined): void {
+    const el = this.container?.querySelector<HTMLElement>(".lira-sr-learning-status");
+    if (!el) return;
+    if (!status || !status.enabled) {
+      el.textContent = "Learning off";
+      return;
+    }
+    const gain = status.recordedThisRead > 0 ? ` (+${status.recordedThisRead})` : "";
+    el.textContent = `Learning: ${status.totalObservations} observation${status.totalObservations === 1 ? "" : "s"}${gain}`;
   }
 
   private setError(message: string | undefined): void {
@@ -168,6 +189,7 @@ export class SentenceReaderView {
     const trace = this.container?.querySelector<HTMLElement>(".lira-sr-trace");
     if (predicted) predicted.innerHTML = this.renderPredicted(result.predicted, result.words);
     if (trace) trace.innerHTML = this.renderTrace(result.trace);
+    this.setLearningStatus(result.learning);
   }
 
   private ensureStyles(): void {
@@ -184,8 +206,13 @@ export class SentenceReaderView {
         <div class="lira-sr-input-card">
           <textarea class="lira-sr-textarea" placeholder="e.g. A meaning is a representation.">${escapeHtml(QUICK_EXAMPLES[0])}</textarea>
           <div class="lira-sr-input-row">
-            <button type="button" class="lira-sr-read-btn">Read sentence</button>
+            <button type="button" class="lira-sr-read-btn">Read</button>
+            <label class="lira-sr-learning-toggle-label" title="When on, a sentence that reads VALID reinforces the state machine's own learned lexical evidence -- future ambiguous reads prefer word/phrase transitions it has seen validated before.">
+              <input type="checkbox" class="lira-sr-learning-toggle" checked>
+              Learning
+            </label>
             <span class="lira-sr-hint">or press &#8984;/Ctrl + Enter</span>
+            <span class="lira-sr-learning-status"></span>
           </div>
           <div class="lira-sr-examples">
             ${QUICK_EXAMPLES.map((example) => `<button type="button" class="lira-sr-example" data-example="${escapeHtml(example)}">${escapeHtml(example)}</button>`).join("")}
@@ -396,7 +423,13 @@ const CSS = `
   padding: 0.5rem 1.1rem; font-size: 0.85rem; font-weight: 600; cursor: pointer; font-family: var(--font-body);
 }
 .lira-sr-read-btn:disabled { opacity: 0.55; cursor: default; }
+.lira-sr-learning-toggle-label {
+  display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.8rem; color: var(--ink);
+  cursor: pointer; user-select: none;
+}
+.lira-sr-learning-toggle { accent-color: var(--accent); cursor: pointer; margin: 0; }
 .lira-sr-hint { color: var(--ink-muted); font-size: 0.76rem; }
+.lira-sr-learning-status { color: var(--ink-muted); font-size: 0.72rem; font-family: var(--font-mono); margin-left: auto; }
 .lira-sr-examples { display: flex; flex-wrap: wrap; gap: 0.35rem 0.5rem; margin-top: 0.6rem; }
 .lira-sr-example {
   background: none; border: 1px solid var(--line); border-radius: 999px; padding: 0.15rem 0.6rem;

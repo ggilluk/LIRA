@@ -97,6 +97,12 @@ function handleRead(request: ReadRequest): void {
     const trace: unknown[] = [];
     const sentence = controller.readSentence(request.text, trace);
     const rawTokens = controller.readingContext.tokenResolver.resolveSentence(request.text);
+    // recordObservedReading is itself a no-op (returns 0, touches
+    // nothing) for a sentence that didn't validate -- spec 17's "only
+    // validated observations reinforce" -- so this is safe to call
+    // unconditionally whenever learning is on, without checking
+    // sentence.validation here first.
+    const recordedThisRead = request.learningEnabled ? controller.recordObservedReading(sentence) : 0;
     post({
       type: "read-result",
       requestId: request.requestId,
@@ -104,6 +110,11 @@ function handleRead(request: ReadRequest): void {
         predicted: sentenceToJson(sentence),
         words: buildPredictedWords(sentence, rawTokens),
         trace: trace as TracePosition[],
+        learning: {
+          enabled: request.learningEnabled,
+          recordedThisRead,
+          totalObservations: controller.evidenceStore.totalObservations,
+        },
       },
     });
   } catch (error) {
