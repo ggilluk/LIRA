@@ -46,11 +46,26 @@ export interface ReadyMessage {
   domains: readonly VocabularyDomainSummary[];
 }
 
+/** A rendered Domain's DictionaryView, as its three renderFragment()
+ * pieces -- style/body/script -- rather than one self-contained HTML
+ * string. The Portal shell mounts these directly into its own DOM
+ * (matching the Python `LiraView` combiner's pattern) instead of an
+ * `<iframe srcdoc>`, so the fragment inherits the shell's own width,
+ * fonts, and theme tokens instead of laying out for a full-page
+ * viewport -- and so DictionaryView's own masthead/title, which
+ * renderFragment() excludes by design, never duplicates the Portal
+ * topbar's breadcrumb. */
+export interface RenderedFragment {
+  style: string;
+  body: string;
+  script: string;
+}
+
 export interface RenderedMessage {
   type: "rendered";
   requestId: string;
   domain: string;
-  html: string;
+  fragment: RenderedFragment;
 }
 
 export interface ErrorMessage {

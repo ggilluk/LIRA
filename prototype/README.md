@@ -109,9 +109,22 @@ will have) a UI component. Only Vocabulary is enabled; Linguistics and
 Knowledge render as visibly disabled tabs ("Not ported yet") rather than
 being hidden, so the shell's own shape doesn't imply LIRA only ever has
 one layer. Selecting a Domain asks the Vocabulary Service (below) to
-render it and mounts the result in an `<iframe srcdoc>` (same reasoning
-as `main.ts`'s original iframe use); the Service caches renders itself,
-so switching back and forth doesn't re-render.
+render it and mounts the result *directly into the shell's own DOM* --
+`DictionaryView.renderFragment()`'s style/body/script pieces, the same
+composition Python's `LiraView` uses to combine views, not an `<iframe
+srcdoc>` the way this shell's first version worked. That matters for two
+things an iframe couldn't give it: the fragment's CSS inherits the
+shell's own `--ground`/`--surface`/`--accent`/etc. tokens (defined once
+in `portal_shell.ts`, copied verbatim from dictionary_view.py's own
+`:root` block) instead of laying out for a full browser window, and
+`DictionaryView`'s own masthead/title -- which `renderFragment()`
+excludes by design -- is never in the picture; the Portal topbar's
+breadcrumb is the *only* title the pane ever shows. The fragment's
+`<script>` is injected via a real `<script>` element (`innerHTML` never
+executes an injected script) wrapped in its own IIFE, so a second
+Domain's fragment mounted later can't collide with the first's top-level
+`const`s. The Service still caches each Domain's render itself, so
+switching back and forth doesn't re-render.
 
 Try it: `npm run dev` opens directly into the shell -- click between
 Common and Physics in the tree (or the mode pill to see the mobile
@@ -132,10 +145,11 @@ messages and rendered HTML strings cross back over `postMessage`.
 by both sides. `VocabularyWorkerClient` (main thread) wraps it in two
 promise-based calls -- `init()` (seed everything, resolve with a summary
 per Domain) and `renderDomain(name)` (render-or-return-cached, resolve
-with the HTML string) -- and fans the worker's status messages out to
-any number of listeners, so the LoadingScreen and the persistent
-ServiceStatusView panel can both watch the same live status without
-knowing about each other.
+with a `RenderedFragment` -- `{style, body, script}`, the same three
+pieces `DictionaryView.renderFragment()` returns) -- and fans the
+worker's status messages out to any number of listeners, so the
+LoadingScreen and the persistent ServiceStatusView panel can both watch
+the same live status without knowing about each other.
 
 Splitting the worker into its own Vite chunk was a deliberate win, not
 just an architectural one: the ~5MB bundled Common Vocabulary Cache now

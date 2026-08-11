@@ -16,20 +16,32 @@ import type { VocabularyWorkerClient } from "../../vocabulary/role/vocabulary_wo
  * a `ServiceStatusView` shows the same Background Services the
  * LoadingScreen tracked during startup, still live.
  *
- * Every control here is a live event listener, and the Vocabulary view
- * comes from a real `VocabularyWorkerClient` -- a Web Worker running
- * WordSeeder/RelationshipSeeder/DictionaryView off the main thread (see
- * vocabulary/role/vocabulary_worker.ts) -- mounted via `<iframe
- * srcdoc>`, the same embedding this prototype has used since main.ts's
- * first version and the same reason: DictionaryView.render() returns
- * its own `<!DOCTYPE>`/`<head>`/`<script>`, which innerHTML would both
- * mangle and silently refuse to execute.
+ * The Vocabulary view comes from a real `VocabularyWorkerClient` -- a
+ * Web Worker running WordSeeder/RelationshipSeeder/DictionaryView off
+ * the main thread (see vocabulary/role/vocabulary_worker.ts) -- but
+ * unlike this shell's first version, it's mounted by
+ * *direct-DOM-composition*, not an `<iframe srcdoc>`: the worker
+ * returns `DictionaryView.renderFragment()`'s three pieces (style/
+ * body/script) instead of a full `render()` document, and this shell
+ * injects them into its own DOM the same way the Python `LiraView`
+ * combines DictionaryView with SentenceReaderView into one page. That
+ * matters for two reasons an iframe couldn't give it: the fragment's
+ * CSS inherits this shell's own `--ground`/`--surface`/`--accent`/etc.
+ * tokens (defined once below, copied verbatim from
+ * vocabulary/ui/dictionary_view.py's own `:root` block) instead of
+ * laying out for a full browser window, and DictionaryView's own
+ * masthead/title -- which `renderFragment()` excludes by design -- is
+ * never in the picture to begin with; the Portal topbar's breadcrumb
+ * is the only title the pane ever shows.
  *
- * Token names (`--ground`, `--surface`, `--ink`, `--accent`, `--line`,
- * `--line-strong`, `--shadow`) match vocabulary/ui/dictionary_view.py's
- * own `_PAGE_TEMPLATE` `:root` block exactly, so the shell's chrome and
- * the DictionaryView it frames read as one system rather than two
- * different applications glued together. */
+ * The fragment's `<script>` still expects to run against a real,
+ * already-in-the-DOM copy of its `body` (it does its own
+ * `document.getElementById(...)` wiring) -- `loadView()` sets the body
+ * HTML first, then executes the script via a real `<script>` element
+ * (not `innerHTML`, which never executes injected scripts), wrapped in
+ * its own IIFE so its top-level `const`s/`function`s can't collide
+ * with a second fragment mounted later (or, one day, a sibling view's
+ * own script mounted alongside it). */
 
 type ShellMode = "desktop" | "mobile";
 type MobileScreen = "browse" | "view";
@@ -52,6 +64,7 @@ export interface PortalShellOptions {
 }
 
 const STYLE_ELEMENT_ID = "lira-portal-shell-styles";
+const FRAGMENT_STYLE_ELEMENT_ID = "lira-vocabulary-fragment-styles";
 
 export class PortalShell {
   private mode: ShellMode;
@@ -113,6 +126,19 @@ export class PortalShell {
     document.head.appendChild(style);
   }
 
+  /** The fragment's own CSS is identical across every Domain (it styles
+   * class names like `.stat-row`/`.word-form`, not domain-specific
+   * selectors), so it's injected once, the first time any Domain's
+   * Vocabulary view loads -- the same idempotent `ensureStyles`
+   * pattern this shell already uses for its own chrome. */
+  private ensureFragmentStyles(css: string): void {
+    if (document.getElementById(FRAGMENT_STYLE_ELEMENT_ID)) return;
+    const style = document.createElement("style");
+    style.id = FRAGMENT_STYLE_ELEMENT_ID;
+    style.textContent = css;
+    document.head.appendChild(style);
+  }
+
   private render(): void {
     if (!this.container) return;
     const selected = this.selectedName ? this.registry.get(this.selectedName) : undefined;
@@ -134,18 +160,25 @@ export class PortalShell {
     }
   }
 
-  /** Requests the selected Domain's Vocabulary view from the worker and,
-   * once it arrives, writes it into the still-mounted iframe -- a
-   * targeted DOM update rather than a full re-render, so a slower fetch
-   * doesn't get raced or clobbered by the user picking a different
-   * Domain in the meantime (`token` guards exactly that). */
+  /** Requests the selected Domain's Vocabulary fragment from the worker
+   * and, once it arrives, mounts it into the still-present fragment
+   * container -- a targeted DOM update rather than a full re-render, so
+   * a slower fetch doesn't get raced or clobbered by the user picking a
+   * different Domain in the meantime (`token` guards exactly that). */
   private async loadView(domain: PortalDomain): Promise<void> {
     const token = ++this.renderToken;
     this.setViewStatus("Loading Vocabulary…");
-    const html = await this.vocabularyClient.renderDomain(domain.name);
+    const fragment = await this.vocabularyClient.renderDomain(domain.name);
     if (token !== this.renderToken || !this.container) return;
-    const frame = this.container.querySelector<HTMLIFrameElement>(".portal-frame");
-    if (frame) frame.srcdoc = html;
+
+    this.ensureFragmentStyles(fragment.style);
+    const mount = this.container.querySelector<HTMLElement>(".portal-fragment-mount");
+    if (mount) {
+      mount.innerHTML = fragment.body;
+      const script = document.createElement("script");
+      script.textContent = `(function () {\n${fragment.script}\n})();`;
+      mount.appendChild(script);
+    }
     this.setViewStatus(undefined);
   }
 
@@ -249,7 +282,7 @@ export class PortalShell {
     const content = component?.available
       ? `
         <div class="portal-view-status" style="display:none"></div>
-        <iframe class="portal-frame" title="${escapeHtml(selected.name)} — ${escapeHtml(component.label)}"></iframe>`
+        <div class="portal-fragment-mount"></div>`
       : `<div class="portal-view-empty">${escapeHtml(component?.label ?? "This component")} is not ported yet.</div>`;
 
     return `
@@ -273,12 +306,27 @@ const ICON_BACK = `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" st
 const ICON_DESKTOP = `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="1.5" y="2.5" width="13" height="9" rx="1"/><path d="M6 13.5h4"/></svg>`;
 const ICON_MOBILE = `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="4.5" y="1.5" width="7" height="13" rx="1.4"/></svg>`;
 
+// Token names and values below match vocabulary/ui/dictionary_view.py's
+// own `:root` block exactly (--ground/--surface/--ink/--ink-muted/
+// --accent/--accent-ink/--line/--line-strong/--shadow/--radius/
+// --font-display/--font-body/--font-mono) -- the DictionaryView
+// fragment's own extracted CSS (ensureFragmentStyles above) assumes
+// every one of these exists on an ancestor element, the same "shared
+// chrome, defined once" contract render_fragment()'s own docstring
+// describes. --surface-2/--ink-faint/--accent-soft are this shell's
+// own additions (tree hover/selection, disabled-tab dimming) --
+// DictionaryView's page never needed them standing alone.
 const SHELL_CSS = `
 .portal-shell {
   --ground: #F4F5F1; --surface: #FFFFFF; --surface-2: #ECEEE8; --ink: #1C2321; --ink-muted: #5B6660;
   --ink-faint: #8B948E; --accent: #2B6E63; --accent-ink: #FFFFFF; --accent-soft: #DCE9E4;
   --line: #DDE0DA; --line-strong: #C4C9BF;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --shadow: 0 1px 2px rgba(28, 35, 33, 0.06), 0 4px 12px rgba(28, 35, 33, 0.04);
+  --radius: 6px;
+  --font-display: 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
+  --font-body: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: 'SF Mono', 'Cascadia Code', Consolas, 'Liberation Mono', Menlo, monospace;
+  font-family: var(--font-body);
   color: var(--ink);
   background: var(--surface);
   border: 1px solid var(--line-strong);
@@ -293,13 +341,14 @@ const SHELL_CSS = `
     --ground: #12211D; --surface: #182A24; --surface-2: #16241F; --ink: #E7EEEA; --ink-muted: #90A69D;
     --ink-faint: #5E7A70; --accent: #4FBBA6; --accent-ink: #0B1613; --accent-soft: #1F3A32;
     --line: #2A3B34; --line-strong: #3B4F47;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 4px 16px rgba(0, 0, 0, 0.25);
   }
 }
 .portal-topbar { display: flex; align-items: center; gap: 0.75rem; padding: 0.55rem 0.9rem; background: var(--surface-2); border-bottom: 1px solid var(--line); }
 .portal-topbar-title { font-weight: 600; font-size: 0.92rem; flex: 1; }
 .portal-back { background: none; border: none; color: var(--accent); cursor: pointer; padding: 0.2rem; display: flex; }
 .portal-back svg { width: 16px; height: 16px; }
-.portal-breadcrumb { display: flex; align-items: center; gap: 0.35rem; font-family: 'SF Mono', Menlo, monospace; font-size: 0.78rem; color: var(--ink-muted); flex: 1; min-width: 0; overflow: hidden; white-space: nowrap; }
+.portal-breadcrumb { display: flex; align-items: center; gap: 0.35rem; font-family: var(--font-mono); font-size: 0.78rem; color: var(--ink-muted); flex: 1; min-width: 0; overflow: hidden; white-space: nowrap; }
 .portal-breadcrumb .crumb-root { display: inline-flex; align-items: center; gap: 0.3rem; color: var(--ink); font-weight: 600; }
 .portal-breadcrumb .crumb-root svg { width: 11px; height: 11px; }
 .portal-breadcrumb .crumb-sep svg { width: 9px; height: 9px; opacity: 0.6; vertical-align: -1px; }
@@ -312,7 +361,7 @@ const SHELL_CSS = `
 .mode-mobile .portal-body { grid-template-columns: 1fr; }
 .portal-tree { background: var(--surface-2); border-right: 1px solid var(--line); padding: 0.75rem 0.5rem; overflow-y: auto; }
 .portal-tree--mobile { border-right: none; padding: 0.5rem; }
-.portal-tree-label { font-family: 'SF Mono', Menlo, monospace; font-size: 0.66rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-faint); padding: 0.2rem 0.55rem 0.5rem; }
+.portal-tree-label { font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-faint); padding: 0.2rem 0.55rem 0.5rem; }
 .portal-tree-row { display: flex; align-items: center; gap: 0.4rem; padding: 0.4rem 0.55rem; border-radius: 6px; font-size: 0.85rem; cursor: pointer; }
 .portal-tree-row:hover { background: var(--accent-soft); }
 .portal-tree-row.selected { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
@@ -322,10 +371,10 @@ const SHELL_CSS = `
 .portal-tree-row .chev-spacer { width: 10px; flex: none; }
 .portal-tree-row .i-folder { width: 15px; height: 15px; color: var(--accent); flex: none; }
 .portal-tree-row .name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.portal-tree-row .count { font-family: 'SF Mono', Menlo, monospace; font-size: 0.7rem; color: var(--ink-faint); }
-.portal-view { display: flex; flex-direction: column; min-width: 0; }
+.portal-tree-row .count { font-family: var(--font-mono); font-size: 0.7rem; color: var(--ink-faint); }
+.portal-view { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
 .portal-view-empty { flex: 1; display: flex; align-items: center; justify-content: center; color: var(--ink-muted); font-size: 0.88rem; padding: 2rem; text-align: center; }
-.portal-component-switcher { display: flex; gap: 0.4rem; padding: 0.6rem 0.9rem; border-bottom: 1px solid var(--line); flex: none; }
+.portal-component-switcher { display: flex; flex-wrap: wrap; gap: 0.4rem; padding: 0.6rem 0.9rem; border-bottom: 1px solid var(--line); flex: none; }
 .portal-component-switcher button {
   border: 1px solid var(--line-strong); background: var(--surface); color: var(--ink-muted);
   font-family: inherit; font-size: 0.8rem; font-weight: 600; padding: 0.35rem 0.75rem; border-radius: 999px; cursor: pointer;
@@ -336,7 +385,17 @@ const SHELL_CSS = `
 .portal-component-switcher button:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
 .not-ported-badge { font-size: 0.62rem; font-weight: 700; letter-spacing: 0.02em; text-transform: uppercase; opacity: 0.75; }
 .portal-view-status { padding: 0.4rem 0.9rem 0; font-size: 0.76rem; color: var(--ink-muted); flex: none; }
-.portal-frame { width: 100%; height: 100%; border: 0; flex: 1; background: var(--ground); min-height: 380px; }
-.mode-mobile .portal-frame { min-height: 55vh; }
+.portal-fragment-mount { flex: 1; min-width: 0; min-height: 0; overflow-y: auto; padding: 0.85rem 0.9rem 1.1rem; background: var(--ground); }
+.mode-mobile .portal-fragment-mount { min-height: 55vh; }
+/* Scoped override, not an edit of the ported fragment CSS itself
+   (that stays a verbatim, mechanical extraction from
+   vocabulary/ui/dictionary_view.py -- see ensureFragmentStyles above):
+   DictionaryView's own .tabs group uses overflow: hidden to keep its
+   pill shape, which was never a problem at the standalone page's full
+   width but clips the last tab ("Cyclic") once the pane is narrower
+   than the Portal makes it. Scrolling the group horizontally here, via
+   a higher-specificity selector that only applies inside this mount,
+   keeps every tab reachable without touching the ported string. */
+.portal-fragment-mount .tabs { max-width: 100%; overflow-x: auto; }
 .portal-service-status { flex: none; }
 `;

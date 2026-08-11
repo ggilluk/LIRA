@@ -1,4 +1,5 @@
 import type {
+  RenderedFragment,
   VocabularyDomainSummary,
   VocabularyServiceState,
   VocabularyWorkerMessage,
@@ -19,7 +20,7 @@ export class VocabularyWorkerClient {
   private readonly worker: Worker;
   private readonly statusListeners = new Set<VocabularyStatusListener>();
   private readyResolvers: Array<(domains: readonly VocabularyDomainSummary[]) => void> = [];
-  private readonly pendingRenders = new Map<string, (html: string) => void>();
+  private readonly pendingRenders = new Map<string, (fragment: RenderedFragment) => void>();
 
   constructor() {
     this.worker = new Worker(new URL("./vocabulary_worker.ts", import.meta.url), { type: "module" });
@@ -49,9 +50,10 @@ export class VocabularyWorkerClient {
   }
 
   /** Renders one Domain's DictionaryView inside the worker (cached
-   * there after the first call for that Domain) and resolves with the
-   * self-contained HTML string. */
-  renderDomain(name: string): Promise<string> {
+   * there after the first call for that Domain) and resolves with its
+   * three renderFragment() pieces -- style/body/script -- for the
+   * Portal shell to mount directly into its own DOM. */
+  renderDomain(name: string): Promise<RenderedFragment> {
     const requestId = `${name}-${Math.random().toString(36).slice(2)}`;
     return new Promise((resolve) => {
       this.pendingRenders.set(requestId, resolve);
@@ -73,7 +75,7 @@ export class VocabularyWorkerClient {
       const resolve = this.pendingRenders.get(message.requestId);
       if (resolve) {
         this.pendingRenders.delete(message.requestId);
-        resolve(message.html);
+        resolve(message.fragment);
       }
     } else if (message.type === "error") {
       console.error("Vocabulary Service error:", message.message);

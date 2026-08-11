@@ -22,6 +22,7 @@ import { VocabularyLayer } from "../data/layer";
 import { RelationshipSeeder } from "./relationship_seeder";
 import { WordSeeder } from "./word_seeder";
 import type {
+  RenderedFragment,
   RenderRequest,
   VocabularyDomainSummary,
   VocabularyWorkerMessage,
@@ -41,7 +42,7 @@ interface SeededDomain {
 }
 
 const domains = new Map<string, SeededDomain>();
-const renderCache = new Map<string, string>();
+const renderCache = new Map<string, RenderedFragment>();
 
 function post(message: VocabularyWorkerMessage): void {
   ctx.postMessage(message);
@@ -89,7 +90,7 @@ function handleRender(request: RenderRequest): void {
 
   const cached = renderCache.get(domain.name);
   if (cached !== undefined) {
-    post({ type: "rendered", requestId: request.requestId, domain: domain.name, html: cached });
+    post({ type: "rendered", requestId: request.requestId, domain: domain.name, fragment: cached });
     return;
   }
 
@@ -97,9 +98,10 @@ function handleRender(request: RenderRequest): void {
     title: `LIRA — ${domain.name}`,
     domainName: domain.name,
   });
-  const html = view.render();
-  renderCache.set(domain.name, html);
-  post({ type: "rendered", requestId: request.requestId, domain: domain.name, html });
+  const [style, body, script] = view.renderFragment();
+  const fragment: RenderedFragment = { style, body, script };
+  renderCache.set(domain.name, fragment);
+  post({ type: "rendered", requestId: request.requestId, domain: domain.name, fragment });
 }
 
 ctx.addEventListener("message", (event) => {
