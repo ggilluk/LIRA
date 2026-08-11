@@ -1,25 +1,24 @@
-import { DictionaryView, RelationshipSeeder, VocabularyLayer, WordSeeder } from "lira/vocabulary";
+import { RelationshipSeeder, WordSeeder } from "lira/vocabulary";
+import { createPortalDomain, PortalDomainRegistry } from "lira/knowledge/data/portal_domain";
+import { PortalShell } from "lira/knowledge/ui/portal_shell";
 
-/** Seeds a "Common" Domain's Vocabulary Layer straight from the bundled
- * Common Vocabulary Cache and Relationship Cache, then mounts
- * DictionaryView's rendered page in an <iframe srcdoc>. DictionaryView.render()
- * returns a complete, self-contained HTML document (its own
- * <!DOCTYPE>/<html>/<head>/<script>) -- exactly the shape it's meant to
- * be opened in, whether as a standalone file or embedded here -- so an
- * iframe is the correct host: setting it directly as innerHTML would
- * both mangle the document structure and silently skip running its
- * embedded <script> (script tags injected via innerHTML never
- * execute). A minimal `{ name, vocabulary }` object stands in for the
- * Knowledge Layer's `Domain` here (not ported yet) -- WordSeeder.seedDomain
- * and RelationshipSeeder.seedDomain only ever need that shape. */
+/** Seeds the "Common" Domain from the bundled Common Vocabulary Cache,
+ * then bootstraps a "Physics" Domain the same way the real system
+ * bootstraps any freshly created Domain: `Dictionary.seedFrom(common)`
+ * copies every Common Word in (see vocabulary/data/dictionary.py's own
+ * docstring) -- Physics genuinely starts as "everything Common knows,
+ * nothing Physics-specific yet", not a fabricated stand-in. Registers
+ * both in a PortalDomainRegistry (Physics nested under Common, mirroring
+ * the real D6 composition fact this session's Python side already
+ * registers: Physics is a meronym of Common) and mounts PortalShell --
+ * the actual Explorer/Portal shell, not the earlier static mockup. */
 async function main(): Promise<void> {
   const app = document.querySelector<HTMLDivElement>("#app");
   if (!app) return;
 
   app.innerHTML = `<p style="font:14px system-ui;padding:16px">Seeding the Common Vocabulary Cache…</p>`;
 
-  const commonDomain = { name: "Common", vocabulary: new VocabularyLayer("Common") };
-
+  const commonDomain = createPortalDomain("Common");
   const wordSeeder = new WordSeeder("en");
   const wordsSeeded = wordSeeder.seedDomain(commonDomain);
 
@@ -28,18 +27,17 @@ async function main(): Promise<void> {
 
   console.info(`Seeded ${wordsSeeded} words and ${relationshipsSeeded} relationships into the Common Domain.`);
 
-  const view = new DictionaryView(commonDomain.vocabulary.dictionary, commonDomain.vocabulary.lexicalRelationships, {
-    title: "LIRA Common Dictionary",
-    domainName: "Common",
-  });
+  const physicsDomain = createPortalDomain("Physics", "Common");
+  physicsDomain.vocabulary.dictionary.seedFrom(commonDomain.vocabulary.dictionary);
 
-  const frame = document.createElement("iframe");
-  frame.title = "LIRA Common Dictionary";
-  frame.style.cssText = "width:100%;height:100vh;border:0;display:block";
-  frame.srcdoc = view.render();
+  const registry = new PortalDomainRegistry();
+  registry.add(commonDomain);
+  registry.add(physicsDomain);
 
+  const shell = new PortalShell(registry, { title: "LIRA" });
   app.innerHTML = "";
-  app.appendChild(frame);
+  app.style.height = "100vh";
+  shell.mount(app);
 }
 
 void main();

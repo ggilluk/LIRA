@@ -17,9 +17,11 @@ Mirrors the main repository's own layout 1:1, `src/lira/` down --
 same four Architectural Layers, same per-layer subfolders
 (`documentation/`, `data/`, `agents/`, `role/`, `api/`, `ui/`,
 `assets/`, per ARCHITECTURE.md's Repository Layout rule), `.ts` instead
-of `.py`. The Vocabulary Layer is ported (see below); Linguistics,
-Value Objects (beyond the four CCTS types Vocabulary needs), and
-Knowledge remain empty placeholders (`.gitkeep`).
+of `.py`. The Vocabulary Layer is ported (see below); Knowledge carries
+only the Portal shell so far (also below) -- its `data/domain.py`,
+`hosted_domains.py`, and tensor graph are not ported. Linguistics and
+the rest of Value Objects (beyond the four CCTS types Vocabulary needs)
+remain empty placeholders (`.gitkeep`).
 
 ```
 prototype/
@@ -31,7 +33,10 @@ prototype/
 │       ├── vocabulary/     ported -- see below
 │       ├── linguistics/{documentation,data,agents,role,api,ui,assets}/
 │       ├── value_objects/{documentation,data,agents,role,api,ui,assets}/
-│       └── knowledge/{documentation,data,agents,role,api,ui,assets}/
+│       └── knowledge/
+│           ├── data/portal_domain.ts    Portal-only Domain stand-in -- see below
+│           ├── ui/portal_shell.ts       Explorer/Portal shell -- see below
+│           └── {documentation,agents,role,api,assets}/  (empty placeholder)
 ├── examples/               (empty placeholder, mirrors the root examples/)
 ├── package.json / tsconfig.json / vite.config.ts
 ```
@@ -73,11 +78,39 @@ What deliberately differs, and why:
   `downloadAsFile()` triggers a browser download of the same HTML
   instead.
 
-Try it: `npm run dev` seeds the bundled Common Vocabulary Cache into a
-"Common" Domain and mounts the rendered `DictionaryView` in an iframe --
-open the printed local URL. `npm test` seeds and validates the real
-bundled assets (word counts, relationship counts, the manifest
-checksum) as part of the suite, not just synthetic fixtures.
+### Portal shell (knowledge/ui/portal_shell.ts)
+
+The app shell around `DictionaryView` -- a Windows-Explorer-style desktop
+layout (persistent folder tree + view pane) that switches to a
+drill-down mobile portal via a real toggle in its own title bar, not
+just a `@media` breakpoint. The folder tree *is* the Domain hierarchy:
+root is "All Domains", and nesting follows each Domain's real parent --
+`main.ts` registers "Physics" under "Common" and bootstraps it with
+`Dictionary.seedFrom(common)`, the actual mechanism a freshly created
+Domain uses to inherit Common's vocabulary (vocabulary/data/dictionary.py),
+so Physics's 3,093 words in the running app are genuinely inherited, not
+fabricated to make the tree look populated.
+
+`PortalDomain`/`PortalDomainRegistry` (knowledge/data/portal_domain.ts)
+are a deliberately minimal stand-in for the real `Domain`/`HostedDomains`
+(knowledge/data/domain.py, hosted_domains.py) -- neither is ported yet
+(both depend on Linguistics, the Knowledge tensor graph, and D5/D6
+domain-position math). They carry only a name, an optional parent, and a
+`VocabularyLayer` -- enough to draw a tree and mount a view. When
+`Domain`/`HostedDomains` are ported, this type should be replaced by
+them, not extended to fake the parts it's missing.
+
+Selecting a Domain mounts a fresh `DictionaryView.render()` for it in an
+`<iframe srcdoc>` (same reasoning as `main.ts`'s own iframe use above),
+cached per Domain so switching back and forth doesn't re-render. A
+Domain with more than one ported layer would get its own tabs inside
+that pane, the same way `DictionaryView` already has Words/Relationships/
+Hierarchy/Cyclic tabs -- the shell mounts one component per Domain, it
+doesn't know or care how many views that component itself exposes.
+
+Try it: `npm run dev` opens directly into the shell -- click between
+Common and Physics in the tree (or the mode pill to see the mobile
+drill-down), no separate route needed.
 
 ## Tooling
 
