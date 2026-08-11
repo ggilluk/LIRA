@@ -157,6 +157,18 @@ export class PortalShell {
   private render(): void {
     if (!this.container) return;
     const selected = this.selectedName ? this.registry.get(this.selectedName) : undefined;
+    // Invalidate any Vocabulary fragment fetch still in flight from a
+    // previous render pass -- e.g. the initial render (selectedComponent
+    // defaults to "vocabulary") kicks off loadView() before the user
+    // ever touches the switcher; if they click Linguistics before that
+    // renderDomain() promise resolves, its own token guard (inside
+    // loadView()) must see a stale token so it no-ops instead of
+    // overwriting the now-linguistics `.portal-fragment-mount` with a
+    // vocabulary fragment. Bumping here, unconditionally, on *every*
+    // render (not just loadView's own calls) is what actually closes
+    // that race -- loadView() still bumps it again for itself, which is
+    // harmless (monotonic counter, always fine to bump twice).
+    this.renderToken++;
 
     this.container.innerHTML = `
       <div class="portal-shell mode-${this.mode}">
@@ -178,11 +190,13 @@ export class PortalShell {
   }
 
   /** Mounts the Linguistics `SentenceReaderView` into the pane's
-   * fragment container. Unlike `loadView()`, this isn't racing a
-   * per-Domain network/worker fetch before anything can be shown --
-   * the component mounts synchronously and manages its own read
-   * requests once a user types or picks an example sentence -- so
-   * there's no `renderToken` to guard here. */
+   * fragment container. This call itself is synchronous (no per-Domain
+   * fetch to race), and `SentenceReaderView` guards its own async
+   * `read()` calls against staleness internally (its own
+   * `requestToken`) -- but `render()`'s own `renderToken` bump above is
+   * still what stops a *different*, already in-flight Vocabulary
+   * fragment fetch from a previous render pass clobbering this mount
+   * once it resolves; see render()'s own comment. */
   private loadLinguisticsView(): void {
     if (!this.container) return;
     const mount = this.container.querySelector<HTMLElement>(".portal-fragment-mount");
