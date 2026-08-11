@@ -1,0 +1,4043 @@
+{
+  "schema_version": "2.0.0",
+  "language_code": "en",
+  "part_of_speech": "PRONOUN",
+  "closed_class_kind": "pronoun",
+  "count": 100,
+  "words": [
+    {
+      "entry_id": "0808cf58-5260-4aa2-bf3e-f6a6fd0ce5ba",
+      "lexical_form": "I",
+      "normalised_form": "i",
+      "text": "I",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true,
+      "closed_class_kind": "pronoun",
+      "definition": "The speaker, referring to themself (first person singular subject)",
+      "gloss": "The speaker, referring to themself (first person singular subject)",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "00b6a315-d8f0-42e2-a8f7-5acf9d5f58d6",
+      "lexical_form": "you",
+      "normalised_form": "you",
+      "text": "you",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true,
+      "closed_class_kind": "pronoun",
+      "definition": "The person or people being addressed (second person, subject or object)",
+      "gloss": "The person or people being addressed (second person, subject or object)",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "c3e36c36-f031-4df5-866e-583a380b8596",
+      "lexical_form": "he",
+      "normalised_form": "he",
+      "text": "he",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true,
+      "closed_class_kind": "pronoun",
+      "definition": "A previously mentioned or known male person or animal (third person singular subject)",
+      "gloss": "A previously mentioned or known male person or animal (third person singular subject)",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "059079be-fc2e-47ec-8263-f8790085aa37",
+      "lexical_form": "she",
+      "normalised_form": "she",
+      "text": "she",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true,
+      "closed_class_kind": "pronoun",
+      "definition": "A previously mentioned or known female person or animal (third person singular subject)",
+      "gloss": "A previously mentioned or known female person or animal (third person singular subject)",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "d8d84adb-39af-4f8c-a024-23b45a80883e",
+      "lexical_form": "it",
+      "normalised_form": "it",
+      "text": "it",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true,
+      "closed_class_kind": "pronoun",
+      "definition": "A previously mentioned or known thing, animal, or abstract entity (third person singular subject)",
+      "gloss": "A previously mentioned or known thing, animal, or abstract entity (third person singular subject)",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "fae7180c-ea24-4d82-a58b-ad4a1fb1ed57",
+      "lexical_form": "we",
+      "normalised_form": "we",
+      "text": "we",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true,
+      "closed_class_kind": "pronoun",
+      "definition": "The speaker together with one or more others (first person plural subject)",
+      "gloss": "The speaker together with one or more others (first person plural subject)",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "30274b4b-9df8-4f72-9514-47e34db0ca12",
+      "lexical_form": "they",
+      "normalised_form": "they",
+      "text": "they",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true,
+      "closed_class_kind": "pronoun",
+      "definition": "Previously mentioned people or things, or a person of unspecified gender (third person plural or singular subject)",
+      "gloss": "Previously mentioned people or things, or a person of unspecified gender (third person plural or singular subject)",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "6e76c7f4-5ad3-414e-a6b9-6e6ec4fcd5b1",
+      "lexical_form": "me",
+      "normalised_form": "me",
+      "text": "me",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true,
+      "closed_class_kind": "pronoun",
+      "definition": "The speaker, as the object of a verb or preposition",
+      "gloss": "The speaker, as the object of a verb or preposition",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "d09bc6c6-ccd9-4ff2-9750-b3c6c9b1eba3",
+      "lexical_form": "him",
+      "normalised_form": "him",
+      "text": "him",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true,
+      "closed_class_kind": "pronoun",
+      "definition": "A male person or animal, as the object of a verb or preposition",
+      "gloss": "A male person or animal, as the object of a verb or preposition",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "b571f1ee-87cb-4085-bfd4-f76054e32c6b",
+      "lexical_form": "us",
+      "normalised_form": "us",
+      "text": "us",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true,
+      "closed_class_kind": "pronoun",
+      "definition": "The speaker and others, as the object of a verb or preposition",
+      "gloss": "The speaker and others, as the object of a verb or preposition",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "b7848f7e-8b4d-42e5-bec1-75d1889b9209",
+      "lexical_form": "them",
+      "normalised_form": "them",
+      "text": "them",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true,
+      "closed_class_kind": "pronoun",
+      "definition": "Previously mentioned people or things, as the object of a verb or preposition",
+      "gloss": "Previously mentioned people or things, as the object of a verb or preposition",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "491c6f85-cef4-4d05-84c4-b8399b6fbff6",
+      "lexical_form": "mine",
+      "normalised_form": "mine",
+      "text": "mine",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true,
+      "closed_class_kind": "pronoun",
+      "definition": "The thing or things belonging to the speaker",
+      "gloss": "The thing or things belonging to the speaker",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "fc85616d-4470-4894-8598-5d4659eef1d6",
+      "lexical_form": "yours",
+      "normalised_form": "yours",
+      "text": "yours",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true,
+      "closed_class_kind": "pronoun",
+      "definition": "The thing or things belonging to the person addressed",
+      "gloss": "The thing or things belonging to the person addressed",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "125a2d3b-1336-433f-a52a-9a7a089714e2",
+      "lexical_form": "hers",
+      "normalised_form": "hers",
+      "text": "hers",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true,
+      "closed_class_kind": "pronoun",
+      "definition": "The thing or things belonging to a female person",
+      "gloss": "The thing or things belonging to a female person",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "41ff29fc-ae57-4922-85e8-24166c8349ee",
+      "lexical_form": "ours",
+      "normalised_form": "ours",
+      "text": "ours",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true,
+      "closed_class_kind": "pronoun",
+      "definition": "The thing or things belonging to the speaker and others",
+      "gloss": "The thing or things belonging to the speaker and others",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "d5c6a5a4-39b4-4c00-a829-e910aeda47cb",
+      "lexical_form": "theirs",
+      "normalised_form": "theirs",
+      "text": "theirs",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true,
+      "closed_class_kind": "pronoun",
+      "definition": "The thing or things belonging to other people",
+      "gloss": "The thing or things belonging to other people",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "62a70b23-2ac1-4dd7-86f7-d2c6fe63d51f",
+      "lexical_form": "myself",
+      "normalised_form": "myself",
+      "text": "myself",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true,
+      "closed_class_kind": "pronoun",
+      "definition": "The speaker, used reflexively or for emphasis",
+      "gloss": "The speaker, used reflexively or for emphasis",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "5137a86d-9c2e-4823-993f-d49f3a0e3a7f",
+      "lexical_form": "yourself",
+      "normalised_form": "yourself",
+      "text": "yourself",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true,
+      "closed_class_kind": "pronoun",
+      "definition": "The person addressed, used reflexively or for emphasis (singular)",
+      "gloss": "The person addressed, used reflexively or for emphasis (singular)",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "3d53834c-c4f8-462a-9fe1-a8512c882632",
+      "lexical_form": "himself",
+      "normalised_form": "himself",
+      "text": "himself",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true,
+      "closed_class_kind": "pronoun",
+      "definition": "A male person, used reflexively or for emphasis",
+      "gloss": "A male person, used reflexively or for emphasis",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "f67a4cee-b05e-42fa-ae01-6914dbf2d071",
+      "lexical_form": "herself",
+      "normalised_form": "herself",
+      "text": "herself",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true,
+      "closed_class_kind": "pronoun",
+      "definition": "A female person, used reflexively or for emphasis",
+      "gloss": "A female person, used reflexively or for emphasis",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "2745e786-810e-4d43-b180-d307028fcd34",
+      "lexical_form": "itself",
+      "normalised_form": "itself",
+      "text": "itself",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true,
+      "closed_class_kind": "pronoun",
+      "definition": "A thing or entity, used reflexively or for emphasis",
+      "gloss": "A thing or entity, used reflexively or for emphasis",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "a354eaeb-ce02-453a-b879-baefce0411b1",
+      "lexical_form": "oneself",
+      "normalised_form": "oneself",
+      "text": "oneself",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true,
+      "closed_class_kind": "pronoun",
+      "definition": "An unspecified person, used reflexively or for emphasis",
+      "gloss": "An unspecified person, used reflexively or for emphasis",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 3,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "ef4f2204-abb1-48fc-a5a8-9cddc1414709",
+      "lexical_form": "ourselves",
+      "normalised_form": "ourselves",
+      "text": "ourselves",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true,
+      "closed_class_kind": "pronoun",
+      "definition": "The speaker and others, used reflexively or for emphasis",
+      "gloss": "The speaker and others, used reflexively or for emphasis",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 3,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "2651f511-3ed8-4e0e-a727-721bcd84532e",
+      "lexical_form": "yourselves",
+      "normalised_form": "yourselves",
+      "text": "yourselves",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true,
+      "closed_class_kind": "pronoun",
+      "definition": "The people addressed, used reflexively or for emphasis (plural)",
+      "gloss": "The people addressed, used reflexively or for emphasis (plural)",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 3,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "3a941ec6-9c79-478b-96ee-5ee8aa47b622",
+      "lexical_form": "themselves",
+      "normalised_form": "themselves",
+      "text": "themselves",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true,
+      "closed_class_kind": "pronoun",
+      "definition": "Other people or things, used reflexively or for emphasis",
+      "gloss": "Other people or things, used reflexively or for emphasis",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 3,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "2930707b-0c3b-4b2f-bc79-6ff2bd6adb9f",
+      "lexical_form": "ourself",
+      "normalised_form": "ourself",
+      "text": "ourself",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true,
+      "closed_class_kind": "pronoun",
+      "definition": "Archaic or formal singular reflexive form used with a royal or editorial 'we'",
+      "gloss": "Archaic or formal singular reflexive form used with a royal or editorial 'we'",
+      "usage_notes": [],
+      "register_codes": [
+        "LITERARY"
+      ],
+      "editorial_labels": [
+        "ARCHAIC"
+      ],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "71ab17b3-25ba-491b-8ccd-87962a71bbb1",
+      "lexical_form": "thyself",
+      "normalised_form": "thyself",
+      "text": "thyself",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true,
+      "closed_class_kind": "pronoun",
+      "definition": "Archaic second person singular reflexive form (compare 'yourself')",
+      "gloss": "Archaic second person singular reflexive form (compare 'yourself')",
+      "usage_notes": [],
+      "register_codes": [
+        "LITERARY"
+      ],
+      "editorial_labels": [
+        "ARCHAIC"
+      ],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "e320b9d2-7f61-40fa-acb8-688bbe7b982d",
+      "lexical_form": "who",
+      "normalised_form": "who",
+      "text": "who",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true,
+      "closed_class_kind": "pronoun",
+      "definition": "Asks about, or refers to, a person or people (subject)",
+      "gloss": "Asks about, or refers to, a person or people (subject)",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "22a1b1e7-30dc-4ba9-961b-f1e1b50e28dd",
+      "lexical_form": "whom",
+      "normalised_form": "whom",
+      "text": "whom",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true,
+      "closed_class_kind": "pronoun",
+      "definition": "Asks about, or refers to, a person or people (object)",
+      "gloss": "Asks about, or refers to, a person or people (object)",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "f622a93a-2e02-4b27-a218-3e579e4909a6",
+      "lexical_form": "whose",
+      "normalised_form": "whose",
+      "text": "whose",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true,
+      "closed_class_kind": "pronoun",
+      "definition": "Asks about, or refers to, ownership by a person",
+      "gloss": "Asks about, or refers to, ownership by a person",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "fd1e5555-8ec5-43e5-a674-b5327a4936f1",
+      "lexical_form": "what",
+      "normalised_form": "what",
+      "text": "what",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true,
+      "closed_class_kind": "pronoun",
+      "definition": "Asks about the identity or nature of a thing",
+      "gloss": "Asks about the identity or nature of a thing",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "05ddb5a4-44b3-49fe-85d3-10f035b4fae4",
+      "lexical_form": "what",
+      "normalised_form": "what",
+      "text": "what",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "DETERMINER",
+      "closed_class": true,
+      "closed_class_kind": "determiner",
+      "definition": "Asks about the identity or nature of a thing, used directly before a noun",
+      "gloss": "Asks about the identity or nature of a thing, used directly before a noun",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "877aa886-1443-42d9-b119-54d3d3639651",
+      "lexical_form": "which",
+      "normalised_form": "which",
+      "text": "which",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true,
+      "closed_class_kind": "pronoun",
+      "definition": "Asks about, or singles out, one of a specific set of things or people",
+      "gloss": "Asks about, or singles out, one of a specific set of things or people",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "73bc8861-dd64-44fa-a422-bfd127e2d0bd",
+      "lexical_form": "which",
+      "normalised_form": "which",
+      "text": "which",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "DETERMINER",
+      "closed_class": true,
+      "closed_class_kind": "determiner",
+      "definition": "Asks about, or singles out, one of a specific set of things or people, used directly before a noun",
+      "gloss": "Asks about, or singles out, one of a specific set of things or people, used directly before a noun",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "9c5ee481-51de-4a13-b941-d46920a54925",
+      "lexical_form": "whoever",
+      "normalised_form": "whoever",
+      "text": "whoever",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true,
+      "closed_class_kind": "pronoun",
+      "definition": "Any person who; no matter who",
+      "gloss": "Any person who; no matter who",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "5711a1e1-fa35-4dfa-9327-cb8605c41036",
+      "lexical_form": "whomever",
+      "normalised_form": "whomever",
+      "text": "whomever",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true,
+      "closed_class_kind": "pronoun",
+      "definition": "Any person whom; no matter whom (object form of whoever)",
+      "gloss": "Any person whom; no matter whom (object form of whoever)",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 3,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "b1f13c4c-e8e0-4294-92f5-f1b1976a54e8",
+      "lexical_form": "whichever",
+      "normalised_form": "whichever",
+      "text": "whichever",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true,
+      "closed_class_kind": "pronoun",
+      "definition": "Any one of a set; no matter which",
+      "gloss": "Any one of a set; no matter which",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 3,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "198722ba-042d-4230-b9c2-e1247b4113b0",
+      "lexical_form": "whoso",
+      "normalised_form": "whoso",
+      "text": "whoso",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true,
+      "closed_class_kind": "pronoun",
+      "definition": "Archaic form of 'whoever'",
+      "gloss": "Archaic form of 'whoever'",
+      "usage_notes": [],
+      "register_codes": [
+        "LITERARY"
+      ],
+      "editorial_labels": [
+        "ARCHAIC"
+      ],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "b1053e9a-c88b-4a36-8aa8-1afc185fc66c",
+      "lexical_form": "each other",
+      "normalised_form": "each other",
+      "text": "each other",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true,
+      "closed_class_kind": "pronoun",
+      "definition": "Refers back to two or more subjects acting reciprocally toward one another",
+      "gloss": "Refers back to two or more subjects acting reciprocally toward one another",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": null,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "93a2c81b-69bb-49e8-9205-933cf1f8d852",
+      "lexical_form": "one another",
+      "normalised_form": "one another",
+      "text": "one another",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true,
+      "closed_class_kind": "pronoun",
+      "definition": "Refers back to more than two subjects acting reciprocally toward one another",
+      "gloss": "Refers back to more than two subjects acting reciprocally toward one another",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": null,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "303b5c34-d4b0-4844-8586-5075fc5880c4",
+      "lexical_form": "someone",
+      "normalised_form": "someone",
+      "text": "someone",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true,
+      "closed_class_kind": "pronoun",
+      "definition": "An unspecified or unknown person",
+      "gloss": "An unspecified or unknown person",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "a0dc64ab-7abc-4723-95e6-476e71affe81",
+      "lexical_form": "somebody",
+      "normalised_form": "somebody",
+      "text": "somebody",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true,
+      "closed_class_kind": "pronoun",
+      "definition": "An unspecified or unknown person (informal variant of someone)",
+      "gloss": "An unspecified or unknown person (informal variant of someone)",
+      "usage_notes": [],
+      "register_codes": [
+        "INFORMAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 4,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "7e92013a-de50-45ab-905a-f2a31959b903",
+      "lexical_form": "anyone",
+      "normalised_form": "anyone",
+      "text": "anyone",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true,
+      "closed_class_kind": "pronoun",
+      "definition": "Any person at all, especially in questions or negatives",
+      "gloss": "Any person at all, especially in questions or negatives",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "2295e304-76ad-4b94-9f9d-9ad2a48d1cda",
+      "lexical_form": "anybody",
+      "normalised_form": "anybody",
+      "text": "anybody",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true,
+      "closed_class_kind": "pronoun",
+      "definition": "Any person at all (informal variant of anyone)",
+      "gloss": "Any person at all (informal variant of anyone)",
+      "usage_notes": [],
+      "register_codes": [
+        "INFORMAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 4,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "8a7f4590-6693-4153-aa6e-c9ad94b38c3c",
+      "lexical_form": "everyone",
+      "normalised_form": "everyone",
+      "text": "everyone",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true,
+      "closed_class_kind": "pronoun",
+      "definition": "Every person in a group, considered individually",
+      "gloss": "Every person in a group, considered individually",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 3,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "075fc4b7-6c53-457b-8808-787b2f2a7056",
+      "lexical_form": "everybody",
+      "normalised_form": "everybody",
+      "text": "everybody",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true,
+      "closed_class_kind": "pronoun",
+      "definition": "Every person in a group (informal variant of everyone)",
+      "gloss": "Every person in a group (informal variant of everyone)",
+      "usage_notes": [],
+      "register_codes": [
+        "INFORMAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 5,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "8ab77207-866d-48c4-bd5a-4cd1917d9c3a",
+      "lexical_form": "no one",
+      "normalised_form": "no one",
+      "text": "no one",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true,
+      "closed_class_kind": "pronoun",
+      "definition": "Not any person; nobody",
+      "gloss": "Not any person; nobody",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": null,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "f0400dd2-c89d-4dea-a6fc-d16843dfb230",
+      "lexical_form": "nobody",
+      "normalised_form": "nobody",
+      "text": "nobody",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true,
+      "closed_class_kind": "pronoun",
+      "definition": "Not any person; no one",
+      "gloss": "Not any person; no one",
+      "usage_notes": [],
+      "register_codes": [
+        "INFORMAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 3,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "9387a307-c7aa-4409-a843-d574d16f7240",
+      "lexical_form": "something",
+      "normalised_form": "something",
+      "text": "something",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true,
+      "closed_class_kind": "pronoun",
+      "definition": "An unspecified or unknown thing",
+      "gloss": "An unspecified or unknown thing",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 3,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "9267bf9d-4ba4-4813-9636-7c6c027c5805",
+      "lexical_form": "anything",
+      "normalised_form": "anything",
+      "text": "anything",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true,
+      "closed_class_kind": "pronoun",
+      "definition": "Any thing at all, especially in questions or negatives",
+      "gloss": "Any thing at all, especially in questions or negatives",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 3,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "80c21324-5052-4e48-8e0f-997860960c7e",
+      "lexical_form": "everything",
+      "normalised_form": "everything",
+      "text": "everything",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true,
+      "closed_class_kind": "pronoun",
+      "definition": "All things, considered as a whole",
+      "gloss": "All things, considered as a whole",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 4,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "d9df208c-9559-42f4-aae0-c2b9423dc1dd",
+      "lexical_form": "nothing",
+      "normalised_form": "nothing",
+      "text": "nothing",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true,
+      "closed_class_kind": "pronoun",
+      "definition": "Not anything; no thing at all",
+      "gloss": "Not anything; no thing at all",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "890f3cab-09f4-4d26-8106-84e3774e801c",
+      "lexical_form": "somewhere",
+      "normalised_form": "somewhere",
+      "text": "somewhere",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true,
+      "closed_class_kind": "pronoun",
+      "definition": "An unspecified or unknown place",
+      "gloss": "An unspecified or unknown place",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 3,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "eaca21b4-68a0-4382-9c1b-f3e9419dd250",
+      "lexical_form": "anywhere",
+      "normalised_form": "anywhere",
+      "text": "anywhere",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true,
+      "closed_class_kind": "pronoun",
+      "definition": "Any place at all, especially in questions or negatives",
+      "gloss": "Any place at all, especially in questions or negatives",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 3,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "d3cf1944-a8b8-4f2f-b80b-c349e39e7f8f",
+      "lexical_form": "everywhere",
+      "normalised_form": "everywhere",
+      "text": "everywhere",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true,
+      "closed_class_kind": "pronoun",
+      "definition": "In or to all places",
+      "gloss": "In or to all places",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 4,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "d67da009-229a-49f3-bb09-d8fb74248939",
+      "lexical_form": "nowhere",
+      "normalised_form": "nowhere",
+      "text": "nowhere",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true,
+      "closed_class_kind": "pronoun",
+      "definition": "In or to no place",
+      "gloss": "In or to no place",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "d5463ee8-4923-46ca-8db2-8b9d4b1561c4",
+      "lexical_form": "someone else",
+      "normalised_form": "someone else",
+      "text": "someone else",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true,
+      "closed_class_kind": "pronoun",
+      "definition": "A different, unspecified person",
+      "gloss": "A different, unspecified person",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": null,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "35913e87-a159-40eb-a626-849cdcef9c62",
+      "lexical_form": "somebody else",
+      "normalised_form": "somebody else",
+      "text": "somebody else",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true,
+      "closed_class_kind": "pronoun",
+      "definition": "A different, unspecified person (informal variant)",
+      "gloss": "A different, unspecified person (informal variant)",
+      "usage_notes": [],
+      "register_codes": [
+        "INFORMAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": null,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "2dc1fc85-7dcc-4940-a7f7-a38849af366c",
+      "lexical_form": "anyone else",
+      "normalised_form": "anyone else",
+      "text": "anyone else",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true,
+      "closed_class_kind": "pronoun",
+      "definition": "Any other person",
+      "gloss": "Any other person",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": null,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "8e01f9ba-775b-4347-9a8a-bf522c8f7755",
+      "lexical_form": "anybody else",
+      "normalised_form": "anybody else",
+      "text": "anybody else",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true,
+      "closed_class_kind": "pronoun",
+      "definition": "Any other person (informal variant)",
+      "gloss": "Any other person (informal variant)",
+      "usage_notes": [],
+      "register_codes": [
+        "INFORMAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": null,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "7ac66074-62d0-4f7b-8147-766486e3061e",
+      "lexical_form": "everyone else",
+      "normalised_form": "everyone else",
+      "text": "everyone else",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true,
+      "closed_class_kind": "pronoun",
+      "definition": "Every other person",
+      "gloss": "Every other person",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": null,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "a6a17b56-e36d-43a0-92e1-2bc5f899ee3b",
+      "lexical_form": "everybody else",
+      "normalised_form": "everybody else",
+      "text": "everybody else",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true,
+      "closed_class_kind": "pronoun",
+      "definition": "Every other person (informal variant)",
+      "gloss": "Every other person (informal variant)",
+      "usage_notes": [],
+      "register_codes": [
+        "INFORMAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": null,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "272d2c43-a97c-4e18-8001-3fa2892a0f4b",
+      "lexical_form": "no one else",
+      "normalised_form": "no one else",
+      "text": "no one else",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true,
+      "closed_class_kind": "pronoun",
+      "definition": "No other person",
+      "gloss": "No other person",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": null,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "ddbabd0e-4f03-44d4-a8dd-3602f62420c9",
+      "lexical_form": "nobody else",
+      "normalised_form": "nobody else",
+      "text": "nobody else",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true,
+      "closed_class_kind": "pronoun",
+      "definition": "No other person (informal variant)",
+      "gloss": "No other person (informal variant)",
+      "usage_notes": [],
+      "register_codes": [
+        "INFORMAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": null,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "7027291a-32ac-49cb-a0ec-432ffe465906",
+      "lexical_form": "one",
+      "normalised_form": "one",
+      "text": "one",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true,
+      "closed_class_kind": "pronoun",
+      "definition": "An unspecified single person or thing, or people in general",
+      "gloss": "An unspecified single person or thing, or people in general",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "abf29424-f0c6-45aa-950a-b9ad45d2b703",
+      "lexical_form": "ones",
+      "normalised_form": "ones",
+      "text": "ones",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true,
+      "closed_class_kind": "pronoun",
+      "definition": "Unspecified things already referred to (plural of one)",
+      "gloss": "Unspecified things already referred to (plural of one)",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "a1cc8dc1-810c-4e52-9169-41fa89adee26",
+      "lexical_form": "one's",
+      "normalised_form": "one's",
+      "text": "one's",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true,
+      "closed_class_kind": "pronoun",
+      "definition": "Belonging to an unspecified person (possessive of one)",
+      "gloss": "Belonging to an unspecified person (possessive of one)",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": null,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "81f1e84a-df39-44d6-867c-b8c9a00c3ed5",
+      "lexical_form": "none",
+      "normalised_form": "none",
+      "text": "none",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true,
+      "closed_class_kind": "pronoun",
+      "definition": "Not any, or not one, of a group",
+      "gloss": "Not any, or not one, of a group",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "ec191d5c-2d21-453a-a924-c0c04cf76774",
+      "lexical_form": "others",
+      "normalised_form": "others",
+      "text": "others",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true,
+      "closed_class_kind": "pronoun",
+      "definition": "Additional or different people or things",
+      "gloss": "Additional or different people or things",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "87d4b70d-7ed8-4f72-9d7b-ebeb1fb11ec5",
+      "lexical_form": "fewer",
+      "normalised_form": "fewer",
+      "text": "fewer",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true,
+      "closed_class_kind": "pronoun",
+      "definition": "A smaller number of (comparative of few)",
+      "gloss": "A smaller number of (comparative of few)",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "f96bbc3c-30f0-41d0-8d50-29b41ad75329",
+      "lexical_form": "more",
+      "normalised_form": "more",
+      "text": "more",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true,
+      "closed_class_kind": "pronoun",
+      "definition": "A greater amount or number of",
+      "gloss": "A greater amount or number of",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "c741471f-43dd-434b-bce7-2834f178b2ed",
+      "lexical_form": "less",
+      "normalised_form": "less",
+      "text": "less",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true,
+      "closed_class_kind": "pronoun",
+      "definition": "A smaller amount of (comparative of little)",
+      "gloss": "A smaller amount of (comparative of little)",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "1bbbeb1b-2016-4317-a942-3b8e9f0e26f1",
+      "lexical_form": "same",
+      "normalised_form": "same",
+      "text": "same",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true,
+      "closed_class_kind": "pronoun",
+      "definition": "The identical thing already mentioned",
+      "gloss": "The identical thing already mentioned",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "5959b001-fbf8-4266-a0a4-fd2250beee0f",
+      "lexical_form": "thou",
+      "normalised_form": "thou",
+      "text": "thou",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true,
+      "closed_class_kind": "pronoun",
+      "definition": "Archaic second person singular subject pronoun ('you')",
+      "gloss": "Archaic second person singular subject pronoun ('you')",
+      "usage_notes": [],
+      "register_codes": [
+        "LITERARY"
+      ],
+      "editorial_labels": [
+        "ARCHAIC"
+      ],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "bde2ffb5-6c9f-4cc0-bbde-792d5737bcb2",
+      "lexical_form": "thee",
+      "normalised_form": "thee",
+      "text": "thee",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true,
+      "closed_class_kind": "pronoun",
+      "definition": "Archaic second person singular object pronoun ('you')",
+      "gloss": "Archaic second person singular object pronoun ('you')",
+      "usage_notes": [],
+      "register_codes": [
+        "LITERARY"
+      ],
+      "editorial_labels": [
+        "ARCHAIC"
+      ],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "f17d6d51-4422-4a4d-8820-757d1f461b7b",
+      "lexical_form": "thy",
+      "normalised_form": "thy",
+      "text": "thy",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true,
+      "closed_class_kind": "pronoun",
+      "definition": "Archaic second person singular possessive determiner ('your')",
+      "gloss": "Archaic second person singular possessive determiner ('your')",
+      "usage_notes": [],
+      "register_codes": [
+        "LITERARY"
+      ],
+      "editorial_labels": [
+        "ARCHAIC"
+      ],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "a0b7666c-f914-4e63-84f2-951da9348ed6",
+      "lexical_form": "thine",
+      "normalised_form": "thine",
+      "text": "thine",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true,
+      "closed_class_kind": "pronoun",
+      "definition": "Archaic second person singular possessive pronoun ('yours')",
+      "gloss": "Archaic second person singular possessive pronoun ('yours')",
+      "usage_notes": [],
+      "register_codes": [
+        "LITERARY"
+      ],
+      "editorial_labels": [
+        "ARCHAIC"
+      ],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "56eace43-6195-40bc-a91b-27595ee8e44f",
+      "lexical_form": "ye",
+      "normalised_form": "ye",
+      "text": "ye",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true,
+      "closed_class_kind": "pronoun",
+      "definition": "Archaic second person plural subject pronoun ('you')",
+      "gloss": "Archaic second person plural subject pronoun ('you')",
+      "usage_notes": [],
+      "register_codes": [
+        "LITERARY"
+      ],
+      "editorial_labels": [
+        "ARCHAIC"
+      ],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "195a477b-4fcf-45e8-8f9e-2ed782961fb1",
+      "lexical_form": "aught",
+      "normalised_form": "aught",
+      "text": "aught",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true,
+      "closed_class_kind": "pronoun",
+      "definition": "Archaic word for 'anything'",
+      "gloss": "Archaic word for 'anything'",
+      "usage_notes": [],
+      "register_codes": [
+        "LITERARY"
+      ],
+      "editorial_labels": [
+        "ARCHAIC"
+      ],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "3b2cb3ed-9148-45c8-875a-23357ea20634",
+      "lexical_form": "naught",
+      "normalised_form": "naught",
+      "text": "naught",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true,
+      "closed_class_kind": "pronoun",
+      "definition": "Archaic or literary word for 'nothing'",
+      "gloss": "Archaic or literary word for 'nothing'",
+      "usage_notes": [],
+      "register_codes": [
+        "LITERARY"
+      ],
+      "editorial_labels": [
+        "ARCHAIC"
+      ],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "93f6ce5b-01ab-4fa0-91fe-40d20929529a",
+      "lexical_form": "yon",
+      "normalised_form": "yon",
+      "text": "yon",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true,
+      "closed_class_kind": "pronoun",
+      "definition": "Archaic or dialectal demonstrative meaning 'that, over there'",
+      "gloss": "Archaic or dialectal demonstrative meaning 'that, over there'",
+      "usage_notes": [],
+      "register_codes": [
+        "LITERARY"
+      ],
+      "editorial_labels": [
+        "ARCHAIC"
+      ],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "aa1702bf-e355-4215-80df-aa0fdf94dfb4",
+      "lexical_form": "yonder",
+      "normalised_form": "yonder",
+      "text": "yonder",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true,
+      "closed_class_kind": "pronoun",
+      "definition": "Archaic or dialectal demonstrative meaning 'that place, over there'",
+      "gloss": "Archaic or dialectal demonstrative meaning 'that place, over there'",
+      "usage_notes": [],
+      "register_codes": [
+        "LITERARY"
+      ],
+      "editorial_labels": [
+        "ARCHAIC"
+      ],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "cd8a4f05-7fbf-4715-abd6-55d4dda193d3",
+      "lexical_form": "the former",
+      "normalised_form": "the former",
+      "text": "the former",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true,
+      "closed_class_kind": "pronoun",
+      "definition": "Refers to the first of two previously mentioned things",
+      "gloss": "Refers to the first of two previously mentioned things",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": null,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "a7e3b305-9d88-4a56-93ab-eeffbfbf5626",
+      "lexical_form": "the latter",
+      "normalised_form": "the latter",
+      "text": "the latter",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true,
+      "closed_class_kind": "pronoun",
+      "definition": "Refers to the second of two previously mentioned things",
+      "gloss": "Refers to the second of two previously mentioned things",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": null,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "fa998c73-b861-420d-9091-6550e0d69ce1",
+      "lexical_form": "y'all",
+      "normalised_form": "y'all",
+      "text": "y'all",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true,
+      "closed_class_kind": "pronoun",
+      "definition": "Informal second person plural pronoun, chiefly Southern US English",
+      "gloss": "Informal second person plural pronoun, chiefly Southern US English",
+      "usage_notes": [],
+      "register_codes": [
+        "INFORMAL"
+      ],
+      "editorial_labels": [
+        "REGIONAL"
+      ],
+      "dialect_codes": [
+        "y'all"
+      ],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": null,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "e1c17ccd-d3ca-4731-b4e8-959d5f645c7d",
+      "lexical_form": "youse",
+      "normalised_form": "youse",
+      "text": "youse",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true,
+      "closed_class_kind": "pronoun",
+      "definition": "Informal or dialectal second person plural pronoun",
+      "gloss": "Informal or dialectal second person plural pronoun",
+      "usage_notes": [],
+      "register_codes": [
+        "INFORMAL"
+      ],
+      "editorial_labels": [
+        "REGIONAL"
+      ],
+      "dialect_codes": [
+        "regional/dialectal English"
+      ],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "d958e52c-fe43-49b4-a3c6-21f5c2689427",
+      "lexical_form": "a few",
+      "normalised_form": "a few",
+      "text": "a few",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true,
+      "closed_class_kind": "pronoun",
+      "definition": "A small number, used pronominally",
+      "gloss": "A small number, used pronominally",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": null,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "47bd2bce-1083-407c-88b5-17e2beaef98d",
+      "lexical_form": "a little",
+      "normalised_form": "a little",
+      "text": "a little",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true,
+      "closed_class_kind": "pronoun",
+      "definition": "A small amount, used pronominally",
+      "gloss": "A small amount, used pronominally",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": null,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "331ebc7f-19a5-4e7f-b698-9d50ae5a882c",
+      "lexical_form": "a lot",
+      "normalised_form": "a lot",
+      "text": "a lot",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true,
+      "closed_class_kind": "pronoun",
+      "definition": "A large amount or number, used informally and pronominally",
+      "gloss": "A large amount or number, used informally and pronominally",
+      "usage_notes": [],
+      "register_codes": [
+        "INFORMAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": null,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "08c68e61-e52f-464d-8519-a7a98dbf5c94",
+      "lexical_form": "a bit",
+      "normalised_form": "a bit",
+      "text": "a bit",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true,
+      "closed_class_kind": "pronoun",
+      "definition": "A small amount, used informally and pronominally",
+      "gloss": "A small amount, used informally and pronominally",
+      "usage_notes": [],
+      "register_codes": [
+        "INFORMAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": null,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "c049c10f-becf-4090-b49b-725d11200562",
+      "lexical_form": "half",
+      "normalised_form": "half",
+      "text": "half",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true,
+      "closed_class_kind": "pronoun",
+      "definition": "One of two equal parts of a whole",
+      "gloss": "One of two equal parts of a whole",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "cd3c1bb5-e48a-4556-a533-6b40f7d22648",
+      "lexical_form": "plenty",
+      "normalised_form": "plenty",
+      "text": "plenty",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true,
+      "closed_class_kind": "pronoun",
+      "definition": "A large or sufficient amount",
+      "gloss": "A large or sufficient amount",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "8d44023c-7d67-4f71-a7a2-ca97d2d3e66f",
+      "lexical_form": "whosoever",
+      "normalised_form": "whosoever",
+      "text": "whosoever",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true,
+      "closed_class_kind": "pronoun",
+      "definition": "Emphatic archaic form of 'whoever'",
+      "gloss": "Emphatic archaic form of 'whoever'",
+      "usage_notes": [],
+      "register_codes": [
+        "LITERARY"
+      ],
+      "editorial_labels": [
+        "ARCHAIC"
+      ],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 3,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "e69d6892-9efc-4a96-9e2b-d1fcc13a27ad",
+      "lexical_form": "whatsoever",
+      "normalised_form": "whatsoever",
+      "text": "whatsoever",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true,
+      "closed_class_kind": "pronoun",
+      "definition": "Emphatic form of 'whatever', or 'at all' after a negative",
+      "gloss": "Emphatic form of 'whatever', or 'at all' after a negative",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 3,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "4c484fa6-49eb-4945-b411-7ff7e60b1caf",
+      "lexical_form": "least",
+      "normalised_form": "least",
+      "text": "least",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true,
+      "closed_class_kind": "pronoun",
+      "definition": "Superlative of 'little': the smallest amount of",
+      "gloss": "Superlative of 'little': the smallest amount of",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "462745bf-4284-40fd-b862-92f0dcd4a91c",
+      "lexical_form": "this",
+      "normalised_form": "this",
+      "text": "this",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true,
+      "closed_class_kind": "pronoun",
+      "definition": "Refers to a specific nearby thing being pointed to or discussed, standing alone rather than before a noun",
+      "gloss": "Refers to a specific nearby thing being pointed to or discussed, standing alone rather than before a noun",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "c3cac52e-b72e-46d5-bb80-7be7e34d5e03",
+      "lexical_form": "that",
+      "normalised_form": "that",
+      "text": "that",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true,
+      "closed_class_kind": "pronoun",
+      "definition": "Refers to a specific thing already mentioned or farther away, standing alone, or introduces a relative clause",
+      "gloss": "Refers to a specific thing already mentioned or farther away, standing alone, or introduces a relative clause",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "1b0f2816-5007-4420-a4c8-1a47959dce20",
+      "lexical_form": "these",
+      "normalised_form": "these",
+      "text": "these",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true,
+      "closed_class_kind": "pronoun",
+      "definition": "Refers to multiple specific nearby things, standing alone rather than before a noun (plural of this)",
+      "gloss": "Refers to multiple specific nearby things, standing alone rather than before a noun (plural of this)",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "fd10c16c-90b9-46ac-9d88-8477fad993a8",
+      "lexical_form": "those",
+      "normalised_form": "those",
+      "text": "those",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true,
+      "closed_class_kind": "pronoun",
+      "definition": "Refers to multiple specific distant or previously mentioned things, standing alone rather than before a noun (plural of that)",
+      "gloss": "Refers to multiple specific distant or previously mentioned things, standing alone rather than before a noun (plural of that)",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "ee646605-67c4-4649-8ff0-9dccb02a9ed9",
+      "lexical_form": "themself",
+      "normalised_form": "themself",
+      "text": "themself",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true,
+      "closed_class_kind": "pronoun",
+      "definition": "A gender-neutral reflexive pronoun referring back to a single person previously mentioned.",
+      "gloss": "A gender-neutral reflexive pronoun referring back to a single person previously mentioned.",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Definition-Gap Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    }
+  ]
+}

@@ -1,0 +1,838 @@
+# English Common Vocabulary Relationship Cache (v1)
+
+## Purpose
+
+This cache provides the intrinsic lexical relationships between the
+mandatory English closed-class Words (`../determiners.json`,
+`../pronouns.json`, etc.) -- verb conjugations, pronoun paradigms,
+comparative/superlative forms, and a small set of universally-true
+prepositional synonym/antonym pairs. Relationships are seeded after
+the Words themselves, never before (a relationship can't resolve a
+Word that doesn't exist yet).
+
+**Relationship assets are generated bootstrap assets. They are not the
+authoritative source of lexical knowledge.** The authoritative record
+of every `LexicalRelationship` is the `Domain` it was created in --
+these files are a portable template `RelationshipSeeder` replays
+against a specific Domain's already-seeded `Word`s, not a store of
+`LexicalRelationship` objects themselves.
+
+## Relationship categories
+
+| File | Category | Kinds seeded | Count |
+|------|----------|----------------|-------|
+| `morphological_relationships.json` | Morphological (6.2.1) | Person, tense, participle, and plural forms (`be`/`have`/`do` conjugations, `this`/`that` plurals); comparative/superlative forms (`few`/`many`/`much`/`little`); pronoun paradigm forms (`PRONOUN_OBJECT_FORM`, `PRONOUN_SUBJECT_FORM`, `PRONOUN_POSSESSIVE_DETERMINER_FORM`, `PRONOUN_POSSESSIVE_FORM`, `PRONOUN_REFLEXIVE_FORM`); `LEMMA_FORM` (every edge's materialised reverse -- see Symmetric and inverse edges); 25 base/derived pairs among the promoted words added in `asset_version 1.5.0`; 36 `NOMINALISATION` pairs added in `asset_version 1.6.0`; 6 more `NOMINALISATION` pairs plus 1 `THIRD_PERSON_FORM` pair (`occur`/`occurs`) added in `asset_version 1.7.0`; 3 homograph-safe pairs (`cause`/`causing`, `cause`/`causation`, `state`/`statement`) added in `asset_version 1.8.0` using the new `source_part_of_speech`/`target_part_of_speech` disambiguator (see Version below); 391 pairs (782 edges with reciprocals) for the 1163-word Common definition-gap batch added in `asset_version 1.9.0`, every edge carrying an explicit source/target `part_of_speech`; rule-based VERB conjugation, NOUN pluralisation, ADJECTIVE/ADVERB degree forms, remaining PRONOUN paradigm gaps, and a 39-pair self-documenting back-edge fix added in `asset_version 1.10.0` (see Version below) | 3462 |
+| `semantic_relationships.json` | Lexical Semantic (6.2.2) | `ANTONYM` (spatial/temporal opposites: above/below, before/after, ...; discrete/continuous, high/low, push/pull, negative/positive among the promoted words) and `SYNONYM` (equivalent prepositions: beneath/under, amid/among, due to/owing to, ...; the discourse-marker pair however/nevertheless; idea/concept among the promoted words), each materialised in both directions; 1307 pairs (2599 edges with reciprocals) covering every open-class base word added in `asset_version 1.11.0` -- `SYNONYM`, `ANTONYM`, `HYPERNYM`/`HYPONYM`, `MERONYM`/`HOLONYM`, `TROPONYM`, `ENTAILMENT`, `CAUSE`, `RELATED` (see Version below) | 2633 |
+| `orthographic_relationships.json` | Orthographic and Naming (6.2.3) | `CONTRACTION` -- not/n't, plus each full contraction's component words (do/not -> don't, can/not -> can't, I/am -> I'm, it/is/has -> it's, is/not -> isn't, was/not -> wasn't, had/not -> hadn't) | 16 |
+
+No `HYPERNYM`, `MERONYM`, or `TROPONYM` relationships are seeded for
+closed-class Words -- those hierarchy/part-whole/manner relationships
+describe how open-class concepts relate to each other, and don't apply
+to a fixed set of grammatical function words the way conjugation,
+pronoun paradigms, and near-synonymy do.
+
+`PRONOUN_RECIPROCAL_FORM` is defined (6.2.1, Pronoun Form) but not
+currently seeded in either direction -- see Known gaps.
+
+Total relationships: **6111**.
+
+## Symmetric and inverse edges
+
+Every entry in `semantic_relationships.json`, and every entry in
+`morphological_relationships.json` originally seeded (49 of the 98
+entries there today), has its reverse materialised as a second, real
+edge -- not left to be inferred at query time:
+
+- **Semantic (`SYNONYM`/`ANTONYM`)**: genuinely symmetric relationships
+  -- if `above` is the `ANTONYM` of `below`, `below` is the `ANTONYM`
+  of `above` just as much, so both directions are stored (`above` →
+  `below` and `below` → `above`, each `ANTONYM`).
+- **Semantic, `TROPONYM`**: troponymy is verb-specific hyponymy
+  (WordNet models it as the same hypernym/hyponym relation, just named
+  "troponym" for the narrower verb) -- a `TROPONYM` edge (general,
+  `TROPONYM`, specific) materialises *two* companion edges, not one:
+  (general, `HYPONYM`, specific) in the same direction, and (specific,
+  `HYPERNYM`, general) reversed, exactly the pattern any other
+  `HYPERNYM`/`HYPONYM` pair follows. The `TROPONYM` edge itself is kept
+  too -- `troponyms()` still answers the more specific "manner of"
+  question, `hypernyms()`/`hyponyms()` answer the general one, and
+  after this both read the same pair. (`asset_version 1.15.0`.)
+- **Morphological, `PRONOUN_OBJECT_FORM` pairs**: the reverse of `I` →
+  `me` (`PRONOUN_OBJECT_FORM`) is `me` → `I`, seeded as
+  `PRONOUN_SUBJECT_FORM` -- the enum's own defined inverse of
+  `PRONOUN_OBJECT_FORM` (6.2.1's worked example for
+  `PRONOUN_SUBJECT_FORM` is exactly `"me" → "I"`).
+- **Every other morphological pair** (tense, number, aspect, degree,
+  the non-object pronoun-paradigm forms): the reverse is seeded as
+  `LEMMA_FORM` -- e.g. the reverse of `be` → `am`
+  (`FIRST_PERSON_FORM`) is `am` → `be` (`LEMMA_FORM`), and the reverse
+  of `I` → `myself` (`PRONOUN_REFLEXIVE_FORM`) is `myself` → `I`
+  (`LEMMA_FORM`). No separate, more-specific inverse kind exists for
+  these pairs the way `PRONOUN_SUBJECT_FORM` exists for
+  `PRONOUN_OBJECT_FORM`, so `LEMMA_FORM` -- "target is the lemma of
+  the source" -- is the correct fit: in every one of these pairs the
+  original edge's source genuinely is the more canonical, paradigm-
+  anchor form.
+- **A generic forward `INFLECTION` edge is deliberately never seeded**
+  alongside the specific kind an edge already has (e.g. no redundant
+  `be` → `am` `INFLECTION` on top of the existing `be` → `am`
+  `FIRST_PERSON_FORM`) -- it would assert the same `(source, target)`
+  pair twice under a less specific kind for no additional queryable
+  value. `Word.inflections()` gets the equivalent of a generic
+  `INFLECTION` view for free by querying `LEMMA_FORM` from the
+  *incoming* direction instead (`vocabulary/documentation/README.md`,
+  4.3) -- every seeded `LEMMA_FORM` edge already serves both
+  directions' derived properties.
+- **A word that fills two paradigm roles gets two reverse edges under
+  two different kinds**: `her` is both the object form and the
+  possessive-determiner form of `she`, so it has both `her` → `she`
+  (`PRONOUN_SUBJECT_FORM`, the reverse of the object-form edge) and
+  `her` → `she` (`LEMMA_FORM`, the reverse of the possessive-determiner
+  edge).
+- **No `orthographic_relationships.json` entry is reversed** -- `not` →
+  `n't` and every full-contraction edge added in `asset_version 1.4.0`
+  (e.g. `do` → `don't`, `not` → `don't`) point from full form to
+  contracted form only. There's no defined inverse kind for "target is
+  the expanded form", the way `LEMMA_FORM` covers every morphological
+  case. A contraction with two contracted components (`don't`,
+  `isn't`, `wasn't`, `hadn't`: auxiliary + `not`; `I'm`: pronoun +
+  auxiliary) gets two separate forward `CONTRACTION` edges, one per
+  component, rather than one edge to a two-word phrase that has no
+  single matching Word -- `it's` gets three, since it genuinely
+  contracts either `it is` or `it has` and this cache doesn't attempt
+  to disambiguate which reading a given occurrence intends.
+
+## Seeding order
+
+Relationships are always seeded in this order, enforced by
+`RelationshipSeeder.seed_domain`:
+
+1. The Domain's Words are already seeded (`WordSeeder`, precondition --
+   `RelationshipSeeder` never creates a Word).
+2. Build a lookup index -- in practice, `domain.vocabulary.dictionary`
+   itself, which already indexes every seeded Word by lexical form.
+3. Load the relationship assets (this directory).
+4. Resolve the source Word by lexical form, within this Domain's
+   Dictionary.
+5. Resolve the target Word the same way.
+6. Allocate the `LexicalRelationship` (`domain.vocabulary.lexical_relationship_processor.create`),
+   passing `confidence`/`provenance`/`temporal`/`activation` all as
+   `RelationshipSeeder.SEEDER_DEFAULT_WEIGHT` (`0.9999`) -- these are
+   curated facts from this cache, not unweighted placeholders, so they
+   don't get `LexicalRelationshipProcessor.create`'s `0.0` default.
+7. That allocation call also allocates the relationship's
+   tensor-backed `SystemPropertiesRef` row (Design Principle 8).
+8. Validate the resulting graph (duplicate edges, unresolved
+   references) after the batch completes.
+
+## Qualified Word resolution
+
+Every relationship shall reference a Word by its **Qualified Word**
+identity -- Domain + Lexical Form -- never lexical form alone. These
+JSON files are domain-agnostic templates (the same file seeds every
+Domain's relationships), so they can only specify lexical forms; the
+Domain half of the qualification comes from *which Dictionary
+`RelationshipSeeder` resolves against* -- `domain.vocabulary.dictionary.lookup(lexical_form)`
+is called against one specific Domain's Dictionary, so the (Domain,
+lexical form) pair is what actually gets resolved, even though a
+single JSON entry is replayed across many Domains, once per Domain,
+each time resolving to that Domain's own distinct `Word` instances and
+UUIDs.
+
+This is also why relationships can't simply be copied from `Common`'s
+Dictionary the way Words are (`Dictionary.seed_from`): a
+`LexicalRelationship` references specific `Word` UUIDs, and every
+Domain has its own distinct `Word` instances (Design: `Dictionary.seed_from`
+shallow-copies each Word, giving it a new identity). Relationships
+must be re-resolved and re-created fresh for every Domain.
+
+### Disambiguating a homograph endpoint
+
+`Dictionary + lexical form` alone isn't always a unique `Word` --
+a homograph (`vocabulary/assets/common/en/README.md`'s own Homographs
+table, e.g. `cause` `NOUN`/`VERB`, `state` `NOUN`/`VERB`) has more than
+one `Word` sharing one lexical form. Without more information,
+`RelationshipSeeder` resolves a JSON entry's `source_lexical_form`/
+`target_lexical_form` via `Dictionary.lookup()` -- first-seeded-wins by
+text, ignoring part_of_speech entirely -- which is exact and
+unambiguous for every closed-class/mandatory word (the load order
+`vocabulary/role/word_seeder.py`'s `MANDATORY_FILES`/
+`SUPPLEMENTARY_FILES` comments already document deliberately keeps it
+that way) but silently wrong whenever a relationship genuinely needs
+the *other* sense.
+
+An entry can name the sense explicitly instead: an optional
+`source_part_of_speech` and/or `target_part_of_speech` key, one of
+`PartOfSpeech`'s member names (`NOUN`, `VERB`, ...). When present,
+`RelationshipSeeder._resolve` resolves that endpoint via
+`Dictionary.lookup_all(lexical_form)` and picks the matching sense,
+ignoring load order entirely, instead of `Dictionary.lookup()`'s
+default:
+
+```json
+{
+  "source_lexical_form": "state",
+  "source_part_of_speech": "VERB",
+  "target_lexical_form": "statement",
+  "relationship_kind": "NOMINALISATION"
+}
+```
+
+Most entries never need this -- it exists purely for the rare case
+where an endpoint is a genuine homograph *and* the relationship must
+target a specific sense (`state` `VERB` -> `statement`, not `state`
+`NOUN` -> `statement`, which wouldn't mean anything). Omit both fields
+and behaviour is byte-for-byte what it always was.
+
+### Disambiguating a polysemous endpoint
+
+`part_of_speech` stops disambiguating once a single (lexical_form,
+part_of_speech) pair names more than one genuine sense -- a polyseme
+(`vocabulary/assets/common/en/README.md`'s own Polysemous senses
+section, e.g. `bar` `NOUN` the symbol/mark sense and `bar` `NOUN` the
+physical-rod sense), rather than a homograph told apart by differing
+`part_of_speech`. An entry names the specific sense the same way it
+names a homograph's `part_of_speech`: an optional
+`source_domain_tag`/`target_domain_tag` key, matching that sense's
+`Word.domain_tag` exactly (`None`/omitted means "the plain common
+sense", not "any sense" -- so a spec that must hit the untagged sense
+of a polyseme still resolves correctly even when a differently-tagged
+sibling sense loaded first):
+
+```json
+{
+  "source_lexical_form": "bar",
+  "source_part_of_speech": "NOUN",
+  "source_domain_tag": "item.common",
+  "target_lexical_form": "item",
+  "target_part_of_speech": "NOUN",
+  "relationship_kind": "HYPERNYM"
+}
+```
+
+Like `source_part_of_speech`/`target_part_of_speech`, most entries
+never need this -- only the handful of specs that touch one of the
+words split in `vocabulary/assets/common/en/README.md`'s Polysemous
+senses section, and even for those, only when the edge doesn't
+already resolve correctly by default (an edge meant for a polyseme's
+untagged sense needs no field at all).
+
+## Relationship identity and duplicate prevention
+
+Every `LexicalRelationship` references a source Word UUID, a
+relationship kind, and a target Word UUID. `RelationshipSeeder` treats
+two relationships as duplicates only when all three match exactly (the
+same rule as documented in the Vocabulary Layer developer
+specification, 12.3) -- the same source and target Word under two
+*different* kinds is not a duplicate. This is exercised for real by
+`her` → `she`, which is seeded under both `PRONOUN_SUBJECT_FORM` (the
+reverse of `she` → `her`'s object-form edge) and `LEMMA_FORM` (the
+reverse of `she` → `her`'s possessive-determiner edge) -- two distinct,
+legitimate relationships between the same pair of Words.
+
+## Validation
+
+`RelationshipSeeder.validate_assets()` checks:
+
+- JSON schema (required keys present on every file and manifest)
+- `count` matches the actual number of `relationships` entries
+- Every `relationship_kind` names a real `LexicalRelationshipType`
+  member
+- Every present `source_part_of_speech`/`target_part_of_speech` (both
+  optional -- see Disambiguating a homograph endpoint above) names a
+  real `PartOfSpeech` member
+- `manifest.json`'s `relationship_count` matches the computed total
+  across all three files
+- Mandatory file existence (all three category files plus the
+  manifest)
+
+`RelationshipSeeder.seed_domain()` raises `ValueError` -- it does not
+skip -- if either the source or target Word of a relationship cannot
+be resolved in that Domain's Dictionary. This is treated as a cache/
+asset inconsistency (a relationship referencing a lexical form the
+mandatory word cache doesn't contain), not something to seed around
+silently; see Resolved gaps below for the one case this actually
+happened.
+
+## Known gaps
+
+`PRONOUN_RECIPROCAL_FORM` (e.g. "they" -> "each other") is a real
+`LexicalRelationshipType` member with no relationships seeded under it
+in either direction -- unlike the rest of the Pronoun Form category,
+this one was never seeded even in its forward direction, so there was
+no existing edge for the Symmetric and inverse edges pass above to
+reverse. Adding it requires a new forward relationship (and possibly
+new target words, e.g. "each other"/"one another", if they aren't
+already in the mandatory word cache), not just materialising a reverse
+of something already present -- left open as a separate scope decision
+rather than folded into this pass.
+
+`PRESENT_TENSE_FORM` and `SINGULAR_FORM` are no longer gaps: every
+existing morphological edge, including tense and number pairs, now has
+its reverse materialised (as `LEMMA_FORM`, per Symmetric and inverse
+edges above) rather than the more specific inverse-tense/inverse-number
+kind. This means `PRESENT_TENSE_FORM` and `SINGULAR_FORM` themselves
+remain unused as *kinds* (no edge is seeded under those specific
+names), even though the relationship they'd represent -- "was" back to
+"be", "these" back to "this" -- is fully covered via `LEMMA_FORM`.
+Whether to additionally re-seed those specific reverse edges under
+their own more precise kind, instead of the generic `LEMMA_FORM`, is a
+possible future refinement, not required for `lemma_forms()`/
+`inflections()` to work correctly today.
+
+## Resolved gaps
+
+Seven relationships described in the original developer instructions
+for this cache referenced target words that weren't in the mandatory
+300-word word cache at `asset_version 1.1.0` (`done`, `doing`,
+`little`, `fewest`, `least`, `owing to`, `n't`), so they were left out
+of these files entirely rather than seeded as dangling references:
+
+| Source → Target | Kind |
+|-------------------|------|
+| do → done | `PAST_PARTICIPLE_FORM` |
+| do → doing | `PRESENT_PARTICIPLE_FORM` |
+| few → fewest | `SUPERLATIVE_FORM` |
+| little → less | `COMPARATIVE_FORM` |
+| little → least | `SUPERLATIVE_FORM` |
+| due to → owing to | `SYNONYM` |
+| not → n't | `CONTRACTION` |
+
+The word cache's `asset_version 1.2.0` added those seven words
+(`../README.md`, 300 -> 307), and this cache's `asset_version 1.1.0`
+adds these seven relationships -- all now present in
+`morphological_relationships.json`, `semantic_relationships.json`, and
+`orthographic_relationships.json` above.
+
+## Orthographic and Naming (group 2) coverage check
+
+Checked, added nothing: a systematic scan for `SPELLING_VARIANT`,
+`HISTORICAL_SPELLING`, `ABBREVIATION`, `ACRONYM`, `INITIALISM`,
+`TRANSLITERATION`, `CAPITALISATION`, and `DIACRITIC_VARIANT` candidates
+across the whole Common Vocabulary Cache (`CONTRACTION` was already
+fully covered -- the 16 relationships already in
+`orthographic_relationships.json`) found nothing left to add. Checked
+directly rather than assumed: every word whose own `definition`
+mentions "short for", "abbreviation of", "stands for", "acronym for",
+or "contraction of" already has its relationship seeded; no American-
+spelling counterpart exists for any of this dictionary's British
+spellings (`colour`, `recognise`, `centre`, `behaviour`, `emphasise`,
+`labelled`, `travelled`, ... -- only the British form was ever seeded,
+so there's no second word to link as a `SPELLING_VARIANT`); no
+capitalised-variant pairs exist beyond `I`/`I'm` (already `CONTRACTION`)
+and `English` (the sole `PROPER_NOUN`, with no lowercase common-word
+counterpart to relate it to); no loanword needs `TRANSLITERATION` or
+carries a `DIACRITIC_VARIANT`. This is a property of this vocabulary's
+current scope (grammar terms, closed-class words, and general-purpose
+open-class vocabulary -- no real-world titles, acronyms, or foreign
+loanwords), not a gap in the relationship cache; revisit if a future
+batch adds vocabulary of that kind.
+
+## Version
+
+`v1` / `schema_version 1.0.0` / `asset_version 1.20.0` (6114 -> 6128
+relationships; `morphological_relationships.json` 3488 -> 3506,
+`semantic_relationships.json` 2610 -> 2606). Relationship-cache side of
+the root ontology batch (`assets/common/en/README.md`'s own
+`asset_version 1.21.0` entry has the Vocabulary side --
+`examples/root_ontology.py`/`root_ontology_seeding.py`). Two kinds of
+change:
+- 18 new `morphological_relationships.json` edges: standard
+  inflected-form pairs for the three genuinely new words (`being`,
+  `contribution`, `interact`), plus four new `NOMINALISATION` "Verb
+  Basis" links the root ontology table itself specifies --
+  `be -> being`, `operate -> operation`, `contribute -> contribution`,
+  `interact -> interaction` (`cause -> causation` already existed,
+  `asset_version 1.15.0`'s own verb nominalisation batch) -- each with
+  its reciprocal `LEMMA_FORM` edge, this cache's own established
+  convention.
+- 4 `semantic_relationships.json` edges **removed**, not added:
+  `member --MERONYM--> group` and its reciprocal
+  `group --HOLONYM--> member`, and `operation --HYPERNYM--> process`
+  and its reciprocal `process --HYPONYM--> operation`. Both pairs
+  predate this batch (the 1307-relationship Common semantic completion
+  pass, `asset_version 1.16.0`) and were individually true, ordinary
+  facts -- but the root ontology table now assigns `Member` and
+  `Operation` root status (the Meronym ceiling for Who? and the
+  Hypernym ceiling for How?, respectively), and a root cannot also be a
+  part of something else or a hyponym of something else without
+  contradicting that status. Nothing else about `group`/`process`
+  themselves changes -- only the one edge that reached up from the
+  would-be root is gone. `examples/common_semantic_completion.py`'s own
+  source data table has both original tuples left in place, commented
+  out with the same explanation, so a future re-run of that batch
+  script doesn't silently reintroduce them.
+
+Verified against a real seeded `TensorLiraGraph`
+(`examples/root_ontology_seeding.py`'s own verification step, not just
+checked for existence on disk): all twelve root Concepts and all five
+Verb Basis anchor Concepts land exactly where the table says they
+should -- a genuine, unparented `D1_D2_ROOT` position on the axis each
+one claims.
+
+`v1` / `schema_version 1.0.0` / `asset_version 1.19.0` (6111 -> 6114
+relationships; `semantic_relationships.json` 2607 -> 2610). Makes the
+`CAUSE`/`ENTAILMENT` pairing fully reciprocal: `asset_version 1.18.0`
+above only went one way (every `CAUSE` edge got a matching `ENTAILMENT`
+edge, but a pure `ENTAILMENT` pair was left alone, on the reasoning
+that not every entailment is causal). User feedback ("should be both
+ways") overrides that reasoning for this cache: `CAUSE` and
+`ENTAILMENT` are now treated as always-paired companions, the same way
+`HYPERNYM`/`HYPONYM` and `MERONYM`/`HOLONYM` are always paired, rather
+than modelling real-world entailment-without-causation as a distinct,
+rarer case. Checked directly against the live cache first: 3
+`ENTAILMENT`-only pairs existed with no matching `CAUSE` edge --
+`enclose`/`contain`, `lead`/`precede`, `rest`/`stop` -- the 3 `CAUSE`
+pairs from `asset_version 1.18.0` already had both edges and needed no
+change. `examples/cause_entailment_reciprocal_backfill.py` (supersedes
+`cause_entailment_backfill.py`) added the 3 missing `CAUSE` edges; no
+existing edge touched.
+`common_semantic_completion_seeding.py`'s `add_semantic_relationships()`
+now also materialises a `CAUSE` companion for every `ENTAILMENT` edge
+(previously only the reverse), and `physics_domain_seeding.py`'s
+`_seed_physics_relationships` now materialises both `CAUSE` and
+`ENTAILMENT` from *both* `CAUSE_PAIRS` and `ENTAILMENT_PAIRS` (the two
+lists exist only to keep the curated example sets distinct, not
+because the two kinds are seeded differently). `examples/
+relationship_contradiction_audit.py` gained the symmetric
+`find`-equivalent check, `missing_entailment_companions`, alongside
+the existing `missing_cause_companions`. Also updated the Hierarchy/
+Cyclic kind selector's `KIND_PAIR_GROUPS` to include a `Cause /
+Entailment` optgroup (`vocabulary/ui/dictionary_view.py`), matching
+`Hypernym / Hyponym / Troponym` and `Meronym / Holonym`.
+
+Verified: re-ran the full canonical seeding chain and got 0 new
+semantic edges; re-ran the audit and got 0 on every check, including
+both `CAUSE`- and `ENTAILMENT`-missing-companion checks; confirmed live
+that `CAUSE` and `ENTAILMENT` edge counts in `semantic_relationships.json`
+are now equal (6 each, up from 3 `CAUSE` / 6 `ENTAILMENT`).
+
+`v1` / `schema_version 1.0.0` / `asset_version 1.18.0` (6108 -> 6111
+relationships; `semantic_relationships.json` 2604 -> 2607). `CAUSE` is a
+subtype of `ENTAILMENT`, the same relationship TROPONYM has to
+HYPERNYM/HYPONYM: causation is a *stronger* claim than entailment -- if
+X causes Y, X's occurrence logically entails Y's -- but not every
+entailment is causal ("snore" entails "sleep" without snoring causing
+sleep). Unlike TROPONYM's reversed HYPERNYM companion, this is a
+*same-direction* pairing: "kill" `CAUSE` "die" and "kill" `ENTAILMENT`
+"die" name the same two endpoints in the same order. Checked directly
+against the live cache before writing anything: 3 `CAUSE` pairs
+existed with no matching `ENTAILMENT` edge --
+`acquire`/`possess` (`acquire`'s own definition: "to gain or come to
+**possess** something"), `attract`/`move`, `trigger`/`start`
+(`trigger`'s own definition: "to cause something to happen or
+**start**"). `examples/cause_entailment_backfill.py` added the 3
+missing `ENTAILMENT` edges; every existing `CAUSE`/`ENTAILMENT` edge is
+untouched. `common_semantic_completion_seeding.py`'s `add_semantic_relationships()`
+and `physics_domain_seeding.py`'s `_seed_physics_relationships` both
+changed to materialise the `ENTAILMENT` companion for every `CAUSE`
+edge going forward (5 Physics-domain `CAUSE_PAIRS`, same-direction, not
+yet backfilled into a static file since Physics is rebuilt fresh each
+run -- confirmed live: `acquire`/`attract`/`trigger` each carry exactly
+one `CAUSE` edge and one `ENTAILMENT` edge in a freshly seeded Common
+Domain). `examples/relationship_contradiction_audit.py`'s `FAMILY` map
+now groups `CAUSE` with `ENTAILMENT` (co-occurrence, same direction, is
+expected, not a contradiction) and gained
+`find_missing_cause_companions()` for the opposite failure mode -- a
+`CAUSE` edge missing its `ENTAILMENT` pair.
+
+Verified: re-ran the full canonical seeding chain and got 0 new
+semantic edges (the fix doesn't get silently undone the way the
+TROPONYM/HYPONYM bug did); re-ran the audit and got 0 on every check,
+including the new one; Playwright-confirmed the rendered UI shows both
+"X causes Y" and "X entails Y" sentences for `acquire`, `attract`, and
+`trigger`, no console errors.
+
+`v1` / `schema_version 1.0.0` / `asset_version 1.17.0` (6158 -> 6108
+relationships; `semantic_relationships.json` 2654 -> 2604). Corrects an
+over-application from `asset_version 1.15.0`/`1.16.0`: `HYPONYM` is a
+noun-only kind. The correct rule is `HYPERNYM`/`HYPONYM` applies to
+nouns, `TROPONYM`/`HYPERNYM` applies to verbs -- `HYPERNYM` is the one
+kind shared between the two, `HYPONYM` is not. `1.15.0` reasoned
+"troponymy is verb-specific hyponymy" and concluded a `TROPONYM` edge
+should materialise *both* a same-direction `HYPONYM` edge and a
+reverse-direction `HYPERNYM` edge; only the `HYPERNYM` reciprocal was
+ever correct. Surfaced directly by the rendered UI, not by re-reading
+the rule -- selecting `HYPONYM` in the Hierarchy tab was showing verbs
+(`move`, `travel`, `demonstrate`, ...) alongside nouns, when it should
+only ever show nouns.
+
+Removed all 50 verb-verb `HYPONYM` edges found (9 materialised as
+`TROPONYM` companions in `1.15.0`, 41 pre-existing from the original
+14-subagent drafting pass and the 37-pair contradiction fix, both of
+which predate `1.15.0` entirely) via
+`examples/troponym_hyponym_removal_fix.py` -- every corresponding
+`HYPERNYM` edge (broader, shared with nouns) and `TROPONYM` edge
+(narrower, verb-specific) is untouched, only the `HYPONYM` edge is
+gone. Fixed at the root too, not just the generated data: 40 of
+`examples/common_semantic_completion.py`'s own source `RELATIONSHIPS`
+tuples were still plain `HYPERNYM` entries for these verb pairs, so
+re-running `common_semantic_completion_seeding.py` was silently
+resurrecting the removed `HYPONYM` edges via the ordinary
+`HYPERNYM` -> reciprocal `HYPONYM` materialisation rule (caught by
+re-running the canonical seeding chain immediately after the JSON-level
+fix and finding it wasn't a no-op); those 40 tuples are now `TROPONYM`
+tuples instead, matching the correct pairing. `examples/head_word_seeding.py`
+had the identical gap for `head`/`lead` (`head`'s own promotion batch,
+`asset_version 1.19.0` in `../README.md`, seeded before `TROPONYM`/
+`HYPERNYM` existed) -- its `HYPERNYM_PAIRS` split into a noun-only
+`HYPERNYM_PAIRS` (`head`/`part`) and a new `TROPONYM_PAIRS`
+(`head`/`lead`).
+
+`common_semantic_completion_seeding.py`'s TROPONYM materialisation and
+`physics_domain_seeding.py`'s `_seed_physics_relationships` both
+changed to add only the `HYPERNYM` reciprocal, not `HYPONYM`.
+`examples/relationship_contradiction_audit.py` gained
+`find_verb_hyponym_edges()` (any verb-verb `HYPONYM` edge is now itself
+a finding) and `find_missing_troponym_companions()` narrowed to only
+check for the `HYPERNYM` companion.
+
+Verified directly, not assumed: re-ran the full canonical seeding chain
+after all three script fixes and got 0 new semantic edges (previously
+a no-op run had silently re-added 40); re-ran the audit and got 0 of
+every check (missing companions, verb `HYPERNYM` without `TROPONYM`,
+and the new verb-verb `HYPONYM` check); confirmed live against a seeded
+Domain that `move.hyponyms()` is now empty while `move.troponyms()`
+still lists every manner-specific verb, `travel.hypernyms()` still
+finds `go`/`move`, and noun hyponymy (`part.hyponyms()`) is unaffected;
+Playwright-checked the rendered UI in headless Chromium -- selecting
+`Hyponym` in the Hierarchy tab now shows 0 verbs (198 edges, all nouns,
+down from 252 when verbs were still included), no console errors.
+
+`v1` / `schema_version 1.0.0` / `asset_version 1.16.0` (6117 -> 6158
+relationships; `semantic_relationships.json` 2613 -> 2654). Backfilled
+the missing `TROPONYM` edge for every pre-existing verb-verb
+`HYPERNYM`/`HYPONYM` pair: `asset_version 1.15.0` fixed `TROPONYM`
+edges that were missing their `HYPERNYM`/`HYPONYM` companion, but never
+checked the mirror-image gap -- a verb-verb hyponymy pair seeded as
+plain `HYPERNYM`/`HYPONYM` with no `TROPONYM` edge at all, because it
+predates `TROPONYM`/`HYPERNYM` being modelled as the verb-specific
+pairing (most of these came from the original 14-subagent drafting
+pass and the 37-pair contradiction fix, both of which predate
+`asset_version 1.15.0`). Checked directly, not assumed: resolving
+every `HYPERNYM` edge's two endpoints against the full word cache found
+41 such pairs (`add`/`calculate`, `advance`/`move`, `demonstrate`/`show`,
+`grade`/`classify`, `head`/`lead`, `transform`/`change`, `travel`/`go`,
+and 34 more) -- every existing `HYPERNYM`/`HYPONYM` edge for these pairs
+is untouched (direction already correct); only the one missing
+`TROPONYM` edge per pair was added
+(`examples/troponym_verb_backfill.py`). `examples/
+relationship_contradiction_audit.py` gained a permanent check for this,
+`find_verb_hypernym_without_troponym()`, resolving part of speech
+against the full word cache rather than trusting the relationship
+entry's own optional `source_part_of_speech`/`target_part_of_speech`
+fields (most pre-`asset_version 1.8.0` entries omit them). Verified:
+re-ran the audit after seeding and got 0 verb-verb `HYPERNYM` pairs
+without a `TROPONYM` edge, 0 missing `TROPONYM` companions, and 0
+cross-family contradictions; re-ran `troponym_verb_backfill.py` a
+second time and got 0 new edges (idempotent).
+
+The Hierarchy and Cyclic tab kind selectors in `DictionaryView`
+(`vocabulary/ui/dictionary_view.py`) now group `Hypernym`/`Hyponym`/
+`Troponym` under one `<optgroup>` and `Meronym`/`Holonym` under another,
+instead of a flat alphabetical list -- see `vocabulary/ui/README.md`.
+
+`v1` / `schema_version 1.0.0` / `asset_version 1.15.0` (6099 -> 6117
+relationships; `semantic_relationships.json` 2595 -> 2613). `TROPONYM`
+previously had no reciprocal at all -- documented (and verified against
+`Word.py`) as "one-directional, no inverse kind defined", the same
+category as `ENTAILMENT`/`CAUSE`. That was wrong: troponymy is
+verb-specific hyponymy, not an implicational relation like entailment
+or causation ("stroll" genuinely *is a type of* "walk", the same "is a"
+relationship `HYPERNYM`/`HYPONYM` already models for nouns -- unlike
+"snore" entailing "sleep", which isn't "snoring is a type of
+sleeping"). Every `TROPONYM` edge now also materialises the matching
+`HYPONYM` (same direction) and `HYPERNYM` (reverse direction) pair, the
+same "Symmetric and inverse edges" discipline every other kind here
+already follows -- see that section above. No new
+`LexicalRelationshipType` member was needed; this reuses the existing
+`HYPERNYM`/`HYPONYM` values. `examples/common_semantic_completion_seeding.py`'s
+`add_semantic_relationships()` and `examples/physics_domain_seeding.py`'s
+`_seed_physics_relationships()` both changed to materialise the pair;
+`examples/relationship_contradiction_audit.py` now treats `TROPONYM` as
+part of the `HYPERNYM`/`HYPONYM` family (co-occurring is expected, not
+a contradiction) and gained a new check,
+`find_missing_troponym_companions()`, for the opposite failure mode --
+a `TROPONYM` edge without its companion pair. Applied to all 9 existing
+Common `TROPONYM` pairs (18 new edges: `compare`/`contrast`,
+`divide`/`fragment`, `express`/`write`, `look`/`watch`, `move`/`travel`,
+`negate`/`not`, `see`/`watch`, `touch`/`strike`, `turn`/`twist`) and the
+5 Physics-domain hand-curated `TROPONYM_PAIRS` (`move`/`flow`,
+`move`/`spin`, `move`/`wave`, `move`/`transfer`, `move`/`accelerate` --
+3 of the 5 companion pairs turned out already present, inherited from
+Common's own `wave`/`move` hypernym pair, so only new edges were
+created, none duplicated). Verified directly, not assumed: re-ran the
+audit after seeding and got 0 missing companions and 0 cross-family
+contradictions; confirmed `move.hyponyms()` now includes `travel`
+alongside its existing hyponyms and `travel.hypernyms()` now includes
+`move` alongside `go`; re-ran both seeding scripts a second time and
+got 0 new edges (idempotent).
+
+`v1` / `schema_version 1.0.0` / `asset_version 1.14.0` (6173 -> 6099
+relationships, net; `semantic_relationships.json` 2669 -> 2595).
+`examples/relationship_contradiction_audit.py` found 37 word pairs
+carrying more than one Lexical Semantic relationship kind at once (e.g.
+SYNONYM *and* HYPERNYM/HYPONYM between the same two words -- a pair
+can't both mean the same thing and be broader/narrower than each
+other), traced to the `common_semantic_completion.py` drafting pass's
+aggregation step never checking whether two subagents proposed a
+*different* kind for the same pair (only exact reverse-direction
+duplicates were caught). `examples/relationship_contradiction_fix.py`
+applied the reviewed correction list
+(`examples/relationship_contradiction_report.md`): 36 pairs had a
+redundant edge removed (usually RELATED dropped in favour of a more
+specific kind already seeded); one pair, `method`/`procedure`, had its
+HYPERNYM/HYPONYM direction corrected (`method`'s own definition, "a
+particular procedure...", makes `method` the narrower term, but the
+cache had it backwards) rather than just deduplicated. 76 edges
+removed, 2 added (the corrected `method`/`procedure` direction) -- net
+-74. The same 37 corrections were also applied to
+`examples/common_semantic_completion.py`'s own source `RELATIONSHIPS`
+list (1307 -> 1270 tuples) so that re-running the canonical seeding
+chain (`common_semantic_completion_seeding.py`) does not resurrect
+them -- confirmed directly: a fresh run after this fix added 0 new
+semantic edges. `assets/common/en/README.md` is unchanged by this
+batch (no words added or removed, relationships only).
+
+`v1` / `schema_version 1.0.0` / `asset_version 1.13.0` (6169 -> 6173
+relationships). Added `head` (`examples/head_word_seeding.py`, alongside
+`../README.md`'s `asset_version 1.19.0`): `head` (NOUN) -> HYPERNYM ->
+`part` and `head` (VERB) -> HYPERNYM -> `lead`, each with its reciprocal
+HYPONYM edge materialised (`part` -> HYPONYM -> `head`; `lead` ->
+HYPONYM -> `head`) -- the same "every HYPERNYM gets its reciprocal
+HYPONYM" discipline `asset_version 1.11.0` established. Both edges name
+an explicit `source_part_of_speech`/`target_part_of_speech` on `head`'s
+side since promoting both senses makes it a homograph.
+
+`v1` / `schema_version 1.0.0` / `asset_version 1.12.0` (6111 -> 6187
+relationships). Migrated relationships for the 13-word polysemy split
+(`../README.md`'s Polysemous senses section): every edge the original
+merged entry carried moved to whichever new sense it actually
+describes, plus a fresh HYPERNYM/HYPONYM pair for every sense whose
+`domain_tag` names a hypernym not already linked, plus PLURAL_FORM/
+LEMMA_FORM for every new sense's own plural. Also rebuilt `positive`/
+`negative` (`ADJECTIVE`)'s single ANTONYM pair as one pair per
+sense-family (see the polyseme section for why). Added the
+`source_domain_tag`/`target_domain_tag` schema fields this required --
+see Disambiguating a polysemous endpoint above.
+
+`v1` / `schema_version 1.0.0` / `asset_version 1.11.0` (3470 -> 6111
+relationships). Seeded Lexical Semantic (group 1) coverage for every
+base-form open-class word in the Common Vocabulary Cache -- `../
+README.md`'s morphology-completion batch (`asset_version 1.16.0`)
+completed Group 0; this completes the group above it. 1095 base words
+(492 NOUN, 289 VERB, 240 ADJECTIVE, 74 ADVERB -- a base word being one
+with no outgoing `LEMMA_FORM` edge, i.e. not itself an inflected form;
+semantic relationships attach to a word's lemma, an inflected form
+inherits them via its own `LEMMA_FORM` edge). Drafted by 14 parallel
+subagents (`examples/common_semantic_completion.py`'s own module
+docstring has the full methodology), each grounded only in a word's
+own `definition` and restricted to a supplied list of the 1095 valid
+words -- never allowed to invent a target. 1498 raw proposals, 1307
+survived mechanical validation (191 dropped were exclusively cross-
+chunk duplicates -- an independent second chunk proposing the reverse
+direction of a symmetric pair a different chunk had already given;
+zero were dropped for an invalid word, part_of_speech, kind, or self-
+reference). 2599 edges added to `semantic_relationships.json` (34 ->
+2633): every `HYPERNYM` pair gets its reciprocal `HYPONYM` edge, every
+`MERONYM` pair its reciprocal `HOLONYM` edge, every `SYNONYM`/
+`ANTONYM`/`RELATED` pair its reverse-direction same-kind edge (all
+three are genuinely symmetric, this cache's own long-standing
+convention -- see Symmetric and inverse edges above); `TROPONYM`/
+`ENTAILMENT`/`CAUSE` get no reciprocal, one-directional by definition,
+matching the same convention `examples/physics_domain_relationships.py`
+documents for the Physics Domain's own hand-curated set. Kind
+breakdown of the 1307 given pairs: 481 `SYNONYM`, 451 `RELATED`, 214
+`HYPERNYM`, 122 `ANTONYM`, 24 `MERONYM`, 9 `TROPONYM`, 3 `CAUSE`, 3
+`ENTAILMENT`. Verified before seeding: no `HYPERNYM`/`MERONYM` pair had
+both directions proposed by different chunks (would have been a
+contradictory edge -- a word both broader and narrower than another),
+and no cycle exists in the `HYPERNYM` graph -- both checked
+programmatically, not assumed. Orthographic and Naming (group 2)
+relationship gaps are a separate, later batch.
+
+`v1` / `schema_version 1.0.0` / `asset_version 1.10.0` (1070 -> 3470
+relationships). Completed the Group 0 (Morphological) coverage gap a
+user-supplied per-part-of-speech relationship export surfaced (`../
+README.md`'s own `asset_version 1.16.0` Version entry has the full
+methodology and per-action counts; `examples/
+common_morphology_completion.py` holds the rule engine, irregular
+tables, and exclusion sets). 2442 edges added to
+`morphological_relationships.json` (1020 -> 3462): 76 edges from a
+39-pair self-documenting back-edge fix, 1416 from VERB conjugation, 704
+from NOUN pluralisation, 238 from ADJECTIVE/ADVERB degree forms, and 8
+from the remaining PRONOUN paradigm gaps (`he`/`it` standalone
+possessive, `who` object/possessive). Every edge, new or reciprocal,
+was checked against the full existing `(source_lexical_form,
+source_part_of_speech, relationship_kind, target_lexical_form,
+target_part_of_speech)` tuple set before being added, the same
+idempotency discipline `asset_version 1.9.0` below already used --
+confirmed by re-running the seeding script a second time and getting
+zero new words and zero new edges. `semantic_relationships.json` (34)
+and `orthographic_relationships.json` (16) are unchanged by this batch;
+those relationship groups are a separate, later batch.
+
+`v1` / `schema_version 1.0.0` / `asset_version 1.9.0` (288 -> 1070
+relationships). Wired the relationships for the 1163-word Common
+definition-gap batch (`assets/common/en/README.md`'s own
+`asset_version 1.15.0`, `examples/common_definition_gap_vocabulary.py`).
+391 `MORPHOLOGICAL_LINKS` pairs -- 129 base lemmas discovered while
+wiring (e.g. "denotes" -> `THIRD_PERSON_FORM` -> "denote"), plus 23
+homograph senses discovered the same way (e.g. `mark` needed a `VERB`
+sense to be the base of `marked`/`marking`/`marks`) -- each seeded as
+two edges (the specific kind plus its reciprocal `LEMMA_FORM`), always
+with an explicit `source_part_of_speech`/`target_part_of_speech` on
+both edges, not just where a base happens to already be a homograph:
+782 edges added to `morphological_relationships.json` (238 -> 1020).
+Five of the 129 bases (`cause`, `form`, `name`, `point`, `state`) are
+the same pre-existing Common homographs `asset_version 1.8.0` above
+fixed resolution for; the other 124, plus the 23 homograph senses, are
+new. Two pattern-matched candidate derivations were deliberately
+dropped rather than seeded: "proportion" (a false-positive text match
+-- its definition uses the word "comparative" descriptively, not as a
+morphological claim) and "singles" -> "single" (too idiomatic a `VERB`
+sense -- "to single out" -- to justify a fourth homograph sense of
+`single` for one relationship). Verified directly: re-seeding a fresh
+Domain resolves every one of the 391 pairs to the correct sense
+(confirmed for the five pre-existing homograph bases specifically,
+the same way `asset_version 1.8.0` verified `cause`/`state`), and a
+second run of the seeding script adds nothing new.
+
+Seeding this batch also exposed a real Physics Domain regression, not
+a relationship-cache bug as such: Common's own new `wave` (`VERB`),
+`moving` (`VERB`), and `flow` (`NOUN`) senses made `identify_word()`
+stop queuing hydration for Physics's fixture-evidenced `wave` (`NOUN`),
+`moving` (`ADJECTIVE`), and `flow` (`VERB`) senses -- `identify_word`
+only queues hydration when *no* sense at all already matches,
+regardless of part_of_speech, the same gap `object`/`particle` first
+surfaced (`examples/README.md`'s Word-sense conflicts section). Fixed
+in `physics_domain_seeding.py`: `CONFLICTING_SENSE_WORDS` grew from 2
+entries to 5, using the same `register_conflicting_sense` path.
+
+`v1` / `schema_version 1.0.0` / `asset_version 1.8.0` (282 -> 288
+relationships). `RelationshipSeeder` gained the part-of-speech
+disambiguator described in Disambiguating a homograph endpoint above
+(`_resolve`, an optional `source_part_of_speech`/`target_part_of_speech`
+per entry) -- the fix that `asset_version 1.7.0` below explicitly held
+back as out of scope for the `WordSeeder` fix it was written alongside.
+With it, three relationships a part-of-speech blind spot had made
+unsafe were seeded correctly for the first time:
+`cause` (`VERB`) -> `PRESENT_PARTICIPLE_FORM` -> `causing` and
+`cause` (`VERB`) -> `NOMINALISATION` -> `causation` -- both removed
+from earlier batches after being found silently attached to the `NOUN`
+sense of `cause`; and `state` (`VERB`) -> `NOMINALISATION` ->
+`statement` -- the pair `asset_version 1.7.0` deliberately left
+unseeded, above. Each gets its reciprocal `LEMMA_FORM` edge too, an
+explicit `target_part_of_speech` on the reverse edge since the lemma
+being pointed back to is the ambiguous endpoint there
+(`morphological_relationships.json` 232 -> 238).
+
+Verified directly, not assumed: seeding a fresh Domain now attaches
+every edge to the `VERB` sense of `cause`/`state` and leaves the `NOUN`
+sense's own relationship list empty, confirmed both by inspecting the
+`LexicalRelationshipStore` directly and by checking the rendered UI in
+headless Chromium. Existing entries are untouched -- neither
+`source_part_of_speech` nor `target_part_of_speech` is set on any of
+them, so every one of them resolves exactly as it always did via
+`Dictionary.lookup()`'s first-seeded-wins default; a fresh Common
+Domain still seeds all 282 pre-existing relationships unchanged before
+these 6 new ones are added. See `examples/relationship_cache_homograph_fix.py`.
+
+`v1` / `schema_version 1.0.0` / `asset_version 1.7.0` (266 -> 282
+relationships, alongside `../README.md`'s `asset_version 1.12.0`
+common-core vocabulary batch: 6 more `NOMINALISATION` pairs
+(`occur`/`occurrence`, `produce`/`production`, `introduce`/`introduction`,
+`contain`/`containment`, `accompany`/`accompaniment`,
+`receive`/`reception`), each with its reciprocal `LEMMA_FORM` edge,
+taking `morphological_relationships.json` 218 -> 230; 1
+`THIRD_PERSON_FORM` pair (`occur`/`occurs`) plus reciprocal
+`LEMMA_FORM`, retroactively linking `occurs` -- seeded unlinked in
+`asset_version 1.5.0`, its true lemma `occur` didn't exist yet -- to
+its now-seeded lemma, taking `morphological_relationships.json` 230 ->
+232; and 1 `SYNONYM` pair (`idea`/`concept`), both directions, taking
+`semantic_relationships.json` 32 -> 34. `orthographic_relationships.json`
+is unchanged at 16. `examples/common_core_vocabulary.py` has the full
+reasoning, including which words a user-supplied audit flagged as
+missing but turned out already seeded from earlier batches.
+
+`v1` / `schema_version 1.0.0` / `asset_version 1.6.0` (196 -> 266
+relationships, alongside `../README.md`'s `asset_version 1.11.0`
+promoted-words batch: `NOMINALISATION` (6.2.1 Derivation -- defined
+since `schema_version 1.0.0` but never seeded until now) for 36
+base-form verbs, each a (verb, `NOMINALISATION`, noun) edge plus its
+materialised reverse (noun, `LEMMA_FORM`, verb) -- taking
+`morphological_relationships.json` 148 -> 222, then 222 -> 218 net
+after also removing 4 wrong edges (below). `semantic_relationships.json`
+and `orthographic_relationships.json` are unchanged at 32 and 16.
+`examples/verb_nominalisation_vocabulary.py` has the full
+verb-by-verb reasoning (which verbs qualify, which don't, and why).
+
+While seeding this batch, `cause` -> `causation` (a genuine
+nominalisation) proved unseedable correctly: `cause` is a Common
+homograph (`NOUN` and `VERB`, both open-class), and
+`RelationshipSeeder.seed_domain` resolves a cache entry's
+`source_lexical_form` via `Dictionary.lookup()` -- first-seeded-wins by
+text alone, not part-of-speech-aware -- so an entry naming `cause` as
+source can only ever attach to the `NOUN` sense. Checking the actual
+resulting edge confirmed it: the `NOMINALISATION` edge had attached to
+`cause` (`NOUN`), not `cause` (`VERB`). Rather than ship a wrong edge,
+it was removed, and `causation` stays a promoted Word with no formal
+relationship (`../README.md`'s Version section has the reasoning).
+Checking for the same failure mode elsewhere in the cache found one
+more, pre-existing since `asset_version 1.5.0`: `cause` -> `causing`
+(`PRESENT_PARTICIPLE_FORM`) had the identical problem, silently
+attached to the `NOUN` sense the whole time. Both `cause`-involving
+pairs (4 edges total: `cause`/`causing` `PRESENT_PARTICIPLE_FORM` +
+reverse `LEMMA_FORM`, `cause`/`causation` `NOMINALISATION` + reverse
+`LEMMA_FORM`) were removed together. `causing` and `causation` keep
+their own accurate definitions (each already states the relationship
+in prose); only the formal graph edges are gone. Surfaced, not fixed:
+making `seed_domain`'s resolution part-of-speech-aware would be a
+change to a shared pipeline class, well beyond either of these two
+batches' scope.
+
+`v1` / `schema_version 1.0.0` / `asset_version 1.5.0` (138 -> 196
+relationships, alongside `../README.md`'s `asset_version 1.10.0`
+promoted-words batch: 25 base/derived morphological pairs among the 221
+newly-promoted words -- each a (base, specific-form-kind, derived) edge
+plus its materialised reverse (derived, `LEMMA_FORM`, base), the same
+convention as every other pair in this cache -- taking
+`morphological_relationships.json` 98 -> 148; and 4 `ANTONYM` pairs
+(discrete/continuous, high/low, push/pull, negative/positive), each
+materialised in both directions, taking `semantic_relationships.json`
+24 -> 32. `orthographic_relationships.json` is unchanged at 16. Kept
+deliberately small -- only pairs found directly while classifying the
+promoted words, not an attempted full taxonomy for 221 new words in one
+pass; see `examples/README.md`'s Definition-gap vocabulary section.
+`asset_version 1.4.0` (121 -> 138
+relationships: added 15 `CONTRACTION` edges to
+`orthographic_relationships.json` (1 -> 16) for the seven full
+contractions added to `../auxiliaries.json` -- see Symmetric and
+inverse edges above for why each gets one edge per component rather
+than a reverse. Added a `however` <-> `nevertheless` `SYNONYM` pair,
+both directions, to `semantic_relationships.json` (22 -> 24) -- the
+only relationship among the four new discourse markers with a clear,
+already-seeded partner; `therefore` and `moreover` have no existing
+semantic neighbour in this cache to link to, so neither was forced
+into an artificial relationship. `morphological_relationships.json` is
+unchanged at 98. `asset_version 1.3.0` (61 -> 121
+relationships: materialised the reverse of every existing morphological
+and semantic edge -- see Symmetric and inverse edges above -- taking
+`morphological_relationships.json` 49 -> 98 and
+`semantic_relationships.json` 11 -> 22; `orthographic_relationships.json`
+is unchanged at 1. `asset_version 1.2.0` took 60 -> 61, adding the
+missing `she` -> `her` `PRONOUN_POSSESSIVE_DETERMINER_FORM` edge --
+"her" is dual-role, both the object form and the possessive determiner
+form of "she", unlike `him`/`his` where those are distinct words, so it
+needed two edges, not one. `asset_version 1.1.0` took 53 -> 60,
+resolving the seven gaps in Resolved Gaps above; `asset_version 1.0.0`'s
+53 relationships are unchanged).
+
+## Future languages
+
+This directory is `assets/common/en/relationships/`. Additional
+languages follow the same `assets/common/<language_code>/relationships/`
+structure and file format; `RelationshipSeeder` is not
+language-specific -- like `WordSeeder`, it loads whichever
+`assets/common/<language_code>/relationships/` directory matches the
+Domain's language code, without any change to the seeder itself.

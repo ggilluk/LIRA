@@ -1,0 +1,325 @@
+/** Word: one lexical form in one language and one grammatical category
+ * (Vocabulary Layer developer specification, 4). Still shaped like
+ * Linguistics's LinguisticUnit -- Word has two legitimate uses, the
+ * *type* (a lexical entry, owned by Vocabulary) and the *token* (one
+ * occurrence of that type in a sentence, participating in Linguistics's
+ * tree via LinguisticUnit's `text` and `systemProperty`); this is
+ * deliberate, not an unresolved layering error (see
+ * vocabulary/documentation/README.md, 4.1).
+ *
+ * Word has no `systemProperties` field of its own (Design Principle 8
+ * -- tensor-backed system properties belong to a claimed
+ * LexicalRelationship between two words, not to a word standing alone).
+ *
+ * Ported from vocabulary/data/word.py. Python's `@dataclass` with
+ * `kw_only` fields and `__post_init__` becomes a plain `Word` data
+ * interface plus a `createWord()` factory applying the same defaults
+ * and post-init normalisation. Python's bound derived-property methods
+ * (`word.hypernyms(relationships, dictionary)`, ...) become free
+ * functions of the same name taking `word` as their first argument --
+ * idiomatic TS, same behaviour, same call-site shape read right to
+ * left instead of left to right. */
+
+import type { Code, Identifier, Number_, Text } from "../../value_objects";
+import type { LinguisticUnit } from "../../linguistics/data/linguistic_unit";
+import type { Dictionary } from "./dictionary";
+import type { DefinitionWordReference } from "./definition_word_reference";
+import type { EditorialLabel } from "./editorial_label";
+import { LexicalRelationshipStore } from "./lexical_relationship_store";
+import { LexicalRelationshipType } from "./lexical_relationship_type";
+import type { PartOfSpeech } from "./part_of_speech";
+import type { Pronunciation } from "./pronunciation";
+import type { RegisterCode } from "./register_code";
+import type { SourceReference } from "./source_reference";
+import { newUuid } from "./uuid";
+
+// Splits a definition's prose into its own word tokens -- deliberately a
+// local regex, not a Linguistics-Layer LinguisticLexer import: Vocabulary
+// must not depend on Linguistics (Linguistics depends on Vocabulary, via
+// Word), and definitionWords() only needs "the words in this string",
+// not sentence/grammar structure. Same pattern as
+// external_dictionary_adapter.ts's wordTerms().
+const DEFINITION_WORD_PATTERN = /[^\W_]+/g;
+
+function definitionTokens(definitionText: string): string[] {
+  return definitionText.replace(/-/g, " ").match(DEFINITION_WORD_PATTERN) ?? [];
+}
+
+export interface Word extends LinguisticUnit {
+  partOfSpeech: PartOfSpeech;
+
+  uuid: Identifier;
+
+  // The persistent Qualified Word Identity (Domain + Lexical Form +
+  // partOfSpeech) -- distinct from `uuid` above, which is deliberately
+  // NOT stable: `uuid` is a per-Domain-graph-instance identity, freshly
+  // regenerated every time a Word is copied into a Domain's own
+  // Dictionary (Dictionary.seedFrom, WordSeeder.seedClosedClassWords),
+  // so that two Domains' independent copies of "be" are never confused
+  // as the same graph node. `entryId` is the opposite: assigned once,
+  // when a Word is first authored (an asset-file entry, a promotion, a
+  // hydration, or a conflict-resolution registration), stored in the
+  // Common Vocabulary Cache's asset JSON for every entry that lives
+  // there, and left untouched by every later copy -- the same
+  // underlying vocabulary entry keeps the same entryId no matter how
+  // many Domains end up holding their own runtime copy of it.
+  entryId: Identifier;
+
+  version: Text;
+  languageCode: Code;
+  lexicalForm?: Text;
+  normalisedForm?: Text;
+  scriptCode?: Code;
+  pronunciations: readonly Pronunciation[];
+  syllableRepresentation?: Text;
+  syllableCount?: Number_;
+  stressPattern?: Text;
+  gloss?: Text;
+  definition?: Text;
+  usageNotes: readonly Text[];
+  registerCodes: readonly RegisterCode[];
+  dialectCodes: readonly Code[];
+  frequencyValue?: Number_;
+  frequencyScale?: Code;
+  etymologyText?: Text;
+  firstRecordedUse?: Text;
+  editorialLabels: readonly EditorialLabel[];
+  sourceReferences: readonly SourceReference[];
+
+  // True only for a Word loaded from the English Common Vocabulary
+  // Cache (or another language's equivalent) by WordSeeder -- never
+  // set true by hand. See vocabulary/documentation/README.md, 9.5.
+  isCommon: boolean;
+
+  // Only ever set on a Common Vocabulary Cache entry, and only when its
+  // (lexicalForm, partOfSpeech) pair is shared with another entry --
+  // true dictionary polysemy, as opposed to a homograph (same spelling,
+  // different partOfSpeech, already told apart by partOfSpeech alone).
+  // undefined means the plain "common" domain; a value like
+  // "symbol.common" names this sense's own HYPERNYM as a subdomain of
+  // "common" -- see Word.domainTag's Python docstring for the full
+  // rationale (vocabulary/data/word.py).
+  domainTag?: Text;
+
+  // Implementation plumbing, not part of the documented field set:
+  // tracks whether AsyncDictionaryHydrator has finished populating this
+  // Word's meaning/partOfSpeech from the external dictionary API yet.
+  isFullyHydrated: boolean;
+
+  // Seeded Attributes: this Word's approximate, hand/heuristically
+  // assigned position in the PAD (Pleasure-Arousal-Dominance) affective
+  // space (Mehrabian & Russell). undefined means no PAD value has been
+  // assigned yet, not "neutral" (0.0 is the seeded value for a
+  // genuinely neutral word).
+  seededPleasureDispleasureWeight?: Number_;
+  seededArousalNonArousalWeight?: Number_;
+  seededDominanceSubmissiveWeight?: Number_;
+}
+
+export type WordInit = Pick<Word, "text" | "partOfSpeech"> & Partial<Omit<Word, "text" | "partOfSpeech">>;
+
+export function createWord(init: WordInit): Word {
+  const word: Word = {
+    pronunciations: [],
+    usageNotes: [],
+    registerCodes: [],
+    dialectCodes: [],
+    editorialLabels: [],
+    sourceReferences: [],
+    isCommon: false,
+    isFullyHydrated: true,
+    uuid: init.uuid ?? { value: newUuid() },
+    entryId: init.entryId ?? { value: newUuid() },
+    version: init.version ?? { value: "1.0" },
+    languageCode: init.languageCode ?? { value: "en" },
+    ...init,
+  };
+  if (word.lexicalForm === undefined) word.lexicalForm = { value: word.text };
+  if (word.normalisedForm === undefined) word.normalisedForm = { value: word.text.toLowerCase() };
+  return word;
+}
+
+/** A shallow copy of `word`, sharing every field's own object identity
+ * except `uuid`, which becomes a fresh Identifier -- the same shape as
+ * Python's `copy.copy(word)` followed by a `uuid` reassignment, used by
+ * Dictionary.seedFrom and WordSeeder.seedClosedClassWords/loadCache. */
+export function copyWordWithFreshUuid(word: Word): Word {
+  return { ...word, uuid: { value: newUuid() } };
+}
+
+// -- Derived properties (4.3) --------------------------------------
+// None of these are stored fields. Each is computed on demand from a
+// LexicalRelationshipStore (this Word's relationships) and a
+// Dictionary (to resolve the other word in each relationship).
+
+interface RelatedWordsOptions {
+  relationshipType?: LexicalRelationshipType;
+  group?: number;
+  category?: number;
+  direction?: "outgoing" | "incoming" | "both";
+}
+
+function relationshipMatches(
+  relationship: { relationshipType: LexicalRelationshipType },
+  relationshipType?: LexicalRelationshipType,
+  group?: number,
+  category?: number,
+): boolean {
+  if (relationshipType !== undefined) return relationship.relationshipType === relationshipType;
+  if (category !== undefined) {
+    return (
+      groupOf(relationship.relationshipType) === group && categoryOf(relationship.relationshipType) === category
+    );
+  }
+  if (group !== undefined) return groupOf(relationship.relationshipType) === group;
+  return true;
+}
+
+function groupOf(kind: LexicalRelationshipType): number {
+  return kind >> 6;
+}
+
+function categoryOf(kind: LexicalRelationshipType): number {
+  return (kind >> 3) & 0b111;
+}
+
+/** Returns the distinct set of related Words, in first-seen order --
+ * not one entry per matching relationship. Two different edges can
+ * legitimately point at the same other Word (e.g. "her" is both the
+ * object form and the possessive-determiner form of "she"), and a
+ * reciprocal pair (SYNONYM/ANTONYM, materialised in both directions) is
+ * visible as both an outgoing and an incoming match under
+ * direction="both". Either way, a caller asking "what Words is this
+ * related to" wants each Word once. */
+function relatedWords(
+  word: Word,
+  relationships: LexicalRelationshipStore,
+  dictionary: Dictionary,
+  options: RelatedWordsOptions = {},
+): readonly Word[] {
+  const { relationshipType, group, category, direction = "outgoing" } = options;
+  const myId = word.uuid.value;
+  const otherIds: string[] = [];
+  if (direction === "outgoing" || direction === "both") {
+    for (const r of relationships.outgoing(myId)) {
+      if (relationshipMatches(r, relationshipType, group, category)) otherIds.push(r.targetWordId.value);
+    }
+  }
+  if (direction === "incoming" || direction === "both") {
+    for (const r of relationships.incoming(myId)) {
+      if (relationshipMatches(r, relationshipType, group, category)) otherIds.push(r.sourceWordId.value);
+    }
+  }
+  const seenIds = new Set<string>();
+  const resolved: Word[] = [];
+  for (const wordId of otherIds) {
+    if (seenIds.has(wordId)) continue;
+    seenIds.add(wordId);
+    const other = dictionary.findByUuid(wordId);
+    if (other !== undefined) resolved.push(other);
+  }
+  return resolved;
+}
+
+export function lemmaForms(word: Word, relationships: LexicalRelationshipStore, dictionary: Dictionary): readonly Word[] {
+  return relatedWords(word, relationships, dictionary, { relationshipType: LexicalRelationshipType.LEMMA_FORM });
+}
+
+/** Every Word that names `word` as its LEMMA_FORM -- the inverse
+ * direction of lemmaForms(), read via LEMMA_FORM's own incoming edges
+ * rather than a separately-seeded INFLECTION edge. */
+export function inflections(word: Word, relationships: LexicalRelationshipStore, dictionary: Dictionary): readonly Word[] {
+  return relatedWords(word, relationships, dictionary, {
+    relationshipType: LexicalRelationshipType.LEMMA_FORM,
+    direction: "incoming",
+  });
+}
+
+export function morphologicalVariants(word: Word, relationships: LexicalRelationshipStore, dictionary: Dictionary): readonly Word[] {
+  return relatedWords(word, relationships, dictionary, { group: 0 });
+}
+
+export function derivedForms(word: Word, relationships: LexicalRelationshipStore, dictionary: Dictionary): readonly Word[] {
+  return relatedWords(word, relationships, dictionary, { group: 0, category: 6 });
+}
+
+export function synonyms(word: Word, relationships: LexicalRelationshipStore, dictionary: Dictionary): readonly Word[] {
+  return relatedWords(word, relationships, dictionary, { relationshipType: LexicalRelationshipType.SYNONYM, direction: "both" });
+}
+
+export function antonyms(word: Word, relationships: LexicalRelationshipStore, dictionary: Dictionary): readonly Word[] {
+  return relatedWords(word, relationships, dictionary, { relationshipType: LexicalRelationshipType.ANTONYM, direction: "both" });
+}
+
+export function hypernyms(word: Word, relationships: LexicalRelationshipStore, dictionary: Dictionary): readonly Word[] {
+  return relatedWords(word, relationships, dictionary, { relationshipType: LexicalRelationshipType.HYPERNYM });
+}
+
+export function hyponyms(word: Word, relationships: LexicalRelationshipStore, dictionary: Dictionary): readonly Word[] {
+  return relatedWords(word, relationships, dictionary, { relationshipType: LexicalRelationshipType.HYPONYM });
+}
+
+export function meronyms(word: Word, relationships: LexicalRelationshipStore, dictionary: Dictionary): readonly Word[] {
+  return relatedWords(word, relationships, dictionary, { relationshipType: LexicalRelationshipType.MERONYM, direction: "incoming" });
+}
+
+export function holonyms(word: Word, relationships: LexicalRelationshipStore, dictionary: Dictionary): readonly Word[] {
+  return relatedWords(word, relationships, dictionary, { relationshipType: LexicalRelationshipType.HOLONYM, direction: "incoming" });
+}
+
+export function troponyms(word: Word, relationships: LexicalRelationshipStore, dictionary: Dictionary): readonly Word[] {
+  return relatedWords(word, relationships, dictionary, { relationshipType: LexicalRelationshipType.TROPONYM });
+}
+
+export function spellingVariants(word: Word, relationships: LexicalRelationshipStore, dictionary: Dictionary): readonly Word[] {
+  return relatedWords(word, relationships, dictionary, { group: 2, category: 0, direction: "both" });
+}
+
+export function abbreviations(word: Word, relationships: LexicalRelationshipStore, dictionary: Dictionary): readonly Word[] {
+  return relatedWords(word, relationships, dictionary, { relationshipType: LexicalRelationshipType.ABBREVIATION });
+}
+
+export function acronyms(word: Word, relationships: LexicalRelationshipStore, dictionary: Dictionary): readonly Word[] {
+  return relatedWords(word, relationships, dictionary, { relationshipType: LexicalRelationshipType.ACRONYM });
+}
+
+export function contractions(word: Word, relationships: LexicalRelationshipStore, dictionary: Dictionary): readonly Word[] {
+  return relatedWords(word, relationships, dictionary, { relationshipType: LexicalRelationshipType.CONTRACTION });
+}
+
+export function transliterations(word: Word, relationships: LexicalRelationshipStore, dictionary: Dictionary): readonly Word[] {
+  return relatedWords(word, relationships, dictionary, { relationshipType: LexicalRelationshipType.TRANSLITERATION });
+}
+
+export function relatedWordsOf(word: Word, relationships: LexicalRelationshipStore, dictionary: Dictionary): readonly Word[] {
+  return relatedWords(word, relationships, dictionary, { relationshipType: LexicalRelationshipType.RELATED, direction: "both" });
+}
+
+// -- Definition word breakdown (4.4) ---------------------------------
+// Also not a stored field -- computed on demand, like the derived
+// properties above -- but resolved directly against a Dictionary
+// rather than a LexicalRelationshipStore: a definition is prose about
+// this Word, not a claimed relationship between two Words, so there is
+// no LexicalRelationship to read.
+
+/** Breaks `word`'s own `definition` text into its own sequenced array
+ * of DefinitionWordReferences, one per token in reading order --
+ * unlike relatedWords, duplicates are kept and position is preserved,
+ * since this describes a sentence, not a set of related Words. Empty
+ * when `definition` is undefined.
+ *
+ * Each token is resolved against `dictionary` domain-first: every
+ * same-text candidate `Dictionary.lookupAll` returns, preferring one
+ * with `isCommon=false` if any exists, else falling back to
+ * lookupAll's own first-seeded order. A token with no candidate at all
+ * resolves to `word=undefined`, reported rather than guessed. */
+export function definitionWords(word: Word, dictionary: Dictionary): readonly DefinitionWordReference[] {
+  if (word.definition === undefined) return [];
+  const references: DefinitionWordReference[] = [];
+  for (const token of definitionTokens(word.definition.value)) {
+    const candidates = dictionary.lookupAll(token);
+    const resolved = candidates.length > 0 ? (candidates.find((w) => !w.isCommon) ?? candidates[0]) : undefined;
+    references.push({ text: token, word: resolved });
+  }
+  return references;
+}

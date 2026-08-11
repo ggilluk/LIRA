@@ -1,0 +1,289 @@
+{
+  "schema_version": "2.0.0",
+  "language_code": "en",
+  "part_of_speech": "CONJUNCTION",
+  "closed_class_kind": "coordinating_conjunction",
+  "count": 7,
+  "words": [
+    {
+      "entry_id": "f9363c79-46cb-4c3a-bf78-ade8b27df308",
+      "lexical_form": "for",
+      "normalised_form": "for",
+      "text": "for",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "CONJUNCTION",
+      "closed_class": true,
+      "closed_class_kind": "coordinating_conjunction",
+      "definition": "Introduces the reason for the preceding clause (formal)",
+      "gloss": "Introduces the reason for the preceding clause (formal)",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "dd9a22ee-2290-4d10-b27e-5b7c90b2e089",
+      "lexical_form": "and",
+      "normalised_form": "and",
+      "text": "and",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "CONJUNCTION",
+      "closed_class": true,
+      "closed_class_kind": "coordinating_conjunction",
+      "definition": "Joins two or more equivalent words, phrases, or clauses",
+      "gloss": "Joins two or more equivalent words, phrases, or clauses",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "2bb15f2d-0798-41c6-a448-15662f5b80c7",
+      "lexical_form": "nor",
+      "normalised_form": "nor",
+      "text": "nor",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "CONJUNCTION",
+      "closed_class": true,
+      "closed_class_kind": "coordinating_conjunction",
+      "definition": "Joins a second negative clause or phrase, continuing a negation",
+      "gloss": "Joins a second negative clause or phrase, continuing a negation",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "5492e408-c6de-4a03-85c4-4d351b42826e",
+      "lexical_form": "but",
+      "normalised_form": "but",
+      "text": "but",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "CONJUNCTION",
+      "closed_class": true,
+      "closed_class_kind": "coordinating_conjunction",
+      "definition": "Joins two contrasting words, phrases, or clauses",
+      "gloss": "Joins two contrasting words, phrases, or clauses",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "db85153a-4b0e-4d79-b426-97880ae06b3b",
+      "lexical_form": "or",
+      "normalised_form": "or",
+      "text": "or",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "CONJUNCTION",
+      "closed_class": true,
+      "closed_class_kind": "coordinating_conjunction",
+      "definition": "Joins alternatives",
+      "gloss": "Joins alternatives",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "423e5eb5-e290-4f60-a89a-935bfd89d53d",
+      "lexical_form": "yet",
+      "normalised_form": "yet",
+      "text": "yet",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "CONJUNCTION",
+      "closed_class": true,
+      "closed_class_kind": "coordinating_conjunction",
+      "definition": "Introduces a contrasting statement, similar to 'but'",
+      "gloss": "Introduces a contrasting statement, similar to 'but'",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "8f86f56f-8fc5-4381-9b70-bcb1d5ff078a",
+      "lexical_form": "so",
+      "normalised_form": "so",
+      "text": "so",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "CONJUNCTION",
+      "closed_class": true,
+      "closed_class_kind": "coordinating_conjunction",
+      "definition": "Introduces a result or consequence",
+      "gloss": "Introduces a result or consequence",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    }
+  ]
+}

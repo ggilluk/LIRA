@@ -1,0 +1,76 @@
+{
+  "schema_version": "2.0.0",
+  "asset_version": "1.21.0",
+  "language_code": "en",
+  "total_lexical_forms": 435,
+  "files": [
+    {
+      "file": "determiners.json",
+      "count": 37
+    },
+    {
+      "file": "pronouns.json",
+      "count": 100
+    },
+    {
+      "file": "auxiliaries.json",
+      "count": 36
+    },
+    {
+      "file": "prepositions.json",
+      "count": 96
+    },
+    {
+      "file": "coordinating_conjunctions.json",
+      "count": 7
+    },
+    {
+      "file": "subordinating_conjunctions.json",
+      "count": 36
+    },
+    {
+      "file": "particles.json",
+      "count": 16
+    },
+    {
+      "file": "punctuation.json",
+      "count": 28
+    },
+    {
+      "file": "symbols.json",
+      "count": 46
+    },
+    {
+      "file": "numerals.json",
+      "count": 33
+    },
+    {
+      "file": "metalinguistic_nouns.json",
+      "count": 66
+    },
+    {
+      "file": "metalinguistic_verbs.json",
+      "count": 45
+    },
+    {
+      "file": "metalinguistic_adjectives.json",
+      "count": 28
+    },
+    {
+      "file": "metalinguistic_adverbs.json",
+      "count": 17
+    },
+    {
+      "file": "metalinguistic_proper_nouns.json",
+      "count": 1
+    },
+    {
+      "file": "metalinguistic_interjections.json",
+      "count": 13
+    },
+    {
+      "file": "promoted_words.json",
+      "count": 2465
+    }
+  ]
+}

@@ -1,0 +1,689 @@
+{
+  "schema_version": "2.0.0",
+  "language_code": "en",
+  "part_of_speech": "ADVERB",
+  "closed_class_kind": "metalinguistic_term",
+  "count": 17,
+  "words": [
+    {
+      "entry_id": "8400ba65-aa4f-4430-8857-c7aea671378b",
+      "lexical_form": "grammatically",
+      "normalised_form": "grammatically",
+      "text": "grammatically",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "ADVERB",
+      "closed_class": false,
+      "closed_class_kind": "metalinguistic_term",
+      "definition": "In a way that relates to grammar",
+      "gloss": "In a way that relates to grammar",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 5,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Metalinguistic Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "c68e3edf-5d9c-4497-bf80-3ba2c3d6494a",
+      "lexical_form": "lexically",
+      "normalised_form": "lexically",
+      "text": "lexically",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "ADVERB",
+      "closed_class": false,
+      "closed_class_kind": "metalinguistic_term",
+      "definition": "In a way that relates to words or vocabulary, rather than grammar",
+      "gloss": "In a way that relates to words or vocabulary, rather than grammar",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 4,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Metalinguistic Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "689df181-9bb2-4dc6-9a22-b17a4a6ada0c",
+      "lexical_form": "semantically",
+      "normalised_form": "semantically",
+      "text": "semantically",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "ADVERB",
+      "closed_class": false,
+      "closed_class_kind": "metalinguistic_term",
+      "definition": "In a way that relates to meaning",
+      "gloss": "In a way that relates to meaning",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 5,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Metalinguistic Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "aceeeacf-1a99-4a29-85fe-be693899efbb",
+      "lexical_form": "syntactically",
+      "normalised_form": "syntactically",
+      "text": "syntactically",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "ADVERB",
+      "closed_class": false,
+      "closed_class_kind": "metalinguistic_term",
+      "definition": "In a way that relates to the arrangement of words in a sentence",
+      "gloss": "In a way that relates to the arrangement of words in a sentence",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 5,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Metalinguistic Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "e30d9cdf-be96-4e16-bee9-340508407e4a",
+      "lexical_form": "morphologically",
+      "normalised_form": "morphologically",
+      "text": "morphologically",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "ADVERB",
+      "closed_class": false,
+      "closed_class_kind": "metalinguistic_term",
+      "definition": "In a way that relates to the form or structure of words",
+      "gloss": "In a way that relates to the form or structure of words",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 6,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Metalinguistic Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "e5f75ef5-307f-4ada-9b65-57617101f7e6",
+      "lexical_form": "directly",
+      "normalised_form": "directly",
+      "text": "directly",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "ADVERB",
+      "closed_class": false,
+      "closed_class_kind": "metalinguistic_term",
+      "definition": "In a straight line or manner, without an intervening step",
+      "gloss": "In a straight line or manner, without an intervening step",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 3,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Metalinguistic Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "b6c1fe06-6734-4ec0-a40f-f332c14ff81c",
+      "lexical_form": "indirectly",
+      "normalised_form": "indirectly",
+      "text": "indirectly",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "ADVERB",
+      "closed_class": false,
+      "closed_class_kind": "metalinguistic_term",
+      "definition": "By an indirect route or means, with an intervening step",
+      "gloss": "By an indirect route or means, with an intervening step",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 4,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Metalinguistic Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "267662aa-e6af-4b19-ac2c-d1f6a2d77da1",
+      "lexical_form": "mutually",
+      "normalised_form": "mutually",
+      "text": "mutually",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "ADVERB",
+      "closed_class": false,
+      "closed_class_kind": "metalinguistic_term",
+      "definition": "In a way that is shared or reciprocal between two or more parties",
+      "gloss": "In a way that is shared or reciprocal between two or more parties",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 3,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Metalinguistic Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "86de0346-43bc-4b93-8c9c-1786cbbe2bdb",
+      "lexical_form": "typically",
+      "normalised_form": "typically",
+      "text": "typically",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "ADVERB",
+      "closed_class": false,
+      "closed_class_kind": "metalinguistic_term",
+      "definition": "In a way that is usual or characteristic",
+      "gloss": "In a way that is usual or characteristic",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 4,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Metalinguistic Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "4bc597a3-c8c3-4819-94ea-a6664b94b99a",
+      "lexical_form": "usually",
+      "normalised_form": "usually",
+      "text": "usually",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "ADVERB",
+      "closed_class": false,
+      "closed_class_kind": "metalinguistic_term",
+      "definition": "Under normal or ordinary conditions; most of the time",
+      "gloss": "Under normal or ordinary conditions; most of the time",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 3,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Metalinguistic Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "34e310d8-9dab-4399-a6e4-9b3676177ff8",
+      "lexical_form": "always",
+      "normalised_form": "always",
+      "text": "always",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "ADVERB",
+      "closed_class": false,
+      "closed_class_kind": "metalinguistic_term",
+      "definition": "At all times; on every occasion, without exception",
+      "gloss": "At all times; on every occasion, without exception",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Metalinguistic Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "648e8c04-22d3-4681-9bcd-4b79686e31ae",
+      "lexical_form": "sometimes",
+      "normalised_form": "sometimes",
+      "text": "sometimes",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "ADVERB",
+      "closed_class": false,
+      "closed_class_kind": "metalinguistic_term",
+      "definition": "On some occasions, but not always",
+      "gloss": "On some occasions, but not always",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 4,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Metalinguistic Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "ba98b742-e8dd-4e7a-ab17-8291e2cd4a92",
+      "lexical_form": "never",
+      "normalised_form": "never",
+      "text": "never",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "ADVERB",
+      "closed_class": false,
+      "closed_class_kind": "metalinguistic_term",
+      "definition": "At no time; not on any occasion",
+      "gloss": "At no time; not on any occasion",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Metalinguistic Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "ca6fde4d-dcbd-4354-8bd7-b33993633cc9",
+      "lexical_form": "however",
+      "normalised_form": "however",
+      "text": "however",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "ADVERB",
+      "closed_class": true,
+      "closed_class_kind": "discourse_marker",
+      "definition": "Discourse marker introducing a statement that contrasts with or qualifies what preceded it",
+      "gloss": "Discourse marker introducing a statement that contrasts with or qualifies what preceded it",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": null,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "d219092f-54a1-43c2-88c8-d14f5ae72aaa",
+      "lexical_form": "therefore",
+      "normalised_form": "therefore",
+      "text": "therefore",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "ADVERB",
+      "closed_class": true,
+      "closed_class_kind": "discourse_marker",
+      "definition": "Discourse marker introducing a conclusion or consequence that follows logically from what preceded it",
+      "gloss": "Discourse marker introducing a conclusion or consequence that follows logically from what preceded it",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": null,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "32d5b39a-82b4-47d6-9ef6-d876aba80104",
+      "lexical_form": "moreover",
+      "normalised_form": "moreover",
+      "text": "moreover",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "ADVERB",
+      "closed_class": true,
+      "closed_class_kind": "discourse_marker",
+      "definition": "Discourse marker introducing an additional point that reinforces what preceded it",
+      "gloss": "Discourse marker introducing an additional point that reinforces what preceded it",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": null,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "2622b1ea-fce5-4cbe-a7d4-45acc1ae326c",
+      "lexical_form": "nevertheless",
+      "normalised_form": "nevertheless",
+      "text": "nevertheless",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "ADVERB",
+      "closed_class": true,
+      "closed_class_kind": "discourse_marker",
+      "definition": "Discourse marker introducing a statement that holds true in spite of what preceded it",
+      "gloss": "Discourse marker introducing a statement that holds true in spite of what preceded it",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": null,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    }
+  ]
+}
