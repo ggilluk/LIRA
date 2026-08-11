@@ -5,9 +5,25 @@ import { copyWordWithFreshUuid, type Word } from "./word";
  * 3). Ported from vocabulary/data/dictionary.py -- the Python version
  * is thread-safe (a lock around every access); JavaScript's
  * single-threaded execution model gives that guarantee for free, so no
- * lock is ported. */
+ * lock is ported.
+ *
+ * Python's `lookup_all`/`find_by_uuid` are a linear scan over every
+ * Word (`for word in self.words if ...`), which is fine for a batch
+ * script that calls them a handful of times. This port calls them from
+ * a live, interactive page instead -- DictionaryView.wordRecords()
+ * alone calls the equivalent of lookupAll once per definition word
+ * across every Word in the Dictionary, and RelationshipSeeder.resolve()
+ * calls it once per cached relationship (thousands, against thousands
+ * of Words) -- so a linear scan here is quadratic overall and was
+ * measured freezing the page for several seconds on the real Common
+ * Vocabulary Cache (~3,100 words, ~6,100 relationships). `byText`/
+ * `byUuid` keep the exact same lookup() and lookupAll() behaviour
+ * (case-insensitive text match, first-seeded-wins default, every
+ * homograph returned) but backed by a hash map instead of a scan. */
 export class Dictionary {
   private words: Word[] = [];
+  private readonly byText = new Map<string, Word[]>();
+  private readonly byUuid = new Map<string, Word>();
 
   all(): readonly Word[] {
     return this.words.slice();
@@ -29,16 +45,20 @@ export class Dictionary {
    * ever surfaces the first such entry; this is how the rest become
    * visible too. */
   lookupAll(text: string): readonly Word[] {
-    const lower = text.toLowerCase();
-    return this.words.filter((word) => word.text.toLowerCase() === lower);
+    return this.byText.get(text.toLowerCase())?.slice() ?? [];
   }
 
   findByUuid(wordId: string): Word | undefined {
-    return this.words.find((word) => word.uuid.value === wordId);
+    return this.byUuid.get(wordId);
   }
 
   append(word: Word): void {
     this.words.push(word);
+    const key = word.text.toLowerCase();
+    const bucket = this.byText.get(key);
+    if (bucket) bucket.push(word);
+    else this.byText.set(key, [word]);
+    this.byUuid.set(word.uuid.value, word);
   }
 
   totalEntries(): number {
@@ -58,7 +78,7 @@ export class Dictionary {
    * regardless of how many Domains hold their own runtime copy of it. */
   seedFrom(other: Dictionary): void {
     for (const word of other.words) {
-      this.words.push(copyWordWithFreshUuid(word));
+      this.append(copyWordWithFreshUuid(word));
     }
   }
 }
