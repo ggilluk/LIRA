@@ -1800,7 +1800,10 @@
           "licence_identifier": null
         }
       ],
-      "entry_id": "2cc20767-ad2f-4f9c-967e-04adf9905f77"
+      "entry_id": "2cc20767-ad2f-4f9c-967e-04adf9905f77",
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
     }
   ]
 }

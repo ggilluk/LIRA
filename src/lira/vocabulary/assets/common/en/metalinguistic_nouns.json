@@ -2600,7 +2600,10 @@
           "licence_identifier": null
         }
       ],
-      "entry_id": "a3cd50fa-457b-48f9-8f90-de6544f831e1"
+      "entry_id": "a3cd50fa-457b-48f9-8f90-de6544f831e1",
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
     },
     {
       "lexical_form": "contribution",
@@ -2637,7 +2640,10 @@
           "licence_identifier": null
         }
       ],
-      "entry_id": "862befbe-d80f-48b3-8c94-7f6e740a9f9d"
+      "entry_id": "862befbe-d80f-48b3-8c94-7f6e740a9f9d",
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
     }
   ]
 }

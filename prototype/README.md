@@ -82,6 +82,20 @@ What deliberately differs, and why:
   `downloadAsFile()` triggers a browser download of the same HTML
   instead.
 
+`promoted_words.json` includes two definition-gap batches on top of the
+mandatory/supplementary closed-class + metalinguistic vocabulary: every
+word some other Common word's own `definition` text depended on but
+that wasn't itself seeded, found by scanning `Word.definitionWords()`
+against the Dictionary and promoted the same way
+`WordSeeder.promoteWord` promotes any open-class word (real, hand-
+authored definitions, never fabricated) -- see
+`src/lira/vocabulary/assets/common/en/missing_words.json` for the
+current residual gap (definition-gap closure isn't a single fixed
+point: new definitions reference some words of their own) and
+`examples/common_definition_gap_vocabulary_2.py`/
+`examples/common_definition_gap_vocabulary_seeding_2.py` in the Python
+package for the second batch's data and seeding script.
+
 ### Linguistics Layer (Service ported and wired in; new Portal UI)
 
 Ported from `src/lira/linguistics/` -- `data/` and `role/` (the full
@@ -147,7 +161,7 @@ in-memory `Dictionary` -- the same way two real backend services would
 each hold their own working copy of shared reference data rather than
 share a process. That does mean "known words" here is exactly the
 Common Vocabulary Cache's closed-class + metalinguistic word list
-(~3,093 words), not the full English language: typed text using
+(~4,036 words), not the full English language: typed text using
 ordinary open-class vocabulary outside that list reads back
 `UNRESOLVED`, honestly, the same as the Python original would against
 the same cache slice.
@@ -246,7 +260,7 @@ root is "All Domains", and nesting follows each Domain's real parent --
 `main.ts` registers "Physics" under "Common" and bootstraps it with
 `Dictionary.seedFrom(common)`, the actual mechanism a freshly created
 Domain uses to inherit Common's vocabulary (vocabulary/data/dictionary.py),
-so Physics's 3,093 words in the running app are genuinely inherited, not
+so Physics's 4,036 words in the running app are genuinely inherited, not
 fabricated to make the tree look populated.
 
 `PortalDomain`/`PortalDomainRegistry` (knowledge/data/portal_domain.ts)
@@ -333,8 +347,8 @@ Two UI Components read the same board:
   `Promise.all([vocabularyClient.init(), linguisticsClient.init()])`).
   Since it's driven by the same board each worker updates via its own
   client's `onStatus`, its checklist reflects genuine progress from both
-  ("Seeded 3093 words — seeding relationships…" for Vocabulary, "Seeded
-  3093 words — configuring grammar…" for Linguistics), not a fake timer.
+  ("Seeded 4036 words — seeding relationships…" for Vocabulary, "Seeded
+  4036 words — configuring grammar…" for Linguistics), not a fake timer.
 - `ServiceStatusView` (knowledge/ui/service_status_view.ts) -- the
   persistent "Background Services" panel under the component switcher
   in `PortalShell`, showing the same rows on an ongoing basis. Each
