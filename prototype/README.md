@@ -31,7 +31,8 @@ prototype/
 │   ├── vite-env.d.ts       Vite ambient types (import.meta.glob, etc.)
 │   └── lira/
 │       ├── vocabulary/     ported -- see below
-│       ├── linguistics/    Service ported (data/ + role/); UI not ported -- see below
+│       ├── linguistics/    Service ported and wired in (data/ + role/), plus a new
+│       │                   Portal-native Sentence Reader UI -- see below
 │       ├── value_objects/{documentation,data,agents,role,api,ui,assets}/
 │       └── knowledge/
 │           ├── data/portal_domain.ts    Portal-only Domain stand-in -- see below
@@ -81,7 +82,7 @@ What deliberately differs, and why:
   `downloadAsFile()` triggers a browser download of the same HTML
   instead.
 
-### Linguistics Layer (Service ported, UI not ported)
+### Linguistics Layer (Service ported and wired in; new Portal UI)
 
 Ported from `src/lira/linguistics/` -- `data/` and `role/` (the full
 grammar/parsing engine: `GrammarConfigurator`'s phrase/clause/sentence
@@ -89,12 +90,11 @@ rule tables, `SequenceEngine`'s bounded beam search, `PhraseReader`/
 `ClauseReader`/`SentenceReader`, `GraphProcessor`, `LinguisticController`)
 plus `ui/user_prompt.ts` (a plain data type despite living in `ui/` in
 the Python original -- see that file's own docstring). Deliberately
-**not** ported: `sentence_reader_view.py`/`sentence_reader_server.py`
-(the actual Linguistics UI) -- this was scoped as "port the Linguistics
-Service, not the UI". Nothing in this layer is wired into `main.ts`,
-the Portal shell, or a Web Worker yet; it's ported and tested in
-isolation, the same stage Vocabulary was in before it got its own
-Service worker.
+**not ported**: `sentence_reader_view.py`/`sentence_reader_server.py`
+themselves -- this layer's UI is a new component built directly against
+the Portal shell (`linguistics/ui/sentence_reader_view.ts`, see below),
+not a port of those two files, though it draws its visual language from
+them.
 
 Verified against the real seeded Common Vocabulary Cache, not
 synthetic fixtures: `readSentence("A meaning is a representation.")`
@@ -131,6 +131,71 @@ What deliberately differs from the Python original, and why:
   becomes `crypto.randomUUID().replace(/-/g, "").slice(0, 6)` --
   browser-native, same shape.
 
+#### Linguistic Service (a real Web Worker)
+
+`linguistics/role/linguistics_worker.ts` runs a `WordSeeder` +
+`LinguisticController` inside its own browser Web Worker -- the same
+"browser-tab stand-in for a server-side process" role
+`vocabulary/role/vocabulary_worker.ts` plays for Vocabulary, given its
+own message protocol (`linguistics_worker_protocol.ts`) and main-thread
+client (`LinguisticsWorkerClient`) of the same shape (`init()`, an
+`onStatus` listener fan-out, and here a `read(text)` call instead of
+`renderDomain(name)`). It seeds its **own** copy of the Common
+Vocabulary Cache inside its own worker -- it has no way to reach across
+the Vocabulary worker's separate thread boundary to share that one's
+in-memory `Dictionary` -- the same way two real backend services would
+each hold their own working copy of shared reference data rather than
+share a process. That does mean "known words" here is exactly the
+Common Vocabulary Cache's closed-class + metalinguistic word list
+(~3,093 words), not the full English language: typed text using
+ordinary open-class vocabulary outside that list reads back
+`UNRESOLVED`, honestly, the same as the Python original would against
+the same cache slice.
+
+`read(text)` returns `{predicted, trace}` -- a JSON-safe mirror of one
+read `Sentence` (`JsonSentence`/`JsonClause`/`JsonPhrase`, camelCase
+versions of `sentence_reader_server.py`'s own `_sentence_to_json`/
+`_clause_to_json`/`_phrase_to_json`) plus the full per-token-position
+search trace `role/phrase_reader.ts`'s `positionTrace()` already builds
+(every phrase type tried, whether its start state matched, every
+completion considered, which one won). Both worker chunks -- Vocabulary
+(~5MB, its own Common Vocabulary Cache copy) and Linguistics (~2.8MB,
+a second copy plus the whole grammar engine) -- load and seed in
+parallel; `main.ts` gates the LoadingScreen on both before mounting the
+real `PortalShell`.
+
+#### Sentence Reader (linguistics/ui/sentence_reader_view.ts)
+
+A new Portal-native UI component -- **not** a port of
+`sentence_reader_view.py`/`sentence_reader_server.py` (see those files'
+own docstrings: a full standalone page with its own masthead, its own
+`:root` tokens, and a `fetch("/api/read")` call against a local Python
+HTTP server). This component is built directly against the Portal
+shell's own composition instead: it assumes the shell's `--ground`/
+`--surface`/`--accent`/etc. tokens already exist on an ancestor element
+rather than defining its own, it never renders a title of its own (the
+Portal topbar's breadcrumb is the only title), it reflows via a CSS
+grid with `auto-fit`/`minmax` columns rather than a viewport-width media
+query (so it stacks correctly at the Portal pane's own, narrower-than-
+viewport width), and "reading" a sentence calls
+`LinguisticsWorkerClient.read()` directly instead of `fetch()`-ing a
+local server -- there is no server anywhere in this port. What *is*
+carried over from the old page, since it's what "look at the old UI for
+inspiration" asked for, is the visual language: part-of-speech chip
+colours, validation badge colours, and the position/attempt/completion
+shape of the trace panel -- labelled "Full trace — word prediction"
+here, since that's what the old trace panel actually *is*: not a
+separate autocomplete feature, but the state machine's own per-token,
+per-position record of which phrase types it predicted and tried before
+settling on a winner.
+
+Selectable from the Portal's component switcher (Vocabulary /
+Linguistics / Knowledge) once both worker Services report ready; type or
+paste any text, or pick one of five quick examples (the same worked
+examples `sentence_reader_server.py`'s own `DEFAULT_QUICK_EXAMPLES`
+ships, chosen there to exercise a spread of outcomes), and see the
+predicted structure plus the full trace update live.
+
 ### Portal shell (knowledge/ui/portal_shell.ts)
 
 The app shell around `DictionaryView` -- a Windows-Explorer-style desktop
@@ -155,11 +220,15 @@ them, not extended to fake the parts it's missing.
 
 Above the view pane sits a component switcher -- Vocabulary /
 Linguistics / Knowledge, one button per Architectural Layer that has (or
-will have) a UI component. Only Vocabulary is enabled; Linguistics and
-Knowledge render as visibly disabled tabs ("Not ported yet") rather than
-being hidden, so the shell's own shape doesn't imply LIRA only ever has
-one layer. Selecting a Domain asks the Vocabulary Service (below) to
-render it and mounts the result *directly into the shell's own DOM* --
+will have) a UI component. Vocabulary and Linguistics are enabled;
+Knowledge renders as a visibly disabled tab ("Not ported yet") rather
+than being hidden, so the shell's own shape doesn't imply LIRA only ever
+has these two layers. The Linguistics tab mounts a `SentenceReaderView`
+(see above) -- unlike Vocabulary it isn't per-Domain data, so it renders
+the same regardless of which Domain node is selected in the tree.
+Selecting a Domain with Vocabulary active asks the Vocabulary Service
+(below) to render it and mounts the result *directly into the shell's
+own DOM* --
 `DictionaryView.renderFragment()`'s style/body/script pieces, the same
 composition Python's `LiraView` uses to combine views, not an `<iframe
 srcdoc>` the way this shell's first version worked. That matters for two
@@ -219,18 +288,20 @@ what's ready so far.
 
 Two UI Components read the same board:
 - `LoadingScreen` (knowledge/ui/loading_screen.ts) -- the "LIRA
-  Initialising" box, mounted immediately and shown until the Vocabulary
-  Service reports `"done"`. Since it's driven by the same board the
-  worker updates via `VocabularyWorkerClient.onStatus`, its checklist
-  reflects genuine seeding progress ("Seeded 3093 words — seeding
-  relationships…"), not a fake timer.
+  Initialising" box, mounted immediately and shown until **both** the
+  Vocabulary and Linguistic Services report `"done"` (`main.ts` gates on
+  `Promise.all([vocabularyClient.init(), linguisticsClient.init()])`).
+  Since it's driven by the same board each worker updates via its own
+  client's `onStatus`, its checklist reflects genuine progress from both
+  ("Seeded 3093 words — seeding relationships…" for Vocabulary, "Seeded
+  3093 words — configuring grammar…" for Linguistics), not a fake timer.
 - `ServiceStatusView` (knowledge/ui/service_status_view.ts) -- the
   persistent "Background Services" panel under the component switcher
-  in `PortalShell`, showing the same rows on an ongoing basis. The
-  Vocabulary Service's `"done"` state displays as "Running", not
-  "Ready"/finished -- the worker itself stays alive and keeps handling
-  `renderDomain` requests, it's a live process, not a one-shot script
-  that exits once seeding completes.
+  in `PortalShell`, showing the same rows on an ongoing basis. Each
+  Service's `"done"` state displays as "Running", not "Ready"/finished
+  -- both workers stay alive and keep handling requests (`renderDomain`
+  for Vocabulary, `read` for Linguistics), live processes, not one-shot
+  scripts that exit once their initial work completes.
 
 ## Tooling
 

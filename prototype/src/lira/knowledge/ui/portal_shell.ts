@@ -2,6 +2,8 @@ import type { ServiceStatusBoard } from "../data/service_status";
 import type { PortalDomain, PortalDomainRegistry } from "../data/portal_domain";
 import { ServiceStatusView } from "./service_status_view";
 import type { VocabularyWorkerClient } from "../../vocabulary/role/vocabulary_worker_client";
+import type { LinguisticsWorkerClient } from "../../linguistics/role/linguistics_worker_client";
+import { SentenceReaderView } from "../../linguistics/ui/sentence_reader_view";
 
 /** PortalShell: a Windows-Explorer-style desktop shell that switches to
  * a drill-down mobile portal -- the folder tree is the Domain hierarchy
@@ -9,10 +11,10 @@ import type { VocabularyWorkerClient } from "../../vocabulary/role/vocabulary_wo
  * `parentName`), and the pane beside it hosts a component switcher
  * (Vocabulary / Linguistics / Knowledge -- one button per ported-or-not
  * Architectural Layer that has a UI component) mounting the selected
- * one's view for whichever Domain is picked. Only Vocabulary is
- * available today; Linguistics and Knowledge render as disabled tabs
- * rather than disappearing, so the shell's own shape doesn't quietly
- * imply LIRA only ever has one layer. Beneath the component switcher,
+ * one's view for whichever Domain is picked. Vocabulary and Linguistics
+ * are available today; Knowledge renders as a disabled tab rather than
+ * disappearing, so the shell's own shape doesn't quietly imply LIRA
+ * only ever has these two layers. Beneath the component switcher,
  * a `ServiceStatusView` shows the same Background Services the
  * LoadingScreen tracked during startup, still live.
  *
@@ -41,7 +43,17 @@ import type { VocabularyWorkerClient } from "../../vocabulary/role/vocabulary_wo
  * (not `innerHTML`, which never executes injected scripts), wrapped in
  * its own IIFE so its top-level `const`s/`function`s can't collide
  * with a second fragment mounted later (or, one day, a sibling view's
- * own script mounted alongside it). */
+ * own script mounted alongside it).
+ *
+ * The Linguistics view is different in kind, not just in content: it's
+ * not a ported Python page being embedded, it's a new component
+ * (linguistics/ui/sentence_reader_view.ts's `SentenceReaderView`) built
+ * directly against this shell's own composition and a real
+ * `LinguisticsWorkerClient` -- there is no fragment to inject and no
+ * per-Domain routing (the Linguistics worker reads against its own
+ * seeded Common vocabulary regardless of which Domain node is
+ * selected); it just mounts itself into whatever container this shell
+ * hands it. */
 
 type ShellMode = "desktop" | "mobile";
 type MobileScreen = "browse" | "view";
@@ -55,7 +67,7 @@ interface ComponentDescriptor {
 
 const COMPONENTS: readonly ComponentDescriptor[] = [
   { id: "vocabulary", label: "Vocabulary", available: true },
-  { id: "linguistics", label: "Linguistics", available: false },
+  { id: "linguistics", label: "Linguistics", available: true },
   { id: "knowledge", label: "Knowledge", available: false },
 ];
 
@@ -74,11 +86,13 @@ export class PortalShell {
   private readonly title: string;
   private container: HTMLElement | undefined;
   private readonly serviceStatusView: ServiceStatusView;
+  private readonly sentenceReaderView: SentenceReaderView;
   private renderToken = 0;
 
   constructor(
     private readonly registry: PortalDomainRegistry,
     private readonly vocabularyClient: VocabularyWorkerClient,
+    linguisticsClient: LinguisticsWorkerClient,
     statusBoard: ServiceStatusBoard,
     options: PortalShellOptions = {},
   ) {
@@ -86,6 +100,7 @@ export class PortalShell {
     this.mode = typeof window !== "undefined" && window.matchMedia("(max-width: 720px)").matches ? "mobile" : "desktop";
     this.selectedName = this.registry.roots()[0]?.name;
     this.serviceStatusView = new ServiceStatusView(statusBoard);
+    this.sentenceReaderView = new SentenceReaderView(linguisticsClient);
   }
 
   mount(container: HTMLElement): void {
@@ -157,7 +172,21 @@ export class PortalShell {
 
     if (selected && this.selectedComponent === "vocabulary") {
       void this.loadView(selected);
+    } else if (selected && this.selectedComponent === "linguistics") {
+      this.loadLinguisticsView();
     }
+  }
+
+  /** Mounts the Linguistics `SentenceReaderView` into the pane's
+   * fragment container. Unlike `loadView()`, this isn't racing a
+   * per-Domain network/worker fetch before anything can be shown --
+   * the component mounts synchronously and manages its own read
+   * requests once a user types or picks an example sentence -- so
+   * there's no `renderToken` to guard here. */
+  private loadLinguisticsView(): void {
+    if (!this.container) return;
+    const mount = this.container.querySelector<HTMLElement>(".portal-fragment-mount");
+    if (mount) this.sentenceReaderView.mount(mount);
   }
 
   /** Requests the selected Domain's Vocabulary fragment from the worker
@@ -273,7 +302,7 @@ export class PortalShell {
       return `
         <div class="portal-view ${fullWidth ? "portal-view--full" : ""}">
           ${switcher}
-          <div class="portal-view-empty">Select a Domain to open its Vocabulary.</div>
+          <div class="portal-view-empty">Select a Domain to continue.</div>
           ${statusPanel}
         </div>`;
     }
