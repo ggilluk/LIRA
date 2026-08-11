@@ -13,6 +13,20 @@ import type { GrammarConfigurator, PhraseGrammar } from "./grammar_configurator"
 import type { GraphProcessor } from "./graph_processor";
 import { createSequenceStep, type SequenceEngine, type SequencePath, type SequenceStep } from "./sequence_engine";
 
+/** One token's contribution to a trace completion's part-of-speech
+ * breakdown -- see positionTrace()'s own "Trace" section below.
+ * Deliberately not imported from a worker-only protocol module (this
+ * file's own trace-building return type stays `unknown`, same as
+ * before); linguistics_worker_protocol.ts's `TraceCompletion.tokens`
+ * field is a structurally identical, independently declared type on
+ * the other side of the worker's postMessage boundary. */
+export interface TraceToken {
+  text: string;
+  partOfSpeech: string | null;
+  isUnknown: boolean;
+  isMarker: boolean;
+}
+
 /** PhraseReader: spec 12.3's actual readPhrase() implementation -- the
  * only place phrase-level part-of-speech ambiguity gets resolved.
  * Tries every PhraseType at the given start position (a NOUN_PHRASE and
@@ -290,6 +304,28 @@ export class PhraseReader {
     return words.join(" ");
   }
 
+  /** Per-token part of speech this candidate path actually selected --
+   * not just the token's *candidate* parts of speech (TracePosition's
+   * own candidatePartsOfSpeech, which only covers the position's first
+   * token), but the specific one this completion committed to at every
+   * token it covers, including a PREPOSITIONAL_PHRASE completion's
+   * nested NOUN_PHRASE steps. A marker step (e.g. INFINITIVE_PHRASE's
+   * "to") has no POS state of its own (SequenceStep's own docstring);
+   * an unknown step is an unseeded token the grammar's absorption rule
+   * let through -- both report `partOfSpeech: null`, distinguished by
+   * `isMarker`/`isUnknown` so the UI can label them instead of showing
+   * a blank. */
+  private pathPartsOfSpeech(path: SequencePath, tokens: readonly TokenReading[]): TraceToken[] {
+    const entries: TraceToken[] = path.steps.map((step) => ({
+      text: tokens[step.tokenIndex].text,
+      partOfSpeech: step.partOfSpeech !== undefined ? PartOfSpeech[step.partOfSpeech] : null,
+      isUnknown: step.isUnknown,
+      isMarker: step.isMarker,
+    }));
+    for (const nested of path.nestedPaths) entries.push(...this.pathPartsOfSpeech(nested, tokens));
+    return entries;
+  }
+
   private positionTrace(
     tokens: readonly TokenReading[], startIndex: number, grammar: GrammarConfigurator,
     perTypeCandidates: Map<PhraseType, SequencePath[]>, winningPath: SequencePath | undefined, winningPhrase: Phrase,
@@ -316,6 +352,7 @@ export class PhraseReader {
         validation: ValidationOutcome[this.engine.validateSequence(path)],
         confidence: Math.round(this.engine.scorer.confidence(this.engine.scoringFactors(path, tokens)) * 10000) / 10000,
         isWinner: path === winningPath,
+        tokens: this.pathPartsOfSpeech(path, tokens),
       }));
 
       let rejectionReason: string | null = null;
@@ -350,6 +387,13 @@ export class PhraseReader {
       winnerText: winningPhrase.text,
       winnerValidation: ValidationOutcome[winningPhrase.validation],
       winnerEndIndex: winningPhrase.endPosition,
+      // Read straight off the materialised winningPhrase.words rather
+      // than re-derived from a SequencePath (like completions[].tokens
+      // above): this is the one candidate that actually got
+      // GraphProcessor.materialiseToken'd into real Words, so its
+      // per-token partOfSpeech is authoritative, not just a candidate's
+      // own selection.
+      winnerPartsOfSpeech: winningPhrase.words.map((word) => ({ text: word.text, partOfSpeech: PartOfSpeech[word.partOfSpeech] })),
     };
   }
 

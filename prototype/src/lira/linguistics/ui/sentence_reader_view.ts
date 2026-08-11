@@ -43,6 +43,7 @@ import type {
   ReadResult,
   TraceAttempt,
   TracePosition,
+  TraceToken,
 } from "../role/linguistics_worker_protocol";
 
 // Same hex values as vocabulary/ui/dictionary_view.ts's own POS_COLORS
@@ -276,6 +277,12 @@ export class SentenceReaderView {
     const posTags = position.candidatePartsOfSpeech.length
       ? position.candidatePartsOfSpeech.join(", ")
       : position.isKnown === false ? "unseeded" : "";
+    const winnerPos = position.winnerPartsOfSpeech.length
+      ? `<div class="lira-sr-winner-pos">
+          <span class="lira-sr-faint">Predicted part(s) of speech:</span>
+          ${position.winnerPartsOfSpeech.map((word) => posChip(word.text, word.partOfSpeech)).join("")}
+        </div>`
+      : "";
     return `
       <div class="lira-sr-position">
         <div class="lira-sr-position-head">
@@ -284,6 +291,7 @@ export class SentenceReaderView {
           <span class="lira-sr-faint">${escapeHtml(posTags)}</span>
           <span class="lira-sr-winner">&#8594; won by ${escapeHtml(position.winnerPhraseType ?? "none")}</span>
         </div>
+        ${winnerPos}
         ${position.attempts.map((attempt) => this.renderAttempt(attempt)).join("")}
       </div>`;
   }
@@ -294,6 +302,7 @@ export class SentenceReaderView {
           <div class="lira-sr-completion ${completion.isWinner ? "winner" : ""}">
             ${completion.isWinner ? `<span class="lira-sr-win-mark">&#10003; winner</span>` : ""}
             "${escapeHtml(completion.text)}" — ${escapeHtml(completion.validation)}, confidence ${completion.confidence.toFixed(2)}
+            ${renderTraceTokens(completion.tokens)}
           </div>`).join("")
       : attempt.rejectionReason
         ? `<div class="lira-sr-rejection">${escapeHtml(attempt.rejectionReason)}</div>`
@@ -330,6 +339,20 @@ function posChip(text: string, pos: string): string {
       <span class="w">${escapeHtml(text)}</span>
       <span class="p">${escapeHtml(pos)}</span>
     </span>`;
+}
+
+/** Renders one candidate completion's per-token part-of-speech
+ * breakdown -- the sequence this specific reading committed to, not
+ * just the token's candidate set. A marker token (e.g. INFINITIVE_PHRASE's
+ * "to") or an unseeded token the grammar absorbed both carry
+ * `partOfSpeech: null` (role/phrase_reader.ts's own TraceToken
+ * docstring); labelled MARKER/UNKNOWN here instead of a blank chip. */
+function renderTraceTokens(tokens: readonly TraceToken[]): string {
+  if (!tokens.length) return "";
+  const chips = tokens
+    .map((token) => posChip(token.text, token.partOfSpeech ?? (token.isMarker ? "MARKER" : "UNKNOWN")))
+    .join("");
+  return `<div class="lira-sr-trace-tokens">${chips}</div>`;
 }
 
 function errorsList(errors: readonly JsonReadingError[]): string {
@@ -421,6 +444,8 @@ const CSS = `
 .lira-sr-error-row { padding: 0.35rem 0.55rem; border-left: 3px solid #B2542D; background: color-mix(in srgb, #B2542D 8%, transparent); margin-bottom: 0.35rem; border-radius: 3px; }
 .lira-sr-position { border: 1px solid var(--line); border-radius: var(--radius); margin-bottom: 0.65rem; overflow: hidden; }
 .lira-sr-position-head { padding: 0.45rem 0.65rem; background: color-mix(in srgb, var(--accent) 7%, var(--surface)); display: flex; align-items: center; gap: 0.55rem; flex-wrap: wrap; }
+.lira-sr-winner-pos { padding: 0.4rem 0.65rem 0.5rem; display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; border-bottom: 1px solid var(--line); }
+.lira-sr-trace-tokens { margin-top: 0.35rem; display: flex; flex-wrap: wrap; }
 .lira-sr-attempt { padding: 0.45rem 0.65rem; border-top: 1px solid var(--line); font-size: 0.78rem; }
 .lira-sr-attempt.rejected { opacity: 0.62; }
 .lira-sr-attempt-head { display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; }

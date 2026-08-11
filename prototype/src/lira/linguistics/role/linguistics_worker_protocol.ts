@@ -107,12 +107,27 @@ export interface JsonSentence {
  * every phrase type the state machine tried at this token, whether its
  * required start state matched, every completion considered, and which
  * one (if any) won. */
+/** One token's contribution to a completion's part-of-speech breakdown
+ * -- structurally identical to role/phrase_reader.ts's own (independently
+ * declared, not imported -- see that file's own note) `TraceToken`. A
+ * marker step (e.g. INFINITIVE_PHRASE's "to") or an unseeded token the
+ * grammar's absorption rule let through both report `partOfSpeech:
+ * null`, distinguished by `isMarker`/`isUnknown` so the UI can label
+ * them instead of showing a blank. */
+export interface TraceToken {
+  text: string;
+  partOfSpeech: string | null;
+  isUnknown: boolean;
+  isMarker: boolean;
+}
+
 export interface TraceCompletion {
   text: string;
   endIndex: number;
   validation: string;
   confidence: number;
   isWinner: boolean;
+  tokens: TraceToken[];
 }
 
 export interface TraceAttempt {
@@ -133,6 +148,11 @@ export interface TracePosition {
   winnerText: string;
   winnerValidation: string;
   winnerEndIndex: number;
+  /** The winning phrase's own per-token part of speech, read off its
+   * real materialised Words -- see role/phrase_reader.ts's own
+   * positionTrace() docstring for why this is authoritative rather than
+   * re-derived from a candidate SequencePath. */
+  winnerPartsOfSpeech: { text: string; partOfSpeech: string }[];
 }
 
 export interface ReadResult {
