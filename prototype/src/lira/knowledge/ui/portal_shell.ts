@@ -1,23 +1,29 @@
-import { DictionaryView } from "../../vocabulary/ui/dictionary_view";
+import type { ServiceStatusBoard } from "../data/service_status";
 import type { PortalDomain, PortalDomainRegistry } from "../data/portal_domain";
+import { ServiceStatusView } from "./service_status_view";
+import type { VocabularyWorkerClient } from "../../vocabulary/role/vocabulary_worker_client";
 
 /** PortalShell: a Windows-Explorer-style desktop shell that switches to
  * a drill-down mobile portal -- the folder tree is the Domain hierarchy
  * (root is "All Domains"; nesting follows each PortalDomain's own
- * `parentName`), and the pane beside it mounts a ported UI component
- * for whichever Domain is selected (DictionaryView today; a Domain
- * with more than one ported layer would get its own tabs here the same
- * way DictionaryView's Words/Relationships/Hierarchy/Cyclic tabs work
- * inside one view).
+ * `parentName`), and the pane beside it hosts a component switcher
+ * (Vocabulary / Linguistics / Knowledge -- one button per ported-or-not
+ * Architectural Layer that has a UI component) mounting the selected
+ * one's view for whichever Domain is picked. Only Vocabulary is
+ * available today; Linguistics and Knowledge render as disabled tabs
+ * rather than disappearing, so the shell's own shape doesn't quietly
+ * imply LIRA only ever has one layer. Beneath the component switcher,
+ * a `ServiceStatusView` shows the same Background Services the
+ * LoadingScreen tracked during startup, still live.
  *
- * This is the real shell the mockup ("LIRA Portal Shell -- Explorer
- * Concept") sketched, not a mockup itself -- every control here is a
- * live event listener, and the view pane mounts a genuine
- * `DictionaryView.render()` output (a self-contained HTML document) in
- * an `<iframe srcdoc>`, the same embedding this prototype's `main.ts`
- * already uses and the same reason: `render()` returns its own
- * `<!DOCTYPE>`/`<head>`/`<script>`, which innerHTML would both mangle
- * and silently refuse to execute.
+ * Every control here is a live event listener, and the Vocabulary view
+ * comes from a real `VocabularyWorkerClient` -- a Web Worker running
+ * WordSeeder/RelationshipSeeder/DictionaryView off the main thread (see
+ * vocabulary/role/vocabulary_worker.ts) -- mounted via `<iframe
+ * srcdoc>`, the same embedding this prototype has used since main.ts's
+ * first version and the same reason: DictionaryView.render() returns
+ * its own `<!DOCTYPE>`/`<head>`/`<script>`, which innerHTML would both
+ * mangle and silently refuse to execute.
  *
  * Token names (`--ground`, `--surface`, `--ink`, `--accent`, `--line`,
  * `--line-strong`, `--shadow`) match vocabulary/ui/dictionary_view.py's
@@ -27,6 +33,19 @@ import type { PortalDomain, PortalDomainRegistry } from "../data/portal_domain";
 
 type ShellMode = "desktop" | "mobile";
 type MobileScreen = "browse" | "view";
+type ComponentId = "vocabulary" | "linguistics" | "knowledge";
+
+interface ComponentDescriptor {
+  id: ComponentId;
+  label: string;
+  available: boolean;
+}
+
+const COMPONENTS: readonly ComponentDescriptor[] = [
+  { id: "vocabulary", label: "Vocabulary", available: true },
+  { id: "linguistics", label: "Linguistics", available: false },
+  { id: "knowledge", label: "Knowledge", available: false },
+];
 
 export interface PortalShellOptions {
   title?: string;
@@ -38,18 +57,27 @@ export class PortalShell {
   private mode: ShellMode;
   private mobileScreen: MobileScreen = "browse";
   private selectedName: string | undefined;
+  private selectedComponent: ComponentId = "vocabulary";
   private readonly title: string;
-  private readonly viewCache = new Map<string, string>();
   private container: HTMLElement | undefined;
+  private readonly serviceStatusView: ServiceStatusView;
+  private renderToken = 0;
 
-  constructor(private readonly registry: PortalDomainRegistry, options: PortalShellOptions = {}) {
+  constructor(
+    private readonly registry: PortalDomainRegistry,
+    private readonly vocabularyClient: VocabularyWorkerClient,
+    statusBoard: ServiceStatusBoard,
+    options: PortalShellOptions = {},
+  ) {
     this.title = options.title ?? "LIRA";
     this.mode = typeof window !== "undefined" && window.matchMedia("(max-width: 720px)").matches ? "mobile" : "desktop";
     this.selectedName = this.registry.roots()[0]?.name;
+    this.serviceStatusView = new ServiceStatusView(statusBoard);
   }
 
   mount(container: HTMLElement): void {
     this.container = container;
+    document.title = this.title;
     this.ensureStyles();
     container.addEventListener("click", (event) => this.handleClick(event));
     this.render();
@@ -57,7 +85,7 @@ export class PortalShell {
 
   private handleClick(event: MouseEvent): void {
     const target = (event.target as HTMLElement).closest<HTMLElement>("[data-action]");
-    if (!target) return;
+    if (!target || (target as HTMLButtonElement).disabled) return;
     const action = target.dataset.action;
 
     if (action === "select") {
@@ -71,6 +99,9 @@ export class PortalShell {
     } else if (action === "back") {
       this.mobileScreen = "browse";
       this.render();
+    } else if (action === "component") {
+      this.selectedComponent = target.dataset.component as ComponentId;
+      this.render();
     }
   }
 
@@ -80,18 +111,6 @@ export class PortalShell {
     style.id = STYLE_ELEMENT_ID;
     style.textContent = SHELL_CSS;
     document.head.appendChild(style);
-  }
-
-  private viewHtmlFor(domain: PortalDomain): string {
-    const cached = this.viewCache.get(domain.name);
-    if (cached !== undefined) return cached;
-    const view = new DictionaryView(domain.vocabulary.dictionary, domain.vocabulary.lexicalRelationships, {
-      title: `${this.title} — ${domain.name}`,
-      domainName: domain.name,
-    });
-    const html = view.render();
-    this.viewCache.set(domain.name, html);
-    return html;
   }
 
   private render(): void {
@@ -107,10 +126,34 @@ export class PortalShell {
       </div>
     `;
 
-    if (selected) {
-      const frame = this.container.querySelector<HTMLIFrameElement>(".portal-frame");
-      if (frame) frame.srcdoc = this.viewHtmlFor(selected);
+    const statusMount = this.container.querySelector<HTMLElement>(".portal-service-status");
+    if (statusMount) this.serviceStatusView.mount(statusMount);
+
+    if (selected && this.selectedComponent === "vocabulary") {
+      void this.loadView(selected);
     }
+  }
+
+  /** Requests the selected Domain's Vocabulary view from the worker and,
+   * once it arrives, writes it into the still-mounted iframe -- a
+   * targeted DOM update rather than a full re-render, so a slower fetch
+   * doesn't get raced or clobbered by the user picking a different
+   * Domain in the meantime (`token` guards exactly that). */
+  private async loadView(domain: PortalDomain): Promise<void> {
+    const token = ++this.renderToken;
+    this.setViewStatus("Loading Vocabulary…");
+    const html = await this.vocabularyClient.renderDomain(domain.name);
+    if (token !== this.renderToken || !this.container) return;
+    const frame = this.container.querySelector<HTMLIFrameElement>(".portal-frame");
+    if (frame) frame.srcdoc = html;
+    this.setViewStatus(undefined);
+  }
+
+  private setViewStatus(text: string | undefined): void {
+    const status = this.container?.querySelector<HTMLElement>(".portal-view-status");
+    if (!status) return;
+    status.textContent = text ?? "";
+    status.style.display = text ? "block" : "none";
   }
 
   private renderTopbar(selected: PortalDomain | undefined): string {
@@ -158,13 +201,12 @@ export class PortalShell {
       .map((domain) => {
         const kids = this.registry.children(domain.name);
         const selected = domain.name === this.selectedName;
-        const wordCount = domain.vocabulary.dictionary.totalEntries();
         return `
           <div class="portal-tree-row depth-${depth} ${selected ? "selected" : ""}" data-action="select" data-domain="${escapeHtml(domain.name)}">
             ${kids.length > 0 ? ICON_CHEVRON_DOWN : `<span class="chev-spacer"></span>`}
             ${ICON_FOLDER}
             <span class="name">${escapeHtml(domain.name)}</span>
-            <span class="count">${wordCount.toLocaleString()}</span>
+            <span class="count">${domain.wordCount.toLocaleString()}</span>
           </div>
           ${kids.length > 0 ? this.renderTreeRows(depth + 1, domain.name) : ""}
         `;
@@ -172,13 +214,49 @@ export class PortalShell {
       .join("");
   }
 
+  private renderComponentSwitcher(): string {
+    return `
+      <div class="portal-component-switcher" role="tablist" aria-label="UI Component">
+        ${COMPONENTS.map((component) => `
+          <button
+            type="button"
+            role="tab"
+            data-action="component"
+            data-component="${component.id}"
+            class="${component.id === this.selectedComponent ? "active" : ""}"
+            ${component.available ? "" : "disabled"}
+            title="${component.available ? "" : "Not ported yet"}"
+            aria-selected="${component.id === this.selectedComponent}"
+          >${escapeHtml(component.label)}${component.available ? "" : ` <span class="not-ported-badge">Not ported</span>`}</button>
+        `).join("")}
+      </div>`;
+  }
+
   private renderViewPane(selected: PortalDomain | undefined, fullWidth = false): string {
+    const switcher = this.renderComponentSwitcher();
+    const statusPanel = `<div class="portal-service-status"></div>`;
+
     if (!selected) {
-      return `<div class="portal-view portal-view-empty">Select a Domain to open its Vocabulary.</div>`;
+      return `
+        <div class="portal-view ${fullWidth ? "portal-view--full" : ""}">
+          ${switcher}
+          <div class="portal-view-empty">Select a Domain to open its Vocabulary.</div>
+          ${statusPanel}
+        </div>`;
     }
+
+    const component = COMPONENTS.find((c) => c.id === this.selectedComponent);
+    const content = component?.available
+      ? `
+        <div class="portal-view-status" style="display:none"></div>
+        <iframe class="portal-frame" title="${escapeHtml(selected.name)} — ${escapeHtml(component.label)}"></iframe>`
+      : `<div class="portal-view-empty">${escapeHtml(component?.label ?? "This component")} is not ported yet.</div>`;
+
     return `
       <div class="portal-view ${fullWidth ? "portal-view--full" : ""}">
-        <iframe class="portal-frame" title="${escapeHtml(selected.name)} — Vocabulary"></iframe>
+        ${switcher}
+        ${content}
+        ${statusPanel}
       </div>`;
   }
 }
@@ -245,8 +323,20 @@ const SHELL_CSS = `
 .portal-tree-row .i-folder { width: 15px; height: 15px; color: var(--accent); flex: none; }
 .portal-tree-row .name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .portal-tree-row .count { font-family: 'SF Mono', Menlo, monospace; font-size: 0.7rem; color: var(--ink-faint); }
-.portal-view { display: flex; min-width: 0; }
-.portal-view-empty { align-items: center; justify-content: center; color: var(--ink-muted); font-size: 0.88rem; padding: 2rem; }
-.portal-frame { width: 100%; height: 100%; border: 0; flex: 1; background: var(--ground); min-height: 480px; }
-.mode-mobile .portal-frame { min-height: 70vh; }
+.portal-view { display: flex; flex-direction: column; min-width: 0; }
+.portal-view-empty { flex: 1; display: flex; align-items: center; justify-content: center; color: var(--ink-muted); font-size: 0.88rem; padding: 2rem; text-align: center; }
+.portal-component-switcher { display: flex; gap: 0.4rem; padding: 0.6rem 0.9rem; border-bottom: 1px solid var(--line); flex: none; }
+.portal-component-switcher button {
+  border: 1px solid var(--line-strong); background: var(--surface); color: var(--ink-muted);
+  font-family: inherit; font-size: 0.8rem; font-weight: 600; padding: 0.35rem 0.75rem; border-radius: 999px; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 0.4rem;
+}
+.portal-component-switcher button.active { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.portal-component-switcher button:disabled { cursor: not-allowed; opacity: 0.55; }
+.portal-component-switcher button:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.not-ported-badge { font-size: 0.62rem; font-weight: 700; letter-spacing: 0.02em; text-transform: uppercase; opacity: 0.75; }
+.portal-view-status { padding: 0.4rem 0.9rem 0; font-size: 0.76rem; color: var(--ink-muted); flex: none; }
+.portal-frame { width: 100%; height: 100%; border: 0; flex: 1; background: var(--ground); min-height: 380px; }
+.mode-mobile .portal-frame { min-height: 55vh; }
+.portal-service-status { flex: none; }
 `;

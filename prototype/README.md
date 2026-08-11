@@ -69,7 +69,10 @@ What deliberately differs, and why:
 - No background thread: `AsyncDictionaryHydrator` runs each external
   dictionary-API lookup as an async `fetch()` instead of a pooled
   worker thread reading off a queue -- same dedup/telemetry behaviour,
-  single-threaded JS doesn't need the thread.
+  single-threaded JS doesn't need the thread. (WordSeeder/
+  RelationshipSeeder/DictionaryView themselves *do* run on a real
+  background thread -- see the Vocabulary Service below, a browser Web
+  Worker, not a Python `threading` port.)
 - `RelationshipSeeder.validateAssets()`/`loadRelationshipSpecs()`/
   `seedDomain()` are `async` (checksum verification uses
   `crypto.subtle.digest`, which is promise-based); their Python
@@ -95,22 +98,75 @@ fabricated to make the tree look populated.
 are a deliberately minimal stand-in for the real `Domain`/`HostedDomains`
 (knowledge/data/domain.py, hosted_domains.py) -- neither is ported yet
 (both depend on Linguistics, the Knowledge tensor graph, and D5/D6
-domain-position math). They carry only a name, an optional parent, and a
-`VocabularyLayer` -- enough to draw a tree and mount a view. When
+domain-position math). They carry only a name, an optional parent, and
+the counts a tree row shows -- enough to draw a tree. When
 `Domain`/`HostedDomains` are ported, this type should be replaced by
 them, not extended to fake the parts it's missing.
 
-Selecting a Domain mounts a fresh `DictionaryView.render()` for it in an
-`<iframe srcdoc>` (same reasoning as `main.ts`'s own iframe use above),
-cached per Domain so switching back and forth doesn't re-render. A
-Domain with more than one ported layer would get its own tabs inside
-that pane, the same way `DictionaryView` already has Words/Relationships/
-Hierarchy/Cyclic tabs -- the shell mounts one component per Domain, it
-doesn't know or care how many views that component itself exposes.
+Above the view pane sits a component switcher -- Vocabulary /
+Linguistics / Knowledge, one button per Architectural Layer that has (or
+will have) a UI component. Only Vocabulary is enabled; Linguistics and
+Knowledge render as visibly disabled tabs ("Not ported yet") rather than
+being hidden, so the shell's own shape doesn't imply LIRA only ever has
+one layer. Selecting a Domain asks the Vocabulary Service (below) to
+render it and mounts the result in an `<iframe srcdoc>` (same reasoning
+as `main.ts`'s original iframe use); the Service caches renders itself,
+so switching back and forth doesn't re-render.
 
 Try it: `npm run dev` opens directly into the shell -- click between
 Common and Physics in the tree (or the mode pill to see the mobile
 drill-down), no separate route needed.
+
+### Vocabulary Service (a real Web Worker)
+
+`WordSeeder`/`RelationshipSeeder`/`DictionaryView` all run inside an
+actual browser Web Worker (vocabulary/role/vocabulary_worker.ts), not on
+the main thread -- the browser-tab stand-in for a server-side Vocabulary
+process, and literally why the page stays responsive while ~3,100 words
+and ~6,100 relationships get seeded and rendered. Nothing in that
+pipeline touches the DOM (it's all pure data/string logic, same as the
+Python originals), so it runs unmodified in the worker; only status
+messages and rendered HTML strings cross back over `postMessage`.
+
+`vocabulary_worker_protocol.ts` defines that message shape once, shared
+by both sides. `VocabularyWorkerClient` (main thread) wraps it in two
+promise-based calls -- `init()` (seed everything, resolve with a summary
+per Domain) and `renderDomain(name)` (render-or-return-cached, resolve
+with the HTML string) -- and fans the worker's status messages out to
+any number of listeners, so the LoadingScreen and the persistent
+ServiceStatusView panel can both watch the same live status without
+knowing about each other.
+
+Splitting the worker into its own Vite chunk was a deliberate win, not
+just an architectural one: the ~5MB bundled Common Vocabulary Cache now
+loads in the worker's chunk, not the main thread's -- `npm run build`'s
+main entry chunk dropped from ~5MB to ~23KB once the worker took over
+seeding and rendering.
+
+### Loading screen and Background Services panel
+
+`knowledge/data/service_status.ts` (`ServiceStatusBoard`) is a small
+observable status registry -- one row per Service (`"idle"` /
+`"running"` / `"done"` / `"error"`, or the permanent `"not-ported"` for
+a layer with no Service at all yet). `main.ts` registers three rows up
+front (Vocabulary, Linguistic, Knowledge) before the worker has done any
+work, so the very first paint already shows the full picture, not just
+what's ready so far.
+
+Two UI Components read the same board:
+- `LoadingScreen` (knowledge/ui/loading_screen.ts) -- the "LIRA
+  Initialising" box, mounted immediately and shown until the Vocabulary
+  Service reports `"done"`. Since it's driven by the same board the
+  worker updates via `VocabularyWorkerClient.onStatus`, its checklist
+  reflects genuine seeding progress ("Seeded 3093 words — seeding
+  relationships…"), not a fake timer.
+- `ServiceStatusView` (knowledge/ui/service_status_view.ts) -- the
+  persistent "Background Services" panel under the component switcher
+  in `PortalShell`, showing the same rows on an ongoing basis. The
+  Vocabulary Service's `"done"` state displays as "Running", not
+  "Ready"/finished -- the worker itself stays alive and keeps handling
+  `renderDomain` requests, it's a live process, not a one-shot script
+  that exits once seeding completes.
 
 ## Tooling
 
