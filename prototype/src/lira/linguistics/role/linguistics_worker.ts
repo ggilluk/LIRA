@@ -40,6 +40,7 @@ import type { ReadingError } from "../data/reading_error";
 import { ReadingErrorKind } from "../data/reading_error";
 import type { Sentence } from "../data/sentence";
 import { SentenceType } from "../data/sentence_type";
+import { isKnown, type TokenReading } from "../data/token_reading";
 import { ValidationOutcome } from "../data/validation_outcome";
 import { LinguisticController } from "./linguistic_controller";
 import type {
@@ -50,6 +51,7 @@ import type {
   JsonSentence,
   LinguisticsWorkerMessage,
   LinguisticsWorkerRequest,
+  PredictedWord,
   ReadRequest,
   TracePosition,
 } from "./linguistics_worker_protocol";
@@ -94,15 +96,87 @@ function handleRead(request: ReadRequest): void {
   try {
     const trace: unknown[] = [];
     const sentence = controller.readSentence(request.text, trace);
+    const rawTokens = controller.readingContext.tokenResolver.resolveSentence(request.text);
     post({
       type: "read-result",
       requestId: request.requestId,
-      result: { predicted: sentenceToJson(sentence), trace: trace as TracePosition[] },
+      result: {
+        predicted: sentenceToJson(sentence),
+        words: buildPredictedWords(sentence, rawTokens),
+        trace: trace as TracePosition[],
+      },
     });
   } catch (error) {
     const message = error instanceof Error ? `${error.name}: ${error.message}` : String(error);
     post({ type: "error", requestId: request.requestId, message });
   }
+}
+
+/** The predicted sentence as a flat, in-order word array (linguistics/ui/
+ * sentence_reader_view.ts's "Predicted sentence" rendering) -- covers
+ * every raw token `rawTokens` produced, not just the ones that made it
+ * into a successfully-typed phrase.
+ *
+ * `resolved` is the raw token's own `isKnown()` -- whether Vocabulary
+ * had a seeded/hydrated sense for it at all -- not whether the grammar
+ * accepted it. Those are different questions: SequenceEngine's
+ * unknown-token absorption (grammar/config's own `unknownTokenAbsorbingScopes`)
+ * still lets an unseeded token join a phrase as a placeholder Word
+ * (`GraphProcessor.materialiseToken`'s own `partOfSpeech: OTHER,
+ * isFullyHydrated: false` branch, "Pending external hydration; part of
+ * speech not yet identified") so the phrase can be reported at all --
+ * that placeholder is not a real prediction, so a token this function
+ * finds unknown stays `partOfSpeech: null` even if some phrase
+ * materialised it as OTHER, rather than fabricating a POS the grammar
+ * never actually determined. A *known* token gets its real predicted
+ * partOfSpeech/validation/confidence overlaid from whichever phrase
+ * covers it -- Phase 1's ClauseReader always covers its whole span with
+ * *some* phrase per position (role/clause_reader.ts's own read() loop),
+ * so every known slot inside the clause gets exactly one overlay
+ * attempt. The terminal punctuation token, which sits outside the
+ * clause's own span (role/sentence_reader.ts), is handled separately
+ * from `sentence.punctuation`. */
+function buildPredictedWords(sentence: Sentence, rawTokens: readonly TokenReading[]): PredictedWord[] {
+  const words: PredictedWord[] = rawTokens.map((token) => ({
+    text: token.text,
+    resolved: isKnown(token),
+    partOfSpeech: null,
+    validation: null,
+    confidence: null,
+  }));
+
+  const clause = sentence.clauses[0];
+  if (clause) {
+    for (const phrase of clause.phrases) {
+      const span = phrase.endPosition - phrase.startPosition;
+      if (phrase.words.length !== span) continue;
+      phrase.words.forEach((word, offset) => {
+        const index = phrase.startPosition + offset;
+        if (index < 0 || index >= words.length || !words[index].resolved) return;
+        words[index] = {
+          ...words[index],
+          partOfSpeech: PartOfSpeech[word.partOfSpeech],
+          validation: ValidationOutcome[phrase.validation],
+          confidence: Math.round(phrase.confidence * 10000) / 10000,
+        };
+      });
+    }
+  }
+
+  if (sentence.punctuation) {
+    const index = rawTokens.length - 1;
+    if (index >= 0 && words[index].resolved) {
+      words[index] = {
+        ...words[index],
+        text: sentence.punctuation.text,
+        partOfSpeech: PartOfSpeech[sentence.punctuation.partOfSpeech],
+        validation: ValidationOutcome[sentence.validation],
+        confidence: Math.round(sentence.confidence * 10000) / 10000,
+      };
+    }
+  }
+
+  return words;
 }
 
 ctx.addEventListener("message", (event) => {

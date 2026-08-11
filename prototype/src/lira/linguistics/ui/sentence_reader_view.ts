@@ -36,10 +36,9 @@
 import { PartOfSpeech } from "../../vocabulary/data/part_of_speech";
 import type { LinguisticsWorkerClient } from "../role/linguistics_worker_client";
 import type {
-  JsonClause,
-  JsonPhrase,
   JsonReadingError,
   JsonSentence,
+  PredictedWord,
   ReadResult,
   TraceAttempt,
   TracePosition,
@@ -167,7 +166,7 @@ export class SentenceReaderView {
   private renderResult(result: ReadResult): void {
     const predicted = this.container?.querySelector<HTMLElement>(".lira-sr-predicted");
     const trace = this.container?.querySelector<HTMLElement>(".lira-sr-trace");
-    if (predicted) predicted.innerHTML = this.renderPredicted(result.predicted);
+    if (predicted) predicted.innerHTML = this.renderPredicted(result.predicted, result.words);
     if (trace) trace.innerHTML = this.renderTrace(result.trace);
   }
 
@@ -209,7 +208,22 @@ export class SentenceReaderView {
     `;
   }
 
-  private renderPredicted(sentence: JsonSentence): string {
+  /** The predicted sentence as a simple, in-order array of words --
+   * flows as running text (like Sentence.text itself), not a nested
+   * clause/phrase tree. Each word is its own focusable/clickable span,
+   * the same `.def-word`/`.def-tooltip` hover-or-focus pattern
+   * vocabulary/ui/dictionary_view.ts's own inline word-in-a-definition
+   * rendering uses (a `tabindex="0"` span reveals an absolutely
+   * positioned tooltip on `:hover`/`:focus`, which a click satisfies for
+   * free since clicking a focusable element focuses it -- no separate
+   * click handler needed) -- see renderPredictedWord()'s own tooltip
+   * content for what it shows. An unresolved word (PredictedWord.resolved
+   * === false: no seeded/hydrated Vocabulary sense, or a known word the
+   * grammar didn't incorporate into any successfully-read phrase --
+   * worker/linguistics_worker.ts's own buildPredictedWords()) is
+   * highlighted with a yellow background directly in the sentence, not
+   * hidden or reported only as a separate error line. */
+  private renderPredicted(sentence: JsonSentence, words: readonly PredictedWord[]): string {
     const top = `
       <div class="lira-sr-clause-head">
         ${badge(sentence.validation)}
@@ -217,55 +231,7 @@ export class SentenceReaderView {
         <span class="lira-sr-faint">confidence ${sentence.confidence.toFixed(2)}</span>
         <span class="lira-sr-faint">${sentence.punctuation ? `terminal "${escapeHtml(sentence.punctuation)}"` : "no terminal punctuation"}</span>
       </div>`;
-
-    const clauses = sentence.clauses.length
-      ? sentence.clauses.map((clause) => this.renderClause(clause)).join("")
-      : `<div class="lira-sr-empty">No clause was read.</div>`;
-
-    return `${top}${clauses}${errorsList(sentence.errors)}`;
-  }
-
-  private renderClause(clause: JsonClause): string {
-    const modifiers = clause.modifiers.length
-      ? `<div class="lira-sr-role-row"><div class="lira-sr-role-label">Modifiers</div>${clause.modifiers.map((phrase) => this.renderPhrase(phrase)).join("")}</div>`
-      : "";
-    return `
-      <div class="lira-sr-clause-block">
-        <div class="lira-sr-clause-head">
-          <span class="lira-sr-strong">${escapeHtml(clause.clauseType ?? "UNRESOLVED")}</span>
-          ${badge(clause.validation)}
-        </div>
-        ${roleRow("Subject", clause.subject, (p) => this.renderPhrase(p))}
-        ${roleRow("Predicate", clause.predicate, (p) => this.renderPhrase(p))}
-        ${roleRow("Object", clause.object, (p) => this.renderPhrase(p))}
-        ${roleRow("Complement", clause.complement, (p) => this.renderPhrase(p))}
-        ${modifiers}
-        ${errorsList(clause.errors)}
-      </div>`;
-  }
-
-  private renderPhrase(phrase: JsonPhrase): string {
-    const words = phrase.words.map((word) => posChip(word.text, word.pos)).join("");
-    const nested = phrase.nestedPhrases.length
-      ? `<div class="lira-sr-nested">${phrase.nestedPhrases.map((nested) => this.renderPhrase(nested)).join("")}</div>`
-      : "";
-    const alternatives = phrase.alternatives.length
-      ? `<div class="lira-sr-alternatives">${phrase.alternatives.map((alt) => `
-          <span class="lira-sr-alt">${escapeHtml(alt.phraseType ?? "?")} (${alt.partsOfSpeech.map(escapeHtml).join(", ")}) — ${escapeHtml(alt.validation)}, conf ${alt.confidence.toFixed(2)}</span>
-        `).join("")}</div>`
-      : "";
-    return `
-      <div class="lira-sr-phrase">
-        <div class="lira-sr-clause-head">
-          <span class="lira-sr-phrase-type">${escapeHtml(phrase.phraseType ?? "UNRESOLVED")}</span>
-          ${badge(phrase.validation)}
-          <span class="lira-sr-faint">conf ${phrase.confidence.toFixed(2)}</span>
-        </div>
-        <div class="lira-sr-words">${words}</div>
-        ${nested}
-        ${alternatives}
-        ${errorsList(phrase.errors)}
-      </div>`;
+    return `${top}${renderWordSentence(words)}${errorsList(sentence.errors)}`;
   }
 
   private renderTrace(trace: readonly TracePosition[]): string {
@@ -319,12 +285,37 @@ export class SentenceReaderView {
   }
 }
 
-function roleRow(label: string, phrase: JsonPhrase | null, render: (phrase: JsonPhrase) => string): string {
-  return `
-    <div class="lira-sr-role-row">
-      <div class="lira-sr-role-label">${label}</div>
-      ${phrase ? render(phrase) : `<div class="lira-sr-empty">(none)</div>`}
-    </div>`;
+/** Joins the predicted word array into running text -- a space before
+ * every word except an attached punctuation mark (".", ",", "!", "?",
+ * ";", ":"), so the result reads like a real sentence rather than a
+ * comma-separated array. */
+function renderWordSentence(words: readonly PredictedWord[]): string {
+  if (!words.length) return `<div class="lira-sr-empty">No words to show.</div>`;
+  let html = "";
+  words.forEach((word, index) => {
+    const isAttachedPunctuation = /^[.,!?;:]+$/.test(word.text);
+    if (index > 0 && !isAttachedPunctuation) html += " ";
+    html += renderPredictedWord(word, index);
+  });
+  return `<div class="lira-sr-sentence">${html}</div>`;
+}
+
+function renderPredictedWord(word: PredictedWord, index: number): string {
+  const unfoundClass = word.resolved ? "" : " lira-sr-word-unfound";
+  return `<span class="lira-sr-word${unfoundClass}" tabindex="0" data-word-index="${index}">${escapeHtml(word.text)}${renderWordTooltip(word)}</span>`;
+}
+
+/** The `.def-tooltip`-shaped popup: word text as the title line, then a
+ * meta line with validation/part-of-speech/confidence -- or, for an
+ * unresolved word, the same honest "not found" wording
+ * dictionary_view.ts's own unresolved `.def-word` tooltip uses, since
+ * there is no committed reading to report a POS/confidence for. */
+function renderWordTooltip(word: PredictedWord): string {
+  if (!word.resolved) {
+    return `<span class="lira-sr-word-tooltip"><span class="tt-title">${escapeHtml(word.text)}</span><span class="tt-meta">Not found in the Common Vocabulary Cache</span></span>`;
+  }
+  const meta = [word.validation ?? "UNRESOLVED", word.partOfSpeech ?? "?", `conf ${word.confidence !== null ? word.confidence.toFixed(2) : "—"}`];
+  return `<span class="lira-sr-word-tooltip"><span class="tt-title">${escapeHtml(word.text)}</span><span class="tt-meta">${meta.map(escapeHtml).join(" · ")}</span></span>`;
 }
 
 function badge(validation: string): string {
@@ -433,13 +424,28 @@ const CSS = `
 }
 .lira-sr-pos-chip .w { font-size: 0.85rem; font-weight: 600; }
 .lira-sr-pos-chip .p { font-size: 0.56rem; opacity: 0.88; letter-spacing: 0.03em; }
-.lira-sr-role-row { margin-bottom: 0.7rem; }
-.lira-sr-role-label { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-muted); font-weight: 700; margin-bottom: 0.25rem; }
-.lira-sr-clause-block { border: 1px solid var(--line); border-radius: var(--radius); padding: 0.8rem 0.9rem; margin-bottom: 0.8rem; }
 .lira-sr-clause-head { display: flex; align-items: center; gap: 0.55rem; margin-bottom: 0.5rem; flex-wrap: wrap; }
-.lira-sr-nested { margin-top: 0.4rem; padding-left: 0.8rem; border-left: 2px solid var(--line); }
-.lira-sr-alternatives { margin-top: 0.35rem; display: flex; flex-direction: column; gap: 0.15rem; }
-.lira-sr-alt { font-size: 0.72rem; color: var(--ink-muted); }
+.lira-sr-sentence { font-size: 1.05rem; line-height: 2.1; }
+.lira-sr-word {
+  position: relative; border-bottom: 1px dotted var(--ink-muted); cursor: pointer;
+}
+.lira-sr-word.lira-sr-word-unfound {
+  border-bottom-style: dashed; border-bottom-color: #B8860B;
+  background: color-mix(in srgb, #F5C518 45%, var(--surface));
+  border-radius: 3px; padding: 0 0.15rem;
+}
+.lira-sr-word-tooltip {
+  position: absolute; left: 50%; bottom: calc(100% + 7px); transform: translate(-50%, 4px);
+  width: max-content; max-width: 240px; background: var(--ink); color: var(--ground);
+  font-size: 0.74rem; line-height: 1.4; padding: 0.5rem 0.6rem; border-radius: 5px;
+  box-shadow: var(--shadow); opacity: 0; pointer-events: none;
+  transition: opacity 0.12s ease, transform 0.12s ease; z-index: 5;
+}
+.lira-sr-word-tooltip .tt-title { display: block; font-family: var(--font-mono); font-weight: 700; margin-bottom: 0.15rem; }
+.lira-sr-word-tooltip .tt-meta { display: block; opacity: 0.85; }
+.lira-sr-word:hover .lira-sr-word-tooltip, .lira-sr-word:focus .lira-sr-word-tooltip, .lira-sr-word:focus-visible .lira-sr-word-tooltip {
+  opacity: 1; transform: translate(-50%, 0);
+}
 .lira-sr-errors { margin-top: 0.5rem; font-size: 0.78rem; }
 .lira-sr-error-row { padding: 0.35rem 0.55rem; border-left: 3px solid #B2542D; background: color-mix(in srgb, #B2542D 8%, transparent); margin-bottom: 0.35rem; border-radius: 3px; }
 .lira-sr-position { border: 1px solid var(--line); border-radius: var(--radius); margin-bottom: 0.65rem; overflow: hidden; }

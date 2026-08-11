@@ -97,16 +97,6 @@ export interface JsonSentence {
   errors: JsonReadingError[];
 }
 
-/** One token position's full search record -- exactly the shape
- * role/phrase_reader.ts's own `positionTrace()` already builds (that
- * method's return type is `unknown` there, since PhraseReader has no
- * reason to import this worker-only protocol; this interface is the
- * typed view of the same object on this side of the postMessage
- * boundary). "Word prediction" in the old Python Sentence Reader UI
- * (sentence_reader_server.py's "Full trace" panel) *is* this record:
- * every phrase type the state machine tried at this token, whether its
- * required start state matched, every completion considered, and which
- * one (if any) won. */
 /** One token's contribution to a completion's part-of-speech breakdown
  * -- structurally identical to role/phrase_reader.ts's own (independently
  * declared, not imported -- see that file's own note) `TraceToken`. A
@@ -138,6 +128,16 @@ export interface TraceAttempt {
   rejectionReason: string | null;
 }
 
+/** One token position's full search record -- exactly the shape
+ * role/phrase_reader.ts's own `positionTrace()` already builds (that
+ * method's return type is `unknown` there, since PhraseReader has no
+ * reason to import this worker-only protocol; this interface is the
+ * typed view of the same object on this side of the postMessage
+ * boundary). "Word prediction" in the old Python Sentence Reader UI
+ * (sentence_reader_server.py's "Full trace" panel) *is* this record:
+ * every phrase type the state machine tried at this token, whether its
+ * required start state matched, every completion considered, and which
+ * one (if any) won. */
 export interface TracePosition {
   startIndex: number;
   tokenText: string | null;
@@ -155,8 +155,32 @@ export interface TracePosition {
   winnerPartsOfSpeech: { text: string; partOfSpeech: string }[];
 }
 
+/** One raw input token, in original sentence order -- covers every
+ * token the tokenizer produced (role/token_resolver.ts's
+ * `resolveSentence`), not just the ones that made it into a
+ * successfully-typed phrase. `resolved: false` means either the token
+ * has no seeded/hydrated Vocabulary sense at all (an unknown word) or
+ * it simply wasn't incorporated into any successfully-read phrase --
+ * both are "not found" from this array's point of view, so the UI
+ * renders both the same way (yellow) rather than distinguishing a
+ * grammar failure from a vocabulary gap the user can't see the
+ * difference of anyway. `partOfSpeech`/`validation`/`confidence` are
+ * all `null` for an unresolved token -- there is no committed reading
+ * to report one for. */
+export interface PredictedWord {
+  text: string;
+  resolved: boolean;
+  partOfSpeech: string | null;
+  validation: string | null;
+  confidence: number | null;
+}
+
 export interface ReadResult {
   predicted: JsonSentence;
+  /** The predicted sentence as a flat, in-order word array -- see
+   * linguistics/ui/sentence_reader_view.ts's own "Predicted sentence"
+   * rendering, the thing this field exists for. */
+  words: readonly PredictedWord[];
   trace: readonly TracePosition[];
 }
 
