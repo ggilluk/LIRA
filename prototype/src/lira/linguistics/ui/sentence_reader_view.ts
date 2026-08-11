@@ -305,17 +305,22 @@ function renderPredictedWord(word: PredictedWord, index: number): string {
   return `<span class="lira-sr-word${unfoundClass}" tabindex="0" data-word-index="${index}">${escapeHtml(word.text)}${renderWordTooltip(word)}</span>`;
 }
 
-/** The `.def-tooltip`-shaped popup: word text as the title line, then a
- * meta line with validation/part-of-speech/confidence -- or, for an
- * unresolved word, the same honest "not found" wording
- * dictionary_view.ts's own unresolved `.def-word` tooltip uses, since
- * there is no committed reading to report a POS/confidence for. */
+/** The `.def-tooltip`-shaped popup: word text as the title line, then
+ * two meta lines -- validation + the predicted phrase this word was
+ * read as part of (e.g. NOUN_PHRASE), then its predicted part of
+ * speech + confidence -- or, for an unresolved word, the same honest
+ * "not found" wording dictionary_view.ts's own unresolved `.def-word`
+ * tooltip uses, since there is no committed reading to report a
+ * phrase/POS/confidence for. */
 function renderWordTooltip(word: PredictedWord): string {
   if (!word.resolved) {
     return `<span class="lira-sr-word-tooltip"><span class="tt-title">${escapeHtml(word.text)}</span><span class="tt-meta">Not found in the Common Vocabulary Cache</span></span>`;
   }
-  const meta = [word.validation ?? "UNRESOLVED", word.partOfSpeech ?? "?", `conf ${word.confidence !== null ? word.confidence.toFixed(2) : "—"}`];
-  return `<span class="lira-sr-word-tooltip"><span class="tt-title">${escapeHtml(word.text)}</span><span class="tt-meta">${meta.map(escapeHtml).join(" · ")}</span></span>`;
+  const structureLine = [word.validation ?? "UNRESOLVED", word.phraseType ?? "no phrase"];
+  const wordLine = [word.partOfSpeech ?? "?", `conf ${word.confidence !== null ? word.confidence.toFixed(2) : "—"}`];
+  return `<span class="lira-sr-word-tooltip"><span class="tt-title">${escapeHtml(word.text)}</span>`
+    + `<span class="tt-meta">${structureLine.map(escapeHtml).join(" · ")}</span>`
+    + `<span class="tt-meta">${wordLine.map(escapeHtml).join(" · ")}</span></span>`;
 }
 
 function badge(validation: string): string {
@@ -436,13 +441,14 @@ const CSS = `
 }
 .lira-sr-word-tooltip {
   position: absolute; left: 50%; bottom: calc(100% + 7px); transform: translate(-50%, 4px);
-  width: max-content; max-width: 240px; background: var(--ink); color: var(--ground);
+  width: max-content; max-width: 270px; background: var(--ink); color: var(--ground);
   font-size: 0.74rem; line-height: 1.4; padding: 0.5rem 0.6rem; border-radius: 5px;
   box-shadow: var(--shadow); opacity: 0; pointer-events: none;
   transition: opacity 0.12s ease, transform 0.12s ease; z-index: 5;
 }
 .lira-sr-word-tooltip .tt-title { display: block; font-family: var(--font-mono); font-weight: 700; margin-bottom: 0.15rem; }
 .lira-sr-word-tooltip .tt-meta { display: block; opacity: 0.85; }
+.lira-sr-word-tooltip .tt-meta + .tt-meta { margin-top: 0.1rem; }
 .lira-sr-word:hover .lira-sr-word-tooltip, .lira-sr-word:focus .lira-sr-word-tooltip, .lira-sr-word:focus-visible .lira-sr-word-tooltip {
   opacity: 1; transform: translate(-50%, 0);
 }

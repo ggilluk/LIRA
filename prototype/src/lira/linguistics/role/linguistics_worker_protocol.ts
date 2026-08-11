@@ -171,6 +171,10 @@ export interface PredictedWord {
   text: string;
   resolved: boolean;
   partOfSpeech: string | null;
+  /** The PhraseType of the phrase this word was read as part of (e.g.
+   * NOUN_PHRASE, VERB_PHRASE) -- null for an unresolved word, same as
+   * partOfSpeech/validation/confidence. */
+  phraseType: string | null;
   validation: string | null;
   confidence: number | null;
 }

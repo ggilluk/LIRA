@@ -3,7 +3,7 @@
   "language_code": "en",
   "part_of_speech": "ADVERB",
   "closed_class_kind": "metalinguistic_term",
-  "count": 17,
+  "count": 19,
   "words": [
     {
       "entry_id": "8400ba65-aa4f-4430-8857-c7aea671378b",
@@ -675,6 +675,86 @@
       "source_references": [
         {
           "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "ad65f7a2-0913-46de-81d7-b0f5fcb08a7f",
+      "lexical_form": "then",
+      "normalised_form": "then",
+      "text": "then",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "ADVERB",
+      "closed_class": true,
+      "closed_class_kind": "discourse_marker",
+      "definition": "Discourse marker introducing what happens next in time, or a consequence that follows from what preceded it",
+      "gloss": "Discourse marker introducing what happens next in time, or a consequence that follows from what preceded it",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": null,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "edaf3aca-5a27-4c72-81d1-337fc2bb8b3c",
+      "lexical_form": "again",
+      "normalised_form": "again",
+      "text": "again",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "ADVERB",
+      "closed_class": false,
+      "closed_class_kind": "metalinguistic_term",
+      "definition": "Once more; another time",
+      "gloss": "Once more; another time",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Metalinguistic Vocabulary v1",
           "source_version": "1.0.0",
           "external_identifier": null,
           "reference_uri": null,

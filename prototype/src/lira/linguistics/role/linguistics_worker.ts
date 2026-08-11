@@ -141,6 +141,7 @@ function buildPredictedWords(sentence: Sentence, rawTokens: readonly TokenReadin
     text: token.text,
     resolved: isKnown(token),
     partOfSpeech: null,
+    phraseType: null,
     validation: null,
     confidence: null,
   }));
@@ -156,6 +157,7 @@ function buildPredictedWords(sentence: Sentence, rawTokens: readonly TokenReadin
         words[index] = {
           ...words[index],
           partOfSpeech: PartOfSpeech[word.partOfSpeech],
+          phraseType: phrase.phraseType !== undefined ? PhraseType[phrase.phraseType] : null,
           validation: ValidationOutcome[phrase.validation],
           confidence: Math.round(phrase.confidence * 10000) / 10000,
         };
