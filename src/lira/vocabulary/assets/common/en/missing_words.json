@@ -1,0 +1,7178 @@
+{
+  "generated_by": "Definition-gap scan of the seeded Common Vocabulary Cache (WordSeeder.seed_closed_class_words, mandatory + supplementary + promoted files) against every seeded word's own Word.definition_words()",
+  "total_words_scanned": 3095,
+  "total_definition_tokens_scanned": 27979,
+  "distinct_missing_words": 941,
+  "excluded_as_tokenizer_noise": {
+    "note": "Pure-digit tokens (from numeral definitions like \"one\" defined using the digit 1) and 1-2 character fragments (from abbreviation splits like \"e.g.\"/\"i.e.\" or possessive 's) -- not real missing vocabulary.",
+    "count": 35,
+    "words": [
+      "0",
+      "000",
+      "1",
+      "10",
+      "100",
+      "11",
+      "12",
+      "13",
+      "14",
+      "15",
+      "16",
+      "17",
+      "18",
+      "19",
+      "2",
+      "20",
+      "3",
+      "30",
+      "4",
+      "40",
+      "5",
+      "50",
+      "6",
+      "60",
+      "7",
+      "70",
+      "8",
+      "80",
+      "9",
+      "90",
+      "e",
+      "em",
+      "en",
+      "g",
+      "s"
+    ]
+  },
+  "words": [
+    {
+      "text": "punctuation",
+      "referenced_by_count": 60,
+      "referenced_by_sample": [
+        "!",
+        "\"",
+        "#",
+        "%",
+        "&",
+        "'",
+        "(",
+        ")"
+      ]
+    },
+    {
+      "text": "expected",
+      "referenced_by_count": 13,
+      "referenced_by_sample": [
+        "actually",
+        "contrary",
+        "deliver",
+        "due",
+        "earlier",
+        "early",
+        "lacks",
+        "missing"
+      ]
+    },
+    {
+      "text": "quote",
+      "referenced_by_count": 12,
+      "referenced_by_sample": [
+        "«",
+        "»",
+        "‘",
+        "’",
+        "“",
+        "”",
+        "‹",
+        "›"
+      ]
+    },
+    {
+      "text": "dash",
+      "referenced_by_count": 10,
+      "referenced_by_sample": [
+        "-",
+        "‐",
+        "‑",
+        "‒",
+        "–",
+        "—",
+        "―"
+      ]
+    },
+    {
+      "text": "aware",
+      "referenced_by_count": 9,
+      "referenced_by_sample": [
+        "discover",
+        "discovered",
+        "know",
+        "notice",
+        "noticed",
+        "perceive",
+        "perceived",
+        "realisation"
+      ]
+    },
+    {
+      "text": "forward",
+      "referenced_by_count": 9,
+      "referenced_by_sample": [
+        "advance",
+        "advancement",
+        "ahead",
+        "front",
+        "introduces",
+        "onward",
+        "suggest",
+        "suggestion"
+      ]
+    },
+    {
+      "text": "official",
+      "referenced_by_count": 9,
+      "referenced_by_sample": [
+        "authoritative",
+        "euro",
+        "euros",
+        "formal",
+        "informal",
+        "procedure",
+        "register",
+        "registered"
+      ]
+    },
+    {
+      "text": "opinion",
+      "referenced_by_count": 9,
+      "referenced_by_sample": [
+        "agreement",
+        "disagreement",
+        "editorial",
+        "impression",
+        "judge",
+        "judged",
+        "remark",
+        "say"
+      ]
+    },
+    {
+      "text": "evidence",
+      "referenced_by_count": 8,
+      "referenced_by_sample": [
+        "demonstrate",
+        "document",
+        "establish",
+        "established",
+        "establishing",
+        "hypothesis",
+        "prove",
+        "proved"
+      ]
+    },
+    {
+      "text": "precise",
+      "referenced_by_count": 7,
+      "referenced_by_sample": [
+        "define",
+        "defined",
+        "defining",
+        "detailed",
+        "exact",
+        "exactness",
+        "instrument"
+      ]
+    },
+    {
+      "text": "belief",
+      "referenced_by_count": 6,
+      "referenced_by_sample": [
+        "assert",
+        "asserting",
+        "expectation",
+        "feeling",
+        "justification",
+        "notion"
+      ]
+    },
+    {
+      "text": "bracket",
+      "referenced_by_count": 6,
+      "referenced_by_sample": [
+        "[",
+        "]",
+        "{",
+        "}",
+        "⟨",
+        "⟩"
+      ]
+    },
+    {
+      "text": "consideration",
+      "referenced_by_count": 6,
+      "referenced_by_sample": [
+        "judge",
+        "judged",
+        "regard",
+        "suggest",
+        "suggestion",
+        "suggests"
+      ]
+    },
+    {
+      "text": "currency",
+      "referenced_by_count": 6,
+      "referenced_by_sample": [
+        "euro",
+        "euros",
+        "money",
+        "pound",
+        "pounds",
+        "sterling"
+      ]
+    },
+    {
+      "text": "final",
+      "referenced_by_count": 6,
+      "referenced_by_sample": [
+        "end",
+        "settle",
+        "»",
+        "’",
+        "”",
+        "›"
+      ]
+    },
+    {
+      "text": "legal",
+      "referenced_by_count": 6,
+      "referenced_by_sample": [
+        "charge",
+        "copyright",
+        "ownership",
+        "party",
+        "plea",
+        "status"
+      ]
+    },
+    {
+      "text": "open",
+      "referenced_by_count": 6,
+      "referenced_by_sample": [
+        "(",
+        "[",
+        "field",
+        "mesh",
+        "{",
+        "⟨"
+      ]
+    },
+    {
+      "text": "progress",
+      "referenced_by_count": 6,
+      "referenced_by_sample": [
+        "advance",
+        "advanced",
+        "advancement",
+        "monitor",
+        "monitoring",
+        "ongoing"
+      ]
+    },
+    {
+      "text": "understand",
+      "referenced_by_count": 6,
+      "referenced_by_sample": [
+        "clear",
+        "clearly",
+        "complex",
+        "difficulty",
+        "explain",
+        "grasp"
+      ]
+    },
+    {
+      "text": "correct",
+      "referenced_by_count": 5,
+      "referenced_by_sample": [
+        "accepted",
+        "approximation",
+        "logical",
+        "proper",
+        "rightly"
+      ]
+    },
+    {
+      "text": "formally",
+      "referenced_by_count": 5,
+      "referenced_by_sample": [
+        "pronounce",
+        "registered",
+        "request",
+        "requests",
+        "unregistered"
+      ]
+    },
+    {
+      "text": "fully",
+      "referenced_by_count": 5,
+      "referenced_by_sample": [
+        "completely",
+        "context",
+        "grasp",
+        "mature",
+        "realisation"
+      ]
+    },
+    {
+      "text": "goods",
+      "referenced_by_count": 5,
+      "referenced_by_sample": [
+        "charge",
+        "manufacturing",
+        "money",
+        "ship",
+        "vehicle"
+      ]
+    },
+    {
+      "text": "height",
+      "referenced_by_count": 5,
+      "referenced_by_sample": [
+        "dimensional",
+        "higher",
+        "highest",
+        "lower",
+        "tall"
+      ]
+    },
+    {
+      "text": "intense",
+      "referenced_by_count": 5,
+      "referenced_by_sample": [
+        "intensify",
+        "moderate",
+        "moderates",
+        "softening",
+        "softens"
+      ]
+    },
+    {
+      "text": "light",
+      "referenced_by_count": 5,
+      "referenced_by_sample": [
+        "colour",
+        "filament",
+        "filaments",
+        "negative"
+      ]
+    },
+    {
+      "text": "living",
+      "referenced_by_count": 5,
+      "referenced_by_sample": [
+        "air",
+        "animal",
+        "animals",
+        "being",
+        "kill"
+      ]
+    },
+    {
+      "text": "non",
+      "referenced_by_count": 5,
+      "referenced_by_sample": [
+        "a",
+        "absence",
+        "an",
+        "spirit",
+        "‑"
+      ]
+    },
+    {
+      "text": "paid",
+      "referenced_by_count": 5,
+      "referenced_by_sample": [
+        "due",
+        "employ",
+        "employed",
+        "employing",
+        "noticed"
+      ]
+    },
+    {
+      "text": "severe",
+      "referenced_by_count": 5,
+      "referenced_by_sample": [
+        "mild",
+        "moderates",
+        "soften",
+        "softening",
+        "softens"
+      ]
+    },
+    {
+      "text": "typical",
+      "referenced_by_count": 5,
+      "referenced_by_sample": [
+        "average",
+        "characteristic",
+        "characteristics",
+        "norm",
+        "normal"
+      ]
+    },
+    {
+      "text": "break",
+      "referenced_by_count": 4,
+      "referenced_by_sample": [
+        "escape",
+        "fragment",
+        "hyphen",
+        "uninterrupted"
+      ]
+    },
+    {
+      "text": "broken",
+      "referenced_by_count": 4,
+      "referenced_by_sample": [
+        "fragmented",
+        "hard",
+        "irreducible",
+        "unbroken"
+      ]
+    },
+    {
+      "text": "circle",
+      "referenced_by_count": 4,
+      "referenced_by_sample": [
+        "arc",
+        "circular",
+        "encircle",
+        "encircled"
+      ]
+    },
+    {
+      "text": "conduct",
+      "referenced_by_count": 4,
+      "referenced_by_sample": [
+        "behave",
+        "filaments",
+        "govern",
+        "rules"
+      ]
+    },
+    {
+      "text": "decision",
+      "referenced_by_count": 4,
+      "referenced_by_sample": [
+        "conclusion",
+        "discuss",
+        "justification",
+        "resolution"
+      ]
+    },
+    {
+      "text": "double",
+      "referenced_by_count": 4,
+      "referenced_by_sample": [
+        "“",
+        "”",
+        "‡",
+        "″"
+      ]
+    },
+    {
+      "text": "easy",
+      "referenced_by_count": 4,
+      "referenced_by_sample": [
+        "clear",
+        "clearly",
+        "complex",
+        "explain"
+      ]
+    },
+    {
+      "text": "electricity",
+      "referenced_by_count": 4,
+      "referenced_by_sample": [
+        "conductor",
+        "electric",
+        "filament",
+        "filaments"
+      ]
+    },
+    {
+      "text": "emotional",
+      "referenced_by_count": 4,
+      "referenced_by_sample": [
+        "feeling",
+        "feelings",
+        "hurt",
+        "plea"
+      ]
+    },
+    {
+      "text": "goal",
+      "referenced_by_count": 4,
+      "referenced_by_sample": [
+        "aim",
+        "attainment",
+        "competing",
+        "objective"
+      ]
+    },
+    {
+      "text": "guillemet",
+      "referenced_by_count": 4,
+      "referenced_by_sample": [
+        "«",
+        "»",
+        "‹",
+        "›"
+      ]
+    },
+    {
+      "text": "harsh",
+      "referenced_by_count": 4,
+      "referenced_by_sample": [
+        "mild",
+        "soften",
+        "softening",
+        "softens"
+      ]
+    },
+    {
+      "text": "horizontal",
+      "referenced_by_count": 4,
+      "referenced_by_sample": [
+        "underscore",
+        "vertical",
+        "―",
+        "…"
+      ]
+    },
+    {
+      "text": "law",
+      "referenced_by_count": 4,
+      "referenced_by_sample": [
+        "legally",
+        "obey",
+        "obligation",
+        "prohibition"
+      ]
+    },
+    {
+      "text": "metal",
+      "referenced_by_count": 4,
+      "referenced_by_sample": [
+        "alloy",
+        "bar",
+        "metallic",
+        "wire"
+      ]
+    },
+    {
+      "text": "monetary",
+      "referenced_by_count": 4,
+      "referenced_by_sample": [
+        "dollar",
+        "dollars",
+        "sterling",
+        "yen"
+      ]
+    },
+    {
+      "text": "presented",
+      "referenced_by_count": 4,
+      "referenced_by_sample": [
+        "face",
+        "received",
+        "receives",
+        "receiving"
+      ]
+    },
+    {
+      "text": "printed",
+      "referenced_by_count": 4,
+      "referenced_by_sample": [
+        "document",
+        "list",
+        "reading",
+        "underscore"
+      ]
+    },
+    {
+      "text": "proof",
+      "referenced_by_count": 4,
+      "referenced_by_sample": [
+        "assume",
+        "assumed",
+        "demonstrate",
+        "suppose"
+      ]
+    },
+    {
+      "text": "reaction",
+      "referenced_by_count": 4,
+      "referenced_by_sample": [
+        "elicit",
+        "feeling",
+        "remark",
+        "response"
+      ]
+    },
+    {
+      "text": "relevant",
+      "referenced_by_count": 4,
+      "referenced_by_sample": [
+        "apply",
+        "circumstance",
+        "circumstances",
+        "scope"
+      ]
+    },
+    {
+      "text": "sex",
+      "referenced_by_count": 4,
+      "referenced_by_sample": [
+        "female",
+        "gender",
+        "male"
+      ]
+    },
+    {
+      "text": "situated",
+      "referenced_by_count": 4,
+      "referenced_by_sample": [
+        "external",
+        "located",
+        "southern",
+        "upper"
+      ]
+    },
+    {
+      "text": "special",
+      "referenced_by_count": 4,
+      "referenced_by_sample": [
+        "emphasis",
+        "emphasise",
+        "emphasises",
+        "occasion"
+      ]
+    },
+    {
+      "text": "square",
+      "referenced_by_count": 4,
+      "referenced_by_sample": [
+        "[",
+        "]",
+        "▪",
+        "▫"
+      ]
+    },
+    {
+      "text": "thinking",
+      "referenced_by_count": 4,
+      "referenced_by_sample": [
+        "reasoning",
+        "thought",
+        "thoughts"
+      ]
+    },
+    {
+      "text": "unexpectedly",
+      "referenced_by_count": 4,
+      "referenced_by_sample": [
+        "discover",
+        "encounter",
+        "encountered",
+        "sudden"
+      ]
+    },
+    {
+      "text": "united",
+      "referenced_by_count": 4,
+      "referenced_by_sample": [
+        "dollar",
+        "dollars",
+        "pound",
+        "sterling"
+      ]
+    },
+    {
+      "text": "valid",
+      "referenced_by_count": 4,
+      "referenced_by_sample": [
+        "accepted",
+        "holds",
+        "recognised",
+        "standing"
+      ]
+    },
+    {
+      "text": "working",
+      "referenced_by_count": 4,
+      "referenced_by_sample": [
+        "functioning",
+        "mechanical",
+        "objective",
+        "system"
+      ]
+    },
+    {
+      "text": "accurate",
+      "referenced_by_count": 3,
+      "referenced_by_sample": [
+        "authoritative",
+        "exact",
+        "precisely"
+      ]
+    },
+    {
+      "text": "adjectivally",
+      "referenced_by_count": 3,
+      "referenced_by_sample": [
+        "fixed",
+        "fragmented",
+        "graduated"
+      ]
+    },
+    {
+      "text": "affairs",
+      "referenced_by_count": 3,
+      "referenced_by_sample": [
+        "govern",
+        "situation",
+        "status"
+      ]
+    },
+    {
+      "text": "argument",
+      "referenced_by_count": 3,
+      "referenced_by_sample": [
+        "basis",
+        "prove",
+        "proved"
+      ]
+    },
+    {
+      "text": "attentively",
+      "referenced_by_count": 3,
+      "referenced_by_sample": [
+        "observed",
+        "watch",
+        "watching"
+      ]
+    },
+    {
+      "text": "bullet",
+      "referenced_by_count": 3,
+      "referenced_by_sample": [
+        "•",
+        "‣",
+        "◦"
+      ]
+    },
+    {
+      "text": "calm",
+      "referenced_by_count": 3,
+      "referenced_by_sample": [
+        "peaceful",
+        "resignation",
+        "settled"
+      ]
+    },
+    {
+      "text": "cannot",
+      "referenced_by_count": 3,
+      "referenced_by_sample": [
+        "impossibility",
+        "limits",
+        "uncountable"
+      ]
+    },
+    {
+      "text": "careful",
+      "referenced_by_count": 3,
+      "referenced_by_sample": [
+        "closely",
+        "judge",
+        "judged"
+      ]
+    },
+    {
+      "text": "communicate",
+      "referenced_by_count": 3,
+      "referenced_by_sample": [
+        "convey",
+        "interact",
+        "write"
+      ]
+    },
+    {
+      "text": "conflict",
+      "referenced_by_count": 3,
+      "referenced_by_sample": [
+        "oppose",
+        "opposition",
+        "peaceful"
+      ]
+    },
+    {
+      "text": "container",
+      "referenced_by_count": 3,
+      "referenced_by_sample": [
+        "enclosed",
+        "gas",
+        "liquid"
+      ]
+    },
+    {
+      "text": "creative",
+      "referenced_by_count": 3,
+      "referenced_by_sample": [
+        "art",
+        "arts",
+        "copyright"
+      ]
+    },
+    {
+      "text": "delay",
+      "referenced_by_count": 3,
+      "referenced_by_sample": [
+        "hesitation",
+        "immediate",
+        "immediately"
+      ]
+    },
+    {
+      "text": "deliberately",
+      "referenced_by_count": 3,
+      "referenced_by_sample": [
+        "actions",
+        "falsehood",
+        "omit"
+      ]
+    },
+    {
+      "text": "desirable",
+      "referenced_by_count": 3,
+      "referenced_by_sample": [
+        "deficient",
+        "excess",
+        "perfect"
+      ]
+    },
+    {
+      "text": "difficult",
+      "referenced_by_count": 3,
+      "referenced_by_sample": [
+        "escape",
+        "face",
+        "problem"
+      ]
+    },
+    {
+      "text": "dispute",
+      "referenced_by_count": 3,
+      "referenced_by_sample": [
+        "disagreement",
+        "parties",
+        "resolution"
+      ]
+    },
+    {
+      "text": "european",
+      "referenced_by_count": 3,
+      "referenced_by_sample": [
+        "euro",
+        "euros",
+        "germanic"
+      ]
+    },
+    {
+      "text": "faculty",
+      "referenced_by_count": 3,
+      "referenced_by_sample": [
+        "attention",
+        "sense",
+        "sight"
+      ]
+    },
+    {
+      "text": "feel",
+      "referenced_by_count": 3,
+      "referenced_by_sample": [
+        "handle",
+        "mind",
+        "texture"
+      ]
+    },
+    {
+      "text": "felt",
+      "referenced_by_count": 3,
+      "referenced_by_sample": [
+        "mutual",
+        "reciprocally",
+        "triumph"
+      ]
+    },
+    {
+      "text": "forth",
+      "referenced_by_count": 3,
+      "referenced_by_sample": [
+        "shake",
+        "vibrations",
+        "waving"
+      ]
+    },
+    {
+      "text": "free",
+      "referenced_by_count": 3,
+      "referenced_by_sample": [
+        "clear",
+        "escape",
+        "peaceful"
+      ]
+    },
+    {
+      "text": "freely",
+      "referenced_by_count": 3,
+      "referenced_by_sample": [
+        "gas",
+        "give",
+        "liquid"
+      ]
+    },
+    {
+      "text": "gain",
+      "referenced_by_count": 3,
+      "referenced_by_sample": [
+        "acquire",
+        "observe",
+        "studied"
+      ]
+    },
+    {
+      "text": "gained",
+      "referenced_by_count": 3,
+      "referenced_by_sample": [
+        "acquired",
+        "obtained",
+        "skill"
+      ]
+    },
+    {
+      "text": "gradually",
+      "referenced_by_count": 3,
+      "referenced_by_sample": [
+        "developing",
+        "graduated",
+        "progressive"
+      ]
+    },
+    {
+      "text": "harm",
+      "referenced_by_count": 3,
+      "referenced_by_sample": [
+        "damage",
+        "protect",
+        "protected"
+      ]
+    },
+    {
+      "text": "help",
+      "referenced_by_count": 3,
+      "referenced_by_sample": [
+        "contribute",
+        "support"
+      ]
+    },
+    {
+      "text": "image",
+      "referenced_by_count": 3,
+      "referenced_by_sample": [
+        "imagine",
+        "imagined",
+        "negative"
+      ]
+    },
+    {
+      "text": "injury",
+      "referenced_by_count": 3,
+      "referenced_by_sample": [
+        "harmful",
+        "hurt",
+        "pain"
+      ]
+    },
+    {
+      "text": "lasting",
+      "referenced_by_count": 3,
+      "referenced_by_sample": [
+        "brief",
+        "long",
+        "temporary"
+      ]
+    },
+    {
+      "text": "live",
+      "referenced_by_count": 3,
+      "referenced_by_sample": [
+        "earth",
+        "inhabitants",
+        "social"
+      ]
+    },
+    {
+      "text": "mathematics",
+      "referenced_by_count": 3,
+      "referenced_by_sample": [
+        "arithmetical",
+        "calculate",
+        "mathematical"
+      ]
+    },
+    {
+      "text": "meet",
+      "referenced_by_count": 3,
+      "referenced_by_sample": [
+        "angle",
+        "encounter",
+        "satisfy"
+      ]
+    },
+    {
+      "text": "met",
+      "referenced_by_count": 3,
+      "referenced_by_sample": [
+        "encountered",
+        "satisfied",
+        "unsatisfied"
+      ]
+    },
+    {
+      "text": "numeral",
+      "referenced_by_count": 3,
+      "referenced_by_sample": [
+        "character",
+        "figure",
+        "number"
+      ]
+    },
+    {
+      "text": "officially",
+      "referenced_by_count": 3,
+      "referenced_by_sample": [
+        "approval",
+        "pronounce",
+        "unregistered"
+      ]
+    },
+    {
+      "text": "organic",
+      "referenced_by_count": 3,
+      "referenced_by_sample": [
+        "animal",
+        "animals",
+        "carbon"
+      ]
+    },
+    {
+      "text": "organization",
+      "referenced_by_count": 3,
+      "referenced_by_sample": [
+        "employed",
+        "member",
+        "members"
+      ]
+    },
+    {
+      "text": "organs",
+      "referenced_by_count": 3,
+      "referenced_by_sample": [
+        "body",
+        "eye",
+        "eyes"
+      ]
+    },
+    {
+      "text": "permanent",
+      "referenced_by_count": 3,
+      "referenced_by_sample": [
+        "establish",
+        "inherent",
+        "temporary"
+      ]
+    },
+    {
+      "text": "practice",
+      "referenced_by_count": 3,
+      "referenced_by_sample": [
+        "habit",
+        "habitual",
+        "skill"
+      ]
+    },
+    {
+      "text": "principles",
+      "referenced_by_count": 3,
+      "referenced_by_sample": [
+        "rules",
+        "scientific",
+        "values"
+      ]
+    },
+    {
+      "text": "prominence",
+      "referenced_by_count": 3,
+      "referenced_by_sample": [
+        "emphasis",
+        "emphasise",
+        "emphasises"
+      ]
+    },
+    {
+      "text": "reality",
+      "referenced_by_count": 3,
+      "referenced_by_sample": [
+        "existing",
+        "exists",
+        "truth"
+      ]
+    },
+    {
+      "text": "record",
+      "referenced_by_count": 3,
+      "referenced_by_sample": [
+        "document",
+        "register"
+      ]
+    },
+    {
+      "text": "recorded",
+      "referenced_by_count": 3,
+      "referenced_by_sample": [
+        "registered",
+        "unregistered",
+        "written"
+      ]
+    },
+    {
+      "text": "reduced",
+      "referenced_by_count": 3,
+      "referenced_by_sample": [
+        "contracted",
+        "irreducible",
+        "shortened"
+      ]
+    },
+    {
+      "text": "remains",
+      "referenced_by_count": 3,
+      "referenced_by_sample": [
+        "holds",
+        "rest",
+        "stands"
+      ]
+    },
+    {
+      "text": "repeatedly",
+      "referenced_by_count": 3,
+      "referenced_by_sample": [
+        "habitual",
+        "shake",
+        "shaking"
+      ]
+    },
+    {
+      "text": "resembling",
+      "referenced_by_count": 3,
+      "referenced_by_sample": [
+        "mechanical",
+        "metallic",
+        "similar"
+      ]
+    },
+    {
+      "text": "semi",
+      "referenced_by_count": 3,
+      "referenced_by_sample": [
+        "dare",
+        "need",
+        "ought"
+      ]
+    },
+    {
+      "text": "solid",
+      "referenced_by_count": 3,
+      "referenced_by_sample": [
+        "firm",
+        "firmness",
+        "hard"
+      ]
+    },
+    {
+      "text": "text",
+      "referenced_by_count": 3,
+      "referenced_by_sample": [
+        "figure",
+        "tag",
+        "underscore"
+      ]
+    },
+    {
+      "text": "thin",
+      "referenced_by_count": 3,
+      "referenced_by_sample": [
+        "filaments",
+        "thread",
+        "wire"
+      ]
+    },
+    {
+      "text": "understood",
+      "referenced_by_count": 3,
+      "referenced_by_sample": [
+        "apparent",
+        "context",
+        "rules"
+      ]
+    },
+    {
+      "text": "unexpected",
+      "referenced_by_count": 3,
+      "referenced_by_sample": [
+        "surprise",
+        "surprising"
+      ]
+    },
+    {
+      "text": "view",
+      "referenced_by_count": 3,
+      "referenced_by_sample": [
+        "appears",
+        "face",
+        "notion"
+      ]
+    },
+    {
+      "text": "white",
+      "referenced_by_count": 3,
+      "referenced_by_sample": [
+        "grey",
+        "▫",
+        "◦"
+      ]
+    },
+    {
+      "text": "wishes",
+      "referenced_by_count": 3,
+      "referenced_by_sample": [
+        "satisfaction",
+        "satisfied",
+        "subjunctive"
+      ]
+    },
+    {
+      "text": "absent",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "lacking",
+        "missing"
+      ]
+    },
+    {
+      "text": "aloud",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "speak",
+        "speaking"
+      ]
+    },
+    {
+      "text": "alphabet",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "letter",
+        "letters"
+      ]
+    },
+    {
+      "text": "articulated",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "pronounced",
+        "pronunciation"
+      ]
+    },
+    {
+      "text": "aside",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "reserve",
+        "reserved"
+      ]
+    },
+    {
+      "text": "awareness",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "feeling",
+        "understanding"
+      ]
+    },
+    {
+      "text": "black",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "grey",
+        "▪"
+      ]
+    },
+    {
+      "text": "breaking",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "interruption",
+        "‑"
+      ]
+    },
+    {
+      "text": "briefly",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "mention",
+        "mentioned"
+      ]
+    },
+    {
+      "text": "bulb",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "filament",
+        "filaments"
+      ]
+    },
+    {
+      "text": "capable",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "aircraft",
+        "logical"
+      ]
+    },
+    {
+      "text": "casual",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "informal",
+        "informally"
+      ]
+    },
+    {
+      "text": "ceasing",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "disappearance",
+        "resting"
+      ]
+    },
+    {
+      "text": "certainty",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "attempt",
+        "supposed"
+      ]
+    },
+    {
+      "text": "check",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "monitor",
+        "tests"
+      ]
+    },
+    {
+      "text": "chief",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "main",
+        "primary"
+      ]
+    },
+    {
+      "text": "collectively",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "machinery",
+        "media"
+      ]
+    },
+    {
+      "text": "comment",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "footnote",
+        "remark"
+      ]
+    },
+    {
+      "text": "commitment",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "devotion",
+        "obligation"
+      ]
+    },
+    {
+      "text": "communicated",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "conveyed",
+        "spoken"
+      ]
+    },
+    {
+      "text": "compounds",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "carbon",
+        "dimensional"
+      ]
+    },
+    {
+      "text": "computers",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "email",
+        "network"
+      ]
+    },
+    {
+      "text": "computing",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "backslash",
+        "boolean"
+      ]
+    },
+    {
+      "text": "conceal",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "cover",
+        "covered"
+      ]
+    },
+    {
+      "text": "conducts",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "behaves",
+        "filament"
+      ]
+    },
+    {
+      "text": "confidence",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "rely",
+        "relying"
+      ]
+    },
+    {
+      "text": "confidently",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "assert",
+        "asserting"
+      ]
+    },
+    {
+      "text": "conscious",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "being",
+        "impression"
+      ]
+    },
+    {
+      "text": "consider",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "regard",
+        "reject"
+      ]
+    },
+    {
+      "text": "considerable",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "greatly",
+        "large"
+      ]
+    },
+    {
+      "text": "convention",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "informally",
+        "proper"
+      ]
+    },
+    {
+      "text": "conventions",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "formal",
+        "informal"
+      ]
+    },
+    {
+      "text": "created",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "produced",
+        "purpose"
+      ]
+    },
+    {
+      "text": "curly",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "{",
+        "}"
+      ]
+    },
+    {
+      "text": "customary",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "habitual",
+        "usual"
+      ]
+    },
+    {
+      "text": "dagger",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "†",
+        "‡"
+      ]
+    },
+    {
+      "text": "death",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "grief",
+        "kill"
+      ]
+    },
+    {
+      "text": "debt",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "due",
+        "owing"
+      ]
+    },
+    {
+      "text": "diagram",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "draw",
+        "figure"
+      ]
+    },
+    {
+      "text": "directed",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "aim",
+        "referred"
+      ]
+    },
+    {
+      "text": "directs",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "looks",
+        "refers"
+      ]
+    },
+    {
+      "text": "discussion",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "conclusion",
+        "discourse"
+      ]
+    },
+    {
+      "text": "durability",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "strong",
+        "stronger"
+      ]
+    },
+    {
+      "text": "duty",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "obligation",
+        "serve"
+      ]
+    },
+    {
+      "text": "edges",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "boundaries",
+        "middle"
+      ]
+    },
+    {
+      "text": "eggs",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "female",
+        "male"
+      ]
+    },
+    {
+      "text": "enter",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "contract",
+        "register"
+      ]
+    },
+    {
+      "text": "evaluated",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "assessed",
+        "judged"
+      ]
+    },
+    {
+      "text": "expert",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "authoritative",
+        "specialise"
+      ]
+    },
+    {
+      "text": "explicit",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "direct",
+        "rules"
+      ]
+    },
+    {
+      "text": "extremities",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "feet",
+        "middle"
+      ]
+    },
+    {
+      "text": "factory",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "manufacture",
+        "manufacturing"
+      ]
+    },
+    {
+      "text": "fall",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "balance",
+        "fluctuate"
+      ]
+    },
+    {
+      "text": "familiar",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "known",
+        "unknown"
+      ]
+    },
+    {
+      "text": "fasten",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "attach",
+        "fix"
+      ]
+    },
+    {
+      "text": "fastened",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "attached",
+        "fixed"
+      ]
+    },
+    {
+      "text": "fibre",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "filament",
+        "rope"
+      ]
+    },
+    {
+      "text": "fill",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "gas",
+        "occupy"
+      ]
+    },
+    {
+      "text": "filled",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "empty",
+        "occupied"
+      ]
+    },
+    {
+      "text": "fulfilled",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "satisfied",
+        "unsatisfied"
+      ]
+    },
+    {
+      "text": "fulfilment",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "satisfaction"
+      ]
+    },
+    {
+      "text": "gaining",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "acquiring",
+        "study"
+      ]
+    },
+    {
+      "text": "good",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "maintained",
+        "polite"
+      ]
+    },
+    {
+      "text": "harmony",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "agreement",
+        "disagreement"
+      ]
+    },
+    {
+      "text": "heat",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "conductor",
+        "temperature"
+      ]
+    },
+    {
+      "text": "homo",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "human",
+        "humans"
+      ]
+    },
+    {
+      "text": "ineffective",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "negate",
+        "negates"
+      ]
+    },
+    {
+      "text": "inquiry",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "ascertain",
+        "investigation"
+      ]
+    },
+    {
+      "text": "interconnected",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "complex",
+        "network"
+      ]
+    },
+    {
+      "text": "intermediate",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "grey",
+        "indirect"
+      ]
+    },
+    {
+      "text": "internet",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "domain",
+        "media"
+      ]
+    },
+    {
+      "text": "interpret",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "clear",
+        "perceive"
+      ]
+    },
+    {
+      "text": "inverted",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "¡",
+        "¿"
+      ]
+    },
+    {
+      "text": "irregularly",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "fluctuate",
+        "fluctuating"
+      ]
+    },
+    {
+      "text": "japan",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "japanese",
+        "yen"
+      ]
+    },
+    {
+      "text": "jointly",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "share",
+        "shared"
+      ]
+    },
+    {
+      "text": "journey",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "arrive",
+        "departure"
+      ]
+    },
+    {
+      "text": "kingdom",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "pound",
+        "sterling"
+      ]
+    },
+    {
+      "text": "land",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "earth",
+        "field"
+      ]
+    },
+    {
+      "text": "liking",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "favour",
+        "preference"
+      ]
+    },
+    {
+      "text": "lives",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "address",
+        "inhabitant"
+      ]
+    },
+    {
+      "text": "logic",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "logical",
+        "logically"
+      ]
+    },
+    {
+      "text": "loss",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "grief",
+        "protected"
+      ]
+    },
+    {
+      "text": "lying",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "resting",
+        "west"
+      ]
+    },
+    {
+      "text": "mass",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "matter",
+        "media"
+      ]
+    },
+    {
+      "text": "mechanism",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "machinery",
+        "mechanically"
+      ]
+    },
+    {
+      "text": "meeting",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "parallel",
+        "qualifying"
+      ]
+    },
+    {
+      "text": "minor",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "detail",
+        "details"
+      ]
+    },
+    {
+      "text": "modifier",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "^",
+        "々"
+      ]
+    },
+    {
+      "text": "month",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "date",
+        "dates"
+      ]
+    },
+    {
+      "text": "necessarily",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "apparent",
+        "seem"
+      ]
+    },
+    {
+      "text": "noteworthy",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "incident",
+        "significant"
+      ]
+    },
+    {
+      "text": "offered",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "accept",
+        "advice"
+      ]
+    },
+    {
+      "text": "organise",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "arrange",
+        "classify"
+      ]
+    },
+    {
+      "text": "organized",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "arrangement",
+        "methodical"
+      ]
+    },
+    {
+      "text": "owed",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "due",
+        "owing"
+      ]
+    },
+    {
+      "text": "owned",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "possessed",
+        "possession"
+      ]
+    },
+    {
+      "text": "owning",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "ownership",
+        "possession"
+      ]
+    },
+    {
+      "text": "paper",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "label",
+        "write"
+      ]
+    },
+    {
+      "text": "parenthesis",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "(",
+        ")"
+      ]
+    },
+    {
+      "text": "participate",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "engage",
+        "involve"
+      ]
+    },
+    {
+      "text": "pause",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "hesitation",
+        "uninterrupted"
+      ]
+    },
+    {
+      "text": "planned",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "happens",
+        "intended"
+      ]
+    },
+    {
+      "text": "plants",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "animal",
+        "male"
+      ]
+    },
+    {
+      "text": "pleasure",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "joy",
+        "satisfaction"
+      ]
+    },
+    {
+      "text": "politely",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "request",
+        "requests"
+      ]
+    },
+    {
+      "text": "powerful",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "forceful",
+        "forcefully"
+      ]
+    },
+    {
+      "text": "prime",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "′",
+        "″"
+      ]
+    },
+    {
+      "text": "principal",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "main",
+        "primary"
+      ]
+    },
+    {
+      "text": "printing",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "character",
+        "mark"
+      ]
+    },
+    {
+      "text": "probable",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "likely",
+        "suppose"
+      ]
+    },
+    {
+      "text": "proceeding",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "charge",
+        "plea"
+      ]
+    },
+    {
+      "text": "promise",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "guarantee",
+        "obligation"
+      ]
+    },
+    {
+      "text": "proven",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "apparent",
+        "facts"
+      ]
+    },
+    {
+      "text": "publication",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "editorial"
+      ]
+    },
+    {
+      "text": "publicly",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "exhibit",
+        "exhibited"
+      ]
+    },
+    {
+      "text": "quick",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "cache",
+        "fast"
+      ]
+    },
+    {
+      "text": "rapid",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "vibration",
+        "vibrations"
+      ]
+    },
+    {
+      "text": "recognized",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "known",
+        "legally"
+      ]
+    },
+    {
+      "text": "recover",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "rest",
+        "resting"
+      ]
+    },
+    {
+      "text": "regular",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "habit",
+        "pattern"
+      ]
+    },
+    {
+      "text": "relax",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "rest",
+        "resting"
+      ]
+    },
+    {
+      "text": "reliability",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "test"
+      ]
+    },
+    {
+      "text": "remain",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "continue",
+        "leave"
+      ]
+    },
+    {
+      "text": "resemble",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "similarities",
+        "similarity"
+      ]
+    },
+    {
+      "text": "resistance",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "alloy",
+        "opposition"
+      ]
+    },
+    {
+      "text": "resources",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "allocate",
+        "energy"
+      ]
+    },
+    {
+      "text": "safe",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "protect",
+        "protected"
+      ]
+    },
+    {
+      "text": "sapiens",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "human",
+        "humans"
+      ]
+    },
+    {
+      "text": "satisfactory",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "approval",
+        "resolve"
+      ]
+    },
+    {
+      "text": "seat",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "mind",
+        "spirit"
+      ]
+    },
+    {
+      "text": "securely",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "fix",
+        "fixed"
+      ]
+    },
+    {
+      "text": "self",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "independent"
+      ]
+    },
+    {
+      "text": "sensations",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "colour",
+        "sounds"
+      ]
+    },
+    {
+      "text": "sent",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "destination",
+        "email"
+      ]
+    },
+    {
+      "text": "sewing",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "thread",
+        "threads"
+      ]
+    },
+    {
+      "text": "shut",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "enclose",
+        "enclosed"
+      ]
+    },
+    {
+      "text": "signifies",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "denotes",
+        "marks"
+      ]
+    },
+    {
+      "text": "signifying",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "denoting",
+        "means"
+      ]
+    },
+    {
+      "text": "simplified",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "irreducible",
+        "model"
+      ]
+    },
+    {
+      "text": "slender",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "filament",
+        "finger"
+      ]
+    },
+    {
+      "text": "smooth",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "curve",
+        "curving"
+      ]
+    },
+    {
+      "text": "solidus",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "/",
+        "\\"
+      ]
+    },
+    {
+      "text": "solution",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "problem",
+        "resolve"
+      ]
+    },
+    {
+      "text": "species",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "human",
+        "humans"
+      ]
+    },
+    {
+      "text": "specifically",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "named",
+        "things"
+      ]
+    },
+    {
+      "text": "sphere",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "bounds",
+        "domain"
+      ]
+    },
+    {
+      "text": "strongly",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "desire",
+        "desired"
+      ]
+    },
+    {
+      "text": "success",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "attempt",
+        "optimistic"
+      ]
+    },
+    {
+      "text": "sun",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "earth",
+        "west"
+      ]
+    },
+    {
+      "text": "surround",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "encircle",
+        "enclose"
+      ]
+    },
+    {
+      "text": "surrounding",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "encircled",
+        "environment"
+      ]
+    },
+    {
+      "text": "symbolic",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "data",
+        "expressions"
+      ]
+    },
+    {
+      "text": "talk",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "discuss",
+        "speak"
+      ]
+    },
+    {
+      "text": "tangible",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "embodies",
+        "embody"
+      ]
+    },
+    {
+      "text": "terms",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "context",
+        "worded"
+      ]
+    },
+    {
+      "text": "think",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "mind",
+        "regard"
+      ]
+    },
+    {
+      "text": "tract",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "consonant",
+        "vowel"
+      ]
+    },
+    {
+      "text": "training",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "graduate",
+        "skill"
+      ]
+    },
+    {
+      "text": "transporting",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "ship",
+        "vehicle"
+      ]
+    },
+    {
+      "text": "trust",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "rely",
+        "relying"
+      ]
+    },
+    {
+      "text": "unambiguous",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "definitely",
+        "explicitly"
+      ]
+    },
+    {
+      "text": "underlying",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "basis",
+        "foundation"
+      ]
+    },
+    {
+      "text": "uniform",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "evenly",
+        "substances"
+      ]
+    },
+    {
+      "text": "union",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "euro",
+        "euros"
+      ]
+    },
+    {
+      "text": "uniquely",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "identifier",
+        "identifiers"
+      ]
+    },
+    {
+      "text": "useful",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "constructive",
+        "practical"
+      ]
+    },
+    {
+      "text": "uttered",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "pronounced",
+        "said"
+      ]
+    },
+    {
+      "text": "validity",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "recognise",
+        "recognition"
+      ]
+    },
+    {
+      "text": "visual",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "art",
+        "looks"
+      ]
+    },
+    {
+      "text": "voluntarily",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "animal",
+        "animals"
+      ]
+    },
+    {
+      "text": "warmly",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "welcome",
+        "welcomed"
+      ]
+    },
+    {
+      "text": "weaving",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "thread",
+        "threads"
+      ]
+    },
+    {
+      "text": "wide",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "narrow",
+        "road"
+      ]
+    },
+    {
+      "text": "willingly",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "accept",
+        "favour"
+      ]
+    },
+    {
+      "text": "works",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "functions",
+        "literary"
+      ]
+    },
+    {
+      "text": "year",
+      "referenced_by_count": 2,
+      "referenced_by_sample": [
+        "date",
+        "dates"
+      ]
+    },
+    {
+      "text": "abnormal",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "normal"
+      ]
+    },
+    {
+      "text": "absolutely",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "essential"
+      ]
+    },
+    {
+      "text": "accent",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "^"
+      ]
+    },
+    {
+      "text": "acceptance",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "resignation"
+      ]
+    },
+    {
+      "text": "accidentally",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "omit"
+      ]
+    },
+    {
+      "text": "accusation",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "charge"
+      ]
+    },
+    {
+      "text": "acknowledge",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "recognise"
+      ]
+    },
+    {
+      "text": "acknowledgement",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "recognition"
+      ]
+    },
+    {
+      "text": "adequate",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "sufficient"
+      ]
+    },
+    {
+      "text": "adjacent",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "next"
+      ]
+    },
+    {
+      "text": "admitting",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "exclusive"
+      ]
+    },
+    {
+      "text": "adverse",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "harmful"
+      ]
+    },
+    {
+      "text": "advisable",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "advisability"
+      ]
+    },
+    {
+      "text": "ago",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "recency"
+      ]
+    },
+    {
+      "text": "agree",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "accept"
+      ]
+    },
+    {
+      "text": "agreed",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "contracted"
+      ]
+    },
+    {
+      "text": "agreeing",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "approval"
+      ]
+    },
+    {
+      "text": "airplane",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "aircraft"
+      ]
+    },
+    {
+      "text": "algebraic",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "boolean"
+      ]
+    },
+    {
+      "text": "alike",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "identical"
+      ]
+    },
+    {
+      "text": "alluded",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "referred"
+      ]
+    },
+    {
+      "text": "alludes",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "refers"
+      ]
+    },
+    {
+      "text": "alluding",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "referring"
+      ]
+    },
+    {
+      "text": "amazement",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "astonishment"
+      ]
+    },
+    {
+      "text": "ambiguity",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "clearly"
+      ]
+    },
+    {
+      "text": "analyse",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "complex"
+      ]
+    },
+    {
+      "text": "analysis",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "data"
+      ]
+    },
+    {
+      "text": "ancient",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "archaic"
+      ]
+    },
+    {
+      "text": "anger",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "emotion"
+      ]
+    },
+    {
+      "text": "ankle",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "foot"
+      ]
+    },
+    {
+      "text": "annoy",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "spite"
+      ]
+    },
+    {
+      "text": "appeal",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "plea"
+      ]
+    },
+    {
+      "text": "application",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "art"
+      ]
+    },
+    {
+      "text": "approximated",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "exact"
+      ]
+    },
+    {
+      "text": "argue",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "oppose"
+      ]
+    },
+    {
+      "text": "arithmetic",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "arithmetical"
+      ]
+    },
+    {
+      "text": "article",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "item"
+      ]
+    },
+    {
+      "text": "articles",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "items"
+      ]
+    },
+    {
+      "text": "artistic",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "literary"
+      ]
+    },
+    {
+      "text": "ash",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "grey"
+      ]
+    },
+    {
+      "text": "assurance",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "guarantee"
+      ]
+    },
+    {
+      "text": "attain",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "competing"
+      ]
+    },
+    {
+      "text": "attainable",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "maximum"
+      ]
+    },
+    {
+      "text": "attitude",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "favour"
+      ]
+    },
+    {
+      "text": "authorisation",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "permission"
+      ]
+    },
+    {
+      "text": "authority",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "hierarchy"
+      ]
+    },
+    {
+      "text": "banknotes",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "money"
+      ]
+    },
+    {
+      "text": "barrier",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "enclosure"
+      ]
+    },
+    {
+      "text": "befitting",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "royal"
+      ]
+    },
+    {
+      "text": "behavioural",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "response"
+      ]
+    },
+    {
+      "text": "believed",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "supposed"
+      ]
+    },
+    {
+      "text": "best",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "chosen"
+      ]
+    },
+    {
+      "text": "big",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "large"
+      ]
+    },
+    {
+      "text": "biological",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "gender"
+      ]
+    },
+    {
+      "text": "birth",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "acquired"
+      ]
+    },
+    {
+      "text": "blend",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "mix"
+      ]
+    },
+    {
+      "text": "blending",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "mixing"
+      ]
+    },
+    {
+      "text": "blue",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "bluish"
+      ]
+    },
+    {
+      "text": "bones",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "body"
+      ]
+    },
+    {
+      "text": "books",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "study"
+      ]
+    },
+    {
+      "text": "bottom",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "footnote"
+      ]
+    },
+    {
+      "text": "bounding",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "side"
+      ]
+    },
+    {
+      "text": "boys",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "male"
+      ]
+    },
+    {
+      "text": "brain",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "head"
+      ]
+    },
+    {
+      "text": "bravery",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "courage"
+      ]
+    },
+    {
+      "text": "breathed",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "air"
+      ]
+    },
+    {
+      "text": "build",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "constructive"
+      ]
+    },
+    {
+      "text": "building",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "construction"
+      ]
+    },
+    {
+      "text": "business",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "manufacturing"
+      ]
+    },
+    {
+      "text": "care",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "carefully"
+      ]
+    },
+    {
+      "text": "carriages",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "train"
+      ]
+    },
+    {
+      "text": "categorise",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "tag"
+      ]
+    },
+    {
+      "text": "categorised",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "classified"
+      ]
+    },
+    {
+      "text": "cease",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "rest"
+      ]
+    },
+    {
+      "text": "ceremonious",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "formal"
+      ]
+    },
+    {
+      "text": "certainly",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "definitely"
+      ]
+    },
+    {
+      "text": "characterised",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "scientific"
+      ]
+    },
+    {
+      "text": "characterized",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "methodical"
+      ]
+    },
+    {
+      "text": "checking",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "monitoring"
+      ]
+    },
+    {
+      "text": "chin",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "face"
+      ]
+    },
+    {
+      "text": "circumference",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "arc"
+      ]
+    },
+    {
+      "text": "circumflex",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "^"
+      ]
+    },
+    {
+      "text": "clarifying",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "figure"
+      ]
+    },
+    {
+      "text": "clever",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "manipulate"
+      ]
+    },
+    {
+      "text": "cleverly",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "manipulating"
+      ]
+    },
+    {
+      "text": "closure",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "consonant"
+      ]
+    },
+    {
+      "text": "clouds",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "grey"
+      ]
+    },
+    {
+      "text": "coherently",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "articulate"
+      ]
+    },
+    {
+      "text": "coins",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "money"
+      ]
+    },
+    {
+      "text": "cold",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "temperature"
+      ]
+    },
+    {
+      "text": "collective",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "editorial"
+      ]
+    },
+    {
+      "text": "colon",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        ":"
+      ]
+    },
+    {
+      "text": "combinations",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "expressions"
+      ]
+    },
+    {
+      "text": "commercial",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "@"
+      ]
+    },
+    {
+      "text": "communicates",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "conveys"
+      ]
+    },
+    {
+      "text": "communities",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "social"
+      ]
+    },
+    {
+      "text": "company",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "trademark"
+      ]
+    },
+    {
+      "text": "comparable",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "analogous"
+      ]
+    },
+    {
+      "text": "complied",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "obeyed"
+      ]
+    },
+    {
+      "text": "comply",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "obey"
+      ]
+    },
+    {
+      "text": "composition",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "grammar"
+      ]
+    },
+    {
+      "text": "comprehend",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "understanding"
+      ]
+    },
+    {
+      "text": "comprehending",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "reading"
+      ]
+    },
+    {
+      "text": "concentrate",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "specialise"
+      ]
+    },
+    {
+      "text": "concentrating",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "attention"
+      ]
+    },
+    {
+      "text": "conception",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "notion"
+      ]
+    },
+    {
+      "text": "concrete",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "abstract"
+      ]
+    },
+    {
+      "text": "conducting",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "manner"
+      ]
+    },
+    {
+      "text": "confident",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "optimistic"
+      ]
+    },
+    {
+      "text": "confinement",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "escape"
+      ]
+    },
+    {
+      "text": "confirming",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "affirmation"
+      ]
+    },
+    {
+      "text": "conforming",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "normal"
+      ]
+    },
+    {
+      "text": "conformity",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "accordance"
+      ]
+    },
+    {
+      "text": "confront",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "face"
+      ]
+    },
+    {
+      "text": "confronting",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "facing"
+      ]
+    },
+    {
+      "text": "confusion",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "clear"
+      ]
+    },
+    {
+      "text": "connector",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "_"
+      ]
+    },
+    {
+      "text": "consciousness",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "mind"
+      ]
+    },
+    {
+      "text": "consensus",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "disagreement"
+      ]
+    },
+    {
+      "text": "considerably",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "great"
+      ]
+    },
+    {
+      "text": "consistency",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "texture"
+      ]
+    },
+    {
+      "text": "constantly",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "habitual"
+      ]
+    },
+    {
+      "text": "constriction",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "vowel"
+      ]
+    },
+    {
+      "text": "continuance",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "tenses"
+      ]
+    },
+    {
+      "text": "contradict",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "negate"
+      ]
+    },
+    {
+      "text": "contradicting",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "negation"
+      ]
+    },
+    {
+      "text": "contradictory",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "consistent"
+      ]
+    },
+    {
+      "text": "contradicts",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "negates"
+      ]
+    },
+    {
+      "text": "convenient",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "cache"
+      ]
+    },
+    {
+      "text": "conviction",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "doubt"
+      ]
+    },
+    {
+      "text": "cooperation",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "together"
+      ]
+    },
+    {
+      "text": "copy",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "model"
+      ]
+    },
+    {
+      "text": "cord",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "rope"
+      ]
+    },
+    {
+      "text": "core",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "fundamental"
+      ]
+    },
+    {
+      "text": "correspondence",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "disagreement"
+      ]
+    },
+    {
+      "text": "corrosion",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "alloy"
+      ]
+    },
+    {
+      "text": "cotton",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "thread"
+      ]
+    },
+    {
+      "text": "crash",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "collide"
+      ]
+    },
+    {
+      "text": "crashing",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "colliding"
+      ]
+    },
+    {
+      "text": "create",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "compose"
+      ]
+    },
+    {
+      "text": "creates",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "produces"
+      ]
+    },
+    {
+      "text": "creatures",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "air"
+      ]
+    },
+    {
+      "text": "criticise",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "constructive"
+      ]
+    },
+    {
+      "text": "crops",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "field"
+      ]
+    },
+    {
+      "text": "cry",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "exclamation"
+      ]
+    },
+    {
+      "text": "culture",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "japanese"
+      ]
+    },
+    {
+      "text": "curled",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "twist"
+      ]
+    },
+    {
+      "text": "cut",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "hard"
+      ]
+    },
+    {
+      "text": "damaged",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "resistant"
+      ]
+    },
+    {
+      "text": "danger",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "courage"
+      ]
+    },
+    {
+      "text": "dangerous",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "escape"
+      ]
+    },
+    {
+      "text": "dark",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "negative"
+      ]
+    },
+    {
+      "text": "day",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "date"
+      ]
+    },
+    {
+      "text": "days",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "dates"
+      ]
+    },
+    {
+      "text": "debate",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "discourse"
+      ]
+    },
+    {
+      "text": "decisions",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "conclusions"
+      ]
+    },
+    {
+      "text": "declare",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "pronounce"
+      ]
+    },
+    {
+      "text": "declared",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "statements"
+      ]
+    },
+    {
+      "text": "declining",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "refusal"
+      ]
+    },
+    {
+      "text": "decorative",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "pattern"
+      ]
+    },
+    {
+      "text": "decree",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "prohibition"
+      ]
+    },
+    {
+      "text": "deep",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "grief"
+      ]
+    },
+    {
+      "text": "delicate",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "instrument"
+      ]
+    },
+    {
+      "text": "demanded",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "requirements"
+      ]
+    },
+    {
+      "text": "denial",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "negatives"
+      ]
+    },
+    {
+      "text": "denies",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "negates"
+      ]
+    },
+    {
+      "text": "deny",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "negate"
+      ]
+    },
+    {
+      "text": "denying",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "negation"
+      ]
+    },
+    {
+      "text": "depart",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "go"
+      ]
+    },
+    {
+      "text": "departed",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "gone"
+      ]
+    },
+    {
+      "text": "depicted",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "represented"
+      ]
+    },
+    {
+      "text": "depicting",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "representing"
+      ]
+    },
+    {
+      "text": "deserve",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "significant"
+      ]
+    },
+    {
+      "text": "designate",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "identifiers"
+      ]
+    },
+    {
+      "text": "destroy",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "constructive"
+      ]
+    },
+    {
+      "text": "detour",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "direct"
+      ]
+    },
+    {
+      "text": "deviation",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "exactly"
+      ]
+    },
+    {
+      "text": "devote",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "study"
+      ]
+    },
+    {
+      "text": "diacritical",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "tilde"
+      ]
+    },
+    {
+      "text": "dialect",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "dialectal"
+      ]
+    },
+    {
+      "text": "digital",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "money"
+      ]
+    },
+    {
+      "text": "dimensions",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "length"
+      ]
+    },
+    {
+      "text": "directing",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "referring"
+      ]
+    },
+    {
+      "text": "disagree",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "differ"
+      ]
+    },
+    {
+      "text": "disappointment",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "regret"
+      ]
+    },
+    {
+      "text": "discomfort",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "pain"
+      ]
+    },
+    {
+      "text": "disconnected",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "fragmented"
+      ]
+    },
+    {
+      "text": "dismiss",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "reject"
+      ]
+    },
+    {
+      "text": "dismissed",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "rejected"
+      ]
+    },
+    {
+      "text": "disperse",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "distribute"
+      ]
+    },
+    {
+      "text": "dissent",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "opposition"
+      ]
+    },
+    {
+      "text": "dissimilar",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "differ"
+      ]
+    },
+    {
+      "text": "distress",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "hurt"
+      ]
+    },
+    {
+      "text": "ditto",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "〃"
+      ]
+    },
+    {
+      "text": "diverse",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "variety"
+      ]
+    },
+    {
+      "text": "drag",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "draw"
+      ]
+    },
+    {
+      "text": "drama",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "literary"
+      ]
+    },
+    {
+      "text": "dutch",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "germanic"
+      ]
+    },
+    {
+      "text": "duties",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "allocate"
+      ]
+    },
+    {
+      "text": "editing",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "editorial"
+      ]
+    },
+    {
+      "text": "education",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "knowledge"
+      ]
+    },
+    {
+      "text": "effective",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "developed"
+      ]
+    },
+    {
+      "text": "electronic",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "document"
+      ]
+    },
+    {
+      "text": "electronically",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "email"
+      ]
+    },
+    {
+      "text": "ellipsis",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "…"
+      ]
+    },
+    {
+      "text": "emerge",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "arise"
+      ]
+    },
+    {
+      "text": "emits",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "colour"
+      ]
+    },
+    {
+      "text": "emotionally",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "mature"
+      ]
+    },
+    {
+      "text": "enables",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "mind"
+      ]
+    },
+    {
+      "text": "ending",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "cessation"
+      ]
+    },
+    {
+      "text": "energetic",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "vigorous"
+      ]
+    },
+    {
+      "text": "engine",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "vehicle"
+      ]
+    },
+    {
+      "text": "ensures",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "guarantees"
+      ]
+    },
+    {
+      "text": "entered",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "registered"
+      ]
+    },
+    {
+      "text": "entirely",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "completely"
+      ]
+    },
+    {
+      "text": "equally",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "middle"
+      ]
+    },
+    {
+      "text": "equilibrium",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "balanced"
+      ]
+    },
+    {
+      "text": "erect",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "upright"
+      ]
+    },
+    {
+      "text": "estimate",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "assess"
+      ]
+    },
+    {
+      "text": "estimated",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "assessed"
+      ]
+    },
+    {
+      "text": "estimating",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "comparing"
+      ]
+    },
+    {
+      "text": "evaluate",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "assess"
+      ]
+    },
+    {
+      "text": "evoke",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "elicit"
+      ]
+    },
+    {
+      "text": "evoked",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "admiration"
+      ]
+    },
+    {
+      "text": "examination",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "investigation"
+      ]
+    },
+    {
+      "text": "exceptional",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "ordinary"
+      ]
+    },
+    {
+      "text": "exceptionally",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "extremely"
+      ]
+    },
+    {
+      "text": "executes",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "performs"
+      ]
+    },
+    {
+      "text": "executing",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "performing"
+      ]
+    },
+    {
+      "text": "exercise",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "control"
+      ]
+    },
+    {
+      "text": "expands",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "gas"
+      ]
+    },
+    {
+      "text": "extra",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "additional"
+      ]
+    },
+    {
+      "text": "fairly",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "moderately"
+      ]
+    },
+    {
+      "text": "falling",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "fluctuating"
+      ]
+    },
+    {
+      "text": "family",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "royal"
+      ]
+    },
+    {
+      "text": "favouring",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "progressive"
+      ]
+    },
+    {
+      "text": "fear",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "emotion"
+      ]
+    },
+    {
+      "text": "feed",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "animals"
+      ]
+    },
+    {
+      "text": "feeds",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "animal"
+      ]
+    },
+    {
+      "text": "fence",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "enclosure"
+      ]
+    },
+    {
+      "text": "fiction",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "literary"
+      ]
+    },
+    {
+      "text": "findings",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "scientific"
+      ]
+    },
+    {
+      "text": "fine",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "threads"
+      ]
+    },
+    {
+      "text": "finish",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "complete"
+      ]
+    },
+    {
+      "text": "finished",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "completed"
+      ]
+    },
+    {
+      "text": "finishing",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "completion"
+      ]
+    },
+    {
+      "text": "flat",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "step"
+      ]
+    },
+    {
+      "text": "flawless",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "perfect"
+      ]
+    },
+    {
+      "text": "flesh",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "body"
+      ]
+    },
+    {
+      "text": "flexible",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "wire"
+      ]
+    },
+    {
+      "text": "flight",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "aircraft"
+      ]
+    },
+    {
+      "text": "fluently",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "articulate"
+      ]
+    },
+    {
+      "text": "folder",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "file"
+      ]
+    },
+    {
+      "text": "food",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "mouth"
+      ]
+    },
+    {
+      "text": "forbidding",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "prohibition"
+      ]
+    },
+    {
+      "text": "forbids",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "prohibition"
+      ]
+    },
+    {
+      "text": "forcible",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "hit"
+      ]
+    },
+    {
+      "text": "forcibly",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "emphatic"
+      ]
+    },
+    {
+      "text": "forehead",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "face"
+      ]
+    },
+    {
+      "text": "foremost",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "front"
+      ]
+    },
+    {
+      "text": "frequently",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "often"
+      ]
+    },
+    {
+      "text": "friendly",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "welcome"
+      ]
+    },
+    {
+      "text": "frightens",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "courage"
+      ]
+    },
+    {
+      "text": "fulfil",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "satisfy"
+      ]
+    },
+    {
+      "text": "gap",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "space"
+      ]
+    },
+    {
+      "text": "gears",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "mesh"
+      ]
+    },
+    {
+      "text": "gentle",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "mild"
+      ]
+    },
+    {
+      "text": "german",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "germanic"
+      ]
+    },
+    {
+      "text": "get",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "obtain"
+      ]
+    },
+    {
+      "text": "gets",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "receives"
+      ]
+    },
+    {
+      "text": "getting",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "receiving"
+      ]
+    },
+    {
+      "text": "got",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "received"
+      ]
+    },
+    {
+      "text": "government",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "country"
+      ]
+    },
+    {
+      "text": "grant",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "give"
+      ]
+    },
+    {
+      "text": "gravity",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "weight"
+      ]
+    },
+    {
+      "text": "greet",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "welcome"
+      ]
+    },
+    {
+      "text": "greeted",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "welcomed"
+      ]
+    },
+    {
+      "text": "groundwork",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "foundation"
+      ]
+    },
+    {
+      "text": "guidance",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "advice"
+      ]
+    },
+    {
+      "text": "guide",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "lead"
+      ]
+    },
+    {
+      "text": "habitually",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "usual"
+      ]
+    },
+    {
+      "text": "halt",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "stop"
+      ]
+    },
+    {
+      "text": "handed",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "delivered"
+      ]
+    },
+    {
+      "text": "happiness",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "joy"
+      ]
+    },
+    {
+      "text": "heaviness",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "weight"
+      ]
+    },
+    {
+      "text": "helicopter",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "aircraft"
+      ]
+    },
+    {
+      "text": "helped",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "supported"
+      ]
+    },
+    {
+      "text": "helps",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "contribution"
+      ]
+    },
+    {
+      "text": "hopeful",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "optimistic"
+      ]
+    },
+    {
+      "text": "horizon",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "west"
+      ]
+    },
+    {
+      "text": "hospitably",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "welcomed"
+      ]
+    },
+    {
+      "text": "ideographic",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "々"
+      ]
+    },
+    {
+      "text": "illness",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "pain"
+      ]
+    },
+    {
+      "text": "illustrate",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "example"
+      ]
+    },
+    {
+      "text": "illustration",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "figure"
+      ]
+    },
+    {
+      "text": "imaginary",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "axis"
+      ]
+    },
+    {
+      "text": "imagination",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "art"
+      ]
+    },
+    {
+      "text": "imitation",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "model"
+      ]
+    },
+    {
+      "text": "impairs",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "damage"
+      ]
+    },
+    {
+      "text": "imparting",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "communication"
+      ]
+    },
+    {
+      "text": "imposed",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "obligation"
+      ]
+    },
+    {
+      "text": "impressive",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "admiration"
+      ]
+    },
+    {
+      "text": "improve",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "constructive"
+      ]
+    },
+    {
+      "text": "inadequate",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "rejected"
+      ]
+    },
+    {
+      "text": "indecision",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "hesitation"
+      ]
+    },
+    {
+      "text": "independently",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "standalone"
+      ]
+    },
+    {
+      "text": "indispensable",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "necessity"
+      ]
+    },
+    {
+      "text": "individuals",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "members"
+      ]
+    },
+    {
+      "text": "indo",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "germanic"
+      ]
+    },
+    {
+      "text": "innate",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "naturally"
+      ]
+    },
+    {
+      "text": "inner",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "interior"
+      ]
+    },
+    {
+      "text": "insertion",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "caret"
+      ]
+    },
+    {
+      "text": "inspect",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "examine"
+      ]
+    },
+    {
+      "text": "instructs",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "rule"
+      ]
+    },
+    {
+      "text": "intact",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "unbroken"
+      ]
+    },
+    {
+      "text": "interpreting",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "reading"
+      ]
+    },
+    {
+      "text": "interrobang",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "‽"
+      ]
+    },
+    {
+      "text": "interrupted",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "unbroken"
+      ]
+    },
+    {
+      "text": "interrupting",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "interruption"
+      ]
+    },
+    {
+      "text": "intersecting",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "angle"
+      ]
+    },
+    {
+      "text": "introductory",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "preliminary"
+      ]
+    },
+    {
+      "text": "intuition",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "feeling"
+      ]
+    },
+    {
+      "text": "invalid",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "negates"
+      ]
+    },
+    {
+      "text": "investigated",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "studied"
+      ]
+    },
+    {
+      "text": "invisible",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "air"
+      ]
+    },
+    {
+      "text": "involuntarily",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "shaking"
+      ]
+    },
+    {
+      "text": "issue",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "address"
+      ]
+    },
+    {
+      "text": "iteration",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "々"
+      ]
+    },
+    {
+      "text": "job",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "resignation"
+      ]
+    },
+    {
+      "text": "jointed",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "finger"
+      ]
+    },
+    {
+      "text": "judgement",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "conclusion"
+      ]
+    },
+    {
+      "text": "judgements",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "conclusions"
+      ]
+    },
+    {
+      "text": "justified",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "rightly"
+      ]
+    },
+    {
+      "text": "kindness",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "favour"
+      ]
+    },
+    {
+      "text": "king",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "royal"
+      ]
+    },
+    {
+      "text": "largest",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "greatest"
+      ]
+    },
+    {
+      "text": "last",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "extend"
+      ]
+    },
+    {
+      "text": "latest",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "deadline"
+      ]
+    },
+    {
+      "text": "layer",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "surface"
+      ]
+    },
+    {
+      "text": "learned",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "information"
+      ]
+    },
+    {
+      "text": "leg",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "foot"
+      ]
+    },
+    {
+      "text": "legs",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "feet"
+      ]
+    },
+    {
+      "text": "let",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "allow"
+      ]
+    },
+    {
+      "text": "lets",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "allows"
+      ]
+    },
+    {
+      "text": "liable",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "variable"
+      ]
+    },
+    {
+      "text": "life",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "values"
+      ]
+    },
+    {
+      "text": "limbs",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "arm"
+      ]
+    },
+    {
+      "text": "listed",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "unregistered"
+      ]
+    },
+    {
+      "text": "locomotive",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "train"
+      ]
+    },
+    {
+      "text": "love",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "devotion"
+      ]
+    },
+    {
+      "text": "loyalty",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "devotion"
+      ]
+    },
+    {
+      "text": "magnet",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "magnetic"
+      ]
+    },
+    {
+      "text": "mainly",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "chiefly"
+      ]
+    },
+    {
+      "text": "manage",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "handle"
+      ]
+    },
+    {
+      "text": "manifold",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "multiple"
+      ]
+    },
+    {
+      "text": "manually",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "mechanically"
+      ]
+    },
+    {
+      "text": "markedly",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "transforming"
+      ]
+    },
+    {
+      "text": "match",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "identical"
+      ]
+    },
+    {
+      "text": "maturity",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "growth"
+      ]
+    },
+    {
+      "text": "meets",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "qualifies"
+      ]
+    },
+    {
+      "text": "men",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "male"
+      ]
+    },
+    {
+      "text": "mend",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "fix"
+      ]
+    },
+    {
+      "text": "mentally",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "mature"
+      ]
+    },
+    {
+      "text": "merging",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "combining"
+      ]
+    },
+    {
+      "text": "messages",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "email"
+      ]
+    },
+    {
+      "text": "metals",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "magnetic"
+      ]
+    },
+    {
+      "text": "mille",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "‰"
+      ]
+    },
+    {
+      "text": "moral",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "character"
+      ]
+    },
+    {
+      "text": "morality",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "obligation"
+      ]
+    },
+    {
+      "text": "mostly",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "chiefly"
+      ]
+    },
+    {
+      "text": "motion",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "force"
+      ]
+    },
+    {
+      "text": "movements",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "vibrations"
+      ]
+    },
+    {
+      "text": "music",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "instrument"
+      ]
+    },
+    {
+      "text": "nation",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "country"
+      ]
+    },
+    {
+      "text": "nearest",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "next"
+      ]
+    },
+    {
+      "text": "nearly",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "approximation"
+      ]
+    },
+    {
+      "text": "nearness",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "proximity"
+      ]
+    },
+    {
+      "text": "negotiated",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "agreement"
+      ]
+    },
+    {
+      "text": "net",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "mesh"
+      ]
+    },
+    {
+      "text": "neutral",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "themself"
+      ]
+    },
+    {
+      "text": "nonmetallic",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "carbon"
+      ]
+    },
+    {
+      "text": "north",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "left"
+      ]
+    },
+    {
+      "text": "nose",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "head"
+      ]
+    },
+    {
+      "text": "notably",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "particularly"
+      ]
+    },
+    {
+      "text": "notation",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "boolean"
+      ]
+    },
+    {
+      "text": "note",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "footnote"
+      ]
+    },
+    {
+      "text": "noticeable",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "visible"
+      ]
+    },
+    {
+      "text": "noticeably",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "distinctly"
+      ]
+    },
+    {
+      "text": "noting",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "comparing"
+      ]
+    },
+    {
+      "text": "nullify",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "negate"
+      ]
+    },
+    {
+      "text": "obstacle",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "difficulty"
+      ]
+    },
+    {
+      "text": "obvious",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "apparent"
+      ]
+    },
+    {
+      "text": "occupation",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "activity"
+      ]
+    },
+    {
+      "text": "offend",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "spite"
+      ]
+    },
+    {
+      "text": "office",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "resignation"
+      ]
+    },
+    {
+      "text": "offspring",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "female"
+      ]
+    },
+    {
+      "text": "old",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "new"
+      ]
+    },
+    {
+      "text": "opening",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "mouth"
+      ]
+    },
+    {
+      "text": "opinions",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "thoughts"
+      ]
+    },
+    {
+      "text": "opportunity",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "chance"
+      ]
+    },
+    {
+      "text": "orderly",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "methodical"
+      ]
+    },
+    {
+      "text": "organ",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "ear"
+      ]
+    },
+    {
+      "text": "organisation",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "govern"
+      ]
+    },
+    {
+      "text": "organised",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "system"
+      ]
+    },
+    {
+      "text": "organism",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "animal"
+      ]
+    },
+    {
+      "text": "organisms",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "animals"
+      ]
+    },
+    {
+      "text": "organizations",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "network"
+      ]
+    },
+    {
+      "text": "organize",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "file"
+      ]
+    },
+    {
+      "text": "oriented",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "facing"
+      ]
+    },
+    {
+      "text": "outer",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "exterior"
+      ]
+    },
+    {
+      "text": "outright",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "implied"
+      ]
+    },
+    {
+      "text": "overcome",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "resistant"
+      ]
+    },
+    {
+      "text": "overlapping",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "interlock"
+      ]
+    },
+    {
+      "text": "page",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "footnote"
+      ]
+    },
+    {
+      "text": "pair",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "eye"
+      ]
+    },
+    {
+      "text": "papers",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "file"
+      ]
+    },
+    {
+      "text": "partial",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "consonant"
+      ]
+    },
+    {
+      "text": "participant",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "involved"
+      ]
+    },
+    {
+      "text": "particulars",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "address"
+      ]
+    },
+    {
+      "text": "pasture",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "field"
+      ]
+    },
+    {
+      "text": "pay",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "money"
+      ]
+    },
+    {
+      "text": "pen",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "marker"
+      ]
+    },
+    {
+      "text": "perceptible",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "distinctly"
+      ]
+    },
+    {
+      "text": "perception",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "feeling"
+      ]
+    },
+    {
+      "text": "persisting",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "continuing"
+      ]
+    },
+    {
+      "text": "photographic",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "negative"
+      ]
+    },
+    {
+      "text": "physiological",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "emotion"
+      ]
+    },
+    {
+      "text": "pick",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "single"
+      ]
+    },
+    {
+      "text": "picks",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "singles"
+      ]
+    },
+    {
+      "text": "picture",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "draw"
+      ]
+    },
+    {
+      "text": "pilcrow",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "¶"
+      ]
+    },
+    {
+      "text": "placing",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "putting"
+      ]
+    },
+    {
+      "text": "planet",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "earth"
+      ]
+    },
+    {
+      "text": "poetry",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "literary"
+      ]
+    },
+    {
+      "text": "policy",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "govern"
+      ]
+    },
+    {
+      "text": "powered",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "electric"
+      ]
+    },
+    {
+      "text": "prediction",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "hypothesis"
+      ]
+    },
+    {
+      "text": "preferred",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "chosen"
+      ]
+    },
+    {
+      "text": "preparation",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "arrangement"
+      ]
+    },
+    {
+      "text": "prepared",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "road"
+      ]
+    },
+    {
+      "text": "preparing",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "preliminary"
+      ]
+    },
+    {
+      "text": "prepositionally",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "including"
+      ]
+    },
+    {
+      "text": "presenting",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "introducing"
+      ]
+    },
+    {
+      "text": "presents",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "introduces"
+      ]
+    },
+    {
+      "text": "pressure",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "hard"
+      ]
+    },
+    {
+      "text": "price",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "charge"
+      ]
+    },
+    {
+      "text": "principle",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "foundation"
+      ]
+    },
+    {
+      "text": "prints",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "negative"
+      ]
+    },
+    {
+      "text": "prize",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "contest"
+      ]
+    },
+    {
+      "text": "proceed",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "go"
+      ]
+    },
+    {
+      "text": "professional",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "status"
+      ]
+    },
+    {
+      "text": "promised",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "deliver"
+      ]
+    },
+    {
+      "text": "promises",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "guarantees"
+      ]
+    },
+    {
+      "text": "promoting",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "advancement"
+      ]
+    },
+    {
+      "text": "properly",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "fail"
+      ]
+    },
+    {
+      "text": "proposal",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "plan"
+      ]
+    },
+    {
+      "text": "proposed",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "hypothesis"
+      ]
+    },
+    {
+      "text": "propositions",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "boolean"
+      ]
+    },
+    {
+      "text": "prudent",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "advice"
+      ]
+    },
+    {
+      "text": "public",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "audience"
+      ]
+    },
+    {
+      "text": "publish",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "copyright"
+      ]
+    },
+    {
+      "text": "pursuit",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "activity"
+      ]
+    },
+    {
+      "text": "queen",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "royal"
+      ]
+    },
+    {
+      "text": "quiet",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "peaceful"
+      ]
+    },
+    {
+      "text": "quotation",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "\""
+      ]
+    },
+    {
+      "text": "radio",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "media"
+      ]
+    },
+    {
+      "text": "railway",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "train"
+      ]
+    },
+    {
+      "text": "raising",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "exponentiation"
+      ]
+    },
+    {
+      "text": "ranked",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "hierarchy"
+      ]
+    },
+    {
+      "text": "reactions",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "feelings"
+      ]
+    },
+    {
+      "text": "reasonable",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "justification"
+      ]
+    },
+    {
+      "text": "reasonably",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "logical"
+      ]
+    },
+    {
+      "text": "recently",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "new"
+      ]
+    },
+    {
+      "text": "recognizing",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "distinguishing"
+      ]
+    },
+    {
+      "text": "recommendations",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "advice"
+      ]
+    },
+    {
+      "text": "records",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "file"
+      ]
+    },
+    {
+      "text": "recurring",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "repeated"
+      ]
+    },
+    {
+      "text": "reflects",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "colour"
+      ]
+    },
+    {
+      "text": "reform",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "progressive"
+      ]
+    },
+    {
+      "text": "refrain",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "avoid"
+      ]
+    },
+    {
+      "text": "refuse",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "reject"
+      ]
+    },
+    {
+      "text": "regional",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "dialectal"
+      ]
+    },
+    {
+      "text": "reigning",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "royal"
+      ]
+    },
+    {
+      "text": "relaxed",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "informal"
+      ]
+    },
+    {
+      "text": "reliable",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "authoritative"
+      ]
+    },
+    {
+      "text": "reluctance",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "hesitation"
+      ]
+    },
+    {
+      "text": "remarkable",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "ordinary"
+      ]
+    },
+    {
+      "text": "remember",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "mind"
+      ]
+    },
+    {
+      "text": "repair",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "fix"
+      ]
+    },
+    {
+      "text": "repentance",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "regret"
+      ]
+    },
+    {
+      "text": "reproduce",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "copyright"
+      ]
+    },
+    {
+      "text": "resolute",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "firmness"
+      ]
+    },
+    {
+      "text": "responsibility",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "handle"
+      ]
+    },
+    {
+      "text": "restraint",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "escape"
+      ]
+    },
+    {
+      "text": "reversed",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "negative"
+      ]
+    },
+    {
+      "text": "rigid",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "bar"
+      ]
+    },
+    {
+      "text": "rise",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "fluctuate"
+      ]
+    },
+    {
+      "text": "rising",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "fluctuating"
+      ]
+    },
+    {
+      "text": "rod",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "wire"
+      ]
+    },
+    {
+      "text": "rotates",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "axis"
+      ]
+    },
+    {
+      "text": "rough",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "track"
+      ]
+    },
+    {
+      "text": "ruling",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "governing"
+      ]
+    },
+    {
+      "text": "run",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "operate"
+      ]
+    },
+    {
+      "text": "sadness",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "regret"
+      ]
+    },
+    {
+      "text": "scandinavian",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "germanic"
+      ]
+    },
+    {
+      "text": "scheduled",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "due"
+      ]
+    },
+    {
+      "text": "scheme",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "system"
+      ]
+    },
+    {
+      "text": "scoring",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "points"
+      ]
+    },
+    {
+      "text": "sea",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "ship"
+      ]
+    },
+    {
+      "text": "searching",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "find"
+      ]
+    },
+    {
+      "text": "secure",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "firmly"
+      ]
+    },
+    {
+      "text": "seeking",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "search"
+      ]
+    },
+    {
+      "text": "seize",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "lay"
+      ]
+    },
+    {
+      "text": "seizing",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "grasping"
+      ]
+    },
+    {
+      "text": "sending",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "return"
+      ]
+    },
+    {
+      "text": "sensible",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "practical"
+      ]
+    },
+    {
+      "text": "serious",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "formal"
+      ]
+    },
+    {
+      "text": "service",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "charge"
+      ]
+    },
+    {
+      "text": "services",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "money"
+      ]
+    },
+    {
+      "text": "sharp",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "curve"
+      ]
+    },
+    {
+      "text": "shoulder",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "arm"
+      ]
+    },
+    {
+      "text": "signify",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "mark"
+      ]
+    },
+    {
+      "text": "simpler",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "irreducible"
+      ]
+    },
+    {
+      "text": "skilfully",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "manipulate"
+      ]
+    },
+    {
+      "text": "skillfully",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "manipulating"
+      ]
+    },
+    {
+      "text": "slight",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "vibration"
+      ]
+    },
+    {
+      "text": "smell",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "sense"
+      ]
+    },
+    {
+      "text": "society",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "social"
+      ]
+    },
+    {
+      "text": "soft",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "soften"
+      ]
+    },
+    {
+      "text": "softer",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "soften"
+      ]
+    },
+    {
+      "text": "soil",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "earth"
+      ]
+    },
+    {
+      "text": "somewhat",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "bluish"
+      ]
+    },
+    {
+      "text": "sorrow",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "grief"
+      ]
+    },
+    {
+      "text": "sort",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "kind"
+      ]
+    },
+    {
+      "text": "south",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "southern"
+      ]
+    },
+    {
+      "text": "spectators",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "audience"
+      ]
+    },
+    {
+      "text": "spends",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "companion"
+      ]
+    },
+    {
+      "text": "sperm",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "male"
+      ]
+    },
+    {
+      "text": "spiral",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "twist"
+      ]
+    },
+    {
+      "text": "spread",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "distribute"
+      ]
+    },
+    {
+      "text": "spun",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "threads"
+      ]
+    },
+    {
+      "text": "staff",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "editorial"
+      ]
+    },
+    {
+      "text": "statistics",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "data"
+      ]
+    },
+    {
+      "text": "stimuli",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "sense"
+      ]
+    },
+    {
+      "text": "storm",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "grey"
+      ]
+    },
+    {
+      "text": "straightforward",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "direct"
+      ]
+    },
+    {
+      "text": "strengthen",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "reinforce"
+      ]
+    },
+    {
+      "text": "strengthens",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "reinforces"
+      ]
+    },
+    {
+      "text": "stretches",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "extends"
+      ]
+    },
+    {
+      "text": "stretching",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "extending"
+      ]
+    },
+    {
+      "text": "strive",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "compete"
+      ]
+    },
+    {
+      "text": "striving",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "competing"
+      ]
+    },
+    {
+      "text": "subjected",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "undergo"
+      ]
+    },
+    {
+      "text": "succeeded",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "followed"
+      ]
+    },
+    {
+      "text": "successive",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "counting"
+      ]
+    },
+    {
+      "text": "suffering",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "pain"
+      ]
+    },
+    {
+      "text": "sufficiently",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "significant"
+      ]
+    },
+    {
+      "text": "superiority",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "contest"
+      ]
+    },
+    {
+      "text": "surrounds",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "air"
+      ]
+    },
+    {
+      "text": "sustained",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "energy"
+      ]
+    },
+    {
+      "text": "sympathetic",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "understanding"
+      ]
+    },
+    {
+      "text": "talked",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "discussed"
+      ]
+    },
+    {
+      "text": "talking",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "spoken"
+      ]
+    },
+    {
+      "text": "taste",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "sense"
+      ]
+    },
+    {
+      "text": "teeth",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "mesh"
+      ]
+    },
+    {
+      "text": "television",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "media"
+      ]
+    },
+    {
+      "text": "tendency",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "habit"
+      ]
+    },
+    {
+      "text": "tending",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "constructive"
+      ]
+    },
+    {
+      "text": "tends",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "force"
+      ]
+    },
+    {
+      "text": "territory",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "country"
+      ]
+    },
+    {
+      "text": "themes",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "subjects"
+      ]
+    },
+    {
+      "text": "theoretical",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "applied"
+      ]
+    },
+    {
+      "text": "theory",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "practical"
+      ]
+    },
+    {
+      "text": "thick",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "rope"
+      ]
+    },
+    {
+      "text": "thorough",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "detailed"
+      ]
+    },
+    {
+      "text": "tool",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "instrument"
+      ]
+    },
+    {
+      "text": "tools",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "equipment"
+      ]
+    },
+    {
+      "text": "totally",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "completely"
+      ]
+    },
+    {
+      "text": "totals",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "amounts"
+      ]
+    },
+    {
+      "text": "trace",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "mark"
+      ]
+    },
+    {
+      "text": "trade",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "™"
+      ]
+    },
+    {
+      "text": "trained",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "specialised"
+      ]
+    },
+    {
+      "text": "transfer",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "give"
+      ]
+    },
+    {
+      "text": "transferred",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "gave"
+      ]
+    },
+    {
+      "text": "transferring",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "giving"
+      ]
+    },
+    {
+      "text": "transition",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "marker"
+      ]
+    },
+    {
+      "text": "transmitted",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "medium"
+      ]
+    },
+    {
+      "text": "transport",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "carry"
+      ]
+    },
+    {
+      "text": "transported",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "carried"
+      ]
+    },
+    {
+      "text": "treat",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "distinguish"
+      ]
+    },
+    {
+      "text": "treated",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "priority"
+      ]
+    },
+    {
+      "text": "treating",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "distinguishing"
+      ]
+    },
+    {
+      "text": "triangular",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "‣"
+      ]
+    },
+    {
+      "text": "tube",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "pipe"
+      ]
+    },
+    {
+      "text": "unacceptable",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "rejected"
+      ]
+    },
+    {
+      "text": "unavoidable",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "resignation"
+      ]
+    },
+    {
+      "text": "uncertainty",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "doubt"
+      ]
+    },
+    {
+      "text": "undertaken",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "task"
+      ]
+    },
+    {
+      "text": "undesirable",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "resignation"
+      ]
+    },
+    {
+      "text": "undetermined",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "unspecified"
+      ]
+    },
+    {
+      "text": "unfair",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "manipulate"
+      ]
+    },
+    {
+      "text": "unimportant",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "negligible"
+      ]
+    },
+    {
+      "text": "unmistakably",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "distinctly"
+      ]
+    },
+    {
+      "text": "unoccupied",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "space"
+      ]
+    },
+    {
+      "text": "unpleasant",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "incident"
+      ]
+    },
+    {
+      "text": "unsuccessful",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "fail"
+      ]
+    },
+    {
+      "text": "untrue",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "falsehood"
+      ]
+    },
+    {
+      "text": "unusual",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "incident"
+      ]
+    },
+    {
+      "text": "unwanted",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "precaution"
+      ]
+    },
+    {
+      "text": "unyielding",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "firm"
+      ]
+    },
+    {
+      "text": "usage",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "rules"
+      ]
+    },
+    {
+      "text": "usefulness",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "damage"
+      ]
+    },
+    {
+      "text": "utter",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "say"
+      ]
+    },
+    {
+      "text": "valued",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "literary"
+      ]
+    },
+    {
+      "text": "versions",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "forms"
+      ]
+    },
+    {
+      "text": "vertebrates",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "ear"
+      ]
+    },
+    {
+      "text": "vessel",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "ship"
+      ]
+    },
+    {
+      "text": "victory",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "triumph"
+      ]
+    },
+    {
+      "text": "viewed",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "regarded"
+      ]
+    },
+    {
+      "text": "violent",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "moderate"
+      ]
+    },
+    {
+      "text": "vitality",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "energy"
+      ]
+    },
+    {
+      "text": "wagons",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "train"
+      ]
+    },
+    {
+      "text": "wait",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "await"
+      ]
+    },
+    {
+      "text": "waiting",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "awaiting"
+      ]
+    },
+    {
+      "text": "walks",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "foot"
+      ]
+    },
+    {
+      "text": "wall",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "enclosure"
+      ]
+    },
+    {
+      "text": "warm",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "welcome"
+      ]
+    },
+    {
+      "text": "warning",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "sudden"
+      ]
+    },
+    {
+      "text": "wavering",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "firmly"
+      ]
+    },
+    {
+      "text": "wheels",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "vehicle"
+      ]
+    },
+    {
+      "text": "win",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "compete"
+      ]
+    },
+    {
+      "text": "wise",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "advisability"
+      ]
+    },
+    {
+      "text": "wish",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "desire"
+      ]
+    },
+    {
+      "text": "wished",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "desired"
+      ]
+    },
+    {
+      "text": "withstand",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "resistant"
+      ]
+    },
+    {
+      "text": "wood",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "bar"
+      ]
+    },
+    {
+      "text": "worry",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "concern"
+      ]
+    },
+    {
+      "text": "worthy",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "model"
+      ]
+    },
+    {
+      "text": "wound",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "twisted"
+      ]
+    },
+    {
+      "text": "writer",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "editorial"
+      ]
+    },
+    {
+      "text": "wrongdoing",
+      "referenced_by_count": 1,
+      "referenced_by_sample": [
+        "charge"
+      ]
+    }
+  ]
+}
