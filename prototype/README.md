@@ -17,11 +17,11 @@ Mirrors the main repository's own layout 1:1, `src/lira/` down --
 same four Architectural Layers, same per-layer subfolders
 (`documentation/`, `data/`, `agents/`, `role/`, `api/`, `ui/`,
 `assets/`, per ARCHITECTURE.md's Repository Layout rule), `.ts` instead
-of `.py`. The Vocabulary Layer is ported (see below); Knowledge carries
-only the Portal shell so far (also below) -- its `data/domain.py`,
-`hosted_domains.py`, and tensor graph are not ported. Linguistics and
-the rest of Value Objects (beyond the four CCTS types Vocabulary needs)
-remain empty placeholders (`.gitkeep`).
+of `.py`. Vocabulary and Linguistics are ported (see below); Knowledge
+carries only the Portal shell so far (also below) -- its
+`data/domain.py`, `hosted_domains.py`, and tensor graph are not
+ported. The rest of Value Objects (beyond the four CCTS types
+Vocabulary needs) remains an empty placeholder (`.gitkeep`).
 
 ```
 prototype/
@@ -31,7 +31,7 @@ prototype/
 │   ├── vite-env.d.ts       Vite ambient types (import.meta.glob, etc.)
 │   └── lira/
 │       ├── vocabulary/     ported -- see below
-│       ├── linguistics/{documentation,data,agents,role,api,ui,assets}/
+│       ├── linguistics/    Service ported (data/ + role/); UI not ported -- see below
 │       ├── value_objects/{documentation,data,agents,role,api,ui,assets}/
 │       └── knowledge/
 │           ├── data/portal_domain.ts    Portal-only Domain stand-in -- see below
@@ -80,6 +80,56 @@ What deliberately differs, and why:
 - `DictionaryView.save(path)` has no filesystem to write to; the port's
   `downloadAsFile()` triggers a browser download of the same HTML
   instead.
+
+### Linguistics Layer (Service ported, UI not ported)
+
+Ported from `src/lira/linguistics/` -- `data/` and `role/` (the full
+grammar/parsing engine: `GrammarConfigurator`'s phrase/clause/sentence
+rule tables, `SequenceEngine`'s bounded beam search, `PhraseReader`/
+`ClauseReader`/`SentenceReader`, `GraphProcessor`, `LinguisticController`)
+plus `ui/user_prompt.ts` (a plain data type despite living in `ui/` in
+the Python original -- see that file's own docstring). Deliberately
+**not** ported: `sentence_reader_view.py`/`sentence_reader_server.py`
+(the actual Linguistics UI) -- this was scoped as "port the Linguistics
+Service, not the UI". Nothing in this layer is wired into `main.ts`,
+the Portal shell, or a Web Worker yet; it's ported and tested in
+isolation, the same stage Vocabulary was in before it got its own
+Service worker.
+
+Verified against the real seeded Common Vocabulary Cache, not
+synthetic fixtures: `readSentence("A meaning is a representation.")`
+comes back `VALID` with a `NOUN_PHRASE` subject, a `VERB_PHRASE`
+predicate, and (because "is" is a linking verb) a `NOUN_PHRASE`
+**complement**, not an object; `readSentence("The fox over the dog.")`
+-- spec 20's own worked example -- comes back `INVALID` with no
+predicate found, even though both its `NOUN_PHRASE` and
+`PREPOSITIONAL_PHRASE` are individually valid.
+
+What deliberately differs from the Python original, and why:
+- Python's module-scope deferred imports (`from lira.vocabulary import
+  PartOfSpeech` inside a function body) exist purely to dodge a
+  Python-level circular import within its own package. TypeScript's
+  module graph has no equivalent cycle (`vocabulary/data/word.ts` only
+  depends on the leaf `linguistics/data/linguistic_unit.ts`, never on
+  anything in `linguistics/role/`), so `PartOfSpeech`/`Word`/
+  `WordIdentification` are imported normally at the top of every file
+  that needs them.
+- Where Python instead left `ReadingContext`/`GrammarConfigurator`/
+  `TokenReading` as bare string type hints in `data/phrase.py` etc.
+  (needed only for static analysis, never imported), the TypeScript
+  port uses real `import type` declarations for the same names --
+  erased at compile time, so this still never becomes a runtime
+  circular import, but it's now actually type-checked rather than
+  merely hinted.
+- `Phrase`/`Clause`/`Sentence`/etc. are plain data interfaces plus a
+  `createX()` factory and a `readX()` free function (mirroring
+  `vocabulary/data/word.ts`'s own derived-property pattern), not
+  dataclasses with a `@classmethod read()` -- `readPhrase(tokens,
+  context, options)` reads right-to-left instead of
+  `Phrase.read(tokens, context=...)`, same delegation-only content.
+- `GraphProcessor`'s short per-row id (Python: `uuid.uuid4().hex[:6]`)
+  becomes `crypto.randomUUID().replace(/-/g, "").slice(0, 6)` --
+  browser-native, same shape.
 
 ### Portal shell (knowledge/ui/portal_shell.ts)
 
