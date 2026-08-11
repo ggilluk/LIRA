@@ -49,6 +49,38 @@ export interface WordFileEntry {
   seeded_pleasure_displeasure_weight?: number | null;
   seeded_arousal_non_arousal_weight?: number | null;
   seeded_dominance_submissive_weight?: number | null;
+  /** Inflected forms grouped with their shared base lemma -- a prototype-
+   * only schema optimisation (Python's own assets/common/en/ keeps the
+   * original flat-array-plus-separate-relationship-file shape; this
+   * mirrored copy intentionally diverges) so a lemma and the forms
+   * derived from it read as one unit on disk instead of scattering
+   * across the array, only linkable via a separate
+   * relationships/morphological_relationships.json edge. Each nested
+   * entry is a full, independent WordFileEntry in its own right (own
+   * entry_id/definition/etc, per Word's own Qualified Word Identity) --
+   * WordSeeder flattens every nested form back into its own top-level
+   * Word, so this changes nothing about which Words end up seeded, only
+   * how they're organised on disk and indexed at runtime (see
+   * Dictionary.formsOf/lemmaOf). Only ever one level deep: a nested
+   * form is never itself given further nested forms. */
+  forms?: WordFileFormEntry[];
+}
+
+/** One nested inflected-form entry -- everything a top-level
+ * WordFileEntry has, plus how it relates to the base lemma it's nested
+ * under. `derivation_kinds` is a list, not a single value, because one
+ * surface form can legitimately satisfy more than one inflectional role
+ * against the same base -- most regular English verbs' past tense and
+ * past participle are identical ("measured" is both PAST_TENSE_FORM and
+ * PAST_PARTICIPLE_FORM of "measure"). Values match
+ * relationships/morphological_relationships.json's own
+ * `relationship_kind` vocabulary (LEMMA_FORM itself never appears here
+ * -- it's the reciprocal edge that relationship file used instead of a
+ * structural link; nesting supersedes needing it for these entries, but
+ * the relationship file is left untouched -- see
+ * word_seeder.ts's own module docstring). */
+export interface WordFileFormEntry extends WordFileEntry {
+  derivation_kinds: string[];
 }
 
 export interface WordFileDocument {

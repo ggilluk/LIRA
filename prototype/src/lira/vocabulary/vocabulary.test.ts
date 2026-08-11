@@ -31,6 +31,45 @@ describe("Dictionary", () => {
     expect(copied.uuid.value).not.toBe(word.uuid.value);
     expect(copied.entryId.value).toBe(word.entryId.value);
   });
+
+  it("linkForm/formsOf/lemmaOf record and query the lemma index", () => {
+    const dictionary = new Dictionary();
+    const measure = createWord({ text: "measure", partOfSpeech: PartOfSpeech.VERB });
+    const measured = createWord({ text: "measured", partOfSpeech: PartOfSpeech.VERB });
+    const measuring = createWord({ text: "measuring", partOfSpeech: PartOfSpeech.VERB });
+    dictionary.append(measure);
+    dictionary.append(measured);
+    dictionary.append(measuring);
+
+    dictionary.linkForm(measure, measured, ["PAST_TENSE_FORM", "PAST_PARTICIPLE_FORM"]);
+    dictionary.linkForm(measure, measuring, ["PRESENT_PARTICIPLE_FORM"]);
+
+    const forms = dictionary.formsOf(measure);
+    expect(forms.map((f) => f.word.text).sort()).toEqual(["measured", "measuring"]);
+    expect(forms.find((f) => f.word.text === "measured")?.derivationKinds).toEqual(["PAST_TENSE_FORM", "PAST_PARTICIPLE_FORM"]);
+
+    expect(dictionary.lemmaOf(measured)?.word.text).toBe("measure");
+    expect(dictionary.lemmaOf(measure)).toBeUndefined();
+    expect(dictionary.formsOf(measured)).toHaveLength(0);
+  });
+
+  it("seedFrom replays the source dictionary's own lemma links onto the fresh copies", () => {
+    const source = new Dictionary();
+    const base = createWord({ text: "walk", partOfSpeech: PartOfSpeech.VERB });
+    const form = createWord({ text: "walked", partOfSpeech: PartOfSpeech.VERB });
+    source.append(base);
+    source.append(form);
+    source.linkForm(base, form, ["PAST_TENSE_FORM"]);
+
+    const target = new Dictionary();
+    target.seedFrom(source);
+
+    const [copiedBase, copiedForm] = target.all();
+    expect(target.formsOf(copiedBase).map((f) => f.word.uuid.value)).toEqual([copiedForm.uuid.value]);
+    expect(target.lemmaOf(copiedForm)?.word.uuid.value).toBe(copiedBase.uuid.value);
+    // The link is against the NEW copies, not the original source Words.
+    expect(target.formsOf(base)).toHaveLength(0);
+  });
 });
 
 describe("Word derived properties", () => {
@@ -82,6 +121,29 @@ describe("WordSeeder against the bundled Common Vocabulary Cache", () => {
     expect(first).toBeGreaterThan(300);
     expect(second).toBe(0);
     expect(dictionary.lookup("the")?.partOfSpeech).toBe(PartOfSpeech.DETERMINER);
+  });
+
+  it("wires the real Common Vocabulary Cache's nested lemma groups into the seeded Dictionary's lemma index", () => {
+    const dictionary = new Dictionary();
+    new WordSeeder("en").seedClosedClassWords(dictionary);
+
+    // "measure" -> "measured" is nested in promoted_words.json with
+    // BOTH PAST_TENSE_FORM and PAST_PARTICIPLE_FORM (the same surface
+    // form legitimately satisfies both for a regular verb).
+    const measure = dictionary.lookupAll("measure").find((w) => w.partOfSpeech === PartOfSpeech.VERB);
+    expect(measure).toBeDefined();
+    const forms = dictionary.formsOf(measure!);
+    expect(forms.length).toBeGreaterThan(0);
+    const measured = forms.find((f) => f.word.text === "measured");
+    expect(measured?.derivationKinds).toEqual(expect.arrayContaining(["PAST_TENSE_FORM", "PAST_PARTICIPLE_FORM"]));
+
+    // The reverse lookup agrees.
+    expect(dictionary.lemmaOf(measured!.word)?.word.uuid.value).toBe(measure!.uuid.value);
+
+    // Flattening didn't change what's actually seeded -- "measured" is
+    // still independently reachable through the normal flat lookup(),
+    // exactly as if it had never been nested on disk.
+    expect(dictionary.lookup("measured")?.partOfSpeech).toBe(PartOfSpeech.VERB);
   });
 });
 

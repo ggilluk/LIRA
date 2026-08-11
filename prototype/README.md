@@ -96,6 +96,35 @@ point: new definitions reference some words of their own) and
 `examples/common_definition_gap_vocabulary_seeding_2.py` in the Python
 package for the second batch's data and seeding script.
 
+#### Lemma grouping (prototype-only schema optimisation)
+
+`pronouns.json`/`determiners.json`/`promoted_words.json` nest 1,286
+inflected-form entries under their 680 base lemmas' own entries, as a
+`forms` array (each nested entry a full `WordFileEntry` plus
+`derivation_kinds`, matching `relationships/morphological_relationships.json`'s
+own `relationship_kind` vocabulary -- more than one kind per form is
+legitimate, e.g. "measured" is both `PAST_TENSE_FORM` and
+`PAST_PARTICIPLE_FORM` of "measure"), instead of every surface form
+living as an independent top-level entry linked only by a separate
+relationship-file edge. This is a **prototype-only divergence** -- the
+Python source's own `assets/common/en/` keeps the original flat schema
+untouched; only this mirrored copy was restructured, and only for
+lemma pairs that resolve unambiguously to the same file with no fan-in
+or morphological chain (see `word_seeder.ts`'s own module docstring
+for the exact safety rules the one-time migration applied).
+
+`WordSeeder.loadCache()` flattens every nested form back into its own
+top-level `Word` exactly as if it had never been nested -- the seeded
+Dictionary ends up with the identical set of Words either way (4,036,
+unchanged) -- while also wiring the grouping into a new
+`Dictionary.linkForm`/`formsOf`/`lemmaOf` index (keyed by `Word.uuid`,
+O(1), no scan over `LexicalRelationshipStore`), which `seedFrom`
+replays onto Physics's own inherited copy too.
+`relationships/morphological_relationships.json` itself is deliberately
+left untouched: both representations agree, and nothing else
+(`Word`'s own related-word derived properties, `RelationshipSeeder`'s
+checksum) needed to change to add this index.
+
 ### Linguistics Layer (Service ported and wired in; new Portal UI)
 
 Ported from `src/lira/linguistics/` -- `data/` and `role/` (the full

@@ -83,7 +83,138 @@
       ],
       "seeded_pleasure_displeasure_weight": 0.0,
       "seeded_arousal_non_arousal_weight": 0.0,
-      "seeded_dominance_submissive_weight": 0.0
+      "seeded_dominance_submissive_weight": 0.0,
+      "forms": [
+        {
+          "entry_id": "fc85616d-4470-4894-8598-5d4659eef1d6",
+          "lexical_form": "yours",
+          "normalised_form": "yours",
+          "text": "yours",
+          "version": "1.0",
+          "language_code": "en",
+          "script_code": "Latn",
+          "part_of_speech": "PRONOUN",
+          "closed_class": true,
+          "closed_class_kind": "pronoun",
+          "definition": "The thing or things belonging to the person addressed",
+          "gloss": "The thing or things belonging to the person addressed",
+          "usage_notes": [],
+          "register_codes": [
+            "NEUTRAL"
+          ],
+          "editorial_labels": [],
+          "dialect_codes": [],
+          "pronunciations": [],
+          "syllable_representation": null,
+          "syllable_count": 1,
+          "stress_pattern": null,
+          "frequency_value": null,
+          "frequency_scale": null,
+          "etymology_text": null,
+          "first_recorded_use": null,
+          "source_references": [
+            {
+              "source_name": "LIRA English Common Closed-Class Cache v1",
+              "source_version": "1.0.0",
+              "external_identifier": null,
+              "reference_uri": null,
+              "licence_identifier": null
+            }
+          ],
+          "seeded_pleasure_displeasure_weight": 0.0,
+          "seeded_arousal_non_arousal_weight": 0.0,
+          "seeded_dominance_submissive_weight": 0.0,
+          "derivation_kinds": [
+            "PRONOUN_POSSESSIVE_FORM"
+          ]
+        },
+        {
+          "entry_id": "5137a86d-9c2e-4823-993f-d49f3a0e3a7f",
+          "lexical_form": "yourself",
+          "normalised_form": "yourself",
+          "text": "yourself",
+          "version": "1.0",
+          "language_code": "en",
+          "script_code": "Latn",
+          "part_of_speech": "PRONOUN",
+          "closed_class": true,
+          "closed_class_kind": "pronoun",
+          "definition": "The person addressed, used reflexively or for emphasis (singular)",
+          "gloss": "The person addressed, used reflexively or for emphasis (singular)",
+          "usage_notes": [],
+          "register_codes": [
+            "NEUTRAL"
+          ],
+          "editorial_labels": [],
+          "dialect_codes": [],
+          "pronunciations": [],
+          "syllable_representation": null,
+          "syllable_count": 2,
+          "stress_pattern": null,
+          "frequency_value": null,
+          "frequency_scale": null,
+          "etymology_text": null,
+          "first_recorded_use": null,
+          "source_references": [
+            {
+              "source_name": "LIRA English Common Closed-Class Cache v1",
+              "source_version": "1.0.0",
+              "external_identifier": null,
+              "reference_uri": null,
+              "licence_identifier": null
+            }
+          ],
+          "seeded_pleasure_displeasure_weight": 0.0,
+          "seeded_arousal_non_arousal_weight": 0.0,
+          "seeded_dominance_submissive_weight": 0.0,
+          "derivation_kinds": [
+            "PRONOUN_REFLEXIVE_FORM"
+          ]
+        },
+        {
+          "entry_id": "2651f511-3ed8-4e0e-a727-721bcd84532e",
+          "lexical_form": "yourselves",
+          "normalised_form": "yourselves",
+          "text": "yourselves",
+          "version": "1.0",
+          "language_code": "en",
+          "script_code": "Latn",
+          "part_of_speech": "PRONOUN",
+          "closed_class": true,
+          "closed_class_kind": "pronoun",
+          "definition": "The people addressed, used reflexively or for emphasis (plural)",
+          "gloss": "The people addressed, used reflexively or for emphasis (plural)",
+          "usage_notes": [],
+          "register_codes": [
+            "NEUTRAL"
+          ],
+          "editorial_labels": [],
+          "dialect_codes": [],
+          "pronunciations": [],
+          "syllable_representation": null,
+          "syllable_count": 3,
+          "stress_pattern": null,
+          "frequency_value": null,
+          "frequency_scale": null,
+          "etymology_text": null,
+          "first_recorded_use": null,
+          "source_references": [
+            {
+              "source_name": "LIRA English Common Closed-Class Cache v1",
+              "source_version": "1.0.0",
+              "external_identifier": null,
+              "reference_uri": null,
+              "licence_identifier": null
+            }
+          ],
+          "seeded_pleasure_displeasure_weight": 0.0,
+          "seeded_arousal_non_arousal_weight": 0.0,
+          "seeded_dominance_submissive_weight": 0.0,
+          "derivation_kinds": [
+            "PRONOUN_REFLEXIVE_FORM"
+          ]
+        }
+      ]
     },
     {
       "entry_id": "c3e36c36-f031-4df5-866e-583a380b8596",
@@ -163,7 +294,95 @@
       ],
       "seeded_pleasure_displeasure_weight": 0.0,
       "seeded_arousal_non_arousal_weight": 0.0,
-      "seeded_dominance_submissive_weight": 0.0
+      "seeded_dominance_submissive_weight": 0.0,
+      "forms": [
+        {
+          "entry_id": "125a2d3b-1336-433f-a52a-9a7a089714e2",
+          "lexical_form": "hers",
+          "normalised_form": "hers",
+          "text": "hers",
+          "version": "1.0",
+          "language_code": "en",
+          "script_code": "Latn",
+          "part_of_speech": "PRONOUN",
+          "closed_class": true,
+          "closed_class_kind": "pronoun",
+          "definition": "The thing or things belonging to a female person",
+          "gloss": "The thing or things belonging to a female person",
+          "usage_notes": [],
+          "register_codes": [
+            "NEUTRAL"
+          ],
+          "editorial_labels": [],
+          "dialect_codes": [],
+          "pronunciations": [],
+          "syllable_representation": null,
+          "syllable_count": 1,
+          "stress_pattern": null,
+          "frequency_value": null,
+          "frequency_scale": null,
+          "etymology_text": null,
+          "first_recorded_use": null,
+          "source_references": [
+            {
+              "source_name": "LIRA English Common Closed-Class Cache v1",
+              "source_version": "1.0.0",
+              "external_identifier": null,
+              "reference_uri": null,
+              "licence_identifier": null
+            }
+          ],
+          "seeded_pleasure_displeasure_weight": 0.0,
+          "seeded_arousal_non_arousal_weight": 0.0,
+          "seeded_dominance_submissive_weight": 0.0,
+          "derivation_kinds": [
+            "PRONOUN_POSSESSIVE_FORM"
+          ]
+        },
+        {
+          "entry_id": "f67a4cee-b05e-42fa-ae01-6914dbf2d071",
+          "lexical_form": "herself",
+          "normalised_form": "herself",
+          "text": "herself",
+          "version": "1.0",
+          "language_code": "en",
+          "script_code": "Latn",
+          "part_of_speech": "PRONOUN",
+          "closed_class": true,
+          "closed_class_kind": "pronoun",
+          "definition": "A female person, used reflexively or for emphasis",
+          "gloss": "A female person, used reflexively or for emphasis",
+          "usage_notes": [],
+          "register_codes": [
+            "NEUTRAL"
+          ],
+          "editorial_labels": [],
+          "dialect_codes": [],
+          "pronunciations": [],
+          "syllable_representation": null,
+          "syllable_count": 2,
+          "stress_pattern": null,
+          "frequency_value": null,
+          "frequency_scale": null,
+          "etymology_text": null,
+          "first_recorded_use": null,
+          "source_references": [
+            {
+              "source_name": "LIRA English Common Closed-Class Cache v1",
+              "source_version": "1.0.0",
+              "external_identifier": null,
+              "reference_uri": null,
+              "licence_identifier": null
+            }
+          ],
+          "seeded_pleasure_displeasure_weight": 0.0,
+          "seeded_arousal_non_arousal_weight": 0.0,
+          "seeded_dominance_submissive_weight": 0.0,
+          "derivation_kinds": [
+            "PRONOUN_REFLEXIVE_FORM"
+          ]
+        }
+      ]
     },
     {
       "entry_id": "d8d84adb-39af-4f8c-a024-23b45a80883e",
@@ -203,7 +422,52 @@
       ],
       "seeded_pleasure_displeasure_weight": 0.0,
       "seeded_arousal_non_arousal_weight": 0.0,
-      "seeded_dominance_submissive_weight": 0.0
+      "seeded_dominance_submissive_weight": 0.0,
+      "forms": [
+        {
+          "entry_id": "2745e786-810e-4d43-b180-d307028fcd34",
+          "lexical_form": "itself",
+          "normalised_form": "itself",
+          "text": "itself",
+          "version": "1.0",
+          "language_code": "en",
+          "script_code": "Latn",
+          "part_of_speech": "PRONOUN",
+          "closed_class": true,
+          "closed_class_kind": "pronoun",
+          "definition": "A thing or entity, used reflexively or for emphasis",
+          "gloss": "A thing or entity, used reflexively or for emphasis",
+          "usage_notes": [],
+          "register_codes": [
+            "NEUTRAL"
+          ],
+          "editorial_labels": [],
+          "dialect_codes": [],
+          "pronunciations": [],
+          "syllable_representation": null,
+          "syllable_count": 2,
+          "stress_pattern": null,
+          "frequency_value": null,
+          "frequency_scale": null,
+          "etymology_text": null,
+          "first_recorded_use": null,
+          "source_references": [
+            {
+              "source_name": "LIRA English Common Closed-Class Cache v1",
+              "source_version": "1.0.0",
+              "external_identifier": null,
+              "reference_uri": null,
+              "licence_identifier": null
+            }
+          ],
+          "seeded_pleasure_displeasure_weight": 0.0,
+          "seeded_arousal_non_arousal_weight": 0.0,
+          "seeded_dominance_submissive_weight": 0.0,
+          "derivation_kinds": [
+            "PRONOUN_REFLEXIVE_FORM"
+          ]
+        }
+      ]
     },
     {
       "entry_id": "fae7180c-ea24-4d82-a58b-ad4a1fb1ed57",
@@ -486,86 +750,6 @@
       "seeded_dominance_submissive_weight": 0.0
     },
     {
-      "entry_id": "fc85616d-4470-4894-8598-5d4659eef1d6",
-      "lexical_form": "yours",
-      "normalised_form": "yours",
-      "text": "yours",
-      "version": "1.0",
-      "language_code": "en",
-      "script_code": "Latn",
-      "part_of_speech": "PRONOUN",
-      "closed_class": true,
-      "closed_class_kind": "pronoun",
-      "definition": "The thing or things belonging to the person addressed",
-      "gloss": "The thing or things belonging to the person addressed",
-      "usage_notes": [],
-      "register_codes": [
-        "NEUTRAL"
-      ],
-      "editorial_labels": [],
-      "dialect_codes": [],
-      "pronunciations": [],
-      "syllable_representation": null,
-      "syllable_count": 1,
-      "stress_pattern": null,
-      "frequency_value": null,
-      "frequency_scale": null,
-      "etymology_text": null,
-      "first_recorded_use": null,
-      "source_references": [
-        {
-          "source_name": "LIRA English Common Closed-Class Cache v1",
-          "source_version": "1.0.0",
-          "external_identifier": null,
-          "reference_uri": null,
-          "licence_identifier": null
-        }
-      ],
-      "seeded_pleasure_displeasure_weight": 0.0,
-      "seeded_arousal_non_arousal_weight": 0.0,
-      "seeded_dominance_submissive_weight": 0.0
-    },
-    {
-      "entry_id": "125a2d3b-1336-433f-a52a-9a7a089714e2",
-      "lexical_form": "hers",
-      "normalised_form": "hers",
-      "text": "hers",
-      "version": "1.0",
-      "language_code": "en",
-      "script_code": "Latn",
-      "part_of_speech": "PRONOUN",
-      "closed_class": true,
-      "closed_class_kind": "pronoun",
-      "definition": "The thing or things belonging to a female person",
-      "gloss": "The thing or things belonging to a female person",
-      "usage_notes": [],
-      "register_codes": [
-        "NEUTRAL"
-      ],
-      "editorial_labels": [],
-      "dialect_codes": [],
-      "pronunciations": [],
-      "syllable_representation": null,
-      "syllable_count": 1,
-      "stress_pattern": null,
-      "frequency_value": null,
-      "frequency_scale": null,
-      "etymology_text": null,
-      "first_recorded_use": null,
-      "source_references": [
-        {
-          "source_name": "LIRA English Common Closed-Class Cache v1",
-          "source_version": "1.0.0",
-          "external_identifier": null,
-          "reference_uri": null,
-          "licence_identifier": null
-        }
-      ],
-      "seeded_pleasure_displeasure_weight": 0.0,
-      "seeded_arousal_non_arousal_weight": 0.0,
-      "seeded_dominance_submissive_weight": 0.0
-    },
-    {
       "entry_id": "41ff29fc-ae57-4922-85e8-24166c8349ee",
       "lexical_form": "ours",
       "normalised_form": "ours",
@@ -686,46 +870,6 @@
       "seeded_dominance_submissive_weight": 0.0
     },
     {
-      "entry_id": "5137a86d-9c2e-4823-993f-d49f3a0e3a7f",
-      "lexical_form": "yourself",
-      "normalised_form": "yourself",
-      "text": "yourself",
-      "version": "1.0",
-      "language_code": "en",
-      "script_code": "Latn",
-      "part_of_speech": "PRONOUN",
-      "closed_class": true,
-      "closed_class_kind": "pronoun",
-      "definition": "The person addressed, used reflexively or for emphasis (singular)",
-      "gloss": "The person addressed, used reflexively or for emphasis (singular)",
-      "usage_notes": [],
-      "register_codes": [
-        "NEUTRAL"
-      ],
-      "editorial_labels": [],
-      "dialect_codes": [],
-      "pronunciations": [],
-      "syllable_representation": null,
-      "syllable_count": 2,
-      "stress_pattern": null,
-      "frequency_value": null,
-      "frequency_scale": null,
-      "etymology_text": null,
-      "first_recorded_use": null,
-      "source_references": [
-        {
-          "source_name": "LIRA English Common Closed-Class Cache v1",
-          "source_version": "1.0.0",
-          "external_identifier": null,
-          "reference_uri": null,
-          "licence_identifier": null
-        }
-      ],
-      "seeded_pleasure_displeasure_weight": 0.0,
-      "seeded_arousal_non_arousal_weight": 0.0,
-      "seeded_dominance_submissive_weight": 0.0
-    },
-    {
       "entry_id": "3d53834c-c4f8-462a-9fe1-a8512c882632",
       "lexical_form": "himself",
       "normalised_form": "himself",
@@ -738,86 +882,6 @@
       "closed_class_kind": "pronoun",
       "definition": "A male person, used reflexively or for emphasis",
       "gloss": "A male person, used reflexively or for emphasis",
-      "usage_notes": [],
-      "register_codes": [
-        "NEUTRAL"
-      ],
-      "editorial_labels": [],
-      "dialect_codes": [],
-      "pronunciations": [],
-      "syllable_representation": null,
-      "syllable_count": 2,
-      "stress_pattern": null,
-      "frequency_value": null,
-      "frequency_scale": null,
-      "etymology_text": null,
-      "first_recorded_use": null,
-      "source_references": [
-        {
-          "source_name": "LIRA English Common Closed-Class Cache v1",
-          "source_version": "1.0.0",
-          "external_identifier": null,
-          "reference_uri": null,
-          "licence_identifier": null
-        }
-      ],
-      "seeded_pleasure_displeasure_weight": 0.0,
-      "seeded_arousal_non_arousal_weight": 0.0,
-      "seeded_dominance_submissive_weight": 0.0
-    },
-    {
-      "entry_id": "f67a4cee-b05e-42fa-ae01-6914dbf2d071",
-      "lexical_form": "herself",
-      "normalised_form": "herself",
-      "text": "herself",
-      "version": "1.0",
-      "language_code": "en",
-      "script_code": "Latn",
-      "part_of_speech": "PRONOUN",
-      "closed_class": true,
-      "closed_class_kind": "pronoun",
-      "definition": "A female person, used reflexively or for emphasis",
-      "gloss": "A female person, used reflexively or for emphasis",
-      "usage_notes": [],
-      "register_codes": [
-        "NEUTRAL"
-      ],
-      "editorial_labels": [],
-      "dialect_codes": [],
-      "pronunciations": [],
-      "syllable_representation": null,
-      "syllable_count": 2,
-      "stress_pattern": null,
-      "frequency_value": null,
-      "frequency_scale": null,
-      "etymology_text": null,
-      "first_recorded_use": null,
-      "source_references": [
-        {
-          "source_name": "LIRA English Common Closed-Class Cache v1",
-          "source_version": "1.0.0",
-          "external_identifier": null,
-          "reference_uri": null,
-          "licence_identifier": null
-        }
-      ],
-      "seeded_pleasure_displeasure_weight": 0.0,
-      "seeded_arousal_non_arousal_weight": 0.0,
-      "seeded_dominance_submissive_weight": 0.0
-    },
-    {
-      "entry_id": "2745e786-810e-4d43-b180-d307028fcd34",
-      "lexical_form": "itself",
-      "normalised_form": "itself",
-      "text": "itself",
-      "version": "1.0",
-      "language_code": "en",
-      "script_code": "Latn",
-      "part_of_speech": "PRONOUN",
-      "closed_class": true,
-      "closed_class_kind": "pronoun",
-      "definition": "A thing or entity, used reflexively or for emphasis",
-      "gloss": "A thing or entity, used reflexively or for emphasis",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -898,46 +962,6 @@
       "closed_class_kind": "pronoun",
       "definition": "The speaker and others, used reflexively or for emphasis",
       "gloss": "The speaker and others, used reflexively or for emphasis",
-      "usage_notes": [],
-      "register_codes": [
-        "NEUTRAL"
-      ],
-      "editorial_labels": [],
-      "dialect_codes": [],
-      "pronunciations": [],
-      "syllable_representation": null,
-      "syllable_count": 3,
-      "stress_pattern": null,
-      "frequency_value": null,
-      "frequency_scale": null,
-      "etymology_text": null,
-      "first_recorded_use": null,
-      "source_references": [
-        {
-          "source_name": "LIRA English Common Closed-Class Cache v1",
-          "source_version": "1.0.0",
-          "external_identifier": null,
-          "reference_uri": null,
-          "licence_identifier": null
-        }
-      ],
-      "seeded_pleasure_displeasure_weight": 0.0,
-      "seeded_arousal_non_arousal_weight": 0.0,
-      "seeded_dominance_submissive_weight": 0.0
-    },
-    {
-      "entry_id": "2651f511-3ed8-4e0e-a727-721bcd84532e",
-      "lexical_form": "yourselves",
-      "normalised_form": "yourselves",
-      "text": "yourselves",
-      "version": "1.0",
-      "language_code": "en",
-      "script_code": "Latn",
-      "part_of_speech": "PRONOUN",
-      "closed_class": true,
-      "closed_class_kind": "pronoun",
-      "definition": "The people addressed, used reflexively or for emphasis (plural)",
-      "gloss": "The people addressed, used reflexively or for emphasis (plural)",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
