@@ -54,9 +54,26 @@ export class Dictionary {
   private readonly byUuid = new Map<string, Word>();
   private readonly formsByBase = new Map<string, LemmaFormLink[]>();
   private readonly baseByForm = new Map<string, LemmaFormLink>();
+  private maxPhraseSpan = 1;
 
   all(): readonly Word[] {
     return this.words.slice();
+  }
+
+  /** The greatest number of whitespace-separated words any appended
+   * Word's own `text` spans -- e.g. 3 once "in spite of" has been
+   * appended. DictionaryProcessor.identifyPhrase uses this as its
+   * longest-match search bound, so a phrase lookup never probes further
+   * ahead than any entry could possibly need (Design Principle 1 treats
+   * a multi-word closed-class item like "in spite of" or "each other"
+   * as one independent lexical form / one Word, same as a single-word
+   * entry -- this is what lets that Word actually get recognised as one
+   * unit while reading, instead of only being reachable by looking up
+   * its exact multi-word text directly). 1 when nothing multi-word has
+   * been appended yet, so a Dictionary with no phrase entries costs
+   * nothing extra at lookup time. */
+  get phraseSpanLimit(): number {
+    return this.maxPhraseSpan;
   }
 
   lookup(text: string): Word | undefined {
@@ -89,6 +106,9 @@ export class Dictionary {
     if (bucket) bucket.push(word);
     else this.byText.set(key, [word]);
     this.byUuid.set(word.uuid.value, word);
+
+    const wordCount = key.trim().split(/\s+/).filter(Boolean).length;
+    if (wordCount > this.maxPhraseSpan) this.maxPhraseSpan = wordCount;
   }
 
   totalEntries(): number {

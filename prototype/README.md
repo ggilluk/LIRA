@@ -125,6 +125,49 @@ left untouched: both representations agree, and nothing else
 (`Word`'s own related-word derived properties, `RelationshipSeeder`'s
 checksum) needed to change to add this index.
 
+#### Phrase support (prototype-only reading-pipeline optimisation)
+
+The Common Vocabulary Cache has always contained closed-class
+multi-word entries -- `prepositions.json`'s "in spite of"/"according
+to", `subordinating_conjunctions.json`'s "as long as"/"even though",
+`pronouns.json`'s "each other"/"no one" -- each one already a single
+`Word` (Design Principle 1: "each lexical form must be stored as a
+separate `Word`" applies just as well to a multi-word lexical form as a
+single-word one; nothing about `Dictionary`'s data model needed to
+change to store them). What was missing was the *reading* side: the
+tokenizer split raw text into one-token-at-a-time strings and looked
+each one up individually, so "in spite of" could only ever be found by
+looking up that exact three-word string directly -- during an ordinary
+sentence read it fragmented into "in"/"spite"/"of" as three unrelated
+single-word lookups instead.
+
+`Dictionary.phraseSpanLimit` now tracks the longest whitespace-span any
+appended `Word.text` has (1 when nothing multi-word has been seeded,
+so a phrase-free Dictionary pays nothing extra). `DictionaryProcessor.identifyPhrase(rawTokens,
+startIndex)` tries the longest matching span down to 2 tokens before
+falling back to a plain single-token `identifyWord` (which alone still
+queues external hydration -- an unmatched shorter span like "in spite"
+is never mistaken for a candidate of its own just because the search
+happened to probe it on the way to the real 3-token match).
+`TokenReading` gained `tokenSpan` (1 for an ordinary word); both the
+write path (`GraphProcessor.processSentence`, via the new
+`processPhraseCandidates`) and the read path
+(`role/token_resolver.ts`'s `TokenResolver.resolveSentence`) now walk
+the raw token stream with a cursor that advances by `tokenSpan` rather
+than by 1, so "in spite of" becomes one `TokenReading` -- and, once
+materialised, one `Word` node in the `Clause`/`Sentence` tree -- the
+same way it's already one `Word` in the Dictionary. `SequenceEngine`/
+`PhraseReader`/`ClauseReader` needed no changes at all: they already
+treat their `tokens` argument as an opaque ordered sequence indexed by
+array position, never by raw-token offset, so a shorter, phrase-
+collapsed array is simply a shorter sequence to search over.
+
+This is a **prototype-only** capability, same divergence class as the
+lemma grouping above -- Python's `role/token_resolver.py`/
+`role/graph_processor.py` still resolve one raw token at a time, so a
+multi-word Common Vocabulary Cache entry is reachable there only by
+looking it up directly, not while reading a real sentence.
+
 ### Linguistics Layer (Service ported and wired in; new Portal UI)
 
 Ported from `src/lira/linguistics/` -- `data/` and `role/` (the full

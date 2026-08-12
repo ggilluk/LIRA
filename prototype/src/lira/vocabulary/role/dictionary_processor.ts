@@ -66,6 +66,57 @@ export class DictionaryProcessor {
     return [];
   }
 
+  /** The phrase-aware sibling of identifyWord: given the full raw token
+   * sequence of a sentence and a start position within it, tries the
+   * longest whitespace-joined span of consecutive raw tokens (bounded by
+   * `dictionary.phraseSpanLimit`, down to 2) against the Dictionary
+   * before falling back to a plain single-token identifyWord lookup --
+   * "in spite of" resolves as the one closed-class PREPOSITION Word it's
+   * seeded as (assets/common/en/prepositions.json), not three
+   * independent single-word lookups on "in"/"spite"/"of". Only the
+   * final single-token fallback ever queues external hydration: a
+   * two-word span that doesn't match anything ("in spite", i.e. the
+   * phrase minus its last word) is not itself a candidate lexical form,
+   * so it must not get treated as one just because the longer phrase
+   * search happened to probe it first.
+   *
+   * Returns the winning candidates together with `tokenSpan`, the
+   * number of raw tokens actually consumed (1 for an ordinary word). */
+  identifyPhrase(
+    rawTokens: readonly string[],
+    startIndex: number,
+    options: { sentenceIndex?: number; isSentenceStart?: boolean } = {},
+  ): { candidates: readonly WordIdentification[]; tokenSpan: number } {
+    const sentenceIndex = options.sentenceIndex ?? 0;
+    const isSentenceStart = options.isSentenceStart ?? false;
+    const maxSpan = Math.min(this.dictionary.phraseSpanLimit, rawTokens.length - startIndex);
+
+    for (let span = maxSpan; span >= 2; span--) {
+      const rawText = rawTokens.slice(startIndex, startIndex + span).join(" ");
+      const context = createWordLookupContext({
+        rawText,
+        normalisedText: rawText.toLowerCase(),
+        domainName: this.domainName,
+        sentenceIndex,
+        tokenIndex: startIndex,
+        isSentenceStart,
+        precedingWords: rawTokens.slice(0, startIndex),
+        followingWords: rawTokens.slice(startIndex + span),
+      });
+      const candidates = this.partOfSpeechIdentifier.identifySeeded(context);
+      if (candidates.length > 0) return { candidates, tokenSpan: span };
+    }
+
+    const candidates = this.identifyWord(rawTokens[startIndex], {
+      sentenceIndex,
+      tokenIndex: startIndex,
+      isSentenceStart,
+      precedingWords: rawTokens.slice(0, startIndex),
+      followingWords: rawTokens.slice(startIndex + 1),
+    });
+    return { candidates, tokenSpan: 1 };
+  }
+
   /** Registers `word` as a distinct sense of a lexical form already
    * present in this Dictionary under a different meaning -- the "keep
    * both, tell them apart by identity" resolution path for a

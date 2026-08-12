@@ -78,6 +78,31 @@ export class GraphProcessor {
     });
   }
 
+  /** The phrase-aware sibling of processTokenCandidates: resolves the
+   * raw token at `startIndex` within the full `rawTokens` sequence,
+   * trying the longest multi-word span the Dictionary actually has a
+   * seeded entry for (DictionaryProcessor.identifyPhrase) before
+   * falling back to a single-token reading. The returned TokenReading's
+   * `tokenSpan` tells the caller (processSentence below, and
+   * role/token_resolver.ts's own resolveSentence) how many raw tokens
+   * to advance past -- 2+ once a closed-class multi-word entry like "in
+   * spite of" (assets/common/en/prepositions.json) wins the search, so
+   * it materialises as the one Word it's seeded as instead of
+   * fragmenting back into single-word lookups on "in"/"spite"/"of". */
+  processPhraseCandidates(
+    rawTokens: readonly string[],
+    startIndex: number,
+    options: { sentenceIndex?: number; isSentenceStart?: boolean } = {},
+  ): TokenReading {
+    const sentenceIndex = options.sentenceIndex ?? 0;
+    const isSentenceStart = options.isSentenceStart ?? false;
+    const { candidates, tokenSpan } = this.dictProcessor.identifyPhrase(rawTokens, startIndex, {
+      sentenceIndex, isSentenceStart,
+    });
+    const text = rawTokens.slice(startIndex, startIndex + tokenSpan).join(" ");
+    return createTokenReading({ text, tokenIndex: startIndex, sentenceIndex, isSentenceStart, candidates, tokenSpan });
+  }
+
   /** Turns one TokenReading occurrence into a tensor-backed Word node
    * -- the second half of what processToken used to do in one step.
    * `selectedCandidate` lets a reader (PhraseReader et al.) materialise
@@ -144,12 +169,17 @@ export class GraphProcessor {
 
   processSentence(rawSentenceText: string, seqNum: number): Sentence {
     const rawTokens = LinguisticLexer.extractTokens(rawSentenceText);
-    const allProcessedTokens = rawTokens.map((tok, idx) =>
-      this.processToken(tok, idx, {
-        sentenceIndex: seqNum, tokenIndex: idx, isSentenceStart: idx === 0,
-        precedingWords: rawTokens.slice(0, idx), followingWords: rawTokens.slice(idx + 1),
-      }),
-    );
+    const allProcessedTokens: Word[] = [];
+    let rawIndex = 0;
+    let absoluteSeqNum = 0;
+    while (rawIndex < rawTokens.length) {
+      const reading = this.processPhraseCandidates(rawTokens, rawIndex, {
+        sentenceIndex: seqNum, isSentenceStart: rawIndex === 0,
+      });
+      allProcessedTokens.push(this.materialiseToken(reading, absoluteSeqNum));
+      rawIndex += reading.tokenSpan;
+      absoluteSeqNum += 1;
+    }
     const compiledClauses: Clause[] = [];
 
     if (this.useClauseSegmentation) {

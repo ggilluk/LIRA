@@ -25,12 +25,21 @@ export interface TokenReading {
   // sequencing never re-derives this ranking, only chooses among what
   // it already contains.
   candidates: readonly WordIdentification[];
+  // How many raw tokens (GraphProcessor.processPhraseCandidates' own
+  // input) this one reading actually consumes -- 1 for an ordinary
+  // word, 2+ when a multi-word closed-class entry like "in spite of"
+  // (Dictionary.phraseSpanLimit) won the longest-match phrase search.
+  // The reader/write-path loops that build a sentence's TokenReading
+  // sequence advance their raw-token cursor by this amount, not by 1,
+  // so a phrase is consumed once, as the single Word it's seeded as,
+  // rather than fragmenting back into its individual words.
+  tokenSpan: number;
 }
 
 export function createTokenReading(
   init: Pick<TokenReading, "text" | "tokenIndex" | "sentenceIndex" | "isSentenceStart"> & Partial<TokenReading>,
 ): TokenReading {
-  return { candidates: [], ...init };
+  return { candidates: [], tokenSpan: 1, ...init };
 }
 
 /** False means identifyWord found no seeded or previously-hydrated

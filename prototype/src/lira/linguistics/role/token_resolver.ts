@@ -22,15 +22,24 @@ export class TokenResolver {
   /** One sentence's worth of TokenReadings, in order -- every seeded
    * candidate retained per token (spec 7's "candidate parts of
    * speech"), none collapsed to a single sense the way processToken's
-   * materialisation step does. */
+   * materialisation step does. Uses GraphProcessor.processPhraseCandidates,
+   * not processTokenCandidates directly: a closed-class multi-word entry
+   * like "in spite of" resolves as one TokenReading spanning three raw
+   * tokens (its own tokenSpan) rather than three independent
+   * single-word readings, so the cursor below advances by tokenSpan,
+   * not by 1. */
   resolveSentence(rawSentenceText: string, sentenceIndex = 0): readonly TokenReading[] {
     const rawTokens = LinguisticLexer.extractTokens(rawSentenceText);
-    return rawTokens.map((tokenText, idx) =>
-      this.graphProcessor.processTokenCandidates(tokenText, {
-        sentenceIndex, tokenIndex: idx, isSentenceStart: idx === 0,
-        precedingWords: rawTokens.slice(0, idx), followingWords: rawTokens.slice(idx + 1),
-      }),
-    );
+    const readings: TokenReading[] = [];
+    let rawIndex = 0;
+    while (rawIndex < rawTokens.length) {
+      const reading = this.graphProcessor.processPhraseCandidates(rawTokens, rawIndex, {
+        sentenceIndex, isSentenceStart: rawIndex === 0,
+      });
+      readings.push(reading);
+      rawIndex += reading.tokenSpan;
+    }
+    return readings;
   }
 
   /** One array of TokenReadings per sentence in `rawText`, split by the

@@ -5,6 +5,8 @@ import { LexicalRelationshipSystemPropertyTensor } from "./data/lexical_relation
 import { LexicalRelationshipType } from "./data/lexical_relationship_type";
 import { PartOfSpeech } from "./data/part_of_speech";
 import { createWord, hypernyms, synonyms } from "./data/word";
+import { AsyncDictionaryHydrator } from "./role/dictionary_hydrator";
+import { DictionaryProcessor } from "./role/dictionary_processor";
 import { LexicalRelationshipProcessor } from "./role/lexical_relationship_processor";
 import { RelationshipSeeder } from "./role/relationship_seeder";
 import { WordSeeder } from "./role/word_seeder";
@@ -69,6 +71,77 @@ describe("Dictionary", () => {
     expect(target.lemmaOf(copiedForm)?.word.uuid.value).toBe(copiedBase.uuid.value);
     // The link is against the NEW copies, not the original source Words.
     expect(target.formsOf(base)).toHaveLength(0);
+  });
+
+  it("phraseSpanLimit tracks the longest multi-word Word.text appended, starting from 1", () => {
+    const dictionary = new Dictionary();
+    expect(dictionary.phraseSpanLimit).toBe(1);
+
+    dictionary.append(createWord({ text: "give up", partOfSpeech: PartOfSpeech.VERB }));
+    expect(dictionary.phraseSpanLimit).toBe(2);
+
+    dictionary.append(createWord({ text: "in spite of", partOfSpeech: PartOfSpeech.PREPOSITION }));
+    expect(dictionary.phraseSpanLimit).toBe(3);
+
+    // A later, shorter multi-word entry never lowers the limit back down.
+    dictionary.append(createWord({ text: "each other", partOfSpeech: PartOfSpeech.PRONOUN }));
+    expect(dictionary.phraseSpanLimit).toBe(3);
+  });
+});
+
+describe("DictionaryProcessor.identifyPhrase", () => {
+  it("prefers the longest seeded multi-word span over single-token lookups", () => {
+    const dictionary = new Dictionary();
+    dictionary.append(createWord({ text: "in", partOfSpeech: PartOfSpeech.PREPOSITION }));
+    dictionary.append(createWord({ text: "of", partOfSpeech: PartOfSpeech.PREPOSITION }));
+    dictionary.append(createWord({ text: "in spite of", partOfSpeech: PartOfSpeech.PREPOSITION }));
+    const processor = new DictionaryProcessor(dictionary, new AsyncDictionaryHydrator(dictionary), "Common");
+
+    const rawTokens = ["he", "waited", "in", "spite", "of", "the", "rain"];
+    const result = processor.identifyPhrase(rawTokens, 2);
+
+    expect(result.tokenSpan).toBe(3);
+    expect(result.candidates).toHaveLength(1);
+    expect(result.candidates[0].word?.text).toBe("in spite of");
+  });
+
+  it("falls back to a plain single-token identifyWord lookup, hydration included, when no phrase matches", () => {
+    const dictionary = new Dictionary();
+    dictionary.append(createWord({ text: "cat", partOfSpeech: PartOfSpeech.NOUN }));
+    const hydrator = new AsyncDictionaryHydrator(dictionary);
+    const processor = new DictionaryProcessor(dictionary, hydrator, "Common");
+
+    const result = processor.identifyPhrase(["the", "cat", "sat"], 1);
+
+    expect(result.tokenSpan).toBe(1);
+    expect(result.candidates[0].word?.text).toBe("cat");
+  });
+
+  it("never mistakes an unmatched shorter span (\"in spite\") for a candidate of its own", () => {
+    const dictionary = new Dictionary();
+    dictionary.append(createWord({ text: "spite", partOfSpeech: PartOfSpeech.NOUN }));
+    dictionary.append(createWord({ text: "in spite of", partOfSpeech: PartOfSpeech.PREPOSITION }));
+    const processor = new DictionaryProcessor(dictionary, new AsyncDictionaryHydrator(dictionary), "Common");
+
+    // "in spite" (2 tokens) matches nothing on its own -- only the full
+    // 3-token "in spite of" is seeded -- so the longest-match search
+    // must skip straight past it to the 3-token span, not settle for a
+    // false positive on the shorter one.
+    const result = processor.identifyPhrase(["standing", "in", "spite", "of", "warnings"], 1);
+    expect(result.tokenSpan).toBe(3);
+    expect(result.candidates[0].word?.text).toBe("in spite of");
+  });
+
+  it("resolves \"in spite of\" as one PREPOSITION span against the real bundled Common Vocabulary Cache", () => {
+    const dictionary = new Dictionary();
+    new WordSeeder("en").seedClosedClassWords(dictionary);
+    const processor = new DictionaryProcessor(dictionary, new AsyncDictionaryHydrator(dictionary), "Common");
+
+    const rawTokens = ["he", "stood", "his", "ground", "in", "spite", "of", "the", "storm"];
+    const result = processor.identifyPhrase(rawTokens, 4);
+
+    expect(result.tokenSpan).toBe(3);
+    expect(result.candidates.some((c) => c.partOfSpeech === PartOfSpeech.PREPOSITION)).toBe(true);
   });
 });
 

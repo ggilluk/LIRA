@@ -79,6 +79,34 @@ describe("LinguisticController against the bundled Common Vocabulary Cache", () 
   });
 });
 
+describe("Phrase support: multi-word Dictionary entries recognised while reading", () => {
+  it("TokenResolver.resolveSentence collapses \"in spite of\" into one TokenReading, not three", () => {
+    const controller = seededController();
+    const readings = controller.readingContext.tokenResolver.resolveSentence("He stood his ground in spite of the storm.");
+
+    const phraseReading = readings.find((reading) => reading.text === "in spite of");
+    expect(phraseReading).toBeDefined();
+    expect(phraseReading?.tokenSpan).toBe(3);
+    expect(phraseReading?.candidates.some((c) => c.partOfSpeech === PartOfSpeech.PREPOSITION)).toBe(true);
+
+    // 10 raw tokens (He/stood/his/ground/in/spite/of/the/storm/.) collapse
+    // to 8 readings once "in spite of" is read as the single closed-class
+    // entry it's seeded as.
+    expect(readings).toHaveLength(8);
+    expect(readings.some((reading) => reading.text === "in" || reading.text === "spite" || reading.text === "of")).toBe(false);
+  });
+
+  it("readSentence materialises the phrase as a single Word token in the clause", () => {
+    const controller = seededController();
+    const sentence = controller.readSentence("He stood his ground in spite of the storm.");
+
+    const clauseWords = sentence.clauses[0].tokens;
+    const phraseWord = clauseWords.find((word) => word.text === "in spite of");
+    expect(phraseWord).toBeDefined();
+    expect(phraseWord?.partOfSpeech).toBe(PartOfSpeech.PREPOSITION);
+  });
+});
+
 describe("Learned lexical transition evidence (spec 15-24, Proposed)", () => {
   it("never records anything on its own -- reading a sentence alone leaves evidenceStore empty", () => {
     const controller = seededController();
