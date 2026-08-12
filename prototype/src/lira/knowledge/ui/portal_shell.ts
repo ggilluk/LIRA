@@ -83,6 +83,12 @@ export class PortalShell {
   private mobileScreen: MobileScreen = "browse";
   private selectedName: string | undefined;
   private selectedComponent: ComponentId = "vocabulary";
+  /** Desktop-only: collapses the Domains tree ("Explorer" pane) down to
+   * a slim re-expand rail, giving the view pane the full width. Never
+   * consulted in mobile mode -- the tree there is its own full-screen
+   * "browse" step (mobileScreen), not a side pane, so there's nothing
+   * analogous to minimize. */
+  private treeCollapsed = false;
   private readonly title: string;
   private container: HTMLElement | undefined;
   private readonly serviceStatusView: ServiceStatusView;
@@ -130,6 +136,9 @@ export class PortalShell {
     } else if (action === "component") {
       this.selectedComponent = target.dataset.component as ComponentId;
       this.render();
+    } else if (action === "toggle-tree") {
+      this.treeCollapsed = !this.treeCollapsed;
+      this.render();
     }
   }
 
@@ -170,8 +179,9 @@ export class PortalShell {
     // harmless (monotonic counter, always fine to bump twice).
     this.renderToken++;
 
+    const treeCollapsedClass = this.mode === "desktop" && this.treeCollapsed ? "tree-collapsed" : "";
     this.container.innerHTML = `
-      <div class="portal-shell mode-${this.mode}">
+      <div class="portal-shell mode-${this.mode} ${treeCollapsedClass}">
         ${this.renderTopbar(selected)}
         <div class="portal-body">
           ${this.renderBody(selected)}
@@ -268,7 +278,20 @@ export class PortalShell {
   }
 
   private renderTree(): string {
-    return `<nav class="portal-tree"><div class="portal-tree-label">Domains</div>${this.renderTreeRows(0)}</nav>`;
+    if (this.treeCollapsed) {
+      return `
+        <nav class="portal-tree portal-tree--collapsed">
+          <button type="button" class="portal-tree-toggle" data-action="toggle-tree" title="Expand Domains" aria-label="Expand Domains" aria-expanded="false">${ICON_CHEVRON_RIGHT}</button>
+        </nav>`;
+    }
+    return `
+      <nav class="portal-tree">
+        <div class="portal-tree-label">
+          <span>Domains</span>
+          <button type="button" class="portal-tree-toggle" data-action="toggle-tree" title="Collapse Domains" aria-label="Collapse Domains" aria-expanded="true">${ICON_CHEVRON_LEFT}</button>
+        </div>
+        ${this.renderTreeRows(0)}
+      </nav>`;
   }
 
   private renderTreeRows(depth: number, parentName?: string): string {
@@ -348,6 +371,8 @@ const ICON_HOME = `<svg class="i-home" viewBox="0 0 16 16" fill="none" stroke="c
 const ICON_BACK = `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 3L5 8l5 5"/></svg>`;
 const ICON_DESKTOP = `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="1.5" y="2.5" width="13" height="9" rx="1"/><path d="M6 13.5h4"/></svg>`;
 const ICON_MOBILE = `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="4.5" y="1.5" width="7" height="13" rx="1.4"/></svg>`;
+const ICON_CHEVRON_LEFT = `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 3L5 8l5 5"/></svg>`;
+const ICON_CHEVRON_RIGHT = `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 3l5 5-5 5"/></svg>`;
 
 // Token names and values below match vocabulary/ui/dictionary_view.py's
 // own `:root` block exactly (--ground/--surface/--ink/--ink-muted/
@@ -402,9 +427,16 @@ const SHELL_CSS = `
 .portal-mode-toggle button:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
 .portal-body { display: grid; grid-template-columns: 208px 1fr; flex: 1; min-height: 0; }
 .mode-mobile .portal-body { grid-template-columns: 1fr; }
+.tree-collapsed .portal-body { grid-template-columns: 34px 1fr; }
 .portal-tree { background: var(--surface-2); border-right: 1px solid var(--line); padding: 0.75rem 0.5rem; overflow-y: auto; }
 .portal-tree--mobile { border-right: none; padding: 0.5rem; }
-.portal-tree-label { font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-faint); padding: 0.2rem 0.55rem 0.5rem; }
+.portal-tree--collapsed { display: flex; justify-content: center; padding: 0.6rem 0; overflow: visible; }
+.portal-tree-label { display: flex; align-items: center; justify-content: space-between; gap: 0.3rem; font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-faint); padding: 0.2rem 0.35rem 0.5rem 0.55rem; }
+.portal-tree-toggle { background: none; border: none; color: var(--ink-faint); cursor: pointer; padding: 0.2rem; border-radius: 4px; display: flex; flex: none; }
+.portal-tree-toggle svg { width: 12px; height: 12px; }
+.portal-tree-toggle:hover { background: var(--accent-soft); color: var(--accent); }
+.portal-tree-toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.portal-tree--collapsed .portal-tree-toggle svg { width: 13px; height: 13px; }
 .portal-tree-row { display: flex; align-items: center; gap: 0.4rem; padding: 0.4rem 0.55rem; border-radius: 6px; font-size: 0.85rem; cursor: pointer; }
 .portal-tree-row:hover { background: var(--accent-soft); }
 .portal-tree-row.selected { background: var(--accent-soft); color: var(--accent); font-weight: 600; }

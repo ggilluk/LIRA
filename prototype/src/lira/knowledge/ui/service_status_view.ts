@@ -7,15 +7,27 @@ import type { ServiceState, ServiceStatus, ServiceStatusBoard } from "../data/se
  * server-status dashboard, since a Service here is a Web Worker rather
  * than a server process. Subscribes to a ServiceStatusBoard and
  * re-renders on every change; the same board the LoadingScreen watches
- * during startup keeps driving this panel afterwards. */
+ * during startup keeps driving this panel afterwards.
+ *
+ * Minimizable: a chevron in the header row collapses the rows down to
+ * just that header (which then shows a "N/M running" summary in place
+ * of the hidden rows, so collapsing never hides an error silently).
+ * `collapsed` lives on this instance, not in the DOM the board
+ * re-renders into -- PortalShell rebuilds this view's container from
+ * scratch on every one of its own re-renders (selecting a Domain,
+ * switching component, etc.), so an instance field is what makes the
+ * collapsed state survive that instead of silently resetting to
+ * expanded on the next unrelated Portal action. */
 export class ServiceStatusView {
   private unsubscribe: (() => void) | undefined;
+  private collapsed = false;
 
   constructor(private readonly board: ServiceStatusBoard) {}
 
   mount(container: HTMLElement): void {
     this.ensureStyles();
     this.unsubscribe?.();
+    container.addEventListener("click", (event) => this.handleClick(event, container));
     this.unsubscribe = this.board.subscribe((statuses) => {
       container.innerHTML = this.renderPanel(statuses);
     });
@@ -26,10 +38,22 @@ export class ServiceStatusView {
     this.unsubscribe = undefined;
   }
 
+  private handleClick(event: MouseEvent, container: HTMLElement): void {
+    const target = (event.target as HTMLElement).closest<HTMLElement>('[data-action="toggle"]');
+    if (!target) return;
+    this.collapsed = !this.collapsed;
+    container.innerHTML = this.renderPanel(this.board.all());
+  }
+
   private renderPanel(statuses: readonly ServiceStatus[]): string {
+    const runningCount = statuses.filter((status) => status.state === "running" || status.state === "done").length;
     return `
-      <div class="service-status-panel">
-        <div class="service-status-label">Background Services</div>
+      <div class="service-status-panel ${this.collapsed ? "collapsed" : ""}">
+        <button type="button" class="service-status-header" data-action="toggle" aria-expanded="${!this.collapsed}">
+          <span class="service-status-label">Background Services</span>
+          ${this.collapsed ? `<span class="service-status-summary">${runningCount}/${statuses.length} running</span>` : ""}
+          <span class="service-status-chevron">${ICON_CHEVRON}</span>
+        </button>
         <div class="service-status-rows">
           ${statuses.map((status) => this.renderRow(status)).join("")}
         </div>
@@ -69,6 +93,8 @@ function escapeHtml(value: string): string {
   return value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
+const ICON_CHEVRON = `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6l4 4 4-4"/></svg>`;
+
 const STYLE_ID = "lira-service-status-styles";
 const CSS = `
 .service-status-panel {
@@ -77,14 +103,25 @@ const CSS = `
   border-top: 1px solid var(--line, #DDE0DA);
   padding: 0.6rem 0.9rem 0.75rem;
 }
+.service-status-header {
+  display: flex; align-items: center; gap: 0.5rem; width: 100%;
+  background: none; border: none; padding: 0; margin-bottom: 0.45rem;
+  font-family: inherit; cursor: pointer; text-align: left;
+}
 .service-status-label {
   font-family: 'SF Mono', Menlo, monospace;
   font-size: 0.64rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--ink-faint, #8B948E);
-  margin-bottom: 0.45rem;
 }
+.service-status-summary { font-size: 0.72rem; color: var(--ink-muted, #5B6660); flex: 1; }
+.service-status-chevron { display: flex; margin-left: auto; color: var(--ink-faint, #8B948E); transition: transform 0.15s ease; }
+.service-status-chevron svg { width: 12px; height: 12px; }
+.service-status-panel.collapsed .service-status-header { margin-bottom: 0; }
+.service-status-panel.collapsed .service-status-chevron { transform: rotate(-90deg); }
+.service-status-panel.collapsed .service-status-rows { display: none; }
+.service-status-header:focus-visible { outline: 2px solid var(--accent, #2B6E63); outline-offset: 2px; }
 .service-status-rows { display: flex; flex-direction: column; gap: 0.3rem; }
 .service-status-row { display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; color: var(--ink, #1C2321); }
 .service-status-dot { width: 7px; height: 7px; border-radius: 50%; flex: none; background: var(--ink-faint, #8B948E); }
