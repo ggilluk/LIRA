@@ -78,6 +78,7 @@ interface WordRecord {
   dialect_codes: string[];
   editorial_labels: string[];
   is_common: boolean;
+  is_root_word: boolean;
   domain: string | null;
   is_fully_hydrated: boolean;
   sources: string[];
@@ -245,6 +246,7 @@ export class DictionaryView {
         dialect_codes: word.dialectCodes.map((code) => code.value),
         editorial_labels: word.editorialLabels.map((label) => EditorialLabel[label]),
         is_common: word.isCommon,
+        is_root_word: word.isRootWord,
         domain: this.domainLabel(word),
         is_fully_hydrated: word.isFullyHydrated,
         sources: word.sourceReferences.map((ref) => ref.sourceName.value),
@@ -513,6 +515,17 @@ select#pos-filter, select#domain-filter {
   font-family: var(--font-body);
   font-size: 0.88rem;
 }
+.root-word-toggle-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  color: var(--ink-muted);
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+}
+.root-word-toggle-label input { accent-color: var(--accent); cursor: pointer; margin: 0; }
 .tabs {
   display: inline-flex;
   border: 1px solid var(--line-strong);
@@ -595,6 +608,13 @@ tbody tr:hover { background: color-mix(in srgb, var(--accent) 6%, transparent); 
   font-size: 0.68rem;
   color: var(--accent);
   border: 1px solid var(--accent);
+  border-radius: 4px;
+  padding: 1px 6px;
+}
+.badge-root-word {
+  font-size: 0.68rem;
+  color: #7A5CA6;
+  border: 1px solid #7A5CA6;
   border-radius: 4px;
   padding: 1px 6px;
 }
@@ -966,6 +986,7 @@ footer {
     <div class="search-field"><input id="search-definition" type="text" placeholder="Search definition&hellip;" aria-label="Search definition" autocomplete="off"></div>
     <select id="pos-filter"><option value="">All parts of speech</option></select>
     <select id="domain-filter"><option value="">All domains</option></select>
+    <label class="root-word-toggle-label"><input type="checkbox" id="root-word-filter"> Root words only</label>
     <div class="tabs" role="tablist">
       <button id="tab-words" role="tab" aria-selected="true">Words</button>
       <button id="tab-rels" role="tab" aria-selected="false">Relationships</button>
@@ -1070,7 +1091,7 @@ const GROUP_NAMES = @@GROUP_NAMES_JSON@@;
 const DOMAIN_COLORS = @@DOMAIN_COLORS_JSON@@;
 
 const state = {
-  tab: "words", search: { word: "", gloss: "", definition: "" }, pos: "", domain: "",
+  tab: "words", search: { word: "", gloss: "", definition: "" }, pos: "", domain: "", rootWordsOnly: false,
   selected: { words: null, hierarchy: null, cyclic: null },
   hierarchyKind: null, cyclicKind: null,
   sort: { words: ["lexical_form", 1], rels: ["source_text", 1] },
@@ -1300,7 +1321,7 @@ function matchesQuery(word) {
 }
 
 function filteredWords() {
-  return WORDS.filter(w => matchesQuery(w) && (!state.pos || w.pos === state.pos) && (!state.domain || w.domain === state.domain));
+  return WORDS.filter(w => matchesQuery(w) && (!state.pos || w.pos === state.pos) && (!state.domain || w.domain === state.domain) && (!state.rootWordsOnly || w.is_root_word));
 }
 
 function filteredRels() {
@@ -1342,7 +1363,7 @@ function renderWords() {
   document.getElementById("words-empty").style.display = rows.length ? "none" : "block";
   body.innerHTML = rows.map(w => \`
     <tr data-word-id="\${w.id}" class="\${w.id === state.selected.words ? 'selected' : ''}">
-      <td><span class="word-form">\${w.lexical_form}</span>\${w.is_common ? ' <span class="badge-common">common</span>' : ''}</td>
+      <td><span class="word-form">\${w.lexical_form}</span>\${w.is_common ? ' <span class="badge-common">common</span>' : ''}\${w.is_root_word ? ' <span class="badge-root-word">root word</span>' : ''}</td>
       <td>\${posPill(w.pos)}</td>
       <td>\${domainPill(w.domain)}</td>
       <td class="definition">\${w.definition || w.gloss || '<span style="opacity:.5">&mdash;</span>'}</td>
@@ -1410,7 +1431,7 @@ function renderDetailPanel(panel) {
   empty.style.display = "none";
   content.style.display = "block";
   content.innerHTML = \`
-    <div class="detail-word">\${word.lexical_form}\${word.is_common ? ' <span class="badge-common">common</span>' : ''}\${word.is_fully_hydrated ? '' : ' <span class="badge-common" style="color:#C2544B;border-color:#C2544B">hydration pending</span>'}</div>
+    <div class="detail-word">\${word.lexical_form}\${word.is_common ? ' <span class="badge-common">common</span>' : ''}\${word.is_root_word ? ' <span class="badge-root-word">root word</span>' : ''}\${word.is_fully_hydrated ? '' : ' <span class="badge-common" style="color:#C2544B;border-color:#C2544B">hydration pending</span>'}</div>
     <div style="margin-top:6px">\${posPill(word.pos)} \${domainPill(word.domain)}</div>
     <div class="detail-entry-id" title="Persistent Qualified Word Identity (domain + part of speech + word) -- stable across regenerations, unlike this word's transient graph id">Entry ID <code>\${word.entry_id}</code></div>
     <div class="detail-definition">\${renderDefinition(word)}</div>
@@ -2152,6 +2173,11 @@ document.getElementById("pos-filter").addEventListener("change", (e) => {
 
 document.getElementById("domain-filter").addEventListener("change", (e) => {
   state.domain = e.target.value;
+  renderWords();
+});
+
+document.getElementById("root-word-filter").addEventListener("change", (e) => {
+  state.rootWordsOnly = e.target.checked;
   renderWords();
 });
 

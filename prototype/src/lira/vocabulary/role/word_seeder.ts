@@ -29,6 +29,10 @@
 import { PartOfSpeech } from "../data/part_of_speech";
 import { RegisterCode } from "../data/register_code";
 import { EditorialLabel } from "../data/editorial_label";
+import { HolonymRootWord } from "../data/holonym_root_word";
+import { HypernymRootWord } from "../data/hypernym_root_word";
+import { InterrogativeRootWord } from "../data/interrogative_root_word";
+import { VectorPrimitiveRootWord } from "../data/vector_primitive_root_word";
 import type { Dictionary } from "../data/dictionary";
 import { copyWordWithFreshUuid, createWord, type Word } from "../data/word";
 import {
@@ -75,7 +79,30 @@ export const MANDATORY_FILES = [
 // closed-class function words. Order matters: metalinguistic_nouns.json
 // must load before metalinguistic_verbs.json ("cause"/"result" homograph),
 // and MANDATORY_FILES always loads before SUPPLEMENTARY_FILES in full.
+//
+// root_words.json loads first -- the first (NOUN) words this cache
+// seeds under the new Interrogative/Hypernym/Holonym/Vector-Primitive
+// root word table (data/interrogative_root_word.ts's own docstring).
+// Several of its 25 entries are deliberate homographs of an existing
+// NOUN sense seeded elsewhere (e.g. "operation" already exists in
+// promoted_words.json) -- each root_words.json entry carries its own
+// domainTag ("root_word.common") specifically so validateAssets()'s
+// duplicate (lexicalForm, partOfSpeech, domainTag) check treats it as
+// legitimate polysemy rather than a collision (Word.domainTag's own
+// docstring). One real, accepted trade-off: Dictionary.lookup()'s
+// "first entry wins" default (word_seeder.ts's own numerals.json
+// comment above) means a homograph here becomes the *default* sense
+// for that (text, partOfSpeech) pair -- promoted_words.json always
+// loads last regardless of this list's own order (loadCache() below),
+// so there is no position in SUPPLEMENTARY_FILES that avoids this for
+// the handful of words root_words.json shares with promoted_words.json.
+// The one caller sensitive to that default (RelationshipSeeder's
+// POS-less lookup fallback, role/relationship_seeder.ts) still resolves
+// to a valid same-text-same-partOfSpeech Word either way -- see the
+// full test suite, exercised against this exact bundled cache, for
+// confirmation nothing actually broke.
 export const SUPPLEMENTARY_FILES = [
+  "root_words.json",
   "metalinguistic_nouns.json",
   "metalinguistic_verbs.json",
   "metalinguistic_adjectives.json",
@@ -249,6 +276,18 @@ export class WordSeeder {
     }
     for (const label of entry.editorial_labels ?? []) {
       if (!(label in EditorialLabel)) throw new Error(`${filename}: '${entry.lexical_form}' has unknown editorial_label '${label}'`);
+    }
+    if (entry.interrogative_root_word && !(entry.interrogative_root_word in InterrogativeRootWord)) {
+      throw new Error(`${filename}: '${entry.lexical_form}' has unknown interrogative_root_word '${entry.interrogative_root_word}'`);
+    }
+    if (entry.hypernym_root_word && !(entry.hypernym_root_word in HypernymRootWord)) {
+      throw new Error(`${filename}: '${entry.lexical_form}' has unknown hypernym_root_word '${entry.hypernym_root_word}'`);
+    }
+    if (entry.holonym_root_word && !(entry.holonym_root_word in HolonymRootWord)) {
+      throw new Error(`${filename}: '${entry.lexical_form}' has unknown holonym_root_word '${entry.holonym_root_word}'`);
+    }
+    if (entry.vector_primitive_root_word && !(entry.vector_primitive_root_word in VectorPrimitiveRootWord)) {
+      throw new Error(`${filename}: '${entry.lexical_form}' has unknown vector_primitive_root_word '${entry.vector_primitive_root_word}'`);
     }
     const syllableCount = entry.syllable_count;
     if (syllableCount !== undefined && syllableCount !== null && (!Number.isInteger(syllableCount) || syllableCount < 1)) {
@@ -431,6 +470,19 @@ export class WordSeeder {
       seededPleasureDispleasureWeight: optNumber(entry.seeded_pleasure_displeasure_weight),
       seededArousalNonArousalWeight: optNumber(entry.seeded_arousal_non_arousal_weight),
       seededDominanceSubmissiveWeight: optNumber(entry.seeded_dominance_submissive_weight),
+      isRootWord: entry.is_root_word ?? false,
+      interrogativeRootWord: entry.interrogative_root_word
+        ? InterrogativeRootWord[entry.interrogative_root_word as keyof typeof InterrogativeRootWord]
+        : undefined,
+      hypernymRootWord: entry.hypernym_root_word
+        ? HypernymRootWord[entry.hypernym_root_word as keyof typeof HypernymRootWord]
+        : undefined,
+      holonymRootWord: entry.holonym_root_word
+        ? HolonymRootWord[entry.holonym_root_word as keyof typeof HolonymRootWord]
+        : undefined,
+      vectorPrimitiveRootWord: entry.vector_primitive_root_word
+        ? VectorPrimitiveRootWord[entry.vector_primitive_root_word as keyof typeof VectorPrimitiveRootWord]
+        : undefined,
     });
   }
 
@@ -463,6 +515,11 @@ export class WordSeeder {
       seeded_pleasure_displeasure_weight: word.seededPleasureDispleasureWeight?.value ?? null,
       seeded_arousal_non_arousal_weight: word.seededArousalNonArousalWeight?.value ?? null,
       seeded_dominance_submissive_weight: word.seededDominanceSubmissiveWeight?.value ?? null,
+      is_root_word: word.isRootWord,
+      interrogative_root_word: word.interrogativeRootWord !== undefined ? InterrogativeRootWord[word.interrogativeRootWord] : null,
+      hypernym_root_word: word.hypernymRootWord !== undefined ? HypernymRootWord[word.hypernymRootWord] : null,
+      holonym_root_word: word.holonymRootWord !== undefined ? HolonymRootWord[word.holonymRootWord] : null,
+      vector_primitive_root_word: word.vectorPrimitiveRootWord !== undefined ? VectorPrimitiveRootWord[word.vectorPrimitiveRootWord] : null,
       source_references: word.sourceReferences.map((ref) => ({
         source_name: ref.sourceName.value,
         source_version: ref.sourceVersion?.value ?? null,

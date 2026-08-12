@@ -179,6 +179,50 @@ lemma grouping above -- Python's `role/token_resolver.py`/
 multi-word Common Vocabulary Cache entry is reachable there only by
 looking it up directly, not while reading a real sentence.
 
+#### Root word table (prototype-only)
+
+Four new enums -- `InterrogativeRootWord`, `HypernymRootWord`,
+`HolonymRootWord`, `VectorPrimitiveRootWord` (`data/interrogative_root_word.ts`
+and its three siblings) -- one per column of a user-supplied table
+(What/Who/Where/When/Why/How as interrogatives, each with its own
+hypernym, holonym, and vector/primitive root word). Members share the
+same numeric ordinal across all four enums for the same table row
+(`InterrogativeRootWord.WHAT === HypernymRootWord.ENTITY === 0`, and so
+on), so a caller holding one root word's column value can look up its
+counterpart in another column by ordinal alone, without any Word
+needing to store all four itself. No Python equivalent -- new to this
+table, prototype only.
+
+`Word` gained five new fields: `isRootWord` (defaults `false` via
+`createWord()`, same convention as `isCommon`/`isFullyHydrated`) plus
+four optional enum-typed fields (`interrogativeRootWord`/
+`hypernymRootWord`/`holonymRootWord`/`vectorPrimitiveRootWord`), at
+most one of which is ever set on a given Word -- whichever single
+column it instantiates.
+
+`assets/common/en/root_words.json` (new, 25 entries, `SUPPLEMENTARY_FILES`'s
+first file so these are the first NOUN words this cache seeds) seeds
+one Word per table cell -- both "party" and "role" for the Hypernym
+column's "Who" row, since that cell names two words. Several entries
+are deliberate homographs of an existing NOUN sense seeded elsewhere
+(e.g. "operation" already exists in `promoted_words.json`) -- each
+carries its own `domainTag` (`"root_word.common"`) so
+`WordSeeder.validateAssets()`'s duplicate `(lexicalForm, partOfSpeech,
+domainTag)` check treats it as legitimate polysemy (`Word.domainTag`'s
+own docstring), not a collision; both senses coexist and are visible
+via `Dictionary.lookupAll()`. See `word_seeder.ts`'s own
+`SUPPLEMENTARY_FILES` docstring for the one accepted trade-off this
+creates (`Dictionary.lookup()`'s "first entry wins" default shifts to
+the new sense for the words root_words.json shares with
+`promoted_words.json` -- verified against the full test suite, which
+exercises `RelationshipSeeder` against this exact bundled cache, that
+nothing actually broke).
+
+`DictionaryView` shows a "Root words only" toolbar checkbox (Words tab)
+that filters the table down to just these 25 entries, and a small
+"root word" badge next to any root word's own name, alongside its
+existing "common" badge.
+
 ### Linguistics Layer (Service ported and wired in; new Portal UI)
 
 Ported from `src/lira/linguistics/` -- `data/` and `role/` (the full

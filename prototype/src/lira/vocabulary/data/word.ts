@@ -25,12 +25,16 @@ import type { LinguisticUnit } from "../../linguistics/data/linguistic_unit";
 import type { Dictionary } from "./dictionary";
 import type { DefinitionWordReference } from "./definition_word_reference";
 import type { EditorialLabel } from "./editorial_label";
+import type { HolonymRootWord } from "./holonym_root_word";
+import type { HypernymRootWord } from "./hypernym_root_word";
+import type { InterrogativeRootWord } from "./interrogative_root_word";
 import { LexicalRelationshipStore } from "./lexical_relationship_store";
 import { LexicalRelationshipType } from "./lexical_relationship_type";
 import type { PartOfSpeech } from "./part_of_speech";
 import type { Pronunciation } from "./pronunciation";
 import type { RegisterCode } from "./register_code";
 import type { SourceReference } from "./source_reference";
+import type { VectorPrimitiveRootWord } from "./vector_primitive_root_word";
 import { newUuid } from "./uuid";
 
 // Splits a definition's prose into its own word tokens -- deliberately a
@@ -114,6 +118,28 @@ export interface Word extends LinguisticUnit {
   seededPleasureDispleasureWeight?: Number_;
   seededArousalNonArousalWeight?: Number_;
   seededDominanceSubmissiveWeight?: Number_;
+
+  // True only for one of the 25 words seeded from
+  // assets/common/en/root_words.json -- the Interrogative/Hypernym/
+  // Holonym/Vector-Primitive root word table (data/interrogative_root_word.ts's
+  // own docstring). Never set true by hand elsewhere; every other Word
+  // defaults to false via createWord(). See DictionaryView's own "Show
+  // root words" filter, the reason this flag exists at all rather than
+  // being inferred from whichever of the four fields below is set.
+  isRootWord: boolean;
+
+  // At most one of these four is ever set, and only when isRootWord is
+  // true -- whichever single column of the root word table this Word
+  // instantiates (e.g. the Word "entity" carries hypernymRootWord =
+  // HypernymRootWord.ENTITY, and none of the other three). All four
+  // enums share the same numeric ordinal for the same table row (see
+  // each one's own docstring), so a caller holding one root word's
+  // column value can look up its counterpart in another column by
+  // ordinal alone, without this Word needing to store all four itself.
+  interrogativeRootWord?: InterrogativeRootWord;
+  hypernymRootWord?: HypernymRootWord;
+  holonymRootWord?: HolonymRootWord;
+  vectorPrimitiveRootWord?: VectorPrimitiveRootWord;
 }
 
 export type WordInit = Pick<Word, "text" | "partOfSpeech"> & Partial<Omit<Word, "text" | "partOfSpeech">>;
@@ -128,6 +154,7 @@ export function createWord(init: WordInit): Word {
     sourceReferences: [],
     isCommon: false,
     isFullyHydrated: true,
+    isRootWord: false,
     uuid: init.uuid ?? { value: newUuid() },
     entryId: init.entryId ?? { value: newUuid() },
     version: init.version ?? { value: "1.0" },

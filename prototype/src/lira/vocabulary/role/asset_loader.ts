@@ -49,6 +49,18 @@ export interface WordFileEntry {
   seeded_pleasure_displeasure_weight?: number | null;
   seeded_arousal_non_arousal_weight?: number | null;
   seeded_dominance_submissive_weight?: number | null;
+  /** Word.isRootWord -- true only for an entry in root_words.json.
+   * Absent (not just false) for every other file, same as this schema's
+   * other rarely-set optional fields. */
+  is_root_word?: boolean;
+  /** Word.interrogativeRootWord/hypernymRootWord/holonymRootWord/
+   * vectorPrimitiveRootWord -- the enum member name (e.g. "WHAT"), at
+   * most one of these four ever set on a given entry. Only meaningful
+   * when is_root_word is true. */
+  interrogative_root_word?: string | null;
+  hypernym_root_word?: string | null;
+  holonym_root_word?: string | null;
+  vector_primitive_root_word?: string | null;
   /** Inflected forms grouped with their shared base lemma -- a prototype-
    * only schema optimisation (Python's own assets/common/en/ keeps the
    * original flat-array-plus-separate-relationship-file shape; this
