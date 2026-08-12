@@ -349,6 +349,32 @@ checkbox next to the Read button (on by default) controls whether that
 read reinforces the state machine's own learned lexical evidence -- see
 below.
 
+**Document structure tree.** The Read button now reads `text` as a whole
+Document (`LinguisticsWorkerClient.readDocument()`, a new `read-document`
+worker message alongside `read`) rather than a single Sentence -- a
+one-sentence input still comes back as a one-Paragraph, one-Sentence
+Document, so the same code path handles both. A collapsible outline tree
+under the input panel shows Document -> Heading | Paragraph -> Sentence,
+the same recursive `<li>`/`<ul>` nesting `vocabulary/ui/dictionary_view.ts`'s
+own `hierarchy-tree` uses and the same chevron/`aria-expanded` fold toggle
+`knowledge/ui/service_status_view.ts`'s collapsible panel uses: each node
+carries a validation-outcome dot, and a folded Paragraph/Document shows a
+one-line summary ("3 sentences, 1 error") in place of its hidden rows, so
+triage is possible without expanding anything.
+
+Only Sentence rows are selectable. Selecting one fetches its full
+predicted structure and trace on demand -- `client.read(sentenceText,
+learningEnabled, true)`, the `true` being `ReadRequest.skipLearning` --
+and renders it into the "Predicted structure" and "Full trace" panels to
+the tree's right, plus a new "Winner" summary card above the trace (the
+winning sentence type/validation/confidence, the winning phrase per
+clause role, and a compact per-token-position winner list). `skipLearning`
+matters because `readDocument()` already walks and reinforces every
+validated Sentence in the Document once, up front; without it, re-
+selecting the same node would double-count that reinforcement. Fetched
+detail is cached per node for the lifetime of the current Document, so
+re-selecting a node already viewed doesn't refetch.
+
 #### Learned lexical transition evidence (spec 15-24)
 
 `linguistics/documentation/sentence_reading_state_machine_specification.md`

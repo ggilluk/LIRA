@@ -33,7 +33,10 @@ import { DictionaryProcessor } from "../../vocabulary/role/dictionary_processor"
 import { WordSeeder } from "../../vocabulary/role/word_seeder";
 import type { Clause } from "../data/clause";
 import { ClauseType } from "../data/clause_type";
+import type { Document } from "../data/document";
+import type { Heading } from "../data/heading";
 import { LinguisticUnitKind } from "../data/linguistic_unit_kind";
+import type { Paragraph } from "../data/paragraph";
 import type { Phrase } from "../data/phrase";
 import { PhraseType } from "../data/phrase_type";
 import type { ReadingError } from "../data/reading_error";
@@ -45,13 +48,17 @@ import { ValidationOutcome } from "../data/validation_outcome";
 import { LinguisticController } from "./linguistic_controller";
 import type {
   JsonAlternative,
+  JsonBlock,
   JsonClause,
+  JsonDocument,
   JsonPhrase,
   JsonReadingError,
   JsonSentence,
+  JsonSentenceSummary,
   LinguisticsWorkerMessage,
   LinguisticsWorkerRequest,
   PredictedWord,
+  ReadDocumentRequest,
   ReadRequest,
   TracePosition,
 } from "./linguistics_worker_protocol";
@@ -102,7 +109,7 @@ function handleRead(request: ReadRequest): void {
     // validated observations reinforce" -- so this is safe to call
     // unconditionally whenever learning is on, without checking
     // sentence.validation here first.
-    const recordedThisRead = request.learningEnabled ? controller.recordObservedReading(sentence) : 0;
+    const recordedThisRead = request.learningEnabled && !request.skipLearning ? controller.recordObservedReading(sentence) : 0;
     post({
       type: "read-result",
       requestId: request.requestId,
@@ -110,6 +117,47 @@ function handleRead(request: ReadRequest): void {
         predicted: sentenceToJson(sentence),
         words: buildPredictedWords(sentence, rawTokens),
         trace: trace as TracePosition[],
+        learning: {
+          enabled: request.learningEnabled,
+          recordedThisRead,
+          totalObservations: controller.evidenceStore.totalObservations,
+        },
+      },
+    });
+  } catch (error) {
+    const message = error instanceof Error ? `${error.name}: ${error.message}` : String(error);
+    post({ type: "error", requestId: request.requestId, message });
+  }
+}
+
+/** Reads `text` as a full Document -- the tree view's own entry point
+ * (see linguistics_worker_protocol.ts's own ReadDocumentRequest
+ * docstring for why this is a separate message from `read` rather than
+ * `read` growing an optional "as a document" mode). Learning reinforces
+ * every validated Sentence the Document contains, walked once here via
+ * `recordObservedReading` the same way `handleRead` reinforces its own
+ * single Sentence -- the tree view's later on-demand `read` calls for
+ * one sentence's detail always set `skipLearning: true` so this is the
+ * only place a fresh document read's transitions get recorded. */
+function handleReadDocument(request: ReadDocumentRequest): void {
+  if (!controller) {
+    post({ type: "error", requestId: request.requestId, message: "Linguistic Service: not initialised yet" });
+    return;
+  }
+  try {
+    const document = controller.readDocument(request.text);
+    let recordedThisRead = 0;
+    if (request.learningEnabled) {
+      for (const block of document.blocks) {
+        if (block.blockKind !== "paragraph") continue;
+        for (const sentence of block.sentences) recordedThisRead += controller.recordObservedReading(sentence);
+      }
+    }
+    post({
+      type: "read-document-result",
+      requestId: request.requestId,
+      result: {
+        document: documentToJson(document),
         learning: {
           enabled: request.learningEnabled,
           recordedThisRead,
@@ -196,6 +244,7 @@ ctx.addEventListener("message", (event) => {
   const request = event.data;
   if (request.type === "init") handleInit();
   else if (request.type === "read") handleRead(request);
+  else if (request.type === "read-document") handleReadDocument(request);
 });
 
 // --- Sentence/Clause/Phrase/ReadingError -> JSON, the same fields
@@ -266,5 +315,44 @@ function sentenceToJson(sentence: Sentence): JsonSentence {
     punctuation: sentence.punctuation?.text ?? null,
     clauses: sentence.clauses.map(clauseToJson),
     errors: sentence.errors.map(errorToJson),
+  };
+}
+
+// --- Document/Paragraph/Heading -> JSON, the Document tree view's own
+// (lighter-weight, no clause/phrase detail -- see JsonSentenceSummary's
+// own docstring) mirror of sentenceToJson/clauseToJson/phraseToJson
+// above. -------------------------------------------------------------
+
+function sentenceSummaryToJson(sentence: Sentence): JsonSentenceSummary {
+  return {
+    text: sentence.text,
+    sentenceType: sentence.sentenceType !== undefined ? SentenceType[sentence.sentenceType] : null,
+    validation: ValidationOutcome[sentence.validation],
+    confidence: Math.round(sentence.confidence * 10000) / 10000,
+    errors: sentence.errors.map(errorToJson),
+  };
+}
+
+function blockToJson(block: Heading | Paragraph): JsonBlock {
+  if (block.blockKind === "heading") {
+    return { blockKind: "heading", text: block.text, level: block.level };
+  }
+  return {
+    blockKind: "paragraph",
+    text: block.text,
+    sentences: block.sentences.map(sentenceSummaryToJson),
+    validation: ValidationOutcome[block.validation],
+    confidence: Math.round(block.confidence * 10000) / 10000,
+    errors: block.errors.map(errorToJson),
+  };
+}
+
+function documentToJson(document: Document): JsonDocument {
+  return {
+    text: document.text,
+    blocks: document.blocks.map(blockToJson),
+    validation: ValidationOutcome[document.validation],
+    confidence: Math.round(document.confidence * 10000) / 10000,
+    errors: document.errors.map(errorToJson),
   };
 }

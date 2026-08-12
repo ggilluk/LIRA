@@ -31,9 +31,35 @@ export interface ReadRequest {
    * read call is otherwise already a complete, self-contained unit of
    * work. */
   learningEnabled: boolean;
+  /** True when this call is a detail re-read of a sentence a prior
+   * `read-document` call already walked and recorded (the Document tree
+   * view's own on-demand fetch of one sentence's predicted structure and
+   * trace, when a user expands/selects its node -- see
+   * ui/sentence_reader_view.ts's own tree selection handling). Skips
+   * `recordObservedReading` even when `learningEnabled` is true, since
+   * that sentence's transitions were already reinforced once by the
+   * document-level read; re-selecting the same node in the tree must not
+   * reinforce them a second time. Defaults to false, the ordinary
+   * single-sentence "Read" button path. */
+  skipLearning?: boolean;
 }
 
-export type LinguisticsWorkerRequest = InitRequest | ReadRequest;
+/** Reads `text` as a full Document -- Heading/Paragraph blocks, each
+ * Paragraph's Sentences -- the same "Document, Heading, Paragraph,
+ * Sentence, Phrase, Word" hierarchy LinguisticController.readDocument()
+ * builds, requested as its own message because it returns a
+ * (potentially large, multi-sentence) tree rather than one Sentence's
+ * full trace. Deliberately does not carry a `trace` in its own result --
+ * see JsonDocument's own docstring for why per-sentence trace is instead
+ * fetched on demand via a `ReadRequest` for just that sentence's text. */
+export interface ReadDocumentRequest {
+  type: "read-document";
+  requestId: string;
+  text: string;
+  learningEnabled: boolean;
+}
+
+export type LinguisticsWorkerRequest = InitRequest | ReadRequest | ReadDocumentRequest;
 
 export interface StatusMessage {
   type: "status";
@@ -102,6 +128,53 @@ export interface JsonSentence {
   confidence: number;
   punctuation: string | null;
   clauses: JsonClause[];
+  errors: JsonReadingError[];
+}
+
+/** A Sentence's own summary within a Document tree -- everything the
+ * tree view (ui/sentence_reader_view.ts) needs to render a Sentence node
+ * (its validation dot, a truncated snippet, an error count) without
+ * paying for its full JsonSentence.clauses tree, which a Document with
+ * many sentences would make expensive to build and serialise for every
+ * one of them up front. The full JsonSentence -- clauses, words, trace --
+ * is fetched on demand for exactly one sentence at a time via a
+ * `ReadRequest` for that sentence's own `text`, the moment its node is
+ * selected in the tree, not before. */
+export interface JsonSentenceSummary {
+  text: string;
+  sentenceType: string | null;
+  validation: string;
+  confidence: number;
+  errors: JsonReadingError[];
+}
+
+export interface JsonHeadingBlock {
+  blockKind: "heading";
+  text: string;
+  level: number;
+}
+
+export interface JsonParagraphBlock {
+  blockKind: "paragraph";
+  text: string;
+  sentences: JsonSentenceSummary[];
+  validation: string;
+  confidence: number;
+  errors: JsonReadingError[];
+}
+
+export type JsonBlock = JsonHeadingBlock | JsonParagraphBlock;
+
+/** JSON-safe mirror of data/document.ts's own Document -- the tree
+ * shape a `read-document` call returns: DocumentReader's classification
+ * of `text` into Heading/Paragraph blocks, each Paragraph's Sentences
+ * summarised (JsonSentenceSummary, not the full JsonSentence -- see that
+ * interface's own docstring for why). */
+export interface JsonDocument {
+  text: string;
+  blocks: JsonBlock[];
+  validation: string;
+  confidence: number;
   errors: JsonReadingError[];
 }
 
@@ -222,13 +295,29 @@ export interface ReadResultMessage {
   result: ReadResult;
 }
 
-/** `requestId` set means this error belongs to one in-flight `read`
- * call (the client rejects just that promise); unset means it's a
- * whole-Service failure (init itself threw). */
+export interface ReadDocumentResult {
+  document: JsonDocument;
+  learning: LearningStatus;
+}
+
+export interface ReadDocumentResultMessage {
+  type: "read-document-result";
+  requestId: string;
+  result: ReadDocumentResult;
+}
+
+/** `requestId` set means this error belongs to one in-flight `read`/
+ * `read-document` call (the client rejects just that promise); unset
+ * means it's a whole-Service failure (init itself threw). */
 export interface ErrorMessage {
   type: "error";
   requestId?: string;
   message: string;
 }
 
-export type LinguisticsWorkerMessage = StatusMessage | ReadyMessage | ReadResultMessage | ErrorMessage;
+export type LinguisticsWorkerMessage =
+  | StatusMessage
+  | ReadyMessage
+  | ReadResultMessage
+  | ReadDocumentResultMessage
+  | ErrorMessage;

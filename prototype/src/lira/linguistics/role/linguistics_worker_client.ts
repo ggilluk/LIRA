@@ -2,6 +2,7 @@ import type {
   LinguisticServiceState,
   LinguisticsWorkerMessage,
   LinguisticsWorkerRequest,
+  ReadDocumentResult,
   ReadResult,
 } from "./linguistics_worker_protocol";
 
@@ -19,6 +20,7 @@ export class LinguisticsWorkerClient {
   private readonly statusListeners = new Set<LinguisticsStatusListener>();
   private readyResolvers: Array<(wordCount: number) => void> = [];
   private readonly pendingReads = new Map<string, { resolve: (result: ReadResult) => void; reject: (error: Error) => void }>();
+  private readonly pendingReadDocuments = new Map<string, { resolve: (result: ReadDocumentResult) => void; reject: (error: Error) => void }>();
 
   constructor() {
     this.worker = new Worker(new URL("./linguistics_worker.ts", import.meta.url), { type: "module" });
@@ -57,11 +59,29 @@ export class LinguisticsWorkerClient {
    * call was made -- see linguistics_worker_protocol.ts's own
    * `ReadRequest.learningEnabled` docstring for why it's sent fresh per
    * call rather than toggled as separate worker state. */
-  read(text: string, learningEnabled: boolean): Promise<ReadResult> {
+  read(text: string, learningEnabled: boolean, skipLearning = false): Promise<ReadResult> {
     const requestId = `read-${Math.random().toString(36).slice(2)}`;
     return new Promise((resolve, reject) => {
       this.pendingReads.set(requestId, { resolve, reject });
-      this.post({ type: "read", requestId, text, learningEnabled });
+      this.post({ type: "read", requestId, text, learningEnabled, skipLearning });
+    });
+  }
+
+  /** Reads `text` as a full Document -- the tree view's own entry point
+   * (ui/sentence_reader_view.ts), returning the Document/Heading/
+   * Paragraph/Sentence-summary tree DocumentReader built plus how much
+   * this call reinforced the worker's own LexicalEvidenceStore. Does not
+   * return a trace -- fetch a selected Sentence's own full predicted
+   * structure and trace via `read(sentenceText, learningEnabled, true)`
+   * once its node is chosen in the tree (the `skipLearning: true` there
+   * matters: this call already recorded every validated Sentence in the
+   * Document, so a later per-sentence detail fetch must not double-count
+   * it). */
+  readDocument(text: string, learningEnabled: boolean): Promise<ReadDocumentResult> {
+    const requestId = `read-doc-${Math.random().toString(36).slice(2)}`;
+    return new Promise((resolve, reject) => {
+      this.pendingReadDocuments.set(requestId, { resolve, reject });
+      this.post({ type: "read-document", requestId, text, learningEnabled });
     });
   }
 
@@ -81,12 +101,24 @@ export class LinguisticsWorkerClient {
         this.pendingReads.delete(message.requestId);
         pending.resolve(message.result);
       }
+    } else if (message.type === "read-document-result") {
+      const pending = this.pendingReadDocuments.get(message.requestId);
+      if (pending) {
+        this.pendingReadDocuments.delete(message.requestId);
+        pending.resolve(message.result);
+      }
     } else if (message.type === "error") {
       if (message.requestId) {
-        const pending = this.pendingReads.get(message.requestId);
-        if (pending) {
+        const pendingRead = this.pendingReads.get(message.requestId);
+        if (pendingRead) {
           this.pendingReads.delete(message.requestId);
-          pending.reject(new Error(message.message));
+          pendingRead.reject(new Error(message.message));
+          return;
+        }
+        const pendingReadDocument = this.pendingReadDocuments.get(message.requestId);
+        if (pendingReadDocument) {
+          this.pendingReadDocuments.delete(message.requestId);
+          pendingReadDocument.reject(new Error(message.message));
           return;
         }
       }
