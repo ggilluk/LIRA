@@ -19,6 +19,9 @@ export { type DefinitionWordReference, isResolved } from "./data/definition_word
 export { Dictionary } from "./data/dictionary";
 export { EditorialLabel } from "./data/editorial_label";
 export { type ExternalWordCandidate, combinedConfidence } from "./data/external_word_candidate";
+export { HolonymRootWord } from "./data/holonym_root_word";
+export { HypernymRootWord } from "./data/hypernym_root_word";
+export { InterrogativeRootWord } from "./data/interrogative_root_word";
 export { VocabularyLayer } from "./data/layer";
 export type { LexicalRelationship } from "./data/lexical_relationship";
 export { LexicalRelationshipStore } from "./data/lexical_relationship_store";
@@ -29,6 +32,7 @@ export type { Pronunciation } from "./data/pronunciation";
 export { RegisterCode } from "./data/register_code";
 export type { SourceReference } from "./data/source_reference";
 export { SystemPropertiesRef } from "./data/system_properties_ref";
+export { VectorPrimitiveRootWord } from "./data/vector_primitive_root_word";
 export {
   type Word,
   type WordInit,
