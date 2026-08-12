@@ -1,16 +1,19 @@
 import type { DictionaryProcessor } from "../../vocabulary/role/dictionary_processor";
 import type { LexicalRelationshipStore } from "../../vocabulary/data/lexical_relationship_store";
 import type { PartOfSpeech } from "../../vocabulary/data/part_of_speech";
+import type { Document } from "../data/document";
+import type { Paragraph } from "../data/paragraph";
 import type { Sentence } from "../data/sentence";
-import type { Subject } from "../data/subject";
 import { LinguisticSystemPropertyTensor } from "../data/tensor";
 import { ValidationOutcome } from "../data/validation_outcome";
 import type { UserPrompt } from "../ui/user_prompt";
 import { ClauseReader } from "./clause_reader";
+import { DocumentReader } from "./document_reader";
 import { GrammarConfigurator } from "./grammar_configurator";
 import { GraphProcessor } from "./graph_processor";
 import { LexicalEvidenceStore } from "./lexical_evidence_store";
 import { LinguisticLexer } from "./lexer";
+import { ParagraphReader } from "./paragraph_reader";
 import { PhraseReader } from "./phrase_reader";
 import { PromptTokenizer } from "./prompt_tokenizer";
 import type { ReadingContext } from "./reading_context";
@@ -70,18 +73,21 @@ export class LinguisticController {
     const phraseReader = new PhraseReader(sequenceEngine, this.graphProcessor, this.grammarConfigurator);
     const clauseReader = new ClauseReader(phraseReader, sequenceEngine, this.grammarConfigurator);
     const sentenceReader = new SentenceReader(clauseReader, tokenResolver, sequenceEngine, this.grammarConfigurator);
+    const paragraphReader = new ParagraphReader(sentenceReader, this.grammarConfigurator);
+    const documentReader = new DocumentReader(paragraphReader, this.grammarConfigurator);
 
     // Built once, held for the controller's lifetime -- every
-    // readPhrase()/readClause()/readSentence() call reaches these same
-    // shared services through this bundle.
+    // readPhrase()/readClause()/readSentence()/readParagraph()/
+    // readDocument() call reaches these same shared services through
+    // this bundle.
     this.readingContext = {
       grammar: this.grammarConfigurator, sequenceEngine, tokenResolver,
-      phraseReader, clauseReader, sentenceReader,
+      phraseReader, clauseReader, sentenceReader, paragraphReader, documentReader,
       graphProcessor: this.graphProcessor,
     };
   }
 
-  tokenizePrompt(prompt: UserPrompt): Subject {
+  tokenizePrompt(prompt: UserPrompt): Document {
     return this.tokenizer.tokenizePrompt(prompt);
   }
 
@@ -102,6 +108,24 @@ export class LinguisticController {
     return rawSentences
       .filter((sentenceText) => sentenceText)
       .map((sentenceText, idx) => this.readingContext.sentenceReader.read(sentenceText, { grammar: this.grammarConfigurator, sequenceNumber: idx }));
+  }
+
+  /** Reads `text` as one Paragraph -- delegates to the shared
+   * ParagraphReader via readingContext, never re-implements sentence
+   * splitting or sequencing here (spec 9, extended one level up). */
+  readParagraph(text: string): Paragraph {
+    return this.readingContext.paragraphReader.read(text, { grammar: this.grammarConfigurator });
+  }
+
+  /** Reads `text` as one Document -- classifies each line as a Heading
+   * or a Paragraph (heading.ts's own matchHeadingLine) and delegates to
+   * the shared DocumentReader via readingContext. This is the top of
+   * the "Document, Heading, Paragraph, Sentence, Phrase, Word" reading
+   * hierarchy: DocumentReader -> ParagraphReader -> SentenceReader ->
+   * ClauseReader/PhraseReader -> SequenceEngine, each level delegating
+   * to exactly the one below it. */
+  readDocument(text: string): Document {
+    return this.readingContext.documentReader.read(text, { grammar: this.grammarConfigurator });
   }
 
   /** spec 17's "Validated observation => lexical evidence increases" --

@@ -3,11 +3,12 @@ import type { DictionaryProcessor } from "../../vocabulary/role/dictionary_proce
 import type { WordIdentification } from "../../vocabulary/data/word_identification";
 import { createWord, type Word } from "../../vocabulary/data/word";
 import { createClause, type Clause } from "../data/clause";
+import { createDocument, type Document } from "../data/document";
+import { createHeading, matchHeadingLine, type Heading } from "../data/heading";
 import type { LinguisticUnit } from "../data/linguistic_unit";
 import { LinguisticUnitKind } from "../data/linguistic_unit_kind";
 import { createParagraph, type Paragraph } from "../data/paragraph";
 import { createSentence, type Sentence } from "../data/sentence";
-import { createSubject, type Subject } from "../data/subject";
 import { LinguisticSystemProperty, SystemPropertyRef } from "../data/system_property";
 import type { LinguisticSystemPropertyTensor } from "../data/tensor";
 import { createTokenReading, type TokenReading } from "../data/token_reading";
@@ -15,9 +16,9 @@ import { ClauseSegmentationUtility } from "./clause_segmentation";
 import type { GrammarConfigurator } from "./grammar_configurator";
 import { LinguisticLexer } from "./lexer";
 
-/** Builds the Word -> Clause -> Sentence -> Paragraph -> Subject tree
- * from raw text, attaching a tensor-backed LinguisticSystemProperty to
- * every unit it creates.
+/** Builds the Word -> Clause -> Sentence -> (Paragraph | Heading) ->
+ * Document tree from raw text, attaching a tensor-backed
+ * LinguisticSystemProperty to every unit it creates.
  *
  * Ported from linguistics/role/graph_processor.py. Python defers
  * importing Word/PartOfSpeech inside method bodies purely to avoid a
@@ -213,16 +214,45 @@ export class GraphProcessor {
     return node;
   }
 
-  processSubject(rawSubjectText: string, seqNum: number): Subject {
-    const rawParagraphStrings = rawSubjectText
+  /** One line's worth of Heading node -- no grammar to run (heading.ts's
+   * own docstring on why a Heading is never decomposed into Sentences),
+   * so this is just materialisation plus a tensor row. Public (not just
+   * the write path's own processParagraph/processSentence counterpart)
+   * because DocumentReader's read path (role/document_reader.ts) reuses
+   * it verbatim -- a Heading needs the exact same tensor-row
+   * construction either way, so there is nothing for a read-path
+   * version to validate differently. `text` is the de-hashed heading
+   * text ("Title" from "## Title"), matching every other unit's own
+   * `text` being its reconstructed content rather than raw source
+   * markup. */
+  processHeadingBlock(headingText: string, level: number, seqNum: number): Heading {
+    const node = createHeading({ text: headingText, level });
+    node.systemProperty = this.createPropertyWrapper(node, LinguisticUnitKind.Heading, seqNum, "GraphProcessor_HeadingLayer");
+    return node;
+  }
+
+  /** Splits `rawDocumentText` into lines (same one-line-one-block
+   * granularity processSubject always used -- no blank-line paragraph
+   * grouping in this phase), classifying each non-blank line as a
+   * Heading (Markdown ATX syntax, heading.ts's own matchHeadingLine) or
+   * a Paragraph, in document order -- the same classification
+   * DocumentReader (role/document_reader.ts) uses on the read path, so
+   * a line is never a Heading on one path and a Paragraph on the
+   * other. */
+  processDocument(rawDocumentText: string, seqNum: number): Document {
+    const rawLines = rawDocumentText
       .trim()
       .split("\n")
-      .map((p) => p.trim())
-      .filter((p) => p.length > 0);
-    const compiledParagraphs = rawParagraphStrings.map((p, idx) => this.processParagraph(p, idx));
+      .map((line) => line.trim())
+      .filter((line) => line.length > 0);
 
-    const node = createSubject({ text: rawSubjectText.trim(), paragraphs: compiledParagraphs });
-    node.systemProperty = this.createPropertyWrapper(node, LinguisticUnitKind.Subject, seqNum, "GraphProcessor_SubjectLayer");
+    const blocks: (Heading | Paragraph)[] = rawLines.map((line, idx) => {
+      const heading = matchHeadingLine(line);
+      return heading ? this.processHeadingBlock(heading.text, heading.level, idx) : this.processParagraph(line, idx);
+    });
+
+    const node = createDocument({ text: rawDocumentText.trim(), blocks });
+    node.systemProperty = this.createPropertyWrapper(node, LinguisticUnitKind.Document, seqNum, "GraphProcessor_DocumentLayer");
     return node;
   }
 }

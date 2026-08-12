@@ -8,16 +8,21 @@ import type { TokenResolver } from "./token_resolver";
 // point signatures) -- see phrase.ts's own note on why this never
 // becomes a real runtime cycle.
 import type { ClauseReader } from "./clause_reader";
+import type { DocumentReader } from "./document_reader";
+import type { ParagraphReader } from "./paragraph_reader";
 import type { PhraseReader } from "./phrase_reader";
 import type { SentenceReader } from "./sentence_reader";
 
-/** The service bundle readPhrase()/readClause()/readSentence() are
- * given to reach the shared sequencing services (Linguistics Layer
- * developer specification, 8.6). Built once per LinguisticController
- * (LinguisticController.readingContext) and passed explicitly to each
- * read call -- e.g. `readSentence(text, domain.linguistics.readingContext)`
- * -- rather than having the read functions reach for a controller
- * directly. This keeps PhraseReader/ClauseReader/SentenceReader
+/** The service bundle readPhrase()/readClause()/readSentence()/
+ * readParagraph()/readDocument() are given to reach the shared
+ * sequencing services (Linguistics Layer developer specification, 8.6;
+ * paragraphReader/documentReader are a prototype-only extension one and
+ * two levels above Sentence -- see document.ts's own docstring). Built
+ * once per LinguisticController (LinguisticController.readingContext)
+ * and passed explicitly to each read call -- e.g. `readSentence(text,
+ * domain.linguistics.readingContext)` -- rather than having the read
+ * functions reach for a controller directly. This keeps PhraseReader/
+ * ClauseReader/SentenceReader/ParagraphReader/DocumentReader
  * exercisable in isolation (a test can build a ReadingContext by hand
  * around a bare GrammarConfigurator, with no Domain/Dictionary
  * involved) while every real call still goes through the one
@@ -35,5 +40,7 @@ export interface ReadingContext {
   phraseReader: PhraseReader;
   clauseReader: ClauseReader;
   sentenceReader: SentenceReader;
+  paragraphReader: ParagraphReader;
+  documentReader: DocumentReader;
   graphProcessor: GraphProcessor;
 }

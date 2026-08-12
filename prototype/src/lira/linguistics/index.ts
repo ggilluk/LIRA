@@ -8,11 +8,13 @@
  * UI"). See prototype/README.md for the full scope note. */
 export { ClauseReader } from "./role/clause_reader";
 export { ClauseSegmentationUtility } from "./role/clause_segmentation";
+export { DocumentReader } from "./role/document_reader";
 export { GrammarConfigurator } from "./role/grammar_configurator";
 export type { ClauseTemplate, PhraseGrammar, SentenceTemplate } from "./role/grammar_configurator";
 export { GraphProcessor } from "./role/graph_processor";
 export { LinguisticLexer } from "./role/lexer";
 export { LinguisticController } from "./role/linguistic_controller";
+export { ParagraphReader } from "./role/paragraph_reader";
 export { PhraseReader } from "./role/phrase_reader";
 export { PromptTokenizer } from "./role/prompt_tokenizer";
 export type { ReadingContext } from "./role/reading_context";
@@ -33,6 +35,10 @@ export { LinguisticRelationType } from "./data/linguistic_relation_type";
 export { LinguisticScope } from "./data/linguistic_scope";
 export type { LinguisticUnit } from "./data/linguistic_unit";
 export { LinguisticUnitKind } from "./data/linguistic_unit_kind";
+export { createDocument } from "./data/document";
+export type { Document } from "./data/document";
+export { createHeading, matchHeadingLine } from "./data/heading";
+export type { Heading } from "./data/heading";
 export { createParagraph } from "./data/paragraph";
 export type { Paragraph } from "./data/paragraph";
 export { createPhrase, readPhrase } from "./data/phrase";
@@ -45,8 +51,6 @@ export type { Sentence } from "./data/sentence";
 export { SentenceType } from "./data/sentence_type";
 export { ObligationKind } from "./data/sequencing_obligation";
 export type { SequencingObligation } from "./data/sequencing_obligation";
-export { createSubject } from "./data/subject";
-export type { Subject } from "./data/subject";
 export {
   candidatePartsOfSpeech,
   createTokenReading,

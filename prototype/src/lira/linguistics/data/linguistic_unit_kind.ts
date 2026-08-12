@@ -16,11 +16,16 @@ export enum LinguisticUnitKind {
   Clause = 2,
   Sentence = 3,
   Paragraph = 4,
-  Subject = 5,
+  // Renamed from Subject (prototype only -- see data/document.ts's own
+  // docstring); same tensor slot, same underlying concept, so the
+  // value stays 5 -- a rename is not a renumbering.
+  Document = 5,
   UserPrompt = 6,
   // Appended, not inserted -- 0-6 above are already live tensor cell
   // codes in any LinguisticSystemPropertyTensor built before this value
   // existed; renumbering them would silently corrupt previously-
   // allocated rows' kindOf() reads.
   Phrase = 7,
+  // Also appended, same reasoning -- new to this hierarchy (data/heading.ts).
+  Heading = 8,
 }

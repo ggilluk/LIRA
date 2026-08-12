@@ -219,7 +219,34 @@ function buildSentenceTemplates(): Map<SentenceType, SentenceTemplate> {
     maxClauses: 1,
     terminalPunctuation: new Set(["."]),
   });
-  // INTERROGATIVE/IMPERATIVE/EXCLAMATORY: Phase 2 (sentence_type.ts).
+  // INTERROGATIVE/EXCLAMATORY reuse DECLARATIVE's exact clause shape --
+  // this phase recognises a sentence as interrogative/exclamatory by
+  // its terminal punctuation alone ("?"/"!"), not by word-order
+  // grammar (subject-auxiliary inversion, wh-fronting, etc. are not
+  // modelled by PhraseReader/ClauseReader at all yet, so there is
+  // nothing for a distinct clause template to check). SentenceReader.read()
+  // picks whichever of these three templates' terminalPunctuation
+  // actually matches the sentence's own final punctuation mark, tried
+  // in Map insertion order -- see that file's own docstring.
+  templates.set(SentenceType.INTERROGATIVE, {
+    sentenceType: SentenceType.INTERROGATIVE,
+    clauseTypes: new Set([ClauseType.INDEPENDENT]),
+    minClauses: 1,
+    maxClauses: 1,
+    terminalPunctuation: new Set(["?"]),
+  });
+  templates.set(SentenceType.EXCLAMATORY, {
+    sentenceType: SentenceType.EXCLAMATORY,
+    clauseTypes: new Set([ClauseType.INDEPENDENT]),
+    minClauses: 1,
+    maxClauses: 1,
+    terminalPunctuation: new Set(["!"]),
+  });
+  // IMPERATIVE: still Phase 2 (sentence_type.ts) -- an imperative
+  // clause has no subject at all ("Stop."), which this phase's
+  // ClauseTemplate.subjectRequired=true (INDEPENDENT) would reject
+  // outright; recognising it needs its own ClauseTemplate, not just a
+  // new terminal-punctuation set.
   return templates;
 }
 

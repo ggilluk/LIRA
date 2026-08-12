@@ -1,7 +1,8 @@
 import type { LinguisticUnitKind } from "./linguistic_unit_kind";
 
 /** Linguistics Layer tensor store: one growable row per linguistic unit
- * (Word, Punctuation, Clause, Sentence, Paragraph, Subject, UserPrompt).
+ * (Word, Punctuation, Clause, Sentence, Paragraph, Document, UserPrompt,
+ * Heading).
  * Numeric fields live in one dense array, grown by doubling like
  * TensorLiraGraph's matrices -- amortized O(1) per allocation -- and
  * LinguisticSystemProperty reads/writes them by reference (Rule 14),

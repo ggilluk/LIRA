@@ -191,6 +191,70 @@ predicate, and (because "is" is a linking verb) a `NOUN_PHRASE`
 predicate found, even though both its `NOUN_PHRASE` and
 `PREPOSITIONAL_PHRASE` are individually valid.
 
+#### Document/Heading/Paragraph reading hierarchy and sentence types (prototype only)
+
+Two extensions on top of the ported Service, both prototype-only (this
+session's standing TypeScript-only scope -- Python's own `linguistics/`
+package is untouched):
+
+**Sentence types.** `grammar_configurator.ts`'s `buildSentenceTemplates()`
+now populates `INTERROGATIVE` ("?") and `EXCLAMATORY` ("!") alongside
+`DECLARATIVE` ("."), all three sharing DECLARATIVE's exact
+`ClauseTemplate` (`ClauseType.INDEPENDENT`, one required subject and
+predicate) -- this phase distinguishes them purely by terminal
+punctuation, not word-order grammar (subject-auxiliary inversion,
+wh-fronting), since `PhraseReader`/`ClauseReader` don't model that yet.
+`SentenceReader.read()`'s own `selectSentenceTemplate()` tries every
+configured template against the sentence's actual terminal mark
+(falling back to DECLARATIVE when there's no terminal punctuation at
+all, or when the mark matches no template, exactly as before this
+change) instead of hardcoding `DECLARATIVE` the way it always had.
+`IMPERATIVE` stays unpopulated -- an imperative clause has no subject
+("Stop."), which needs its own `ClauseTemplate`
+(`subjectRequired=false`), not just a new terminal-punctuation set.
+
+**Document/Heading/Paragraph.** The hierarchy above Sentence is now a
+genuine, validated read-path state machine, not just the write path's
+naive text split: `Subject` is renamed `Document` (same
+`LinguisticUnitKind` tensor slot, 5 -- a rename, not a renumbering),
+`Paragraph` gained `validation`/`confidence`/`errors` (worst-outcome
+aggregated across its own Sentences, the same
+`[ownOutcome, ...childOutcomes].reduce(min)` pattern
+`ClauseReader.validate` already uses one level down), and a new
+`Heading` block type (`data/heading.ts`) is recognised via Markdown ATX
+syntax (`matchHeadingLine` -- 1-6 leading `#` characters, e.g. `## Title`)
+against every non-blank line, the one unambiguous plain-text heading
+convention this phase supports; every other non-blank line is a
+Paragraph, exactly as before. A Heading is deliberately never
+decomposed into Sentences (it's typically a fragment, "Results", not a
+grammatical sentence) -- "identifying" it means recognising the block
+and its level, not parsing its internal grammar, so it always
+contributes `VALID` to its parent's aggregation.
+
+Two new read-path classes complete the hierarchy one level at a time,
+mirroring how `ClauseReader`/`PhraseReader` already delegate to
+`SequenceEngine` rather than reimplementing sequencing themselves:
+`ParagraphReader` (splits into sentences via the same
+`LinguisticLexer.splitSentences` the write path uses, reads each
+through the shared `SentenceReader`) and `DocumentReader` (classifies
+lines into Heading/Paragraph blocks, reads each Paragraph through the
+shared `ParagraphReader`). `LinguisticController.readParagraph(text)`/
+`readDocument(text)` are the new entry points, alongside the existing
+`readSentence`/`readText` -- so the full recognised order is now
+**Document, Heading, Paragraph, Sentence, Phrase, Word**, each level
+delegating to exactly the one below it and never reimplementing it.
+`GraphProcessor`'s write path (`processDocument`, renamed from
+`processSubject`) classifies Heading vs Paragraph lines the identical
+way, so a line is never a Heading on one path and a Paragraph on the
+other; write-path Documents/Paragraphs simply leave `validation` at its
+`UNRESOLVED` default, honestly reporting "not evaluated by the read
+path" rather than a guess.
+
+This is role/data-layer only -- the Portal's Sentence Reader UI is
+still scoped to one sentence at a time and is not (yet) a Document
+viewer; `readDocument`/`readParagraph` are verified via Vitest against
+the real seeded Common Vocabulary Cache, not through the live UI.
+
 What deliberately differs from the Python original, and why:
 - Python's module-scope deferred imports (`from lira.vocabulary import
   PartOfSpeech` inside a function body) exist purely to dodge a
