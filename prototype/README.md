@@ -5,6 +5,17 @@ Python, no server, no Python runtime. Independent project: its own
 `package.json`/`tsconfig.json`/`node_modules`, no shared tooling with
 the Python repository at the root of this repo.
 
+**Live preview:** https://ggilluk.github.io/LIRA/prototype/ -- the
+Portal shell (Vocabulary + Linguistics), built and published to the
+repo's `docs/prototype/` folder on `main` via `npm run build:pages`
+(same `vite build`, but with `--base=./` so the bundle's asset
+references stay relative and resolve correctly under that subpath --
+plain `npm run build`'s absolute-rooted output is only correct served
+from a domain root, which is why it isn't what gets published here).
+Not auto-deployed -- re-run `build:pages` and re-publish `dist-pages/`
+under `docs/prototype/` on `main` whenever the UI changes and a fresh
+preview is wanted.
+
 See the repository root's [ARCHITECTURE.md](../ARCHITECTURE.md) for
 the architecture this prototype is porting -- component tree, design
 principles, and architecture rules. This folder does not fork or
