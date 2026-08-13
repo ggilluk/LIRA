@@ -426,22 +426,23 @@ export class WordSeeder {
    *
    * A WordNet synset IS a LIRA Domain+Word (Word.synsetId's own
    * docstring): both name one sense, not one spelling. So each synset's
-   * member lemmas become one Word apiece (isCommon=true, domainTag
-   * `wordnet.<synsetId>` so true WordNet polysemy -- the same lemma in
-   * more than one synset -- lands as distinct Words the same way
-   * root_words.json's homographs do, word_seeder.ts's own
-   * SUPPLEMENTARY_FILES docstring), and every pairwise combination of a
-   * synset's members is wired together with a SYNONYM
-   * LexicalRelationship -- the direct encoding of "wordnet uses
-   * synsets, LIRA uses synonym relationships": querying synonyms() on
-   * any one member (word.ts, direction="both") already recovers the
-   * synset's full membership from either endpoint without this needing
-   * to store the group itself anywhere.
+   * member lemmas become one Word apiece (isCommon=true, synsetId set to
+   * this synset's own -- synsetMemberToWord's own docstring on why that,
+   * not domainTag, is what disambiguates true WordNet polysemy: the same
+   * lemma in more than one synset lands as distinct Words, but reads as
+   * plain "Common" in the UI rather than each getting its own synthetic
+   * one-off domain), and every pairwise combination of a synset's
+   * members is wired together with a SYNONYM LexicalRelationship -- the
+   * direct encoding of "wordnet uses synsets, LIRA uses synonym
+   * relationships": querying synonyms() on any one member (word.ts,
+   * direction="both") already recovers the synset's full membership
+   * from either endpoint without this needing to store the group itself
+   * anywhere.
    *
    * Idempotent like seedClosedClassWords: a lemma already present under
-   * the same partOfSpeech and domainTag is reused rather than
-   * duplicated, and an already-created SYNONYM edge is never recreated,
-   * so calling this more than once against the same Domain is safe.
+   * the same partOfSpeech and synsetId is reused rather than duplicated,
+   * and an already-created SYNONYM edge is never recreated, so calling
+   * this more than once against the same Domain is safe.
    *
    * Async, unlike seedClosedClassWords -- loadWordNetSynsets() fetches
    * its dict/ text via a lazy `import()` (wordnet_loader.ts's own
@@ -495,18 +496,17 @@ export class WordSeeder {
     const synsets = await loadWordNetSynsets();
     let processed = 0;
     for (const synset of synsets) {
-      const domainTag = `wordnet.${synset.synsetId}`;
       const members: Word[] = [];
       for (const lemma of synset.lemmas) {
         if (lemma.length === 0) continue;
         const existing = dictionary
           .lookupAll(lemma)
-          .find((word) => word.partOfSpeech === synset.partOfSpeech && word.domainTag?.value === domainTag);
+          .find((word) => word.partOfSpeech === synset.partOfSpeech && word.synsetId?.value === synset.synsetId);
         if (existing !== undefined) {
           members.push(existing);
           continue;
         }
-        const word = this.synsetMemberToWord(synset, lemma, domainTag);
+        const word = this.synsetMemberToWord(synset, lemma);
         dictionary.append(word);
         members.push(word);
         wordsSeeded += 1;
@@ -541,14 +541,24 @@ export class WordSeeder {
     return { wordsSeeded, relationshipsSeeded };
   }
 
-  private synsetMemberToWord(synset: WordNetSynset, lemma: string, domainTag: string): Word {
+  // domainTag deliberately left unset -- unlike root_words.json's true
+  // dictionary polysemy (Word.domainTag's own docstring), a WordNet
+  // synset isn't a curated, human-meaningful subdomain name; it's an
+  // opaque per-sense identifier, and DictionaryView.domainLabel() shows
+  // domainTag verbatim as this Word's "Domain" wherever it's set. Giving
+  // each of WordNet's ~117,800 synsets its own domainTag would turn the
+  // Domain column/filter into ~117,800 one-off values instead of the
+  // plain "Common" every other Common Vocabulary Cache word gets --
+  // synsetId (Word.synsetId's own docstring) already carries the
+  // synset-level identity this class needs for its own dedup, without
+  // repurposing domainTag to also carry it.
+  private synsetMemberToWord(synset: WordNetSynset, lemma: string): Word {
     return createWord({
       text: lemma,
       partOfSpeech: synset.partOfSpeech,
       languageCode: { value: this.languageCode },
       definition: synset.definition ? { value: synset.definition } : undefined,
       usageNotes: synset.examples.map((example) => ({ value: example })),
-      domainTag: { value: domainTag },
       synsetId: { value: synset.synsetId, ...WORDNET_SYNSET_ID_SCHEME },
       isCommon: true,
       sourceReferences: [WORDNET_SOURCE_REFERENCE],

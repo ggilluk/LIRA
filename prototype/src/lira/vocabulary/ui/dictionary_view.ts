@@ -188,6 +188,17 @@ export class DictionaryView {
     const rels = overCapacity ? [] : this.relationshipRecords();
     const commonCount = allWords.filter((w) => w.isCommon).length;
     const posCounts = new Set(allWords.map((w) => w.partOfSpeech));
+    // The Words tab's own pos-filter/domain-filter <select> options --
+    // computed off allWords, same as the stat tiles above, not off the
+    // (possibly capped-empty) `words` WordRecord array: populatePosFilter/
+    // populateDomainFilter used to derive their own options by scanning
+    // the client-side WORDS array directly, which silently left both
+    // filters empty whenever overCapacity emptied that array (a real bug
+    // this fixed -- filed against seedWordNet's own WordNet-scale runs,
+    // where every dropdown showed nothing at all despite 200,000+ Words
+    // actually being there).
+    const posValues = [...new Set(allWords.map((w) => PartOfSpeech[w.partOfSpeech]))].sort();
+    const domainValues = [...new Set(allWords.map((w) => this.domainLabel(w)).filter((d): d is string => d !== null))].sort();
     // Just two labels are ever possible for one DictionaryView render
     // ("Common" and this.domainName), so a fixed two-color assignment,
     // not a per-domain palette, is enough.
@@ -205,6 +216,8 @@ export class DictionaryView {
       UNRESOLVED_COUNT: String(this.unresolved.length),
       WORDS_JSON: JSON.stringify(words),
       RELS_JSON: JSON.stringify(rels),
+      POS_VALUES_JSON: JSON.stringify(posValues),
+      DOMAIN_VALUES_JSON: JSON.stringify(domainValues),
       OVER_CAPACITY_JSON: JSON.stringify(overCapacity),
       WORDS_EMPTY_MESSAGE: overCapacity
         ? escapeHtml(
@@ -1147,6 +1160,14 @@ const DOMAIN_COLORS = @@DOMAIN_COLORS_JSON@@;
 const OVER_CAPACITY = @@OVER_CAPACITY_JSON@@;
 const TOTAL_WORD_COUNT = @@WORD_COUNT@@;
 const TOTAL_RELATIONSHIP_COUNT = @@RELATIONSHIP_COUNT@@;
+// The pos-filter/domain-filter <select> options -- computed server-side
+// off every Word in the Dictionary (render()'s own posValues/
+// domainValues), not derived from WORDS here: WORDS is [] whenever
+// OVER_CAPACITY is true, which used to leave both filters silently
+// empty despite the Dictionary actually holding hundreds of thousands
+// of Words (populatePosFilter/populateDomainFilter's own docstrings).
+const POS_VALUES = @@POS_VALUES_JSON@@;
+const DOMAIN_VALUES = @@DOMAIN_VALUES_JSON@@;
 
 const state = {
   tab: "words", search: { word: "", gloss: "", definition: "" }, pos: "", domain: "", rootWordsOnly: false,
@@ -1335,8 +1356,7 @@ function renderDefinition(word) {
 
 function populatePosFilter() {
   const select = document.getElementById("pos-filter");
-  const seen = new Set(WORDS.map(w => w.pos));
-  [...seen].sort().forEach(pos => {
+  POS_VALUES.forEach(pos => {
     const opt = document.createElement("option");
     opt.value = pos;
     opt.textContent = titleCase(pos);
@@ -1346,8 +1366,7 @@ function populatePosFilter() {
 
 function populateDomainFilter() {
   const select = document.getElementById("domain-filter");
-  const seen = new Set(WORDS.map(w => w.domain));
-  [...seen].sort().forEach(domain => {
+  DOMAIN_VALUES.forEach(domain => {
     const opt = document.createElement("option");
     opt.value = domain;
     opt.textContent = domain;
