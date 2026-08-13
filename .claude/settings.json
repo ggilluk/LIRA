@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run test)",
+      "Bash(npm run build)",
+      "Bash(npm run dev *)",
+      "Bash(git fetch *)",
+      "Bash(npm ls *)",
+      "Bash(npm run build:pages)",
+      "mcp__github__get_file_contents"
+    ]
+  }
+}
