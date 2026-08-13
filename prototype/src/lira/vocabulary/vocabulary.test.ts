@@ -11,6 +11,7 @@ import { LexicalRelationshipProcessor } from "./role/lexical_relationship_proces
 import { RelationshipSeeder } from "./role/relationship_seeder";
 import { WordSeeder } from "./role/word_seeder";
 import { loadWordNetSynsets } from "./role/wordnet_loader";
+import { DictionaryView } from "./ui/dictionary_view";
 
 describe("Dictionary", () => {
   it("lookupAll returns every homograph sharing one surface text", () => {
@@ -297,4 +298,59 @@ describe("RelationshipSeeder against the bundled Common Relationship Cache", () 
     expect(seeded).toBeGreaterThan(1000);
     expect(vocabulary.lexicalRelationships.totalRelationships()).toBe(seeded);
   });
+});
+
+describe("DictionaryView.searchWords", () => {
+  it("matches the same fields client-side matchesQuery()/filteredWords() does, on demand rather than against a pre-embedded array", () => {
+    const dictionary = new Dictionary();
+    const big = createWord({ text: "big", partOfSpeech: PartOfSpeech.ADJECTIVE, definition: { value: "of considerable size" } });
+    const large = createWord({ text: "large", partOfSpeech: PartOfSpeech.ADJECTIVE, definition: { value: "above average size" } });
+    const cat = createWord({ text: "cat", partOfSpeech: PartOfSpeech.NOUN, definition: { value: "a small domesticated feline" }, isRootWord: true });
+    dictionary.append(big);
+    dictionary.append(large);
+    dictionary.append(cat);
+
+    const relationships = new LexicalRelationshipStore();
+    const view = new DictionaryView(dictionary, relationships, { domainName: "Common" });
+
+    // Substring match on lexical_form, case-insensitive.
+    expect(view.searchWords({ word: "BIG" }).words.map((w) => w.lexical_form)).toEqual(["big"]);
+    // Substring match on definition.
+    expect(view.searchWords({ definition: "size" }).words.map((w) => w.lexical_form)).toEqual(["big", "large"]);
+    // pos filter.
+    expect(view.searchWords({ pos: "NOUN" }).words.map((w) => w.lexical_form)).toEqual(["cat"]);
+    // rootWordsOnly filter.
+    expect(view.searchWords({ rootWordsOnly: true }).words.map((w) => w.lexical_form)).toEqual(["cat"]);
+    // No match.
+    expect(view.searchWords({ word: "nonexistent" }).words).toEqual([]);
+  });
+
+  it("caps `words` at `limit` but reports the true, uncapped totalMatches", () => {
+    const dictionary = new Dictionary();
+    for (let i = 0; i < 10; i++) {
+      dictionary.append(createWord({ text: `word${i}`, partOfSpeech: PartOfSpeech.NOUN }));
+    }
+    const relationships = new LexicalRelationshipStore();
+    const view = new DictionaryView(dictionary, relationships, { domainName: "Common" });
+
+    const result = view.searchWords({ word: "word", limit: 3 });
+    expect(result.words).toHaveLength(3);
+    expect(result.totalMatches).toBe(10);
+  });
+
+  it("resolves against the real bundled WordNet-scale dataset without embedding it (regression check for the RangeError MAX_INTERACTIVE_WORDS exists to avoid)", async () => {
+    const dictionary = new Dictionary();
+    const lexicalRelationships = new LexicalRelationshipStore();
+    const lexicalRelationshipProcessor = new LexicalRelationshipProcessor(
+      lexicalRelationships,
+      new LexicalRelationshipSystemPropertyTensor(),
+    );
+    await new WordSeeder("en").seedWordNet({ vocabulary: { dictionary, lexicalRelationships, lexicalRelationshipProcessor } });
+
+    const view = new DictionaryView(dictionary, lexicalRelationships, { domainName: "Common" });
+    const result = view.searchWords({ word: "large", limit: 50 });
+    expect(result.totalMatches).toBeGreaterThan(0);
+    expect(result.words.length).toBeLessThanOrEqual(50);
+    expect(result.words.every((w) => w.lexical_form.toLowerCase().includes("large"))).toBe(true);
+  }, 30000);
 });

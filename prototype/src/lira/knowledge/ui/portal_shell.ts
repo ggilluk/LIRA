@@ -10,6 +10,22 @@ import { SentenceReaderView } from "../../linguistics/ui/sentence_reader_view";
 // (SeedWordNetRequest's own docstring, vocabulary_worker_protocol.ts).
 const WORDNET_SEED_DOMAIN = "Common";
 
+// Mirrors the "lira-search-words" CustomEvent's own `detail` shape --
+// dictionary_view.ts's renderWordsOverCapacity() is the one place that
+// dispatches it (a fragment's script has no reference to this shell or
+// its VocabularyWorkerClient, only this event), see this file's own
+// searchWordsBridge() docstring for the other end.
+interface LiraSearchWordsEventDetail {
+  requestId: string;
+  word?: string;
+  gloss?: string;
+  definition?: string;
+  pos?: string;
+  domain?: string;
+  rootWordsOnly?: boolean;
+  limit?: number;
+}
+
 /** PortalShell: a Windows-Explorer-style desktop shell that switches to
  * a drill-down mobile portal -- the folder tree is the Domain hierarchy
  * (root is "All Domains"; nesting follows each PortalDomain's own
@@ -99,6 +115,15 @@ export class PortalShell {
   private readonly serviceStatusView: ServiceStatusView;
   private readonly sentenceReaderView: SentenceReaderView;
   private renderToken = 0;
+  // The Domain name whose Vocabulary fragment is currently mounted --
+  // set once loadView() actually finishes mounting one (not at request
+  // time: a stale or failed fetch should never become the search
+  // bridge's target). searchWordsBridge() reads this to know which
+  // Domain a "lira-search-words" event's search should run against,
+  // since the fragment's own script only ever names a query, never a
+  // Domain (it doesn't know its own Domain name -- DictionaryView never
+  // embeds it as data, only as the page title/breadcrumb text).
+  private currentVocabularyDomainName: string | undefined;
 
   constructor(
     private readonly registry: PortalDomainRegistry,
@@ -131,6 +156,45 @@ export class PortalShell {
     this.vocabularyClient.onDomainUpdated((domain) => {
       this.registry.add(domain);
       this.render();
+    });
+    this.searchWordsBridge();
+  }
+
+  /** Listens on `document` (not `this.container` -- that element gets
+   * torn down and rebuilt by every render()'s own `innerHTML` write, a
+   * plain child listener wouldn't survive that) for the Vocabulary
+   * fragment's own "lira-search-words" event (dictionary_view.ts's
+   * renderWordsOverCapacity(), dispatched only once a Domain is over
+   * MAX_INTERACTIVE_WORDS) and answers it by calling
+   * VocabularyWorkerClient.searchWords() against whichever Domain is
+   * currently mounted, then dispatching "lira-search-words-result" back
+   * with the same requestId for that same script's own result listener
+   * to pick up. Set up once, for this shell's whole lifetime -- unlike
+   * loadView()'s own per-fetch token, there's nothing to invalidate
+   * here: a search answered for a Domain that's since been navigated
+   * away from is simply ignored by the (now unmounted, event-listener-
+   * free) fragment script that would have received it. */
+  private searchWordsBridge(): void {
+    document.addEventListener("lira-search-words", (event) => {
+      const detail = (event as CustomEvent<LiraSearchWordsEventDetail>).detail;
+      if (!this.currentVocabularyDomainName) return;
+      void this.vocabularyClient
+        .searchWords(this.currentVocabularyDomainName, {
+          word: detail.word,
+          gloss: detail.gloss,
+          definition: detail.definition,
+          pos: detail.pos,
+          domainLabel: detail.domain,
+          rootWordsOnly: detail.rootWordsOnly,
+          limit: detail.limit,
+        })
+        .then((result) => {
+          document.dispatchEvent(
+            new CustomEvent("lira-search-words-result", {
+              detail: { requestId: detail.requestId, words: result.words, totalMatches: result.totalMatches },
+            }),
+          );
+        });
     });
   }
 
@@ -263,6 +327,11 @@ export class PortalShell {
     const mount = this.container.querySelector<HTMLElement>(".portal-fragment-mount");
     if (mount) {
       mount.innerHTML = fragment.body;
+      // Set only once the fragment is actually about to mount, not at
+      // request time -- searchWordsBridge()'s own docstring on why a
+      // stale/failed fetch must never become the search bridge's
+      // target.
+      this.currentVocabularyDomainName = domain.name;
       const script = document.createElement("script");
       script.textContent = `(function () {\n${fragment.script}\n})();`;
       mount.appendChild(script);

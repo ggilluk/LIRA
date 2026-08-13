@@ -3,6 +3,8 @@
  * both sides are typed against the same shapes instead of each guessing
  * at the other's message format. */
 
+import type { WordRecord } from "../ui/dictionary_view";
+
 /** The Vocabulary Service's own status vocabulary -- deliberately not
  * knowledge/data/service_status.ts's `ServiceState` (which also has
  * `"not-ported"`, a state only the UI ever assigns to a layer with no
@@ -51,7 +53,27 @@ export interface SeedWordNetRequest {
   domain: string;
 }
 
-export type VocabularyWorkerRequest = InitRequest | RenderRequest | SeedWordNetRequest;
+/** Resolves one Words-tab search against `domain`'s full Dictionary,
+ * server-side (DictionaryView.searchWords() -- that method's own
+ * docstring on why: past MAX_INTERACTIVE_WORDS, there's no embedded
+ * client-side WORDS array left to filter in the browser at all). Field
+ * names/semantics mirror DictionaryView.searchWords()'s own options
+ * directly -- this request is just that call, addressed across the
+ * Worker boundary. */
+export interface SearchWordsRequest {
+  type: "search-words";
+  requestId: string;
+  domain: string;
+  word?: string;
+  gloss?: string;
+  definition?: string;
+  pos?: string;
+  domainLabel?: string;
+  rootWordsOnly?: boolean;
+  limit?: number;
+}
+
+export type VocabularyWorkerRequest = InitRequest | RenderRequest | SeedWordNetRequest | SearchWordsRequest;
 
 export interface StatusMessage {
   type: "status";
@@ -121,10 +143,26 @@ export interface ErrorMessage {
   message: string;
 }
 
+/** The response to a SearchWordsRequest -- `words` capped at the
+ * request's own `limit` (DictionaryView.searchWords()'s own docstring),
+ * `totalMatches` the true, uncapped count, so a caller can show
+ * "showing N of totalMatches" the same way MAX_WORD_ROWS_SHOWN's
+ * client-side note already does for the under-capacity case. Always
+ * posted, even for zero matches or an unknown Domain (words: [],
+ * totalMatches: 0) -- never left unanswered the way a render failure
+ * used to before RenderErrorMessage existed. */
+export interface SearchWordsResultMessage {
+  type: "search-words-result";
+  requestId: string;
+  words: readonly WordRecord[];
+  totalMatches: number;
+}
+
 export type VocabularyWorkerMessage =
   | StatusMessage
   | ReadyMessage
   | RenderedMessage
   | RenderErrorMessage
   | ErrorMessage
-  | DomainUpdatedMessage;
+  | DomainUpdatedMessage
+  | SearchWordsResultMessage;

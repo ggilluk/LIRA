@@ -5,14 +5,31 @@ import type {
   VocabularyWorkerMessage,
   VocabularyWorkerRequest,
 } from "./vocabulary_worker_protocol";
+import type { WordRecord } from "../ui/dictionary_view";
+
+export interface WordSearchQuery {
+  word?: string;
+  gloss?: string;
+  definition?: string;
+  pos?: string;
+  domainLabel?: string;
+  rootWordsOnly?: boolean;
+  limit?: number;
+}
+
+export interface WordSearchResult {
+  words: readonly WordRecord[];
+  totalMatches: number;
+}
 
 export type VocabularyStatusListener = (state: VocabularyServiceState, detail?: string, progress?: number) => void;
 export type VocabularyDomainUpdateListener = (domain: VocabularyDomainSummary) => void;
 
 /** Main-thread handle to the Vocabulary Service worker
  * (vocabulary_worker.ts) -- starts the worker, turns its postMessage
- * protocol into promise-based calls (`init()`, `renderDomain()`) plus
- * one fire-and-forget call (`seedWordNet()`), and fans its status
+ * protocol into promise-based calls (`init()`, `renderDomain()`,
+ * `searchWords()`) plus one fire-and-forget call (`seedWordNet()`), and
+ * fans its status
  * messages out to any number of listeners (the LoadingScreen during
  * startup, the persistent ServiceStatusView afterwards -- both just
  * call `onStatus`, neither knows about the other). One client owns
@@ -24,6 +41,7 @@ export class VocabularyWorkerClient {
   private readonly domainUpdateListeners = new Set<VocabularyDomainUpdateListener>();
   private readyResolvers: Array<(domains: readonly VocabularyDomainSummary[]) => void> = [];
   private readonly pendingRenders = new Map<string, { resolve: (fragment: RenderedFragment) => void; reject: (error: Error) => void }>();
+  private readonly pendingSearches = new Map<string, (result: WordSearchResult) => void>();
 
   constructor() {
     this.worker = new Worker(new URL("./vocabulary_worker.ts", import.meta.url), { type: "module" });
@@ -90,6 +108,33 @@ export class VocabularyWorkerClient {
     };
   }
 
+  /** Resolves one Words-tab search against `domainName`'s Dictionary
+   * inside the worker (DictionaryView.searchWords()'s own docstring) --
+   * the on-demand counterpart to renderDomain() for a Domain over
+   * MAX_INTERACTIVE_WORDS, where there's no client-embedded word list
+   * to search locally. PortalShell's own DOM-event bridge is what
+   * actually calls this -- the DictionaryView fragment's script has no
+   * reference to this client, only a "lira-search-words" event it
+   * dispatches (dictionary_view.ts's own renderWordsOverCapacity()). */
+  searchWords(domainName: string, query: WordSearchQuery): Promise<WordSearchResult> {
+    const requestId = `search-${domainName}-${Math.random().toString(36).slice(2)}`;
+    return new Promise((resolve) => {
+      this.pendingSearches.set(requestId, resolve);
+      this.post({
+        type: "search-words",
+        requestId,
+        domain: domainName,
+        word: query.word,
+        gloss: query.gloss,
+        definition: query.definition,
+        pos: query.pos,
+        domainLabel: query.domainLabel,
+        rootWordsOnly: query.rootWordsOnly,
+        limit: query.limit,
+      });
+    });
+  }
+
   private post(request: VocabularyWorkerRequest): void {
     this.worker.postMessage(request);
   }
@@ -114,6 +159,12 @@ export class VocabularyWorkerClient {
       }
     } else if (message.type === "domain-updated") {
       for (const listener of this.domainUpdateListeners) listener(message.domain);
+    } else if (message.type === "search-words-result") {
+      const resolve = this.pendingSearches.get(message.requestId);
+      if (resolve) {
+        this.pendingSearches.delete(message.requestId);
+        resolve({ words: message.words, totalMatches: message.totalMatches });
+      }
     } else if (message.type === "error") {
       console.error("Vocabulary Service error:", message.message);
     }

@@ -28,6 +28,7 @@ import { WordSeeder } from "./word_seeder";
 import type {
   RenderedFragment,
   RenderRequest,
+  SearchWordsRequest,
   SeedWordNetRequest,
   VocabularyDomainSummary,
   VocabularyWorkerMessage,
@@ -187,9 +188,41 @@ function handleRender(request: RenderRequest): void {
   }
 }
 
+/** Resolves a Words-tab search on demand, against the real Dictionary
+ * (DictionaryView.searchWords()) rather than a pre-embedded array --
+ * the fragment's own script dispatches a "lira-search-words" DOM event
+ * for this whenever the target Domain is over MAX_INTERACTIVE_WORDS
+ * (dictionary_view.ts's own renderWordsOverCapacity()); PortalShell
+ * relays it here (portal_shell.ts's own bridge) and relays the result
+ * back the same way. Always posts a result, even for an unknown Domain
+ * (empty), rather than leaving the caller's search hanging. */
+function handleSearchWords(request: SearchWordsRequest): void {
+  const domain = domains.get(request.domain);
+  if (!domain) {
+    post({ type: "search-words-result", requestId: request.requestId, words: [], totalMatches: 0 });
+    return;
+  }
+
+  const view = new DictionaryView(domain.vocabulary.dictionary, domain.vocabulary.lexicalRelationships, {
+    title: `LIRA — ${domain.name}`,
+    domainName: domain.name,
+  });
+  const { words, totalMatches } = view.searchWords({
+    word: request.word,
+    gloss: request.gloss,
+    definition: request.definition,
+    pos: request.pos,
+    domain: request.domainLabel,
+    rootWordsOnly: request.rootWordsOnly,
+    limit: request.limit,
+  });
+  post({ type: "search-words-result", requestId: request.requestId, words, totalMatches });
+}
+
 ctx.addEventListener("message", (event) => {
   const request = event.data;
   if (request.type === "init") void handleInit();
   else if (request.type === "render") handleRender(request);
   else if (request.type === "seed-wordnet") void handleSeedWordNet(request);
+  else if (request.type === "search-words") handleSearchWords(request);
 });

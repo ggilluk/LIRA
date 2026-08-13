@@ -66,7 +66,7 @@ function extractBetween(html: string, startMarker: string, endMarker: string): s
   return html.slice(start, end).replace(/^\n+|\n+$/g, "");
 }
 
-interface WordRecord {
+export interface WordRecord {
   id: string;
   entry_id: string;
   lexical_form: string;
@@ -219,10 +219,16 @@ export class DictionaryView {
       POS_VALUES_JSON: JSON.stringify(posValues),
       DOMAIN_VALUES_JSON: JSON.stringify(domainValues),
       OVER_CAPACITY_JSON: JSON.stringify(overCapacity),
+      // Over capacity, the Words tab searches the full Dictionary
+      // server-side per keystroke (searchWords(), renderWordsOverCapacity()
+      // in the fragment's own script below) rather than embedding every
+      // Word up front -- so this message now only ever shows on a
+      // genuine zero-match search, same as the normal (under-capacity)
+      // wording, just naming the real total so a search that finds
+      // nothing against 211,000 Words reads differently than one
+      // against 40.
       WORDS_EMPTY_MESSAGE: overCapacity
-        ? escapeHtml(
-            `This Domain has ${totalWordCount.toLocaleString()} words -- too many for this interactive view (limit ${MAX_INTERACTIVE_WORDS.toLocaleString()}). The counts above are still accurate.`,
-          )
+        ? escapeHtml(`No words match this search across all ${totalWordCount.toLocaleString()} words in this Domain.`)
         : "No words match this search.",
       RELS_EMPTY_MESSAGE: overCapacity
         ? escapeHtml(`This Domain has ${totalRelationshipCount.toLocaleString()} relationships -- too many for this interactive view.`)
@@ -282,34 +288,91 @@ export class DictionaryView {
   }
 
   private wordRecords(): WordRecord[] {
-    const records: WordRecord[] = [];
-    for (const word of this.dictionary.all()) {
-      const wordId = word.uuid.value;
-      const relationshipCount = this.relationships.outgoing(wordId).length + this.relationships.incoming(wordId).length;
-      records.push({
-        id: wordId,
-        entry_id: word.entryId.value,
-        lexical_form: word.lexicalForm?.value ?? word.text,
-        text: word.text,
-        pos: PartOfSpeech[word.partOfSpeech],
-        definition: word.definition?.value ?? "",
-        gloss: word.gloss?.value ?? "",
-        register_codes: word.registerCodes.map((code) => RegisterCode[code]),
-        dialect_codes: word.dialectCodes.map((code) => code.value),
-        editorial_labels: word.editorialLabels.map((label) => EditorialLabel[label]),
-        is_common: word.isCommon,
-        is_root_word: word.isRootWord,
-        is_derivable_noun: word.isDerivableNoun,
-        domain: this.domainLabel(word),
-        is_fully_hydrated: word.isFullyHydrated,
-        sources: word.sourceReferences.map((ref) => ref.sourceName.value),
-        relationship_count: relationshipCount,
-        definition_segments: this.definitionSegments(word),
-        pad: this.padRecord(word),
-      });
-    }
+    const records = this.dictionary.all().map((word) => this.wordRecordFor(word));
     records.sort((a, b) => a.lexical_form.toLowerCase().localeCompare(b.lexical_form.toLowerCase()));
     return records;
+  }
+
+  /** One Word's full WordRecord -- everything wordRecords() (the whole-
+   * Dictionary path, only ever run under MAX_INTERACTIVE_WORDS) and
+   * searchWords() (the single-Word-at-a-time path, run regardless of
+   * scale) both build from, so a WordRecord looks identical -- same
+   * fields, same relationship_count/definition_segments/pad logic --
+   * whichever path produced it. */
+  private wordRecordFor(word: Word): WordRecord {
+    const wordId = word.uuid.value;
+    const relationshipCount = this.relationships.outgoing(wordId).length + this.relationships.incoming(wordId).length;
+    return {
+      id: wordId,
+      entry_id: word.entryId.value,
+      lexical_form: word.lexicalForm?.value ?? word.text,
+      text: word.text,
+      pos: PartOfSpeech[word.partOfSpeech],
+      definition: word.definition?.value ?? "",
+      gloss: word.gloss?.value ?? "",
+      register_codes: word.registerCodes.map((code) => RegisterCode[code]),
+      dialect_codes: word.dialectCodes.map((code) => code.value),
+      editorial_labels: word.editorialLabels.map((label) => EditorialLabel[label]),
+      is_common: word.isCommon,
+      is_root_word: word.isRootWord,
+      is_derivable_noun: word.isDerivableNoun,
+      domain: this.domainLabel(word),
+      is_fully_hydrated: word.isFullyHydrated,
+      sources: word.sourceReferences.map((ref) => ref.sourceName.value),
+      relationship_count: relationshipCount,
+      definition_segments: this.definitionSegments(word),
+      pad: this.padRecord(word),
+    };
+  }
+
+  /** Resolves a Words-tab search against every Word in the Dictionary
+   * directly, rather than against a pre-embedded client-side array --
+   * the on-demand counterpart to wordRecords() for a Domain over
+   * MAX_INTERACTIVE_WORDS, where embedding every Word up front isn't an
+   * option (that constant's own docstring). Matching semantics
+   * (case-insensitive substring on lexical_form/gloss/definition, exact
+   * pos/domain, is_root_word) mirror the fragment's own client-side
+   * matchesQuery()/filteredWords() exactly, so a search behaves the same
+   * whether it ran client-side (a small Domain) or here (a large one).
+   *
+   * A linear scan over the whole Dictionary -- for the ~211,000-Word
+   * scale this exists for, that's tens of milliseconds of plain string
+   * comparisons, nowhere near the cost embedding every Word's full
+   * WordRecord (and then JSON.stringify-ing the result) would be.
+   * `words` is capped at `options.limit`; `totalMatches` is the true
+   * count of everything that matched, uncapped, so a caller can show
+   * "showing N of totalMatches" the same way MAX_WORD_ROWS_SHOWN's
+   * client-side note already does. */
+  searchWords(options: {
+    word?: string;
+    gloss?: string;
+    definition?: string;
+    pos?: string;
+    domain?: string;
+    rootWordsOnly?: boolean;
+    limit?: number;
+  }): { words: WordRecord[]; totalMatches: number } {
+    const limit = options.limit ?? 1000;
+    const wordQuery = options.word?.trim().toLowerCase();
+    const glossQuery = options.gloss?.trim().toLowerCase();
+    const definitionQuery = options.definition?.trim().toLowerCase();
+
+    const matches: WordRecord[] = [];
+    let totalMatches = 0;
+    for (const word of this.dictionary.all()) {
+      if (options.pos && PartOfSpeech[word.partOfSpeech] !== options.pos) continue;
+      if (options.rootWordsOnly && !word.isRootWord) continue;
+      if (options.domain && this.domainLabel(word) !== options.domain) continue;
+      const lexicalForm = (word.lexicalForm?.value ?? word.text).toLowerCase();
+      if (wordQuery && !lexicalForm.includes(wordQuery)) continue;
+      if (glossQuery && !(word.gloss?.value ?? "").toLowerCase().includes(glossQuery)) continue;
+      if (definitionQuery && !(word.definition?.value ?? "").toLowerCase().includes(definitionQuery)) continue;
+
+      totalMatches += 1;
+      if (matches.length < limit) matches.push(this.wordRecordFor(word));
+    }
+    matches.sort((a, b) => a.lexical_form.toLowerCase().localeCompare(b.lexical_form.toLowerCase()));
+    return { words: matches, totalMatches };
   }
 
   /** This Word's Seeded Attributes for the PAD (Pleasure-Arousal-
@@ -1440,7 +1503,32 @@ function sortRows(rows, key, dir) {
 // to reach a word outside the first MAX_WORD_ROWS_SHOWN.
 const MAX_WORD_ROWS_SHOWN = 1000;
 
+function wordRowHtml(w) {
+  return \`
+    <tr data-word-id="\${w.id}" class="\${w.id === state.selected.words ? 'selected' : ''}">
+      <td><span class="word-form">\${w.lexical_form}</span>\${w.is_common ? ' <span class="badge-common">common</span>' : ''}\${w.is_root_word ? ' <span class="badge-root-word">root word</span>' : ''}\${w.is_derivable_noun ? ' <span class="badge-derivable-noun">derivable noun</span>' : ''}</td>
+      <td>\${posPill(w.pos)}</td>
+      <td>\${domainPill(w.domain)}</td>
+      <td class="definition">\${w.definition || w.gloss || '<span style="opacity:.5">&mdash;</span>'}</td>
+      <td>\${w.register_codes.concat(w.editorial_labels).map(t => \`<span class="tag">\${titleCase(t)}</span>\`).join('')}</td>
+      <td style="text-align:right" class="rel-count">\${w.relationship_count}</td>
+    </tr>\`;
+}
+
+// requestId of the most recently *dispatched* over-capacity search --
+// renderWordsOverCapacity's own lira-search-words-result listener
+// compares against this so a slow earlier search's response can never
+// clobber a faster later one's (the same stale-response guard
+// PortalShell's own render()/loadView() apply to a Vocabulary fragment
+// fetch, portal_shell.ts's own comment on renderToken).
+let latestWordSearchRequestId = null;
+let wordSearchDebounceTimer = null;
+
 function renderWords() {
+  if (OVER_CAPACITY) {
+    renderWordsOverCapacity();
+    return;
+  }
   let rows = filteredWords();
   const [key, dir] = state.sort.words;
   rows = sortRows(rows, key, dir);
@@ -1454,17 +1542,82 @@ function renderWords() {
   } else {
     note.style.display = "none";
   }
-  body.innerHTML = shown.map(w => \`
-    <tr data-word-id="\${w.id}" class="\${w.id === state.selected.words ? 'selected' : ''}">
-      <td><span class="word-form">\${w.lexical_form}</span>\${w.is_common ? ' <span class="badge-common">common</span>' : ''}\${w.is_root_word ? ' <span class="badge-root-word">root word</span>' : ''}\${w.is_derivable_noun ? ' <span class="badge-derivable-noun">derivable noun</span>' : ''}</td>
-      <td>\${posPill(w.pos)}</td>
-      <td>\${domainPill(w.domain)}</td>
-      <td class="definition">\${w.definition || w.gloss || '<span style="opacity:.5">&mdash;</span>'}</td>
-      <td>\${w.register_codes.concat(w.editorial_labels).map(t => \`<span class="tag">\${titleCase(t)}</span>\`).join('')}</td>
-      <td style="text-align:right" class="rel-count">\${w.relationship_count}</td>
-    </tr>\`).join('');
-  document.getElementById("stat-words").textContent = OVER_CAPACITY ? TOTAL_WORD_COUNT : rows.length;
+  body.innerHTML = shown.map(wordRowHtml).join('');
+  document.getElementById("stat-words").textContent = rows.length;
 }
+
+// How long to wait after the last keystroke before actually dispatching
+// an over-capacity search -- WORDS is [] past MAX_INTERACTIVE_WORDS, so
+// unlike the local-array path above (instant, in-process filtering),
+// every keystroke here is a round trip out to the Vocabulary Service
+// worker (lira-search-words below); debouncing keeps a fast typist from
+// firing a search per character.
+const WORD_SEARCH_DEBOUNCE_MS = 250;
+
+// The over-capacity counterpart to renderWords()'s own local-array
+// path: instead of filtering an already-embedded WORDS array (there
+// isn't one -- MAX_INTERACTIVE_WORDS's own docstring), this dispatches
+// a "lira-search-words" DOM event carrying the current search/filter
+// state and waits for whatever's listening (PortalShell, when this
+// fragment is embedded in the Portal -- portal_shell.ts's own listener)
+// to resolve it against the real Dictionary and fire back
+// "lira-search-words-result" with the same requestId. A standalone
+// render()/downloadAsFile() page (no Portal, no worker to ask) has
+// nothing listening for the event at all, so an over-capacity Domain
+// there stays non-interactive beyond the stat tiles -- a real
+// limitation of a page with no server behind it, not a bug.
+function renderWordsOverCapacity() {
+  if (wordSearchDebounceTimer !== null) clearTimeout(wordSearchDebounceTimer);
+  wordSearchDebounceTimer = setTimeout(() => {
+    const requestId = 'word-search-' + Math.random().toString(36).slice(2);
+    latestWordSearchRequestId = requestId;
+    document.getElementById("words-note").style.display = "none";
+    document.getElementById("words-empty").style.display = "none";
+    document.getElementById("words-body").innerHTML =
+      '<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--ink-muted,#5B6660)">Searching…</td></tr>';
+    document.dispatchEvent(new CustomEvent("lira-search-words", {
+      detail: {
+        requestId,
+        word: state.search.word,
+        gloss: state.search.gloss,
+        definition: state.search.definition,
+        pos: state.pos,
+        domain: state.domain,
+        rootWordsOnly: state.rootWordsOnly,
+        limit: MAX_WORD_ROWS_SHOWN,
+      },
+    }));
+  }, WORD_SEARCH_DEBOUNCE_MS);
+}
+
+document.addEventListener("lira-search-words-result", (e) => {
+  const { requestId, words, totalMatches } = e.detail;
+  if (requestId !== latestWordSearchRequestId) return; // superseded by a later search
+  lastWordSearchResults = words;
+  const body = document.getElementById("words-body");
+  const empty = document.getElementById("words-empty");
+  const note = document.getElementById("words-note");
+  if (words.length === 0) {
+    body.innerHTML = "";
+    empty.style.display = "block";
+    note.style.display = "none";
+  } else {
+    empty.style.display = "none";
+    body.innerHTML = words.map(wordRowHtml).join('');
+    if (totalMatches > words.length) {
+      note.style.display = "block";
+      note.textContent = \`Showing the first \${words.length.toLocaleString()} of \${totalMatches.toLocaleString()} matching words -- narrow your search to see the rest.\`;
+    } else {
+      note.style.display = "none";
+    }
+  }
+  document.getElementById("stat-words").textContent = TOTAL_WORD_COUNT;
+  // Refreshes against the just-updated lastWordSearchResults -- clears
+  // the detail panel back to empty if whatever was selected isn't in
+  // this search's own results, same as the local-array path's own
+  // renderAll() already does for every other search keystroke.
+  renderDetailPanel("words");
+});
 
 // panel is one of "words" / "hierarchy" / "cyclic" -- each tab owns its
 // own selection and its own detail panel above its content, so picking
@@ -1511,16 +1664,34 @@ function padSectionHTML(word) {
   \`;
 }
 
+// Search results currently shown in the Words tab, over capacity only --
+// renderDetailPanel("words") reads a clicked row's own Word data from
+// here instead of WORDS (always [] past MAX_INTERACTIVE_WORDS), kept in
+// lockstep with whatever the last "lira-search-words-result" rendered.
+// RELS has no over-capacity counterpart at all (no search-relationships
+// request exists yet), so a selected word's own relationship *list*
+// stays unavailable there even once this fixes the word lookup itself --
+// renderDetailPanel's own over-capacity branch below shows the
+// still-accurate relationship_count instead of pretending the count is
+// zero.
+let lastWordSearchResults = [];
+
+function wordForDetailPanel(panel) {
+  const source = panel === "words" && OVER_CAPACITY ? lastWordSearchResults : WORDS;
+  return source.find(w => w.id === state.selected[panel]);
+}
+
 function renderDetailPanel(panel) {
   const empty = document.getElementById(\`detail-empty-\${panel}\`);
   const content = document.getElementById(\`detail-content-\${panel}\`);
-  const word = WORDS.find(w => w.id === state.selected[panel]);
+  const word = wordForDetailPanel(panel);
   if (!word) {
     empty.style.display = "block";
     content.style.display = "none";
     return;
   }
-  const rels = relationshipsForWord(word.id);
+  const overCapacityRels = panel === "words" && OVER_CAPACITY;
+  const rels = overCapacityRels ? [] : relationshipsForWord(word.id);
   empty.style.display = "none";
   content.style.display = "block";
   content.innerHTML = \`
@@ -1531,8 +1702,12 @@ function renderDetailPanel(panel) {
     \${padSectionHTML(word)}
     <div class="detail-section-title">Provenance</div>
     <div class="detail-definition" style="margin-top:0">\${word.sources && word.sources.length ? word.sources.map(s => \`<span class="tag">\${s}</span>\`).join('') : '<span style="opacity:.6">No source recorded.</span>'}</div>
-    <div class="detail-section-title">Relationships (\${rels.length})</div>
-    \${rels.length === 0 ? '<div class="detail-empty" style="padding:8px 0">No relationships recorded.</div>' : rels.map(r => \`
+    <div class="detail-section-title">Relationships (\${word.relationship_count})</div>
+    \${overCapacityRels
+      ? (word.relationship_count === 0
+          ? '<div class="detail-empty" style="padding:8px 0">No relationships recorded.</div>'
+          : \`<div class="detail-empty" style="padding:8px 0">\${word.relationship_count.toLocaleString()} relationship\${word.relationship_count === 1 ? '' : 's'} recorded -- individual relationship browsing isn't available for a Domain this large.</div>\`)
+      : (rels.length === 0 ? '<div class="detail-empty" style="padding:8px 0">No relationships recorded.</div>' : rels.map(r => \`
       <div class="rel-entry">
         <div class="rel-row">
           <span class="rel-dir" title="\${r.outgoing ? 'Outgoing' : 'Incoming'}">\${r.outgoing ? '&rarr;' : '&larr;'}</span>
@@ -1541,7 +1716,7 @@ function renderDetailPanel(panel) {
           \${domainPill(r.otherDomain)}
         </div>
         <div class="rel-sentence">\${relationshipSentence(r.kind, r.source_text, r.target_text)}</div>
-      </div>\`).join('')}
+      </div>\`).join(''))}
   \`;
   content.querySelectorAll("button[data-pivot-id]").forEach(btn => {
     btn.addEventListener("click", () => selectWordIn(panel, btn.dataset.pivotId));
