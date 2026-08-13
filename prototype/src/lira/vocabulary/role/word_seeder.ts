@@ -139,6 +139,12 @@ const WORDNET_SYNSET_ID_SCHEME = {
 // (relationship_seeder.ts's own SEEDER_DEFAULT_WEIGHT). 0.9999 rather
 // than a literal 1.0: certainty is never asserted as exactly 1.0.
 const WORDNET_SEEDER_DEFAULT_WEIGHT = 0.9999;
+// How often seedWordNet's own onProgress fires, in synsets processed --
+// about 59 calls across the full ~117,800-synset dataset. Frequent
+// enough for a progress bar to read as continuously moving, far below
+// the per-postMessage-call overhead becoming visible against the
+// per-synset work it's reporting on.
+const PROGRESS_REPORT_INTERVAL = 2000;
 
 interface PromotedDocEntry extends WordFileEntry {
   reference_count?: number;
@@ -440,26 +446,42 @@ export class WordSeeder {
    * Async, unlike seedClosedClassWords -- loadWordNetSynsets() fetches
    * its dict/ text via a lazy `import()` (wordnet_loader.ts's own
    * docstring on why it isn't bundled eagerly like the Common
-   * Vocabulary Cache), so nothing here can resolve synchronously. */
-  async seedWordNet(domain: {
-    vocabulary: {
-      dictionary: Dictionary;
-      lexicalRelationships: LexicalRelationshipStore;
-      lexicalRelationshipProcessor: LexicalRelationshipProcessor;
-    };
-  }): Promise<{ wordsSeeded: number; relationshipsSeeded: number }> {
+   * Vocabulary Cache), so nothing here can resolve synchronously.
+   *
+   * `onProgress`, if given, is called every PROGRESS_REPORT_INTERVAL
+   * synsets (and once more at the very end) with (processed, total) --
+   * vocabulary_worker.ts's own call site relays each call across the
+   * Worker boundary as a status message so a caller-side progress bar
+   * can track a run against the full ~117,800-synset dataset (a few
+   * seconds of CPU-bound work, worker.ts's docstring), instead of only
+   * seeing "running" for that whole span with no sense of how far along
+   * it is. The `await` after each call isn't there for the callback's
+   * own sake (it may well be synchronous) -- it yields this loop back
+   * to the event loop for a tick, so a message posted from inside
+   * `onProgress` actually gets a chance to leave the Worker before the
+   * next few thousand synsets' worth of synchronous work runs. */
+  async seedWordNet(
+    domain: {
+      vocabulary: {
+        dictionary: Dictionary;
+        lexicalRelationships: LexicalRelationshipStore;
+        lexicalRelationshipProcessor: LexicalRelationshipProcessor;
+      };
+    },
+    onProgress?: (processed: number, total: number) => void,
+  ): Promise<{ wordsSeeded: number; relationshipsSeeded: number }> {
     const dictionary = domain.vocabulary.dictionary;
     const store = domain.vocabulary.lexicalRelationships;
     const processor = domain.vocabulary.lexicalRelationshipProcessor;
 
-    // LexicalRelationshipStore.outgoing() is a linear scan over every
-    // relationship (fine for RelationshipSeeder's own few thousand
-    // Common Vocabulary Relationship Cache edges, relationship_seeder.ts's
-    // own relationshipExists) -- but WordNet seeds far more SYNONYM
-    // edges than that, so calling it once per candidate pair here would
-    // turn idempotency checking quadratic. Scanning the store once
-    // up front into a Set instead keeps each pair's check O(1), the
-    // same reasoning Dictionary's byText/byUuid maps already apply to
+    // LexicalRelationshipStore.outgoing() is indexed (O(1) amortized,
+    // lexical_relationship_store.ts's own docstring) rather than a raw
+    // linear scan, but it still allocates a fresh array copy on every
+    // call -- real overhead multiplied across the ~150,000+ candidate
+    // pairs a full WordNet seed checks. Scanning the store once up
+    // front into a Set instead avoids that repeated Map lookup and
+    // allocation entirely, the same reasoning Dictionary's byText/byUuid
+    // maps already apply to
     // lookup()/lookupAll() (dictionary.ts's own module docstring).
     const existingSynonymPairs = new Set<string>();
     for (const relationship of store.all()) {
@@ -470,7 +492,9 @@ export class WordSeeder {
     let wordsSeeded = 0;
     let relationshipsSeeded = 0;
 
-    for (const synset of await loadWordNetSynsets()) {
+    const synsets = await loadWordNetSynsets();
+    let processed = 0;
+    for (const synset of synsets) {
       const domainTag = `wordnet.${synset.synsetId}`;
       const members: Word[] = [];
       for (const lemma of synset.lemmas) {
@@ -505,6 +529,12 @@ export class WordSeeder {
           existingSynonymPairs.add(pairKey);
           relationshipsSeeded += 1;
         }
+      }
+
+      processed += 1;
+      if (onProgress && (processed % PROGRESS_REPORT_INTERVAL === 0 || processed === synsets.length)) {
+        onProgress(processed, synsets.length);
+        await new Promise((resolve) => setTimeout(resolve, 0));
       }
     }
 

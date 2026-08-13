@@ -28,7 +28,7 @@ function main(): void {
   loadingScreen.mount(app);
 
   const vocabularyClient = new VocabularyWorkerClient();
-  vocabularyClient.onStatus((state, detail) => statusBoard.update("vocabulary", state, detail));
+  vocabularyClient.onStatus((state, detail, progress) => statusBoard.update("vocabulary", state, detail, progress));
 
   const linguisticsClient = new LinguisticsWorkerClient();
   linguisticsClient.onStatus((state, detail) => statusBoard.update("linguistics", state, detail));

@@ -33,17 +33,52 @@ export interface RenderRequest {
   domain: string;
 }
 
-export type VocabularyWorkerRequest = InitRequest | RenderRequest;
+/** Triggers WordSeeder.seedWordNet (role/word_seeder.ts) on demand
+ * against the named Domain's own VocabularyLayer -- an on-demand
+ * seeding pass, never implied by "init" (vocabulary_worker.ts's own
+ * handleInit only ever runs seedClosedClassWords/RelationshipSeeder).
+ * `domain` is a real target, not always "Common", but the worker's own
+ * PortalShell caller (portal_shell.ts) only ever asks for "Common" --
+ * WordNet is a general-English lexical resource, not a Domain-specific
+ * fact, and Physics's own Dictionary is a one-time snapshot copy taken
+ * at boot (VocabularyLayer.seedFrom), so seeding a child Domain
+ * directly here wouldn't do anything a Common seed doesn't already
+ * cover for it going forward, while seeding Common retroactively into
+ * an already-copied child would need its own separate propagation this
+ * protocol doesn't attempt. */
+export interface SeedWordNetRequest {
+  type: "seed-wordnet";
+  domain: string;
+}
+
+export type VocabularyWorkerRequest = InitRequest | RenderRequest | SeedWordNetRequest;
 
 export interface StatusMessage {
   type: "status";
   state: VocabularyServiceState;
   detail?: string;
+  // Fraction in [0, 1] for a run with a known length (seedWordNet's own
+  // (processed, total) synset count) -- undefined means either no
+  // progress-bearing work is in flight, or its length isn't known yet,
+  // never "0%"; a listener should treat undefined as "no bar to show",
+  // not "just started".
+  progress?: number;
 }
 
 export interface ReadyMessage {
   type: "ready";
   domains: readonly VocabularyDomainSummary[];
+}
+
+/** Posted once a seed-wordnet request finishes -- the target Domain's
+ * refreshed summary (wordCount/relationshipCount now reflecting the
+ * newly-seeded WordNet Words/SYNONYM relationships), so whichever UI
+ * asked for the seed can update its own copy of that Domain's counts
+ * (e.g. PortalDomainRegistry's tree row) without re-requesting "ready"
+ * for every Domain. */
+export interface DomainUpdatedMessage {
+  type: "domain-updated";
+  domain: VocabularyDomainSummary;
 }
 
 /** A rendered Domain's DictionaryView, as its three renderFragment()
@@ -68,9 +103,28 @@ export interface RenderedMessage {
   fragment: RenderedFragment;
 }
 
+/** Posted instead of RenderedMessage when a render request fails --
+ * an unknown Domain name, or DictionaryView.renderFragment() itself
+ * throwing (dictionary_view.ts's own MAX_INTERACTIVE_WORDS docstring).
+ * Carries the same `requestId` a RenderedMessage would have, so
+ * VocabularyWorkerClient.renderDomain()'s matching pending Promise can
+ * reject instead of hanging forever -- the failure mode before this
+ * message type existed. */
+export interface RenderErrorMessage {
+  type: "render-error";
+  requestId: string;
+  message: string;
+}
+
 export interface ErrorMessage {
   type: "error";
   message: string;
 }
 
-export type VocabularyWorkerMessage = StatusMessage | ReadyMessage | RenderedMessage | ErrorMessage;
+export type VocabularyWorkerMessage =
+  | StatusMessage
+  | ReadyMessage
+  | RenderedMessage
+  | RenderErrorMessage
+  | ErrorMessage
+  | DomainUpdatedMessage;

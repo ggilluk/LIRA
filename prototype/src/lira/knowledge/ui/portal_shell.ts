@@ -2,8 +2,13 @@ import type { ServiceStatusBoard } from "../data/service_status";
 import type { PortalDomain, PortalDomainRegistry } from "../data/portal_domain";
 import { ServiceStatusView } from "./service_status_view";
 import type { VocabularyWorkerClient } from "../../vocabulary/role/vocabulary_worker_client";
+import type { RenderedFragment } from "../../vocabulary/role/vocabulary_worker_protocol";
 import type { LinguisticsWorkerClient } from "../../linguistics/role/linguistics_worker_client";
 import { SentenceReaderView } from "../../linguistics/ui/sentence_reader_view";
+
+// WordSeeder.seedWordNet always targets "Common" in practice
+// (SeedWordNetRequest's own docstring, vocabulary_worker_protocol.ts).
+const WORDNET_SEED_DOMAIN = "Common";
 
 /** PortalShell: a Windows-Explorer-style desktop shell that switches to
  * a drill-down mobile portal -- the folder tree is the Domain hierarchy
@@ -105,8 +110,28 @@ export class PortalShell {
     this.title = options.title ?? "LIRA";
     this.mode = typeof window !== "undefined" && window.matchMedia("(max-width: 720px)").matches ? "mobile" : "desktop";
     this.selectedName = this.registry.roots()[0]?.name;
-    this.serviceStatusView = new ServiceStatusView(statusBoard);
+    // "Load WordNet" attaches to the "vocabulary" Service row -- see
+    // ServiceStatusAction's own docstring for why it needs no separate
+    // disabled/loading state of its own (the row's live `state` already
+    // covers that) and WORDNET_SEED_DOMAIN's for why it always targets
+    // "Common" regardless of which Domain is currently selected.
+    this.serviceStatusView = new ServiceStatusView(statusBoard, [
+      { id: "vocabulary", label: "Load WordNet", onClick: () => this.vocabularyClient.seedWordNet(WORDNET_SEED_DOMAIN) },
+    ]);
     this.sentenceReaderView = new SentenceReaderView(linguisticsClient);
+    // seedWordNet grows the target Domain's own word/relationship
+    // counts after this shell's initial registry snapshot was built
+    // (main.ts's own "ready" handling) -- re-render picks up both the
+    // tree row's now-larger counts (renderTreeRows reads wordCount
+    // straight off the registry) and, if that Domain's Vocabulary view
+    // happens to be the one currently mounted, a fresh fragment fetch
+    // (render()'s own loadView() call), since the worker already
+    // invalidated its cached fragment for it (vocabulary_worker.ts's
+    // own handleSeedWordNet).
+    this.vocabularyClient.onDomainUpdated((domain) => {
+      this.registry.add(domain);
+      this.render();
+    });
   }
 
   mount(container: HTMLElement): void {
@@ -217,11 +242,21 @@ export class PortalShell {
    * and, once it arrives, mounts it into the still-present fragment
    * container -- a targeted DOM update rather than a full re-render, so
    * a slower fetch doesn't get raced or clobbered by the user picking a
-   * different Domain in the meantime (`token` guards exactly that). */
+   * different Domain in the meantime (`token` guards exactly that).
+   * renderDomain() can reject (RenderErrorMessage's own docstring,
+   * vocabulary_worker_protocol.ts) -- surfaced here as a view status
+   * message instead of leaving "Loading Vocabulary…" up forever. */
   private async loadView(domain: PortalDomain): Promise<void> {
     const token = ++this.renderToken;
     this.setViewStatus("Loading Vocabulary…");
-    const fragment = await this.vocabularyClient.renderDomain(domain.name);
+    let fragment: RenderedFragment;
+    try {
+      fragment = await this.vocabularyClient.renderDomain(domain.name);
+    } catch (error) {
+      if (token !== this.renderToken) return;
+      this.setViewStatus(`Couldn't load this Domain's Vocabulary view: ${error instanceof Error ? error.message : String(error)}`);
+      return;
+    }
     if (token !== this.renderToken || !this.container) return;
 
     this.ensureFragmentStyles(fragment.style);

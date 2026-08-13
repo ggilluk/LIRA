@@ -1,5 +1,20 @@
 import type { ServiceState, ServiceStatus, ServiceStatusBoard } from "../data/service_status";
 
+/** One row's optional attached action -- e.g. "Load WordNet" on the
+ * Vocabulary Service row (PortalShell's own construction). Generic
+ * (Knowledge doesn't know what WordNet is), matched to a row purely by
+ * `id === ServiceStatus.id`; a row with no matching action renders
+ * without a button at all. The button is automatically disabled while
+ * that row's own `state === "running"` -- there's no separate
+ * caller-managed disabled flag, since "this row's background task is
+ * currently running" is already exactly the condition an action
+ * button attached to it should be unavailable for. */
+export interface ServiceStatusAction {
+  id: string;
+  label: string;
+  onClick: () => void;
+}
+
 /** ServiceStatusView: a real, persistent UI Component showing every
  * registered Service's live status (Vocabulary Service running in a Web
  * Worker today; Linguistic/Knowledge Service rows shown as
@@ -7,7 +22,11 @@ import type { ServiceState, ServiceStatus, ServiceStatusBoard } from "../data/se
  * server-status dashboard, since a Service here is a Web Worker rather
  * than a server process. Subscribes to a ServiceStatusBoard and
  * re-renders on every change; the same board the LoadingScreen watches
- * during startup keeps driving this panel afterwards.
+ * during startup keeps driving this panel afterwards. A row with
+ * `progress` set (ServiceStatus's own docstring) additionally renders a
+ * filling progress bar beneath it, e.g. WordSeeder.seedWordNet's own
+ * synset-by-synset run relayed live through the Vocabulary Service
+ * worker.
  *
  * Minimizable: a chevron in the header row collapses the rows down to
  * just that header (which then shows a "N/M running" summary in place
@@ -22,7 +41,10 @@ export class ServiceStatusView {
   private unsubscribe: (() => void) | undefined;
   private collapsed = false;
 
-  constructor(private readonly board: ServiceStatusBoard) {}
+  constructor(
+    private readonly board: ServiceStatusBoard,
+    private readonly actions: readonly ServiceStatusAction[] = [],
+  ) {}
 
   mount(container: HTMLElement): void {
     this.ensureStyles();
@@ -39,10 +61,16 @@ export class ServiceStatusView {
   }
 
   private handleClick(event: MouseEvent, container: HTMLElement): void {
-    const target = (event.target as HTMLElement).closest<HTMLElement>('[data-action="toggle"]');
-    if (!target) return;
-    this.collapsed = !this.collapsed;
-    container.innerHTML = this.renderPanel(this.board.all());
+    const target = (event.target as HTMLElement).closest<HTMLElement>("[data-action]");
+    if (!target || (target as HTMLButtonElement).disabled) return;
+
+    if (target.dataset.action === "toggle") {
+      this.collapsed = !this.collapsed;
+      container.innerHTML = this.renderPanel(this.board.all());
+    } else if (target.dataset.action === "run") {
+      const action = this.actions.find((a) => a.id === target.dataset.actionId);
+      action?.onClick();
+    }
   }
 
   private renderPanel(statuses: readonly ServiceStatus[]): string {
@@ -62,12 +90,25 @@ export class ServiceStatusView {
   }
 
   private renderRow(status: ServiceStatus): string {
+    const action = this.actions.find((a) => a.id === status.id);
+    const progressBar =
+      status.progress !== undefined
+        ? `<div class="service-status-progress"><div class="service-status-progress-fill" style="width:${Math.round(status.progress * 100)}%"></div></div>`
+        : "";
     return `
-      <div class="service-status-row state-${status.state}">
-        <span class="service-status-dot"></span>
-        <span class="service-status-name">${escapeHtml(status.label)}</span>
-        <span class="service-status-pill">${STATE_LABEL[status.state]}</span>
-        ${status.detail ? `<span class="service-status-detail">${escapeHtml(status.detail)}</span>` : ""}
+      <div class="service-status-row-group">
+        <div class="service-status-row state-${status.state}">
+          <span class="service-status-dot"></span>
+          <span class="service-status-name">${escapeHtml(status.label)}</span>
+          <span class="service-status-pill">${STATE_LABEL[status.state]}</span>
+          ${status.detail ? `<span class="service-status-detail">${escapeHtml(status.detail)}</span>` : ""}
+          ${
+            action
+              ? `<button type="button" class="service-status-action" data-action="run" data-action-id="${escapeHtml(action.id)}" ${status.state === "running" ? "disabled" : ""}>${escapeHtml(action.label)}</button>`
+              : ""
+          }
+        </div>
+        ${progressBar}
       </div>
     `;
   }
@@ -122,7 +163,8 @@ const CSS = `
 .service-status-panel.collapsed .service-status-chevron { transform: rotate(-90deg); }
 .service-status-panel.collapsed .service-status-rows { display: none; }
 .service-status-header:focus-visible { outline: 2px solid var(--accent, #2B6E63); outline-offset: 2px; }
-.service-status-rows { display: flex; flex-direction: column; gap: 0.3rem; }
+.service-status-rows { display: flex; flex-direction: column; gap: 0.4rem; }
+.service-status-row-group { display: flex; flex-direction: column; gap: 0.25rem; }
 .service-status-row { display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; color: var(--ink, #1C2321); }
 .service-status-dot { width: 7px; height: 7px; border-radius: 50%; flex: none; background: var(--ink-faint, #8B948E); }
 .service-status-name { min-width: 148px; }
@@ -131,7 +173,23 @@ const CSS = `
   padding: 0.08rem 0.45rem; border-radius: 999px; color: var(--ink-muted, #5B6660);
   background: var(--surface-2, #ECEEE8); flex: none;
 }
-.service-status-detail { color: var(--ink-muted, #5B6660); font-size: 0.76rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.service-status-detail { color: var(--ink-muted, #5B6660); font-size: 0.76rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; min-width: 0; }
+.service-status-action {
+  font-family: inherit; font-size: 0.68rem; font-weight: 600; letter-spacing: 0.01em;
+  border: 1px solid var(--line-strong, #C4C9BF); background: var(--surface, #FFFFFF); color: var(--accent, #2B6E63);
+  padding: 0.15rem 0.55rem; border-radius: 999px; cursor: pointer; flex: none; margin-left: auto;
+}
+.service-status-action:hover:not(:disabled) { background: var(--accent-soft, #DCE9E4); }
+.service-status-action:disabled { cursor: not-allowed; opacity: 0.5; }
+.service-status-action:focus-visible { outline: 2px solid var(--accent, #2B6E63); outline-offset: 1px; }
+.service-status-progress {
+  height: 4px; border-radius: 999px; background: var(--surface-2, #ECEEE8); overflow: hidden;
+  margin-left: 15px; /* aligns the bar's left edge under the dot's name column, not the dot itself */
+}
+.service-status-progress-fill {
+  height: 100%; background: var(--accent, #2B6E63); border-radius: 999px;
+  transition: width 0.2s ease-out;
+}
 .service-status-row.state-running .service-status-dot { background: var(--accent, #2B6E63); animation: lira-pulse 1.4s ease-in-out infinite; }
 .service-status-row.state-running .service-status-pill { background: var(--accent-soft, #DCE9E4); color: var(--accent, #2B6E63); }
 .service-status-row.state-done .service-status-dot { background: var(--accent, #2B6E63); }
@@ -139,6 +197,6 @@ const CSS = `
 .service-status-row.state-error .service-status-dot { background: #C2544B; }
 .service-status-row.state-error .service-status-pill { background: rgba(194, 84, 75, 0.15); color: #C2544B; }
 .service-status-row.state-not-ported { opacity: 0.55; }
-@media (prefers-reduced-motion: reduce) { .service-status-dot { animation: none !important; } }
+@media (prefers-reduced-motion: reduce) { .service-status-dot { animation: none !important; } .service-status-progress-fill { transition: none; } }
 @keyframes lira-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
 `;

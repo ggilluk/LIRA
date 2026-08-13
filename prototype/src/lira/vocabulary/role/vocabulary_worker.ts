@@ -15,7 +15,11 @@
  * the ~5MB bundled Common Vocabulary Cache JSON they read) bundles into
  * this worker's own chunk, not the main thread's, so the page that
  * mounts the Portal shell stays light while this chunk loads and runs
- * in parallel. */
+ * in parallel. handleSeedWordNet's own ~21MB Princeton WordNet dict/
+ * text is deliberately NOT part of that always-loaded chunk -- it's
+ * fetched as its own lazy `import()` only once a "seed-wordnet" request
+ * actually arrives (wordnet_loader.ts's own docstring), so a session
+ * that never triggers it never pays for it. */
 
 import { DictionaryView } from "../ui/dictionary_view";
 import { VocabularyLayer } from "../data/layer";
@@ -24,6 +28,7 @@ import { WordSeeder } from "./word_seeder";
 import type {
   RenderedFragment,
   RenderRequest,
+  SeedWordNetRequest,
   VocabularyDomainSummary,
   VocabularyWorkerMessage,
   VocabularyWorkerRequest,
@@ -43,9 +48,25 @@ interface SeededDomain {
 
 const domains = new Map<string, SeededDomain>();
 const renderCache = new Map<string, RenderedFragment>();
+// Domain names with a seed-wordnet run currently in flight -- guards
+// against a rapid double click (or two independent UI callers) firing
+// two overlapping seedWordNet passes against the same Domain at once;
+// the client itself also disables its trigger while "running" (this
+// module's own handleSeedWordNet posts that state), so this is a
+// defensive backstop, not the primary guard.
+const wordNetSeedingDomains = new Set<string>();
 
 function post(message: VocabularyWorkerMessage): void {
   ctx.postMessage(message);
+}
+
+function summaryOf(domain: SeededDomain): VocabularyDomainSummary {
+  return {
+    name: domain.name,
+    parentName: domain.parentName,
+    wordCount: domain.vocabulary.dictionary.totalEntries(),
+    relationshipCount: domain.vocabulary.lexicalRelationships.totalRelationships(),
+  };
 }
 
 async function handleInit(): Promise<void> {
@@ -65,12 +86,7 @@ async function handleInit(): Promise<void> {
     physicsDomain.vocabulary.dictionary.seedFrom(commonDomain.vocabulary.dictionary);
     domains.set(physicsDomain.name, physicsDomain);
 
-    const summaries: VocabularyDomainSummary[] = [...domains.values()].map((domain) => ({
-      name: domain.name,
-      parentName: domain.parentName,
-      wordCount: domain.vocabulary.dictionary.totalEntries(),
-      relationshipCount: domain.vocabulary.lexicalRelationships.totalRelationships(),
-    }));
+    const summaries: VocabularyDomainSummary[] = [...domains.values()].map(summaryOf);
 
     post({ type: "status", state: "done", detail: `${domains.size} Domains ready` });
     post({ type: "ready", domains: summaries });
@@ -81,10 +97,71 @@ async function handleInit(): Promise<void> {
   }
 }
 
-function handleRender(request: RenderRequest): void {
+/** Handles an on-demand SeedWordNetRequest -- see that request type's
+ * own docstring (vocabulary_worker_protocol.ts) for why it always
+ * targets "Common" in practice, even though it's addressed by name.
+ * Reports progress via the same "status" channel handleInit uses
+ * (WordSeeder.seedWordNet's own onProgress -- word_seeder.ts's own
+ * docstring on why each call is followed by a yield back to the event
+ * loop, which is what lets these messages actually leave the Worker
+ * one by one instead of all arriving at once after the whole run
+ * finishes), then invalidates that Domain's cached DictionaryView
+ * fragment (it's now stale -- WordNet just added Words/relationships
+ * to the same Dictionary/LexicalRelationshipStore DictionaryView
+ * rendered against) and posts a DomainUpdatedMessage with the Domain's
+ * refreshed counts. */
+async function handleSeedWordNet(request: SeedWordNetRequest): Promise<void> {
   const domain = domains.get(request.domain);
   if (!domain) {
     post({ type: "error", message: `Vocabulary Service: unknown Domain '${request.domain}'` });
+    return;
+  }
+  if (wordNetSeedingDomains.has(domain.name)) return;
+  wordNetSeedingDomains.add(domain.name);
+
+  try {
+    post({ type: "status", state: "running", detail: `Loading Princeton WordNet 3.1 for ${domain.name}…`, progress: 0 });
+    const seeder = new WordSeeder("en");
+    const result = await seeder.seedWordNet(domain, (processed, total) => {
+      post({
+        type: "status",
+        state: "running",
+        detail: `Seeding WordNet into ${domain.name} — ${processed.toLocaleString()} / ${total.toLocaleString()} synsets…`,
+        progress: processed / total,
+      });
+    });
+
+    renderCache.delete(domain.name);
+    post({
+      type: "status",
+      state: "done",
+      detail: `WordNet seeded into ${domain.name} — ${result.wordsSeeded.toLocaleString()} words, ${result.relationshipsSeeded.toLocaleString()} relationships`,
+    });
+    post({ type: "domain-updated", domain: summaryOf(domain) });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    post({ type: "status", state: "error", detail: message });
+    post({ type: "error", message });
+  } finally {
+    wordNetSeedingDomains.delete(domain.name);
+  }
+}
+
+/** Wrapped in try/catch, unlike this function's earlier version --
+ * DictionaryView.renderFragment() is generally cheap against the
+ * Common Vocabulary Cache scale this was first built for, but a much
+ * larger Domain (WordSeeder.seedWordNet's own ~211,000 Words) can still
+ * hit MAX_INTERACTIVE_WORDS's own capacity ceiling in ways that are
+ * hard to fully rule out in advance (dictionary_view.ts's own
+ * docstring on why JSON.stringify itself can throw past a certain
+ * size). Before this wrapping, an exception here left the client's
+ * matching renderDomain() Promise pending forever -- nothing ever
+ * posted a "rendered" message for that requestId, and nothing told the
+ * client to stop waiting either. */
+function handleRender(request: RenderRequest): void {
+  const domain = domains.get(request.domain);
+  if (!domain) {
+    post({ type: "render-error", requestId: request.requestId, message: `Vocabulary Service: unknown Domain '${request.domain}'` });
     return;
   }
 
@@ -94,18 +171,25 @@ function handleRender(request: RenderRequest): void {
     return;
   }
 
-  const view = new DictionaryView(domain.vocabulary.dictionary, domain.vocabulary.lexicalRelationships, {
-    title: `LIRA — ${domain.name}`,
-    domainName: domain.name,
-  });
-  const [style, body, script] = view.renderFragment();
-  const fragment: RenderedFragment = { style, body, script };
-  renderCache.set(domain.name, fragment);
-  post({ type: "rendered", requestId: request.requestId, domain: domain.name, fragment });
+  try {
+    const view = new DictionaryView(domain.vocabulary.dictionary, domain.vocabulary.lexicalRelationships, {
+      title: `LIRA — ${domain.name}`,
+      domainName: domain.name,
+    });
+    const [style, body, script] = view.renderFragment();
+    const fragment: RenderedFragment = { style, body, script };
+    renderCache.set(domain.name, fragment);
+    post({ type: "rendered", requestId: request.requestId, domain: domain.name, fragment });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    post({ type: "render-error", requestId: request.requestId, message });
+    post({ type: "error", message: `Vocabulary Service: failed to render '${domain.name}': ${message}` });
+  }
 }
 
 ctx.addEventListener("message", (event) => {
   const request = event.data;
   if (request.type === "init") void handleInit();
   else if (request.type === "render") handleRender(request);
+  else if (request.type === "seed-wordnet") void handleSeedWordNet(request);
 });

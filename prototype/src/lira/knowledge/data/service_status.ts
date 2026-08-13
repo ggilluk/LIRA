@@ -26,6 +26,13 @@ export interface ServiceStatus {
   label: string;
   state: ServiceState;
   detail?: string;
+  // Fraction in [0, 1] for a running background task with a known
+  // length (e.g. WordSeeder.seedWordNet's own synset count, relayed via
+  // vocabulary_worker_protocol.ts's StatusMessage). undefined means
+  // there's no length-bounded task to show a bar for right now -- never
+  // "0%" -- so ServiceStatusView only ever draws a progress bar when
+  // there's real progress to report.
+  progress?: number;
 }
 
 export type ServiceStatusListener = (statuses: readonly ServiceStatus[]) => void;
@@ -44,10 +51,15 @@ export class ServiceStatusBoard {
     this.notify();
   }
 
-  update(id: string, state: ServiceState, detail?: string): void {
+  // `progress` is replaced wholesale (undefined clears it), not merged
+  // with whatever the previous update carried -- a status update that
+  // doesn't mention progress means "no progress to report right now"
+  // (e.g. seedWordNet's own final "done" status), not "leave the old
+  // bar showing".
+  update(id: string, state: ServiceState, detail?: string, progress?: number): void {
     const existing = this.statuses.get(id);
     if (!existing) return;
-    this.statuses.set(id, { ...existing, state, detail });
+    this.statuses.set(id, { ...existing, state, detail, progress });
     this.notify();
   }
 

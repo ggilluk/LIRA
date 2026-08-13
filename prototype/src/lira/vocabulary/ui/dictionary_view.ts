@@ -115,6 +115,26 @@ export interface DictionaryViewOptions {
   unresolved?: readonly string[];
 }
 
+// A hard ceiling on how many Words this view will build full,
+// per-Word interactive records for (wordRecords()/relationshipRecords())
+// and embed into the page's own client-side WORDS/RELS arrays. Below
+// it, the Words/Relationships/Hierarchy/Cyclic tabs behave exactly as
+// they always have -- a full, searchable, client-side data set (the
+// original Python page's own design, ~3,100 words for the real Common
+// Vocabulary Cache). Above it, this class renders a clear "too many
+// Words for this view" notice instead: embedding a Domain the size
+// WordSeeder.seedWordNet (role/word_seeder.ts) can produce -- ~211,000
+// Words, ~164,000 relationships -- as one client-side JSON literal
+// doesn't just get slow, `JSON.stringify` on that many WordRecords
+// throws `RangeError: Invalid string length` outright, well past the
+// JS engine's own maximum string length. The stat tiles above the tabs
+// stay accurate regardless (render()'s own totalWordCount/
+// totalRelationshipCount, computed directly off the Dictionary/
+// LexicalRelationshipStore, never off the capped arrays) -- only the
+// interactive browse-every-word experience is unavailable past this
+// ceiling, not the counts.
+const MAX_INTERACTIVE_WORDS = 20_000;
+
 /** Builds the HTML page. Construct with the Dictionary and
  * LexicalRelationshipStore to display -- typically a Domain's
  * `domain.vocabulary.dictionary` and `domain.vocabulary.lexicalRelationships`
@@ -155,10 +175,19 @@ export class DictionaryView {
   }
 
   render(): string {
-    const words = this.wordRecords();
-    const rels = this.relationshipRecords();
-    const commonCount = words.filter((w) => w.is_common).length;
-    const posCounts = new Set(words.map((w) => w.pos));
+    // Computed directly off the Dictionary/LexicalRelationshipStore,
+    // never off wordRecords()/relationshipRecords() -- MAX_INTERACTIVE_WORDS's
+    // own docstring on why those two stay accurate even when the full
+    // interactive record set below is deliberately skipped.
+    const allWords = this.dictionary.all();
+    const totalWordCount = allWords.length;
+    const totalRelationshipCount = this.relationships.all().length;
+    const overCapacity = totalWordCount > MAX_INTERACTIVE_WORDS;
+
+    const words = overCapacity ? [] : this.wordRecords();
+    const rels = overCapacity ? [] : this.relationshipRecords();
+    const commonCount = allWords.filter((w) => w.isCommon).length;
+    const posCounts = new Set(allWords.map((w) => w.partOfSpeech));
     // Just two labels are ever possible for one DictionaryView render
     // ("Common" and this.domainName), so a fixed two-color assignment,
     // not a per-domain palette, is enough.
@@ -168,14 +197,23 @@ export class DictionaryView {
     const substitutions: Record<string, string> = {
       TITLE: escapeHtml(this.title),
       COMPILED_AT: escapeHtml(this.compiledAt()),
-      WORD_COUNT: String(words.length),
-      RELATIONSHIP_COUNT: String(rels.length),
+      WORD_COUNT: String(totalWordCount),
+      RELATIONSHIP_COUNT: String(totalRelationshipCount),
       COMMON_COUNT: String(commonCount),
-      DOMAIN_SPECIFIC_COUNT: String(words.length - commonCount),
+      DOMAIN_SPECIFIC_COUNT: String(totalWordCount - commonCount),
       POS_COUNT: String(posCounts.size),
       UNRESOLVED_COUNT: String(this.unresolved.length),
       WORDS_JSON: JSON.stringify(words),
       RELS_JSON: JSON.stringify(rels),
+      OVER_CAPACITY_JSON: JSON.stringify(overCapacity),
+      WORDS_EMPTY_MESSAGE: overCapacity
+        ? escapeHtml(
+            `This Domain has ${totalWordCount.toLocaleString()} words -- too many for this interactive view (limit ${MAX_INTERACTIVE_WORDS.toLocaleString()}). The counts above are still accurate.`,
+          )
+        : "No words match this search.",
+      RELS_EMPTY_MESSAGE: overCapacity
+        ? escapeHtml(`This Domain has ${totalRelationshipCount.toLocaleString()} relationships -- too many for this interactive view.`)
+        : "No relationships match this search.",
       UNRESOLVED_JSON: JSON.stringify([...this.unresolved].sort()),
       POS_COLORS_JSON: JSON.stringify(POS_COLORS),
       GROUP_COLORS_JSON: JSON.stringify(GROUP_COLORS),
@@ -1016,6 +1054,7 @@ footer {
         <div id="detail-content-words" style="display:none"></div>
       </aside>
       <div class="table-wrap">
+        <div class="cyclic-note" id="words-note" style="display:none"></div>
         <table>
           <thead>
             <tr>
@@ -1029,13 +1068,14 @@ footer {
           </thead>
           <tbody id="words-body"></tbody>
         </table>
-        <div class="empty-state" id="words-empty" style="display:none">No words match this search.</div>
+        <div class="empty-state" id="words-empty" style="display:none">@@WORDS_EMPTY_MESSAGE@@</div>
       </div>
     </div>
   </section>
 
   <section class="panel" id="panel-rels">
     <div class="table-wrap">
+      <div class="cyclic-note" id="rels-note" style="display:none"></div>
       <table>
         <thead>
           <tr>
@@ -1047,7 +1087,7 @@ footer {
         </thead>
         <tbody id="rels-body"></tbody>
       </table>
-      <div class="empty-state" id="rels-empty" style="display:none">No relationships match this search.</div>
+      <div class="empty-state" id="rels-empty" style="display:none">@@RELS_EMPTY_MESSAGE@@</div>
     </div>
   </section>
 
@@ -1098,6 +1138,15 @@ const POS_COLORS = @@POS_COLORS_JSON@@;
 const GROUP_COLORS = @@GROUP_COLORS_JSON@@;
 const GROUP_NAMES = @@GROUP_NAMES_JSON@@;
 const DOMAIN_COLORS = @@DOMAIN_COLORS_JSON@@;
+// True when this Domain's own Word/relationship count is over
+// DictionaryView's own MAX_INTERACTIVE_WORDS (that constant's own
+// docstring) -- WORDS/RELS above are deliberately [] in that case, not
+// a truncated slice of the real data, so the stat tiles below fall back
+// to the true, still-accurate TOTAL_WORD_COUNT/TOTAL_RELATIONSHIP_COUNT
+// instead of the empty arrays' own (misleadingly zero) length.
+const OVER_CAPACITY = @@OVER_CAPACITY_JSON@@;
+const TOTAL_WORD_COUNT = @@WORD_COUNT@@;
+const TOTAL_RELATIONSHIP_COUNT = @@RELATIONSHIP_COUNT@@;
 
 const state = {
   tab: "words", search: { word: "", gloss: "", definition: "" }, pos: "", domain: "", rootWordsOnly: false,
@@ -1364,13 +1413,29 @@ function sortRows(rows, key, dir) {
   });
 }
 
+// A generous safety cap, not a curation choice -- same reasoning as
+// MAX_CYCLIC_GROUPS_SHOWN above: a Domain seeded from WordNet can carry
+// hundreds of thousands of Words, and laying out that many <tr>
+// elements in one innerHTML assignment is what actually locks up the
+// tab, not anything about the data itself. Narrow with search/filters
+// to reach a word outside the first MAX_WORD_ROWS_SHOWN.
+const MAX_WORD_ROWS_SHOWN = 1000;
+
 function renderWords() {
   let rows = filteredWords();
   const [key, dir] = state.sort.words;
   rows = sortRows(rows, key, dir);
+  const shown = rows.slice(0, MAX_WORD_ROWS_SHOWN);
   const body = document.getElementById("words-body");
   document.getElementById("words-empty").style.display = rows.length ? "none" : "block";
-  body.innerHTML = rows.map(w => \`
+  const note = document.getElementById("words-note");
+  if (rows.length > shown.length) {
+    note.style.display = "block";
+    note.textContent = \`Showing the first \${shown.length.toLocaleString()} of \${rows.length.toLocaleString()} matching words -- search or filter to narrow.\`;
+  } else {
+    note.style.display = "none";
+  }
+  body.innerHTML = shown.map(w => \`
     <tr data-word-id="\${w.id}" class="\${w.id === state.selected.words ? 'selected' : ''}">
       <td><span class="word-form">\${w.lexical_form}</span>\${w.is_common ? ' <span class="badge-common">common</span>' : ''}\${w.is_root_word ? ' <span class="badge-root-word">root word</span>' : ''}\${w.is_derivable_noun ? ' <span class="badge-derivable-noun">derivable noun</span>' : ''}</td>
       <td>\${posPill(w.pos)}</td>
@@ -1379,7 +1444,7 @@ function renderWords() {
       <td>\${w.register_codes.concat(w.editorial_labels).map(t => \`<span class="tag">\${titleCase(t)}</span>\`).join('')}</td>
       <td style="text-align:right" class="rel-count">\${w.relationship_count}</td>
     </tr>\`).join('');
-  document.getElementById("stat-words").textContent = rows.length;
+  document.getElementById("stat-words").textContent = OVER_CAPACITY ? TOTAL_WORD_COUNT : rows.length;
 }
 
 // panel is one of "words" / "hierarchy" / "cyclic" -- each tab owns its
@@ -2095,20 +2160,32 @@ function populateCyclicKindFilter() {
   if (state.cyclicKind) select.value = state.cyclicKind;
 }
 
+// Same reasoning as MAX_WORD_ROWS_SHOWN above -- a generous safety cap
+// on <tr> elements laid out at once, not a curation choice.
+const MAX_REL_ROWS_SHOWN = 1000;
+
 function renderRels() {
   let rows = filteredRels();
   const [key, dir] = state.sort.rels;
   rows = sortRows(rows, key, dir);
+  const shown = rows.slice(0, MAX_REL_ROWS_SHOWN);
   const body = document.getElementById("rels-body");
   document.getElementById("rels-empty").style.display = rows.length ? "none" : "block";
-  body.innerHTML = rows.map(r => \`
+  const note = document.getElementById("rels-note");
+  if (rows.length > shown.length) {
+    note.style.display = "block";
+    note.textContent = \`Showing the first \${shown.length.toLocaleString()} of \${rows.length.toLocaleString()} matching relationships -- search to narrow.\`;
+  } else {
+    note.style.display = "none";
+  }
+  body.innerHTML = shown.map(r => \`
     <tr>
       <td><span class="word-form">\${r.source_text}</span> \${r.source_pos ? posPill(r.source_pos) : ''}</td>
       <td>\${relPill(r.kind, r.group)}</td>
       <td><span class="word-form">\${r.target_text}</span> \${r.target_pos ? posPill(r.target_pos) : ''}</td>
       <td style="text-align:right" class="confidence">\${r.confidence.toFixed(4)}</td>
     </tr>\`).join('');
-  document.getElementById("stat-rels").textContent = rows.length;
+  document.getElementById("stat-rels").textContent = OVER_CAPACITY ? TOTAL_RELATIONSHIP_COUNT : rows.length;
 }
 
 function renderUnresolved() {
