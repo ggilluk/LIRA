@@ -10,8 +10,14 @@
 export enum VectorPrimitiveRootWord {
   MANIFESTATION = 0,
   AGENCY = 1,
-  ORIGIN = 2,
+  // Seeded as "origination" (root_words.json), not "origin" -- renamed
+  // so the Vector/Primitive root word for the Where/Place row is a
+  // genuine derivable noun (Word.isDerivableNoun's own docstring, "to
+  // originate" -> "origination"), which "origin" never was.
+  ORIGINATION = 2,
   INSTANCE = 3,
   CAUSE = 4,
-  MECHANISM = 5,
+  // Seeded as "trigger" (root_words.json), not "mechanism" -- renamed
+  // for the same isDerivableNoun reason as WORK/ORIGINATION above.
+  TRIGGER = 5,
 }

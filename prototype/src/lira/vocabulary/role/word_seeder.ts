@@ -483,6 +483,7 @@ export class WordSeeder {
       vectorPrimitiveRootWord: entry.vector_primitive_root_word
         ? VectorPrimitiveRootWord[entry.vector_primitive_root_word as keyof typeof VectorPrimitiveRootWord]
         : undefined,
+      isDerivableNoun: entry.is_derivable_noun ?? false,
     });
   }
 
@@ -520,6 +521,7 @@ export class WordSeeder {
       hypernym_root_word: word.hypernymRootWord !== undefined ? HypernymRootWord[word.hypernymRootWord] : null,
       holonym_root_word: word.holonymRootWord !== undefined ? HolonymRootWord[word.holonymRootWord] : null,
       vector_primitive_root_word: word.vectorPrimitiveRootWord !== undefined ? VectorPrimitiveRootWord[word.vectorPrimitiveRootWord] : null,
+      is_derivable_noun: word.isDerivableNoun,
       source_references: word.sourceReferences.map((ref) => ({
         source_name: ref.sourceName.value,
         source_version: ref.sourceVersion?.value ?? null,

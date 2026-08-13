@@ -79,6 +79,7 @@ interface WordRecord {
   editorial_labels: string[];
   is_common: boolean;
   is_root_word: boolean;
+  is_derivable_noun: boolean;
   domain: string | null;
   is_fully_hydrated: boolean;
   sources: string[];
@@ -247,6 +248,7 @@ export class DictionaryView {
         editorial_labels: word.editorialLabels.map((label) => EditorialLabel[label]),
         is_common: word.isCommon,
         is_root_word: word.isRootWord,
+        is_derivable_noun: word.isDerivableNoun,
         domain: this.domainLabel(word),
         is_fully_hydrated: word.isFullyHydrated,
         sources: word.sourceReferences.map((ref) => ref.sourceName.value),
@@ -615,6 +617,13 @@ tbody tr:hover { background: color-mix(in srgb, var(--accent) 6%, transparent); 
   font-size: 0.68rem;
   color: #7A5CA6;
   border: 1px solid #7A5CA6;
+  border-radius: 4px;
+  padding: 1px 6px;
+}
+.badge-derivable-noun {
+  font-size: 0.68rem;
+  color: #B08900;
+  border: 1px solid #B08900;
   border-radius: 4px;
   padding: 1px 6px;
 }
@@ -1363,7 +1372,7 @@ function renderWords() {
   document.getElementById("words-empty").style.display = rows.length ? "none" : "block";
   body.innerHTML = rows.map(w => \`
     <tr data-word-id="\${w.id}" class="\${w.id === state.selected.words ? 'selected' : ''}">
-      <td><span class="word-form">\${w.lexical_form}</span>\${w.is_common ? ' <span class="badge-common">common</span>' : ''}\${w.is_root_word ? ' <span class="badge-root-word">root word</span>' : ''}</td>
+      <td><span class="word-form">\${w.lexical_form}</span>\${w.is_common ? ' <span class="badge-common">common</span>' : ''}\${w.is_root_word ? ' <span class="badge-root-word">root word</span>' : ''}\${w.is_derivable_noun ? ' <span class="badge-derivable-noun">derivable noun</span>' : ''}</td>
       <td>\${posPill(w.pos)}</td>
       <td>\${domainPill(w.domain)}</td>
       <td class="definition">\${w.definition || w.gloss || '<span style="opacity:.5">&mdash;</span>'}</td>
@@ -1431,7 +1440,7 @@ function renderDetailPanel(panel) {
   empty.style.display = "none";
   content.style.display = "block";
   content.innerHTML = \`
-    <div class="detail-word">\${word.lexical_form}\${word.is_common ? ' <span class="badge-common">common</span>' : ''}\${word.is_root_word ? ' <span class="badge-root-word">root word</span>' : ''}\${word.is_fully_hydrated ? '' : ' <span class="badge-common" style="color:#C2544B;border-color:#C2544B">hydration pending</span>'}</div>
+    <div class="detail-word">\${word.lexical_form}\${word.is_common ? ' <span class="badge-common">common</span>' : ''}\${word.is_root_word ? ' <span class="badge-root-word">root word</span>' : ''}\${word.is_derivable_noun ? ' <span class="badge-derivable-noun">derivable noun</span>' : ''}\${word.is_fully_hydrated ? '' : ' <span class="badge-common" style="color:#C2544B;border-color:#C2544B">hydration pending</span>'}</div>
     <div style="margin-top:6px">\${posPill(word.pos)} \${domainPill(word.domain)}</div>
     <div class="detail-entry-id" title="Persistent Qualified Word Identity (domain + part of speech + word) -- stable across regenerations, unlike this word's transient graph id">Entry ID <code>\${word.entry_id}</code></div>
     <div class="detail-definition">\${renderDefinition(word)}</div>

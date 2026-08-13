@@ -13,5 +13,9 @@ export enum HolonymRootWord {
   DOMAIN = 2,
   TIMELINE = 3,
   DISCOURSE = 4,
-  FRAMEWORK = 5,
+  // Seeded as "work" (root_words.json), not "framework" -- renamed so
+  // the Holonym root word for the How/Operation row is a genuine
+  // derivable noun (Word.isDerivableNoun's own docstring), which
+  // "framework" never was.
+  WORK = 5,
 }

@@ -61,6 +61,12 @@ export interface WordFileEntry {
   hypernym_root_word?: string | null;
   holonym_root_word?: string | null;
   vector_primitive_root_word?: string | null;
+  /** Word.isDerivableNoun -- true for a NOUN entry considered derived
+   * from (or sharing its form with) a corresponding VERB sense. Optional
+   * (absent means false, same as WordSeeder.entryToWord()'s own
+   * `?? false`) since most files that predate this field never set it
+   * either way. */
+  is_derivable_noun?: boolean;
   /** Inflected forms grouped with their shared base lemma -- a prototype-
    * only schema optimisation (Python's own assets/common/en/ keeps the
    * original flat-array-plus-separate-relationship-file shape; this

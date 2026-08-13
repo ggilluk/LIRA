@@ -49,7 +49,8 @@
       "interrogative_root_word": "WHAT",
       "hypernym_root_word": null,
       "holonym_root_word": null,
-      "vector_primitive_root_word": null
+      "vector_primitive_root_word": null,
+      "is_derivable_noun": false
     },
     {
       "entry_id": "8165e42b-ebaf-40d8-93e9-08dfa6c6398c",
@@ -95,7 +96,8 @@
       "interrogative_root_word": "WHO",
       "hypernym_root_word": null,
       "holonym_root_word": null,
-      "vector_primitive_root_word": null
+      "vector_primitive_root_word": null,
+      "is_derivable_noun": false
     },
     {
       "entry_id": "fc9daf2f-1cfd-42ad-b187-55ec2cef5da8",
@@ -109,8 +111,8 @@
       "part_of_speech": "NOUN",
       "closed_class": false,
       "closed_class_kind": "root_word",
-      "definition": "The interrogative root word for an unspecified place or origin.",
-      "gloss": "The interrogative root word for an unspecified place or origin.",
+      "definition": "The interrogative root word for an unspecified place or origination.",
+      "gloss": "The interrogative root word for an unspecified place or origination.",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -141,7 +143,8 @@
       "interrogative_root_word": "WHERE",
       "hypernym_root_word": null,
       "holonym_root_word": null,
-      "vector_primitive_root_word": null
+      "vector_primitive_root_word": null,
+      "is_derivable_noun": false
     },
     {
       "entry_id": "0ca14a93-ab34-47be-8c1e-e7e23a7a641b",
@@ -187,7 +190,8 @@
       "interrogative_root_word": "WHEN",
       "hypernym_root_word": null,
       "holonym_root_word": null,
-      "vector_primitive_root_word": null
+      "vector_primitive_root_word": null,
+      "is_derivable_noun": false
     },
     {
       "entry_id": "d7d75c0d-8b87-48f2-a0a3-6cd11c7d77fe",
@@ -233,7 +237,8 @@
       "interrogative_root_word": "WHY",
       "hypernym_root_word": null,
       "holonym_root_word": null,
-      "vector_primitive_root_word": null
+      "vector_primitive_root_word": null,
+      "is_derivable_noun": false
     },
     {
       "entry_id": "f94a8382-c76e-43b8-998e-1a6f70cf0c3d",
@@ -247,8 +252,8 @@
       "part_of_speech": "NOUN",
       "closed_class": false,
       "closed_class_kind": "root_word",
-      "definition": "The interrogative root word for an unspecified operation or mechanism.",
-      "gloss": "The interrogative root word for an unspecified operation or mechanism.",
+      "definition": "The interrogative root word for an unspecified operation or trigger.",
+      "gloss": "The interrogative root word for an unspecified operation or trigger.",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -279,7 +284,8 @@
       "interrogative_root_word": "HOW",
       "hypernym_root_word": null,
       "holonym_root_word": null,
-      "vector_primitive_root_word": null
+      "vector_primitive_root_word": null,
+      "is_derivable_noun": false
     },
     {
       "entry_id": "2cc3731c-048f-484b-8f9a-ab3fc9d8c2f9",
@@ -325,7 +331,8 @@
       "interrogative_root_word": null,
       "hypernym_root_word": "ENTITY",
       "holonym_root_word": null,
-      "vector_primitive_root_word": null
+      "vector_primitive_root_word": null,
+      "is_derivable_noun": false
     },
     {
       "entry_id": "2f3473fd-21a3-4f87-a465-fe8f2f7b3a57",
@@ -371,7 +378,8 @@
       "interrogative_root_word": null,
       "hypernym_root_word": "PARTY_ROLE",
       "holonym_root_word": null,
-      "vector_primitive_root_word": null
+      "vector_primitive_root_word": null,
+      "is_derivable_noun": false
     },
     {
       "entry_id": "afafe1a4-155d-4175-b347-2bd21edf11aa",
@@ -417,7 +425,8 @@
       "interrogative_root_word": null,
       "hypernym_root_word": "PARTY_ROLE",
       "holonym_root_word": null,
-      "vector_primitive_root_word": null
+      "vector_primitive_root_word": null,
+      "is_derivable_noun": false
     },
     {
       "entry_id": "8ae9c889-e1d8-4bf3-8460-72a8a84e2cd4",
@@ -463,7 +472,8 @@
       "interrogative_root_word": null,
       "hypernym_root_word": "PLACE",
       "holonym_root_word": null,
-      "vector_primitive_root_word": null
+      "vector_primitive_root_word": null,
+      "is_derivable_noun": false
     },
     {
       "entry_id": "10062352-88b1-4ddf-b6d4-e4d18c5d5cdf",
@@ -509,7 +519,8 @@
       "interrogative_root_word": null,
       "hypernym_root_word": "TIME",
       "holonym_root_word": null,
-      "vector_primitive_root_word": null
+      "vector_primitive_root_word": null,
+      "is_derivable_noun": false
     },
     {
       "entry_id": "a9b4cf61-054a-46bb-9533-8524765a604c",
@@ -555,7 +566,8 @@
       "interrogative_root_word": null,
       "hypernym_root_word": "REASON",
       "holonym_root_word": null,
-      "vector_primitive_root_word": null
+      "vector_primitive_root_word": null,
+      "is_derivable_noun": false
     },
     {
       "entry_id": "0a314101-fd03-4ead-b2f8-ef5419a89a6a",
@@ -601,7 +613,8 @@
       "interrogative_root_word": null,
       "hypernym_root_word": "OPERATION",
       "holonym_root_word": null,
-      "vector_primitive_root_word": null
+      "vector_primitive_root_word": null,
+      "is_derivable_noun": true
     },
     {
       "entry_id": "d19ce85f-1fce-4aa0-a1f0-7935fbb4daf4",
@@ -647,7 +660,8 @@
       "interrogative_root_word": null,
       "hypernym_root_word": null,
       "holonym_root_word": "SYSTEM",
-      "vector_primitive_root_word": null
+      "vector_primitive_root_word": null,
+      "is_derivable_noun": false
     },
     {
       "entry_id": "8ea6ebfc-42a6-44aa-8ead-760933d008c4",
@@ -693,7 +707,8 @@
       "interrogative_root_word": null,
       "hypernym_root_word": null,
       "holonym_root_word": "SOCIETY",
-      "vector_primitive_root_word": null
+      "vector_primitive_root_word": null,
+      "is_derivable_noun": false
     },
     {
       "entry_id": "7783af25-7b31-46b1-a454-e0b41ef3eadb",
@@ -707,8 +722,8 @@
       "part_of_speech": "NOUN",
       "closed_class": false,
       "closed_class_kind": "root_word",
-      "definition": "The holonym root word for place: the whole a place's origin is a part of, a bounded sphere of activity or knowledge.",
-      "gloss": "The holonym root word for place: the whole a place's origin is a part of, a bounded sphere of activity or knowledge.",
+      "definition": "The holonym root word for place: the whole a place's origination is a part of, a bounded sphere of activity or knowledge.",
+      "gloss": "The holonym root word for place: the whole a place's origination is a part of, a bounded sphere of activity or knowledge.",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -739,7 +754,8 @@
       "interrogative_root_word": null,
       "hypernym_root_word": null,
       "holonym_root_word": "DOMAIN",
-      "vector_primitive_root_word": null
+      "vector_primitive_root_word": null,
+      "is_derivable_noun": false
     },
     {
       "entry_id": "833d7505-92ed-4d7d-b329-acc30ee7bc4e",
@@ -785,7 +801,8 @@
       "interrogative_root_word": null,
       "hypernym_root_word": null,
       "holonym_root_word": "TIMELINE",
-      "vector_primitive_root_word": null
+      "vector_primitive_root_word": null,
+      "is_derivable_noun": false
     },
     {
       "entry_id": "b704c063-c784-4b23-ad01-d36f01582f7a",
@@ -831,22 +848,23 @@
       "interrogative_root_word": null,
       "hypernym_root_word": null,
       "holonym_root_word": "DISCOURSE",
-      "vector_primitive_root_word": null
+      "vector_primitive_root_word": null,
+      "is_derivable_noun": false
     },
     {
       "entry_id": "0e8b4384-fc4d-4e7a-b08a-547ef03b9d43",
       "domain_tag": "root_word.common",
-      "lexical_form": "framework",
-      "normalised_form": "framework",
-      "text": "framework",
+      "lexical_form": "work",
+      "normalised_form": "work",
+      "text": "work",
       "version": "1.0",
       "language_code": "en",
       "script_code": "Latn",
       "part_of_speech": "NOUN",
       "closed_class": false,
       "closed_class_kind": "root_word",
-      "definition": "The holonym root word for operation: the whole an operation's mechanism is a part of, a structure within which a process functions.",
-      "gloss": "The holonym root word for operation: the whole an operation's mechanism is a part of, a structure within which a process functions.",
+      "definition": "The holonym root word for operation: the whole an operation's trigger is a part of, the sustained activity within which a process functions.",
+      "gloss": "The holonym root word for operation: the whole an operation's trigger is a part of, the sustained activity within which a process functions.",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -876,8 +894,9 @@
       "is_root_word": true,
       "interrogative_root_word": null,
       "hypernym_root_word": null,
-      "holonym_root_word": "FRAMEWORK",
-      "vector_primitive_root_word": null
+      "holonym_root_word": "WORK",
+      "vector_primitive_root_word": null,
+      "is_derivable_noun": true
     },
     {
       "entry_id": "97db4797-32bb-4049-98d5-3a73074018a0",
@@ -923,7 +942,8 @@
       "interrogative_root_word": null,
       "hypernym_root_word": null,
       "holonym_root_word": null,
-      "vector_primitive_root_word": "MANIFESTATION"
+      "vector_primitive_root_word": "MANIFESTATION",
+      "is_derivable_noun": true
     },
     {
       "entry_id": "c0ca545b-1409-43be-ba00-535cb71c8b55",
@@ -969,22 +989,23 @@
       "interrogative_root_word": null,
       "hypernym_root_word": null,
       "holonym_root_word": null,
-      "vector_primitive_root_word": "AGENCY"
+      "vector_primitive_root_word": "AGENCY",
+      "is_derivable_noun": false
     },
     {
       "entry_id": "2d15fed4-09fb-4963-8036-24e9d16028f1",
       "domain_tag": "root_word.common",
-      "lexical_form": "origin",
-      "normalised_form": "origin",
-      "text": "origin",
+      "lexical_form": "origination",
+      "normalised_form": "origination",
+      "text": "origination",
       "version": "1.0",
       "language_code": "en",
       "script_code": "Latn",
       "part_of_speech": "NOUN",
       "closed_class": false,
       "closed_class_kind": "root_word",
-      "definition": "The vector/primitive root word for place: the point or place where something begins or is derived from.",
-      "gloss": "The vector/primitive root word for place: the point or place where something begins or is derived from.",
+      "definition": "The vector/primitive root word for place: the act or process by which something originates or is brought into being.",
+      "gloss": "The vector/primitive root word for place: the act or process by which something originates or is brought into being.",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -1015,7 +1036,8 @@
       "interrogative_root_word": null,
       "hypernym_root_word": null,
       "holonym_root_word": null,
-      "vector_primitive_root_word": "ORIGIN"
+      "vector_primitive_root_word": "ORIGINATION",
+      "is_derivable_noun": true
     },
     {
       "entry_id": "a09c9a55-7393-419f-a9d0-1f751df1d27c",
@@ -1061,7 +1083,8 @@
       "interrogative_root_word": null,
       "hypernym_root_word": null,
       "holonym_root_word": null,
-      "vector_primitive_root_word": "INSTANCE"
+      "vector_primitive_root_word": "INSTANCE",
+      "is_derivable_noun": false
     },
     {
       "entry_id": "f682a212-d774-4570-9709-735b08e4a846",
@@ -1107,22 +1130,23 @@
       "interrogative_root_word": null,
       "hypernym_root_word": null,
       "holonym_root_word": null,
-      "vector_primitive_root_word": "CAUSE"
+      "vector_primitive_root_word": "CAUSE",
+      "is_derivable_noun": false
     },
     {
       "entry_id": "678633f2-8894-40b1-84f8-cf6f6edc0b98",
       "domain_tag": "root_word.common",
-      "lexical_form": "mechanism",
-      "normalised_form": "mechanism",
-      "text": "mechanism",
+      "lexical_form": "trigger",
+      "normalised_form": "trigger",
+      "text": "trigger",
       "version": "1.0",
       "language_code": "en",
       "script_code": "Latn",
       "part_of_speech": "NOUN",
       "closed_class": false,
       "closed_class_kind": "root_word",
-      "definition": "The vector/primitive root word for operation: the device or process by which something operates.",
-      "gloss": "The vector/primitive root word for operation: the device or process by which something operates.",
+      "definition": "The vector/primitive root word for operation: the immediate stimulus or event that sets a process operating.",
+      "gloss": "The vector/primitive root word for operation: the immediate stimulus or event that sets a process operating.",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -1153,7 +1177,8 @@
       "interrogative_root_word": null,
       "hypernym_root_word": null,
       "holonym_root_word": null,
-      "vector_primitive_root_word": "MECHANISM"
+      "vector_primitive_root_word": "TRIGGER",
+      "is_derivable_noun": true
     }
   ]
 }

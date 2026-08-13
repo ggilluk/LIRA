@@ -223,6 +223,32 @@ that filters the table down to just these 25 entries, and a small
 "root word" badge next to any root word's own name, alongside its
 existing "common" badge.
 
+Three of the 25 words were later renamed to genuine derivable nouns:
+`HolonymRootWord.FRAMEWORK` -> `WORK` ("framework" has no verb
+counterpart at all), `VectorPrimitiveRootWord.MECHANISM` -> `TRIGGER`,
+and `VectorPrimitiveRootWord.ORIGIN` -> `ORIGINATION` (the suffix-
+derived nominalisation of "originate", matching "operate" ->
+`operation`/"manifest" -> `manifestation`'s existing pattern) --
+`root_words.json`'s entries and every cross-referencing definition
+(`"where"`, `"how"`, `"domain"`) were updated to match, keeping the
+same `entry_id`s (an edit, not a new entry).
+
+`Word` gained a sixth field, `isDerivableNoun` (defaults `false`),
+true for a NOUN considered derived from -- or sharing its form with --
+a corresponding VERB sense: a suffix-derived nominalisation
+("operate"/"manifest"/"originate") or a genuine zero-derivation
+noun/verb pair ("work", "trigger"). Only a flag -- it doesn't itself
+wire the `NOMINALISATION` `LexicalRelationship` edge to the verb (see
+`relationships/morphological_relationships.json` for that, where one
+already exists for `operate`/`manifest`). Set `true` on exactly 5 of
+the 25 root words -- `operation`, `manifestation`, `work`, `trigger`,
+`origination` -- `false` (the default) on the other 20, including
+words with a same-form VERB homograph the property deliberately
+doesn't count as "derivable" (e.g. `cause`, whose verb sense is denominal
+-- derived *from* the noun, the opposite direction). `DictionaryView`
+shows a small "derivable noun" badge next to any such Word's name,
+alongside its "common"/"root word" badges.
+
 ### Linguistics Layer (Service ported and wired in; new Portal UI)
 
 Ported from `src/lira/linguistics/` -- `data/` and `role/` (the full

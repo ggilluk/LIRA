@@ -140,6 +140,19 @@ export interface Word extends LinguisticUnit {
   hypernymRootWord?: HypernymRootWord;
   holonymRootWord?: HolonymRootWord;
   vectorPrimitiveRootWord?: VectorPrimitiveRootWord;
+
+  // True for a NOUN Word that can be considered derived from (or shares
+  // its lexical form with) a corresponding VERB sense -- a suffix-
+  // derived nominalisation ("operate" -> "operation", "manifest" ->
+  // "manifestation", "originate" -> "origination") or a genuine
+  // zero-derivation noun/verb pair ("work", "trigger"). Defaults false
+  // via createWord(); never set true by hand outside WordSeeder's own
+  // entryToWord(). Not itself a LexicalRelationship -- this only flags
+  // that the Word's own NOUN sense is a derivable one, it doesn't wire
+  // the actual NOMINALISATION edge to the verb (see
+  // relationships/morphological_relationships.json for that, where one
+  // already exists).
+  isDerivableNoun: boolean;
 }
 
 export type WordInit = Pick<Word, "text" | "partOfSpeech"> & Partial<Omit<Word, "text" | "partOfSpeech">>;
@@ -155,6 +168,7 @@ export function createWord(init: WordInit): Word {
     isCommon: false,
     isFullyHydrated: true,
     isRootWord: false,
+    isDerivableNoun: false,
     uuid: init.uuid ?? { value: newUuid() },
     entryId: init.entryId ?? { value: newUuid() },
     version: init.version ?? { value: "1.0" },
