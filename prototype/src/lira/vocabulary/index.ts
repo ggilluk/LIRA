@@ -13,6 +13,7 @@ export { LexicalRelationshipProcessor } from "./role/lexical_relationship_proces
 export { PartOfSpeechIdentifier } from "./role/part_of_speech_identifier";
 export { RelationshipSeeder } from "./role/relationship_seeder";
 export { WordSeeder } from "./role/word_seeder";
+export { loadWordNetSynsets, type WordNetSynset } from "./role/wordnet_loader";
 
 export type { AttributeValue } from "./data/attribute_value";
 export { type DefinitionWordReference, isResolved } from "./data/definition_word_reference";

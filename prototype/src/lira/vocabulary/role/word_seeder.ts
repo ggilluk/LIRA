@@ -34,6 +34,9 @@ import { HypernymRootWord } from "../data/hypernym_root_word";
 import { InterrogativeRootWord } from "../data/interrogative_root_word";
 import { VectorPrimitiveRootWord } from "../data/vector_primitive_root_word";
 import type { Dictionary } from "../data/dictionary";
+import { LexicalRelationshipStore } from "../data/lexical_relationship_store";
+import { LexicalRelationshipType } from "../data/lexical_relationship_type";
+import type { SourceReference } from "../data/source_reference";
 import { copyWordWithFreshUuid, createWord, type Word } from "../data/word";
 import {
   languageHasCommonCache,
@@ -43,6 +46,8 @@ import {
   type WordFileEntry,
   type WordManifestDocument,
 } from "./asset_loader";
+import type { LexicalRelationshipProcessor } from "./lexical_relationship_processor";
+import { loadWordNetSynsets, type WordNetSynset } from "./wordnet_loader";
 
 /** One flattened nested form's link back to its base lemma, keyed by
  * entryId (the stable Qualified Word Identity, unaffected by
@@ -114,6 +119,26 @@ export const SUPPLEMENTARY_FILES = [
 export const PROMOTED_FILE = "promoted_words.json";
 export const MANIFEST_FILE = "manifest.json";
 const OPEN_CLASSES = [PartOfSpeech.NOUN, PartOfSpeech.VERB, PartOfSpeech.ADJECTIVE, PartOfSpeech.ADVERB];
+
+// seedWordNet's own constants -- see that method's docstring.
+const WORDNET_SOURCE_REFERENCE: SourceReference = {
+  sourceName: { value: "Princeton WordNet 3.1" },
+  sourceVersion: { value: "3.1" },
+  referenceUri: { value: "https://wordnet.princeton.edu/" },
+  licenceIdentifier: { value: "Princeton WordNet License" },
+};
+const WORDNET_SYNSET_ID_SCHEME = {
+  schemeId: "wn31",
+  schemeAgencyName: "Princeton University",
+  schemeUri: "https://wordnet.princeton.edu/",
+} as const;
+// Every SYNONYM edge seedWordNet creates comes straight from WordNet
+// synset membership, a curated linguistic fact, not an inference with
+// genuine uncertainty attached -- same as-good-as-certain weight
+// RelationshipSeeder uses for its own curated relationships
+// (relationship_seeder.ts's own SEEDER_DEFAULT_WEIGHT). 0.9999 rather
+// than a literal 1.0: certainty is never asserted as exactly 1.0.
+const WORDNET_SEEDER_DEFAULT_WEIGHT = 0.9999;
 
 interface PromotedDocEntry extends WordFileEntry {
   reference_count?: number;
@@ -385,6 +410,119 @@ export class WordSeeder {
 
   seedDomain(domain: { vocabulary: { dictionary: Dictionary } }): number {
     return this.seedClosedClassWords(domain.vocabulary.dictionary);
+  }
+
+  /** Seeds `domain` from the bundled Princeton WordNet 3.1 dict/ files
+   * (assets/wordnet/, loaded via wordnet_loader.ts) rather than the
+   * Common Vocabulary Cache -- a separate, independent source, so
+   * unlike seedClosedClassWords this is never implied by seedDomain and
+   * must be called on its own.
+   *
+   * A WordNet synset IS a LIRA Domain+Word (Word.synsetId's own
+   * docstring): both name one sense, not one spelling. So each synset's
+   * member lemmas become one Word apiece (isCommon=true, domainTag
+   * `wordnet.<synsetId>` so true WordNet polysemy -- the same lemma in
+   * more than one synset -- lands as distinct Words the same way
+   * root_words.json's homographs do, word_seeder.ts's own
+   * SUPPLEMENTARY_FILES docstring), and every pairwise combination of a
+   * synset's members is wired together with a SYNONYM
+   * LexicalRelationship -- the direct encoding of "wordnet uses
+   * synsets, LIRA uses synonym relationships": querying synonyms() on
+   * any one member (word.ts, direction="both") already recovers the
+   * synset's full membership from either endpoint without this needing
+   * to store the group itself anywhere.
+   *
+   * Idempotent like seedClosedClassWords: a lemma already present under
+   * the same partOfSpeech and domainTag is reused rather than
+   * duplicated, and an already-created SYNONYM edge is never recreated,
+   * so calling this more than once against the same Domain is safe.
+   *
+   * Async, unlike seedClosedClassWords -- loadWordNetSynsets() fetches
+   * its dict/ text via a lazy `import()` (wordnet_loader.ts's own
+   * docstring on why it isn't bundled eagerly like the Common
+   * Vocabulary Cache), so nothing here can resolve synchronously. */
+  async seedWordNet(domain: {
+    vocabulary: {
+      dictionary: Dictionary;
+      lexicalRelationships: LexicalRelationshipStore;
+      lexicalRelationshipProcessor: LexicalRelationshipProcessor;
+    };
+  }): Promise<{ wordsSeeded: number; relationshipsSeeded: number }> {
+    const dictionary = domain.vocabulary.dictionary;
+    const store = domain.vocabulary.lexicalRelationships;
+    const processor = domain.vocabulary.lexicalRelationshipProcessor;
+
+    // LexicalRelationshipStore.outgoing() is a linear scan over every
+    // relationship (fine for RelationshipSeeder's own few thousand
+    // Common Vocabulary Relationship Cache edges, relationship_seeder.ts's
+    // own relationshipExists) -- but WordNet seeds far more SYNONYM
+    // edges than that, so calling it once per candidate pair here would
+    // turn idempotency checking quadratic. Scanning the store once
+    // up front into a Set instead keeps each pair's check O(1), the
+    // same reasoning Dictionary's byText/byUuid maps already apply to
+    // lookup()/lookupAll() (dictionary.ts's own module docstring).
+    const existingSynonymPairs = new Set<string>();
+    for (const relationship of store.all()) {
+      if (relationship.relationshipType !== LexicalRelationshipType.SYNONYM) continue;
+      existingSynonymPairs.add(`${relationship.sourceWordId.value}|${relationship.targetWordId.value}`);
+    }
+
+    let wordsSeeded = 0;
+    let relationshipsSeeded = 0;
+
+    for (const synset of await loadWordNetSynsets()) {
+      const domainTag = `wordnet.${synset.synsetId}`;
+      const members: Word[] = [];
+      for (const lemma of synset.lemmas) {
+        if (lemma.length === 0) continue;
+        const existing = dictionary
+          .lookupAll(lemma)
+          .find((word) => word.partOfSpeech === synset.partOfSpeech && word.domainTag?.value === domainTag);
+        if (existing !== undefined) {
+          members.push(existing);
+          continue;
+        }
+        const word = this.synsetMemberToWord(synset, lemma, domainTag);
+        dictionary.append(word);
+        members.push(word);
+        wordsSeeded += 1;
+      }
+
+      for (let i = 0; i < members.length; i++) {
+        for (let j = i + 1; j < members.length; j++) {
+          const pairKey = `${members[i].uuid.value}|${members[j].uuid.value}`;
+          if (existingSynonymPairs.has(pairKey)) continue;
+          processor.create({
+            sourceWordId: members[i].uuid.value,
+            targetWordId: members[j].uuid.value,
+            relationshipType: LexicalRelationshipType.SYNONYM,
+            sourceReferences: [WORDNET_SOURCE_REFERENCE],
+            confidence: WORDNET_SEEDER_DEFAULT_WEIGHT,
+            provenance: WORDNET_SEEDER_DEFAULT_WEIGHT,
+            temporal: WORDNET_SEEDER_DEFAULT_WEIGHT,
+            activation: WORDNET_SEEDER_DEFAULT_WEIGHT,
+          });
+          existingSynonymPairs.add(pairKey);
+          relationshipsSeeded += 1;
+        }
+      }
+    }
+
+    return { wordsSeeded, relationshipsSeeded };
+  }
+
+  private synsetMemberToWord(synset: WordNetSynset, lemma: string, domainTag: string): Word {
+    return createWord({
+      text: lemma,
+      partOfSpeech: synset.partOfSpeech,
+      languageCode: { value: this.languageCode },
+      definition: synset.definition ? { value: synset.definition } : undefined,
+      usageNotes: synset.examples.map((example) => ({ value: example })),
+      domainTag: { value: domainTag },
+      synsetId: { value: synset.synsetId, ...WORDNET_SYNSET_ID_SCHEME },
+      isCommon: true,
+      sourceReferences: [WORDNET_SOURCE_REFERENCE],
+    });
   }
 
   /** Adds `word` to the in-memory promoted-words overlay if it belongs

@@ -10,6 +10,7 @@ import { DictionaryProcessor } from "./role/dictionary_processor";
 import { LexicalRelationshipProcessor } from "./role/lexical_relationship_processor";
 import { RelationshipSeeder } from "./role/relationship_seeder";
 import { WordSeeder } from "./role/word_seeder";
+import { loadWordNetSynsets } from "./role/wordnet_loader";
 
 describe("Dictionary", () => {
   it("lookupAll returns every homograph sharing one surface text", () => {
@@ -218,6 +219,55 @@ describe("WordSeeder against the bundled Common Vocabulary Cache", () => {
     // exactly as if it had never been nested on disk.
     expect(dictionary.lookup("measured")?.partOfSpeech).toBe(PartOfSpeech.VERB);
   });
+});
+
+describe("loadWordNetSynsets against the bundled Princeton WordNet 3.1 dict/ files", () => {
+  it("parses the real synset data, one entry per line", async () => {
+    const synsets = await loadWordNetSynsets();
+    expect(synsets.length).toBeGreaterThan(100000);
+
+    // 01385012-a: "large, big" -- above average in size, ... (data.adj).
+    const largeBig = synsets.find((s) => s.synsetId === "01385012-a");
+    expect(largeBig?.lemmas).toEqual(expect.arrayContaining(["large", "big"]));
+    expect(largeBig?.partOfSpeech).toBe(PartOfSpeech.ADJECTIVE);
+    expect(largeBig?.definition).toContain("above average in size");
+    expect(largeBig?.examples).toEqual(expect.arrayContaining(["a large city"]));
+  }, 30000);
+});
+
+describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/ files", () => {
+  it("seeds every synset member as a Word carrying its synsetId, wired together by SYNONYM, and stays idempotent", async () => {
+    const dictionary = new Dictionary();
+    const lexicalRelationships = new LexicalRelationshipStore();
+    const lexicalRelationshipProcessor = new LexicalRelationshipProcessor(
+      lexicalRelationships,
+      new LexicalRelationshipSystemPropertyTensor(),
+    );
+    const seeder = new WordSeeder("en");
+    const domain = { vocabulary: { dictionary, lexicalRelationships, lexicalRelationshipProcessor } };
+
+    const first = await seeder.seedWordNet(domain);
+    expect(first.wordsSeeded).toBeGreaterThan(100000);
+    expect(first.relationshipsSeeded).toBeGreaterThan(10000);
+    expect(dictionary.totalEntries()).toBe(first.wordsSeeded);
+    expect(lexicalRelationships.totalRelationships()).toBe(first.relationshipsSeeded);
+
+    const big = dictionary
+      .lookupAll("big")
+      .find((word) => word.partOfSpeech === PartOfSpeech.ADJECTIVE && word.synsetId?.value === "01385012-a");
+    expect(big).toBeDefined();
+    expect(big?.isCommon).toBe(true);
+    expect(big?.synsetId?.schemeId).toBe("wn31");
+    expect(synonyms(big!, lexicalRelationships, dictionary).map((w) => w.text)).toEqual(["large"]);
+
+    // Re-seeding the same Domain neither duplicates Words nor
+    // recreates SYNONYM edges.
+    const second = await seeder.seedWordNet(domain);
+    expect(second.wordsSeeded).toBe(0);
+    expect(second.relationshipsSeeded).toBe(0);
+    expect(dictionary.totalEntries()).toBe(first.wordsSeeded);
+    expect(lexicalRelationships.totalRelationships()).toBe(first.relationshipsSeeded);
+  }, 30000);
 });
 
 describe("RelationshipSeeder against the bundled Common Relationship Cache", () => {

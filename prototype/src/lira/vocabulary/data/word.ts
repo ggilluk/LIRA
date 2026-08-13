@@ -69,6 +69,19 @@ export interface Word extends LinguisticUnit {
   // many Domains end up holding their own runtime copy of it.
   entryId: Identifier;
 
+  // The Princeton WordNet 3.1 synset this Word corresponds to, when
+  // known ("00001740-n" -- an 8-digit zero-padded byte offset, a
+  // hyphen, then the synset's ss_type letter: n/v/a/s/r). A WordNet
+  // synset -- literally "a set of one or more synonyms" -- IS a LIRA
+  // Domain+Word: both name one sense, not one spelling, which is why
+  // LIRA models a WordNet synset as a set of Words joined by SYNONYM
+  // LexicalRelationships (word.ts's own synonyms()) rather than as a
+  // separate concept of its own -- synsetId is just that sense's
+  // upstream WordNet identity carried along, the same role entryId
+  // plays for the Common Vocabulary Cache. Undefined for a Word that
+  // didn't come from WordSeeder.seedWordNet (role/word_seeder.ts).
+  synsetId?: Identifier;
+
   version: Text;
   languageCode: Code;
   lexicalForm?: Text;
