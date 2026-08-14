@@ -10,7 +10,17 @@
  * Naming (3 reserved for a future fourth group).
  *
  * Matches the Vocabulary Layer developer specification, 6.2. Ported
- * from vocabulary/data/lexical_relationship_type.py. */
+ * from vocabulary/data/lexical_relationship_type.py.
+ *
+ * PERTAINYM through USAGE_DOMAIN are this prototype's own addition (no
+ * Python/spec equivalent) -- Princeton WordNet's dict/ files encode
+ * pointer types (hypernym `@`, meronym `%p`/`%m`/`%s`, similar-to `&`,
+ * domain `;c`/`;r`/`;u`, ...) the original spec's kind list has no
+ * member for; role/word_seeder.ts's own relationshipKindForPointer maps
+ * every WordNet pointer symbol onto either one of these or an existing
+ * kind above (e.g. `~` on a verb synset becomes TROPONYM, not a new
+ * kind, since LIRA already had that distinction). See each new member's
+ * own comment for which WordNet pointer symbol it came from. */
 export enum LexicalRelationshipType {
   // Morphological (group 0)
   // -- Base relation (category 0)
@@ -38,6 +48,16 @@ export enum LexicalRelationshipType {
   NOMINALISATION = 50,
   ADJECTIVAL_DERIVATION = 51,
   ADVERBIAL_DERIVATION = 52,
+  // WordNet's own "pertainym" pointer (`\`) -- an adjective's relational
+  // noun base ("presidential" pertains to "president") or an adverb's
+  // adjective base -- ported from role/word_seeder.ts's own
+  // pointer-to-kind mapping (relationshipKindForPointer). Distinct from
+  // ADJECTIVAL_DERIVATION/ADVERBIAL_DERIVATION: those already cover a
+  // clean base-to-derived-word pair (`+`, WordNet's "derivationally
+  // related form"); a pertainym is "relates to" rather than "is formed
+  // from", the same distinction WordNet itself draws between the two
+  // pointer symbols.
+  PERTAINYM = 53,
   // -- Pronoun Form (category 7 -- last available in this group; see
   // the module docstring's 3-bit category ceiling) -- deliberately not
   // DERIVED_FORM: a pronoun's object/possessive/reflexive form isn't a
@@ -54,12 +74,39 @@ export enum LexicalRelationshipType {
   // -- Similarity / Opposition (category 0)
   SYNONYM = 64,
   ANTONYM = 65,
+  // WordNet's `&` pointer, a satellite adjective synset's link to the
+  // head synset it clusters around ("dry" satellite -> "arid" head) --
+  // close in meaning, like SYNONYM, but WordNet itself keeps satellite
+  // and head as separate synsets rather than merging them into one, so
+  // this stays its own kind rather than becoming another SYNONYM edge.
+  SIMILAR_TO = 66,
   // -- Hierarchy (category 1)
   HYPERNYM = 72,
   HYPONYM = 73,
+  // WordNet's `@i`/`~i` pointers -- class-inclusion (HYPERNYM/HYPONYM,
+  // "a dog is a kind of mammal") vs instance-of ("Fido is an instance
+  // of dog", a named individual rather than a subtype) are genuinely
+  // different ontological relations, which is exactly why WordNet gives
+  // them their own pointer symbols instead of reusing `@`/`~`.
+  INSTANCE_HYPERNYM = 74,
+  INSTANCE_HYPONYM = 75,
   // -- Part-Whole (category 2)
   MERONYM = 80,
   HOLONYM = 81,
+  // WordNet splits part-whole into three kinds by what the "part" is --
+  // a piece of a larger whole (%p/#p: "wheel" part of "car"), a member
+  // of a group (%m/#m: "tree" member of "forest"), or a substance a
+  // whole is made of (%s/#s: "wood" substance of "table"). MERONYM/
+  // HOLONYM above stay the general Common-Vocabulary-Cache kind
+  // (unqualified, curated by hand); WordNet's own seeded data always
+  // arrives already split into one of these three, so it's seeded that
+  // way rather than collapsed back into the unqualified pair.
+  PART_MERONYM = 82,
+  PART_HOLONYM = 83,
+  MEMBER_MERONYM = 84,
+  MEMBER_HOLONYM = 85,
+  SUBSTANCE_MERONYM = 86,
+  SUBSTANCE_HOLONYM = 87,
   // -- Manner (category 3)
   TROPONYM = 88,
   // -- Entailment / Causation (category 4)
@@ -67,6 +114,34 @@ export enum LexicalRelationshipType {
   CAUSE = 97,
   // -- Unspecified (category 5)
   RELATED = 104,
+  // WordNet's `^` pointer -- a hand-picked "see also" cross-reference
+  // between related concepts that don't fit a crisper kind above (e.g.
+  // a verb pointing to a related-but-distinct verb). Kept apart from
+  // RELATED (LIRA's own general catch-all, not WordNet-specific) so a
+  // WordNet-seeded "see also" edge is traceable back to that pointer
+  // specifically.
+  ALSO_SEE = 105,
+  // WordNet's `$` pointer -- verb senses (in different synsets) close
+  // enough in meaning that WordNet groups them without merging the
+  // synsets outright, similar in spirit to SIMILAR_TO but verb-specific
+  // and never crossing the satellite/head adjective structure SIMILAR_TO
+  // is defined against.
+  VERB_GROUP = 106,
+  // WordNet's `=` pointer -- links an adjective to the noun naming the
+  // attribute/dimension it's a value of ("hot"/"cold" both attribute
+  // "temperature"). Neither hierarchy nor part-whole nor derivation;
+  // its own kind for the same reason ALSO_SEE and VERB_GROUP get theirs.
+  ATTRIBUTE = 107,
+  // -- Domain / Classification (category 6) -- WordNet's own `;c`/`;r`/
+  // `;u` (and their reciprocal `-c`/`-r`/`-u`, seeded as the same kind
+  // with source/target swapped -- role/word_seeder.ts's own
+  // relationshipKindForPointer) pointers: which subject-matter topic,
+  // dialect/regional usage, or register a word or sense belongs to.
+  // Classification, not similarity/hierarchy/part-whole/causation, so
+  // it gets a category of its own rather than crowding into Unspecified.
+  TOPIC_DOMAIN = 112,
+  REGION_DOMAIN = 113,
+  USAGE_DOMAIN = 114,
 
   // Orthographic and Naming (group 2)
   // -- Spelling Variation (category 0)

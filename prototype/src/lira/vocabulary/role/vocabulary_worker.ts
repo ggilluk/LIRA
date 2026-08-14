@@ -123,11 +123,17 @@ async function handleSeedWordNet(request: SeedWordNetRequest): Promise<void> {
   try {
     post({ type: "status", state: "running", detail: `Loading Princeton WordNet 3.1 for ${domain.name}…`, progress: 0 });
     const seeder = new WordSeeder("en");
-    const result = await seeder.seedWordNet(domain, (processed, total) => {
+    // Each pass reports its own 0->1 progress fraction (word_seeder.ts's
+    // own seedWordNet docstring on the two passes) -- the bar fills once
+    // for word/synonym seeding, then again for every other relationship
+    // kind, rather than trying to divide one bar's own fraction across
+    // two passes whose relative durations aren't known up front.
+    const phaseLabel: Record<"words" | "relationships", string> = { words: "words", relationships: "relationships" };
+    const result = await seeder.seedWordNet(domain, (phase, processed, total) => {
       post({
         type: "status",
         state: "running",
-        detail: `Seeding WordNet into ${domain.name} — ${processed.toLocaleString()} / ${total.toLocaleString()} synsets…`,
+        detail: `Seeding WordNet ${phaseLabel[phase]} into ${domain.name} — ${processed.toLocaleString()} / ${total.toLocaleString()} synsets…`,
         progress: processed / total,
       });
     });

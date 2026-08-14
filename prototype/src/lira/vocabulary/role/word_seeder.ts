@@ -47,7 +47,7 @@ import {
   type WordManifestDocument,
 } from "./asset_loader";
 import type { LexicalRelationshipProcessor } from "./lexical_relationship_processor";
-import { loadWordNetSynsets, type WordNetSynset } from "./wordnet_loader";
+import { loadWordNetSynsets, type WordNetPointer, type WordNetSynset } from "./wordnet_loader";
 
 /** One flattened nested form's link back to its base lemma, keyed by
  * entryId (the stable Qualified Word Identity, unaffected by
@@ -145,6 +145,142 @@ const WORDNET_SEEDER_DEFAULT_WEIGHT = 0.9999;
 // the per-postMessage-call overhead becoming visible against the
 // per-synset work it's reporting on.
 const PROGRESS_REPORT_INTERVAL = 2000;
+
+/** `+`/`<`'s own shared rule: which Derivation-category kind
+ * (lexical_relationship_type.ts) a cross-word derivation pointer becomes,
+ * chosen by the *target* word's own part of speech -- WordNet's pointer
+ * data names two related words without saying which specific
+ * derivational relationship holds between them (no "agent noun" vs
+ * "action noun" flag the way root_words.json's own curated entries can
+ * carry), so this is a coarser, POS-driven rule rather than a lookup
+ * against WordNet's own richer semantics: NOMINALISATION for a NOUN
+ * target, ADJECTIVAL_DERIVATION for ADJECTIVE, ADVERBIAL_DERIVATION for
+ * ADVERB, DERIVED_FORM (the generic catch-all) for anything else,
+ * including a same-part-of-speech pair (WordNet's `+` occasionally
+ * links two senses of the same word rather than crossing categories). */
+function derivationKind(sourcePos: PartOfSpeech, targetPos: PartOfSpeech): LexicalRelationshipType {
+  if (targetPos === sourcePos) return LexicalRelationshipType.DERIVED_FORM;
+  switch (targetPos) {
+    case PartOfSpeech.NOUN:
+      return LexicalRelationshipType.NOMINALISATION;
+    case PartOfSpeech.ADJECTIVE:
+      return LexicalRelationshipType.ADJECTIVAL_DERIVATION;
+    case PartOfSpeech.ADVERB:
+      return LexicalRelationshipType.ADVERBIAL_DERIVATION;
+    default:
+      return LexicalRelationshipType.DERIVED_FORM;
+  }
+}
+
+/** Maps one WordNet pointer symbol (WordNetPointer.symbol, wordnet_loader.ts)
+ * onto the LexicalRelationshipType it becomes, given the pointer's own
+ * source and target synsets' parts of speech -- `undefined` for a
+ * symbol this class doesn't recognise (none as of WordNet 3.1's own
+ * documented pointer set, but seedWordNetPointerRelationships skips
+ * rather than throws, so a future WordNet release adding a new symbol
+ * degrades to "not seeded" instead of failing the whole run).
+ *
+ * `swap: true` means the edge WordNet's own record implies runs target
+ * -> source, not source -> target -- true only for `-c`/`-r`/`-u`
+ * ("member of this domain"), the reciprocal listing of `;c`/`;r`/`;u`
+ * ("domain of synset") recorded on the *other* synset's own entry;
+ * both symbols become the same TOPIC_DOMAIN/REGION_DOMAIN/USAGE_DOMAIN
+ * kind, always oriented word -> its domain, regardless of which of the
+ * pair's two entries the pointer was actually read from. */
+function relationshipKindForPointer(
+  symbol: string,
+  sourcePos: PartOfSpeech,
+  targetPos: PartOfSpeech,
+): { kind: LexicalRelationshipType; swap: boolean } | undefined {
+  switch (symbol) {
+    case "!":
+      return { kind: LexicalRelationshipType.ANTONYM, swap: false };
+    case "@":
+      return { kind: LexicalRelationshipType.HYPERNYM, swap: false };
+    case "@i":
+      return { kind: LexicalRelationshipType.INSTANCE_HYPERNYM, swap: false };
+    case "~":
+      // Troponymy is WordNet's own name for verb-specific hyponymy --
+      // this class's own module docstring (lexical_relationship_type.ts)
+      // already draws that line for LIRA's curated data; WordNet marks
+      // both with the identical `~` symbol; sourcePos is what tells
+      // them apart here.
+      return { kind: sourcePos === PartOfSpeech.VERB ? LexicalRelationshipType.TROPONYM : LexicalRelationshipType.HYPONYM, swap: false };
+    case "~i":
+      return { kind: LexicalRelationshipType.INSTANCE_HYPONYM, swap: false };
+    case "%p":
+      return { kind: LexicalRelationshipType.PART_MERONYM, swap: false };
+    case "%m":
+      return { kind: LexicalRelationshipType.MEMBER_MERONYM, swap: false };
+    case "%s":
+      return { kind: LexicalRelationshipType.SUBSTANCE_MERONYM, swap: false };
+    case "#p":
+      return { kind: LexicalRelationshipType.PART_HOLONYM, swap: false };
+    case "#m":
+      return { kind: LexicalRelationshipType.MEMBER_HOLONYM, swap: false };
+    case "#s":
+      return { kind: LexicalRelationshipType.SUBSTANCE_HOLONYM, swap: false };
+    case "*":
+      return { kind: LexicalRelationshipType.ENTAILMENT, swap: false };
+    case ">":
+      return { kind: LexicalRelationshipType.CAUSE, swap: false };
+    case "^":
+      return { kind: LexicalRelationshipType.ALSO_SEE, swap: false };
+    case "$":
+      return { kind: LexicalRelationshipType.VERB_GROUP, swap: false };
+    case "&":
+      return { kind: LexicalRelationshipType.SIMILAR_TO, swap: false };
+    case "=":
+      return { kind: LexicalRelationshipType.ATTRIBUTE, swap: false };
+    case "\\":
+      return { kind: LexicalRelationshipType.PERTAINYM, swap: false };
+    case "+":
+    case "<":
+      return { kind: derivationKind(sourcePos, targetPos), swap: false };
+    case ";c":
+      return { kind: LexicalRelationshipType.TOPIC_DOMAIN, swap: false };
+    case ";r":
+      return { kind: LexicalRelationshipType.REGION_DOMAIN, swap: false };
+    case ";u":
+      return { kind: LexicalRelationshipType.USAGE_DOMAIN, swap: false };
+    case "-c":
+      return { kind: LexicalRelationshipType.TOPIC_DOMAIN, swap: true };
+    case "-r":
+      return { kind: LexicalRelationshipType.REGION_DOMAIN, swap: true };
+    case "-u":
+      return { kind: LexicalRelationshipType.USAGE_DOMAIN, swap: true };
+    default:
+      return undefined;
+  }
+}
+
+/** Every unordered pair from `items`, each returned exactly once
+ * (i < j, never (a, a) or both (a, b) and (b, a)) -- seedWordNet's own
+ * SYNONYM-wiring pass (pass 1) uses this for a synset's own members;
+ * synonyms() itself (word.ts) already reads SYNONYM as direction="both",
+ * so one directed edge per pair is enough to make the relationship
+ * discoverable from either endpoint. */
+function allPairs<T>(items: readonly T[]): Array<readonly [T, T]> {
+  const pairs: Array<readonly [T, T]> = [];
+  for (let i = 0; i < items.length; i++) {
+    for (let j = i + 1; j < items.length; j++) pairs.push([items[i], items[j]]);
+  }
+  return pairs;
+}
+
+/** The single Word at WordNetPointer's own 1-based `sourceWordIndex`/
+ * `targetWordIndex` within `members` (that synset's own words, in the
+ * same order as WordNetSynset.lemmas) -- empty, not a thrown error, if
+ * the index is out of range (defensive only; every real WordNet 3.1
+ * lexical pointer names a word position that exists in the synset it
+ * names). Wrapped in an array, not returned bare, so
+ * seedPointerRelationship's own sourceWords/targetWords stay uniform
+ * whether a pointer was synset-level (the whole `members` array) or
+ * lexical (this one-or-zero-element result). */
+function indexedWord(members: readonly Word[], oneBasedIndex: number): readonly Word[] {
+  const word = members[oneBasedIndex - 1];
+  return word === undefined ? [] : [word];
+}
 
 interface PromotedDocEntry extends WordFileEntry {
   reference_count?: number;
@@ -422,15 +558,16 @@ export class WordSeeder {
    * (assets/wordnet/, loaded via wordnet_loader.ts) rather than the
    * Common Vocabulary Cache -- a separate, independent source, so
    * unlike seedClosedClassWords this is never implied by seedDomain and
-   * must be called on its own.
+   * must be called on its own. Two passes over the same synset list:
    *
-   * A WordNet synset IS a LIRA Domain+Word (Word.synsetId's own
-   * docstring): both name one sense, not one spelling. So each synset's
-   * member lemmas become one Word apiece (isCommon=true, synsetId set to
-   * this synset's own -- synsetMemberToWord's own docstring on why that,
-   * not domainTag, is what disambiguates true WordNet polysemy: the same
-   * lemma in more than one synset lands as distinct Words, but reads as
-   * plain "Common" in the UI rather than each getting its own synthetic
+   * Pass 1 (`onProgress("words", ...)`) -- A WordNet synset IS a LIRA
+   * Domain+Word (Word.synsetId's own docstring): both name one sense,
+   * not one spelling. So each synset's member lemmas become one Word
+   * apiece (isCommon=true, synsetId set to this synset's own --
+   * synsetMemberToWord's own docstring on why that, not domainTag, is
+   * what disambiguates true WordNet polysemy: the same lemma in more
+   * than one synset lands as distinct Words, but reads as plain
+   * "Common" in the UI rather than each getting its own synthetic
    * one-off domain), and every pairwise combination of a synset's
    * members is wired together with a SYNONYM LexicalRelationship -- the
    * direct encoding of "wordnet uses synsets, LIRA uses synonym
@@ -439,10 +576,22 @@ export class WordSeeder {
    * from either endpoint without this needing to store the group itself
    * anywhere.
    *
-   * Idempotent like seedClosedClassWords: a lemma already present under
-   * the same partOfSpeech and synsetId is reused rather than duplicated,
-   * and an already-created SYNONYM edge is never recreated, so calling
-   * this more than once against the same Domain is safe.
+   * Pass 2 (`onProgress("relationships", ...)`) -- every *other*
+   * relation WordNet expresses between two synsets (or two specific
+   * words within them), via each synset's own `pointers`
+   * (wordnet_loader.ts's own WordNetPointer) -- hypernym, meronym,
+   * antonym, and the rest relationshipKindForPointer above maps a
+   * pointer symbol onto. Requires every synset's Words to already exist
+   * (a pointer can name a synset processed later in file order, or in a
+   * different POS file entirely -- `+`/`\` regularly cross from one
+   * part of speech to another), which is exactly why this is its own
+   * pass after pass 1 finishes rather than interleaved with it.
+   *
+   * Idempotent like seedClosedClassWords, across both passes: a lemma
+   * already present under the same partOfSpeech and synsetId is reused
+   * rather than duplicated, and an already-created (source, target,
+   * kind) edge is never recreated, so calling this more than once
+   * against the same Domain is safe.
    *
    * Async, unlike seedClosedClassWords -- loadWordNetSynsets() fetches
    * its dict/ text via a lazy `import()` (wordnet_loader.ts's own
@@ -450,17 +599,18 @@ export class WordSeeder {
    * Vocabulary Cache), so nothing here can resolve synchronously.
    *
    * `onProgress`, if given, is called every PROGRESS_REPORT_INTERVAL
-   * synsets (and once more at the very end) with (processed, total) --
-   * vocabulary_worker.ts's own call site relays each call across the
-   * Worker boundary as a status message so a caller-side progress bar
-   * can track a run against the full ~117,800-synset dataset (a few
-   * seconds of CPU-bound work, worker.ts's docstring), instead of only
-   * seeing "running" for that whole span with no sense of how far along
-   * it is. The `await` after each call isn't there for the callback's
-   * own sake (it may well be synchronous) -- it yields this loop back
-   * to the event loop for a tick, so a message posted from inside
-   * `onProgress` actually gets a chance to leave the Worker before the
-   * next few thousand synsets' worth of synchronous work runs. */
+   * synsets within each pass (and once more at the end of that pass)
+   * with (phase, processed, total) -- vocabulary_worker.ts's own call
+   * site relays each call across the Worker boundary as a status
+   * message so a caller-side progress bar can track a run against the
+   * full ~117,800-synset dataset (each pass a few seconds of CPU-bound
+   * work, worker.ts's docstring), instead of only seeing "running" for
+   * that whole span with no sense of how far along it is. The `await`
+   * after each call isn't there for the callback's own sake (it may
+   * well be synchronous) -- it yields this loop back to the event loop
+   * for a tick, so a message posted from inside `onProgress` actually
+   * gets a chance to leave the Worker before the next few thousand
+   * synsets' worth of synchronous work runs. */
   async seedWordNet(
     domain: {
       vocabulary: {
@@ -469,7 +619,7 @@ export class WordSeeder {
         lexicalRelationshipProcessor: LexicalRelationshipProcessor;
       };
     },
-    onProgress?: (processed: number, total: number) => void,
+    onProgress?: (phase: "words" | "relationships", processed: number, total: number) => void,
   ): Promise<{ wordsSeeded: number; relationshipsSeeded: number }> {
     const dictionary = domain.vocabulary.dictionary;
     const store = domain.vocabulary.lexicalRelationships;
@@ -478,22 +628,28 @@ export class WordSeeder {
     // LexicalRelationshipStore.outgoing() is indexed (O(1) amortized,
     // lexical_relationship_store.ts's own docstring) rather than a raw
     // linear scan, but it still allocates a fresh array copy on every
-    // call -- real overhead multiplied across the ~150,000+ candidate
-    // pairs a full WordNet seed checks. Scanning the store once up
-    // front into a Set instead avoids that repeated Map lookup and
-    // allocation entirely, the same reasoning Dictionary's byText/byUuid
-    // maps already apply to
+    // call -- real overhead multiplied across the hundreds of thousands
+    // of candidate pairs a full WordNet seed (both passes) checks.
+    // Scanning the store once up front into a Set instead avoids that
+    // repeated Map lookup and allocation entirely, the same reasoning
+    // Dictionary's byText/byUuid maps already apply to
     // lookup()/lookupAll() (dictionary.ts's own module docstring).
-    const existingSynonymPairs = new Set<string>();
+    // Keyed by kind as well as the pair, unlike an earlier version of
+    // this method that tracked SYNONYM pairs alone -- pass 2 can create
+    // more than one kind of edge between the same two Words (e.g. both
+    // a `+` NOMINALISATION and an unrelated `^` ALSO_SEE), and each is
+    // a distinct fact that must independently survive a re-seed.
+    const existingEdges = new Set<string>();
     for (const relationship of store.all()) {
-      if (relationship.relationshipType !== LexicalRelationshipType.SYNONYM) continue;
-      existingSynonymPairs.add(`${relationship.sourceWordId.value}|${relationship.targetWordId.value}`);
+      existingEdges.add(`${relationship.sourceWordId.value}|${relationship.targetWordId.value}|${relationship.relationshipType}`);
     }
 
     let wordsSeeded = 0;
     let relationshipsSeeded = 0;
 
     const synsets = await loadWordNetSynsets();
+    const synsetMembersById = new Map<string, Word[]>();
+
     let processed = 0;
     for (const synset of synsets) {
       const members: Word[] = [];
@@ -511,34 +667,106 @@ export class WordSeeder {
         members.push(word);
         wordsSeeded += 1;
       }
+      synsetMembersById.set(synset.synsetId, members);
 
-      for (let i = 0; i < members.length; i++) {
-        for (let j = i + 1; j < members.length; j++) {
-          const pairKey = `${members[i].uuid.value}|${members[j].uuid.value}`;
-          if (existingSynonymPairs.has(pairKey)) continue;
-          processor.create({
-            sourceWordId: members[i].uuid.value,
-            targetWordId: members[j].uuid.value,
-            relationshipType: LexicalRelationshipType.SYNONYM,
-            sourceReferences: [WORDNET_SOURCE_REFERENCE],
-            confidence: WORDNET_SEEDER_DEFAULT_WEIGHT,
-            provenance: WORDNET_SEEDER_DEFAULT_WEIGHT,
-            temporal: WORDNET_SEEDER_DEFAULT_WEIGHT,
-            activation: WORDNET_SEEDER_DEFAULT_WEIGHT,
-          });
-          existingSynonymPairs.add(pairKey);
-          relationshipsSeeded += 1;
+      relationshipsSeeded += this.createEdges(processor, existingEdges, LexicalRelationshipType.SYNONYM, allPairs(members));
+
+      processed += 1;
+      if (onProgress && (processed % PROGRESS_REPORT_INTERVAL === 0 || processed === synsets.length)) {
+        onProgress("words", processed, synsets.length);
+        await new Promise((resolve) => setTimeout(resolve, 0));
+      }
+    }
+
+    processed = 0;
+    for (const synset of synsets) {
+      const sourceMembers = synsetMembersById.get(synset.synsetId);
+      if (sourceMembers !== undefined) {
+        for (const pointer of synset.pointers) {
+          relationshipsSeeded += this.seedPointerRelationship(processor, existingEdges, synset, sourceMembers, pointer, synsetMembersById);
         }
       }
 
       processed += 1;
       if (onProgress && (processed % PROGRESS_REPORT_INTERVAL === 0 || processed === synsets.length)) {
-        onProgress(processed, synsets.length);
+        onProgress("relationships", processed, synsets.length);
         await new Promise((resolve) => setTimeout(resolve, 0));
       }
     }
 
     return { wordsSeeded, relationshipsSeeded };
+  }
+
+  /** One WordNetPointer, resolved and (if not already present) created
+   * as a LexicalRelationship. Returns how many edges it actually added
+   * (0 if the symbol is unrecognised, the target synset was never
+   * seeded, an index pointed past the end of a synset's own member
+   * list, every resulting pair was a self-edge, or every edge already
+   * existed). A single pointer record can still produce more than one
+   * edge: a synset-level pointer (sourceWordIndex/targetWordIndex both
+   * 0, "the whole synset") pairs every member of the source synset with
+   * every member of the target synset -- correct, not lossy, only
+   * because every member of a synset is already a mutual synonym of
+   * every other (pass 1's own SYNONYM edges), so connecting all-to-all
+   * carries the identical meaning connecting one representative pair
+   * would, just made explicit for each member instead of left implicit. */
+  private seedPointerRelationship(
+    processor: LexicalRelationshipProcessor,
+    existingEdges: Set<string>,
+    synset: WordNetSynset,
+    sourceMembers: readonly Word[],
+    pointer: WordNetPointer,
+    synsetMembersById: ReadonlyMap<string, Word[]>,
+  ): number {
+    const targetMembers = synsetMembersById.get(pointer.targetSynsetId);
+    if (targetMembers === undefined || targetMembers.length === 0) return 0;
+
+    const resolved = relationshipKindForPointer(pointer.symbol, synset.partOfSpeech, targetMembers[0].partOfSpeech);
+    if (resolved === undefined) return 0;
+
+    const sourceWords = pointer.sourceWordIndex === 0 ? sourceMembers : indexedWord(sourceMembers, pointer.sourceWordIndex);
+    const targetWords = pointer.targetWordIndex === 0 ? targetMembers : indexedWord(targetMembers, pointer.targetWordIndex);
+
+    const pairs: Array<readonly [Word, Word]> = [];
+    for (const sw of sourceWords) {
+      for (const tw of targetWords) {
+        if (sw.uuid.value === tw.uuid.value) continue;
+        pairs.push(resolved.swap ? [tw, sw] : [sw, tw]);
+      }
+    }
+    return this.createEdges(processor, existingEdges, resolved.kind, pairs);
+  }
+
+  /** Creates a LexicalRelationship for every (source, target) pair not
+   * already in `existingEdges`, adding each newly-created one to that
+   * same Set so a later call in the same seedWordNet run (or a later
+   * seedWordNet run entirely) sees it as already present -- the shared
+   * idempotency mechanism both seedWordNet passes funnel through.
+   * Returns the number of edges actually created. */
+  private createEdges(
+    processor: LexicalRelationshipProcessor,
+    existingEdges: Set<string>,
+    kind: LexicalRelationshipType,
+    pairs: Iterable<readonly [Word, Word]>,
+  ): number {
+    let created = 0;
+    for (const [source, target] of pairs) {
+      const key = `${source.uuid.value}|${target.uuid.value}|${kind}`;
+      if (existingEdges.has(key)) continue;
+      processor.create({
+        sourceWordId: source.uuid.value,
+        targetWordId: target.uuid.value,
+        relationshipType: kind,
+        sourceReferences: [WORDNET_SOURCE_REFERENCE],
+        confidence: WORDNET_SEEDER_DEFAULT_WEIGHT,
+        provenance: WORDNET_SEEDER_DEFAULT_WEIGHT,
+        temporal: WORDNET_SEEDER_DEFAULT_WEIGHT,
+        activation: WORDNET_SEEDER_DEFAULT_WEIGHT,
+      });
+      existingEdges.add(key);
+      created += 1;
+    }
+    return created;
   }
 
   // domainTag deliberately left unset -- unlike root_words.json's true

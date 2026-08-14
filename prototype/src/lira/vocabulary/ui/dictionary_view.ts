@@ -1334,6 +1334,23 @@ const RELATIONSHIP_SENTENCES = {
   ENTAILMENT: (s, t) => \`\${s} entails \${t}.\`,
   CAUSE: (s, t) => \`\${s} causes \${t}.\`,
   RELATED: (s, t) => \`\${s} is related to \${t}.\`,
+  // Lexical Semantic -- WordNet-sourced (lexical_relationship_type.ts's
+  // own docstring on PERTAINYM through USAGE_DOMAIN)
+  SIMILAR_TO: (s, t) => \`\${s} is similar in meaning to \${t}.\`,
+  INSTANCE_HYPERNYM: (s, t) => \`\${s} is an instance of \${t}.\`,
+  INSTANCE_HYPONYM: (s, t) => \`\${t} is an instance of \${s}.\`,
+  PART_MERONYM: (s, t) => \`\${s} is a part of \${t}.\`,
+  PART_HOLONYM: (s, t) => \`\${t} is a part of \${s}.\`,
+  MEMBER_MERONYM: (s, t) => \`\${s} is a member of \${t}.\`,
+  MEMBER_HOLONYM: (s, t) => \`\${t} is a member of \${s}.\`,
+  SUBSTANCE_MERONYM: (s, t) => \`\${s} is made of \${t}.\`,
+  SUBSTANCE_HOLONYM: (s, t) => \`\${t} is made of \${s}.\`,
+  ALSO_SEE: (s, t) => \`\${s} is related to \${t} -- see also.\`,
+  VERB_GROUP: (s, t) => \`\${s} and \${t} are closely related senses.\`,
+  ATTRIBUTE: (s, t) => \`\${s} is a value of the attribute \${t}.\`,
+  TOPIC_DOMAIN: (s, t) => \`\${s} belongs to the \${t} topic domain.\`,
+  REGION_DOMAIN: (s, t) => \`\${s} belongs to the \${t} regional domain.\`,
+  USAGE_DOMAIN: (s, t) => \`\${s} belongs to the \${t} usage domain.\`,
   // Morphological -- base relation
   LEMMA_FORM: (s, t) => \`\${t} is the base (lemma) form of \${s}.\`,
   INFLECTION: (s, t) => \`\${t} is an inflected form of \${s}.\`,
@@ -1359,6 +1376,7 @@ const RELATIONSHIP_SENTENCES = {
   NOMINALISATION: (s, t) => \`\${t} is the noun form of \${s}.\`,
   ADJECTIVAL_DERIVATION: (s, t) => \`\${t} is the adjective form of \${s}.\`,
   ADVERBIAL_DERIVATION: (s, t) => \`\${t} is the adverb form of \${s}.\`,
+  PERTAINYM: (s, t) => \`\${s} pertains to \${t}.\`,
   // Morphological -- pronoun form
   PRONOUN_OBJECT_FORM: (s, t) => \`\${t} is the object form of \${s}.\`,
   PRONOUN_SUBJECT_FORM: (s, t) => \`\${t} is the subject form of \${s}.\`,

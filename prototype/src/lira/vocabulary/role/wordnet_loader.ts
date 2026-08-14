@@ -1,30 +1,57 @@
 /** Parses the raw Princeton WordNet 3.1 dict/ files
  * (assets/wordnet/dict/, see assets/wordnet/README.md for provenance)
  * into WordNetSynsets -- one entry per synset line, carrying its
- * member lemmas and gloss. A WordNet synset -- "a set of one or more
- * synonyms" -- is what WordSeeder.seedWordNet (word_seeder.ts) turns
- * into a group of LIRA Words joined by SYNONYM LexicalRelationships
- * (Word.synsetId's own docstring), the same shape entryToWord already
- * turns Common Vocabulary Cache JSON into, one file format earlier in
- * the pipeline.
+ * member lemmas, gloss, and pointer records. A WordNet synset -- "a set
+ * of one or more synonyms" -- is what WordSeeder.seedWordNet
+ * (word_seeder.ts) turns into a group of LIRA Words joined by SYNONYM
+ * LexicalRelationships (Word.synsetId's own docstring), the same shape
+ * entryToWord already turns Common Vocabulary Cache JSON into, one file
+ * format earlier in the pipeline; each pointer record is that same
+ * seeder's own source for every *other* LexicalRelationship kind
+ * WordNet expresses (hypernym, meronym, antonym, ...) --
+ * relationshipKindForPointer there maps a pointer's own symbol onto a
+ * LexicalRelationshipType.
  *
- * Only a synset line's own words and gloss are read. The WordNet data
- * file format is:
+ * The WordNet data file format is:
  *
  *     synset_offset  lex_filenum  ss_type  w_cnt  {word  lex_id}...
  *     p_cnt  {ptr_symbol  offset  pos  source/target}...
  *     [frame_cnt  {+  frame_number  word_number}...]  |  gloss
  *
- * The pointer and (verb-only) frame blocks between w_cnt's word list
- * and the gloss are present in the source data but intentionally
- * unparsed here -- nothing in this loader needs WordNet's other
- * relation types (hypernym `@`, meronym `%`, verb frames, ...) yet.
- * Splitting each line on its own literal " | " separator and reading
- * the data part positionally (offset, ..., ss_type, w_cnt, then w_cnt
- * (word, lex_id) pairs starting right after it) reaches the word list
- * without needing a full pointer-block parser. */
+ * `lex_filenum` (WordNet's own internal lexicographer-file category,
+ * e.g. "noun.animal") and each word's own `lex_id` are read
+ * positionally (needed to walk past them to the next field) but not
+ * retained -- LIRA has no equivalent slot for either, and nothing here
+ * needs them. The (verb-only) frame block is walked past the same way,
+ * using its own `frame_cnt` -- never retained, and critically never
+ * confused with the pointer block's own `+` symbol (WordNet reuses `+`
+ * for two unrelated things: the "derivationally related form" pointer
+ * `ptr_symbol` a synset can have any number of, and the frame-record
+ * separator every frame entry starts with -- ordinary token scanning
+ * for `+` can't tell them apart, so `p_cnt`/`frame_cnt` themselves are
+ * what make each block's own length known in advance, and are read
+ * positionally for exactly that reason). */
 
 import { PartOfSpeech } from "../data/part_of_speech";
+
+/** One relation a synset carries to another synset (or, for a lexical
+ * -- word-specific, not whole-synset -- pointer, to one particular word
+ * within it), exactly as WordNet's own dict/data.* pointer record
+ * states it: `ptr_symbol synset_offset pos source/target`.
+ * `sourceWordIndex`/`targetWordIndex` are WordNet's own `source/target`
+ * hex field split into its two halves -- 0 means "the whole synset" (a
+ * semantic pointer), a nonzero value is the 1-based position of one
+ * specific word in that synset's own `lemmas` array (a lexical
+ * pointer, e.g. ANTONYM is always word-specific: "good" the ADJECTIVE
+ * synset's word #1 is the antonym of "bad" the ADJECTIVE synset's word
+ * #1 specifically, not every word in one synset against every word in
+ * the other). */
+export interface WordNetPointer {
+  symbol: string;
+  targetSynsetId: string;
+  sourceWordIndex: number;
+  targetWordIndex: number;
+}
 
 export interface WordNetSynset {
   // WordNet's own offset-pos key, e.g. "00001740-n" -- see Word.synsetId's
@@ -38,6 +65,7 @@ export interface WordNetSynset {
   lemmas: readonly string[];
   definition: string;
   examples: readonly string[];
+  pointers: readonly WordNetPointer[];
 }
 
 const DICT_FILENAMES = ["data.noun", "data.verb", "data.adj", "data.adv"] as const;
@@ -133,8 +161,39 @@ function parseSynsetLine(line: string): WordNetSynset | undefined {
     lemmas.push(cleanLemma(rawWord));
   }
 
+  // Positional from here on, not pattern-matched -- this module's own
+  // docstring on why (the frame block's own `+` separator is
+  // indistinguishable from the pointer block's own "derivationally
+  // related form" `+` symbol by token alone).
+  let cursor = 4 + wordCount * 2;
+  const pointerCount = parseInt(fields[cursor], 10);
+  cursor += 1;
+  const pointers: WordNetPointer[] = [];
+  for (let i = 0; i < pointerCount; i++) {
+    const symbol = fields[cursor];
+    const targetOffset = fields[cursor + 1];
+    const targetPos = fields[cursor + 2];
+    const sourceTarget = fields[cursor + 3];
+    cursor += 4;
+    if (symbol === undefined || targetOffset === undefined || targetPos === undefined || sourceTarget === undefined) break;
+    pointers.push({
+      symbol,
+      targetSynsetId: `${targetOffset}-${targetPos}`,
+      sourceWordIndex: parseInt(sourceTarget.slice(0, 2), 16),
+      targetWordIndex: parseInt(sourceTarget.slice(2, 4), 16),
+    });
+  }
+  // Verb-only: walk past (never retained -- this module's own docstring)
+  // frame_cnt frame records, each 3 tokens (`+`, frame_number,
+  // word_number), so `cursor` lands exactly where it would with no
+  // frame block at all for every other part of speech.
+  if (ssType === "v") {
+    const frameCount = parseInt(fields[cursor], 10);
+    cursor += 1 + frameCount * 3;
+  }
+
   const { definition, examples } = parseGloss(line.slice(barIndex + 3));
-  return { synsetId: `${synsetOffset}-${ssType}`, partOfSpeech: posForSsType(ssType), lemmas, definition, examples };
+  return { synsetId: `${synsetOffset}-${ssType}`, partOfSpeech: posForSsType(ssType), lemmas, definition, examples, pointers };
 }
 
 let cache: WordNetSynset[] | null = null;

@@ -4,7 +4,7 @@ import { LexicalRelationshipStore } from "./data/lexical_relationship_store";
 import { LexicalRelationshipSystemPropertyTensor } from "./data/lexical_relationship_tensor";
 import { LexicalRelationshipType } from "./data/lexical_relationship_type";
 import { PartOfSpeech } from "./data/part_of_speech";
-import { createWord, hypernyms, synonyms } from "./data/word";
+import { antonyms, createWord, hypernyms, synonyms } from "./data/word";
 import { AsyncDictionaryHydrator } from "./role/dictionary_hydrator";
 import { DictionaryProcessor } from "./role/dictionary_processor";
 import { LexicalRelationshipProcessor } from "./role/lexical_relationship_processor";
@@ -237,7 +237,7 @@ describe("loadWordNetSynsets against the bundled Princeton WordNet 3.1 dict/ fil
 });
 
 describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/ files", () => {
-  it("seeds every synset member as a Word carrying its synsetId, wired together by SYNONYM, and stays idempotent", async () => {
+  it("seeds every synset member as a Word carrying its synsetId, wires every WordNet pointer to a LexicalRelationship, and stays idempotent across both", async () => {
     const dictionary = new Dictionary();
     const lexicalRelationships = new LexicalRelationshipStore();
     const lexicalRelationshipProcessor = new LexicalRelationshipProcessor(
@@ -249,7 +249,11 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
 
     const first = await seeder.seedWordNet(domain);
     expect(first.wordsSeeded).toBeGreaterThan(100000);
-    expect(first.relationshipsSeeded).toBeGreaterThan(10000);
+    // Far beyond the SYNONYM-only total (~158,000) -- every other
+    // WordNet pointer type (hypernym, meronym, antonym, ...) is now
+    // wired too, word_seeder.ts's own seedWordNet docstring on its
+    // second pass.
+    expect(first.relationshipsSeeded).toBeGreaterThan(1000000);
     expect(dictionary.totalEntries()).toBe(first.wordsSeeded);
     expect(lexicalRelationships.totalRelationships()).toBe(first.relationshipsSeeded);
 
@@ -261,14 +265,56 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     expect(big?.synsetId?.schemeId).toBe("wn31");
     expect(synonyms(big!, lexicalRelationships, dictionary).map((w) => w.text)).toEqual(["large"]);
 
+    // 00001930-n "physical entity" -- HYPERNYM -> 00001740-n "entity"
+    // (dict/data.noun's own first two real synset lines).
+    const physicalEntity = dictionary
+      .lookupAll("physical entity")
+      .find((word) => word.synsetId?.value === "00001930-n");
+    expect(physicalEntity).toBeDefined();
+    expect(hypernyms(physicalEntity!, lexicalRelationships, dictionary).map((w) => w.text)).toEqual(["entity"]);
+
+    // 00001740-a "able" -- ANTONYM -> 00002098-a "unable" (both
+    // directions -- antonyms() itself reads direction="both").
+    const able = dictionary.lookupAll("able").find((word) => word.synsetId?.value === "00001740-a");
+    expect(able).toBeDefined();
+    expect(antonyms(able!, lexicalRelationships, dictionary).map((w) => w.text)).toEqual(["unable"]);
+    const unable = dictionary.lookupAll("unable").find((word) => word.synsetId?.value === "00002098-a");
+    expect(antonyms(unable!, lexicalRelationships, dictionary).map((w) => w.text)).toEqual(["able"]);
+
+    // Every new WordNet-sourced kind actually appears at least once --
+    // a regression check against relationshipKindForPointer silently
+    // mapping a symbol to the wrong (or an existing, wrong) kind.
+    const seenKinds = new Set(lexicalRelationships.all().map((r) => r.relationshipType));
+    for (const kind of [
+      LexicalRelationshipType.PERTAINYM,
+      LexicalRelationshipType.SIMILAR_TO,
+      LexicalRelationshipType.INSTANCE_HYPERNYM,
+      LexicalRelationshipType.INSTANCE_HYPONYM,
+      LexicalRelationshipType.PART_MERONYM,
+      LexicalRelationshipType.PART_HOLONYM,
+      LexicalRelationshipType.MEMBER_MERONYM,
+      LexicalRelationshipType.MEMBER_HOLONYM,
+      LexicalRelationshipType.SUBSTANCE_MERONYM,
+      LexicalRelationshipType.SUBSTANCE_HOLONYM,
+      LexicalRelationshipType.ALSO_SEE,
+      LexicalRelationshipType.VERB_GROUP,
+      LexicalRelationshipType.ATTRIBUTE,
+      LexicalRelationshipType.TOPIC_DOMAIN,
+      LexicalRelationshipType.REGION_DOMAIN,
+      LexicalRelationshipType.USAGE_DOMAIN,
+      LexicalRelationshipType.TROPONYM,
+    ]) {
+      expect(seenKinds.has(kind), `expected at least one ${LexicalRelationshipType[kind]} edge`).toBe(true);
+    }
+
     // Re-seeding the same Domain neither duplicates Words nor
-    // recreates SYNONYM edges.
+    // recreates any relationship, of any kind.
     const second = await seeder.seedWordNet(domain);
     expect(second.wordsSeeded).toBe(0);
     expect(second.relationshipsSeeded).toBe(0);
     expect(dictionary.totalEntries()).toBe(first.wordsSeeded);
     expect(lexicalRelationships.totalRelationships()).toBe(first.relationshipsSeeded);
-  }, 30000);
+  }, 60000);
 });
 
 describe("RelationshipSeeder against the bundled Common Relationship Cache", () => {
