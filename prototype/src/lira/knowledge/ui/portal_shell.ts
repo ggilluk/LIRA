@@ -1,4 +1,4 @@
-import type { ServiceStatusBoard } from "../data/service_status";
+import type { ServiceStatus, ServiceStatusBoard } from "../data/service_status";
 import type { PortalDomain, PortalDomainRegistry } from "../data/portal_domain";
 import { ServiceStatusView } from "./service_status_view";
 import type { VocabularyWorkerClient } from "../../vocabulary/role/vocabulary_worker_client";
@@ -141,21 +141,33 @@ export class PortalShell {
     private readonly registry: PortalDomainRegistry,
     private readonly vocabularyClient: VocabularyWorkerClient,
     linguisticsClient: LinguisticsWorkerClient,
-    statusBoard: ServiceStatusBoard,
+    private readonly statusBoard: ServiceStatusBoard,
     options: PortalShellOptions = {},
   ) {
     this.title = options.title ?? "LIRA";
     this.mode = typeof window !== "undefined" && window.matchMedia("(max-width: 720px)").matches ? "mobile" : "desktop";
     this.selectedName = this.registry.roots()[0]?.name;
-    // "Load WordNet" attaches to the "vocabulary" Service row -- see
-    // ServiceStatusAction's own docstring for why it needs no separate
-    // disabled/loading state of its own (the row's live `state` already
-    // covers that) and WORDNET_SEED_DOMAIN's for why it always targets
-    // "Common" regardless of which Domain is currently selected.
-    this.serviceStatusView = new ServiceStatusView(statusBoard, [
-      { id: "vocabulary", label: "Load WordNet", onClick: () => this.vocabularyClient.seedWordNet(WORDNET_SEED_DOMAIN) },
-    ]);
+    // "Load WordNet" now lives in the Vocabulary view pane itself
+    // (renderVocabToolbar()), not attached to the Background Services
+    // row -- WordNet is a Vocabulary Service action a user reaches for
+    // while looking at the Vocabulary view, not a generic service
+    // control. ServiceStatusView keeps showing the Vocabulary Service's
+    // live status (still useful there), just with no button of its own.
+    this.serviceStatusView = new ServiceStatusView(statusBoard);
     this.sentenceReaderView = new SentenceReaderView(linguisticsClient);
+    // Targeted update, not a full render() -- a status tick fires on
+    // every synset-batch progress update during a WordNet seed
+    // (dozens of times a second, vocabulary_worker.ts's own
+    // PROGRESS_REPORT_INTERVAL), and render() remounts the Vocabulary
+    // fragment's own <script> from scratch (loadView()'s own docstring
+    // on why); doing that on every tick would both be wasteful and pile
+    // up duplicate document-level listeners from repeated fragment
+    // mounts. updateVocabToolbar() only ever touches the toolbar's own
+    // markup, inside this shell's own DOM, never the fragment.
+    this.statusBoard.subscribe((statuses) => {
+      const vocabularyStatus = statuses.find((status) => status.id === "vocabulary");
+      if (vocabularyStatus) this.updateVocabToolbar(vocabularyStatus);
+    });
     // seedWordNet grows the target Domain's own word/relationship
     // counts after this shell's initial registry snapshot was built
     // (main.ts's own "ready" handling) -- re-render picks up both the
@@ -272,7 +284,48 @@ export class PortalShell {
     } else if (action === "toggle-tree") {
       this.treeCollapsed = !this.treeCollapsed;
       this.render();
+    } else if (action === "seed-wordnet") {
+      this.vocabularyClient.seedWordNet(WORDNET_SEED_DOMAIN);
     }
+  }
+
+  /** The Vocabulary view pane's own toolbar -- "Load WordNet" plus a
+   * live status line/progress bar, sourced from the same
+   * ServiceStatusBoard row ServiceStatusView used to attach this button
+   * to (statusBoard.get("vocabulary")'s own live state), just rendered
+   * inline in the Vocabulary tab instead of the Background Services
+   * panel. Only shown while the Vocabulary component tab is selected --
+   * WORDNET_SEED_DOMAIN's own docstring on why the action itself never
+   * depends on which Domain is selected. */
+  private renderVocabToolbar(): string {
+    return `<div class="portal-vocab-toolbar">${this.vocabToolbarInner(this.statusBoard.get("vocabulary"))}</div>`;
+  }
+
+  private vocabToolbarInner(status: ServiceStatus | undefined): string {
+    const running = status?.state === "running";
+    const progress = status?.progress;
+    return `
+      <button type="button" class="portal-vocab-toolbar-action" data-action="seed-wordnet" ${running ? "disabled" : ""}>Load WordNet</button>
+      <span class="portal-vocab-toolbar-detail">${status?.detail ? escapeHtml(status.detail) : ""}</span>
+      ${
+        progress !== undefined
+          ? `<div class="portal-vocab-toolbar-progress"><div class="portal-vocab-toolbar-progress-fill" style="width:${Math.round(progress * 100)}%"></div></div>`
+          : ""
+      }
+    `;
+  }
+
+  /** Targeted counterpart to renderVocabToolbar() -- see this class's
+   * own constructor comment on why a status tick updates just this
+   * element instead of calling render(). A no-op whenever the toolbar
+   * isn't currently in the DOM (a different component tab is selected,
+   * or nothing's mounted yet) -- the next renderVocabToolbar() call
+   * picks up the current status fresh regardless, same as
+   * setViewStatus()'s own pattern. */
+  private updateVocabToolbar(status: ServiceStatus): void {
+    const toolbar = this.container?.querySelector<HTMLElement>(".portal-vocab-toolbar");
+    if (!toolbar) return;
+    toolbar.innerHTML = this.vocabToolbarInner(status);
   }
 
   private ensureStyles(): void {
@@ -482,11 +535,17 @@ export class PortalShell {
   private renderViewPane(selected: PortalDomain | undefined, fullWidth = false): string {
     const switcher = this.renderComponentSwitcher();
     const statusPanel = `<div class="portal-service-status"></div>`;
+    // WORDNET_SEED_DOMAIN's own docstring on why this action never
+    // depends on which Domain is selected -- shown for the whole
+    // Vocabulary tab, including its "Select a Domain to continue" state
+    // below, not only once a fragment is actually mounted.
+    const vocabToolbar = this.selectedComponent === "vocabulary" ? this.renderVocabToolbar() : "";
 
     if (!selected) {
       return `
         <div class="portal-view ${fullWidth ? "portal-view--full" : ""}">
           ${switcher}
+          ${vocabToolbar}
           <div class="portal-view-empty">Select a Domain to continue.</div>
           ${statusPanel}
         </div>`;
@@ -502,6 +561,7 @@ export class PortalShell {
     return `
       <div class="portal-view ${fullWidth ? "portal-view--full" : ""}">
         ${switcher}
+        ${vocabToolbar}
         ${content}
         ${statusPanel}
       </div>`;
@@ -607,6 +667,18 @@ const SHELL_CSS = `
 .portal-component-switcher button:disabled { cursor: not-allowed; opacity: 0.55; }
 .portal-component-switcher button:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
 .not-ported-badge { font-size: 0.62rem; font-weight: 700; letter-spacing: 0.02em; text-transform: uppercase; opacity: 0.75; }
+.portal-vocab-toolbar { display: flex; align-items: center; flex-wrap: wrap; gap: 0.6rem; padding: 0.55rem 0.9rem; border-bottom: 1px solid var(--line); flex: none; }
+.portal-vocab-toolbar-action {
+  font-family: inherit; font-size: 0.76rem; font-weight: 600; letter-spacing: 0.01em;
+  border: 1px solid var(--line-strong); background: var(--surface); color: var(--accent);
+  padding: 0.3rem 0.75rem; border-radius: 999px; cursor: pointer; flex: none;
+}
+.portal-vocab-toolbar-action:hover:not(:disabled) { background: var(--accent-soft); }
+.portal-vocab-toolbar-action:disabled { cursor: not-allowed; opacity: 0.55; }
+.portal-vocab-toolbar-action:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.portal-vocab-toolbar-detail { font-size: 0.78rem; color: var(--ink-muted); flex: 1; min-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.portal-vocab-toolbar-progress { flex: 0 0 100%; height: 4px; border-radius: 999px; background: var(--surface-2); overflow: hidden; }
+.portal-vocab-toolbar-progress-fill { height: 100%; background: var(--accent); border-radius: 999px; transition: width 0.2s ease-out; }
 .portal-view-status { padding: 0.4rem 0.9rem 0; font-size: 0.76rem; color: var(--ink-muted); flex: none; }
 .portal-fragment-mount { flex: 1; min-width: 0; min-height: 0; overflow-y: auto; padding: 0.85rem 0.9rem 1.1rem; background: var(--ground); }
 .mode-mobile .portal-fragment-mount { min-height: 55vh; }
