@@ -19,6 +19,7 @@ const SEED_TARGET_DOMAIN = "Common";
 // searchWordsBridge() docstring for the other end.
 interface LiraSearchWordsEventDetail {
   requestId: string;
+  wordId?: string;
   word?: string;
   gloss?: string;
   definition?: string;
@@ -207,6 +208,7 @@ export class PortalShell {
       if (!this.currentVocabularyDomainName) return;
       void this.vocabularyClient
         .searchWords(this.currentVocabularyDomainName, {
+          wordId: detail.wordId,
           word: detail.word,
           gloss: detail.gloss,
           definition: detail.definition,

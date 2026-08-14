@@ -285,6 +285,7 @@ function handleSearchWords(request: SearchWordsRequest): void {
     domainName: domain.name,
   });
   const { words, totalMatches } = view.searchWords({
+    wordId: request.wordId,
     word: request.word,
     gloss: request.gloss,
     definition: request.definition,

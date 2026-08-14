@@ -8,6 +8,7 @@ import type {
 import type { RelationshipRecord, WordRecord } from "../ui/dictionary_view";
 
 export interface WordSearchQuery {
+  wordId?: string;
   word?: string;
   gloss?: string;
   definition?: string;
@@ -147,6 +148,7 @@ export class VocabularyWorkerClient {
         type: "search-words",
         requestId,
         domain: domainName,
+        wordId: query.wordId,
         word: query.word,
         gloss: query.gloss,
         definition: query.definition,

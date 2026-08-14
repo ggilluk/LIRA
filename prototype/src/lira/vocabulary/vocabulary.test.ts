@@ -371,6 +371,27 @@ describe("DictionaryView.searchWords", () => {
     expect(view.searchWords({ word: "nonexistent" }).words).toEqual([]);
   });
 
+  it("`wordId` bypasses every other filter for an O(1) exact lookup", () => {
+    const dictionary = new Dictionary();
+    const big = createWord({ text: "big", partOfSpeech: PartOfSpeech.ADJECTIVE });
+    const large = createWord({ text: "large", partOfSpeech: PartOfSpeech.ADJECTIVE });
+    dictionary.append(big);
+    dictionary.append(large);
+    const view = new DictionaryView(dictionary, new LexicalRelationshipStore(), { domainName: "Common" });
+
+    const found = view.searchWords({ wordId: large.uuid.value });
+    expect(found.totalMatches).toBe(1);
+    expect(found.words.map((w) => w.lexical_form)).toEqual(["large"]);
+
+    // Every other filter is ignored once wordId is set -- this would
+    // match nothing by pos alone (both Words here are ADJECTIVE), but
+    // wordId still resolves the exact Word asked for.
+    const ignoresOtherFilters = view.searchWords({ wordId: big.uuid.value, pos: "NOUN" });
+    expect(ignoresOtherFilters.words.map((w) => w.lexical_form)).toEqual(["big"]);
+
+    expect(view.searchWords({ wordId: "not-a-real-id" }).totalMatches).toBe(0);
+  });
+
   it("caps `words` at `limit` but reports the true, uncapped totalMatches", () => {
     const dictionary = new Dictionary();
     for (let i = 0; i < 10; i++) {
@@ -398,7 +419,19 @@ describe("DictionaryView.searchWords", () => {
     expect(result.totalMatches).toBeGreaterThan(0);
     expect(result.words.length).toBeLessThanOrEqual(50);
     expect(result.words.every((w) => w.lexical_form.toLowerCase().includes("large"))).toBe(true);
+    // Every WordNet-seeded Word carries its synset id as sense_id
+    // (word.synsetId's own docstring) -- the vocabulary UI shows this
+    // to the right of the word.
+    expect(result.words.every((w) => typeof w.sense_id === "string" && w.sense_id.length > 0)).toBe(true);
   }, 30000);
+
+  it("sense_id is null for a Word that didn't come from WordSeeder.seedWordNet", () => {
+    const dictionary = new Dictionary();
+    dictionary.append(createWord({ text: "big", partOfSpeech: PartOfSpeech.ADJECTIVE }));
+    const view = new DictionaryView(dictionary, new LexicalRelationshipStore(), { domainName: "Common" });
+
+    expect(view.searchWords({ word: "big" }).words[0].sense_id).toBeNull();
+  });
 });
 
 describe("DictionaryView.searchRelationships", () => {
@@ -479,5 +512,9 @@ describe("DictionaryView.searchRelationships", () => {
     expect(result.totalMatches).toBeGreaterThan(0);
     expect(result.relationships.length).toBeLessThanOrEqual(25);
     expect(result.relationships.every((r) => r.source_id === large!.uuid.value || r.target_id === large!.uuid.value)).toBe(true);
+    // Both sides of a WordNet-seeded relationship carry their own
+    // sense_id (source_sense_id/target_sense_id) -- the vocabulary UI's
+    // detail panel shows this next to each related word.
+    expect(result.relationships.every((r) => typeof r.source_sense_id === "string" && typeof r.target_sense_id === "string")).toBe(true);
   }, 30000);
 });

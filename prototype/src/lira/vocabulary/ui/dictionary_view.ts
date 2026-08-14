@@ -73,6 +73,11 @@ export interface WordRecord {
   lexical_form: string;
   text: string;
   pos: string;
+  // The Princeton WordNet 3.1 synset this Word corresponds to
+  // (word.synsetId's own docstring), or null for a Word that didn't
+  // come from WordSeeder.seedWordNet -- every Common Vocabulary Cache
+  // entry, in particular.
+  sense_id: string | null;
   definition: string;
   gloss: string;
   register_codes: string[];
@@ -100,10 +105,12 @@ export interface RelationshipRecord {
   source_text: string;
   source_pos: string | null;
   source_domain: string | null;
+  source_sense_id: string | null;
   target_id: string;
   target_text: string;
   target_pos: string | null;
   target_domain: string | null;
+  target_sense_id: string | null;
   kind: string;
   group: number;
   category: number;
@@ -313,6 +320,7 @@ export class DictionaryView {
       lexical_form: word.lexicalForm?.value ?? word.text,
       text: word.text,
       pos: PartOfSpeech[word.partOfSpeech],
+      sense_id: word.synsetId?.value ?? null,
       definition: word.definition?.value ?? "",
       gloss: word.gloss?.value ?? "",
       register_codes: word.registerCodes.map((code) => RegisterCode[code]),
@@ -347,8 +355,18 @@ export class DictionaryView {
    * `words` is capped at `options.limit`; `totalMatches` is the true
    * count of everything that matched, uncapped, so a caller can show
    * "showing N of totalMatches" the same way MAX_WORD_ROWS_SHOWN's
-   * client-side note already does. */
+   * client-side note already does.
+   *
+   * `wordId`, if given, bypasses every other filter for an O(1) exact
+   * lookup (Dictionary.findByUuid) instead of the linear scan below --
+   * the detail panel's own need to resolve a related word clicked from
+   * inside itself (a pivot button carries only that word's id, never
+   * enough to search by) that isn't already one of the currently-shown
+   * Words (WORDS, empty over capacity, or the last search's own
+   * results) -- dictionary_view.ts's own client-side
+   * lookupWordForDetailPanel(). */
   searchWords(options: {
+    wordId?: string;
     word?: string;
     gloss?: string;
     definition?: string;
@@ -357,6 +375,11 @@ export class DictionaryView {
     rootWordsOnly?: boolean;
     limit?: number;
   }): { words: WordRecord[]; totalMatches: number } {
+    if (options.wordId !== undefined) {
+      const word = this.dictionary.findByUuid(options.wordId);
+      return word ? { words: [this.wordRecordFor(word)], totalMatches: 1 } : { words: [], totalMatches: 0 };
+    }
+
     const limit = options.limit ?? 1000;
     const wordQuery = options.word?.trim().toLowerCase();
     const glossQuery = options.gloss?.trim().toLowerCase();
@@ -449,10 +472,12 @@ export class DictionaryView {
       source_text: source?.text ?? "?",
       source_pos: source ? PartOfSpeech[source.partOfSpeech] : null,
       source_domain: this.domainLabel(source),
+      source_sense_id: source?.synsetId?.value ?? null,
       target_id: rel.targetWordId.value,
       target_text: target?.text ?? "?",
       target_pos: target ? PartOfSpeech[target.partOfSpeech] : null,
       target_domain: this.domainLabel(target),
+      target_sense_id: target?.synsetId?.value ?? null,
       kind: LexicalRelationshipType[rel.relationshipType],
       group: relationshipGroup(rel.relationshipType),
       category: relationshipCategory(rel.relationshipType),
@@ -787,6 +812,12 @@ tbody tr:hover { background: color-mix(in srgb, var(--accent) 6%, transparent); 
   border: 1px solid #B08900;
   border-radius: 4px;
   padding: 1px 6px;
+}
+.sense-id {
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  color: var(--ink-faint);
+  white-space: nowrap;
 }
 .link-btn {
   background: none;
@@ -1347,6 +1378,15 @@ function posPill(pos) {
   return \`<span class="pill" style="background:\${color}">\${titleCase(pos)}</span>\`;
 }
 
+// The Princeton WordNet 3.1 synset a Word/related-word came from
+// (WordRecord.sense_id / RelationshipRecord.*_sense_id), rendered as a
+// small muted tag to the right of its own word text -- "" (nothing
+// shown) for a Word with no sense_id, i.e. every Common Vocabulary
+// Cache entry that didn't come from WordSeeder.seedWordNet.
+function senseIdBadge(senseId) {
+  return senseId ? \`<span class="sense-id" title="Princeton WordNet 3.1 synset">\${senseId}</span>\` : "";
+}
+
 function relPill(kind, group) {
   const color = GROUP_COLORS[group] !== undefined ? GROUP_COLORS[group] : "#7A7A7A";
   return \`<span class="pill" style="background:\${color}" title="\${GROUP_NAMES[group] || ''}">\${titleCase(kind)}</span>\`;
@@ -1547,6 +1587,7 @@ function relationshipsForWord(wordId) {
         otherId: outgoing ? r.target_id : r.source_id,
         otherText: outgoing ? r.target_text : r.source_text,
         otherDomain: outgoing ? r.target_domain : r.source_domain,
+        otherSenseId: outgoing ? r.target_sense_id : r.source_sense_id,
       };
     })
     .sort((a, b) => (a.group - b.group) || a.kind.localeCompare(b.kind));
@@ -1571,7 +1612,7 @@ const MAX_WORD_ROWS_SHOWN = 1000;
 function wordRowHtml(w) {
   return \`
     <tr data-word-id="\${w.id}" class="\${w.id === state.selected.words ? 'selected' : ''}">
-      <td><span class="word-form">\${w.lexical_form}</span>\${w.is_common ? ' <span class="badge-common">common</span>' : ''}\${w.is_root_word ? ' <span class="badge-root-word">root word</span>' : ''}\${w.is_derivable_noun ? ' <span class="badge-derivable-noun">derivable noun</span>' : ''}</td>
+      <td><span class="word-form">\${w.lexical_form}</span> \${senseIdBadge(w.sense_id)}\${w.is_common ? ' <span class="badge-common">common</span>' : ''}\${w.is_root_word ? ' <span class="badge-root-word">root word</span>' : ''}\${w.is_derivable_noun ? ' <span class="badge-derivable-noun">derivable noun</span>' : ''}</td>
       <td>\${posPill(w.pos)}</td>
       <td>\${domainPill(w.domain)}</td>
       <td class="definition">\${w.definition || w.gloss || '<span style="opacity:.5">&mdash;</span>'}</td>
@@ -1657,33 +1698,54 @@ function renderWordsOverCapacity() {
   }, WORD_SEARCH_DEBOUNCE_MS);
 }
 
+// Two independent callers share this one event: the Words tab's own
+// renderWordsOverCapacity() (latestWordSearchRequestId) and any detail
+// panel's per-id lookup (latestDetailWordRequestId,
+// lookupWordForDetailPanel()'s own docstring). requestId alone tells
+// them apart -- each caller only ever recognises its own, the same
+// pattern the "lira-search-relationships-result" listener already uses.
 document.addEventListener("lira-search-words-result", (e) => {
   const { requestId, words, totalMatches } = e.detail;
-  if (requestId !== latestWordSearchRequestId) return; // superseded by a later search
-  lastWordSearchResults = words;
-  const body = document.getElementById("words-body");
-  const empty = document.getElementById("words-empty");
-  const note = document.getElementById("words-note");
-  if (words.length === 0) {
-    body.innerHTML = "";
-    empty.style.display = "block";
-    note.style.display = "none";
-  } else {
-    empty.style.display = "none";
-    body.innerHTML = words.map(wordRowHtml).join('');
-    if (totalMatches > words.length) {
-      note.style.display = "block";
-      note.textContent = \`Showing the first \${words.length.toLocaleString()} of \${totalMatches.toLocaleString()} matching words -- narrow your search to see the rest.\`;
-    } else {
+
+  if (requestId === latestWordSearchRequestId) {
+    lastWordSearchResults = words;
+    const body = document.getElementById("words-body");
+    const empty = document.getElementById("words-empty");
+    const note = document.getElementById("words-note");
+    if (words.length === 0) {
+      body.innerHTML = "";
+      empty.style.display = "block";
       note.style.display = "none";
+    } else {
+      empty.style.display = "none";
+      body.innerHTML = words.map(wordRowHtml).join('');
+      if (totalMatches > words.length) {
+        note.style.display = "block";
+        note.textContent = \`Showing the first \${words.length.toLocaleString()} of \${totalMatches.toLocaleString()} matching words -- narrow your search to see the rest.\`;
+      } else {
+        note.style.display = "none";
+      }
     }
+    document.getElementById("stat-words").textContent = TOTAL_WORD_COUNT;
+    // Refreshes against the just-updated lastWordSearchResults -- clears
+    // the detail panel back to empty if whatever was selected isn't in
+    // this search's own results, same as the local-array path's own
+    // renderAll() already does for every other search keystroke.
+    renderDetailPanel("words");
+    return;
   }
-  document.getElementById("stat-words").textContent = TOTAL_WORD_COUNT;
-  // Refreshes against the just-updated lastWordSearchResults -- clears
-  // the detail panel back to empty if whatever was selected isn't in
-  // this search's own results, same as the local-array path's own
-  // renderAll() already does for every other search keystroke.
-  renderDetailPanel("words");
+
+  if (requestId === latestDetailWordRequestId) {
+    const panel = latestDetailWordPanel;
+    const wordId = latestDetailWordId;
+    if (words.length > 0) wordLookupCache.set(wordId, words[0]);
+    else wordLookupFailed.add(panel + ":" + wordId);
+    // Only re-render if this id is still what that panel has selected --
+    // a lookup answering a click that's since been superseded by a
+    // newer one is simply dropped, same guard latestWordSearchRequestId
+    // applies above.
+    if (state.selected[panel] === wordId) renderDetailPanel(panel);
+  }
 });
 
 // panel is one of "words" / "hierarchy" / "cyclic" -- each tab owns its
@@ -1737,9 +1799,60 @@ function padSectionHTML(word) {
 // lockstep with whatever the last "lira-search-words-result" rendered.
 let lastWordSearchResults = [];
 
+// Words resolved via a direct id lookup (DictionaryView.searchWords()'s
+// own \`wordId\` fast path -- see that method's docstring) after
+// wordForDetailPanel() couldn't find them in WORDS/lastWordSearchResults
+// -- a related word clicked from inside the detail panel itself is very
+// often outside whichever list happens to be loaded right now (a
+// different search's own results, or nothing fetched there at all over
+// capacity). Keyed by id, kept for the page's whole lifetime -- a
+// resolved Word's own record never changes shape under it, so nothing
+// here ever needs invalidating. wordLookupFailed tracks the opposite
+// outcome (a "(panel, id)" pair whose lookup came back with nothing --
+// should never happen for a real relationship's own source/target id,
+// but a page bug elsewhere or stale data shouldn't loop forever
+// re-requesting it) so renderDetailPanel() can show a real "not found"
+// message instead of "Loading…" stuck forever.
+const wordLookupCache = new Map();
+const wordLookupFailed = new Set();
+let latestDetailWordRequestId = null;
+let latestDetailWordId = null;
+let latestDetailWordPanel = null;
+
 function wordForDetailPanel(panel) {
+  const selectedId = state.selected[panel];
+  if (selectedId === undefined || selectedId === null) return undefined;
   const source = panel === "words" && OVER_CAPACITY ? lastWordSearchResults : WORDS;
-  return source.find(w => w.id === state.selected[panel]);
+  return source.find(w => w.id === selectedId) || wordLookupCache.get(selectedId);
+}
+
+// Dispatches a "lira-search-words" lookup for exactly one Word by id
+// (PortalShell's own searchWordsBridge() answers it the same way it
+// answers every other "lira-search-words" event -- this is just a
+// \`wordId\`-only query instead of a text/filter one). A no-op for a
+// (panel, id) pair already known to fail (wordLookupFailed's own
+// docstring above) -- renderDetailPanel() only calls this when there's
+// something new to try.
+function lookupWordForDetailPanel(panel, wordId) {
+  if (wordLookupFailed.has(panel + ":" + wordId)) return;
+  const requestId = "detail-word-" + Math.random().toString(36).slice(2);
+  latestDetailWordRequestId = requestId;
+  latestDetailWordId = wordId;
+  latestDetailWordPanel = panel;
+  document.dispatchEvent(new CustomEvent("lira-search-words", {
+    detail: { requestId, wordId, limit: 1 },
+  }));
+}
+
+// Each detail-empty-<panel> element's own static "Select a word..."
+// prompt, captured the first time renderDetailPanel() touches it (a
+// data-* attribute survives that element being left in place, unlike a
+// module-level constant duplicating the template's own text by hand) --
+// swapped out for "Loading…" while a lookupWordForDetailPanel() call is
+// in flight, then restored once nothing is selected again.
+function emptyPanelDefaultText(el) {
+  if (el.dataset.defaultText === undefined) el.dataset.defaultText = el.textContent;
+  return el.dataset.defaultText;
 }
 
 // Tracks the one in-flight "lira-search-relationships" request the
@@ -1765,6 +1878,7 @@ function relationshipsSectionHTML(rels) {
         <span class="rel-dir" title="\${r.outgoing ? 'Outgoing' : 'Incoming'}">\${r.outgoing ? '&rarr;' : '&larr;'}</span>
         \${relPill(r.kind, r.group)}
         <button class="link-btn" data-pivot-id="\${r.otherId}">\${r.otherText}</button>
+        \${senseIdBadge(r.otherSenseId)}
         \${domainPill(r.otherDomain)}
       </div>
       <div class="rel-sentence">\${relationshipSentence(r.kind, r.source_text, r.target_text)}</div>
@@ -1801,10 +1915,23 @@ function wireDetailPivotButtons(content, panel) {
 function renderDetailPanel(panel) {
   const empty = document.getElementById(\`detail-empty-\${panel}\`);
   const content = document.getElementById(\`detail-content-\${panel}\`);
+  const selectedId = state.selected[panel];
   const word = wordForDetailPanel(panel);
   if (!word) {
-    empty.style.display = "block";
     content.style.display = "none";
+    empty.style.display = "block";
+    if (selectedId !== undefined && selectedId !== null && wordLookupFailed.has(panel + ":" + selectedId)) {
+      empty.textContent = "This word could not be found.";
+    } else if (selectedId !== undefined && selectedId !== null) {
+      // A selection exists but isn't resolved locally yet -- kick off
+      // (or wait on) an id lookup rather than claiming nothing is
+      // selected; the "lira-search-words-result" listener below
+      // re-renders this panel once it resolves.
+      lookupWordForDetailPanel(panel, selectedId);
+      empty.textContent = "Loading…";
+    } else {
+      empty.textContent = emptyPanelDefaultText(empty);
+    }
     return;
   }
   const overCapacityRels = panel === "words" && OVER_CAPACITY;
@@ -2559,6 +2686,7 @@ document.addEventListener("lira-search-relationships-result", (e) => {
           otherId: outgoing ? r.target_id : r.source_id,
           otherText: outgoing ? r.target_text : r.source_text,
           otherDomain: outgoing ? r.target_domain : r.source_domain,
+          otherSenseId: outgoing ? r.target_sense_id : r.source_sense_id,
         };
       })
       .sort((a, b) => (a.group - b.group) || a.kind.localeCompare(b.kind));

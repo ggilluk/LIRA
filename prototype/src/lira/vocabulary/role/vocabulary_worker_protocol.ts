@@ -85,6 +85,11 @@ export interface SearchWordsRequest {
   type: "search-words";
   requestId: string;
   domain: string;
+  // Bypasses every field below for an O(1) exact lookup
+  // (DictionaryView.searchWords()'s own docstring on why -- resolving a
+  // related word clicked from inside the detail panel itself). Set on
+  // its own, never combined with the filters below.
+  wordId?: string;
   word?: string;
   gloss?: string;
   definition?: string;
