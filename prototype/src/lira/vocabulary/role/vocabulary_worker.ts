@@ -28,6 +28,7 @@ import { WordSeeder } from "./word_seeder";
 import type {
   RenderedFragment,
   RenderRequest,
+  SearchRelationshipsRequest,
   SearchWordsRequest,
   SeedWordNetRequest,
   VocabularyDomainSummary,
@@ -225,10 +226,30 @@ function handleSearchWords(request: SearchWordsRequest): void {
   post({ type: "search-words-result", requestId: request.requestId, words, totalMatches });
 }
 
+function handleSearchRelationships(request: SearchRelationshipsRequest): void {
+  const domain = domains.get(request.domain);
+  if (!domain) {
+    post({ type: "search-relationships-result", requestId: request.requestId, relationships: [], totalMatches: 0 });
+    return;
+  }
+
+  const view = new DictionaryView(domain.vocabulary.dictionary, domain.vocabulary.lexicalRelationships, {
+    title: `LIRA — ${domain.name}`,
+    domainName: domain.name,
+  });
+  const { relationships, totalMatches } = view.searchRelationships({
+    wordId: request.wordId,
+    query: request.query,
+    limit: request.limit,
+  });
+  post({ type: "search-relationships-result", requestId: request.requestId, relationships, totalMatches });
+}
+
 ctx.addEventListener("message", (event) => {
   const request = event.data;
   if (request.type === "init") void handleInit();
   else if (request.type === "render") handleRender(request);
   else if (request.type === "seed-wordnet") void handleSeedWordNet(request);
   else if (request.type === "search-words") handleSearchWords(request);
+  else if (request.type === "search-relationships") handleSearchRelationships(request);
 });

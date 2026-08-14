@@ -18,6 +18,7 @@
 
 import type { Dictionary } from "../data/dictionary";
 import { EditorialLabel } from "../data/editorial_label";
+import type { LexicalRelationship } from "../data/lexical_relationship";
 import type { LexicalRelationshipStore } from "../data/lexical_relationship_store";
 import { LexicalRelationshipType, relationshipCategory, relationshipGroup } from "../data/lexical_relationship_type";
 import { PartOfSpeech } from "../data/part_of_speech";
@@ -93,7 +94,7 @@ type DefinitionSegment =
   | { text: string; word: true; resolved: false }
   | { text: string; word: true; resolved: true; word_id: string; lexical_form: string; pos: string; domain: string | null; gloss: string };
 
-interface RelationshipRecord {
+export interface RelationshipRecord {
   id: string;
   source_id: string;
   source_text: string;
@@ -230,8 +231,12 @@ export class DictionaryView {
       WORDS_EMPTY_MESSAGE: overCapacity
         ? escapeHtml(`No words match this search across all ${totalWordCount.toLocaleString()} words in this Domain.`)
         : "No words match this search.",
+      // Same reasoning as WORDS_EMPTY_MESSAGE just above -- the
+      // Relationships tab now searches server-side over capacity too
+      // (searchRelationships(), renderRelsOverCapacity() below), so
+      // this only ever shows on a genuine zero-match search.
       RELS_EMPTY_MESSAGE: overCapacity
-        ? escapeHtml(`This Domain has ${totalRelationshipCount.toLocaleString()} relationships -- too many for this interactive view.`)
+        ? escapeHtml(`No relationships match this search across all ${totalRelationshipCount.toLocaleString()} relationships in this Domain.`)
         : "No relationships match this search.",
       UNRESOLVED_JSON: JSON.stringify([...this.unresolved].sort()),
       POS_COLORS_JSON: JSON.stringify(POS_COLORS),
@@ -427,27 +432,69 @@ export class DictionaryView {
   }
 
   private relationshipRecords(): RelationshipRecord[] {
-    const records: RelationshipRecord[] = [];
-    for (const rel of this.relationships.all()) {
-      const source = this.dictionary.findByUuid(rel.sourceWordId.value);
-      const target = this.dictionary.findByUuid(rel.targetWordId.value);
-      records.push({
-        id: rel.uuid.value,
-        source_id: rel.sourceWordId.value,
-        source_text: source?.text ?? "?",
-        source_pos: source ? PartOfSpeech[source.partOfSpeech] : null,
-        source_domain: this.domainLabel(source),
-        target_id: rel.targetWordId.value,
-        target_text: target?.text ?? "?",
-        target_pos: target ? PartOfSpeech[target.partOfSpeech] : null,
-        target_domain: this.domainLabel(target),
-        kind: LexicalRelationshipType[rel.relationshipType],
-        group: relationshipGroup(rel.relationshipType),
-        category: relationshipCategory(rel.relationshipType),
-        confidence: Math.round(rel.systemProperties.confidenceWeight * 10000) / 10000,
-      });
+    return this.relationships.all().map((rel) => this.relationshipRecordFor(rel));
+  }
+
+  /** One LexicalRelationship's full RelationshipRecord -- shared by
+   * relationshipRecords() (the whole-store path, only ever run under
+   * MAX_INTERACTIVE_WORDS) and searchRelationships() (resolved
+   * relationship-by-relationship regardless of scale), same reasoning
+   * as wordRecordFor()/wordRecords(). */
+  private relationshipRecordFor(rel: LexicalRelationship): RelationshipRecord {
+    const source = this.dictionary.findByUuid(rel.sourceWordId.value);
+    const target = this.dictionary.findByUuid(rel.targetWordId.value);
+    return {
+      id: rel.uuid.value,
+      source_id: rel.sourceWordId.value,
+      source_text: source?.text ?? "?",
+      source_pos: source ? PartOfSpeech[source.partOfSpeech] : null,
+      source_domain: this.domainLabel(source),
+      target_id: rel.targetWordId.value,
+      target_text: target?.text ?? "?",
+      target_pos: target ? PartOfSpeech[target.partOfSpeech] : null,
+      target_domain: this.domainLabel(target),
+      kind: LexicalRelationshipType[rel.relationshipType],
+      group: relationshipGroup(rel.relationshipType),
+      category: relationshipCategory(rel.relationshipType),
+      confidence: Math.round(rel.systemProperties.confidenceWeight * 10000) / 10000,
+    };
+  }
+
+  /** Resolves a Relationships-tab search (or, given `wordId`, "every
+   * relationship touching this one Word" -- the Words-tab detail
+   * panel's own need, over MAX_INTERACTIVE_WORDS) on demand, the
+   * relationship-side counterpart to searchWords() (that method's own
+   * docstring). `wordId` takes the fast path: LexicalRelationshipStore's
+   * own outgoing()/incoming() are O(1) indexed (lexical_relationship_store.ts's
+   * own docstring), so looking up one Word's relationships never scans
+   * the whole store, however large it's grown -- unlike a `query`-only
+   * or unfiltered search, which does (still just a linear scan of plain
+   * string comparisons, tens to low hundreds of milliseconds even at
+   * WordNet's ~1,260,000-relationship scale, nowhere near
+   * MAX_INTERACTIVE_WORDS's own JSON.stringify ceiling since nothing
+   * here embeds the result, only returns a capped slice of it). */
+  searchRelationships(options: { wordId?: string; query?: string; limit?: number }): { relationships: RelationshipRecord[]; totalMatches: number } {
+    const limit = options.limit ?? 1000;
+    const query = options.query?.trim().toLowerCase();
+    const candidates: readonly LexicalRelationship[] =
+      options.wordId !== undefined
+        ? [...this.relationships.outgoing(options.wordId), ...this.relationships.incoming(options.wordId)]
+        : this.relationships.all();
+
+    const matches: RelationshipRecord[] = [];
+    let totalMatches = 0;
+    for (const rel of candidates) {
+      const record = this.relationshipRecordFor(rel);
+      if (query) {
+        const sourceHit = record.source_text.toLowerCase().includes(query);
+        const targetHit = record.target_text.toLowerCase().includes(query);
+        const kindHit = record.kind.toLowerCase().includes(query);
+        if (!sourceHit && !targetHit && !kindHit) continue;
+      }
+      totalMatches += 1;
+      if (matches.length < limit) matches.push(record);
     }
-    return records;
+    return { relationships: matches, totalMatches };
   }
 
   private domainLabel(word: Word | undefined): string | null {
@@ -1565,11 +1612,13 @@ function renderWords() {
 }
 
 // How long to wait after the last keystroke before actually dispatching
-// an over-capacity search -- WORDS is [] past MAX_INTERACTIVE_WORDS, so
-// unlike the local-array path above (instant, in-process filtering),
-// every keystroke here is a round trip out to the Vocabulary Service
-// worker (lira-search-words below); debouncing keeps a fast typist from
-// firing a search per character.
+// an over-capacity search -- WORDS/RELS are both [] past
+// MAX_INTERACTIVE_WORDS, so unlike the local-array paths above (instant,
+// in-process filtering), every keystroke here is a round trip out to the
+// Vocabulary Service worker (lira-search-words/lira-search-relationships
+// below, shared by both renderWordsOverCapacity() and
+// renderRelsOverCapacity()); debouncing keeps a fast typist from firing
+// a search per character.
 const WORD_SEARCH_DEBOUNCE_MS = 250;
 
 // The over-capacity counterpart to renderWords()'s own local-array
@@ -1686,17 +1735,67 @@ function padSectionHTML(word) {
 // renderDetailPanel("words") reads a clicked row's own Word data from
 // here instead of WORDS (always [] past MAX_INTERACTIVE_WORDS), kept in
 // lockstep with whatever the last "lira-search-words-result" rendered.
-// RELS has no over-capacity counterpart at all (no search-relationships
-// request exists yet), so a selected word's own relationship *list*
-// stays unavailable there even once this fixes the word lookup itself --
-// renderDetailPanel's own over-capacity branch below shows the
-// still-accurate relationship_count instead of pretending the count is
-// zero.
 let lastWordSearchResults = [];
 
 function wordForDetailPanel(panel) {
   const source = panel === "words" && OVER_CAPACITY ? lastWordSearchResults : WORDS;
   return source.find(w => w.id === state.selected[panel]);
+}
+
+// Tracks the one in-flight "lira-search-relationships" request the
+// detail panel itself (as opposed to the Relationships tab's own
+// renderRelsOverCapacity()) is waiting on -- wordId/panel travel
+// alongside requestId because the result event only echoes requestId
+// back, not which Word or which panel asked for it (searchRelationships()'s
+// own response shape is shared with the tab search, which has neither).
+let latestDetailRelRequestId = null;
+let latestDetailRelWordId = null;
+let latestDetailRelPanel = null;
+
+// \`rels\` is \`null\` while a selected word's own relationship list is
+// still loading over capacity (relationshipsSectionHTML's own "Loading…"
+// branch) -- distinct from \`[]\`, which means the fetch already resolved
+// and there really are none.
+function relationshipsSectionHTML(rels) {
+  if (rels === null) return '<div class="detail-empty" style="padding:8px 0">Loading relationships…</div>';
+  if (rels.length === 0) return '<div class="detail-empty" style="padding:8px 0">No relationships recorded.</div>';
+  return rels.map(r => \`
+    <div class="rel-entry">
+      <div class="rel-row">
+        <span class="rel-dir" title="\${r.outgoing ? 'Outgoing' : 'Incoming'}">\${r.outgoing ? '&rarr;' : '&larr;'}</span>
+        \${relPill(r.kind, r.group)}
+        <button class="link-btn" data-pivot-id="\${r.otherId}">\${r.otherText}</button>
+        \${domainPill(r.otherDomain)}
+      </div>
+      <div class="rel-sentence">\${relationshipSentence(r.kind, r.source_text, r.target_text)}</div>
+    </div>\`).join('');
+}
+
+// \`rels\` follows relationshipsSectionHTML's own null/[]/populated
+// convention. The relationship count in the section header reads off
+// \`relCount\` rather than \`rels.length\` specifically so the loading
+// state (rels === null) can still show word.relationship_count (already
+// known, computed server-side off the real LexicalRelationshipStore
+// regardless of scale -- wordRecordFor()'s own relationshipCount) while
+// the list itself is still in flight.
+function wordDetailHTML(word, rels, relCount) {
+  return \`
+    <div class="detail-word">\${word.lexical_form}\${word.is_common ? ' <span class="badge-common">common</span>' : ''}\${word.is_root_word ? ' <span class="badge-root-word">root word</span>' : ''}\${word.is_derivable_noun ? ' <span class="badge-derivable-noun">derivable noun</span>' : ''}\${word.is_fully_hydrated ? '' : ' <span class="badge-common" style="color:#C2544B;border-color:#C2544B">hydration pending</span>'}</div>
+    <div style="margin-top:6px">\${posPill(word.pos)} \${domainPill(word.domain)}</div>
+    <div class="detail-entry-id" title="Persistent Qualified Word Identity (domain + part of speech + word) -- stable across regenerations, unlike this word's transient graph id">Entry ID <code>\${word.entry_id}</code></div>
+    <div class="detail-definition">\${renderDefinition(word)}</div>
+    \${padSectionHTML(word)}
+    <div class="detail-section-title">Provenance</div>
+    <div class="detail-definition" style="margin-top:0">\${word.sources && word.sources.length ? word.sources.map(s => \`<span class="tag">\${s}</span>\`).join('') : '<span style="opacity:.6">No source recorded.</span>'}</div>
+    <div class="detail-section-title">Relationships (<span class="detail-rel-count">\${relCount}</span>)</div>
+    <div class="detail-relationships-section">\${relationshipsSectionHTML(rels)}</div>
+  \`;
+}
+
+function wireDetailPivotButtons(content, panel) {
+  content.querySelectorAll("button[data-pivot-id]").forEach(btn => {
+    btn.addEventListener("click", () => selectWordIn(panel, btn.dataset.pivotId));
+  });
 }
 
 function renderDetailPanel(panel) {
@@ -1709,36 +1808,20 @@ function renderDetailPanel(panel) {
     return;
   }
   const overCapacityRels = panel === "words" && OVER_CAPACITY;
-  const rels = overCapacityRels ? [] : relationshipsForWord(word.id);
   empty.style.display = "none";
   content.style.display = "block";
-  content.innerHTML = \`
-    <div class="detail-word">\${word.lexical_form}\${word.is_common ? ' <span class="badge-common">common</span>' : ''}\${word.is_root_word ? ' <span class="badge-root-word">root word</span>' : ''}\${word.is_derivable_noun ? ' <span class="badge-derivable-noun">derivable noun</span>' : ''}\${word.is_fully_hydrated ? '' : ' <span class="badge-common" style="color:#C2544B;border-color:#C2544B">hydration pending</span>'}</div>
-    <div style="margin-top:6px">\${posPill(word.pos)} \${domainPill(word.domain)}</div>
-    <div class="detail-entry-id" title="Persistent Qualified Word Identity (domain + part of speech + word) -- stable across regenerations, unlike this word's transient graph id">Entry ID <code>\${word.entry_id}</code></div>
-    <div class="detail-definition">\${renderDefinition(word)}</div>
-    \${padSectionHTML(word)}
-    <div class="detail-section-title">Provenance</div>
-    <div class="detail-definition" style="margin-top:0">\${word.sources && word.sources.length ? word.sources.map(s => \`<span class="tag">\${s}</span>\`).join('') : '<span style="opacity:.6">No source recorded.</span>'}</div>
-    <div class="detail-section-title">Relationships (\${word.relationship_count})</div>
-    \${overCapacityRels
-      ? (word.relationship_count === 0
-          ? '<div class="detail-empty" style="padding:8px 0">No relationships recorded.</div>'
-          : \`<div class="detail-empty" style="padding:8px 0">\${word.relationship_count.toLocaleString()} relationship\${word.relationship_count === 1 ? '' : 's'} recorded -- individual relationship browsing isn't available for a Domain this large.</div>\`)
-      : (rels.length === 0 ? '<div class="detail-empty" style="padding:8px 0">No relationships recorded.</div>' : rels.map(r => \`
-      <div class="rel-entry">
-        <div class="rel-row">
-          <span class="rel-dir" title="\${r.outgoing ? 'Outgoing' : 'Incoming'}">\${r.outgoing ? '&rarr;' : '&larr;'}</span>
-          \${relPill(r.kind, r.group)}
-          <button class="link-btn" data-pivot-id="\${r.otherId}">\${r.otherText}</button>
-          \${domainPill(r.otherDomain)}
-        </div>
-        <div class="rel-sentence">\${relationshipSentence(r.kind, r.source_text, r.target_text)}</div>
-      </div>\`).join(''))}
-  \`;
-  content.querySelectorAll("button[data-pivot-id]").forEach(btn => {
-    btn.addEventListener("click", () => selectWordIn(panel, btn.dataset.pivotId));
-  });
+  content.innerHTML = wordDetailHTML(word, overCapacityRels ? null : relationshipsForWord(word.id), word.relationship_count);
+  wireDetailPivotButtons(content, panel);
+
+  if (overCapacityRels) {
+    const requestId = 'detail-rels-' + Math.random().toString(36).slice(2);
+    latestDetailRelRequestId = requestId;
+    latestDetailRelWordId = word.id;
+    latestDetailRelPanel = panel;
+    document.dispatchEvent(new CustomEvent("lira-search-relationships", {
+      detail: { requestId, wordId: word.id, limit: 500 },
+    }));
+  }
 }
 
 // Connected components of a relationship-edge list, treating every edge
@@ -2376,7 +2459,24 @@ function populateCyclicKindFilter() {
 // on <tr> elements laid out at once, not a curation choice.
 const MAX_REL_ROWS_SHOWN = 1000;
 
+function relRowHtml(r) {
+  return \`
+    <tr>
+      <td><span class="word-form">\${r.source_text}</span> \${r.source_pos ? posPill(r.source_pos) : ''}</td>
+      <td>\${relPill(r.kind, r.group)}</td>
+      <td><span class="word-form">\${r.target_text}</span> \${r.target_pos ? posPill(r.target_pos) : ''}</td>
+      <td style="text-align:right" class="confidence">\${r.confidence.toFixed(4)}</td>
+    </tr>\`;
+}
+
+let latestRelSearchRequestId = null;
+let relSearchDebounceTimer = null;
+
 function renderRels() {
+  if (OVER_CAPACITY) {
+    renderRelsOverCapacity();
+    return;
+  }
   let rows = filteredRels();
   const [key, dir] = state.sort.rels;
   rows = sortRows(rows, key, dir);
@@ -2390,15 +2490,85 @@ function renderRels() {
   } else {
     note.style.display = "none";
   }
-  body.innerHTML = shown.map(r => \`
-    <tr>
-      <td><span class="word-form">\${r.source_text}</span> \${r.source_pos ? posPill(r.source_pos) : ''}</td>
-      <td>\${relPill(r.kind, r.group)}</td>
-      <td><span class="word-form">\${r.target_text}</span> \${r.target_pos ? posPill(r.target_pos) : ''}</td>
-      <td style="text-align:right" class="confidence">\${r.confidence.toFixed(4)}</td>
-    </tr>\`).join('');
-  document.getElementById("stat-rels").textContent = OVER_CAPACITY ? TOTAL_RELATIONSHIP_COUNT : rows.length;
+  body.innerHTML = shown.map(relRowHtml).join('');
+  document.getElementById("stat-rels").textContent = rows.length;
 }
+
+// The over-capacity counterpart to renderRels()'s own local-array path
+// -- same "lira-search-words"/renderWordsOverCapacity() pattern
+// (word_seeder.ts... rather, dictionary_view.ts's own renderWordsOverCapacity()
+// docstring), a "lira-search-relationships" event instead. Reuses
+// state.search.word as its query -- the Relationships tab has always
+// filtered against that one search box (filteredRels()'s own body),
+// never a separate relationship-specific one, so this doesn't add a
+// new filter, only makes the existing one work past MAX_INTERACTIVE_WORDS.
+function renderRelsOverCapacity() {
+  if (relSearchDebounceTimer !== null) clearTimeout(relSearchDebounceTimer);
+  relSearchDebounceTimer = setTimeout(() => {
+    const requestId = 'rel-search-' + Math.random().toString(36).slice(2);
+    latestRelSearchRequestId = requestId;
+    document.getElementById("rels-note").style.display = "none";
+    document.getElementById("rels-empty").style.display = "none";
+    document.getElementById("rels-body").innerHTML =
+      '<tr><td colspan="4" style="text-align:center;padding:24px;color:var(--ink-muted,#5B6660)">Searching…</td></tr>';
+    document.dispatchEvent(new CustomEvent("lira-search-relationships", {
+      detail: { requestId, query: state.search.word, limit: MAX_REL_ROWS_SHOWN },
+    }));
+  }, WORD_SEARCH_DEBOUNCE_MS);
+}
+
+// Two independent callers share this one event: the Relationships tab's
+// own renderRelsOverCapacity() (latestRelSearchRequestId) and the Words-
+// tab detail panel's per-word lookup (latestDetailRelRequestId,
+// renderDetailPanel()'s own docstring). requestId alone tells them
+// apart -- each caller only ever recognises its own.
+document.addEventListener("lira-search-relationships-result", (e) => {
+  const { requestId, relationships, totalMatches } = e.detail;
+
+  if (requestId === latestRelSearchRequestId) {
+    const body = document.getElementById("rels-body");
+    const empty = document.getElementById("rels-empty");
+    const note = document.getElementById("rels-note");
+    if (relationships.length === 0) {
+      body.innerHTML = "";
+      empty.style.display = "block";
+      note.style.display = "none";
+    } else {
+      empty.style.display = "none";
+      body.innerHTML = relationships.map(relRowHtml).join('');
+      if (totalMatches > relationships.length) {
+        note.style.display = "block";
+        note.textContent = \`Showing the first \${relationships.length.toLocaleString()} of \${totalMatches.toLocaleString()} matching relationships -- narrow your search to see the rest.\`;
+      } else {
+        note.style.display = "none";
+      }
+    }
+    document.getElementById("stat-rels").textContent = TOTAL_RELATIONSHIP_COUNT;
+    return;
+  }
+
+  if (requestId === latestDetailRelRequestId) {
+    const wordId = latestDetailRelWordId;
+    const content = document.getElementById(\`detail-content-\${latestDetailRelPanel}\`);
+    if (!content) return;
+    const rels = relationships
+      .map(r => {
+        const outgoing = r.source_id === wordId;
+        return {
+          ...r, outgoing,
+          otherId: outgoing ? r.target_id : r.source_id,
+          otherText: outgoing ? r.target_text : r.source_text,
+          otherDomain: outgoing ? r.target_domain : r.source_domain,
+        };
+      })
+      .sort((a, b) => (a.group - b.group) || a.kind.localeCompare(b.kind));
+    const section = content.querySelector(".detail-relationships-section");
+    if (section) section.innerHTML = relationshipsSectionHTML(rels);
+    const countLabel = content.querySelector(".detail-rel-count");
+    if (countLabel) countLabel.textContent = totalMatches.toLocaleString();
+    wireDetailPivotButtons(content, latestDetailRelPanel);
+  }
+});
 
 function renderUnresolved() {
   const panel = document.getElementById("unresolved-panel");

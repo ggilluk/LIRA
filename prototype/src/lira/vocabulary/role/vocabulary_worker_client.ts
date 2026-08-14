@@ -5,7 +5,7 @@ import type {
   VocabularyWorkerMessage,
   VocabularyWorkerRequest,
 } from "./vocabulary_worker_protocol";
-import type { WordRecord } from "../ui/dictionary_view";
+import type { RelationshipRecord, WordRecord } from "../ui/dictionary_view";
 
 export interface WordSearchQuery {
   word?: string;
@@ -19,6 +19,17 @@ export interface WordSearchQuery {
 
 export interface WordSearchResult {
   words: readonly WordRecord[];
+  totalMatches: number;
+}
+
+export interface RelationshipSearchQuery {
+  wordId?: string;
+  query?: string;
+  limit?: number;
+}
+
+export interface RelationshipSearchResult {
+  relationships: readonly RelationshipRecord[];
   totalMatches: number;
 }
 
@@ -42,6 +53,7 @@ export class VocabularyWorkerClient {
   private readyResolvers: Array<(domains: readonly VocabularyDomainSummary[]) => void> = [];
   private readonly pendingRenders = new Map<string, { resolve: (fragment: RenderedFragment) => void; reject: (error: Error) => void }>();
   private readonly pendingSearches = new Map<string, (result: WordSearchResult) => void>();
+  private readonly pendingRelationshipSearches = new Map<string, (result: RelationshipSearchResult) => void>();
 
   constructor() {
     this.worker = new Worker(new URL("./vocabulary_worker.ts", import.meta.url), { type: "module" });
@@ -135,6 +147,29 @@ export class VocabularyWorkerClient {
     });
   }
 
+  /** Resolves one Relationships-tab search, or (given `query.wordId`)
+   * "every relationship touching this one Word" -- the Words-tab detail
+   * panel's own need over MAX_INTERACTIVE_WORDS -- against `domainName`'s
+   * LexicalRelationshipStore inside the worker
+   * (DictionaryView.searchRelationships()'s own docstring). Same
+   * DOM-event bridge as searchWords() -- PortalShell answers a
+   * "lira-search-relationships" event the fragment's script dispatches
+   * (dictionary_view.ts's own renderRelsOverCapacity()/renderDetailPanel()). */
+  searchRelationships(domainName: string, query: RelationshipSearchQuery): Promise<RelationshipSearchResult> {
+    const requestId = `rel-search-${domainName}-${Math.random().toString(36).slice(2)}`;
+    return new Promise((resolve) => {
+      this.pendingRelationshipSearches.set(requestId, resolve);
+      this.post({
+        type: "search-relationships",
+        requestId,
+        domain: domainName,
+        wordId: query.wordId,
+        query: query.query,
+        limit: query.limit,
+      });
+    });
+  }
+
   private post(request: VocabularyWorkerRequest): void {
     this.worker.postMessage(request);
   }
@@ -164,6 +199,12 @@ export class VocabularyWorkerClient {
       if (resolve) {
         this.pendingSearches.delete(message.requestId);
         resolve({ words: message.words, totalMatches: message.totalMatches });
+      }
+    } else if (message.type === "search-relationships-result") {
+      const resolve = this.pendingRelationshipSearches.get(message.requestId);
+      if (resolve) {
+        this.pendingRelationshipSearches.delete(message.requestId);
+        resolve({ relationships: message.relationships, totalMatches: message.totalMatches });
       }
     } else if (message.type === "error") {
       console.error("Vocabulary Service error:", message.message);

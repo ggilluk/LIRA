@@ -400,3 +400,84 @@ describe("DictionaryView.searchWords", () => {
     expect(result.words.every((w) => w.lexical_form.toLowerCase().includes("large"))).toBe(true);
   }, 30000);
 });
+
+describe("DictionaryView.searchRelationships", () => {
+  function buildFixture() {
+    const dictionary = new Dictionary();
+    const big = createWord({ text: "big", partOfSpeech: PartOfSpeech.ADJECTIVE });
+    const large = createWord({ text: "large", partOfSpeech: PartOfSpeech.ADJECTIVE });
+    const small = createWord({ text: "small", partOfSpeech: PartOfSpeech.ADJECTIVE });
+    dictionary.append(big);
+    dictionary.append(large);
+    dictionary.append(small);
+
+    const store = new LexicalRelationshipStore();
+    const processor = new LexicalRelationshipProcessor(store, new LexicalRelationshipSystemPropertyTensor());
+    processor.create({ sourceWordId: big.uuid.value, targetWordId: large.uuid.value, relationshipType: LexicalRelationshipType.SYNONYM, sourceReferences: [] });
+    processor.create({ sourceWordId: big.uuid.value, targetWordId: small.uuid.value, relationshipType: LexicalRelationshipType.ANTONYM, sourceReferences: [] });
+
+    const view = new DictionaryView(dictionary, store, { domainName: "Common" });
+    return { view, big, large, small };
+  }
+
+  it("resolves every relationship touching `wordId`, both outgoing and incoming", () => {
+    const { view, big, large, small } = buildFixture();
+
+    const forBig = view.searchRelationships({ wordId: big.uuid.value });
+    expect(forBig.totalMatches).toBe(2);
+    expect(forBig.relationships.map((r) => r.kind).sort()).toEqual(["ANTONYM", "SYNONYM"]);
+
+    const forLarge = view.searchRelationships({ wordId: large.uuid.value });
+    expect(forLarge.totalMatches).toBe(1);
+    expect(forLarge.relationships[0].kind).toBe("SYNONYM");
+    expect(forLarge.relationships[0].source_text).toBe("big");
+    expect(forLarge.relationships[0].target_text).toBe("large");
+
+    expect(view.searchRelationships({ wordId: small.uuid.value }).totalMatches).toBe(1);
+  });
+
+  it("matches `query` against source text, target text, or kind, across the whole store when `wordId` is omitted", () => {
+    const { view } = buildFixture();
+
+    expect(view.searchRelationships({ query: "large" }).relationships.map((r) => r.kind)).toEqual(["SYNONYM"]);
+    expect(view.searchRelationships({ query: "anton" }).relationships.map((r) => r.kind)).toEqual(["ANTONYM"]);
+    expect(view.searchRelationships({ query: "nonexistent" }).relationships).toEqual([]);
+    expect(view.searchRelationships({}).totalMatches).toBe(2);
+  });
+
+  it("caps `relationships` at `limit` but reports the true, uncapped totalMatches", () => {
+    const dictionary = new Dictionary();
+    const words = Array.from({ length: 10 }, (_, i) => createWord({ text: `word${i}`, partOfSpeech: PartOfSpeech.NOUN }));
+    for (const w of words) dictionary.append(w);
+
+    const store = new LexicalRelationshipStore();
+    const processor = new LexicalRelationshipProcessor(store, new LexicalRelationshipSystemPropertyTensor());
+    for (let i = 0; i < words.length - 1; i++) {
+      processor.create({ sourceWordId: words[i].uuid.value, targetWordId: words[i + 1].uuid.value, relationshipType: LexicalRelationshipType.SYNONYM, sourceReferences: [] });
+    }
+
+    const view = new DictionaryView(dictionary, store, { domainName: "Common" });
+    const result = view.searchRelationships({ limit: 3 });
+    expect(result.relationships).toHaveLength(3);
+    expect(result.totalMatches).toBe(9);
+  });
+
+  it("resolves against the real bundled WordNet-scale relationship graph without embedding it (regression check mirroring searchWords' own)", async () => {
+    const dictionary = new Dictionary();
+    const lexicalRelationships = new LexicalRelationshipStore();
+    const lexicalRelationshipProcessor = new LexicalRelationshipProcessor(
+      lexicalRelationships,
+      new LexicalRelationshipSystemPropertyTensor(),
+    );
+    await new WordSeeder("en").seedWordNet({ vocabulary: { dictionary, lexicalRelationships, lexicalRelationshipProcessor } });
+
+    const view = new DictionaryView(dictionary, lexicalRelationships, { domainName: "Common" });
+    const large = dictionary.lookup("large");
+    expect(large).toBeDefined();
+
+    const result = view.searchRelationships({ wordId: large!.uuid.value, limit: 25 });
+    expect(result.totalMatches).toBeGreaterThan(0);
+    expect(result.relationships.length).toBeLessThanOrEqual(25);
+    expect(result.relationships.every((r) => r.source_id === large!.uuid.value || r.target_id === large!.uuid.value)).toBe(true);
+  }, 30000);
+});

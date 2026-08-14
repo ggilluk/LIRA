@@ -3,7 +3,7 @@
  * both sides are typed against the same shapes instead of each guessing
  * at the other's message format. */
 
-import type { WordRecord } from "../ui/dictionary_view";
+import type { RelationshipRecord, WordRecord } from "../ui/dictionary_view";
 
 /** The Vocabulary Service's own status vocabulary -- deliberately not
  * knowledge/data/service_status.ts's `ServiceState` (which also has
@@ -73,7 +73,26 @@ export interface SearchWordsRequest {
   limit?: number;
 }
 
-export type VocabularyWorkerRequest = InitRequest | RenderRequest | SeedWordNetRequest | SearchWordsRequest;
+/** Resolves one Relationships-tab search, or (given `wordId`) "every
+ * relationship touching this one Word" -- the Words-tab detail panel's
+ * own need, over MAX_INTERACTIVE_WORDS -- against `domain`'s full
+ * LexicalRelationshipStore, server-side (DictionaryView.searchRelationships(),
+ * that method's own docstring on the `wordId` fast path). */
+export interface SearchRelationshipsRequest {
+  type: "search-relationships";
+  requestId: string;
+  domain: string;
+  wordId?: string;
+  query?: string;
+  limit?: number;
+}
+
+export type VocabularyWorkerRequest =
+  | InitRequest
+  | RenderRequest
+  | SeedWordNetRequest
+  | SearchWordsRequest
+  | SearchRelationshipsRequest;
 
 export interface StatusMessage {
   type: "status";
@@ -158,6 +177,16 @@ export interface SearchWordsResultMessage {
   totalMatches: number;
 }
 
+/** The response to a SearchRelationshipsRequest -- same
+ * capped-`relationships`/true-`totalMatches` shape as
+ * SearchWordsResultMessage, for the same reason. */
+export interface SearchRelationshipsResultMessage {
+  type: "search-relationships-result";
+  requestId: string;
+  relationships: readonly RelationshipRecord[];
+  totalMatches: number;
+}
+
 export type VocabularyWorkerMessage =
   | StatusMessage
   | ReadyMessage
@@ -165,4 +194,5 @@ export type VocabularyWorkerMessage =
   | RenderErrorMessage
   | ErrorMessage
   | DomainUpdatedMessage
-  | SearchWordsResultMessage;
+  | SearchWordsResultMessage
+  | SearchRelationshipsResultMessage;

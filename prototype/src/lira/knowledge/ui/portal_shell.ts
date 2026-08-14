@@ -26,6 +26,18 @@ interface LiraSearchWordsEventDetail {
   limit?: number;
 }
 
+// Mirrors the "lira-search-relationships" CustomEvent's own `detail`
+// shape -- dictionary_view.ts's renderRelsOverCapacity() (Relationships
+// tab search) and renderDetailPanel() (a selected Word's own relationship
+// list, over MAX_INTERACTIVE_WORDS) are the two places that dispatch it;
+// see searchRelationshipsBridge()'s own docstring for the other end.
+interface LiraSearchRelationshipsEventDetail {
+  requestId: string;
+  wordId?: string;
+  query?: string;
+  limit?: number;
+}
+
 /** PortalShell: a Windows-Explorer-style desktop shell that switches to
  * a drill-down mobile portal -- the folder tree is the Domain hierarchy
  * (root is "All Domains"; nesting follows each PortalDomain's own
@@ -158,6 +170,7 @@ export class PortalShell {
       this.render();
     });
     this.searchWordsBridge();
+    this.searchRelationshipsBridge();
   }
 
   /** Listens on `document` (not `this.container` -- that element gets
@@ -192,6 +205,37 @@ export class PortalShell {
           document.dispatchEvent(
             new CustomEvent("lira-search-words-result", {
               detail: { requestId: detail.requestId, words: result.words, totalMatches: result.totalMatches },
+            }),
+          );
+        });
+    });
+  }
+
+  /** Same bridge pattern as searchWordsBridge() (this file's own
+   * docstring above), for the fragment's "lira-search-relationships"
+   * event instead -- answers it with
+   * VocabularyWorkerClient.searchRelationships() against whichever
+   * Domain is currently mounted, then dispatches
+   * "lira-search-relationships-result" back with the same requestId.
+   * One listener serves both of the fragment's own dispatch sites (a
+   * Relationships-tab search, keyed by `query`, and a selected Word's
+   * detail-panel relationship list, keyed by `wordId`) -- the fragment's
+   * own script already tells them apart by requestId when the result
+   * comes back, this bridge just relays whatever it was asked for. */
+  private searchRelationshipsBridge(): void {
+    document.addEventListener("lira-search-relationships", (event) => {
+      const detail = (event as CustomEvent<LiraSearchRelationshipsEventDetail>).detail;
+      if (!this.currentVocabularyDomainName) return;
+      void this.vocabularyClient
+        .searchRelationships(this.currentVocabularyDomainName, {
+          wordId: detail.wordId,
+          query: detail.query,
+          limit: detail.limit,
+        })
+        .then((result) => {
+          document.dispatchEvent(
+            new CustomEvent("lira-search-relationships-result", {
+              detail: { requestId: detail.requestId, relationships: result.relationships, totalMatches: result.totalMatches },
             }),
           );
         });
