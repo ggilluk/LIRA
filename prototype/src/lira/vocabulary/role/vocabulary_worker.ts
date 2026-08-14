@@ -30,6 +30,7 @@ import type {
   RenderRequest,
   SearchRelationshipsRequest,
   SearchWordsRequest,
+  SeedCommonVocabularyRequest,
   SeedWordNetRequest,
   VocabularyDomainSummary,
   VocabularyWorkerMessage,
@@ -57,6 +58,17 @@ const renderCache = new Map<string, RenderedFragment>();
 // module's own handleSeedWordNet posts that state), so this is a
 // defensive backstop, not the primary guard.
 const wordNetSeedingDomains = new Set<string>();
+// Same backstop as wordNetSeedingDomains, for handleSeedCommonVocabulary
+// runs instead.
+const commonVocabularySeedingDomains = new Set<string>();
+// Whether Physics's own one-time Dictionary snapshot (VocabularyLayer.seedFrom)
+// has already been taken -- guards against handleSeedCommonVocabulary
+// retaking it on a second "Seed Vocabulary" click, which would append a
+// second, fully duplicate copy of every Common Word into Physics
+// (Dictionary.seedFrom's own docstring: it always copies unconditionally,
+// with no dedup of its own -- that's this module's job to guard, the same
+// way it was implicitly guarded before by only ever running once, at boot).
+let physicsBootstrapped = false;
 
 function post(message: VocabularyWorkerMessage): void {
   ctx.postMessage(message);
@@ -71,31 +83,89 @@ function summaryOf(domain: SeededDomain): VocabularyDomainSummary {
   };
 }
 
+/** Registers every Domain empty, seeding nothing -- unlike this
+ * function's earlier version, which always ran seedClosedClassWords/
+ * RelationshipSeeder against Common (and, via Physics's own
+ * VocabularyLayer.seedFrom snapshot, Physics too) before "ready" ever
+ * fired, whether or not the Vocabulary UI was ever opened that session.
+ * Both are now on-demand actions the Vocabulary tab's own toolbar
+ * triggers (portal_shell.ts's own renderVocabToolbar(), "Seed
+ * Vocabulary" -> handleSeedCommonVocabulary below, "Load WordNet" ->
+ * handleSeedWordNet) -- this only builds the empty Domain shells a
+ * caller needs something to address ("Common", "Physics") before
+ * either action has anything to target. */
 async function handleInit(): Promise<void> {
   try {
-    post({ type: "status", state: "running", detail: "Loading the Common Vocabulary Cache…" });
+    post({ type: "status", state: "running", detail: "Registering Domains…" });
     const commonDomain: SeededDomain = { name: "Common", vocabulary: new VocabularyLayer("Common") };
-    const wordSeeder = new WordSeeder("en");
-    const wordsSeeded = wordSeeder.seedDomain(commonDomain);
-
-    post({ type: "status", state: "running", detail: `Seeded ${wordsSeeded} words — seeding relationships…` });
-    const relationshipSeeder = new RelationshipSeeder("en");
-    const relationshipsSeeded = await relationshipSeeder.seedDomain(commonDomain);
     domains.set(commonDomain.name, commonDomain);
-
-    post({ type: "status", state: "running", detail: `Seeded ${relationshipsSeeded} relationships — bootstrapping Physics…` });
     const physicsDomain: SeededDomain = { name: "Physics", parentName: "Common", vocabulary: new VocabularyLayer("Physics") };
-    physicsDomain.vocabulary.dictionary.seedFrom(commonDomain.vocabulary.dictionary);
     domains.set(physicsDomain.name, physicsDomain);
 
     const summaries: VocabularyDomainSummary[] = [...domains.values()].map(summaryOf);
 
-    post({ type: "status", state: "done", detail: `${domains.size} Domains ready` });
+    post({ type: "status", state: "done", detail: `${domains.size} Domains ready — seed vocabulary or load WordNet to add words` });
     post({ type: "ready", domains: summaries });
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     post({ type: "status", state: "error", detail: message });
     post({ type: "error", message });
+  }
+}
+
+/** Handles an on-demand SeedCommonVocabularyRequest -- the Common
+ * Vocabulary Cache's own seed files (SeedCommonVocabularyRequest's own
+ * docstring), as opposed to handleSeedWordNet's Princeton WordNet dict/
+ * text. The first successful run against "Common" also refreshes
+ * Physics's own one-time Dictionary snapshot (VocabularyLayer.seedFrom)
+ * -- deferred here to whenever Common's seed data actually lands rather
+ * than unconditionally at boot (this module's own handleInit no longer
+ * seeds anything at all), guarded by `physicsBootstrapped` so a second
+ * "Seed Vocabulary" click doesn't duplicate every Common Word into
+ * Physics a second time (Dictionary.seedFrom's own docstring on why it
+ * can't dedup that itself). Mirrors handleSeedWordNet's own status/
+ * domain-updated reporting shape. */
+async function handleSeedCommonVocabulary(request: SeedCommonVocabularyRequest): Promise<void> {
+  const domain = domains.get(request.domain);
+  if (!domain) {
+    post({ type: "error", message: `Vocabulary Service: unknown Domain '${request.domain}'` });
+    return;
+  }
+  if (commonVocabularySeedingDomains.has(domain.name)) return;
+  commonVocabularySeedingDomains.add(domain.name);
+
+  try {
+    post({ type: "status", state: "running", detail: `Seeding the Common Vocabulary Cache into ${domain.name}…` });
+    const wordSeeder = new WordSeeder("en");
+    const wordsSeeded = wordSeeder.seedDomain(domain);
+
+    post({ type: "status", state: "running", detail: `Seeded ${wordsSeeded} words into ${domain.name} — seeding relationships…` });
+    const relationshipSeeder = new RelationshipSeeder("en");
+    const relationshipsSeeded = await relationshipSeeder.seedDomain(domain);
+
+    renderCache.delete(domain.name);
+    const updatedDomains: SeededDomain[] = [domain];
+
+    const physicsDomain = domains.get("Physics");
+    if (domain.name === "Common" && physicsDomain && !physicsBootstrapped) {
+      physicsDomain.vocabulary.dictionary.seedFrom(domain.vocabulary.dictionary);
+      physicsBootstrapped = true;
+      renderCache.delete(physicsDomain.name);
+      updatedDomains.push(physicsDomain);
+    }
+
+    post({
+      type: "status",
+      state: "done",
+      detail: `Vocabulary seeded into ${domain.name} — ${wordsSeeded.toLocaleString()} words, ${relationshipsSeeded.toLocaleString()} relationships`,
+    });
+    for (const updated of updatedDomains) post({ type: "domain-updated", domain: summaryOf(updated) });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    post({ type: "status", state: "error", detail: message });
+    post({ type: "error", message });
+  } finally {
+    commonVocabularySeedingDomains.delete(domain.name);
   }
 }
 
@@ -250,6 +320,7 @@ ctx.addEventListener("message", (event) => {
   if (request.type === "init") void handleInit();
   else if (request.type === "render") handleRender(request);
   else if (request.type === "seed-wordnet") void handleSeedWordNet(request);
+  else if (request.type === "seed-common-vocabulary") void handleSeedCommonVocabulary(request);
   else if (request.type === "search-words") handleSearchWords(request);
   else if (request.type === "search-relationships") handleSearchRelationships(request);
 });

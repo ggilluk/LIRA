@@ -38,18 +38,39 @@ export interface RenderRequest {
 /** Triggers WordSeeder.seedWordNet (role/word_seeder.ts) on demand
  * against the named Domain's own VocabularyLayer -- an on-demand
  * seeding pass, never implied by "init" (vocabulary_worker.ts's own
- * handleInit only ever runs seedClosedClassWords/RelationshipSeeder).
- * `domain` is a real target, not always "Common", but the worker's own
- * PortalShell caller (portal_shell.ts) only ever asks for "Common" --
- * WordNet is a general-English lexical resource, not a Domain-specific
- * fact, and Physics's own Dictionary is a one-time snapshot copy taken
- * at boot (VocabularyLayer.seedFrom), so seeding a child Domain
- * directly here wouldn't do anything a Common seed doesn't already
- * cover for it going forward, while seeding Common retroactively into
- * an already-copied child would need its own separate propagation this
- * protocol doesn't attempt. */
+ * handleInit registers every Domain empty and seeds nothing at all;
+ * SeedCommonVocabularyRequest below is the other on-demand seeding
+ * pass, for the Common Vocabulary Cache's own closed/open-class words
+ * rather than WordNet's). `domain` is a real target, not always
+ * "Common", but the worker's own PortalShell caller (portal_shell.ts)
+ * only ever asks for "Common" -- WordNet is a general-English lexical
+ * resource, not a Domain-specific fact, and Physics's own Dictionary is
+ * a one-time snapshot copy taken the first time Common is seeded
+ * (VocabularyLayer.seedFrom, vocabulary_worker.ts's own
+ * handleSeedCommonVocabulary), so seeding a child Domain directly here
+ * wouldn't do anything a Common seed doesn't already cover for it going
+ * forward, while seeding Common retroactively into an already-copied
+ * child would need its own separate propagation this protocol doesn't
+ * attempt. */
 export interface SeedWordNetRequest {
   type: "seed-wordnet";
+  domain: string;
+}
+
+/** Triggers WordSeeder.seedDomain (seedClosedClassWords) plus
+ * RelationshipSeeder.seedDomain on demand against the named Domain --
+ * the Common Vocabulary Cache's own seed files (word-file/relationship-
+ * file JSON, asset_loader.ts), as opposed to SeedWordNetRequest's
+ * Princeton WordNet dict/ text. Used to be implied by "init" itself
+ * (every session paid for seeding it, whether or not the Vocabulary UI
+ * was ever opened); now both this and WordNet are on-demand actions a
+ * user reaches for from the Vocabulary tab's own toolbar
+ * (portal_shell.ts's own renderVocabToolbar()), side by side. The
+ * first successful run against "Common" also refreshes Physics's own
+ * one-time Dictionary snapshot (VocabularyLayer.seedFrom) -- see
+ * handleSeedCommonVocabulary's own docstring. */
+export interface SeedCommonVocabularyRequest {
+  type: "seed-common-vocabulary";
   domain: string;
 }
 
@@ -91,6 +112,7 @@ export type VocabularyWorkerRequest =
   | InitRequest
   | RenderRequest
   | SeedWordNetRequest
+  | SeedCommonVocabularyRequest
   | SearchWordsRequest
   | SearchRelationshipsRequest;
 

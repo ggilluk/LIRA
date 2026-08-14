@@ -110,9 +110,20 @@ export class VocabularyWorkerClient {
     this.post({ type: "seed-wordnet", domain: domainName });
   }
 
+  /** Fires an on-demand Common Vocabulary Cache seed pass inside the
+   * worker against the named Domain (SeedCommonVocabularyRequest's own
+   * docstring) -- the seed-files counterpart to seedWordNet() above,
+   * same fire-and-forget shape and the same `onStatus`/`onDomainUpdated`
+   * reporting channels. */
+  seedCommonVocabulary(domainName: string): void {
+    this.post({ type: "seed-common-vocabulary", domain: domainName });
+  }
+
   /** Subscribes to every DomainUpdatedMessage the Service posts (today,
-   * only after a seedWordNet run finishes). Returns an unsubscribe
-   * function. */
+   * after a seedWordNet or seedCommonVocabulary run finishes -- the
+   * latter posts one for Physics too, the first time it bootstraps its
+   * own snapshot copy of Common, handleSeedCommonVocabulary's own
+   * docstring). Returns an unsubscribe function. */
   onDomainUpdated(listener: VocabularyDomainUpdateListener): () => void {
     this.domainUpdateListeners.add(listener);
     return () => {

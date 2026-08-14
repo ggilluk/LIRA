@@ -9,11 +9,16 @@ import { LinguisticsWorkerClient } from "lira/linguistics/role/linguistics_worke
  * Layer with a UI component (Vocabulary and Linguistics are real today;
  * Knowledge is a permanent "Not ported yet" row -- see
  * knowledge/data/service_status.ts), shows the LoadingScreen while the
- * Vocabulary Service worker seeds the Common Vocabulary Cache and
- * bootstraps Physics, and the Linguistic Service worker seeds its own
- * copy of the same cache and configures its grammar, both off the main
- * thread in parallel, then swaps to the real PortalShell once both
- * report ready. */
+ * Vocabulary Service worker registers its (empty) Domains and the
+ * Linguistic Service worker seeds its own copy of the Common Vocabulary
+ * Cache and configures its grammar, both off the main thread in
+ * parallel, then swaps to the real PortalShell once both report ready.
+ * The Vocabulary Service seeds nothing at startup -- "Seed Vocabulary"
+ * and "Load WordNet", both in the Vocabulary tab's own toolbar
+ * (knowledge/ui/portal_shell.ts's own renderVocabToolbar()), are
+ * on-demand actions a user reaches for once the Portal is already up,
+ * not a cost every session pays whether or not the Vocabulary UI is
+ * ever opened. */
 function main(): void {
   const app = document.querySelector<HTMLDivElement>("#app");
   if (!app) return;

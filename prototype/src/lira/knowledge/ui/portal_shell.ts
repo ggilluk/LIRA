@@ -6,9 +6,11 @@ import type { RenderedFragment } from "../../vocabulary/role/vocabulary_worker_p
 import type { LinguisticsWorkerClient } from "../../linguistics/role/linguistics_worker_client";
 import { SentenceReaderView } from "../../linguistics/ui/sentence_reader_view";
 
-// WordSeeder.seedWordNet always targets "Common" in practice
-// (SeedWordNetRequest's own docstring, vocabulary_worker_protocol.ts).
-const WORDNET_SEED_DOMAIN = "Common";
+// Both Vocabulary toolbar seeding actions -- "Seed Vocabulary"
+// (seedCommonVocabulary) and "Load WordNet" (seedWordNet) -- always
+// target "Common" in practice (SeedCommonVocabularyRequest's and
+// SeedWordNetRequest's own docstrings, vocabulary_worker_protocol.ts).
+const SEED_TARGET_DOMAIN = "Common";
 
 // Mirrors the "lira-search-words" CustomEvent's own `detail` shape --
 // dictionary_view.ts's renderWordsOverCapacity() is the one place that
@@ -285,18 +287,25 @@ export class PortalShell {
       this.treeCollapsed = !this.treeCollapsed;
       this.render();
     } else if (action === "seed-wordnet") {
-      this.vocabularyClient.seedWordNet(WORDNET_SEED_DOMAIN);
+      this.vocabularyClient.seedWordNet(SEED_TARGET_DOMAIN);
+    } else if (action === "seed-common-vocabulary") {
+      this.vocabularyClient.seedCommonVocabulary(SEED_TARGET_DOMAIN);
     }
   }
 
-  /** The Vocabulary view pane's own toolbar -- "Load WordNet" plus a
-   * live status line/progress bar, sourced from the same
-   * ServiceStatusBoard row ServiceStatusView used to attach this button
-   * to (statusBoard.get("vocabulary")'s own live state), just rendered
-   * inline in the Vocabulary tab instead of the Background Services
-   * panel. Only shown while the Vocabulary component tab is selected --
-   * WORDNET_SEED_DOMAIN's own docstring on why the action itself never
-   * depends on which Domain is selected. */
+  /** The Vocabulary view pane's own toolbar -- "Seed Vocabulary" (the
+   * Common Vocabulary Cache's own seed files) and "Load WordNet" (the
+   * Princeton WordNet dict/ text), plus a live status line/progress bar
+   * shared between them, sourced from the same ServiceStatusBoard row
+   * ServiceStatusView used to attach a button to (statusBoard.get(
+   * "vocabulary")'s own live state), just rendered inline in the
+   * Vocabulary tab instead of the Background Services panel. Only shown
+   * while the Vocabulary component tab is selected --
+   * SEED_TARGET_DOMAIN's own docstring on why neither action depends on
+   * which Domain is selected. Both buttons disable together while
+   * either action is running -- they post through the one shared
+   * "vocabulary" ServiceStatus row, the same way a single Load WordNet
+   * button already did before this one grew a sibling. */
   private renderVocabToolbar(): string {
     return `<div class="portal-vocab-toolbar">${this.vocabToolbarInner(this.statusBoard.get("vocabulary"))}</div>`;
   }
@@ -305,6 +314,7 @@ export class PortalShell {
     const running = status?.state === "running";
     const progress = status?.progress;
     return `
+      <button type="button" class="portal-vocab-toolbar-action" data-action="seed-common-vocabulary" ${running ? "disabled" : ""}>Seed Vocabulary</button>
       <button type="button" class="portal-vocab-toolbar-action" data-action="seed-wordnet" ${running ? "disabled" : ""}>Load WordNet</button>
       <span class="portal-vocab-toolbar-detail">${status?.detail ? escapeHtml(status.detail) : ""}</span>
       ${
@@ -535,10 +545,10 @@ export class PortalShell {
   private renderViewPane(selected: PortalDomain | undefined, fullWidth = false): string {
     const switcher = this.renderComponentSwitcher();
     const statusPanel = `<div class="portal-service-status"></div>`;
-    // WORDNET_SEED_DOMAIN's own docstring on why this action never
-    // depends on which Domain is selected -- shown for the whole
-    // Vocabulary tab, including its "Select a Domain to continue" state
-    // below, not only once a fragment is actually mounted.
+    // SEED_TARGET_DOMAIN's own docstring on why neither action depends
+    // on which Domain is selected -- shown for the whole Vocabulary
+    // tab, including its "Select a Domain to continue" state below, not
+    // only once a fragment is actually mounted.
     const vocabToolbar = this.selectedComponent === "vocabulary" ? this.renderVocabToolbar() : "";
 
     if (!selected) {
