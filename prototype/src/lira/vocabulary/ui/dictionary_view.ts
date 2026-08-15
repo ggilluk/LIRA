@@ -2409,10 +2409,29 @@ function buildClusters(kind) {
 // so this falls back to buildClusters instead of a forest of redundant
 // per-word roots (each of which would otherwise show largely the same
 // members as every other root in the same mutually-related group).
+//
+// When state.selectedWordId names a word that's actually part of this
+// kind's graph, the returned tree is centred on it instead of showing
+// every root's own full forest -- the under-capacity counterpart to
+// resolveHierarchy()'s own server-side wordId mode (dictionary_view.ts's
+// server-side class), mirrored here rather than shared with it since
+// this path runs entirely against the already-embedded WORDS/RELS
+// arrays: walk *up* the first-parent-at-each-step chain to build a
+// single ancestor path (not every ancestor's other children -- a
+// multiply-inherited node, e.g. two WordNet hypernyms, picks one path,
+// same rare-case tradeoff the server-side version makes), then descend
+// from the selected word's own real children as normal, capped at
+// HIERARCHY_NODE_LIMIT the same way an over-capacity request is. Falls
+// through to the full, unscoped forest if nothing is selected or the
+// selection isn't part of this kind's graph at all (centred stays
+// false either way -- renderHierarchy()'s own docstring on the latter
+// case, which gets its own explicit "no relationships for this word"
+// message rather than silently showing the unrelated full forest).
 function buildHierarchy(kind) {
   const edges = RELS.filter(r => r.kind === kind);
   const wordById = new Map(WORDS.map(w => [w.id, w]));
   const childrenOf = new Map();
+  const parentsOf = new Map();
   const hasIncoming = new Set();
   const nodeIds = new Set();
   edges.forEach(r => {
@@ -2422,18 +2441,63 @@ function buildHierarchy(kind) {
     hasIncoming.add(r.target_id);
     if (!childrenOf.has(r.source_id)) childrenOf.set(r.source_id, []);
     childrenOf.get(r.source_id).push(r.target_id);
+    if (!parentsOf.has(r.target_id)) parentsOf.set(r.target_id, []);
+    parentsOf.get(r.target_id).push(r.source_id);
   });
   const byLabel = id => (wordById.get(id) || {}).lexical_form || "";
   let roots = [...nodeIds].filter(id => !hasIncoming.has(id));
   const fellBack = roots.length === 0 && nodeIds.size > 0;
   let clusters = null;
+  let centred = false;
+  let shownNodeCount = nodeIds.size;
+  let truncated = false;
+  const selectedId = state.selectedWordId;
   if (fellBack) {
     clusters = buildClusters(kind).clusters;
+  } else if (selectedId && nodeIds.has(selectedId)) {
+    centred = true;
+    const ancestorChain = [];
+    let cur = selectedId;
+    const seen = new Set([cur]);
+    for (;;) {
+      const parents = parentsOf.get(cur);
+      if (!parents || !parents.length) break;
+      const next = parents[0];
+      if (seen.has(next)) break;
+      ancestorChain.push(next);
+      seen.add(next);
+      cur = next;
+    }
+    ancestorChain.reverse();
+
+    const scopedChildrenOf = new Map();
+    for (let i = 0; i < ancestorChain.length; i++) {
+      scopedChildrenOf.set(ancestorChain[i], [i + 1 < ancestorChain.length ? ancestorChain[i + 1] : selectedId]);
+    }
+    const included = new Set(ancestorChain);
+    included.add(selectedId);
+    const queue = [selectedId];
+    let queueIndex = 0;
+    while (queueIndex < queue.length) {
+      const current = queue[queueIndex];
+      queueIndex += 1;
+      const kids = (childrenOf.get(current) || []).slice().sort((a, b) => byLabel(a).localeCompare(byLabel(b)));
+      const list = [];
+      kids.forEach(childId => {
+        if (!included.has(childId) && included.size >= HIERARCHY_NODE_LIMIT) { truncated = true; return; }
+        list.push(childId);
+        if (!included.has(childId)) { included.add(childId); queue.push(childId); }
+      });
+      if (list.length) scopedChildrenOf.set(current, list);
+    }
+    roots = [ancestorChain.length ? ancestorChain[0] : selectedId];
+    shownNodeCount = included.size;
+    return { roots, childrenOf: scopedChildrenOf, wordById, edgeCount: edges.length, nodeCount: nodeIds.size, fellBack, clusters, centred, shownNodeCount, truncated };
   } else {
     roots.sort((a, b) => byLabel(a).localeCompare(byLabel(b)));
     childrenOf.forEach(list => list.sort((a, b) => byLabel(a).localeCompare(byLabel(b))));
   }
-  return { roots, childrenOf, wordById, edgeCount: edges.length, nodeCount: nodeIds.size, fellBack, clusters };
+  return { roots, childrenOf, wordById, edgeCount: edges.length, nodeCount: nodeIds.size, fellBack, clusters, centred, shownNodeCount, truncated };
 }
 
 function hierarchyClusterHTML(cluster, wordById) {
@@ -2523,12 +2587,42 @@ function renderHierarchy() {
     return;
   }
 
-  const parts = [
-    \`\${tree.edgeCount} edge\${tree.edgeCount === 1 ? '' : 's'}\`,
-    \`\${tree.nodeCount} word\${tree.nodeCount === 1 ? '' : 's'}\`,
-    \`\${tree.roots.length} root\${tree.roots.length === 1 ? '' : 's'}\`,
-  ];
-  note.textContent = parts.join(" · ");
+  // A word is selected but has no edges of this kind at all -- distinct
+  // from "no relationships of this kind yet" below, which is about the
+  // whole Dictionary, not the selection specifically. Without this
+  // check the code below would silently fall through to the full,
+  // unscoped forest (buildHierarchy()'s own centred=false case), which
+  // reads exactly like the "selection is ignored" bug this whole
+  // function exists to fix.
+  if (state.selectedWordId && !tree.centred) {
+    const selWord = WORDS.find(w => w.id === state.selectedWordId);
+    note.innerHTML = \`No relationships of this kind for <strong>\${selWord ? selWord.lexical_form : 'the selected word'}</strong>. \`
+      + '<button type="button" class="link-btn" id="hierarchy-reset">show the full tree</button>';
+    document.getElementById("hierarchy-reset").addEventListener("click", () => selectWord(null));
+    container.innerHTML = "";
+    return;
+  }
+
+  if (tree.centred) {
+    const selWord = tree.wordById.get(state.selectedWordId);
+    const parts = [
+      \`\${tree.edgeCount} total edge\${tree.edgeCount === 1 ? '' : 's'} of this kind\`,
+      \`\${tree.nodeCount} total word\${tree.nodeCount === 1 ? '' : 's'}\`,
+      \`showing \${tree.shownNodeCount}\${tree.truncated ? '+' : ''}\`,
+    ];
+    note.innerHTML = parts.join(" · ")
+      + (selWord ? \` -- centred on <strong>\${selWord.lexical_form}</strong>\` : "")
+      + (tree.truncated ? ' <span class="hierarchy-cross-ref">(narrowed by node limit -- click a word below to centre the tree there)</span>' : '')
+      + ' &middot; <button type="button" class="link-btn" id="hierarchy-reset">back to full tree</button>';
+    document.getElementById("hierarchy-reset").addEventListener("click", () => selectWord(null));
+  } else {
+    const parts = [
+      \`\${tree.edgeCount} edge\${tree.edgeCount === 1 ? '' : 's'}\`,
+      \`\${tree.nodeCount} word\${tree.nodeCount === 1 ? '' : 's'}\`,
+      \`\${tree.roots.length} root\${tree.roots.length === 1 ? '' : 's'}\`,
+    ];
+    note.textContent = parts.join(" · ");
+  }
   if (!tree.roots.length) {
     container.innerHTML = '<div class="detail-empty" style="padding:8px 0">No relationships of this kind yet.</div>';
     return;
@@ -2987,17 +3081,47 @@ function renderCyclic() {
     container.innerHTML = "";
     return;
   }
-  const shown = groups.slice(0, MAX_CYCLIC_GROUPS_SHOWN);
-  const totalBoxes = groups.reduce((s, g) => s + g.clusters.length, 0);
-  const totalWords = new Set(groups.flatMap(g => g.clusters.flatMap(c => c.wordIds))).size;
-  note.textContent = \`Synonyms boxed together, \${titleCase(state.cyclicKind).toLowerCase()} drawn between boxes: \`
-    + \`\${groups.length} group\${groups.length === 1 ? '' : 's'} &middot; \${totalBoxes} boxes &middot; \${totalWords} words\`
-    + (groups.length > shown.length ? \` -- showing the \${shown.length} largest\` : '') + '.';
+
+  // Scope to just the group(s) containing the shared selection, the
+  // same way Hierarchy centres its own tree on it (buildHierarchy()'s
+  // own docstring) -- without this, every tab keeps showing whichever
+  // groups happen to sort largest regardless of what's selected, which
+  // reads as "the selection is ignored" even though the selected node
+  // IS highlighted wherever it happens to already be on screen
+  // (clusterGraphSVG()'s own isSelected). A word with no edges of this
+  // kind at all has no group to scope to -- shows an explicit message
+  // rather than silently falling back to every unrelated group.
+  let scopedGroups = groups;
+  let centred = false;
+  if (state.selectedWordId) {
+    const matching = groups.filter(g => g.clusters.some(c => c.wordIds.includes(state.selectedWordId)));
+    if (!matching.length) {
+      const selWord = wordById.get(state.selectedWordId);
+      note.innerHTML = \`No \${titleCase(state.cyclicKind).toLowerCase()} relationships connect <strong>\${selWord ? selWord.lexical_form : 'the selected word'}</strong> to any synonym-clustered word for this kind. \`
+        + '<button type="button" class="link-btn" id="cyclic-reset">show every group</button>';
+      document.getElementById("cyclic-reset").addEventListener("click", () => selectWord(null));
+      container.innerHTML = "";
+      return;
+    }
+    scopedGroups = matching;
+    centred = true;
+  }
+
+  const shown = scopedGroups.slice(0, MAX_CYCLIC_GROUPS_SHOWN);
+  const totalBoxes = scopedGroups.reduce((s, g) => s + g.clusters.length, 0);
+  const totalWords = new Set(scopedGroups.flatMap(g => g.clusters.flatMap(c => c.wordIds))).size;
+  const selWord = centred ? wordById.get(state.selectedWordId) : null;
+  note.innerHTML = \`Synonyms boxed together, \${titleCase(state.cyclicKind).toLowerCase()} drawn between boxes: \`
+    + \`\${scopedGroups.length} group\${scopedGroups.length === 1 ? '' : 's'} &middot; \${totalBoxes} boxes &middot; \${totalWords} words\`
+    + (scopedGroups.length > shown.length ? \` -- showing the \${shown.length} largest\` : '') + '.'
+    + (centred ? \` -- showing only the group\${scopedGroups.length === 1 ? '' : 's'} containing <strong>\${selWord ? selWord.lexical_form : 'the selected word'}</strong> &middot; <button type="button" class="link-btn" id="cyclic-reset">show every group</button>\` : '');
   container.innerHTML = shown.map(g => \`
     <div class="cyclic-cluster">
       <div class="cyclic-cluster-title">\${g.clusters.length} synonym boxes &middot; \${g.edges.length} \${titleCase(state.cyclicKind).toLowerCase()} edges</div>
       \${clusterGraphSVG(g, wordById, state.cyclicKind)}
     </div>\`).join('');
+  const cyclicResetBtn = document.getElementById("cyclic-reset");
+  if (cyclicResetBtn) cyclicResetBtn.addEventListener("click", () => selectWord(null));
   container.querySelectorAll(".cyclic-node[data-pivot-id]").forEach(node => {
     node.addEventListener("click", () => selectWord(node.dataset.pivotId));
     node.addEventListener("keydown", (e) => {
