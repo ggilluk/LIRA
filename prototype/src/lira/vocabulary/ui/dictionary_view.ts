@@ -1392,6 +1392,32 @@ function relPill(kind, group) {
   return \`<span class="pill" style="background:\${color}" title="\${GROUP_NAMES[group] || ''}">\${titleCase(kind)}</span>\`;
 }
 
+// word_seeder.ts's own relationshipKindForPointer stores only ONE edge
+// per hypernym/meronym-family fact (a word's own outgoing kind), never
+// a second, separately-labelled edge for the reciprocal direction --
+// but a word's own relationship list still needs to read as "Hyponym"/
+// "Holonym" when it's on the *receiving* end of one of these, not
+// "Hypernym"/"Meronym" again with only the arrow reversed (that would
+// misread as "the other word is my hypernym", not "I have the other
+// word as a hyponym"). This is a display-only relabelling -- the
+// underlying relationshipSentence() call still uses the real stored
+// kind, which already reads correctly regardless of viewing direction
+// (relationshipsSectionHTML's own call site), and the pill's own colour
+// (relPill's \`group\` argument) is unaffected either way: every kind
+// listed here shares its own reciprocal's exact group/category
+// (LexicalRelationshipType's own bit-packing, lexical_relationship_type.ts).
+const RECIPROCAL_DISPLAY_KIND = {
+  HYPERNYM: "HYPONYM",
+  INSTANCE_HYPERNYM: "INSTANCE_HYPONYM",
+  PART_MERONYM: "PART_HOLONYM",
+  MEMBER_MERONYM: "MEMBER_HOLONYM",
+  SUBSTANCE_MERONYM: "SUBSTANCE_HOLONYM",
+};
+
+function displayKind(kind, outgoing) {
+  return outgoing ? kind : (RECIPROCAL_DISPLAY_KIND[kind] || kind);
+}
+
 function domainPill(domain) {
   if (!domain) return "";
   // A polysemous Common word's domain reads as "<hypernym>.common"
@@ -1588,6 +1614,7 @@ function relationshipsForWord(wordId) {
         otherText: outgoing ? r.target_text : r.source_text,
         otherDomain: outgoing ? r.target_domain : r.source_domain,
         otherSenseId: outgoing ? r.target_sense_id : r.source_sense_id,
+        pillKind: displayKind(r.kind, outgoing),
       };
     })
     .sort((a, b) => (a.group - b.group) || a.kind.localeCompare(b.kind));
@@ -1876,7 +1903,7 @@ function relationshipsSectionHTML(rels) {
     <div class="rel-entry">
       <div class="rel-row">
         <span class="rel-dir" title="\${r.outgoing ? 'Outgoing' : 'Incoming'}">\${r.outgoing ? '&rarr;' : '&larr;'}</span>
-        \${relPill(r.kind, r.group)}
+        \${relPill(r.pillKind || r.kind, r.group)}
         <button class="link-btn" data-pivot-id="\${r.otherId}">\${r.otherText}</button>
         \${senseIdBadge(r.otherSenseId)}
         \${domainPill(r.otherDomain)}
@@ -2687,6 +2714,7 @@ document.addEventListener("lira-search-relationships-result", (e) => {
           otherText: outgoing ? r.target_text : r.source_text,
           otherDomain: outgoing ? r.target_domain : r.source_domain,
           otherSenseId: outgoing ? r.target_sense_id : r.source_sense_id,
+          pillKind: displayKind(r.kind, outgoing),
         };
       })
       .sort((a, b) => (a.group - b.group) || a.kind.localeCompare(b.kind));
