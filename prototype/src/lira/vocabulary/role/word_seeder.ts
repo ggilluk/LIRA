@@ -120,6 +120,16 @@ export const PROMOTED_FILE = "promoted_words.json";
 export const MANIFEST_FILE = "manifest.json";
 const OPEN_CLASSES = [PartOfSpeech.NOUN, PartOfSpeech.VERB, PartOfSpeech.ADJECTIVE, PartOfSpeech.ADVERB];
 
+// root_words.json's own domainTag (that file's SUPPLEMENTARY_FILES
+// comment above, and Word.domainTag's) -- seedClosedClassWords' one
+// carve-out from skipping every OPEN_CLASSES Word: this doesn't name
+// general vocabulary coverage, it names the curated Interrogative/
+// Hypernym/Holonym/Vector-Primitive root-word table, and already exists
+// specifically so these 25 NOUN entries coexist as deliberate homographs
+// alongside WordNet's own senses rather than colliding with (or being
+// skipped in favour of) them.
+const ROOT_WORD_DOMAIN_TAG = "root_word.common";
+
 // seedWordNet's own constants -- see that method's docstring.
 const WORDNET_SOURCE_REFERENCE: SourceReference = {
   sourceName: { value: "Princeton WordNet 3.1" },
@@ -560,17 +570,38 @@ export class WordSeeder {
    * appended -- idempotent, safe to call more than once against the
    * same Dictionary.
    *
-   * Also wires `dictionary`'s own lemma index (Dictionary.linkForm):
-   * once every word has been copied in, replays `cacheFormLinks`
-   * against the entryId -> copy map this call just built, linking base
-   * and form only when *both* were freshly inserted this call -- a
-   * link whose base or form was already present (skipped above,
-   * belongs to an earlier seeding call) is left for that earlier call's
-   * own linking to have covered, rather than guessed at here. */
-  seedClosedClassWords(dictionary: Dictionary): number {
+   * `options.excludeOpenClasses`, default false, preserves this
+   * method's original behaviour for every existing caller (Linguistics'
+   * own test fixtures in particular, which seed this cache alone,
+   * without ever loading WordNet, and need its full NOUN/VERB/ADJECTIVE/
+   * ADVERB coverage to parse a realistic sentence). Only the Vocabulary
+   * view's own "Seed Vocabulary" toolbar action (vocabulary_worker.ts's
+   * handleSeedCommonVocabulary) opts in: with WordSeeder.seedWordNet
+   * available as a separate, on-demand action in that same UI,
+   * promoted_words.json and the metalinguistic_{nouns,verbs,adjectives,
+   * adverbs}.json files' own open-class coverage (SUPPLEMENTARY_FILES'
+   * own comment) is redundant there, and worse than redundant if
+   * "Seed Vocabulary" is clicked *before* "Load WordNet": unlike a
+   * WordNet sense, none of these cached entries carry a domainTag, so
+   * they'd silently shadow -- not merely duplicate -- WordNet's own
+   * richer entry for the identical (text, partOfSpeech) pair once it's
+   * loaded (the `alreadyPresent` check just below matches on domainTag
+   * too, and undefined equals undefined). root_words.json's own 25 NOUN
+   * entries (ROOT_WORD_DOMAIN_TAG) are the one exception even when
+   * `excludeOpenClasses` is set -- not general vocabulary coverage, the
+   * curated Interrogative/Hypernym/Holonym/Vector-Primitive root-word
+   * table, with no seeding path of its own outside this cache. Every
+   * other closed class (pronoun, determiner, preposition, ..., symbol,
+   * numeral, proper noun, interjection) is unaffected either way --
+   * WordNet itself only ever seeds NOUN/VERB/ADJECTIVE/ADVERB Words, so
+   * there's nothing for this cache's own closed-class entries to
+   * compete with there. */
+  seedClosedClassWords(dictionary: Dictionary, options?: { excludeOpenClasses?: boolean }): number {
+    const excludeOpenClasses = options?.excludeOpenClasses ?? false;
     let seeded = 0;
     const insertedByEntryId = new Map<string, Word>();
     for (const word of this.loadCache()) {
+      if (excludeOpenClasses && OPEN_CLASSES.includes(word.partOfSpeech) && word.domainTag?.value !== ROOT_WORD_DOMAIN_TAG) continue;
       const wordDomainTag = word.domainTag?.value;
       const alreadyPresent = dictionary
         .lookupAll(word.text)
@@ -589,8 +620,8 @@ export class WordSeeder {
     return seeded;
   }
 
-  seedDomain(domain: { vocabulary: { dictionary: Dictionary } }): number {
-    return this.seedClosedClassWords(domain.vocabulary.dictionary);
+  seedDomain(domain: { vocabulary: { dictionary: Dictionary } }, options?: { excludeOpenClasses?: boolean }): number {
+    return this.seedClosedClassWords(domain.vocabulary.dictionary, options);
   }
 
   /** Seeds `domain` from the bundled Princeton WordNet 3.1 dict/ files

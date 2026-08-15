@@ -138,11 +138,17 @@ async function handleSeedCommonVocabulary(request: SeedCommonVocabularyRequest):
   try {
     post({ type: "status", state: "running", detail: `Seeding the Common Vocabulary Cache into ${domain.name}…` });
     const wordSeeder = new WordSeeder("en");
-    const wordsSeeded = wordSeeder.seedDomain(domain);
+    // excludeOpenClasses: "Load WordNet" is this prototype's actual
+    // source of truth for NOUN/VERB/ADJECTIVE/ADVERB coverage now
+    // (word_seeder.ts's own seedClosedClassWords docstring) -- paired
+    // with skipUnresolvable below, since most of the Common Relationship
+    // Cache's own specs relate open-class words this call now leaves
+    // unseeded by design.
+    const wordsSeeded = wordSeeder.seedDomain(domain, { excludeOpenClasses: true });
 
     post({ type: "status", state: "running", detail: `Seeded ${wordsSeeded} words into ${domain.name} — seeding relationships…` });
     const relationshipSeeder = new RelationshipSeeder("en");
-    const relationshipsSeeded = await relationshipSeeder.seedDomain(domain);
+    const relationshipsSeeded = await relationshipSeeder.seedDomain(domain, { skipUnresolvable: true });
 
     renderCache.delete(domain.name);
     const updatedDomains: SeededDomain[] = [domain];

@@ -154,15 +154,30 @@ export class RelationshipSeeder {
    *
    * Resolution happens as a complete first pass, before any
    * relationship is created: if the Nth spec can't be resolved, the
-   * first N-1 are never created either. */
-  async seedDomain(domain: {
-    name: string;
-    vocabulary: {
-      dictionary: Dictionary;
-      lexicalRelationships: LexicalRelationshipStore;
-      lexicalRelationshipProcessor: LexicalRelationshipProcessor;
-    };
-  }): Promise<number> {
+   * first N-1 are never created either -- unless `options.skipUnresolvable`
+   * is set, in which case an unresolvable spec is simply skipped instead
+   * of aborting the whole run. Default false, preserving this method's
+   * original all-or-nothing behaviour (a real cache-consistency bug
+   * should still fail loudly) for every existing caller. The one caller
+   * that opts in is the Vocabulary view's own "Seed Vocabulary" toolbar
+   * action (vocabulary_worker.ts's handleSeedCommonVocabulary), paired
+   * with WordSeeder.seedDomain's own `excludeOpenClasses` -- once that
+   * option leaves NOUN/VERB/ADJECTIVE/ADVERB Words unseeded by design,
+   * a large share of this Common Relationship Cache's own specs (most
+   * of which relate open-class words) can no longer resolve, and that's
+   * expected, not a cache bug. */
+  async seedDomain(
+    domain: {
+      name: string;
+      vocabulary: {
+        dictionary: Dictionary;
+        lexicalRelationships: LexicalRelationshipStore;
+        lexicalRelationshipProcessor: LexicalRelationshipProcessor;
+      };
+    },
+    options?: { skipUnresolvable?: boolean },
+  ): Promise<number> {
+    const skipUnresolvable = options?.skipUnresolvable ?? false;
     const dictionary = domain.vocabulary.dictionary;
     const store = domain.vocabulary.lexicalRelationships;
     const processor = domain.vocabulary.lexicalRelationshipProcessor;
@@ -171,6 +186,7 @@ export class RelationshipSeeder {
     for (const spec of await this.loadRelationshipSpecs()) {
       const sourceWord = this.resolve(dictionary, spec.sourceForm, spec.sourcePos, spec.sourceDomainTag);
       if (sourceWord === undefined) {
+        if (skipUnresolvable) continue;
         throw new Error(
           `cannot resolve source Word '${spec.sourceForm}'` +
             (spec.sourcePos !== undefined ? ` (${PartOfSpeech[spec.sourcePos]})` : "") +
@@ -180,6 +196,7 @@ export class RelationshipSeeder {
       }
       const targetWord = this.resolve(dictionary, spec.targetForm, spec.targetPos, spec.targetDomainTag);
       if (targetWord === undefined) {
+        if (skipUnresolvable) continue;
         throw new Error(
           `cannot resolve target Word '${spec.targetForm}'` +
             (spec.targetPos !== undefined ? ` (${PartOfSpeech[spec.targetPos]})` : "") +

@@ -5,6 +5,7 @@ import { LexicalRelationshipSystemPropertyTensor } from "./data/lexical_relation
 import { LexicalRelationshipType } from "./data/lexical_relationship_type";
 import { PartOfSpeech } from "./data/part_of_speech";
 import { antonyms, createWord, hypernyms, hyponyms, synonyms } from "./data/word";
+import { HypernymRootWord } from "./data/hypernym_root_word";
 import { AsyncDictionaryHydrator } from "./role/dictionary_hydrator";
 import { DictionaryProcessor } from "./role/dictionary_processor";
 import { LexicalRelationshipProcessor } from "./role/lexical_relationship_processor";
@@ -219,6 +220,41 @@ describe("WordSeeder against the bundled Common Vocabulary Cache", () => {
     // still independently reachable through the normal flat lookup(),
     // exactly as if it had never been nested on disk.
     expect(dictionary.lookup("measured")?.partOfSpeech).toBe(PartOfSpeech.VERB);
+  });
+
+  it("seedClosedClassWords({ excludeOpenClasses: true }) skips every NOUN/VERB/ADJECTIVE/ADVERB cache entry except root_words.json's own curated root-word table", () => {
+    const dictionary = new Dictionary();
+    new WordSeeder("en").seedClosedClassWords(dictionary, { excludeOpenClasses: true });
+
+    // promoted_words.json is entirely NOUN/VERB/ADJECTIVE/ADVERB --
+    // WordSeeder.seedWordNet is now this prototype's source of truth for
+    // those four open classes, so none of it should be seeded here.
+    // "measure"/VERB and "big"/ADJECTIVE are both real promoted_words.json
+    // entries.
+    expect(dictionary.lookupAll("measure").some((w) => w.partOfSpeech === PartOfSpeech.VERB)).toBe(false);
+    expect(dictionary.lookupAll("big").some((w) => w.partOfSpeech === PartOfSpeech.ADJECTIVE)).toBe(false);
+
+    // metalinguistic_nouns.json's "word"/NOUN is likewise skipped.
+    expect(dictionary.lookupAll("word").some((w) => w.partOfSpeech === PartOfSpeech.NOUN)).toBe(false);
+
+    // root_words.json's own 25 NOUN entries are the one carve-out --
+    // isRootWord/hypernymRootWord and friends have no other seeding path.
+    const entity = dictionary.lookupAll("entity").find((w) => w.partOfSpeech === PartOfSpeech.NOUN);
+    expect(entity).toBeDefined();
+    expect(entity?.isRootWord).toBe(true);
+    expect(entity?.hypernymRootWord).toBe(HypernymRootWord.ENTITY);
+    expect(entity?.domainTag?.value).toBe("root_word.common");
+
+    // Every other closed class is unaffected.
+    expect(dictionary.lookup("the")?.partOfSpeech).toBe(PartOfSpeech.DETERMINER);
+    expect(dictionary.lookup("she")?.partOfSpeech).toBe(PartOfSpeech.PRONOUN);
+
+    // Without the option (the default), the same open-class words ARE
+    // seeded -- every other caller (Linguistics' own test fixtures in
+    // particular) is completely unaffected by this option's existence.
+    const unrestricted = new Dictionary();
+    new WordSeeder("en").seedClosedClassWords(unrestricted);
+    expect(unrestricted.lookupAll("measure").some((w) => w.partOfSpeech === PartOfSpeech.VERB)).toBe(true);
   });
 });
 
@@ -444,6 +480,32 @@ describe("RelationshipSeeder against the bundled Common Relationship Cache", () 
     const seeded = await relationshipSeeder.seedDomain({ name: "Common", vocabulary });
 
     expect(seeded).toBeGreaterThan(1000);
+    expect(vocabulary.lexicalRelationships.totalRelationships()).toBe(seeded);
+  });
+
+  it("{ skipUnresolvable: true } skips (rather than throws on) a spec whose Word was deliberately left unseeded by WordSeeder's own excludeOpenClasses, mirroring the Vocabulary view's 'Seed Vocabulary' toolbar action", async () => {
+    const wordSeeder = new WordSeeder("en");
+    const dictionary = new Dictionary();
+    wordSeeder.seedDomain({ vocabulary: { dictionary } }, { excludeOpenClasses: true });
+
+    const lexicalRelationships = new LexicalRelationshipStore();
+    const vocabulary = {
+      dictionary,
+      lexicalRelationships,
+      lexicalRelationshipProcessor: new LexicalRelationshipProcessor(
+        lexicalRelationships,
+        new LexicalRelationshipSystemPropertyTensor(),
+      ),
+    };
+
+    const relationshipSeeder = new RelationshipSeeder("en");
+    // Without skipUnresolvable this would throw -- most Common
+    // Relationship Cache specs relate open-class Words that
+    // excludeOpenClasses left unseeded.
+    await expect(relationshipSeeder.seedDomain({ name: "Common", vocabulary })).rejects.toThrow(/cannot resolve/);
+
+    const seeded = await relationshipSeeder.seedDomain({ name: "Common", vocabulary }, { skipUnresolvable: true });
+    expect(seeded).toBeGreaterThan(0);
     expect(vocabulary.lexicalRelationships.totalRelationships()).toBe(seeded);
   });
 });
