@@ -132,7 +132,7 @@ export interface DictionaryViewOptions {
 // Vocabulary Cache). Above it, this class renders a clear "too many
 // Words for this view" notice instead: embedding a Domain the size
 // WordSeeder.seedWordNet (role/word_seeder.ts) can produce -- ~211,000
-// Words, ~164,000 relationships -- as one client-side JSON literal
+// Words, ~780,000 relationships -- as one client-side JSON literal
 // doesn't just get slow, `JSON.stringify` on that many WordRecords
 // throws `RangeError: Invalid string length` outright, well past the
 // JS engine's own maximum string length. The stat tiles above the tabs

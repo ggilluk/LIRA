@@ -146,6 +146,30 @@ const WORDNET_SEEDER_DEFAULT_WEIGHT = 0.9999;
 // per-synset work it's reporting on.
 const PROGRESS_REPORT_INTERVAL = 2000;
 
+// Pointer symbols relationshipKindForPointer resolves to the SAME kind
+// regardless of which of a pair's two synsets a pointer was read from
+// (WordNet lists "!"/"$"/"="/"^" symmetrically on both ends -- unlike
+// the complementary-kind pairs that method's own docstring already
+// canonicalizes via `swap` (HYPERNYM/HYPONYM, xMERONYM/xHOLONYM), a
+// same-kind pair can't be caught by the exact (source, target, kind)
+// triple `existingEdges` key alone -- source and target are simply
+// swapped, kind is identical either way. createEdges() checks the
+// reversed pair for these kinds too before creating a second, redundant
+// edge for what both pointers describe as the identical fact.
+const SYMMETRIC_RELATIONSHIP_KINDS: ReadonlySet<LexicalRelationshipType> = new Set([
+  LexicalRelationshipType.ANTONYM,
+  LexicalRelationshipType.VERB_GROUP,
+  LexicalRelationshipType.ATTRIBUTE,
+  LexicalRelationshipType.ALSO_SEE,
+  // derivationKind()'s own fallback for a `+`/`<` pointer whose target
+  // isn't noun/adjective/adverb -- when *both* ends of a derivation
+  // pair fall to that same fallback (rather than one side resolving to
+  // NOMINALISATION/ADJECTIVAL_DERIVATION/ADVERBIAL_DERIVATION), the
+  // reciprocal pointer read from the other word's own synset produces
+  // the identical (source, target) swapped under the identical kind.
+  LexicalRelationshipType.DERIVED_FORM,
+]);
+
 /** `+`/`<`'s own shared rule: which Derivation-category kind
  * (lexical_relationship_type.ts) a cross-word derivation pointer becomes,
  * chosen by the *target* word's own part of speech -- WordNet's pointer
@@ -181,12 +205,30 @@ function derivationKind(sourcePos: PartOfSpeech, targetPos: PartOfSpeech): Lexic
  * degrades to "not seeded" instead of failing the whole run).
  *
  * `swap: true` means the edge WordNet's own record implies runs target
- * -> source, not source -> target -- true only for `-c`/`-r`/`-u`
- * ("member of this domain"), the reciprocal listing of `;c`/`;r`/`;u`
- * ("domain of synset") recorded on the *other* synset's own entry;
- * both symbols become the same TOPIC_DOMAIN/REGION_DOMAIN/USAGE_DOMAIN
- * kind, always oriented word -> its domain, regardless of which of the
- * pair's two entries the pointer was actually read from. */
+ * -> source, not source -> target -- true for `-c`/`-r`/`-u` ("member
+ * of this domain", the reciprocal listing of `;c`/`;r`/`;u` "domain of
+ * synset" recorded on the *other* synset's own entry; both symbols
+ * become the same TOPIC_DOMAIN/REGION_DOMAIN/USAGE_DOMAIN kind, always
+ * oriented word -> its domain, regardless of which of the pair's two
+ * entries the pointer was actually read from) -- and, for the same
+ * reason, for `~`/`~i`/`#p`/`#m`/`#s` too: WordNet redundantly encodes
+ * every hypernym/meronym fact from BOTH ends -- the child/part's own
+ * `@`/`@i`/`%p`/`%m`/`%s` pointer to its parent/whole, *and* the
+ * parent/whole's own `~`/`~i`/`#p`/`#m`/`#s` pointer back to each
+ * child/part -- so canonicalizing the second listing onto the exact
+ * same kind, swapped, means both pointers resolve to the identical
+ * (child, HYPERNYM, parent) / (part, xMERONYM, whole) edge; the
+ * existing `existingEdges` dedup in seedWordNet (keyed by the exact
+ * (source, target, kind) triple) then recognises whichever pointer is
+ * processed second as already covered, instead of creating a second,
+ * fully redundant HYPONYM/TROPONYM/INSTANCE_HYPONYM/xHOLONYM edge for
+ * the identical fact -- the "a word's own relationships also show the
+ * hypernyms of its hyponyms" bug this fix addresses (vocabulary.test.ts's
+ * own regression check on the resulting counts). Verb-specific
+ * troponymy (WordNet's own name for verb hyponymy, still marked `~`)
+ * canonicalizes the same way: its own `@` counterpart is already
+ * POS-agnostic HYPERNYM, so there's no separate TROPONYM case to keep
+ * here either. */
 function relationshipKindForPointer(
   symbol: string,
   sourcePos: PartOfSpeech,
@@ -200,14 +242,9 @@ function relationshipKindForPointer(
     case "@i":
       return { kind: LexicalRelationshipType.INSTANCE_HYPERNYM, swap: false };
     case "~":
-      // Troponymy is WordNet's own name for verb-specific hyponymy --
-      // this class's own module docstring (lexical_relationship_type.ts)
-      // already draws that line for LIRA's curated data; WordNet marks
-      // both with the identical `~` symbol; sourcePos is what tells
-      // them apart here.
-      return { kind: sourcePos === PartOfSpeech.VERB ? LexicalRelationshipType.TROPONYM : LexicalRelationshipType.HYPONYM, swap: false };
+      return { kind: LexicalRelationshipType.HYPERNYM, swap: true };
     case "~i":
-      return { kind: LexicalRelationshipType.INSTANCE_HYPONYM, swap: false };
+      return { kind: LexicalRelationshipType.INSTANCE_HYPERNYM, swap: true };
     case "%p":
       return { kind: LexicalRelationshipType.PART_MERONYM, swap: false };
     case "%m":
@@ -215,11 +252,11 @@ function relationshipKindForPointer(
     case "%s":
       return { kind: LexicalRelationshipType.SUBSTANCE_MERONYM, swap: false };
     case "#p":
-      return { kind: LexicalRelationshipType.PART_HOLONYM, swap: false };
+      return { kind: LexicalRelationshipType.PART_MERONYM, swap: true };
     case "#m":
-      return { kind: LexicalRelationshipType.MEMBER_HOLONYM, swap: false };
+      return { kind: LexicalRelationshipType.MEMBER_MERONYM, swap: true };
     case "#s":
-      return { kind: LexicalRelationshipType.SUBSTANCE_HOLONYM, swap: false };
+      return { kind: LexicalRelationshipType.SUBSTANCE_MERONYM, swap: true };
     case "*":
       return { kind: LexicalRelationshipType.ENTAILMENT, swap: false };
     case ">":
@@ -741,18 +778,28 @@ export class WordSeeder {
    * already in `existingEdges`, adding each newly-created one to that
    * same Set so a later call in the same seedWordNet run (or a later
    * seedWordNet run entirely) sees it as already present -- the shared
-   * idempotency mechanism both seedWordNet passes funnel through.
-   * Returns the number of edges actually created. */
+   * idempotency mechanism both seedWordNet passes funnel through. For a
+   * SYMMETRIC_RELATIONSHIP_KINDS kind, also checks the reversed
+   * (target, source, kind) key -- WordNet lists these symmetrically on
+   * both ends (SYMMETRIC_RELATIONSHIP_KINDS's own docstring), so the
+   * second pointer processed for an already-covered pair is recognised
+   * as redundant instead of creating a second edge for the identical
+   * fact, the same way relationshipKindForPointer's own `swap`
+   * canonicalization already does for complementary-kind pairs
+   * (HYPERNYM/HYPONYM, xMERONYM/xHOLONYM) via the exact-triple key
+   * alone. Returns the number of edges actually created. */
   private createEdges(
     processor: LexicalRelationshipProcessor,
     existingEdges: Set<string>,
     kind: LexicalRelationshipType,
     pairs: Iterable<readonly [Word, Word]>,
   ): number {
+    const symmetric = SYMMETRIC_RELATIONSHIP_KINDS.has(kind);
     let created = 0;
     for (const [source, target] of pairs) {
       const key = `${source.uuid.value}|${target.uuid.value}|${kind}`;
-      if (existingEdges.has(key)) continue;
+      const reverseKey = symmetric ? `${target.uuid.value}|${source.uuid.value}|${kind}` : undefined;
+      if (existingEdges.has(key) || (reverseKey !== undefined && existingEdges.has(reverseKey))) continue;
       processor.create({
         sourceWordId: source.uuid.value,
         targetWordId: target.uuid.value,

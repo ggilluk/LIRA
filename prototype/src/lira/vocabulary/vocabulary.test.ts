@@ -4,7 +4,7 @@ import { LexicalRelationshipStore } from "./data/lexical_relationship_store";
 import { LexicalRelationshipSystemPropertyTensor } from "./data/lexical_relationship_tensor";
 import { LexicalRelationshipType } from "./data/lexical_relationship_type";
 import { PartOfSpeech } from "./data/part_of_speech";
-import { antonyms, createWord, hypernyms, synonyms } from "./data/word";
+import { antonyms, createWord, hypernyms, hyponyms, synonyms } from "./data/word";
 import { AsyncDictionaryHydrator } from "./role/dictionary_hydrator";
 import { DictionaryProcessor } from "./role/dictionary_processor";
 import { LexicalRelationshipProcessor } from "./role/lexical_relationship_processor";
@@ -252,8 +252,15 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // Far beyond the SYNONYM-only total (~158,000) -- every other
     // WordNet pointer type (hypernym, meronym, antonym, ...) is now
     // wired too, word_seeder.ts's own seedWordNet docstring on its
-    // second pass.
-    expect(first.relationshipsSeeded).toBeGreaterThan(1000000);
+    // second pass. Below 1,000,000 (unlike an earlier version of this
+    // assertion): relationshipKindForPointer's own docstring on why
+    // WordNet's redundant both-ends pointer encoding no longer produces
+    // two edges per fact for the complementary-kind (HYPERNYM/HYPONYM,
+    // xMERONYM/xHOLONYM) and symmetric-kind (ANTONYM, VERB_GROUP,
+    // ATTRIBUTE, ALSO_SEE, DERIVED_FORM) pairs SYMMETRIC_RELATIONSHIP_KINDS
+    // covers.
+    expect(first.relationshipsSeeded).toBeGreaterThan(700000);
+    expect(first.relationshipsSeeded).toBeLessThan(900000);
     expect(dictionary.totalEntries()).toBe(first.wordsSeeded);
     expect(lexicalRelationships.totalRelationships()).toBe(first.relationshipsSeeded);
 
@@ -272,6 +279,12 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
       .find((word) => word.synsetId?.value === "00001930-n");
     expect(physicalEntity).toBeDefined();
     expect(hypernyms(physicalEntity!, lexicalRelationships, dictionary).map((w) => w.text)).toEqual(["entity"]);
+    // The reciprocal direction resolves too, off the identical stored
+    // edge (hyponyms()'s own docstring) -- "entity" is never told apart
+    // from "physical entity" by a second, separately-stored HYPONYM edge.
+    const entity = dictionary.lookupAll("entity").find((word) => word.synsetId?.value === "00001740-n");
+    expect(entity).toBeDefined();
+    expect(hyponyms(entity!, lexicalRelationships, dictionary).map((w) => w.text)).toContain("physical entity");
 
     // 00001740-a "able" -- ANTONYM -> 00002098-a "unable" (both
     // directions -- antonyms() itself reads direction="both").
@@ -280,6 +293,15 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     expect(antonyms(able!, lexicalRelationships, dictionary).map((w) => w.text)).toEqual(["unable"]);
     const unable = dictionary.lookupAll("unable").find((word) => word.synsetId?.value === "00002098-a");
     expect(antonyms(unable!, lexicalRelationships, dictionary).map((w) => w.text)).toEqual(["able"]);
+    // Only one ANTONYM edge is actually stored for this pair (a genuine
+    // regression check for SYMMETRIC_RELATIONSHIP_KINDS -- antonyms()
+    // reading direction="both" would still pass even if both directions
+    // were separately stored, so this checks the underlying store directly).
+    const antonymEdgesBetween = [
+      ...lexicalRelationships.outgoing(able!.uuid.value),
+      ...lexicalRelationships.incoming(able!.uuid.value),
+    ].filter((r) => r.relationshipType === LexicalRelationshipType.ANTONYM && (r.sourceWordId.value === unable!.uuid.value || r.targetWordId.value === unable!.uuid.value));
+    expect(antonymEdgesBetween).toHaveLength(1);
 
     // Every new WordNet-sourced kind actually appears at least once --
     // a regression check against relationshipKindForPointer silently
@@ -289,22 +311,34 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
       LexicalRelationshipType.PERTAINYM,
       LexicalRelationshipType.SIMILAR_TO,
       LexicalRelationshipType.INSTANCE_HYPERNYM,
-      LexicalRelationshipType.INSTANCE_HYPONYM,
       LexicalRelationshipType.PART_MERONYM,
-      LexicalRelationshipType.PART_HOLONYM,
       LexicalRelationshipType.MEMBER_MERONYM,
-      LexicalRelationshipType.MEMBER_HOLONYM,
       LexicalRelationshipType.SUBSTANCE_MERONYM,
-      LexicalRelationshipType.SUBSTANCE_HOLONYM,
       LexicalRelationshipType.ALSO_SEE,
       LexicalRelationshipType.VERB_GROUP,
       LexicalRelationshipType.ATTRIBUTE,
       LexicalRelationshipType.TOPIC_DOMAIN,
       LexicalRelationshipType.REGION_DOMAIN,
       LexicalRelationshipType.USAGE_DOMAIN,
-      LexicalRelationshipType.TROPONYM,
     ]) {
       expect(seenKinds.has(kind), `expected at least one ${LexicalRelationshipType[kind]} edge`).toBe(true);
+    }
+    // HYPONYM/TROPONYM/INSTANCE_HYPONYM/PART_HOLONYM/MEMBER_HOLONYM/
+    // SUBSTANCE_HOLONYM are never seeded at all -- relationshipKindForPointer
+    // canonicalizes their own WordNet pointer symbols onto their
+    // complementary kind instead (this is the fix itself, not an
+    // implementation detail: a word's own relationship list no longer
+    // shows both "X is a type of Y" and the reciprocal "Y has hyponym
+    // X" as two separate entries for the identical fact).
+    for (const kind of [
+      LexicalRelationshipType.HYPONYM,
+      LexicalRelationshipType.TROPONYM,
+      LexicalRelationshipType.INSTANCE_HYPONYM,
+      LexicalRelationshipType.PART_HOLONYM,
+      LexicalRelationshipType.MEMBER_HOLONYM,
+      LexicalRelationshipType.SUBSTANCE_HOLONYM,
+    ]) {
+      expect(seenKinds.has(kind), `expected no ${LexicalRelationshipType[kind]} edges at all`).toBe(false);
     }
 
     // Re-seeding the same Domain neither duplicates Words nor
@@ -314,6 +348,41 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     expect(second.relationshipsSeeded).toBe(0);
     expect(dictionary.totalEntries()).toBe(first.wordsSeeded);
     expect(lexicalRelationships.totalRelationships()).toBe(first.relationshipsSeeded);
+  }, 60000);
+
+  it("a word's own relationships never show both a hypernym/hyponym (or antonym/meronym/...) fact and its reciprocal listing as two separate entries", async () => {
+    const dictionary = new Dictionary();
+    const lexicalRelationships = new LexicalRelationshipStore();
+    const lexicalRelationshipProcessor = new LexicalRelationshipProcessor(
+      lexicalRelationships,
+      new LexicalRelationshipSystemPropertyTensor(),
+    );
+    await new WordSeeder("en").seedWordNet({ vocabulary: { dictionary, lexicalRelationships, lexicalRelationshipProcessor } });
+
+    const dog = dictionary.lookupAll("dog").find((w) => w.partOfSpeech === PartOfSpeech.NOUN && w.synsetId?.value === "02086723-n");
+    expect(dog).toBeDefined();
+
+    // Both directions still resolve correctly (dog has real hypernyms
+    // -- canine/canid/domestic animal -- and real hyponyms -- poodle,
+    // among many others) ...
+    const dogHypernyms = hypernyms(dog!, lexicalRelationships, dictionary).map((w) => w.text);
+    const dogHyponyms = hyponyms(dog!, lexicalRelationships, dictionary).map((w) => w.text);
+    expect(dogHypernyms).toContain("canine");
+    expect(dogHyponyms).toContain("poodle");
+
+    // ... but every one of dog's own relationships (outgoing + incoming,
+    // exactly what the Vocabulary UI's detail panel queries via
+    // DictionaryView.searchRelationships({ wordId })) touches dog
+    // directly exactly once per (other word, kind) pair -- never a
+    // second entry for the identical fact viewed from the other end.
+    const dogRelationships = [...lexicalRelationships.outgoing(dog!.uuid.value), ...lexicalRelationships.incoming(dog!.uuid.value)];
+    const seenPairs = new Set<string>();
+    for (const r of dogRelationships) {
+      const otherId = r.sourceWordId.value === dog!.uuid.value ? r.targetWordId.value : r.sourceWordId.value;
+      const pairKey = `${otherId}|${r.relationshipType}`;
+      expect(seenPairs.has(pairKey), `duplicate (other word, kind) pair: ${pairKey}`).toBe(false);
+      seenPairs.add(pairKey);
+    }
   }, 60000);
 });
 

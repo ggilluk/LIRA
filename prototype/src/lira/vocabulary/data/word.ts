@@ -30,7 +30,7 @@ import type { HypernymRootWord } from "./hypernym_root_word";
 import type { InterrogativeRootWord } from "./interrogative_root_word";
 import { LexicalRelationshipStore } from "./lexical_relationship_store";
 import { LexicalRelationshipType } from "./lexical_relationship_type";
-import type { PartOfSpeech } from "./part_of_speech";
+import { PartOfSpeech } from "./part_of_speech";
 import type { Pronunciation } from "./pronunciation";
 import type { RegisterCode } from "./register_code";
 import type { SourceReference } from "./source_reference";
@@ -309,8 +309,16 @@ export function hypernyms(word: Word, relationships: LexicalRelationshipStore, d
   return relatedWords(word, relationships, dictionary, { relationshipType: LexicalRelationshipType.HYPERNYM });
 }
 
+// A HYPONYM edge is never actually stored by WordSeeder.seedWordNet --
+// that class's own relationshipKindForPointer canonicalizes WordNet's
+// `~` (hyponym) pointer onto the same HYPERNYM kind as its `@`
+// counterpart, swapped, rather than creating a second, fully redundant
+// edge for the identical fact (that function's own docstring). A
+// word's hyponyms are exactly the other Words with an *incoming*
+// HYPERNYM edge to it -- symmetric with hypernyms() itself reading the
+// *outgoing* side of that same kind.
 export function hyponyms(word: Word, relationships: LexicalRelationshipStore, dictionary: Dictionary): readonly Word[] {
-  return relatedWords(word, relationships, dictionary, { relationshipType: LexicalRelationshipType.HYPONYM });
+  return relatedWords(word, relationships, dictionary, { relationshipType: LexicalRelationshipType.HYPERNYM, direction: "incoming" });
 }
 
 export function meronyms(word: Word, relationships: LexicalRelationshipStore, dictionary: Dictionary): readonly Word[] {
@@ -321,8 +329,14 @@ export function holonyms(word: Word, relationships: LexicalRelationshipStore, di
   return relatedWords(word, relationships, dictionary, { relationshipType: LexicalRelationshipType.HOLONYM, direction: "incoming" });
 }
 
+// Same fate as HYPONYM (hyponyms()'s own docstring): a TROPONYM edge is
+// never actually stored either -- verb-specific hyponymy canonicalizes
+// onto the identical HYPERNYM kind regardless of part of speech. The
+// verb-specific subset troponyms() promises is recovered by filtering
+// hyponyms() itself down to VERB Words, rather than a separately
+// stored fact.
 export function troponyms(word: Word, relationships: LexicalRelationshipStore, dictionary: Dictionary): readonly Word[] {
-  return relatedWords(word, relationships, dictionary, { relationshipType: LexicalRelationshipType.TROPONYM });
+  return hyponyms(word, relationships, dictionary).filter((other) => other.partOfSpeech === PartOfSpeech.VERB);
 }
 
 export function spellingVariants(word: Word, relationships: LexicalRelationshipStore, dictionary: Dictionary): readonly Word[] {
