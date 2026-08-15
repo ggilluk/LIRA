@@ -117,6 +117,51 @@ export interface RelationshipRecord {
   confidence: number;
 }
 
+// One kind's total edge count across the whole LexicalRelationshipStore
+// -- resolveHierarchy()'s own docstring on why this exists: the
+// Hierarchy/Cyclic tabs' own "Relationship kind" dropdowns need to know
+// which kinds exist (and how many edges each has) regardless of
+// MAX_INTERACTIVE_WORDS, the same reason POS_VALUES/DOMAIN_VALUES are
+// embedded unconditionally already (renderFragment()'s own
+// substitutions). `group` rides along so the client can apply the same
+// KIND_PAIR_GROUPS-style grouping/filtering it already does today
+// without a second round trip just to look up one kind's group.
+export interface RelationshipKindCount {
+  kind: string;
+  group: number;
+  count: number;
+}
+
+// One resolved Word, as much as a Hierarchy tree node needs to render
+// itself (posPill/domainPill/senseIdBadge) -- deliberately not a full
+// WordRecord (relationship_count, definition, PAD, ... none of that is
+// shown inside a tree node).
+export interface HierarchyNode {
+  id: string;
+  lexical_form: string;
+  pos: string;
+  domain: string | null;
+  sense_id: string | null;
+}
+
+export interface HierarchyEdge {
+  parentId: string;
+  childId: string;
+}
+
+// resolveHierarchy()'s own result -- see that method's docstring for
+// what each field means and how `fellBack`/`truncated` should be
+// handled by a caller.
+export interface HierarchyResolution {
+  nodes: readonly HierarchyNode[];
+  edges: readonly HierarchyEdge[];
+  roots: readonly string[];
+  totalEdgeCount: number;
+  totalNodeCount: number;
+  fellBack: boolean;
+  truncated: boolean;
+}
+
 export interface DictionaryViewOptions {
   title?: string;
   domainName?: string;
@@ -142,6 +187,34 @@ export interface DictionaryViewOptions {
 // interactive browse-every-word experience is unavailable past this
 // ceiling, not the counts.
 const MAX_INTERACTIVE_WORDS = 20_000;
+
+// The kinds word_seeder.ts's own relationshipKindForPointer stores as
+// only ONE edge per fact, always oriented child -> kind -> parent (that
+// function's own docstring on why: WordNet redundantly lists every
+// hypernym/meronym fact from both ends, so the parent-listed side is
+// canonicalized onto the child-listed side's kind instead of creating a
+// second, fully redundant edge). resolveHierarchy() needs to know this
+// to orient a tree correctly -- for any OTHER kind, the stored
+// (source, target) pair already reads source-as-parent/target-as-child
+// (the Relationships tab's own literal reading), but for these five,
+// the *parent* is the edge's target and the *child* is its source --
+// backwards from every other kind, because there is no longer a
+// separately-stored HYPONYM/INSTANCE_HYPONYM/xHOLONYM edge whose own
+// (source, target) would already read the natural way.
+const HIERARCHY_INVERTED_KINDS: ReadonlySet<LexicalRelationshipType> = new Set([
+  LexicalRelationshipType.HYPERNYM,
+  LexicalRelationshipType.INSTANCE_HYPERNYM,
+  LexicalRelationshipType.PART_MERONYM,
+  LexicalRelationshipType.MEMBER_MERONYM,
+  LexicalRelationshipType.SUBSTANCE_MERONYM,
+]);
+
+// resolveHierarchy()'s own default node cap when a caller doesn't pass
+// its own `limit` -- generous enough to show a genuinely useful subtree
+// (HIERARCHY_NODE_LIMIT's own client-side docstring, dictionary_view.ts's
+// embedded script) without risking the same JSON.stringify-on-too-much-
+// data ceiling MAX_INTERACTIVE_WORDS exists to avoid in the first place.
+const DEFAULT_HIERARCHY_NODE_LIMIT = 500;
 
 /** Builds the HTML page. Construct with the Dictionary and
  * LexicalRelationshipStore to display -- typically a Domain's
@@ -246,6 +319,13 @@ export class DictionaryView {
         ? escapeHtml(`No relationships match this search across all ${totalRelationshipCount.toLocaleString()} relationships in this Domain.`)
         : "No relationships match this search.",
       UNRESOLVED_JSON: JSON.stringify([...this.unresolved].sort()),
+      // The Hierarchy/Cyclic tabs' own "Relationship kind" dropdowns --
+      // computed off the full LexicalRelationshipStore regardless of
+      // overCapacity, same reasoning as POS_VALUES/DOMAIN_VALUES just
+      // above (relationshipKindCounts()'s own docstring: past
+      // MAX_INTERACTIVE_WORDS there's no client-embedded RELS array
+      // left to scan for kinds at all).
+      RELATIONSHIP_KIND_COUNTS_JSON: JSON.stringify(this.relationshipKindCounts()),
       POS_COLORS_JSON: JSON.stringify(POS_COLORS),
       GROUP_COLORS_JSON: JSON.stringify(GROUP_COLORS),
       GROUP_NAMES_JSON: JSON.stringify(GROUP_NAMES),
@@ -520,6 +600,170 @@ export class DictionaryView {
       if (matches.length < limit) matches.push(record);
     }
     return { relationships: matches, totalMatches };
+  }
+
+  /** One entry per relationship kind actually present in this
+   * Dictionary -- embedded into the rendered page unconditionally
+   * (renderFragment()'s own POS_VALUES/DOMAIN_VALUES precedent), so the
+   * Hierarchy/Cyclic tabs' own "Relationship kind" dropdowns have
+   * something to populate from even past MAX_INTERACTIVE_WORDS, where
+   * the client-side RELS array they used to read from is always empty. */
+  relationshipKindCounts(): RelationshipKindCount[] {
+    const counts = new Map<string, { group: number; count: number }>();
+    for (const rel of this.relationships.all()) {
+      const kind = LexicalRelationshipType[rel.relationshipType];
+      const entry = counts.get(kind);
+      if (entry) entry.count += 1;
+      else counts.set(kind, { group: relationshipGroup(rel.relationshipType), count: 1 });
+    }
+    return [...counts.entries()].map(([kind, v]) => ({ kind, group: v.group, count: v.count }));
+  }
+
+  /** Resolves one Hierarchy-tab tree for `options.kind`, server-side,
+   * regardless of scale -- the on-demand counterpart to the small-
+   * Domain client-side buildHierarchy() (dictionary_view.ts's own
+   * embedded script), for a Domain over MAX_INTERACTIVE_WORDS where
+   * there's no client-embedded RELS array left to build a tree from in
+   * the browser at all (that constant's own docstring).
+   *
+   * Two modes, chosen by whether `options.wordId` is given:
+   *  - No wordId: finds this kind's own "broadest root" -- among every
+   *    node with no parent edge of this kind, the one with the most
+   *    direct children. That's a cheap O(1)-per-candidate proxy for
+   *    "most encompassing", not an exact total-descendant count (which
+   *    would need its own full traversal *per candidate root*,
+   *    needlessly expensive when a less strictly hierarchical kind can
+   *    have thousands of root candidates) -- then returns that root's
+   *    own descendant subtree, breadth-first, capped at `options.limit`
+   *    nodes.
+   *  - `wordId` given: walks *up* from that Word, one parent at a time
+   *    (the first parent found at each step -- a rare multiple-parent
+   *    case, e.g. a noun with two WordNet hypernyms, picks one path
+   *    rather than returning a merged DAG of ancestors), to build the
+   *    root-to-word ancestor chain, then returns that Word's own
+   *    descendant subtree the same breadth-first, capped way.
+   *
+   * HIERARCHY_INVERTED_KINDS's own docstring on why `parentId`/`childId`
+   * aren't always simply `sourceWordId`/`targetWordId`. Every edge of
+   * the chosen kind is scanned once regardless of mode
+   * (`this.relationships.all()` filtered by kind) -- at WordNet scale
+   * that's up to a few hundred thousand comparisons, comfortably
+   * sub-second work for an on-demand Worker request, the same order of
+   * magnitude searchWords()/searchRelationships() already do per call.
+   * `fellBack: true` means every node touched by this kind has both
+   * directions (a fully symmetric kind, e.g. ANTONYM) -- there is no
+   * meaningful root to start from; a caller should offer its own
+   * clustering view instead (buildClusters()'s own small-Domain
+   * equivalent) rather than treat this as "no data". `truncated: true`
+   * means the descendant walk hit `options.limit` before it ran out of
+   * children to include. */
+  resolveHierarchy(options: { kind: string; wordId?: string; limit?: number }): HierarchyResolution {
+    const empty: HierarchyResolution = { nodes: [], edges: [], roots: [], totalEdgeCount: 0, totalNodeCount: 0, fellBack: false, truncated: false };
+    const kindEnum = LexicalRelationshipType[options.kind as keyof typeof LexicalRelationshipType];
+    if (kindEnum === undefined) return empty;
+
+    const inverted = HIERARCHY_INVERTED_KINDS.has(kindEnum);
+    const limit = options.limit ?? DEFAULT_HIERARCHY_NODE_LIMIT;
+
+    const childrenOf = new Map<string, Set<string>>();
+    const parentsOf = new Map<string, Set<string>>();
+    const allNodeIds = new Set<string>();
+    let totalEdgeCount = 0;
+    for (const rel of this.relationships.all()) {
+      if (rel.relationshipType !== kindEnum) continue;
+      totalEdgeCount += 1;
+      const parentId = inverted ? rel.targetWordId.value : rel.sourceWordId.value;
+      const childId = inverted ? rel.sourceWordId.value : rel.targetWordId.value;
+      allNodeIds.add(parentId);
+      allNodeIds.add(childId);
+      let children = childrenOf.get(parentId);
+      if (!children) {
+        children = new Set();
+        childrenOf.set(parentId, children);
+      }
+      children.add(childId);
+      let parents = parentsOf.get(childId);
+      if (!parents) {
+        parents = new Set();
+        parentsOf.set(childId, parents);
+      }
+      parents.add(parentId);
+    }
+    const totalNodeCount = allNodeIds.size;
+    if (totalEdgeCount === 0) return empty;
+
+    const ancestorChain: string[] = [];
+    let startId: string;
+
+    if (options.wordId !== undefined) {
+      if (!allNodeIds.has(options.wordId)) return { ...empty, totalEdgeCount, totalNodeCount };
+      let cur = options.wordId;
+      const seen = new Set([cur]);
+      for (;;) {
+        const parents = parentsOf.get(cur);
+        if (!parents || parents.size === 0) break;
+        const next = [...parents][0];
+        if (seen.has(next)) break;
+        ancestorChain.push(next);
+        seen.add(next);
+        cur = next;
+      }
+      ancestorChain.reverse();
+      startId = options.wordId;
+    } else {
+      const rootCandidates = [...allNodeIds].filter((id) => !parentsOf.has(id));
+      if (rootCandidates.length === 0) return { ...empty, totalEdgeCount, totalNodeCount, fellBack: true };
+      rootCandidates.sort((a, b) => (childrenOf.get(b)?.size ?? 0) - (childrenOf.get(a)?.size ?? 0));
+      startId = rootCandidates[0];
+    }
+
+    const includedIds = new Set<string>(ancestorChain);
+    includedIds.add(startId);
+    const edges: HierarchyEdge[] = [];
+    for (let i = 0; i < ancestorChain.length - 1; i++) {
+      edges.push({ parentId: ancestorChain[i], childId: ancestorChain[i + 1] });
+    }
+    if (ancestorChain.length > 0) {
+      edges.push({ parentId: ancestorChain[ancestorChain.length - 1], childId: startId });
+    }
+
+    let truncated = false;
+    const queue: string[] = [startId];
+    let queueIndex = 0;
+    while (queueIndex < queue.length) {
+      const current = queue[queueIndex];
+      queueIndex += 1;
+      const children = childrenOf.get(current);
+      if (!children) continue;
+      for (const childId of children) {
+        const alreadyIncluded = includedIds.has(childId);
+        if (!alreadyIncluded && includedIds.size >= limit) {
+          truncated = true;
+          continue;
+        }
+        edges.push({ parentId: current, childId });
+        if (!alreadyIncluded) {
+          includedIds.add(childId);
+          queue.push(childId);
+        }
+      }
+    }
+
+    const nodes: HierarchyNode[] = [];
+    for (const id of includedIds) {
+      const word = this.dictionary.findByUuid(id);
+      if (!word) continue;
+      nodes.push({
+        id,
+        lexical_form: word.lexicalForm?.value ?? word.text,
+        pos: PartOfSpeech[word.partOfSpeech],
+        domain: this.domainLabel(word),
+        sense_id: word.synsetId?.value ?? null,
+      });
+    }
+
+    const roots = ancestorChain.length > 0 ? [ancestorChain[0]] : [startId];
+    return { nodes, edges, roots, totalEdgeCount, totalNodeCount, fellBack: false, truncated };
   }
 
   private domainLabel(word: Word | undefined): string | null {
@@ -1309,6 +1553,13 @@ const TOTAL_RELATIONSHIP_COUNT = @@RELATIONSHIP_COUNT@@;
 // of Words (populatePosFilter/populateDomainFilter's own docstrings).
 const POS_VALUES = @@POS_VALUES_JSON@@;
 const DOMAIN_VALUES = @@DOMAIN_VALUES_JSON@@;
+// The Hierarchy/Cyclic tabs' own "Relationship kind" dropdowns -- same
+// reasoning as POS_VALUES/DOMAIN_VALUES just above, computed server-side
+// off the whole LexicalRelationshipStore (render()'s own
+// relationshipKindCounts()) rather than scanned from RELS, which is []
+// whenever OVER_CAPACITY is true. One \`{kind, group, count}\` entry per
+// kind actually present in this Dictionary.
+const RELATIONSHIP_KIND_COUNTS = @@RELATIONSHIP_KIND_COUNTS_JSON@@;
 
 const state = {
   tab: "words", search: { word: "", gloss: "", definition: "" }, pos: "", domain: "", rootWordsOnly: false,
@@ -1571,7 +1822,7 @@ function populateDomainFilter() {
 function populateHierarchyKindFilter() {
   const select = document.getElementById("hierarchy-kind");
   const counts = {};
-  RELS.forEach(r => { counts[r.kind] = (counts[r.kind] || 0) + 1; });
+  RELATIONSHIP_KIND_COUNTS.forEach(({ kind, count }) => { counts[kind] = count; });
   const kinds = Object.keys(counts).sort();
   appendKindOptions(select, counts);
   state.hierarchyKind = kinds[0] || null;
@@ -2149,7 +2400,19 @@ function hierarchyNodeHTML(id, tree, pathSet, globalSeen, depth) {
   return \`<li class="hierarchy-node"><div class="hierarchy-node-row">\${label}</div>\${childrenHTML}</li>\`;
 }
 
+// Server-resolved Hierarchy trees (over MAX_INTERACTIVE_WORDS) are
+// capped at this many nodes -- resolveHierarchy()'s own default
+// (DictionaryView.resolveHierarchy(), dictionary_view.ts's server-side
+// class), passed explicitly here so this file's own docstring lives
+// next to the number actually sent, not just the server-side default it
+// happens to match.
+const HIERARCHY_NODE_LIMIT = 500;
+
 function renderHierarchy() {
+  if (OVER_CAPACITY) {
+    renderHierarchyOverCapacity();
+    return;
+  }
   const note = document.getElementById("hierarchy-note");
   const container = document.getElementById("hierarchy-tree");
   if (!state.hierarchyKind) {
@@ -2201,6 +2464,91 @@ function renderHierarchy() {
     btn.addEventListener("click", () => selectWordIn("hierarchy", btn.dataset.pivotId));
   });
 }
+
+// The over-capacity counterpart to renderHierarchy()'s own local-array
+// path: instead of building a forest from an already-embedded RELS
+// array (there isn't one -- MAX_INTERACTIVE_WORDS's own docstring),
+// this dispatches a "lira-resolve-hierarchy" DOM event and waits for
+// whatever's listening (PortalShell's own resolveHierarchyBridge()) to
+// resolve it server-side (DictionaryView.resolveHierarchy()) and fire
+// back "lira-resolve-hierarchy-result". \`state.selected.hierarchy\`
+// doubles as this view's own "centre word" here (undefined/null means
+// "show this kind's own broadest root" -- resolveHierarchy()'s own
+// no-wordId mode): clicking any node re-centres the whole tree on it
+// (recentreHierarchy() below) rather than only updating a side detail
+// panel the way the small-Domain path's own selectWordIn() does --
+// there is no small, bounded "this word's own relationships" view to
+// fall back on at this scale, so the tree itself has to be the
+// navigable surface.
+function renderHierarchyOverCapacity() {
+  const note = document.getElementById("hierarchy-note");
+  const container = document.getElementById("hierarchy-tree");
+  if (!state.hierarchyKind) {
+    note.textContent = "No relationships in this Dictionary yet.";
+    container.innerHTML = "";
+    return;
+  }
+  note.textContent = "Loading…";
+  container.innerHTML = "";
+  const requestId = 'hierarchy-' + Math.random().toString(36).slice(2);
+  latestHierarchyRequestId = requestId;
+  document.dispatchEvent(new CustomEvent("lira-resolve-hierarchy", {
+    detail: { requestId, kind: state.hierarchyKind, wordId: state.selected.hierarchy || undefined, limit: HIERARCHY_NODE_LIMIT },
+  }));
+}
+
+function recentreHierarchy(wordId) {
+  state.selected.hierarchy = wordId;
+  renderHierarchyOverCapacity();
+}
+
+let latestHierarchyRequestId = null;
+
+document.addEventListener("lira-resolve-hierarchy-result", (e) => {
+  const { requestId, nodes, edges, roots, totalEdgeCount, totalNodeCount, fellBack, truncated } = e.detail;
+  if (requestId !== latestHierarchyRequestId) return; // superseded by a later request
+  const note = document.getElementById("hierarchy-note");
+  const container = document.getElementById("hierarchy-tree");
+
+  if (fellBack) {
+    note.textContent = \`\${totalEdgeCount.toLocaleString()} edges -- every word touched by this kind has both an incoming and an outgoing edge (a symmetric relationship), so there's no meaningful root to centre a tree on. Search the Relationships tab instead.\`;
+    container.innerHTML = "";
+    return;
+  }
+  if (!nodes.length) {
+    note.textContent = "No relationships of this kind yet.";
+    container.innerHTML = "";
+    return;
+  }
+
+  const wordById = new Map(nodes.map(n => [n.id, n]));
+  const childrenOf = new Map();
+  edges.forEach(({ parentId, childId }) => {
+    if (!childrenOf.has(parentId)) childrenOf.set(parentId, []);
+    childrenOf.get(parentId).push(childId);
+  });
+  childrenOf.forEach(list => list.sort((a, b) => (wordById.get(a)?.lexical_form || "").localeCompare(wordById.get(b)?.lexical_form || "")));
+  const tree = { wordById, childrenOf };
+
+  const centreWord = state.selected.hierarchy ? wordById.get(state.selected.hierarchy) : null;
+  const parts = [
+    \`\${totalEdgeCount.toLocaleString()} total edge\${totalEdgeCount === 1 ? '' : 's'} of this kind\`,
+    \`\${totalNodeCount.toLocaleString()} total word\${totalNodeCount === 1 ? '' : 's'}\`,
+    \`showing \${nodes.length.toLocaleString()}\${truncated ? '+' : ''}\`,
+  ];
+  note.innerHTML = parts.join(" · ")
+    + (centreWord ? \` -- centred on <strong>\${centreWord.lexical_form}</strong>\` : " -- centred on this kind's broadest root")
+    + (truncated ? ' <span class="hierarchy-cross-ref">(narrowed by node limit -- click a word below to centre the tree there)</span>' : '')
+    + (state.selected.hierarchy ? ' &middot; <button type="button" class="link-btn" id="hierarchy-reset">back to broadest root</button>' : '');
+
+  const globalSeen = new Set();
+  container.innerHTML = \`<ul class="hierarchy-tree">\${roots.map(id => hierarchyNodeHTML(id, tree, new Set(), globalSeen, 0)).join('')}</ul>\`;
+  container.querySelectorAll("button[data-pivot-id]").forEach(btn => {
+    btn.addEventListener("click", () => recentreHierarchy(btn.dataset.pivotId));
+  });
+  const resetBtn = document.getElementById("hierarchy-reset");
+  if (resetBtn) resetBtn.addEventListener("click", () => recentreHierarchy(null));
+});
 
 // SYNONYM defines the boxes here -- via cliqueGroups above, so only
 // words that are ALL directly synonymous with EACH OTHER go in the same
@@ -2541,6 +2889,22 @@ function renderCyclic() {
     container.innerHTML = "";
     return;
   }
+  if (OVER_CAPACITY) {
+    // buildClusterGraphs() (below) reads WORDS/RELS directly, both []
+    // past MAX_INTERACTIVE_WORDS -- unlike the Words/Relationships/
+    // Hierarchy tabs, this view has no server-resolved counterpart yet
+    // (it boxes every synonym-clustered word in the whole Dictionary,
+    // then draws every cross-box edge of the chosen kind -- a
+    // whole-graph analysis, not a single word's own neighbourhood, so
+    // it doesn't reduce to a bounded per-word query the way Hierarchy's
+    // own resolveHierarchy() does). An honest "not available" message,
+    // not the misleading "No relationships" text a caller would see
+    // otherwise (empty RELS reading as "this Dictionary has no data"
+    // rather than "this view can't be built at this Domain's size").
+    note.textContent = \`Cyclic isn't available for a Domain this large yet (\${TOTAL_RELATIONSHIP_COUNT.toLocaleString()} relationships) -- search the Relationships tab instead.\`;
+    container.innerHTML = "";
+    return;
+  }
   const { groups, wordById } = buildClusterGraphs(state.cyclicKind);
   if (!groups.length) {
     note.textContent = \`No \${titleCase(state.cyclicKind).toLowerCase()} relationships connect any synonym-clustered words for this kind.\`;
@@ -2584,7 +2948,7 @@ function renderCyclic() {
 function populateCyclicKindFilter() {
   const select = document.getElementById("cyclic-kind");
   const counts = {};
-  RELS.forEach(r => { if (r.kind !== "SYNONYM" && r.group === 1) counts[r.kind] = (counts[r.kind] || 0) + 1; });
+  RELATIONSHIP_KIND_COUNTS.forEach(({ kind, group, count }) => { if (kind !== "SYNONYM" && group === 1) counts[kind] = count; });
   const kinds = Object.keys(counts).sort();
   appendKindOptions(select, counts);
   // Default to the first kind (by edge count) that actually connects
@@ -2767,6 +3131,12 @@ document.getElementById("tab-cyclic").addEventListener("click", () => { selectTa
 
 document.getElementById("hierarchy-kind").addEventListener("change", (e) => {
   state.hierarchyKind = e.target.value || null;
+  // A word centred/selected under the previous kind may not even
+  // appear in the new one's graph -- resolveHierarchy() would just
+  // treat it as unresolvable, but starting fresh at the new kind's own
+  // broadest root reads far less confusing than an empty tree right
+  // after switching kinds.
+  state.selected.hierarchy = null;
   renderHierarchy();
 });
 

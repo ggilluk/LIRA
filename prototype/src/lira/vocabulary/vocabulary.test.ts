@@ -587,3 +587,114 @@ describe("DictionaryView.searchRelationships", () => {
     expect(result.relationships.every((r) => typeof r.source_sense_id === "string" && typeof r.target_sense_id === "string")).toBe(true);
   }, 30000);
 });
+
+describe("DictionaryView.resolveHierarchy", () => {
+  // vehicle
+  //  |- car
+  //  |   |- sedan
+  //  |- truck
+  //  |- boat
+  // fruit
+  //  |- apple
+  function buildTreeFixture() {
+    const dictionary = new Dictionary();
+    const words = {} as Record<string, ReturnType<typeof createWord>>;
+    for (const text of ["vehicle", "car", "sedan", "truck", "boat", "fruit", "apple"]) {
+      words[text] = createWord({ text, partOfSpeech: PartOfSpeech.NOUN });
+      dictionary.append(words[text]);
+    }
+    const store = new LexicalRelationshipStore();
+    const processor = new LexicalRelationshipProcessor(store, new LexicalRelationshipSystemPropertyTensor());
+    const hypernym = (child: string, parent: string) =>
+      processor.create({ sourceWordId: words[child].uuid.value, targetWordId: words[parent].uuid.value, relationshipType: LexicalRelationshipType.HYPERNYM, sourceReferences: [] });
+    hypernym("car", "vehicle");
+    hypernym("sedan", "car");
+    hypernym("truck", "vehicle");
+    hypernym("boat", "vehicle");
+    hypernym("apple", "fruit");
+
+    const view = new DictionaryView(dictionary, store, { domainName: "Common" });
+    return { view, words };
+  }
+
+  it("with no wordId, centres on the broadest root -- the root with the most direct children", () => {
+    const { view, words } = buildTreeFixture();
+    const result = view.resolveHierarchy({ kind: "HYPERNYM" });
+    expect(result.fellBack).toBe(false);
+    expect(result.roots).toEqual([words.vehicle.uuid.value]);
+    expect(result.totalEdgeCount).toBe(5);
+    expect(result.totalNodeCount).toBe(7);
+    // The whole subtree under vehicle is included -- car, sedan, truck, boat.
+    const includedTexts = result.nodes.map((n) => n.lexical_form).sort();
+    expect(includedTexts).toEqual(["boat", "car", "sedan", "truck", "vehicle"]);
+    // fruit/apple are a separate root -- not part of vehicle's own subtree.
+    expect(includedTexts).not.toContain("fruit");
+    expect(includedTexts).not.toContain("apple");
+  });
+
+  it("with a wordId, builds the ancestor chain up to the root plus that word's own descendants", () => {
+    const { view, words } = buildTreeFixture();
+    const result = view.resolveHierarchy({ kind: "HYPERNYM", wordId: words.sedan.uuid.value });
+    expect(result.roots).toEqual([words.vehicle.uuid.value]);
+    const edgePairs = result.edges.map((e) => [e.parentId, e.childId]);
+    expect(edgePairs).toContainEqual([words.vehicle.uuid.value, words.car.uuid.value]);
+    expect(edgePairs).toContainEqual([words.car.uuid.value, words.sedan.uuid.value]);
+    // Nothing from the unrelated fruit/apple branch leaks in.
+    expect(result.nodes.map((n) => n.lexical_form)).not.toContain("fruit");
+  });
+
+  it("truncates the descendant walk at `limit` and reports `truncated: true`", () => {
+    const { view } = buildTreeFixture();
+    const result = view.resolveHierarchy({ kind: "HYPERNYM", limit: 2 });
+    expect(result.truncated).toBe(true);
+    expect(result.nodes.length).toBeLessThanOrEqual(2);
+  });
+
+  it("falls back with fellBack: true for a fully symmetric kind (every node has both directions)", () => {
+    const dictionary = new Dictionary();
+    const big = createWord({ text: "big", partOfSpeech: PartOfSpeech.ADJECTIVE });
+    const small = createWord({ text: "small", partOfSpeech: PartOfSpeech.ADJECTIVE });
+    dictionary.append(big);
+    dictionary.append(small);
+    const store = new LexicalRelationshipStore();
+    const processor = new LexicalRelationshipProcessor(store, new LexicalRelationshipSystemPropertyTensor());
+    processor.create({ sourceWordId: big.uuid.value, targetWordId: small.uuid.value, relationshipType: LexicalRelationshipType.ANTONYM, sourceReferences: [] });
+    processor.create({ sourceWordId: small.uuid.value, targetWordId: big.uuid.value, relationshipType: LexicalRelationshipType.ANTONYM, sourceReferences: [] });
+
+    const view = new DictionaryView(dictionary, store, { domainName: "Common" });
+    const result = view.resolveHierarchy({ kind: "ANTONYM" });
+    expect(result.fellBack).toBe(true);
+    expect(result.totalEdgeCount).toBe(2);
+  });
+
+  it("resolves against the real bundled WordNet-scale dataset, correctly oriented (broad root, narrow leaves) for a kind only stored in the child->parent direction", async () => {
+    const dictionary = new Dictionary();
+    const lexicalRelationships = new LexicalRelationshipStore();
+    const lexicalRelationshipProcessor = new LexicalRelationshipProcessor(
+      lexicalRelationships,
+      new LexicalRelationshipSystemPropertyTensor(),
+    );
+    await new WordSeeder("en").seedWordNet({ vocabulary: { dictionary, lexicalRelationships, lexicalRelationshipProcessor } });
+
+    const view = new DictionaryView(dictionary, lexicalRelationships, { domainName: "Common" });
+    const poodle = dictionary.lookupAll("poodle").find((w) => w.partOfSpeech === PartOfSpeech.NOUN);
+    expect(poodle).toBeDefined();
+
+    const result = view.resolveHierarchy({ kind: "HYPERNYM", wordId: poodle!.uuid.value, limit: 200 });
+    expect(result.fellBack).toBe(false);
+    expect(result.nodes.length).toBeGreaterThan(0);
+    // poodle itself is a leaf, not a root -- its own root should be a
+    // genuinely broad noun (HYPERNYM_INVERTED handling's own reason for
+    // existing: without it, the root would come out as poodle's own
+    // most *specific* breed instead).
+    const rootWord = result.nodes.find((n) => n.id === result.roots[0]);
+    expect(rootWord).toBeDefined();
+    expect(rootWord!.lexical_form).not.toBe("poodle");
+    // poodle itself must be included, reachable from the ancestor chain.
+    expect(result.nodes.map((n) => n.lexical_form)).toContain("poodle");
+
+    const broadestRoot = view.resolveHierarchy({ kind: "HYPERNYM" });
+    expect(broadestRoot.fellBack).toBe(false);
+    expect(broadestRoot.roots.length).toBe(1);
+  }, 30000);
+});

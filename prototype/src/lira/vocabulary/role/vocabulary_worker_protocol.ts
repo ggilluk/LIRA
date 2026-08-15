@@ -3,7 +3,7 @@
  * both sides are typed against the same shapes instead of each guessing
  * at the other's message format. */
 
-import type { RelationshipRecord, WordRecord } from "../ui/dictionary_view";
+import type { HierarchyEdge, HierarchyNode, RelationshipRecord, WordRecord } from "../ui/dictionary_view";
 
 /** The Vocabulary Service's own status vocabulary -- deliberately not
  * knowledge/data/service_status.ts's `ServiceState` (which also has
@@ -113,13 +113,30 @@ export interface SearchRelationshipsRequest {
   limit?: number;
 }
 
+/** Resolves one Hierarchy-tab tree against `domain`'s full
+ * LexicalRelationshipStore, server-side (DictionaryView.resolveHierarchy(),
+ * that method's own docstring on the two modes `wordId` selects
+ * between, and on `limit`'s own default). The Hierarchy tab's
+ * counterpart to SearchRelationshipsRequest -- same reasoning, past
+ * MAX_INTERACTIVE_WORDS there's no client-embedded RELS array left to
+ * build a tree from in the browser at all. */
+export interface ResolveHierarchyRequest {
+  type: "resolve-hierarchy";
+  requestId: string;
+  domain: string;
+  kind: string;
+  wordId?: string;
+  limit?: number;
+}
+
 export type VocabularyWorkerRequest =
   | InitRequest
   | RenderRequest
   | SeedWordNetRequest
   | SeedCommonVocabularyRequest
   | SearchWordsRequest
-  | SearchRelationshipsRequest;
+  | SearchRelationshipsRequest
+  | ResolveHierarchyRequest;
 
 export interface StatusMessage {
   type: "status";
@@ -214,6 +231,20 @@ export interface SearchRelationshipsResultMessage {
   totalMatches: number;
 }
 
+/** The response to a ResolveHierarchyRequest -- DictionaryView.resolveHierarchy()'s
+ * own return shape, carried across the Worker boundary unchanged. */
+export interface ResolveHierarchyResultMessage {
+  type: "resolve-hierarchy-result";
+  requestId: string;
+  nodes: readonly HierarchyNode[];
+  edges: readonly HierarchyEdge[];
+  roots: readonly string[];
+  totalEdgeCount: number;
+  totalNodeCount: number;
+  fellBack: boolean;
+  truncated: boolean;
+}
+
 export type VocabularyWorkerMessage =
   | StatusMessage
   | ReadyMessage
@@ -222,4 +253,5 @@ export type VocabularyWorkerMessage =
   | ErrorMessage
   | DomainUpdatedMessage
   | SearchWordsResultMessage
-  | SearchRelationshipsResultMessage;
+  | SearchRelationshipsResultMessage
+  | ResolveHierarchyResultMessage;

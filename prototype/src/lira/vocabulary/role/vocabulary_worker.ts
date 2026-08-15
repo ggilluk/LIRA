@@ -28,6 +28,7 @@ import { WordSeeder } from "./word_seeder";
 import type {
   RenderedFragment,
   RenderRequest,
+  ResolveHierarchyRequest,
   SearchRelationshipsRequest,
   SearchWordsRequest,
   SeedCommonVocabularyRequest,
@@ -316,6 +317,31 @@ function handleSearchRelationships(request: SearchRelationshipsRequest): void {
   post({ type: "search-relationships-result", requestId: request.requestId, relationships, totalMatches });
 }
 
+function handleResolveHierarchy(request: ResolveHierarchyRequest): void {
+  const domain = domains.get(request.domain);
+  if (!domain) {
+    post({
+      type: "resolve-hierarchy-result",
+      requestId: request.requestId,
+      nodes: [],
+      edges: [],
+      roots: [],
+      totalEdgeCount: 0,
+      totalNodeCount: 0,
+      fellBack: false,
+      truncated: false,
+    });
+    return;
+  }
+
+  const view = new DictionaryView(domain.vocabulary.dictionary, domain.vocabulary.lexicalRelationships, {
+    title: `LIRA — ${domain.name}`,
+    domainName: domain.name,
+  });
+  const result = view.resolveHierarchy({ kind: request.kind, wordId: request.wordId, limit: request.limit });
+  post({ type: "resolve-hierarchy-result", requestId: request.requestId, ...result });
+}
+
 ctx.addEventListener("message", (event) => {
   const request = event.data;
   if (request.type === "init") void handleInit();
@@ -324,4 +350,5 @@ ctx.addEventListener("message", (event) => {
   else if (request.type === "seed-common-vocabulary") void handleSeedCommonVocabulary(request);
   else if (request.type === "search-words") handleSearchWords(request);
   else if (request.type === "search-relationships") handleSearchRelationships(request);
+  else if (request.type === "resolve-hierarchy") handleResolveHierarchy(request);
 });

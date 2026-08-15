@@ -5,7 +5,7 @@ import type {
   VocabularyWorkerMessage,
   VocabularyWorkerRequest,
 } from "./vocabulary_worker_protocol";
-import type { RelationshipRecord, WordRecord } from "../ui/dictionary_view";
+import type { HierarchyEdge, HierarchyNode, RelationshipRecord, WordRecord } from "../ui/dictionary_view";
 
 export interface WordSearchQuery {
   wordId?: string;
@@ -34,6 +34,22 @@ export interface RelationshipSearchResult {
   totalMatches: number;
 }
 
+export interface HierarchyQuery {
+  kind: string;
+  wordId?: string;
+  limit?: number;
+}
+
+export interface HierarchyResult {
+  nodes: readonly HierarchyNode[];
+  edges: readonly HierarchyEdge[];
+  roots: readonly string[];
+  totalEdgeCount: number;
+  totalNodeCount: number;
+  fellBack: boolean;
+  truncated: boolean;
+}
+
 export type VocabularyStatusListener = (state: VocabularyServiceState, detail?: string, progress?: number) => void;
 export type VocabularyDomainUpdateListener = (domain: VocabularyDomainSummary) => void;
 
@@ -55,6 +71,7 @@ export class VocabularyWorkerClient {
   private readonly pendingRenders = new Map<string, { resolve: (fragment: RenderedFragment) => void; reject: (error: Error) => void }>();
   private readonly pendingSearches = new Map<string, (result: WordSearchResult) => void>();
   private readonly pendingRelationshipSearches = new Map<string, (result: RelationshipSearchResult) => void>();
+  private readonly pendingHierarchyResolutions = new Map<string, (result: HierarchyResult) => void>();
 
   constructor() {
     this.worker = new Worker(new URL("./vocabulary_worker.ts", import.meta.url), { type: "module" });
@@ -183,6 +200,28 @@ export class VocabularyWorkerClient {
     });
   }
 
+  /** Resolves one Hierarchy-tab tree against `domainName`'s full
+   * LexicalRelationshipStore inside the worker
+   * (DictionaryView.resolveHierarchy()'s own docstring on the two modes
+   * `query.wordId` selects between). Same DOM-event bridge pattern as
+   * searchWords()/searchRelationships() -- PortalShell answers a
+   * "lira-resolve-hierarchy" event the fragment's script dispatches
+   * (dictionary_view.ts's own renderHierarchy()). */
+  resolveHierarchy(domainName: string, query: HierarchyQuery): Promise<HierarchyResult> {
+    const requestId = `hierarchy-${domainName}-${Math.random().toString(36).slice(2)}`;
+    return new Promise((resolve) => {
+      this.pendingHierarchyResolutions.set(requestId, resolve);
+      this.post({
+        type: "resolve-hierarchy",
+        requestId,
+        domain: domainName,
+        kind: query.kind,
+        wordId: query.wordId,
+        limit: query.limit,
+      });
+    });
+  }
+
   private post(request: VocabularyWorkerRequest): void {
     this.worker.postMessage(request);
   }
@@ -218,6 +257,20 @@ export class VocabularyWorkerClient {
       if (resolve) {
         this.pendingRelationshipSearches.delete(message.requestId);
         resolve({ relationships: message.relationships, totalMatches: message.totalMatches });
+      }
+    } else if (message.type === "resolve-hierarchy-result") {
+      const resolve = this.pendingHierarchyResolutions.get(message.requestId);
+      if (resolve) {
+        this.pendingHierarchyResolutions.delete(message.requestId);
+        resolve({
+          nodes: message.nodes,
+          edges: message.edges,
+          roots: message.roots,
+          totalEdgeCount: message.totalEdgeCount,
+          totalNodeCount: message.totalNodeCount,
+          fellBack: message.fellBack,
+          truncated: message.truncated,
+        });
       }
     } else if (message.type === "error") {
       console.error("Vocabulary Service error:", message.message);

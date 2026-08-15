@@ -41,6 +41,17 @@ interface LiraSearchRelationshipsEventDetail {
   limit?: number;
 }
 
+// Mirrors the "lira-resolve-hierarchy" CustomEvent's own `detail` shape
+// -- dictionary_view.ts's renderHierarchy() dispatches it whenever the
+// target Domain is over MAX_INTERACTIVE_WORDS; see
+// resolveHierarchyBridge()'s own docstring for the other end.
+interface LiraResolveHierarchyEventDetail {
+  requestId: string;
+  kind: string;
+  wordId?: string;
+  limit?: number;
+}
+
 /** PortalShell: a Windows-Explorer-style desktop shell that switches to
  * a drill-down mobile portal -- the folder tree is the Domain hierarchy
  * (root is "All Domains"; nesting follows each PortalDomain's own
@@ -186,6 +197,7 @@ export class PortalShell {
     });
     this.searchWordsBridge();
     this.searchRelationshipsBridge();
+    this.resolveHierarchyBridge();
   }
 
   /** Listens on `document` (not `this.container` -- that element gets
@@ -252,6 +264,32 @@ export class PortalShell {
           document.dispatchEvent(
             new CustomEvent("lira-search-relationships-result", {
               detail: { requestId: detail.requestId, relationships: result.relationships, totalMatches: result.totalMatches },
+            }),
+          );
+        });
+    });
+  }
+
+  /** Same bridge pattern as searchWordsBridge()/searchRelationshipsBridge()
+   * (this file's own docstring above), for the fragment's own
+   * "lira-resolve-hierarchy" event -- answers it with
+   * VocabularyWorkerClient.resolveHierarchy() against whichever Domain
+   * is currently mounted, then dispatches "lira-resolve-hierarchy-result"
+   * back with the same requestId. */
+  private resolveHierarchyBridge(): void {
+    document.addEventListener("lira-resolve-hierarchy", (event) => {
+      const detail = (event as CustomEvent<LiraResolveHierarchyEventDetail>).detail;
+      if (!this.currentVocabularyDomainName) return;
+      void this.vocabularyClient
+        .resolveHierarchy(this.currentVocabularyDomainName, {
+          kind: detail.kind,
+          wordId: detail.wordId,
+          limit: detail.limit,
+        })
+        .then((result) => {
+          document.dispatchEvent(
+            new CustomEvent("lira-resolve-hierarchy-result", {
+              detail: { requestId: detail.requestId, ...result },
             }),
           );
         });
