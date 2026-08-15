@@ -317,7 +317,6 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
       LexicalRelationshipType.ALSO_SEE,
       LexicalRelationshipType.VERB_GROUP,
       LexicalRelationshipType.ATTRIBUTE,
-      LexicalRelationshipType.TOPIC_DOMAIN,
       LexicalRelationshipType.REGION_DOMAIN,
       LexicalRelationshipType.USAGE_DOMAIN,
     ]) {
@@ -329,7 +328,11 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // complementary kind instead (this is the fix itself, not an
     // implementation detail: a word's own relationship list no longer
     // shows both "X is a type of Y" and the reciprocal "Y has hyponym
-    // X" as two separate entries for the identical fact).
+    // X" as two separate entries for the identical fact). TOPIC_DOMAIN is
+    // never seeded either, for a different reason: seedPointerRelationship
+    // intercepts `;c`/`-c` pointers and tags the word itself
+    // (domainTag/relatedDomainTags) instead of creating an edge (see the
+    // dedicated "topic-domain pointers" test below).
     for (const kind of [
       LexicalRelationshipType.HYPONYM,
       LexicalRelationshipType.TROPONYM,
@@ -337,16 +340,46 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
       LexicalRelationshipType.PART_HOLONYM,
       LexicalRelationshipType.MEMBER_HOLONYM,
       LexicalRelationshipType.SUBSTANCE_HOLONYM,
+      LexicalRelationshipType.TOPIC_DOMAIN,
     ]) {
       expect(seenKinds.has(kind), `expected no ${LexicalRelationshipType[kind]} edges at all`).toBe(false);
     }
 
+    // Topic-domain pointers (`;c`/`-c`) tag the word itself
+    // (domainTag/relatedDomainTags) instead of becoming a relationship --
+    // "infusion" (dict/data.noun offset 00324358) carries exactly one
+    // topic pointer, to the "medicine" (medical_specialty) category.
+    const infusion = dictionary.lookupAll("infusion").find((word) => word.synsetId?.value === "00324358-n");
+    expect(infusion).toBeDefined();
+    expect(infusion?.domainTag?.value).toBe("medicine");
+    expect(infusion?.relatedDomainTags).toEqual([]);
+
+    // "winger" (offset 10802147) carries FOUR topic pointers -- it's a
+    // wing position in soccer, field hockey, rugby, AND football. None
+    // should be lost: exactly one becomes domainTag (first-wins), the
+    // other three land in relatedDomainTags, with no duplicates -- same
+    // outcome whether a given (word, category) fact is discovered via
+    // winger's own `;c` pointer or via the category synset's reciprocal
+    // `-c` pointer back to winger.
+    const winger = dictionary.lookupAll("winger").find((word) => word.synsetId?.value === "10802147-n");
+    expect(winger).toBeDefined();
+    expect(winger?.domainTag).toBeDefined();
+    const wingerDomains = [winger!.domainTag!.value, ...winger!.relatedDomainTags.map((tag) => tag.value)];
+    expect(wingerDomains).toHaveLength(4);
+    expect(new Set(wingerDomains).size).toBe(4);
+    expect(new Set(wingerDomains)).toEqual(new Set(["soccer", "field hockey", "rugby", "football"]));
+
     // Re-seeding the same Domain neither duplicates Words nor
-    // recreates any relationship, of any kind.
+    // recreates any relationship, of any kind -- nor does it disturb or
+    // duplicate any already-assigned domainTag/relatedDomainTags.
     const second = await seeder.seedWordNet(domain);
     expect(second.wordsSeeded).toBe(0);
     expect(second.relationshipsSeeded).toBe(0);
     expect(dictionary.totalEntries()).toBe(first.wordsSeeded);
+    expect(infusion?.domainTag?.value).toBe("medicine");
+    expect(new Set([winger!.domainTag!.value, ...winger!.relatedDomainTags.map((tag) => tag.value)])).toEqual(
+      new Set(["soccer", "field hockey", "rugby", "football"]),
+    );
     expect(lexicalRelationships.totalRelationships()).toBe(first.relationshipsSeeded);
   }, 60000);
 

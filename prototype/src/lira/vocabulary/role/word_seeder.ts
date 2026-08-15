@@ -202,16 +202,22 @@ function derivationKind(sourcePos: PartOfSpeech, targetPos: PartOfSpeech): Lexic
  * symbol this class doesn't recognise (none as of WordNet 3.1's own
  * documented pointer set, but seedWordNetPointerRelationships skips
  * rather than throws, so a future WordNet release adding a new symbol
- * degrades to "not seeded" instead of failing the whole run).
+ * degrades to "not seeded" instead of failing the whole run) *or* for
+ * `;c`/`-c` specifically, which seedPointerRelationship intercepts
+ * before ever calling this function -- a topic-domain pointer tags the
+ * word itself (Word.domainTag/relatedDomainTags) rather than becoming a
+ * TOPIC_DOMAIN relationship edge; see tagTopicDomain's own docstring.
+ * `;r`/`-r`/`;u`/`-u` (region/usage domain) are unaffected by that
+ * change and still become REGION_DOMAIN/USAGE_DOMAIN edges below.
  *
  * `swap: true` means the edge WordNet's own record implies runs target
- * -> source, not source -> target -- true for `-c`/`-r`/`-u` ("member
- * of this domain", the reciprocal listing of `;c`/`;r`/`;u` "domain of
- * synset" recorded on the *other* synset's own entry; both symbols
- * become the same TOPIC_DOMAIN/REGION_DOMAIN/USAGE_DOMAIN kind, always
- * oriented word -> its domain, regardless of which of the pair's two
- * entries the pointer was actually read from) -- and, for the same
- * reason, for `~`/`~i`/`#p`/`#m`/`#s` too: WordNet redundantly encodes
+ * -> source, not source -> target -- true for `-r`/`-u` ("member of
+ * this domain", the reciprocal listing of `;r`/`;u` "domain of synset"
+ * recorded on the *other* synset's own entry; both symbols become the
+ * same REGION_DOMAIN/USAGE_DOMAIN kind, always oriented word -> its
+ * domain, regardless of which of the pair's two entries the pointer was
+ * actually read from) -- and, for the same reason, for
+ * `~`/`~i`/`#p`/`#m`/`#s` too: WordNet redundantly encodes
  * every hypernym/meronym fact from BOTH ends -- the child/part's own
  * `@`/`@i`/`%p`/`%m`/`%s` pointer to its parent/whole, *and* the
  * parent/whole's own `~`/`~i`/`#p`/`#m`/`#s` pointer back to each
@@ -274,14 +280,10 @@ function relationshipKindForPointer(
     case "+":
     case "<":
       return { kind: derivationKind(sourcePos, targetPos), swap: false };
-    case ";c":
-      return { kind: LexicalRelationshipType.TOPIC_DOMAIN, swap: false };
     case ";r":
       return { kind: LexicalRelationshipType.REGION_DOMAIN, swap: false };
     case ";u":
       return { kind: LexicalRelationshipType.USAGE_DOMAIN, swap: false };
-    case "-c":
-      return { kind: LexicalRelationshipType.TOPIC_DOMAIN, swap: true };
     case "-r":
       return { kind: LexicalRelationshipType.REGION_DOMAIN, swap: true };
     case "-u":
@@ -618,7 +620,10 @@ export class WordSeeder {
    * words within them), via each synset's own `pointers`
    * (wordnet_loader.ts's own WordNetPointer) -- hypernym, meronym,
    * antonym, and the rest relationshipKindForPointer above maps a
-   * pointer symbol onto. Requires every synset's Words to already exist
+   * pointer symbol onto, with one exception: `;c`/`-c` (topic-domain)
+   * pointers don't become a relationship edge at all -- seedPointerRelationship
+   * intercepts them and tags the word itself instead (tagTopicDomain's
+   * own docstring). Requires every synset's Words to already exist
    * (a pointer can name a synset processed later in file order, or in a
    * different POS file entirely -- `+`/`\` regularly cross from one
    * part of speech to another), which is exactly why this is its own
@@ -758,6 +763,11 @@ export class WordSeeder {
     const targetMembers = synsetMembersById.get(pointer.targetSynsetId);
     if (targetMembers === undefined || targetMembers.length === 0) return 0;
 
+    if (pointer.symbol === ";c" || pointer.symbol === "-c") {
+      this.tagTopicDomain(sourceMembers, targetMembers, pointer);
+      return 0;
+    }
+
     const resolved = relationshipKindForPointer(pointer.symbol, synset.partOfSpeech, targetMembers[0].partOfSpeech);
     if (resolved === undefined) return 0;
 
@@ -772,6 +782,48 @@ export class WordSeeder {
       }
     }
     return this.createEdges(processor, existingEdges, resolved.kind, pairs);
+  }
+
+  /** `;c`/`-c` (topic-domain pointer) handling, split out of
+   * seedPointerRelationship's general edge-creation path -- unlike every
+   * other recognised pointer symbol, a topic pointer no longer becomes a
+   * LexicalRelationship edge (TOPIC_DOMAIN is consequently orphaned from
+   * WordNet seeding, the same fate HYPONYM/TROPONYM/etc. already have --
+   * relationshipKindForPointer's own docstring). It instead tags the
+   * word itself with the topic category's own representative lemma
+   * ("medicine", "chemistry", ...): the first topic pointer found for a
+   * given Word sets that Word's domainTag (mirroring how the Common
+   * Vocabulary Cache's own polysemy already uses domainTag for a single
+   * subdomain name); any *additional* topic this same sense also carries
+   * in WordNet -- rarer, but real: e.g. "winger" is a wing position in
+   * soccer, hockey, rugby, AND field_hockey -- is appended to
+   * relatedDomainTags (word.ts) instead of silently dropped.
+   *
+   * `;c` is recorded on the tagged word's own synset, pointing at the
+   * topic-category synset (sourceMembers = the word(s), targetMembers =
+   * the category); `-c` is the reciprocal, recorded on the category
+   * synset itself, pointing back at each tagged word (sourceMembers =
+   * the category, targetMembers = the word(s)) -- mirroring
+   * relationshipKindForPointer's own swap convention for the same pair,
+   * so both symbols resolve to the identical (word, category) tagging
+   * regardless of which of the two entries the pointer was read from. */
+  private tagTopicDomain(sourceMembers: readonly Word[], targetMembers: readonly Word[], pointer: WordNetPointer): void {
+    const sourceWords = pointer.sourceWordIndex === 0 ? sourceMembers : indexedWord(sourceMembers, pointer.sourceWordIndex);
+    const targetWords = pointer.targetWordIndex === 0 ? targetMembers : indexedWord(targetMembers, pointer.targetWordIndex);
+
+    const taggedWords = pointer.symbol === ";c" ? sourceWords : targetWords;
+    const categoryWord = (pointer.symbol === ";c" ? targetWords[0] : sourceWords[0])
+      ?? (pointer.symbol === ";c" ? targetMembers[0] : sourceMembers[0]);
+    if (categoryWord === undefined) return;
+    const categoryLemma = categoryWord.text;
+
+    for (const word of taggedWords) {
+      if (word.domainTag === undefined) {
+        word.domainTag = { value: categoryLemma };
+      } else if (word.domainTag.value !== categoryLemma && !word.relatedDomainTags.some((tag) => tag.value === categoryLemma)) {
+        word.relatedDomainTags = [...word.relatedDomainTags, { value: categoryLemma }];
+      }
+    }
   }
 
   /** Creates a LexicalRelationship for every (source, target) pair not
@@ -816,17 +868,21 @@ export class WordSeeder {
     return created;
   }
 
-  // domainTag deliberately left unset -- unlike root_words.json's true
-  // dictionary polysemy (Word.domainTag's own docstring), a WordNet
-  // synset isn't a curated, human-meaningful subdomain name; it's an
-  // opaque per-sense identifier, and DictionaryView.domainLabel() shows
-  // domainTag verbatim as this Word's "Domain" wherever it's set. Giving
-  // each of WordNet's ~117,800 synsets its own domainTag would turn the
-  // Domain column/filter into ~117,800 one-off values instead of the
-  // plain "Common" every other Common Vocabulary Cache word gets --
-  // synsetId (Word.synsetId's own docstring) already carries the
-  // synset-level identity this class needs for its own dedup, without
-  // repurposing domainTag to also carry it.
+  // domainTag deliberately left unset here -- unlike root_words.json's
+  // true dictionary polysemy (Word.domainTag's own docstring), a
+  // WordNet synset isn't itself a curated, human-meaningful subdomain
+  // name; it's an opaque per-sense identifier. Giving each of WordNet's
+  // ~117,800 synsets its own domainTag would turn the Domain column/
+  // filter into ~117,800 one-off values instead of the plain "Common"
+  // every other Common Vocabulary Cache word gets -- synsetId
+  // (Word.synsetId's own docstring) already carries the synset-level
+  // identity this class needs for its own dedup, without repurposing
+  // domainTag to also carry it. Only pass 2's tagTopicDomain sets
+  // domainTag afterward, and only for the minority of senses (~6,690 of
+  // ~117,800) WordNet itself tags with a topic-domain pointer -- a
+  // sparse, small-vocabulary label ("medicine", "chemistry", ...), not
+  // a per-synset identifier, so it doesn't fragment the Domain filter
+  // the way a domainTag-per-synset scheme would.
   private synsetMemberToWord(synset: WordNetSynset, lemma: string): Word {
     return createWord({
       text: lemma,

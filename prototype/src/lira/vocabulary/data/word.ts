@@ -118,6 +118,21 @@ export interface Word extends LinguisticUnit {
   // rationale (vocabulary/data/word.py).
   domainTag?: Text;
 
+  // A WordNet-only sibling of domainTag, populated by WordSeeder.seedWordNet
+  // from a synset's own topic-domain pointers (`;c`/`-c` in the raw dict
+  // files -- word_seeder.ts's relationshipKindForPointer used to turn
+  // these into TOPIC_DOMAIN LexicalRelationship edges; it no longer does).
+  // A word sense can belong to at most one topic domain via domainTag
+  // itself (the first topic pointer WordSeeder encounters for that sense
+  // -- e.g. "winger" -> domainTag "soccer"), with every *additional*
+  // topic this same sense is also tagged with in WordNet (a sense can
+  // legitimately carry several -- "winger" is also a wing position in
+  // hockey, rugby, and field_hockey) recorded here instead, so none are
+  // silently dropped. Always empty for a Common Vocabulary Cache entry
+  // (domainTag's own polysemy use never populates this) and for a
+  // WordNet sense with zero or one topic pointer -- the common case.
+  relatedDomainTags: readonly Text[];
+
   // Implementation plumbing, not part of the documented field set:
   // tracks whether AsyncDictionaryHydrator has finished populating this
   // Word's meaning/partOfSpeech from the external dictionary API yet.
@@ -177,6 +192,7 @@ export function createWord(init: WordInit): Word {
     registerCodes: [],
     dialectCodes: [],
     editorialLabels: [],
+    relatedDomainTags: [],
     sourceReferences: [],
     isCommon: false,
     isFullyHydrated: true,

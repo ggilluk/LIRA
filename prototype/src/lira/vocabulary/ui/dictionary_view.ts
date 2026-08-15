@@ -87,6 +87,13 @@ export interface WordRecord {
   is_root_word: boolean;
   is_derivable_noun: boolean;
   domain: string | null;
+  // Extra topic domains the same WordNet sense also carries beyond its
+  // primary `domain` (Word.relatedDomainTags's own docstring) -- e.g.
+  // "winger" is a wing position in soccer, hockey, rugby, AND
+  // field_hockey, so `domain` is one of those and this holds the rest.
+  // Always empty for a non-WordNet word, or a WordNet sense with at
+  // most one topic-domain pointer -- the common case.
+  related_domains: string[];
   is_fully_hydrated: boolean;
   sources: string[];
   relationship_count: number;
@@ -410,6 +417,7 @@ export class DictionaryView {
       is_root_word: word.isRootWord,
       is_derivable_noun: word.isDerivableNoun,
       domain: this.domainLabel(word),
+      related_domains: word.relatedDomainTags.map((tag) => tag.value),
       is_fully_hydrated: word.isFullyHydrated,
       sources: word.sourceReferences.map((ref) => ref.sourceName.value),
       relationship_count: relationshipCount,
@@ -2245,6 +2253,7 @@ function wordDetailHTML(word, rels, relCount) {
   return \`
     <div class="detail-word">\${word.lexical_form}\${word.is_common ? ' <span class="badge-common">common</span>' : ''}\${word.is_root_word ? ' <span class="badge-root-word">root word</span>' : ''}\${word.is_derivable_noun ? ' <span class="badge-derivable-noun">derivable noun</span>' : ''}\${word.is_fully_hydrated ? '' : ' <span class="badge-common" style="color:#C2544B;border-color:#C2544B">hydration pending</span>'}</div>
     <div style="margin-top:6px">\${posPill(word.pos)} \${domainPill(word.domain)}</div>
+    \${word.related_domains && word.related_domains.length ? \`<div class="detail-related-domains" style="margin-top:4px"><span style="opacity:.6">Also:</span> \${word.related_domains.map(domainPill).join(' ')}</div>\` : ''}
     <div class="detail-entry-id" title="Persistent Qualified Word Identity (domain + part of speech + word) -- stable across regenerations, unlike this word's transient graph id">Entry ID <code>\${word.entry_id}</code></div>
     <div class="detail-definition">\${renderDefinition(word)}</div>
     \${padSectionHTML(word)}
