@@ -1344,6 +1344,12 @@ svg.hierarchy-graph { display: block; }
 .hierarchy-node-selected circle { stroke: var(--accent); stroke-width: 3; }
 .hierarchy-node-cross-ref circle { stroke-dasharray: 2 2; opacity: .65; }
 .hierarchy-node-cross-ref text { opacity: .65; font-style: italic; }
+.hierarchy-node-cross-ref .hierarchy-box { stroke-dasharray: 3 3; opacity: .65; }
+.hierarchy-box {
+  fill: var(--ground);
+  stroke: var(--line-strong);
+  stroke-width: 1.2;
+}
 .hierarchy-cross-ref {
   font-size: 0.78rem;
   color: var(--ink-muted);
@@ -1876,6 +1882,40 @@ function populateHierarchyKindFilter() {
   if (state.hierarchyKind) select.value = state.hierarchyKind;
 }
 
+// Relabels every existing <option> in #hierarchy-kind with a count
+// scoped to the shared selection, instead of leaving them stuck at
+// populateHierarchyKindFilter()'s own whole-Dictionary counts forever
+// -- the set of kinds offered never changes (only appendKindOptions
+// does that), just the "(N)" each one reports, so this only ever
+// touches option.textContent rather than rebuilding the <select>
+// (preserving its own open/scroll state). Falls back to the
+// whole-Dictionary count for a kind while nothing is selected, and
+// also while a selected word's own relationship list is still an
+// in-flight over-capacity fetch (detailRelsCache.get() returns
+// undefined until fetchDetailRelsIfNeeded()'s request resolves) --
+// showing 0 for every kind in that brief window would read as "this
+// word has no relationships" before the real answer has even arrived.
+function refreshHierarchyKindCounts() {
+  const select = document.getElementById("hierarchy-kind");
+  if (!select) return;
+  const totals = {};
+  RELATIONSHIP_KIND_COUNTS.forEach(({ kind, count }) => { totals[kind] = count; });
+  let scoped = null;
+  if (state.selectedWordId) {
+    const rows = OVER_CAPACITY ? detailRelsCache.get(state.selectedWordId) : relationshipsForWord(state.selectedWordId);
+    if (rows) {
+      scoped = {};
+      rows.forEach(r => { scoped[r.kind] = (scoped[r.kind] || 0) + 1; });
+    }
+  }
+  select.querySelectorAll("option").forEach(opt => {
+    const kind = opt.value;
+    if (!kind) return;
+    const count = scoped ? (scoped[kind] || 0) : (totals[kind] || 0);
+    opt.textContent = \`\${titleCase(kind)} (\${count})\`;
+  });
+}
+
 // Three independent substring filters (AND'd together, each one a
 // no-op while empty) rather than one combined "word, gloss, or
 // definition" box -- a search for a gloss term no longer also surfaces
@@ -2398,15 +2438,28 @@ function buildClusters(kind) {
   return { clusters, wordById };
 }
 
-// Builds the full forest for one relationship kind: source_id becomes
-// the parent, target_id the child -- the same literal (source, kind,
-// target) triple the Relationships tab already shows, with no per-kind
-// semantic reorientation. Which reading feels "natural" (broad-to-
-// narrow, whole-to-part, lemma-to-inflection) just depends on which
-// kind you pick -- HOLONYM instead of MERONYM, HYPONYM instead of
-// HYPERNYM, and so on -- the same pair of inverse edges the relationship
-// cache already materialises for exactly this reason (assets/common/en/
-// relationships/README.md's Symmetric and inverse edges section).
+// Mirrors the server-side HIERARCHY_INVERTED_KINDS (dictionary_view.ts's
+// own DictionaryView.resolveHierarchy(), the class this file's own
+// render() method is a method of) -- kept as a literal duplicate rather
+// than shared, since that Set lives in TypeScript-enum-keyed code this
+// client script has no import access to; the five kind *names* below
+// are the stable, load-bearing part, not the enum values behind them.
+const HIERARCHY_INVERTED_KINDS = new Set(["HYPERNYM", "INSTANCE_HYPERNYM", "PART_MERONYM", "MEMBER_MERONYM", "SUBSTANCE_MERONYM"]);
+
+// Builds the full forest for one relationship kind. source_id becomes
+// the parent, target_id the child for most kinds -- the same literal
+// (source, kind, target) triple the Relationships tab already shows --
+// *except* HIERARCHY_INVERTED_KINDS (HYPERNYM, INSTANCE_HYPERNYM,
+// PART_MERONYM, MEMBER_MERONYM, SUBSTANCE_MERONYM), which are stored
+// (narrower/part, kind, broader/whole) -- source is the *child* for
+// these, not the parent, so building the tree straight off source/target
+// would put narrower concepts to the tree's own root side and broader
+// ones toward the leaves, backwards from "broad root, narrow leaves".
+// Mirrors resolveHierarchy()'s own server-side HIERARCHY_INVERTED_KINDS
+// swap (dictionary_view.ts's server-side class) so the under-capacity
+// and WordNet-scale paths agree on which side of a HYPERNYM-like edge
+// is broader, not just this client script's own two rendering paths
+// agreeing with each other.
 // Roots are words with no incoming edge of this kind; a fully symmetric
 // kind (SYNONYM, ANTONYM -- every node has both directions) has none,
 // so this falls back to buildClusters instead of a forest of redundant
@@ -2433,19 +2486,22 @@ function buildClusters(kind) {
 function buildHierarchy(kind) {
   const edges = RELS.filter(r => r.kind === kind);
   const wordById = new Map(WORDS.map(w => [w.id, w]));
+  const inverted = HIERARCHY_INVERTED_KINDS.has(kind);
   const childrenOf = new Map();
   const parentsOf = new Map();
   const hasIncoming = new Set();
   const nodeIds = new Set();
   edges.forEach(r => {
     if (!wordById.has(r.source_id) || !wordById.has(r.target_id)) return;
-    nodeIds.add(r.source_id);
-    nodeIds.add(r.target_id);
-    hasIncoming.add(r.target_id);
-    if (!childrenOf.has(r.source_id)) childrenOf.set(r.source_id, []);
-    childrenOf.get(r.source_id).push(r.target_id);
-    if (!parentsOf.has(r.target_id)) parentsOf.set(r.target_id, []);
-    parentsOf.get(r.target_id).push(r.source_id);
+    const parentId = inverted ? r.target_id : r.source_id;
+    const childId = inverted ? r.source_id : r.target_id;
+    nodeIds.add(parentId);
+    nodeIds.add(childId);
+    hasIncoming.add(childId);
+    if (!childrenOf.has(parentId)) childrenOf.set(parentId, []);
+    childrenOf.get(parentId).push(childId);
+    if (!parentsOf.has(childId)) parentsOf.set(childId, []);
+    parentsOf.get(childId).push(parentId);
   });
   const byLabel = id => (wordById.get(id) || {}).lexical_form || "";
   let roots = [...nodeIds].filter(id => !hasIncoming.has(id));
@@ -2495,12 +2551,12 @@ function buildHierarchy(kind) {
     }
     roots = [ancestorChain.length ? ancestorChain[0] : selectedId];
     shownNodeCount = included.size;
-    return { roots, childrenOf: scopedChildrenOf, wordById, edgeCount: edges.length, nodeCount: nodeIds.size, fellBack, clusters, centred, shownNodeCount, truncated };
+    return { roots, childrenOf: scopedChildrenOf, wordById, edgeCount: edges.length, nodeCount: nodeIds.size, fellBack, clusters, centred, shownNodeCount, truncated, inverted };
   } else {
     roots.sort((a, b) => byLabel(a).localeCompare(byLabel(b)));
     childrenOf.forEach(list => list.sort((a, b) => byLabel(a).localeCompare(byLabel(b))));
   }
-  return { roots, childrenOf, wordById, edgeCount: edges.length, nodeCount: nodeIds.size, fellBack, clusters, centred, shownNodeCount, truncated };
+  return { roots, childrenOf, wordById, edgeCount: edges.length, nodeCount: nodeIds.size, fellBack, clusters, centred, shownNodeCount, truncated, inverted };
 }
 
 function hierarchyClusterHTML(cluster, wordById) {
@@ -2513,120 +2569,195 @@ function hierarchyClusterHTML(cluster, wordById) {
   </div>\`;
 }
 
+// Every id in \`ids\` that shares a WordNet synset (sense_id) is grouped
+// into one array, in first-encountered order -- a word with no
+// sense_id (not WordNet-sourced) gets a singleton group of its own,
+// same as a synset none of whose fellow members are also in \`ids\`.
+// hierarchyTreeSVG's own boxing: WordNet's pointer data fans a HYPERNYM
+// (or any other) edge out to *every* member of the target synset
+// individually (word_seeder.ts's own seedPointerRelationship docstring
+// -- "dog"/"domestic dog"/"Canis familiaris" all separately, for the
+// identical fact), so without this a tree would show three redundant
+// sibling branches for what's really one concept.
+function groupIdsBySense(ids, tree) {
+  const bySense = new Map();
+  const order = [];
+  ids.forEach(id => {
+    const word = tree.wordById.get(id);
+    if (!word) return;
+    const key = word.sense_id ? "s:" + word.sense_id : "w:" + id;
+    if (!bySense.has(key)) { bySense.set(key, []); order.push(key); }
+    bySense.get(key).push(id);
+  });
+  return order.map(key => bySense.get(key));
+}
+
 // Lays out a Hierarchy tree as a left-to-right dendrogram (root column
 // at the left, each generation one column further right) instead of an
 // indented text list -- an org-chart-style node-and-edge diagram reads
 // the actual branching shape of a hierarchy at a glance, the same way
 // Cyclic's own box-and-line graph (clusterGraphSVG below) does for its
 // cluster relationships, rather than asking the eye to reconstruct it
-// from indentation depth.
+// from indentation depth. Every *occurrence* here is actually a
+// same-synset GROUP (groupIdsBySense above), rendered as a boxed,
+// multi-line cluster (mirroring clusterGraphSVG's own per-word-in-box
+// treatment) when it has more than one member, or a plain dot + label
+// -- unchanged from a single word's own old rendering -- when it doesn't,
+// so a non-WordNet hierarchy (e.g. Lemma Form, where sense_id is never
+// set) never shows an unnecessary box around every single node.
 //
-// One pass assigns every node's (occurrence, not word -- see below) row
-// via the classic recursive tree-layout rule: a leaf gets the next
-// unused row in traversal order (top to bottom, matching the old list's
-// own reading order), and a parent's row is the midpoint of its
-// children's rows, so a subtree's branches fan out symmetrically around
-// their parent instead of stair-stepping downward. Depth fixes the
-// column (x); row fixes the vertical position (y) once scaled.
+// \`inverted\` (HIERARCHY_INVERTED_KINDS.has(kind)) flips which end of a
+// connecting line gets the arrowhead, independent of layout position:
+// tree.childrenOf already orients parent = broader/root-ward,
+// child = narrower/leaf-ward for these kinds (buildHierarchy()'s own
+// docstring on why), but the *edge itself* is still stored child->parent
+// (the narrower word's own HYPERNYM pointer names its broader parent),
+// so the arrow needs to point from the child's own position back toward
+// the parent's -- backward along the tree's own left-to-right layout --
+// to actually depict that stored direction, not the reverse.
+//
+// One pass assigns every group's row via the classic recursive tree-
+// layout rule: a leaf gets the next unused row in traversal order (top
+// to bottom, matching the old list's own reading order), and a parent's
+// row is the midpoint of its children's rows, so a subtree's branches
+// fan out symmetrically around their parent instead of stair-stepping
+// downward. Depth fixes the column (x); row fixes the vertical position
+// (y) once scaled by each row's own height (a multi-member box is
+// taller than a single dot, same as clusterGraphSVG's own boxDims).
 //
 // Two independent guards keep this finite even though the underlying
 // graph isn't guaranteed to be a tree (or even acyclic) -- the same
-// pair the old text-list version used: pathSet catches a true cycle
-// within the current branch, globalSeen catches a node reached a second
-// time via a *different* parent (a legitimate DAG shape, e.g. a word
-// with two hypernyms). Both render as a dashed, non-expanding leaf
-// rather than re-entering the subtree -- but as their own *occurrence*
-// node (a fresh synthetic id, tracked separately from the word's own
-// id), because the same word can legitimately appear at more than one
-// position in the diagram; edges and layout are keyed by occurrence, so
-// two occurrences of one word never fight over a single position, while
-// data-pivot-id on every occurrence still names the real word id for
+// pair the old text-list version used, now keyed by group rather than
+// word: pathSet catches a true cycle within the current branch,
+// globalSeen catches a group reached a second time via a *different*
+// parent (a legitimate DAG shape, e.g. a word with two hypernyms). Both
+// render as a dashed, non-expanding leaf rather than re-entering the
+// subtree -- but as their own *occurrence* (a fresh synthetic id,
+// tracked separately from any member's own word id), because the same
+// group can legitimately appear at more than one position in the
+// diagram; edges and layout are keyed by occurrence, so two occurrences
+// of one group never fight over a single position, while data-pivot-id
+// on every member row still names that member's own real word id for
 // click/selection purposes.
-function hierarchyTreeSVG(tree) {
-  const ROW_H = 26, COL_GAP = 46, MARGIN = 20;
-  const occRow = new Map();
+function hierarchyTreeSVG(tree, inverted) {
+  const LINE_H = 15, ROW_GAP = 12, COL_GAP = 46, MARGIN = 20;
+  const occY = new Map();
   const occurrences = [];
   const edges = [];
-  let nextRow = 0;
+  let cursorY = MARGIN;
   let occSeq = 0;
 
-  function visit(id, depth, pathSet, globalSeen) {
-    const word = tree.wordById.get(id);
-    if (!word) return null;
+  function dims(members) {
+    if (members.length === 1) return { width: Math.max(60, members[0].lexical_form.length * 6.3 + 30), height: 22, boxed: false };
+    const width = Math.max(70, Math.max(...members.map(m => m.lexical_form.length)) * 6.6 + 30);
+    const height = members.length * LINE_H + 14;
+    return { width, height, boxed: true };
+  }
+
+  function groupKey(group) {
+    const word = tree.wordById.get(group[0]);
+    return word.sense_id ? "s:" + word.sense_id : "w:" + group[0];
+  }
+
+  function visit(group, depth, pathSet, globalSeen) {
+    const members = group.map(id => tree.wordById.get(id)).filter(Boolean);
+    if (!members.length) return null;
+    const key = groupKey(group);
     const occId = "o" + (occSeq++);
-    const base = { occId, wordId: id, label: word.lexical_form, pos: word.pos };
-    if (pathSet.has(id)) {
-      const row = nextRow++;
-      occRow.set(occId, row);
-      occurrences.push({ ...base, depth, kind: "cycle" });
+    const { width, height, boxed } = dims(members);
+    const base = { occId, ids: group, members, depth, width, height, boxed };
+
+    const pushLeaf = kind => {
+      const oy = cursorY + height / 2;
+      cursorY += height + ROW_GAP;
+      occY.set(occId, oy);
+      occurrences.push({ ...base, kind });
       return occId;
-    }
-    const children = tree.childrenOf.get(id) || [];
-    const firstTimeSeen = !globalSeen.has(id);
-    globalSeen.add(id);
-    if ((!firstTimeSeen || depth > 14) && children.length) {
-      const row = nextRow++;
-      occRow.set(occId, row);
-      occurrences.push({ ...base, depth, kind: "seen" });
-      return occId;
-    }
-    if (!children.length) {
-      const row = nextRow++;
-      occRow.set(occId, row);
-      occurrences.push({ ...base, depth, kind: null });
-      return occId;
-    }
+    };
+
+    if (pathSet.has(key)) return pushLeaf("cycle");
+
+    const childIdsRaw = [];
+    group.forEach(id => (tree.childrenOf.get(id) || []).forEach(c => childIdsRaw.push(c)));
+    const childGroups = groupIdsBySense([...new Set(childIdsRaw)], tree);
+
+    const firstTimeSeen = !globalSeen.has(key);
+    globalSeen.add(key);
+    if ((!firstTimeSeen || depth > 14) && childGroups.length) return pushLeaf("seen");
+    if (!childGroups.length) return pushLeaf(null);
+
     const nextPath = new Set(pathSet);
-    nextPath.add(id);
-    const childOccIds = children.map(c => visit(c, depth + 1, nextPath, globalSeen)).filter(Boolean);
-    const childRows = childOccIds.map(c => occRow.get(c));
-    const row = (Math.min(...childRows) + Math.max(...childRows)) / 2;
-    occRow.set(occId, row);
-    occurrences.push({ ...base, depth, kind: null });
+    nextPath.add(key);
+    const childOccIds = childGroups.map(g => visit(g, depth + 1, nextPath, globalSeen)).filter(Boolean);
+    const childYs = childOccIds.map(c => occY.get(c));
+    const oy = (Math.min(...childYs) + Math.max(...childYs)) / 2;
+    occY.set(occId, oy);
+    occurrences.push({ ...base, kind: null });
     childOccIds.forEach(childOccId => edges.push({ parentOccId: occId, childOccId }));
     return occId;
   }
 
-  tree.roots.forEach(rootId => visit(rootId, 0, new Set(), new Set()));
+  groupIdsBySense(tree.roots, tree).forEach(group => visit(group, 0, new Set(), new Set()));
   if (!occurrences.length) return "";
 
-  const nodeWidth = label => Math.max(60, label.length * 6.3 + 30);
   const maxDepth = Math.max(...occurrences.map(o => o.depth));
   const colWidthByDepth = [];
   for (let d = 0; d <= maxDepth; d++) {
-    const widths = occurrences.filter(o => o.depth === d).map(o => nodeWidth(o.label));
-    colWidthByDepth.push(Math.max(...widths));
+    colWidthByDepth.push(Math.max(...occurrences.filter(o => o.depth === d).map(o => o.width)));
   }
   const colX = [MARGIN];
   for (let d = 1; d <= maxDepth; d++) colX.push(colX[d - 1] + colWidthByDepth[d - 1] + COL_GAP);
 
   const width = colX[maxDepth] + colWidthByDepth[maxDepth] + MARGIN;
-  const height = MARGIN * 2 + nextRow * ROW_H;
+  const height = cursorY + MARGIN;
   const occById = new Map(occurrences.map(o => [o.occId, o]));
-  const y = occId => MARGIN + occRow.get(occId) * ROW_H + ROW_H / 2;
+  const y = occId => occY.get(occId);
   const x = occId => colX[occById.get(occId).depth];
 
   let linesHTML = "";
   edges.forEach(({ parentOccId, childOccId }) => {
-    const px = x(parentOccId) + nodeWidth(occById.get(parentOccId).label);
-    const py = y(parentOccId);
-    const cx = x(childOccId);
-    const cy = y(childOccId);
+    const parentOcc = occById.get(parentOccId), childOcc = occById.get(childOccId);
+    const px = x(parentOccId) + parentOcc.width, py = y(parentOccId);
+    const cx = x(childOccId), cy = y(childOccId);
     const branchX = px + (cx - px) / 2;
-    linesHTML += \`<path d="M\${px.toFixed(1)},\${py.toFixed(1)} H\${branchX.toFixed(1)} V\${cy.toFixed(1)} H\${cx.toFixed(1)}" class="hierarchy-edge" marker-end="url(#hierarchy-arrow)" />\`;
+    // \`inverted\` swaps which endpoint the arrowhead sits at -- the line
+    // itself always runs the same visual path (parent's own right edge
+    // to child's own left edge, the layout's own broad-to-narrow
+    // direction), only marker-start/marker-end trade places.
+    const startMarker = inverted ? \` marker-start="url(#hierarchy-arrow)"\` : '';
+    const endMarker = inverted ? '' : \` marker-end="url(#hierarchy-arrow)"\`;
+    linesHTML += \`<path d="M\${px.toFixed(1)},\${py.toFixed(1)} H\${branchX.toFixed(1)} V\${cy.toFixed(1)} H\${cx.toFixed(1)}" class="hierarchy-edge"\${startMarker}\${endMarker} />\`;
   });
 
   let nodesHTML = "";
   occurrences.forEach(o => {
     const nx = x(o.occId), ny = y(o.occId);
-    const color = POS_COLORS[o.pos] || "#7A7A7A";
-    const isSelected = o.wordId === state.selectedWordId;
     const crossRef = o.kind ? " hierarchy-node-cross-ref" : "";
     const title = o.kind === "cycle" ? "cycle -- already above in this branch" : o.kind === "seen" ? "see elsewhere in this tree" : "";
-    nodesHTML += \`<g class="hierarchy-node-svg\${isSelected ? ' hierarchy-node-selected' : ''}\${crossRef}" data-pivot-id="\${o.wordId}" tabindex="0" transform="translate(\${nx.toFixed(1)},\${ny.toFixed(1)})">\`
-      + (title ? \`<title>\${title}</title>\` : '')
-      + \`<circle r="4" fill="\${color}" />\`
-      + \`<text x="9" y="4" text-anchor="start">\${o.label}\${o.kind ? ' ⋯' : ''}</text></g>\`;
+    const titleHTML = title ? \`<title>\${title}</title>\` : '';
+    const suffix = o.kind ? ' ⋯' : '';
+    if (!o.boxed) {
+      const m = o.members[0];
+      const color = POS_COLORS[m.pos] || "#7A7A7A";
+      const isSelected = m.id === state.selectedWordId;
+      nodesHTML += \`<g class="hierarchy-node-svg\${isSelected ? ' hierarchy-node-selected' : ''}\${crossRef}" data-pivot-id="\${m.id}" tabindex="0" transform="translate(\${nx.toFixed(1)},\${ny.toFixed(1)})">\`
+        + titleHTML + \`<circle r="4" fill="\${color}" />\`
+        + \`<text x="9" y="4" text-anchor="start">\${m.lexical_form}\${suffix}</text></g>\`;
+      return;
+    }
+    const top = ny - o.height / 2;
+    nodesHTML += \`<g class="hierarchy-node-group\${crossRef}">\`
+      + titleHTML
+      + \`<rect x="\${nx.toFixed(1)}" y="\${top.toFixed(1)}" width="\${o.width.toFixed(1)}" height="\${o.height.toFixed(1)}" rx="6" class="hierarchy-box" />\`;
+    o.members.forEach((m, idx) => {
+      const color = POS_COLORS[m.pos] || "#7A7A7A";
+      const isSelected = m.id === state.selectedWordId;
+      const my = top + 11 + idx * LINE_H;
+      nodesHTML += \`<g class="hierarchy-node-svg\${isSelected ? ' hierarchy-node-selected' : ''}" data-pivot-id="\${m.id}" tabindex="0" transform="translate(\${(nx + 10).toFixed(1)},\${my.toFixed(1)})">\`
+        + \`<circle r="3.5" cx="0" fill="\${color}" />\`
+        + \`<text x="8" y="4" text-anchor="start">\${m.lexical_form}\${idx === o.members.length - 1 ? suffix : ''}</text></g>\`;
+    });
+    nodesHTML += '</g>';
   });
 
   return \`<div class="hierarchy-svg-wrap"><svg viewBox="0 0 \${width} \${height}" width="\${width}" height="\${height}" class="hierarchy-graph">\`
@@ -2737,7 +2868,7 @@ function renderHierarchy() {
     container.innerHTML = '<div class="detail-empty" style="padding:8px 0">No relationships of this kind yet.</div>';
     return;
   }
-  container.innerHTML = hierarchyTreeSVG(tree);
+  container.innerHTML = hierarchyTreeSVG(tree, tree.inverted);
   wireHierarchyGraphNodes(container);
 }
 
@@ -2814,7 +2945,7 @@ document.addEventListener("lira-resolve-hierarchy-result", (e) => {
     + (truncated ? ' <span class="hierarchy-cross-ref">(narrowed by node limit -- click a word below to centre the tree there)</span>' : '')
     + (state.selectedWordId ? ' &middot; <button type="button" class="link-btn" id="hierarchy-reset">back to broadest root</button>' : '');
 
-  container.innerHTML = hierarchyTreeSVG(tree);
+  container.innerHTML = hierarchyTreeSVG(tree, HIERARCHY_INVERTED_KINDS.has(state.hierarchyKind));
   wireHierarchyGraphNodes(container);
   const resetBtn = document.getElementById("hierarchy-reset");
   if (resetBtn) resetBtn.addEventListener("click", () => selectWord(null));
@@ -3392,6 +3523,7 @@ document.addEventListener("lira-search-relationships-result", (e) => {
       .sort((a, b) => (a.group - b.group) || a.kind.localeCompare(b.kind));
     detailRelsCache.set(wordId, rels);
     if (state.selectedWordId !== wordId) return;
+    refreshHierarchyKindCounts();
     // Every detail panel currently showing this word gets the same
     // targeted patch -- a plain DOM update, not another renderDetailPanel()
     // call, which would also needlessly re-resolve the Word itself.
@@ -3425,6 +3557,7 @@ function renderAll() {
   renderDetailPanel("hierarchy");
   renderDetailPanel("cyclic");
   renderUnresolved();
+  refreshHierarchyKindCounts();
   renderHierarchy();
   renderCyclic();
 }
