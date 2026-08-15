@@ -629,13 +629,18 @@ export class DictionaryView {
    * Two modes, chosen by whether `options.wordId` is given:
    *  - No wordId: finds this kind's own "broadest root" -- among every
    *    node with no parent edge of this kind, the one with the most
-   *    direct children. That's a cheap O(1)-per-candidate proxy for
-   *    "most encompassing", not an exact total-descendant count (which
-   *    would need its own full traversal *per candidate root*,
-   *    needlessly expensive when a less strictly hierarchical kind can
-   *    have thousands of root candidates) -- then returns that root's
-   *    own descendant subtree, breadth-first, capped at `options.limit`
-   *    nodes.
+   *    total *reachable descendants* (not merely the most direct
+   *    children -- an earlier version of this method used that cheaper
+   *    but misleading proxy: WordNet's own verb taxonomy is much
+   *    shallower than its noun one, so a broad verb concept like
+   *    "change" can have more direct hyponyms than "entity" does, while
+   *    entity's own subtree still covers the overwhelming majority of
+   *    every noun in the Dictionary). Computed via one memoized DFS
+   *    shared across every candidate (subtreeSize() below), not one
+   *    traversal per candidate, so this stays O(nodes + edges) overall
+   *    even when there are many root candidates -- then returns that
+   *    root's own descendant subtree, breadth-first, capped at
+   *    `options.limit` nodes.
    *  - `wordId` given: walks *up* from that Word, one parent at a time
    *    (the first parent found at each step -- a rare multiple-parent
    *    case, e.g. a noun with two WordNet hypernyms, picks one path
@@ -713,7 +718,30 @@ export class DictionaryView {
     } else {
       const rootCandidates = [...allNodeIds].filter((id) => !parentsOf.has(id));
       if (rootCandidates.length === 0) return { ...empty, totalEdgeCount, totalNodeCount, fellBack: true };
-      rootCandidates.sort((a, b) => (childrenOf.get(b)?.size ?? 0) - (childrenOf.get(a)?.size ?? 0));
+
+      // Reachable-descendant count, memoized once per node and reused
+      // across every root candidate's own comparison below -- this
+      // method's own docstring on why (a cheap per-candidate proxy like
+      // direct-child-count picks a shallow-but-wide root instead of the
+      // genuinely broadest one). A DAG's rare multiply-inherited node
+      // (a WordNet synset with two hypernyms) gets counted under each of
+      // its parents -- a defensible approximation for "which root is
+      // broadest", not a guarantee every count is a distinct
+      // reachable-node total.
+      const subtreeSize = new Map<string, number>();
+      const computing = new Set<string>();
+      const sizeOf = (id: string): number => {
+        const cached = subtreeSize.get(id);
+        if (cached !== undefined) return cached;
+        if (computing.has(id)) return 0; // cycle guard
+        computing.add(id);
+        let size = 1;
+        for (const child of childrenOf.get(id) ?? []) size += sizeOf(child);
+        computing.delete(id);
+        subtreeSize.set(id, size);
+        return size;
+      };
+      rootCandidates.sort((a, b) => sizeOf(b) - sizeOf(a));
       startId = rootCandidates[0];
     }
 
@@ -1396,6 +1424,8 @@ svg.cyclic-graph { display: block; }
 }
 .cyclic-node:hover text, .cyclic-node:focus text { fill: var(--accent); text-decoration: underline; }
 .cyclic-node:hover circle, .cyclic-node:focus circle { stroke: var(--accent); }
+.cyclic-node-selected text { fill: var(--accent); font-weight: 700; }
+.cyclic-node-selected circle { stroke: var(--accent); stroke-width: 3; }
 @media (max-width: 860px) {
   .detail-panel { position: static; max-height: none; }
 }
@@ -1561,9 +1591,15 @@ const DOMAIN_VALUES = @@DOMAIN_VALUES_JSON@@;
 // kind actually present in this Dictionary.
 const RELATIONSHIP_KIND_COUNTS = @@RELATIONSHIP_KIND_COUNTS_JSON@@;
 
+// selectedWordId is shared across every tab -- Words (row highlight +
+// detail panel), Relationships (scopes the table to just this word),
+// Hierarchy (the tree's own "centre word"), and Cyclic (highlights its
+// own cluster) all read the *same* value, rather than each tab tracking
+// its own independent selection the way an earlier version of this
+// script did. selectWord() below is the one place that ever writes it.
 const state = {
   tab: "words", search: { word: "", gloss: "", definition: "" }, pos: "", domain: "", rootWordsOnly: false,
-  selected: { words: null, hierarchy: null, cyclic: null },
+  selectedWordId: null,
   hierarchyKind: null, cyclicKind: null,
   sort: { words: ["lexical_form", 1], rels: ["source_text", 1] },
 };
@@ -1846,8 +1882,15 @@ function filteredWords() {
   return WORDS.filter(w => matchesQuery(w) && (!state.pos || w.pos === state.pos) && (!state.domain || w.domain === state.domain) && (!state.rootWordsOnly || w.is_root_word));
 }
 
+// AND's two independent conditions: the shared selection (any word
+// selected in any tab -- selectWord()'s own docstring on why every tab
+// reads the same value) scopes the table down to just that word's own
+// relationships, on top of whichever free-text query is still typed
+// into the search box, exactly the way the Words tab's own pos/domain/
+// rootWordsOnly filters already compose with its own text search.
 function filteredRels() {
   return RELS.filter(r => {
+    if (state.selectedWordId && r.source_id !== state.selectedWordId && r.target_id !== state.selectedWordId) return false;
     const q = state.search.word;
     if (!q) return true;
     const ql = q.toLowerCase();
@@ -1889,7 +1932,7 @@ const MAX_WORD_ROWS_SHOWN = 1000;
 
 function wordRowHtml(w) {
   return \`
-    <tr data-word-id="\${w.id}" class="\${w.id === state.selected.words ? 'selected' : ''}">
+    <tr data-word-id="\${w.id}" class="\${w.id === state.selectedWordId ? 'selected' : ''}">
       <td><span class="word-form">\${w.lexical_form}</span> \${senseIdBadge(w.sense_id)}\${w.is_common ? ' <span class="badge-common">common</span>' : ''}\${w.is_root_word ? ' <span class="badge-root-word">root word</span>' : ''}\${w.is_derivable_noun ? ' <span class="badge-derivable-noun">derivable noun</span>' : ''}</td>
       <td>\${posPill(w.pos)}</td>
       <td>\${domainPill(w.domain)}</td>
@@ -1977,8 +2020,8 @@ function renderWordsOverCapacity() {
 }
 
 // Two independent callers share this one event: the Words tab's own
-// renderWordsOverCapacity() (latestWordSearchRequestId) and any detail
-// panel's per-id lookup (latestDetailWordRequestId,
+// renderWordsOverCapacity() (latestWordSearchRequestId) and the shared
+// selection's own per-id lookup (pendingDetailWordLookups,
 // lookupWordForDetailPanel()'s own docstring). requestId alone tells
 // them apart -- each caller only ever recognises its own, the same
 // pattern the "lira-search-relationships-result" listener already uses.
@@ -2013,31 +2056,47 @@ document.addEventListener("lira-search-words-result", (e) => {
     return;
   }
 
-  if (requestId === latestDetailWordRequestId) {
-    const panel = latestDetailWordPanel;
-    const wordId = latestDetailWordId;
+  if (pendingDetailWordLookups.has(requestId)) {
+    const wordId = pendingDetailWordLookups.get(requestId);
+    pendingDetailWordLookups.delete(requestId);
+    wordLookupInFlight.delete(wordId);
     if (words.length > 0) wordLookupCache.set(wordId, words[0]);
-    else wordLookupFailed.add(panel + ":" + wordId);
-    // Only re-render if this id is still what that panel has selected --
-    // a lookup answering a click that's since been superseded by a
-    // newer one is simply dropped, same guard latestWordSearchRequestId
-    // applies above.
-    if (state.selected[panel] === wordId) renderDetailPanel(panel);
+    else wordLookupFailed.add(wordId);
+    // Only re-render if this id is still the shared selection -- a
+    // lookup answering a click that's since been superseded by a newer
+    // one is simply dropped, same guard latestWordSearchRequestId
+    // applies above. All three detail panels share this one lookup
+    // (selectWord()'s own docstring on why selection is shared), so all
+    // three refresh together rather than each firing its own redundant
+    // request for the identical word.
+    if (state.selectedWordId === wordId) {
+      renderDetailPanel("words");
+      renderDetailPanel("hierarchy");
+      renderDetailPanel("cyclic");
+    }
   }
 });
 
-// panel is one of "words" / "hierarchy" / "cyclic" -- each tab owns its
-// own selection and its own detail panel above its content, so picking
-// a word in the Hierarchy tree or a Cyclic cluster updates that tab's
-// own panel in place rather than pivoting away to the Words list.
-function selectWordIn(panel, wordId) {
-  state.selected[panel] = wordId;
-  if (panel === "words") {
-    document.querySelectorAll("#words-body tr[data-word-id]").forEach(tr => {
-      tr.classList.toggle("selected", tr.dataset.wordId === wordId);
-    });
-  }
-  renderDetailPanel(panel);
+// The one place state.selectedWordId is ever written -- every tab's own
+// click handler (a Words row, a related-word pivot, a Hierarchy tree
+// node, a Cyclic cluster node) calls this instead of keeping its own
+// independent selection the way an earlier version of this script did.
+// renderAll() then refreshes every view against the new shared value:
+// Words (row highlight + detail panel), Relationships (re-scopes its
+// own table to just this word, filteredRels()'s/renderRelsOverCapacity()'s
+// own docstrings), Hierarchy (re-centres its tree on it, over capacity --
+// renderHierarchyOverCapacity()'s own docstring on why there's no
+// separate "recentre" step needed beyond this), and Cyclic (highlights
+// its own cluster). The Words-row highlight is also toggled directly,
+// synchronously, ahead of renderAll()'s own (possibly debounced, over
+// capacity) re-render -- a plain class toggle so clicking a row you can
+// already see responds instantly instead of waiting on a round trip.
+function selectWord(wordId) {
+  state.selectedWordId = wordId;
+  document.querySelectorAll("#words-body tr[data-word-id]").forEach(tr => {
+    tr.classList.toggle("selected", tr.dataset.wordId === wordId);
+  });
+  renderAll();
 }
 
 // One PAD (Pleasure-Arousal-Dominance) meter row: a track centred on
@@ -2083,22 +2142,26 @@ let lastWordSearchResults = [];
 // -- a related word clicked from inside the detail panel itself is very
 // often outside whichever list happens to be loaded right now (a
 // different search's own results, or nothing fetched there at all over
-// capacity). Keyed by id, kept for the page's whole lifetime -- a
-// resolved Word's own record never changes shape under it, so nothing
-// here ever needs invalidating. wordLookupFailed tracks the opposite
-// outcome (a "(panel, id)" pair whose lookup came back with nothing --
-// should never happen for a real relationship's own source/target id,
-// but a page bug elsewhere or stale data shouldn't loop forever
-// re-requesting it) so renderDetailPanel() can show a real "not found"
-// message instead of "Loading…" stuck forever.
+// capacity). Keyed by id (shared across every panel, now that selection
+// itself is shared -- selectWord()'s own docstring), kept for the
+// page's whole lifetime -- a resolved Word's own record never changes
+// shape under it, so nothing here ever needs invalidating.
+// wordLookupFailed tracks the opposite outcome (an id whose lookup came
+// back with nothing -- should never happen for a real relationship's
+// own source/target id, but a page bug elsewhere or stale data
+// shouldn't loop forever re-requesting it) so renderDetailPanel() can
+// show a real "not found" message instead of "Loading…" stuck forever.
+// wordLookupInFlight/pendingDetailWordLookups together guard against
+// the three detail panels (words/hierarchy/cyclic), all now watching
+// the same selection, each independently firing an identical lookup
+// for the same id in the same renderAll() pass.
 const wordLookupCache = new Map();
 const wordLookupFailed = new Set();
-let latestDetailWordRequestId = null;
-let latestDetailWordId = null;
-let latestDetailWordPanel = null;
+const wordLookupInFlight = new Set();
+const pendingDetailWordLookups = new Map(); // requestId -> wordId
 
 function wordForDetailPanel(panel) {
-  const selectedId = state.selected[panel];
+  const selectedId = state.selectedWordId;
   if (selectedId === undefined || selectedId === null) return undefined;
   const source = panel === "words" && OVER_CAPACITY ? lastWordSearchResults : WORDS;
   return source.find(w => w.id === selectedId) || wordLookupCache.get(selectedId);
@@ -2107,16 +2170,15 @@ function wordForDetailPanel(panel) {
 // Dispatches a "lira-search-words" lookup for exactly one Word by id
 // (PortalShell's own searchWordsBridge() answers it the same way it
 // answers every other "lira-search-words" event -- this is just a
-// \`wordId\`-only query instead of a text/filter one). A no-op for a
-// (panel, id) pair already known to fail (wordLookupFailed's own
-// docstring above) -- renderDetailPanel() only calls this when there's
-// something new to try.
-function lookupWordForDetailPanel(panel, wordId) {
-  if (wordLookupFailed.has(panel + ":" + wordId)) return;
+// \`wordId\`-only query instead of a text/filter one). A no-op if
+// \`wordId\` is already known to fail (wordLookupFailed's own docstring above) or
+// already has a request in flight -- renderDetailPanel() calls this
+// once per panel that needs it, but only the first actually dispatches.
+function lookupWordForDetailPanel(wordId) {
+  if (wordLookupFailed.has(wordId) || wordLookupInFlight.has(wordId)) return;
+  wordLookupInFlight.add(wordId);
   const requestId = "detail-word-" + Math.random().toString(36).slice(2);
-  latestDetailWordRequestId = requestId;
-  latestDetailWordId = wordId;
-  latestDetailWordPanel = panel;
+  pendingDetailWordLookups.set(requestId, wordId);
   document.dispatchEvent(new CustomEvent("lira-search-words", {
     detail: { requestId, wordId, limit: 1 },
   }));
@@ -2133,15 +2195,24 @@ function emptyPanelDefaultText(el) {
   return el.dataset.defaultText;
 }
 
-// Tracks the one in-flight "lira-search-relationships" request the
-// detail panel itself (as opposed to the Relationships tab's own
-// renderRelsOverCapacity()) is waiting on -- wordId/panel travel
-// alongside requestId because the result event only echoes requestId
-// back, not which Word or which panel asked for it (searchRelationships()'s
-// own response shape is shared with the tab search, which has neither).
-let latestDetailRelRequestId = null;
-let latestDetailRelWordId = null;
-let latestDetailRelPanel = null;
+// Relationship lists for the shared selection's own detail-panel view
+// (relationshipsSectionHTML()'s own rels array), fetched once per word
+// id and reused by every detail panel showing it -- same sharing
+// reasoning, and the same in-flight/cache/pending-requestId shape, as
+// wordLookupCache/wordLookupInFlight/pendingDetailWordLookups above.
+const detailRelsCache = new Map();
+const detailRelsInFlight = new Set();
+const pendingDetailRelLookups = new Map(); // requestId -> wordId
+
+function fetchDetailRelsIfNeeded(wordId) {
+  if (detailRelsCache.has(wordId) || detailRelsInFlight.has(wordId)) return;
+  detailRelsInFlight.add(wordId);
+  const requestId = 'detail-rels-' + Math.random().toString(36).slice(2);
+  pendingDetailRelLookups.set(requestId, wordId);
+  document.dispatchEvent(new CustomEvent("lira-search-relationships", {
+    detail: { requestId, wordId, limit: 500 },
+  }));
+}
 
 // \`rels\` is \`null\` while a selected word's own relationship list is
 // still loading over capacity (relationshipsSectionHTML's own "Loading…"
@@ -2184,48 +2255,43 @@ function wordDetailHTML(word, rels, relCount) {
   \`;
 }
 
-function wireDetailPivotButtons(content, panel) {
+function wireDetailPivotButtons(content) {
   content.querySelectorAll("button[data-pivot-id]").forEach(btn => {
-    btn.addEventListener("click", () => selectWordIn(panel, btn.dataset.pivotId));
+    btn.addEventListener("click", () => selectWord(btn.dataset.pivotId));
   });
 }
 
 function renderDetailPanel(panel) {
   const empty = document.getElementById(\`detail-empty-\${panel}\`);
   const content = document.getElementById(\`detail-content-\${panel}\`);
-  const selectedId = state.selected[panel];
+  const selectedId = state.selectedWordId;
   const word = wordForDetailPanel(panel);
   if (!word) {
     content.style.display = "none";
     empty.style.display = "block";
-    if (selectedId !== undefined && selectedId !== null && wordLookupFailed.has(panel + ":" + selectedId)) {
+    if (selectedId !== undefined && selectedId !== null && wordLookupFailed.has(selectedId)) {
       empty.textContent = "This word could not be found.";
     } else if (selectedId !== undefined && selectedId !== null) {
       // A selection exists but isn't resolved locally yet -- kick off
       // (or wait on) an id lookup rather than claiming nothing is
       // selected; the "lira-search-words-result" listener below
       // re-renders this panel once it resolves.
-      lookupWordForDetailPanel(panel, selectedId);
+      lookupWordForDetailPanel(selectedId);
       empty.textContent = "Loading…";
     } else {
       empty.textContent = emptyPanelDefaultText(empty);
     }
     return;
   }
-  const overCapacityRels = panel === "words" && OVER_CAPACITY;
+  const overCapacityRels = OVER_CAPACITY;
   empty.style.display = "none";
   content.style.display = "block";
-  content.innerHTML = wordDetailHTML(word, overCapacityRels ? null : relationshipsForWord(word.id), word.relationship_count);
-  wireDetailPivotButtons(content, panel);
+  const rels = overCapacityRels ? (detailRelsCache.get(word.id) ?? null) : relationshipsForWord(word.id);
+  content.innerHTML = wordDetailHTML(word, rels, word.relationship_count);
+  wireDetailPivotButtons(content);
 
-  if (overCapacityRels) {
-    const requestId = 'detail-rels-' + Math.random().toString(36).slice(2);
-    latestDetailRelRequestId = requestId;
-    latestDetailRelWordId = word.id;
-    latestDetailRelPanel = panel;
-    document.dispatchEvent(new CustomEvent("lira-search-relationships", {
-      detail: { requestId, wordId: word.id, limit: 500 },
-    }));
+  if (overCapacityRels && !detailRelsCache.has(word.id)) {
+    fetchDetailRelsIfNeeded(word.id);
   }
 }
 
@@ -2443,7 +2509,7 @@ function renderHierarchy() {
     }
     container.innerHTML = \`<div class="hierarchy-clusters">\${clusters.map(c => hierarchyClusterHTML(c, tree.wordById)).join('')}</div>\`;
     container.querySelectorAll("button[data-pivot-id]").forEach(btn => {
-      btn.addEventListener("click", () => selectWordIn("hierarchy", btn.dataset.pivotId));
+      btn.addEventListener("click", () => selectWord(btn.dataset.pivotId));
     });
     return;
   }
@@ -2461,7 +2527,7 @@ function renderHierarchy() {
   const globalSeen = new Set();
   container.innerHTML = \`<ul class="hierarchy-tree">\${tree.roots.map(id => hierarchyNodeHTML(id, tree, new Set(), globalSeen, 0)).join('')}</ul>\`;
   container.querySelectorAll("button[data-pivot-id]").forEach(btn => {
-    btn.addEventListener("click", () => selectWordIn("hierarchy", btn.dataset.pivotId));
+    btn.addEventListener("click", () => selectWord(btn.dataset.pivotId));
   });
 }
 
@@ -2471,15 +2537,17 @@ function renderHierarchy() {
 // this dispatches a "lira-resolve-hierarchy" DOM event and waits for
 // whatever's listening (PortalShell's own resolveHierarchyBridge()) to
 // resolve it server-side (DictionaryView.resolveHierarchy()) and fire
-// back "lira-resolve-hierarchy-result". \`state.selected.hierarchy\`
-// doubles as this view's own "centre word" here (undefined/null means
-// "show this kind's own broadest root" -- resolveHierarchy()'s own
-// no-wordId mode): clicking any node re-centres the whole tree on it
-// (recentreHierarchy() below) rather than only updating a side detail
-// panel the way the small-Domain path's own selectWordIn() does --
-// there is no small, bounded "this word's own relationships" view to
-// fall back on at this scale, so the tree itself has to be the
-// navigable surface.
+// back "lira-resolve-hierarchy-result". \`state.selectedWordId\` doubles
+// as this view's own "centre word" here (undefined/null means "show
+// this kind's own broadest root" -- resolveHierarchy()'s own no-wordId
+// mode) -- the same shared selection every other tab reads
+// (selectWord()'s own docstring): clicking any node calls selectWord()
+// like everywhere else, which re-centres the whole tree on it as a
+// natural consequence of renderAll() calling this function again with
+// the new selection, rather than a Hierarchy-only "recentre" step. There
+// is no small, bounded "this word's own relationships" view to fall
+// back on at this scale, so the tree itself has to be the navigable
+// surface.
 function renderHierarchyOverCapacity() {
   const note = document.getElementById("hierarchy-note");
   const container = document.getElementById("hierarchy-tree");
@@ -2493,13 +2561,8 @@ function renderHierarchyOverCapacity() {
   const requestId = 'hierarchy-' + Math.random().toString(36).slice(2);
   latestHierarchyRequestId = requestId;
   document.dispatchEvent(new CustomEvent("lira-resolve-hierarchy", {
-    detail: { requestId, kind: state.hierarchyKind, wordId: state.selected.hierarchy || undefined, limit: HIERARCHY_NODE_LIMIT },
+    detail: { requestId, kind: state.hierarchyKind, wordId: state.selectedWordId || undefined, limit: HIERARCHY_NODE_LIMIT },
   }));
-}
-
-function recentreHierarchy(wordId) {
-  state.selected.hierarchy = wordId;
-  renderHierarchyOverCapacity();
 }
 
 let latestHierarchyRequestId = null;
@@ -2530,7 +2593,7 @@ document.addEventListener("lira-resolve-hierarchy-result", (e) => {
   childrenOf.forEach(list => list.sort((a, b) => (wordById.get(a)?.lexical_form || "").localeCompare(wordById.get(b)?.lexical_form || "")));
   const tree = { wordById, childrenOf };
 
-  const centreWord = state.selected.hierarchy ? wordById.get(state.selected.hierarchy) : null;
+  const centreWord = state.selectedWordId ? wordById.get(state.selectedWordId) : null;
   const parts = [
     \`\${totalEdgeCount.toLocaleString()} total edge\${totalEdgeCount === 1 ? '' : 's'} of this kind\`,
     \`\${totalNodeCount.toLocaleString()} total word\${totalNodeCount === 1 ? '' : 's'}\`,
@@ -2539,15 +2602,15 @@ document.addEventListener("lira-resolve-hierarchy-result", (e) => {
   note.innerHTML = parts.join(" · ")
     + (centreWord ? \` -- centred on <strong>\${centreWord.lexical_form}</strong>\` : " -- centred on this kind's broadest root")
     + (truncated ? ' <span class="hierarchy-cross-ref">(narrowed by node limit -- click a word below to centre the tree there)</span>' : '')
-    + (state.selected.hierarchy ? ' &middot; <button type="button" class="link-btn" id="hierarchy-reset">back to broadest root</button>' : '');
+    + (state.selectedWordId ? ' &middot; <button type="button" class="link-btn" id="hierarchy-reset">back to broadest root</button>' : '');
 
   const globalSeen = new Set();
   container.innerHTML = \`<ul class="hierarchy-tree">\${roots.map(id => hierarchyNodeHTML(id, tree, new Set(), globalSeen, 0)).join('')}</ul>\`;
   container.querySelectorAll("button[data-pivot-id]").forEach(btn => {
-    btn.addEventListener("click", () => recentreHierarchy(btn.dataset.pivotId));
+    btn.addEventListener("click", () => selectWord(btn.dataset.pivotId));
   });
   const resetBtn = document.getElementById("hierarchy-reset");
-  if (resetBtn) resetBtn.addEventListener("click", () => recentreHierarchy(null));
+  if (resetBtn) resetBtn.addEventListener("click", () => selectWord(null));
 });
 
 // SYNONYM defines the boxes here -- via cliqueGroups above, so only
@@ -2866,7 +2929,11 @@ function clusterGraphSVG(group, wordById, kind) {
       const w = wordById.get(wid);
       const wp = wordPos.get(wid);
       const color = POS_COLORS[w.pos] || "#7A7A7A";
-      wordsHTML += \`<g class="cyclic-node" data-pivot-id="\${wid}" tabindex="0" transform="translate(\${wp.x.toFixed(1)},\${wp.y.toFixed(1)})">\`
+      // Highlights the shared selection's own node, if it's part of
+      // this cluster graph -- selectWord()'s own docstring on why every
+      // tab (including Cyclic) reflects the same selected word.
+      const isSelected = wid === state.selectedWordId;
+      wordsHTML += \`<g class="cyclic-node\${isSelected ? ' cyclic-node-selected' : ''}" data-pivot-id="\${wid}" tabindex="0" transform="translate(\${wp.x.toFixed(1)},\${wp.y.toFixed(1)})">\`
         + \`<circle r="4" fill="\${color}" cx="\${(-dims.width / 2 + 11).toFixed(1)}" />\`
         + \`<text x="\${(-dims.width / 2 + 19).toFixed(1)}" y="4" text-anchor="start">\${w.lexical_form}</text></g>\`;
     });
@@ -2923,9 +2990,9 @@ function renderCyclic() {
       \${clusterGraphSVG(g, wordById, state.cyclicKind)}
     </div>\`).join('');
   container.querySelectorAll(".cyclic-node[data-pivot-id]").forEach(node => {
-    node.addEventListener("click", () => selectWordIn("cyclic", node.dataset.pivotId));
+    node.addEventListener("click", () => selectWord(node.dataset.pivotId));
     node.addEventListener("keydown", (e) => {
-      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); selectWordIn("cyclic", node.dataset.pivotId); }
+      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); selectWord(node.dataset.pivotId); }
     });
   });
 }
@@ -3018,8 +3085,11 @@ function renderRels() {
 // docstring), a "lira-search-relationships" event instead. Reuses
 // state.search.word as its query -- the Relationships tab has always
 // filtered against that one search box (filteredRels()'s own body),
-// never a separate relationship-specific one, so this doesn't add a
-// new filter, only makes the existing one work past MAX_INTERACTIVE_WORDS.
+// never a separate relationship-specific one -- and now state.selectedWordId
+// too, the shared selection every tab reads (selectWord()'s own
+// docstring), scoping the results server-side (searchRelationships()'s
+// own \`wordId\` option) the same way filteredRels() scopes them
+// client-side under capacity.
 function renderRelsOverCapacity() {
   if (relSearchDebounceTimer !== null) clearTimeout(relSearchDebounceTimer);
   relSearchDebounceTimer = setTimeout(() => {
@@ -3030,16 +3100,17 @@ function renderRelsOverCapacity() {
     document.getElementById("rels-body").innerHTML =
       '<tr><td colspan="4" style="text-align:center;padding:24px;color:var(--ink-muted,#5B6660)">Searching…</td></tr>';
     document.dispatchEvent(new CustomEvent("lira-search-relationships", {
-      detail: { requestId, query: state.search.word, limit: MAX_REL_ROWS_SHOWN },
+      detail: { requestId, wordId: state.selectedWordId || undefined, query: state.search.word, limit: MAX_REL_ROWS_SHOWN },
     }));
   }, WORD_SEARCH_DEBOUNCE_MS);
 }
 
 // Two independent callers share this one event: the Relationships tab's
-// own renderRelsOverCapacity() (latestRelSearchRequestId) and the Words-
-// tab detail panel's per-word lookup (latestDetailRelRequestId,
-// renderDetailPanel()'s own docstring). requestId alone tells them
-// apart -- each caller only ever recognises its own.
+// own renderRelsOverCapacity() (latestRelSearchRequestId) and the
+// shared selection's own detail-panel relationship list
+// (pendingDetailRelLookups, fetchDetailRelsIfNeeded()'s own docstring).
+// requestId alone tells them apart -- each caller only ever recognises
+// its own.
 document.addEventListener("lira-search-relationships-result", (e) => {
   const { requestId, relationships, totalMatches } = e.detail;
 
@@ -3065,10 +3136,10 @@ document.addEventListener("lira-search-relationships-result", (e) => {
     return;
   }
 
-  if (requestId === latestDetailRelRequestId) {
-    const wordId = latestDetailRelWordId;
-    const content = document.getElementById(\`detail-content-\${latestDetailRelPanel}\`);
-    if (!content) return;
+  if (pendingDetailRelLookups.has(requestId)) {
+    const wordId = pendingDetailRelLookups.get(requestId);
+    pendingDetailRelLookups.delete(requestId);
+    detailRelsInFlight.delete(wordId);
     const rels = relationships
       .map(r => {
         const outgoing = r.source_id === wordId;
@@ -3082,11 +3153,20 @@ document.addEventListener("lira-search-relationships-result", (e) => {
         };
       })
       .sort((a, b) => (a.group - b.group) || a.kind.localeCompare(b.kind));
-    const section = content.querySelector(".detail-relationships-section");
-    if (section) section.innerHTML = relationshipsSectionHTML(rels);
-    const countLabel = content.querySelector(".detail-rel-count");
-    if (countLabel) countLabel.textContent = totalMatches.toLocaleString();
-    wireDetailPivotButtons(content, latestDetailRelPanel);
+    detailRelsCache.set(wordId, rels);
+    if (state.selectedWordId !== wordId) return;
+    // Every detail panel currently showing this word gets the same
+    // targeted patch -- a plain DOM update, not another renderDetailPanel()
+    // call, which would also needlessly re-resolve the Word itself.
+    ["words", "hierarchy", "cyclic"].forEach(panel => {
+      const content = document.getElementById(\`detail-content-\${panel}\`);
+      if (!content || content.style.display === "none") return;
+      const section = content.querySelector(".detail-relationships-section");
+      if (section) section.innerHTML = relationshipsSectionHTML(rels);
+      const countLabel = content.querySelector(".detail-rel-count");
+      if (countLabel) countLabel.textContent = totalMatches.toLocaleString();
+      wireDetailPivotButtons(content);
+    });
   }
 });
 
@@ -3131,12 +3211,15 @@ document.getElementById("tab-cyclic").addEventListener("click", () => { selectTa
 
 document.getElementById("hierarchy-kind").addEventListener("change", (e) => {
   state.hierarchyKind = e.target.value || null;
-  // A word centred/selected under the previous kind may not even
-  // appear in the new one's graph -- resolveHierarchy() would just
-  // treat it as unresolvable, but starting fresh at the new kind's own
-  // broadest root reads far less confusing than an empty tree right
-  // after switching kinds.
-  state.selected.hierarchy = null;
+  // The shared selection is left as-is on a kind change, unlike an
+  // earlier version of this handler that cleared it -- selectWord()'s
+  // own docstring on why it's shared across every tab now: clearing it
+  // here would also deselect the Words/Relationships/Cyclic tabs' own
+  // view of the same word, just because the Hierarchy dropdown changed.
+  // If the selected word doesn't exist in the new kind's own graph,
+  // resolveHierarchy() already degrades gracefully (an empty tree with
+  // an honest "No relationships of this kind yet" message, not a crash)
+  // rather than needing a reset here to avoid one.
   renderHierarchy();
 });
 
@@ -3177,7 +3260,7 @@ document.getElementById("root-word-filter").addEventListener("change", (e) => {
 
 document.getElementById("words-body").addEventListener("click", (e) => {
   const row = e.target.closest("tr[data-word-id]");
-  if (row) selectWordIn("words", row.dataset.wordId);
+  if (row) selectWord(row.dataset.wordId);
 });
 
 document.querySelectorAll("#panel-words thead th[data-sort]").forEach(th => {
@@ -3207,7 +3290,7 @@ renderAll();
 // Additive external hook (knowledge/ui/knowledge_view.py) -- lets a
 // combined page embedding this fragment as its own "Vocabulary" tab
 // pivot straight to one word's detail panel from outside this script's
-// own IIFE scope, the same way selectTab/selectWordIn do it internally.
+// own IIFE scope, the same way selectTab/selectWord do it internally.
 // window-scoped since render_fragment()'s IIFE wrapping (module
 // docstring) otherwise hides every name here from a sibling script.
 // Returns false (a no-op) rather than throwing when wordId isn't in
@@ -3219,7 +3302,7 @@ renderAll();
 window.liraDictionaryGoToWord = function (wordId) {
   if (!WORDS.some(w => w.id === wordId)) return false;
   selectTab("words");
-  selectWordIn("words", wordId);
+  selectWord(wordId);
   return true;
 };
 /*@@SCRIPT_FRAGMENT_END@@*/

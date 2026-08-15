@@ -617,7 +617,7 @@ describe("DictionaryView.resolveHierarchy", () => {
     return { view, words };
   }
 
-  it("with no wordId, centres on the broadest root -- the root with the most direct children", () => {
+  it("with no wordId, centres on the broadest root -- the root with the most total reachable descendants", () => {
     const { view, words } = buildTreeFixture();
     const result = view.resolveHierarchy({ kind: "HYPERNYM" });
     expect(result.fellBack).toBe(false);
@@ -630,6 +630,44 @@ describe("DictionaryView.resolveHierarchy", () => {
     // fruit/apple are a separate root -- not part of vehicle's own subtree.
     expect(includedTexts).not.toContain("fruit");
     expect(includedTexts).not.toContain("apple");
+  });
+
+  // Regression check for the "broadest root" heuristic itself: a root
+  // with FEWER direct children but a much larger total subtree must
+  // still win over a root with more direct children but a small,
+  // shallow one -- the exact "entity vs. change" shape of bug an
+  // earlier direct-child-count-only heuristic got wrong (WordNet's own
+  // shallow verb taxonomy can give a broad verb concept more *direct*
+  // hyponyms than "entity" has, while entity's own subtree still
+  // dwarfs it in total size).
+  //
+  // wide_shallow          deep_narrow
+  //  |- w1                 |- d1
+  //  |- w2                     |- d1a .. d1j (10 more)
+  //  |- w3
+  //  |- w4
+  it("picks the root with the largest total subtree, not merely the most direct children", () => {
+    const dictionary = new Dictionary();
+    const words = {} as Record<string, ReturnType<typeof createWord>>;
+    const names = ["wide_shallow", "w1", "w2", "w3", "w4", "deep_narrow", "d1", ...Array.from({ length: 10 }, (_, i) => `d1${String.fromCharCode(97 + i)}`)];
+    for (const text of names) {
+      words[text] = createWord({ text, partOfSpeech: PartOfSpeech.NOUN });
+      dictionary.append(words[text]);
+    }
+    const store = new LexicalRelationshipStore();
+    const processor = new LexicalRelationshipProcessor(store, new LexicalRelationshipSystemPropertyTensor());
+    const hypernym = (child: string, parent: string) =>
+      processor.create({ sourceWordId: words[child].uuid.value, targetWordId: words[parent].uuid.value, relationshipType: LexicalRelationshipType.HYPERNYM, sourceReferences: [] });
+    for (const child of ["w1", "w2", "w3", "w4"]) hypernym(child, "wide_shallow");
+    hypernym("d1", "deep_narrow");
+    for (let i = 0; i < 10; i++) hypernym(`d1${String.fromCharCode(97 + i)}`, "d1");
+
+    const view = new DictionaryView(dictionary, store, { domainName: "Common" });
+    const result = view.resolveHierarchy({ kind: "HYPERNYM" });
+    // wide_shallow has 4 direct children (more than deep_narrow's 1),
+    // but only 5 total descendants; deep_narrow has 12. The broadest
+    // root must be deep_narrow.
+    expect(result.roots).toEqual([words.deep_narrow.uuid.value]);
   });
 
   it("with a wordId, builds the ancestor chain up to the root plus that word's own descendants", () => {
@@ -686,15 +724,28 @@ describe("DictionaryView.resolveHierarchy", () => {
     // poodle itself is a leaf, not a root -- its own root should be a
     // genuinely broad noun (HYPERNYM_INVERTED handling's own reason for
     // existing: without it, the root would come out as poodle's own
-    // most *specific* breed instead).
+    // most *specific* breed instead). Walking up poodle's own single-
+    // inheritance chain (dog -> canine -> ... ) should reach WordNet's
+    // own real top-level noun root, "entity".
     const rootWord = result.nodes.find((n) => n.id === result.roots[0]);
     expect(rootWord).toBeDefined();
-    expect(rootWord!.lexical_form).not.toBe("poodle");
+    expect(rootWord!.lexical_form).toBe("entity");
     // poodle itself must be included, reachable from the ancestor chain.
     expect(result.nodes.map((n) => n.lexical_form)).toContain("poodle");
 
+    // "entity" should also win as the *overall* broadest HYPERNYM root
+    // (no wordId) -- the regression check for the "picks the root with
+    // the largest total subtree" fix above, against the real corpus:
+    // WordNet's own noun taxonomy is almost entirely one connected tree
+    // under entity (tens of thousands of nouns), dwarfing even the
+    // largest single verb root (HYPERNYM also covers verbs, which have
+    // a much shallower, narrower taxonomy overall -- an earlier,
+    // direct-child-count-only heuristic picked a broad verb like
+    // "change" here instead, this method's own docstring on why).
     const broadestRoot = view.resolveHierarchy({ kind: "HYPERNYM" });
     expect(broadestRoot.fellBack).toBe(false);
     expect(broadestRoot.roots.length).toBe(1);
+    const broadestRootWord = broadestRoot.nodes.find((n) => n.id === broadestRoot.roots[0]);
+    expect(broadestRootWord?.lexical_form).toBe("entity");
   }, 30000);
 });
