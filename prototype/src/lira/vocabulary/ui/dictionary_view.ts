@@ -1321,26 +1321,29 @@ select#hierarchy-kind {
   margin-bottom: 12px;
   line-height: 1.4;
 }
-.hierarchy-tree, .hierarchy-tree ul {
-  list-style: none;
-  margin: 0;
-  padding: 0;
+.hierarchy-svg-wrap {
+  overflow-x: auto;
 }
-.hierarchy-tree ul {
-  padding-left: 22px;
-  border-left: 1px dashed var(--line-strong);
-  margin-left: 7px;
+svg.hierarchy-graph { display: block; }
+.hierarchy-edge {
+  stroke: var(--line-strong);
+  stroke-width: 1.4;
+  fill: none;
 }
-.hierarchy-node {
-  padding: 4px 0;
+.hierarchy-arrow { fill: var(--line-strong); }
+.hierarchy-node-svg { cursor: pointer; }
+.hierarchy-node-svg circle { stroke: var(--surface); stroke-width: 2; }
+.hierarchy-node-svg text {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  fill: var(--ink);
 }
-.hierarchy-node-row {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  flex-wrap: wrap;
-}
-.hierarchy-node-row .link-btn { font-size: 0.85rem; }
+.hierarchy-node-svg:hover text, .hierarchy-node-svg:focus text { fill: var(--accent); text-decoration: underline; }
+.hierarchy-node-svg:hover circle, .hierarchy-node-svg:focus circle { stroke: var(--accent); }
+.hierarchy-node-selected text { fill: var(--accent); font-weight: 700; }
+.hierarchy-node-selected circle { stroke: var(--accent); stroke-width: 3; }
+.hierarchy-node-cross-ref circle { stroke-dasharray: 2 2; opacity: .65; }
+.hierarchy-node-cross-ref text { opacity: .65; font-style: italic; }
 .hierarchy-cross-ref {
   font-size: 0.78rem;
   color: var(--ink-muted);
@@ -2510,33 +2513,140 @@ function hierarchyClusterHTML(cluster, wordById) {
   </div>\`;
 }
 
-// Recursive tree HTML. Two independent guards keep this finite even
-// though the underlying graph isn't guaranteed to be a tree (or even
-// acyclic): pathSet catches a true cycle within the current branch
-// (rendered as a labelled leaf, not re-entered), globalSeen catches a
-// node reached a second time via a *different* parent -- a legitimate
-// DAG shape, e.g. a word with two hypernyms -- rendered as a plain
-// cross-reference rather than duplicating its whole subtree again.
-function hierarchyNodeHTML(id, tree, pathSet, globalSeen, depth) {
-  const word = tree.wordById.get(id);
-  if (!word) return "";
-  const label = \`<button class="link-btn" data-pivot-id="\${id}">\${word.lexical_form}</button> \${posPill(word.pos)} \${domainPill(word.domain)}\`;
-  if (pathSet.has(id)) {
-    return \`<li class="hierarchy-node"><div class="hierarchy-node-row">\${label} <span class="hierarchy-cross-ref">(cycle -- already above in this branch)</span></div></li>\`;
+// Lays out a Hierarchy tree as a left-to-right dendrogram (root column
+// at the left, each generation one column further right) instead of an
+// indented text list -- an org-chart-style node-and-edge diagram reads
+// the actual branching shape of a hierarchy at a glance, the same way
+// Cyclic's own box-and-line graph (clusterGraphSVG below) does for its
+// cluster relationships, rather than asking the eye to reconstruct it
+// from indentation depth.
+//
+// One pass assigns every node's (occurrence, not word -- see below) row
+// via the classic recursive tree-layout rule: a leaf gets the next
+// unused row in traversal order (top to bottom, matching the old list's
+// own reading order), and a parent's row is the midpoint of its
+// children's rows, so a subtree's branches fan out symmetrically around
+// their parent instead of stair-stepping downward. Depth fixes the
+// column (x); row fixes the vertical position (y) once scaled.
+//
+// Two independent guards keep this finite even though the underlying
+// graph isn't guaranteed to be a tree (or even acyclic) -- the same
+// pair the old text-list version used: pathSet catches a true cycle
+// within the current branch, globalSeen catches a node reached a second
+// time via a *different* parent (a legitimate DAG shape, e.g. a word
+// with two hypernyms). Both render as a dashed, non-expanding leaf
+// rather than re-entering the subtree -- but as their own *occurrence*
+// node (a fresh synthetic id, tracked separately from the word's own
+// id), because the same word can legitimately appear at more than one
+// position in the diagram; edges and layout are keyed by occurrence, so
+// two occurrences of one word never fight over a single position, while
+// data-pivot-id on every occurrence still names the real word id for
+// click/selection purposes.
+function hierarchyTreeSVG(tree) {
+  const ROW_H = 26, COL_GAP = 46, MARGIN = 20;
+  const occRow = new Map();
+  const occurrences = [];
+  const edges = [];
+  let nextRow = 0;
+  let occSeq = 0;
+
+  function visit(id, depth, pathSet, globalSeen) {
+    const word = tree.wordById.get(id);
+    if (!word) return null;
+    const occId = "o" + (occSeq++);
+    const base = { occId, wordId: id, label: word.lexical_form, pos: word.pos };
+    if (pathSet.has(id)) {
+      const row = nextRow++;
+      occRow.set(occId, row);
+      occurrences.push({ ...base, depth, kind: "cycle" });
+      return occId;
+    }
+    const children = tree.childrenOf.get(id) || [];
+    const firstTimeSeen = !globalSeen.has(id);
+    globalSeen.add(id);
+    if ((!firstTimeSeen || depth > 14) && children.length) {
+      const row = nextRow++;
+      occRow.set(occId, row);
+      occurrences.push({ ...base, depth, kind: "seen" });
+      return occId;
+    }
+    if (!children.length) {
+      const row = nextRow++;
+      occRow.set(occId, row);
+      occurrences.push({ ...base, depth, kind: null });
+      return occId;
+    }
+    const nextPath = new Set(pathSet);
+    nextPath.add(id);
+    const childOccIds = children.map(c => visit(c, depth + 1, nextPath, globalSeen)).filter(Boolean);
+    const childRows = childOccIds.map(c => occRow.get(c));
+    const row = (Math.min(...childRows) + Math.max(...childRows)) / 2;
+    occRow.set(occId, row);
+    occurrences.push({ ...base, depth, kind: null });
+    childOccIds.forEach(childOccId => edges.push({ parentOccId: occId, childOccId }));
+    return occId;
   }
-  const children = tree.childrenOf.get(id) || [];
-  const firstTimeSeen = !globalSeen.has(id);
-  globalSeen.add(id);
-  if (!firstTimeSeen || depth > 14) {
-    const note = children.length ? ' <span class="hierarchy-cross-ref">(see elsewhere in this tree)</span>' : '';
-    return \`<li class="hierarchy-node"><div class="hierarchy-node-row">\${label}\${note}</div></li>\`;
+
+  tree.roots.forEach(rootId => visit(rootId, 0, new Set(), new Set()));
+  if (!occurrences.length) return "";
+
+  const nodeWidth = label => Math.max(60, label.length * 6.3 + 30);
+  const maxDepth = Math.max(...occurrences.map(o => o.depth));
+  const colWidthByDepth = [];
+  for (let d = 0; d <= maxDepth; d++) {
+    const widths = occurrences.filter(o => o.depth === d).map(o => nodeWidth(o.label));
+    colWidthByDepth.push(Math.max(...widths));
   }
-  const nextPath = new Set(pathSet);
-  nextPath.add(id);
-  const childrenHTML = children.length
-    ? \`<ul>\${children.map(c => hierarchyNodeHTML(c, tree, nextPath, globalSeen, depth + 1)).join('')}</ul>\`
-    : '';
-  return \`<li class="hierarchy-node"><div class="hierarchy-node-row">\${label}</div>\${childrenHTML}</li>\`;
+  const colX = [MARGIN];
+  for (let d = 1; d <= maxDepth; d++) colX.push(colX[d - 1] + colWidthByDepth[d - 1] + COL_GAP);
+
+  const width = colX[maxDepth] + colWidthByDepth[maxDepth] + MARGIN;
+  const height = MARGIN * 2 + nextRow * ROW_H;
+  const occById = new Map(occurrences.map(o => [o.occId, o]));
+  const y = occId => MARGIN + occRow.get(occId) * ROW_H + ROW_H / 2;
+  const x = occId => colX[occById.get(occId).depth];
+
+  let linesHTML = "";
+  edges.forEach(({ parentOccId, childOccId }) => {
+    const px = x(parentOccId) + nodeWidth(occById.get(parentOccId).label);
+    const py = y(parentOccId);
+    const cx = x(childOccId);
+    const cy = y(childOccId);
+    const branchX = px + (cx - px) / 2;
+    linesHTML += \`<path d="M\${px.toFixed(1)},\${py.toFixed(1)} H\${branchX.toFixed(1)} V\${cy.toFixed(1)} H\${cx.toFixed(1)}" class="hierarchy-edge" marker-end="url(#hierarchy-arrow)" />\`;
+  });
+
+  let nodesHTML = "";
+  occurrences.forEach(o => {
+    const nx = x(o.occId), ny = y(o.occId);
+    const color = POS_COLORS[o.pos] || "#7A7A7A";
+    const isSelected = o.wordId === state.selectedWordId;
+    const crossRef = o.kind ? " hierarchy-node-cross-ref" : "";
+    const title = o.kind === "cycle" ? "cycle -- already above in this branch" : o.kind === "seen" ? "see elsewhere in this tree" : "";
+    nodesHTML += \`<g class="hierarchy-node-svg\${isSelected ? ' hierarchy-node-selected' : ''}\${crossRef}" data-pivot-id="\${o.wordId}" tabindex="0" transform="translate(\${nx.toFixed(1)},\${ny.toFixed(1)})">\`
+      + (title ? \`<title>\${title}</title>\` : '')
+      + \`<circle r="4" fill="\${color}" />\`
+      + \`<text x="9" y="4" text-anchor="start">\${o.label}\${o.kind ? ' ⋯' : ''}</text></g>\`;
+  });
+
+  return \`<div class="hierarchy-svg-wrap"><svg viewBox="0 0 \${width} \${height}" width="\${width}" height="\${height}" class="hierarchy-graph">\`
+    + \`<defs><marker id="hierarchy-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">\`
+    + \`<path d="M0,0 L10,5 L0,10 z" class="hierarchy-arrow" /></marker></defs>\`
+    + \`\${linesHTML}\${nodesHTML}</svg></div>\`;
+}
+
+// Wires click/keyboard selection for every node hierarchyTreeSVG() just
+// drew into \`container\` -- the same click-or-Enter/Space pattern
+// clusterGraphSVG's own \`.cyclic-node[data-pivot-id]\` wiring uses,
+// mirrored here rather than shared with it since the two draw into
+// different containers at different times.
+function wireHierarchyGraphNodes(container) {
+  container.querySelectorAll(".hierarchy-node-svg[data-pivot-id]").forEach(node => {
+    node.addEventListener("click", () => selectWord(node.dataset.pivotId));
+    node.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); selectWord(node.dataset.pivotId); }
+    });
+  });
 }
 
 // Server-resolved Hierarchy trees (over MAX_INTERACTIVE_WORDS) are
@@ -2627,11 +2737,8 @@ function renderHierarchy() {
     container.innerHTML = '<div class="detail-empty" style="padding:8px 0">No relationships of this kind yet.</div>';
     return;
   }
-  const globalSeen = new Set();
-  container.innerHTML = \`<ul class="hierarchy-tree">\${tree.roots.map(id => hierarchyNodeHTML(id, tree, new Set(), globalSeen, 0)).join('')}</ul>\`;
-  container.querySelectorAll("button[data-pivot-id]").forEach(btn => {
-    btn.addEventListener("click", () => selectWord(btn.dataset.pivotId));
-  });
+  container.innerHTML = hierarchyTreeSVG(tree);
+  wireHierarchyGraphNodes(container);
 }
 
 // The over-capacity counterpart to renderHierarchy()'s own local-array
@@ -2694,7 +2801,7 @@ document.addEventListener("lira-resolve-hierarchy-result", (e) => {
     childrenOf.get(parentId).push(childId);
   });
   childrenOf.forEach(list => list.sort((a, b) => (wordById.get(a)?.lexical_form || "").localeCompare(wordById.get(b)?.lexical_form || "")));
-  const tree = { wordById, childrenOf };
+  const tree = { wordById, childrenOf, roots };
 
   const centreWord = state.selectedWordId ? wordById.get(state.selectedWordId) : null;
   const parts = [
@@ -2707,11 +2814,8 @@ document.addEventListener("lira-resolve-hierarchy-result", (e) => {
     + (truncated ? ' <span class="hierarchy-cross-ref">(narrowed by node limit -- click a word below to centre the tree there)</span>' : '')
     + (state.selectedWordId ? ' &middot; <button type="button" class="link-btn" id="hierarchy-reset">back to broadest root</button>' : '');
 
-  const globalSeen = new Set();
-  container.innerHTML = \`<ul class="hierarchy-tree">\${roots.map(id => hierarchyNodeHTML(id, tree, new Set(), globalSeen, 0)).join('')}</ul>\`;
-  container.querySelectorAll("button[data-pivot-id]").forEach(btn => {
-    btn.addEventListener("click", () => selectWord(btn.dataset.pivotId));
-  });
+  container.innerHTML = hierarchyTreeSVG(tree);
+  wireHierarchyGraphNodes(container);
   const resetBtn = document.getElementById("hierarchy-reset");
   if (resetBtn) resetBtn.addEventListener("click", () => selectWord(null));
 });
@@ -2867,7 +2971,7 @@ function undirectedLevels(clusters, edges, flatten) {
 // broader than the other, e.g. from two different word-level edges
 // landing on the same box pair in opposite directions) by treating the
 // back-edge's target as already resolved at level 0 rather than
-// recursing forever -- the same guard style hierarchyNodeHTML uses for
+// recursing forever -- the same guard style hierarchyTreeSVG uses for
 // the Hierarchy tab's own tree. Multiple broader terms (e.g. "aircraft"
 // having both "machine" and "vehicle" as hypernyms) place the box one
 // column to the right of *all* of them, via the max() below, so every
