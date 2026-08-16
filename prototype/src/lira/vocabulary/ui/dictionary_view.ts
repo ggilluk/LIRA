@@ -349,14 +349,24 @@ export class DictionaryView {
     // interactive record set below is deliberately skipped.
     const allWords = this.dictionary.all();
     const totalWordCount = allWords.length;
+    const totalPhraseCount = this.phrases.totalEntries();
     const totalRelationshipCount = this.relationships.all().length;
     const overCapacity = totalWordCount > MAX_INTERACTIVE_WORDS;
+    // A WordNet-seeded Domain's own PhraseBook is tens of thousands of
+    // entries now (WordSeeder.seedWordNet routes every multi-word synset
+    // lemma there), not the "a few dozen at most" scale an earlier
+    // version of phraseRecords() assumed -- phraseRecords()'s own
+    // docstring on why this needs the identical capacity gate `words`
+    // above already has, checked against the same MAX_INTERACTIVE_WORDS
+    // threshold (there is nothing Phrase-specific about the actual cost
+    // this gate exists to avoid -- laying out tens of thousands of <tr>
+    // elements in one innerHTML assignment, MAX_WORD_ROWS_SHOWN's own
+    // client-side docstring).
+    const overCapacityPhrases = totalPhraseCount > MAX_INTERACTIVE_WORDS;
 
     const words = overCapacity ? [] : this.wordRecords();
     const rels = overCapacity ? [] : this.relationshipRecords();
-    // No capacity gate -- phraseRecords()'s own docstring on why a
-    // Phrase count never approaches MAX_INTERACTIVE_WORDS.
-    const phrases = this.phraseRecords();
+    const phrases = overCapacityPhrases ? [] : this.phraseRecords();
     const commonCount = allWords.filter((w) => w.isCommon).length;
     const posCounts = new Set(allWords.map((w) => w.partOfSpeech));
     // The Words tab's own pos-filter/domain-filter <select> options --
@@ -380,7 +390,7 @@ export class DictionaryView {
       TITLE: escapeHtml(this.title),
       COMPILED_AT: escapeHtml(this.compiledAt()),
       WORD_COUNT: String(totalWordCount),
-      PHRASE_COUNT: String(phrases.length),
+      PHRASE_COUNT: String(totalPhraseCount),
       RELATIONSHIP_COUNT: String(totalRelationshipCount),
       COMMON_COUNT: String(commonCount),
       DOMAIN_SPECIFIC_COUNT: String(totalWordCount - commonCount),
@@ -392,6 +402,7 @@ export class DictionaryView {
       POS_VALUES_JSON: JSON.stringify(posValues),
       DOMAIN_VALUES_JSON: JSON.stringify(domainValues),
       OVER_CAPACITY_JSON: JSON.stringify(overCapacity),
+      OVER_CAPACITY_PHRASES_JSON: JSON.stringify(overCapacityPhrases),
       // Over capacity, the Words tab searches the full Dictionary
       // server-side per keystroke (searchWords(), renderWordsOverCapacity()
       // in the fragment's own script below) rather than embedding every
@@ -410,6 +421,12 @@ export class DictionaryView {
       RELS_EMPTY_MESSAGE: overCapacity
         ? escapeHtml(`No relationships match this search across all ${totalRelationshipCount.toLocaleString()} relationships in this Domain.`)
         : "No relationships match this search.",
+      // Same reasoning as WORDS_EMPTY_MESSAGE just above -- the Phrases
+      // tab now searches server-side over capacity too (searchPhrases(),
+      // renderPhrasesOverCapacity() below).
+      PHRASES_EMPTY_MESSAGE: overCapacityPhrases
+        ? escapeHtml(`No phrases match this search across all ${totalPhraseCount.toLocaleString()} phrases in this Domain.`)
+        : "No phrases match this search.",
       UNRESOLVED_JSON: JSON.stringify([...this.unresolved].sort()),
       // The Hierarchy/Cyclic tabs' own "Relationship kind" dropdowns --
       // computed off the full LexicalRelationshipStore regardless of
@@ -511,12 +528,16 @@ export class DictionaryView {
     };
   }
 
-  /** Every Phrase in this Domain's PhraseBook, as a PhraseRecord --
-   * always the full list, no MAX_INTERACTIVE_WORDS-style capacity gate
-   * the way wordRecords() needs: closed-class multi-word entries are a
-   * few dozen at most (SUPPLEMENTARY_FILES' own scale, word_seeder.ts),
-   * nowhere near the tens-of-thousands-of-Words range that gate exists
-   * for, so there's no over-capacity Phrases path to build. */
+  /** Every Phrase in this Domain's PhraseBook, as a PhraseRecord -- only
+   * ever run under MAX_INTERACTIVE_WORDS_PHRASES, the same capacity gate
+   * wordRecords() has (render()'s own overCapacityPhrases). A closed-
+   * class multi-word entry alone is a few dozen at most
+   * (SUPPLEMENTARY_FILES' own scale, word_seeder.ts), but WordSeeder.seedWordNet
+   * routes every multi-word synset lemma here too now -- tens of
+   * thousands of them at WordNet scale -- so this needs the identical
+   * over-capacity treatment wordRecords() already has, not the "a
+   * Phrase count never approaches that range" assumption an earlier
+   * version of this method made before WordNet-seeded Phrases existed. */
   private phraseRecords(): PhraseRecord[] {
     const records = this.phrases.all().map((phrase) => this.phraseRecordFor(phrase));
     records.sort((a, b) => a.lexical_form.toLowerCase().localeCompare(b.lexical_form.toLowerCase()));
@@ -615,6 +636,42 @@ export class DictionaryView {
     }
     matches.sort((a, b) => a.lexical_form.toLowerCase().localeCompare(b.lexical_form.toLowerCase()));
     return { words: matches, totalMatches };
+  }
+
+  /** searchWords()'s own counterpart for the Phrases tab, over
+   * MAX_INTERACTIVE_WORDS_PHRASES -- resolves a search against every
+   * Phrase in the PhraseBook directly instead of a pre-embedded
+   * client-side array, the same reasoning searchWords() itself
+   * documents. Matching semantics (case-insensitive substring on
+   * lexical_form/gloss/definition, exact pos) mirror the fragment's own
+   * client-side matchesPhraseQuery()/filteredPhrases() exactly, so a
+   * search behaves the same whether it ran client-side (a small
+   * PhraseBook) or here (WordNet scale, tens of thousands of Phrases).
+   * `phrases` is capped at `options.limit`; `totalMatches` is the true,
+   * uncapped count. */
+  searchPhrases(options: { word?: string; gloss?: string; definition?: string; pos?: string; limit?: number }): {
+    phrases: PhraseRecord[];
+    totalMatches: number;
+  } {
+    const limit = options.limit ?? 1000;
+    const wordQuery = options.word?.trim().toLowerCase();
+    const glossQuery = options.gloss?.trim().toLowerCase();
+    const definitionQuery = options.definition?.trim().toLowerCase();
+
+    const matches: PhraseRecord[] = [];
+    let totalMatches = 0;
+    for (const phrase of this.phrases.all()) {
+      if (options.pos && PartOfSpeech[phrase.partOfSpeech] !== options.pos) continue;
+      const lexicalForm = (phrase.lexicalForm?.value ?? phrase.text).toLowerCase();
+      if (wordQuery && !lexicalForm.includes(wordQuery)) continue;
+      if (glossQuery && !(phrase.gloss?.value ?? "").toLowerCase().includes(glossQuery)) continue;
+      if (definitionQuery && !(phrase.definition?.value ?? "").toLowerCase().includes(definitionQuery)) continue;
+
+      totalMatches += 1;
+      if (matches.length < limit) matches.push(this.phraseRecordFor(phrase));
+    }
+    matches.sort((a, b) => a.lexical_form.toLowerCase().localeCompare(b.lexical_form.toLowerCase()));
+    return { phrases: matches, totalMatches };
   }
 
   /** This Word's Seeded Attributes for the PAD (Pleasure-Arousal-
@@ -1712,7 +1769,7 @@ footer {
           </thead>
           <tbody id="phrases-body"></tbody>
         </table>
-        <div class="empty-state" id="phrases-empty" style="display:none">No phrases match this search.</div>
+        <div class="empty-state" id="phrases-empty" style="display:none">@@PHRASES_EMPTY_MESSAGE@@</div>
       </div>
     </div>
   </section>
@@ -1790,7 +1847,14 @@ const DOMAIN_COLORS = @@DOMAIN_COLORS_JSON@@;
 // to the true, still-accurate TOTAL_WORD_COUNT/TOTAL_RELATIONSHIP_COUNT
 // instead of the empty arrays' own (misleadingly zero) length.
 const OVER_CAPACITY = @@OVER_CAPACITY_JSON@@;
+// Same reasoning as OVER_CAPACITY just above, checked against the
+// PhraseBook's own count instead -- PHRASES is deliberately [] whenever
+// this is true (render()'s own overCapacityPhrases), not a truncated
+// slice, so the Phrases stat tile falls back to TOTAL_PHRASE_COUNT the
+// same way the Words tile already falls back to TOTAL_WORD_COUNT.
+const OVER_CAPACITY_PHRASES = @@OVER_CAPACITY_PHRASES_JSON@@;
 const TOTAL_WORD_COUNT = @@WORD_COUNT@@;
+const TOTAL_PHRASE_COUNT = @@PHRASE_COUNT@@;
 const TOTAL_RELATIONSHIP_COUNT = @@RELATIONSHIP_COUNT@@;
 // The pos-filter/domain-filter <select> options -- computed server-side
 // off every Word in the Dictionary (render()'s own posValues/
@@ -2226,10 +2290,11 @@ function renderWords() {
 // meaningful for a Phrase (Phrase's own docstring, data/phrase.ts, on
 // why it's still a real part-of-speech-tagged lexical entry) -- but not
 // domain-filter or the root-word toggle, neither of which a Phrase has
-// a field for. No MAX_INTERACTIVE_WORDS-style capacity split either --
-// phraseRecords()'s own server-side docstring on why the whole list is
-// always embedded, so there's exactly one Phrases rendering path, not
-// an over-capacity counterpart the way Words/Relationships each need.
+// a field for. Same MAX_INTERACTIVE_WORDS-style capacity split Words
+// has now too (renderPhrases()'s own OVER_CAPACITY_PHRASES branch below)
+// -- a WordNet-seeded PhraseBook is tens of thousands of entries, not
+// the "always embedded" scale an earlier version of this comment
+// assumed.
 function matchesPhraseQuery(phrase) {
   const { word: wordQuery, gloss: glossQuery, definition: definitionQuery } = state.search;
   if (wordQuery && !phrase.lexical_form.toLowerCase().includes(wordQuery.toLowerCase())) return false;
@@ -2258,13 +2323,96 @@ function phraseRowHtml(p) {
     </tr>\`;
 }
 
+// A generous safety cap, not a curation choice -- same reasoning as
+// MAX_WORD_ROWS_SHOWN above: a WordNet-seeded PhraseBook can carry tens
+// of thousands of Phrases, and laying out that many <tr> elements in
+// one innerHTML assignment is what actually locks up the tab, not
+// anything about the data itself. Narrow with search/filters to reach a
+// phrase outside the first MAX_PHRASE_ROWS_SHOWN.
+const MAX_PHRASE_ROWS_SHOWN = 1000;
+
 function renderPhrases() {
+  if (OVER_CAPACITY_PHRASES) {
+    renderPhrasesOverCapacity();
+    return;
+  }
   const rows = filteredPhrases().slice().sort((a, b) => a.lexical_form.toLowerCase().localeCompare(b.lexical_form.toLowerCase()));
+  const shown = rows.slice(0, MAX_PHRASE_ROWS_SHOWN);
   const body = document.getElementById("phrases-body");
   document.getElementById("phrases-empty").style.display = rows.length ? "none" : "block";
-  body.innerHTML = rows.map(phraseRowHtml).join('');
+  const note = document.getElementById("phrases-note");
+  if (rows.length > shown.length) {
+    note.style.display = "block";
+    note.textContent = \`Showing the first \${shown.length.toLocaleString()} of \${rows.length.toLocaleString()} matching phrases -- search or filter to narrow.\`;
+  } else {
+    note.style.display = "none";
+  }
+  body.innerHTML = shown.map(phraseRowHtml).join('');
   document.getElementById("stat-phrases").textContent = rows.length;
 }
+
+// requestId of the most recently *dispatched* over-capacity Phrases
+// search -- latestWordSearchRequestId's own exact counterpart, same
+// stale-response guard.
+let latestPhraseSearchRequestId = null;
+let phraseSearchDebounceTimer = null;
+
+// renderWordsOverCapacity()'s own exact counterpart for the Phrases tab
+// -- see that function's own docstring for why this dispatches a
+// "lira-search-phrases" DOM event instead of filtering an already-
+// embedded PHRASES array (there isn't one, past OVER_CAPACITY_PHRASES).
+function renderPhrasesOverCapacity() {
+  if (phraseSearchDebounceTimer !== null) clearTimeout(phraseSearchDebounceTimer);
+  phraseSearchDebounceTimer = setTimeout(() => {
+    const requestId = 'phrase-search-' + Math.random().toString(36).slice(2);
+    latestPhraseSearchRequestId = requestId;
+    document.getElementById("phrases-note").style.display = "none";
+    document.getElementById("phrases-empty").style.display = "none";
+    document.getElementById("phrases-body").innerHTML =
+      '<tr><td colspan="4" style="text-align:center;padding:24px;color:var(--ink-muted,#5B6660)">Searching…</td></tr>';
+    document.dispatchEvent(new CustomEvent("lira-search-phrases", {
+      detail: {
+        requestId,
+        word: state.search.word,
+        gloss: state.search.gloss,
+        definition: state.search.definition,
+        pos: state.pos,
+        limit: MAX_PHRASE_ROWS_SHOWN,
+      },
+    }));
+  }, WORD_SEARCH_DEBOUNCE_MS);
+}
+
+// "lira-search-words-result"'s own exact counterpart for Phrases --
+// renders the row list only (this event's own phrases are plain
+// PhraseRecords, phraseRowHtml()'s own leaner shape -- not enough to
+// feed the detail panel, wordForDetailPanel()'s own docstring on why a
+// Phrase's own detail-panel resolution always goes through the shared
+// "lira-search-words"/wordId path instead, regardless of this event).
+document.addEventListener("lira-search-phrases-result", (e) => {
+  const { requestId, phrases, totalMatches } = e.detail;
+  if (requestId !== latestPhraseSearchRequestId) return;
+
+  const body = document.getElementById("phrases-body");
+  const empty = document.getElementById("phrases-empty");
+  const note = document.getElementById("phrases-note");
+  if (phrases.length === 0) {
+    body.innerHTML = "";
+    empty.style.display = "block";
+    note.style.display = "none";
+  } else {
+    empty.style.display = "none";
+    body.innerHTML = phrases.map(phraseRowHtml).join('');
+    if (totalMatches > phrases.length) {
+      note.style.display = "block";
+      note.textContent = \`Showing the first \${phrases.length.toLocaleString()} of \${totalMatches.toLocaleString()} matching phrases -- narrow your search to see the rest.\`;
+    } else {
+      note.style.display = "none";
+    }
+  }
+  document.getElementById("stat-phrases").textContent = TOTAL_PHRASE_COUNT;
+  renderDetailPanel("phrases");
+});
 
 // How long to wait after the last keystroke before actually dispatching
 // an over-capacity search -- WORDS/RELS are both [] past
@@ -2454,6 +2602,16 @@ const wordLookupFailed = new Set();
 const wordLookupInFlight = new Set();
 const pendingDetailWordLookups = new Map(); // requestId -> wordId
 
+// panel === "phrases" always falls through to wordLookupCache below,
+// never a locally-embedded array the way "words" can -- a selected
+// Phrase's own detail data (relationship_count/definition_segments/
+// domain/pad/phrase_word_segments, wordDetailHTML()'s own fields) only
+// ever comes from the shared "lira-search-words"/wordId path
+// (DictionaryView.searchWords()'s own PhraseBook fallback, phraseAsWord()
+// plus phraseWordSegments()) -- the Phrases tab's own search results
+// (renderPhrasesOverCapacity()'s "lira-search-phrases", plain
+// PhraseRecords, phraseRowHtml()'s own leaner shape) are enough for the
+// row list but not this.
 function wordForDetailPanel(panel) {
   const selectedId = state.selectedWordId;
   if (selectedId === undefined || selectedId === null) return undefined;

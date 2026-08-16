@@ -3,7 +3,7 @@
  * both sides are typed against the same shapes instead of each guessing
  * at the other's message format. */
 
-import type { HierarchyEdge, HierarchyNode, RelationshipRecord, WordRecord } from "../ui/dictionary_view";
+import type { HierarchyEdge, HierarchyNode, PhraseRecord, RelationshipRecord, WordRecord } from "../ui/dictionary_view";
 
 /** The Vocabulary Service's own status vocabulary -- deliberately not
  * knowledge/data/service_status.ts's `ServiceState` (which also has
@@ -99,6 +99,28 @@ export interface SearchWordsRequest {
   limit?: number;
 }
 
+/** Resolves one Phrases-tab search against `domain`'s full PhraseBook,
+ * server-side (DictionaryView.searchPhrases() -- that method's own
+ * docstring on why: past MAX_INTERACTIVE_WORDS_PHRASES, there's no
+ * embedded client-side PHRASES array left to filter in the browser at
+ * all). Field names/semantics mirror DictionaryView.searchPhrases()'s
+ * own options directly -- SearchWordsRequest's own exact counterpart,
+ * minus `wordId`/`domainLabel`/`rootWordsOnly` (a Phrase pivot-lookup
+ * still goes through the shared SearchWordsRequest/`wordId` path,
+ * DictionaryView.searchWords()'s own PhraseBook fallback -- there's
+ * nothing Phrase-specific for a second `wordId` mode to do here -- and
+ * Phrase has neither a domain nor an is-root-word field of its own). */
+export interface SearchPhrasesRequest {
+  type: "search-phrases";
+  requestId: string;
+  domain: string;
+  word?: string;
+  gloss?: string;
+  definition?: string;
+  pos?: string;
+  limit?: number;
+}
+
 /** Resolves one Relationships-tab search, or (given `wordId`) "every
  * relationship touching this one Word" -- the Words-tab detail panel's
  * own need, over MAX_INTERACTIVE_WORDS -- against `domain`'s full
@@ -135,6 +157,7 @@ export type VocabularyWorkerRequest =
   | SeedWordNetRequest
   | SeedCommonVocabularyRequest
   | SearchWordsRequest
+  | SearchPhrasesRequest
   | SearchRelationshipsRequest
   | ResolveHierarchyRequest;
 
@@ -221,6 +244,16 @@ export interface SearchWordsResultMessage {
   totalMatches: number;
 }
 
+/** The response to a SearchPhrasesRequest -- same capped-`phrases`/
+ * true-`totalMatches` shape as SearchWordsResultMessage, for the same
+ * reason. */
+export interface SearchPhrasesResultMessage {
+  type: "search-phrases-result";
+  requestId: string;
+  phrases: readonly PhraseRecord[];
+  totalMatches: number;
+}
+
 /** The response to a SearchRelationshipsRequest -- same
  * capped-`relationships`/true-`totalMatches` shape as
  * SearchWordsResultMessage, for the same reason. */
@@ -253,5 +286,6 @@ export type VocabularyWorkerMessage =
   | ErrorMessage
   | DomainUpdatedMessage
   | SearchWordsResultMessage
+  | SearchPhrasesResultMessage
   | SearchRelationshipsResultMessage
   | ResolveHierarchyResultMessage;

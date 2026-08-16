@@ -6,6 +6,7 @@ import { LexicalRelationshipType } from "./data/lexical_relationship_type";
 import { PartOfSpeech } from "./data/part_of_speech";
 import { antonyms, createWord, hypernyms, hyponyms, synonyms } from "./data/word";
 import { HypernymRootWord } from "./data/hypernym_root_word";
+import { createPhrase } from "./data/phrase";
 import { PhraseBook } from "./data/phrase_book";
 import { AsyncDictionaryHydrator } from "./role/dictionary_hydrator";
 import { DictionaryProcessor } from "./role/dictionary_processor";
@@ -752,6 +753,46 @@ describe("DictionaryView.searchWords", () => {
     const view = new DictionaryView(dictionary, new LexicalRelationshipStore(), { domainName: "Common" });
 
     expect(view.searchWords({ word: "big" }).words[0].sense_id).toBeNull();
+  });
+});
+
+describe("DictionaryView.searchPhrases", () => {
+  it("resolves against the real bundled WordNet-scale PhraseBook without embedding it (regression check mirroring searchWords' own)", async () => {
+    const dictionary = new Dictionary();
+    const phraseBook = new PhraseBook();
+    const lexicalRelationships = new LexicalRelationshipStore();
+    const lexicalRelationshipProcessor = new LexicalRelationshipProcessor(
+      lexicalRelationships,
+      new LexicalRelationshipSystemPropertyTensor(),
+    );
+    await new WordSeeder("en").seedWordNet({
+      vocabulary: { dictionary, phrases: phraseBook, lexicalRelationships, lexicalRelationshipProcessor },
+    });
+    expect(phraseBook.totalEntries()).toBeGreaterThan(20000);
+
+    const view = new DictionaryView(dictionary, lexicalRelationships, { domainName: "Common", phrases: phraseBook });
+    const result = view.searchPhrases({ word: "poodle", limit: 50 });
+    expect(result.totalMatches).toBeGreaterThan(0);
+    expect(result.phrases.length).toBeLessThanOrEqual(50);
+    expect(result.phrases.every((p) => p.lexical_form.toLowerCase().includes("poodle"))).toBe(true);
+    expect(result.phrases.some((p) => p.lexical_form === "toy poodle")).toBe(true);
+  }, 60000);
+
+  it("render() gates the embedded PHRASES array behind the same MAX_INTERACTIVE_WORDS threshold wordRecords() already has, once a PhraseBook grows past it, while still reporting the true, uncapped total in the Phrases stat tile", () => {
+    const dictionary = new Dictionary();
+    const phraseBook = new PhraseBook();
+    // Fabricated, not WordNet-seeded -- exercises render()'s own
+    // capacity gate directly, without paying the cost of a real WordNet
+    // seed just to get a PhraseBook this large.
+    for (let i = 0; i < 20001; i++) {
+      phraseBook.append(createPhrase({ text: `phrase number ${i}`, partOfSpeech: PartOfSpeech.NOUN }));
+    }
+    const view = new DictionaryView(dictionary, new LexicalRelationshipStore(), { domainName: "Common", phrases: phraseBook });
+
+    const html = view.render();
+    expect(html).toContain("const OVER_CAPACITY_PHRASES = true;");
+    expect(html).toContain("const PHRASES = [];");
+    expect(html).toContain(">20001<");
   });
 });
 

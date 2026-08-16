@@ -29,6 +29,20 @@ interface LiraSearchWordsEventDetail {
   limit?: number;
 }
 
+// Mirrors the "lira-search-phrases" CustomEvent's own `detail` shape --
+// dictionary_view.ts's renderPhrasesOverCapacity() is the one place
+// that dispatches it, same reasoning as LiraSearchWordsEventDetail just
+// above (minus wordId/domain/rootWordsOnly, which Phrase search has no
+// use for -- SearchPhrasesRequest's own docstring, vocabulary_worker_protocol.ts).
+interface LiraSearchPhrasesEventDetail {
+  requestId: string;
+  word?: string;
+  gloss?: string;
+  definition?: string;
+  pos?: string;
+  limit?: number;
+}
+
 // Mirrors the "lira-search-relationships" CustomEvent's own `detail`
 // shape -- dictionary_view.ts's renderRelsOverCapacity() (Relationships
 // tab search) and renderDetailPanel() (a selected Word's own relationship
@@ -196,6 +210,7 @@ export class PortalShell {
       this.render();
     });
     this.searchWordsBridge();
+    this.searchPhrasesBridge();
     this.searchRelationshipsBridge();
     this.resolveHierarchyBridge();
   }
@@ -233,6 +248,33 @@ export class PortalShell {
           document.dispatchEvent(
             new CustomEvent("lira-search-words-result", {
               detail: { requestId: detail.requestId, words: result.words, totalMatches: result.totalMatches },
+            }),
+          );
+        });
+    });
+  }
+
+  /** searchWordsBridge()'s own exact counterpart for the fragment's own
+   * "lira-search-phrases" event -- answers it with
+   * VocabularyWorkerClient.searchPhrases() against whichever Domain is
+   * currently mounted, then dispatches "lira-search-phrases-result"
+   * back with the same requestId. */
+  private searchPhrasesBridge(): void {
+    document.addEventListener("lira-search-phrases", (event) => {
+      const detail = (event as CustomEvent<LiraSearchPhrasesEventDetail>).detail;
+      if (!this.currentVocabularyDomainName) return;
+      void this.vocabularyClient
+        .searchPhrases(this.currentVocabularyDomainName, {
+          word: detail.word,
+          gloss: detail.gloss,
+          definition: detail.definition,
+          pos: detail.pos,
+          limit: detail.limit,
+        })
+        .then((result) => {
+          document.dispatchEvent(
+            new CustomEvent("lira-search-phrases-result", {
+              detail: { requestId: detail.requestId, phrases: result.phrases, totalMatches: result.totalMatches },
             }),
           );
         });

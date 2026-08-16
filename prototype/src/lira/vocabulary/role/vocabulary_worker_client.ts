@@ -5,7 +5,7 @@ import type {
   VocabularyWorkerMessage,
   VocabularyWorkerRequest,
 } from "./vocabulary_worker_protocol";
-import type { HierarchyEdge, HierarchyNode, RelationshipRecord, WordRecord } from "../ui/dictionary_view";
+import type { HierarchyEdge, HierarchyNode, PhraseRecord, RelationshipRecord, WordRecord } from "../ui/dictionary_view";
 
 export interface WordSearchQuery {
   wordId?: string;
@@ -20,6 +20,19 @@ export interface WordSearchQuery {
 
 export interface WordSearchResult {
   words: readonly WordRecord[];
+  totalMatches: number;
+}
+
+export interface PhraseSearchQuery {
+  word?: string;
+  gloss?: string;
+  definition?: string;
+  pos?: string;
+  limit?: number;
+}
+
+export interface PhraseSearchResult {
+  phrases: readonly PhraseRecord[];
   totalMatches: number;
 }
 
@@ -70,6 +83,7 @@ export class VocabularyWorkerClient {
   private readyResolvers: Array<(domains: readonly VocabularyDomainSummary[]) => void> = [];
   private readonly pendingRenders = new Map<string, { resolve: (fragment: RenderedFragment) => void; reject: (error: Error) => void }>();
   private readonly pendingSearches = new Map<string, (result: WordSearchResult) => void>();
+  private readonly pendingPhraseSearches = new Map<string, (result: PhraseSearchResult) => void>();
   private readonly pendingRelationshipSearches = new Map<string, (result: RelationshipSearchResult) => void>();
   private readonly pendingHierarchyResolutions = new Map<string, (result: HierarchyResult) => void>();
 
@@ -177,6 +191,29 @@ export class VocabularyWorkerClient {
     });
   }
 
+  /** searchWords()'s own exact counterpart for the Phrases tab, against
+   * `domainName`'s PhraseBook inside the worker
+   * (DictionaryView.searchPhrases()'s own docstring) -- PortalShell's
+   * own DOM-event bridge answers a "lira-search-phrases" event the
+   * fragment's script dispatches (dictionary_view.ts's own
+   * renderPhrasesOverCapacity()). */
+  searchPhrases(domainName: string, query: PhraseSearchQuery): Promise<PhraseSearchResult> {
+    const requestId = `phrase-search-${domainName}-${Math.random().toString(36).slice(2)}`;
+    return new Promise((resolve) => {
+      this.pendingPhraseSearches.set(requestId, resolve);
+      this.post({
+        type: "search-phrases",
+        requestId,
+        domain: domainName,
+        word: query.word,
+        gloss: query.gloss,
+        definition: query.definition,
+        pos: query.pos,
+        limit: query.limit,
+      });
+    });
+  }
+
   /** Resolves one Relationships-tab search, or (given `query.wordId`)
    * "every relationship touching this one Word" -- the Words-tab detail
    * panel's own need over MAX_INTERACTIVE_WORDS -- against `domainName`'s
@@ -251,6 +288,12 @@ export class VocabularyWorkerClient {
       if (resolve) {
         this.pendingSearches.delete(message.requestId);
         resolve({ words: message.words, totalMatches: message.totalMatches });
+      }
+    } else if (message.type === "search-phrases-result") {
+      const resolve = this.pendingPhraseSearches.get(message.requestId);
+      if (resolve) {
+        this.pendingPhraseSearches.delete(message.requestId);
+        resolve({ phrases: message.phrases, totalMatches: message.totalMatches });
       }
     } else if (message.type === "search-relationships-result") {
       const resolve = this.pendingRelationshipSearches.get(message.requestId);
