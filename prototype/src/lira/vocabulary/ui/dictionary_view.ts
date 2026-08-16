@@ -22,7 +22,7 @@ import type { LexicalRelationship } from "../data/lexical_relationship";
 import type { LexicalRelationshipStore } from "../data/lexical_relationship_store";
 import { LexicalRelationshipType, relationshipCategory, relationshipGroup } from "../data/lexical_relationship_type";
 import { PartOfSpeech } from "../data/part_of_speech";
-import type { Phrase } from "../data/phrase";
+import { phraseAsWord, type Phrase } from "../data/phrase";
 import { PhraseBook } from "../data/phrase_book";
 import { RegisterCode } from "../data/register_code";
 import { definitionWords, type Word } from "../data/word";
@@ -110,11 +110,12 @@ type DefinitionSegment =
 
 // Phrase's own client-facing record -- deliberately leaner than
 // WordRecord (no relationship_count/definition_segments/pad/domain):
-// a Phrase never participates in LexicalRelationshipStore (Phrase's
-// own docstring, data/phrase.ts, on why -- relationships stay Word-to-
-// Word only in this first pass), so the Phrases tab is a plain
-// searchable list, not a word-with-a-detail-panel view the way Words
-// is.
+// the Phrases tab itself stays a plain searchable list, not a
+// word-with-a-detail-panel view the way Words is. A WordNet-seeded
+// Phrase's own relationships (it does participate in
+// LexicalRelationshipStore now -- word_seeder.ts's own seedWordNet)
+// are still fully visible, just via the Relationships/Hierarchy tabs'
+// own resolveEntry() fallback to PhraseBook, not through this record.
 export interface PhraseRecord {
   id: string;
   entry_id: string;
@@ -557,7 +558,7 @@ export class DictionaryView {
     limit?: number;
   }): { words: WordRecord[]; totalMatches: number } {
     if (options.wordId !== undefined) {
-      const word = this.dictionary.findByUuid(options.wordId);
+      const word = this.resolveEntry(options.wordId);
       return word ? { words: [this.wordRecordFor(word)], totalMatches: 1 } : { words: [], totalMatches: 0 };
     }
 
@@ -635,6 +636,22 @@ export class DictionaryView {
     };
   }
 
+  /** Resolves a relationship endpoint's uuid against this Domain's
+   * Dictionary first, falling back to its PhraseBook (projected onto a
+   * Word-shaped view via phraseAsWord(), preserving the Phrase's own
+   * uuid) only if the Dictionary lookup fails -- a WordNet-seeded
+   * multi-word synset member (word_seeder.ts's own seedWordNet) can be
+   * either end of a LexicalRelationship exactly like a single-word
+   * member, so every place that used to assume "every relationship
+   * endpoint is a Word in this Dictionary" needs this instead of a bare
+   * `dictionary.findByUuid` call. */
+  private resolveEntry(id: string): Word | undefined {
+    const word = this.dictionary.findByUuid(id);
+    if (word !== undefined) return word;
+    const phrase = this.phrases.findByUuid(id);
+    return phrase !== undefined ? phraseAsWord(phrase) : undefined;
+  }
+
   private relationshipRecords(): RelationshipRecord[] {
     return this.relationships.all().map((rel) => this.relationshipRecordFor(rel));
   }
@@ -645,8 +662,8 @@ export class DictionaryView {
    * relationship-by-relationship regardless of scale), same reasoning
    * as wordRecordFor()/wordRecords(). */
   private relationshipRecordFor(rel: LexicalRelationship): RelationshipRecord {
-    const source = this.dictionary.findByUuid(rel.sourceWordId.value);
-    const target = this.dictionary.findByUuid(rel.targetWordId.value);
+    const source = this.resolveEntry(rel.sourceWordId.value);
+    const target = this.resolveEntry(rel.targetWordId.value);
     return {
       id: rel.uuid.value,
       source_id: rel.sourceWordId.value,
@@ -888,7 +905,7 @@ export class DictionaryView {
 
     const nodes: HierarchyNode[] = [];
     for (const id of includedIds) {
-      const word = this.dictionary.findByUuid(id);
+      const word = this.resolveEntry(id);
       if (!word) continue;
       nodes.push({
         id,

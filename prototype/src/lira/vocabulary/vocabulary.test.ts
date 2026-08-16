@@ -313,13 +313,14 @@ describe("loadWordNetSynsets against the bundled Princeton WordNet 3.1 dict/ fil
 describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/ files", () => {
   it("seeds every synset member as a Word carrying its synsetId, wires every WordNet pointer to a LexicalRelationship, and stays idempotent across both", async () => {
     const dictionary = new Dictionary();
+    const phraseBook = new PhraseBook();
     const lexicalRelationships = new LexicalRelationshipStore();
     const lexicalRelationshipProcessor = new LexicalRelationshipProcessor(
       lexicalRelationships,
       new LexicalRelationshipSystemPropertyTensor(),
     );
     const seeder = new WordSeeder("en");
-    const domain = { vocabulary: { dictionary, lexicalRelationships, lexicalRelationshipProcessor } };
+    const domain = { vocabulary: { dictionary, phrases: phraseBook, lexicalRelationships, lexicalRelationshipProcessor } };
 
     const first = await seeder.seedWordNet(domain);
     expect(first.wordsSeeded).toBeGreaterThan(100000);
@@ -335,7 +336,11 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // covers.
     expect(first.relationshipsSeeded).toBeGreaterThan(700000);
     expect(first.relationshipsSeeded).toBeLessThan(900000);
-    expect(dictionary.totalEntries()).toBe(first.wordsSeeded);
+    // wordsSeeded counts Words and multi-word Phrases together
+    // (word_seeder.ts's own seedWordNet docstring on isMultiWordLemma) --
+    // same combined-count convention seedClosedClassWords already uses.
+    expect(dictionary.totalEntries() + phraseBook.totalEntries()).toBe(first.wordsSeeded);
+    expect(phraseBook.totalEntries()).toBeGreaterThan(0);
     expect(lexicalRelationships.totalRelationships()).toBe(first.relationshipsSeeded);
 
     const big = dictionary
@@ -346,19 +351,25 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     expect(big?.synsetId?.schemeId).toBe("wn31");
     expect(synonyms(big!, lexicalRelationships, dictionary).map((w) => w.text)).toEqual(["large"]);
 
-    // 00001930-n "physical entity" -- HYPERNYM -> 00001740-n "entity"
-    // (dict/data.noun's own first two real synset lines).
-    const physicalEntity = dictionary
+    // 00001930-n "physical entity" -- HYPERNYM -> 00001740-n "entity".
+    // A multi-word lemma, so it seeded as a Phrase, not a Word
+    // (word_seeder.ts's own isMultiWordLemma() split) -- still wired
+    // into the HYPERNYM graph exactly like a single-word synset member,
+    // so hypernyms() resolves it as its own subject directly.
+    const physicalEntity = phraseBook
       .lookupAll("physical entity")
-      .find((word) => word.synsetId?.value === "00001930-n");
+      .find((phrase) => phrase.synsetId?.value === "00001930-n");
     expect(physicalEntity).toBeDefined();
     expect(hypernyms(physicalEntity!, lexicalRelationships, dictionary).map((w) => w.text)).toEqual(["entity"]);
     // The reciprocal direction resolves too, off the identical stored
     // edge (hyponyms()'s own docstring) -- "entity" is never told apart
     // from "physical entity" by a second, separately-stored HYPONYM edge.
+    // Resolving the Phrase-typed hyponym back into a displayable Word
+    // needs the phraseBook fallback (relatedWords()'s own docstring,
+    // word.ts) -- the whole point of this test.
     const entity = dictionary.lookupAll("entity").find((word) => word.synsetId?.value === "00001740-n");
     expect(entity).toBeDefined();
-    expect(hyponyms(entity!, lexicalRelationships, dictionary).map((w) => w.text)).toContain("physical entity");
+    expect(hyponyms(entity!, lexicalRelationships, dictionary, phraseBook).map((w) => w.text)).toContain("physical entity");
 
     // 00001740-a "able" -- ANTONYM -> 00002098-a "unable" (both
     // directions -- antonyms() itself reads direction="both").
@@ -449,7 +460,7 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     const second = await seeder.seedWordNet(domain);
     expect(second.wordsSeeded).toBe(0);
     expect(second.relationshipsSeeded).toBe(0);
-    expect(dictionary.totalEntries()).toBe(first.wordsSeeded);
+    expect(dictionary.totalEntries() + phraseBook.totalEntries()).toBe(first.wordsSeeded);
     expect(infusion?.domainTag?.value).toBe("medicine");
     expect(new Set([winger!.domainTag!.value, ...winger!.relatedDomainTags.map((tag) => tag.value)])).toEqual(
       new Set(["soccer", "field hockey", "rugby", "football"]),
@@ -464,7 +475,7 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
       lexicalRelationships,
       new LexicalRelationshipSystemPropertyTensor(),
     );
-    await new WordSeeder("en").seedWordNet({ vocabulary: { dictionary, lexicalRelationships, lexicalRelationshipProcessor } });
+    await new WordSeeder("en").seedWordNet({ vocabulary: { dictionary, phrases: new PhraseBook(), lexicalRelationships, lexicalRelationshipProcessor } });
 
     const dog = dictionary.lookupAll("dog").find((w) => w.partOfSpeech === PartOfSpeech.NOUN && w.synsetId?.value === "02086723-n");
     expect(dog).toBeDefined();
@@ -490,6 +501,55 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
       expect(seenPairs.has(pairKey), `duplicate (other word, kind) pair: ${pairKey}`).toBe(false);
       seenPairs.add(pairKey);
     }
+  }, 60000);
+
+  it("a multi-word synset lemma seeds as a Phrase, not a Word, and behaves exactly like a Word in the relationship graph -- resolvable from both DictionaryView.searchRelationships and resolveHierarchy", async () => {
+    const dictionary = new Dictionary();
+    const phraseBook = new PhraseBook();
+    const lexicalRelationships = new LexicalRelationshipStore();
+    const lexicalRelationshipProcessor = new LexicalRelationshipProcessor(
+      lexicalRelationships,
+      new LexicalRelationshipSystemPropertyTensor(),
+    );
+    await new WordSeeder("en").seedWordNet({
+      vocabulary: { dictionary, phrases: phraseBook, lexicalRelationships, lexicalRelationshipProcessor },
+    });
+
+    // 02116276-n "toy poodle" -- HYPERNYM -> 02115987-n "poodle" (dict/data.noun).
+    const toyPoodle = phraseBook.lookupAll("toy poodle").find((phrase) => phrase.synsetId?.value === "02116276-n");
+    expect(toyPoodle).toBeDefined();
+    expect(toyPoodle?.isCommon).toBe(true);
+    expect(dictionary.lookupAll("toy poodle")).toEqual([]);
+
+    const poodle = dictionary.lookupAll("poodle").find((w) => w.synsetId?.value === "02115987-n");
+    expect(poodle).toBeDefined();
+
+    // Seeded exactly like a Word: hypernyms() works with the Phrase as
+    // its own subject (relatedWords()'s own widened `word` param, word.ts).
+    expect(hypernyms(toyPoodle!, lexicalRelationships, dictionary).map((w) => w.text)).toEqual(["poodle"]);
+    // And the reverse direction resolves the Phrase back via the
+    // phraseBook fallback.
+    expect(hyponyms(poodle!, lexicalRelationships, dictionary, phraseBook).map((w) => w.text)).toContain("toy poodle");
+
+    // The Vocabulary UI's own resolution paths (DictionaryView) see the
+    // identical fact, regardless of which endpoint they start from --
+    // both server-side, on-demand paths used at WordNet scale
+    // (MAX_INTERACTIVE_WORDS), not just the small-Domain embedded path.
+    const view = new DictionaryView(dictionary, lexicalRelationships, { domainName: "Common", phrases: phraseBook });
+
+    const forToyPoodle = view.searchRelationships({ wordId: toyPoodle!.uuid.value });
+    expect(forToyPoodle.totalMatches).toBeGreaterThan(0);
+    const hypernymRow = forToyPoodle.relationships.find((r) => r.kind === "HYPERNYM");
+    expect(hypernymRow).toBeDefined();
+    expect(hypernymRow?.source_text).toBe("toy poodle");
+    expect(hypernymRow?.target_text).toBe("poodle");
+
+    const hierarchy = view.resolveHierarchy({ kind: "HYPERNYM", wordId: toyPoodle!.uuid.value, limit: 50 });
+    expect(hierarchy.fellBack).toBe(false);
+    const toyPoodleNode = hierarchy.nodes.find((n) => n.id === toyPoodle!.uuid.value);
+    expect(toyPoodleNode).toBeDefined();
+    expect(toyPoodleNode?.lexical_form).toBe("toy poodle");
+    expect(hierarchy.nodes.map((n) => n.lexical_form)).toContain("poodle");
   }, 60000);
 });
 
@@ -618,7 +678,7 @@ describe("DictionaryView.searchWords", () => {
       lexicalRelationships,
       new LexicalRelationshipSystemPropertyTensor(),
     );
-    await new WordSeeder("en").seedWordNet({ vocabulary: { dictionary, lexicalRelationships, lexicalRelationshipProcessor } });
+    await new WordSeeder("en").seedWordNet({ vocabulary: { dictionary, phrases: new PhraseBook(), lexicalRelationships, lexicalRelationshipProcessor } });
 
     const view = new DictionaryView(dictionary, lexicalRelationships, { domainName: "Common" });
     const result = view.searchWords({ word: "large", limit: 50 });
@@ -708,7 +768,7 @@ describe("DictionaryView.searchRelationships", () => {
       lexicalRelationships,
       new LexicalRelationshipSystemPropertyTensor(),
     );
-    await new WordSeeder("en").seedWordNet({ vocabulary: { dictionary, lexicalRelationships, lexicalRelationshipProcessor } });
+    await new WordSeeder("en").seedWordNet({ vocabulary: { dictionary, phrases: new PhraseBook(), lexicalRelationships, lexicalRelationshipProcessor } });
 
     const view = new DictionaryView(dictionary, lexicalRelationships, { domainName: "Common" });
     const large = dictionary.lookup("large");
@@ -889,7 +949,7 @@ describe("DictionaryView.resolveHierarchy", () => {
       lexicalRelationships,
       new LexicalRelationshipSystemPropertyTensor(),
     );
-    await new WordSeeder("en").seedWordNet({ vocabulary: { dictionary, lexicalRelationships, lexicalRelationshipProcessor } });
+    await new WordSeeder("en").seedWordNet({ vocabulary: { dictionary, phrases: new PhraseBook(), lexicalRelationships, lexicalRelationshipProcessor } });
 
     const view = new DictionaryView(dictionary, lexicalRelationships, { domainName: "Common" });
     const poodle = dictionary.lookupAll("poodle").find((w) => w.partOfSpeech === PartOfSpeech.NOUN);

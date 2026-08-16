@@ -224,6 +224,14 @@ async function handleSeedWordNet(request: SeedWordNetRequest): Promise<void> {
     // kind, rather than trying to divide one bar's own fraction across
     // two passes whose relative durations aren't known up front.
     const phaseLabel: Record<"words" | "relationships", string> = { words: "words", relationships: "relationships" };
+    // Words and Phrases counted separately for the status message below,
+    // the same before/after totalEntries() diff handleSeedCommonVocabulary
+    // above uses and for the identical reason -- seedWordNet's own
+    // wordsSeeded return value counts multi-word synset members
+    // (word_seeder.ts's own isMultiWordLemma()) together with
+    // single-word ones, by design.
+    const wordCountBefore = domain.vocabulary.dictionary.totalEntries();
+    const phraseCountBefore = domain.vocabulary.phrases.totalEntries();
     const result = await seeder.seedWordNet(domain, (phase, processed, total) => {
       post({
         type: "status",
@@ -232,12 +240,14 @@ async function handleSeedWordNet(request: SeedWordNetRequest): Promise<void> {
         progress: processed / total,
       });
     });
+    const wordsSeeded = domain.vocabulary.dictionary.totalEntries() - wordCountBefore;
+    const phrasesSeeded = domain.vocabulary.phrases.totalEntries() - phraseCountBefore;
 
     renderCache.delete(domain.name);
     post({
       type: "status",
       state: "done",
-      detail: `WordNet seeded into ${domain.name} — ${result.wordsSeeded.toLocaleString()} words, ${result.relationshipsSeeded.toLocaleString()} relationships`,
+      detail: `WordNet seeded into ${domain.name} — ${wordsSeeded.toLocaleString()} words, ${phrasesSeeded.toLocaleString()} phrases, ${result.relationshipsSeeded.toLocaleString()} relationships`,
     });
     post({ type: "domain-updated", domain: summaryOf(domain) });
   } catch (error) {
@@ -308,6 +318,7 @@ function handleSearchWords(request: SearchWordsRequest): void {
   const view = new DictionaryView(domain.vocabulary.dictionary, domain.vocabulary.lexicalRelationships, {
     title: `LIRA — ${domain.name}`,
     domainName: domain.name,
+    phrases: domain.vocabulary.phrases,
   });
   const { words, totalMatches } = view.searchWords({
     wordId: request.wordId,
@@ -332,6 +343,7 @@ function handleSearchRelationships(request: SearchRelationshipsRequest): void {
   const view = new DictionaryView(domain.vocabulary.dictionary, domain.vocabulary.lexicalRelationships, {
     title: `LIRA — ${domain.name}`,
     domainName: domain.name,
+    phrases: domain.vocabulary.phrases,
   });
   const { relationships, totalMatches } = view.searchRelationships({
     wordId: request.wordId,
@@ -361,6 +373,7 @@ function handleResolveHierarchy(request: ResolveHierarchyRequest): void {
   const view = new DictionaryView(domain.vocabulary.dictionary, domain.vocabulary.lexicalRelationships, {
     title: `LIRA — ${domain.name}`,
     domainName: domain.name,
+    phrases: domain.vocabulary.phrases,
   });
   const result = view.resolveHierarchy({ kind: request.kind, wordId: request.wordId, limit: request.limit });
   post({ type: "resolve-hierarchy-result", requestId: request.requestId, ...result });

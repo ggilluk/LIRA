@@ -1,22 +1,25 @@
-/** Phrase: one multi-word closed-class lexical item -- "in spite of",
- * "each other", "according to" -- previously modelled as an ordinary
- * `Word` whose `text` happened to contain whitespace (Design Principle
- * 1's own original rationale, vocabulary/documentation/README.md). A
- * Phrase is a genuinely separate lexical category from a single-word
- * Word: it names a fixed multi-token span that functions as one
- * grammatical unit, the same role a Word plays for a single token, but
- * kept in its own store (PhraseBook, phrase_book.ts) rather than
- * Dictionary so a caller can tell "this Domain's single-word lexicon"
- * and "this Domain's multi-word lexicon" apart without inspecting
- * `text` for a space.
+/** Phrase: one multi-word lexical item -- a closed-class grammatical
+ * span ("in spite of", "each other", "according to") or a multi-word
+ * WordNet lemma ("toy poodle", "ice cream") -- previously modelled as
+ * an ordinary `Word` whose `text` happened to contain whitespace
+ * (Design Principle 1's own original rationale,
+ * vocabulary/documentation/README.md). A Phrase is a genuinely
+ * separate lexical category from a single-word Word: it names a fixed
+ * multi-token span that functions as one grammatical unit, the same
+ * role a Word plays for a single token, but kept in its own store
+ * (PhraseBook, phrase_book.ts) rather than Dictionary so a caller can
+ * tell "this Domain's single-word lexicon" and "this Domain's
+ * multi-word lexicon" apart without inspecting `text` for a space.
  *
- * Deliberately not a WordNet-facing concept: a WordNet lemma that
- * happens to be multi-word ("toy poodle", "ice cream") is a genuine
- * dictionary sense, not a grammatical-function phrase, and stays an
- * ordinary multi-word Word exactly as before -- only the Common
- * Vocabulary Cache's own closed-class multi-word entries
- * (word_seeder.ts's own seedClosedClassWords, never seedWordNet)
- * become Phrases.
+ * A WordNet-facing concept too, not just the Common Vocabulary Cache's
+ * own closed-class multi-word entries: WordSeeder.seedWordNet routes
+ * any multi-word synset lemma here exactly the same way
+ * seedClosedClassWords already does for the cache (word_seeder.ts's
+ * own isMultiWord() check, shared by both paths), and wires it into
+ * the SYNONYM/pointer-relationship graph exactly like a single-word
+ * synset member -- `domainTag`/`relatedDomainTags`/`synsetId` below
+ * exist for that path specifically, mirroring the identically-named
+ * Word fields (see each one's own docstring on word.ts).
  *
  * Still shaped like Linguistics's LinguisticUnit, the same deliberate
  * dual-use Word already has (word.ts's own docstring): a Phrase is
@@ -49,6 +52,12 @@ export interface Phrase extends LinguisticUnit {
   // every time.
   entryId: Identifier;
 
+  // The Princeton WordNet 3.1 synset this Phrase corresponds to, when
+  // known -- Word.synsetId's own exact counterpart, undefined for a
+  // Phrase that didn't come from WordSeeder.seedWordNet (every
+  // Common Vocabulary Cache closed-class Phrase, in particular).
+  synsetId?: Identifier;
+
   version: Text;
   languageCode: Code;
   lexicalForm?: Text;
@@ -65,6 +74,13 @@ export interface Phrase extends LinguisticUnit {
   // Cache (or another language's equivalent) by WordSeeder -- never
   // set true by hand. Mirrors Word.isCommon exactly.
   isCommon: boolean;
+
+  // Word.domainTag/Word.relatedDomainTags's own exact counterparts,
+  // populated the same way by WordSeeder.seedWordNet's topic-domain
+  // tagging pass for a multi-word synset member -- always empty/
+  // undefined for a Common Vocabulary Cache closed-class Phrase.
+  domainTag?: Text;
+  relatedDomainTags: readonly Text[];
 }
 
 export type PhraseInit = Pick<Phrase, "text" | "partOfSpeech"> & Partial<Omit<Phrase, "text" | "partOfSpeech">>;
@@ -76,6 +92,7 @@ export function createPhrase(init: PhraseInit): Phrase {
     dialectCodes: [],
     editorialLabels: [],
     sourceReferences: [],
+    relatedDomainTags: [],
     isCommon: false,
     uuid: init.uuid ?? { value: newUuid() },
     entryId: init.entryId ?? { value: newUuid() },
@@ -128,5 +145,45 @@ export function toSyntheticWord(phrase: Phrase): Word {
     editorialLabels: phrase.editorialLabels,
     sourceReferences: phrase.sourceReferences,
     isCommon: phrase.isCommon,
+  });
+}
+
+/** Materialises `phrase` as a Word-shaped view *preserving its own
+ * uuid* -- unlike toSyntheticWord above, this is not a fresh token:
+ * it is the identity-preserving projection used wherever a Phrase
+ * needs to be resolved and displayed exactly like a Word, because a
+ * LexicalRelationship's sourceWordId/targetWordId is an opaque uuid
+ * string that doesn't record which store (Dictionary or PhraseBook)
+ * it came from (LexicalRelationshipStore's own docstring). A WordNet-
+ * seeded multi-word Phrase participates in the same SYNONYM/pointer
+ * relationship graph a single-word synset member does
+ * (WordSeeder.seedWordNet), so every place that resolves a
+ * relationship endpoint -- word.ts's own relatedWords() family,
+ * DictionaryView's relationship/Hierarchy rendering -- needs to be
+ * able to turn that endpoint back into something displayable
+ * regardless of which store actually holds it; this is that
+ * conversion, called only after a Dictionary lookup by the same uuid
+ * has already failed. */
+export function phraseAsWord(phrase: Phrase): Word {
+  return createWord({
+    text: phrase.text,
+    uuid: phrase.uuid,
+    entryId: phrase.entryId,
+    synsetId: phrase.synsetId,
+    partOfSpeech: phrase.partOfSpeech,
+    version: phrase.version,
+    languageCode: phrase.languageCode,
+    lexicalForm: phrase.lexicalForm,
+    normalisedForm: phrase.normalisedForm,
+    gloss: phrase.gloss,
+    definition: phrase.definition,
+    usageNotes: phrase.usageNotes,
+    registerCodes: phrase.registerCodes,
+    dialectCodes: phrase.dialectCodes,
+    editorialLabels: phrase.editorialLabels,
+    sourceReferences: phrase.sourceReferences,
+    isCommon: phrase.isCommon,
+    domainTag: phrase.domainTag,
+    relatedDomainTags: phrase.relatedDomainTags,
   });
 }

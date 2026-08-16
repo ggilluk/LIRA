@@ -328,9 +328,19 @@ function allPairs<T>(items: readonly T[]): Array<readonly [T, T]> {
  * seedPointerRelationship's own sourceWords/targetWords stay uniform
  * whether a pointer was synset-level (the whole `members` array) or
  * lexical (this one-or-zero-element result). */
-function indexedWord(members: readonly Word[], oneBasedIndex: number): readonly Word[] {
+function indexedWord(members: readonly (Word | Phrase)[], oneBasedIndex: number): readonly (Word | Phrase)[] {
   const word = members[oneBasedIndex - 1];
   return word === undefined ? [] : [word];
+}
+
+// Shared by seedWordNet's own pass 1 and loadCache()'s own isMultiWord()
+// (that method's own local copy of the identical check) -- kept as its
+// own top-level function here, rather than imported from loadCache's
+// closure, since the two run against unrelated inputs (a WordNet lemma
+// vs. a Common Vocabulary Cache WordFileEntry) and have no other reason
+// to share code.
+function isMultiWordLemma(lemma: string): boolean {
+  return /\s/.test(lemma.trim());
 }
 
 interface PromotedDocEntry extends WordFileEntry {
@@ -751,6 +761,7 @@ export class WordSeeder {
     domain: {
       vocabulary: {
         dictionary: Dictionary;
+        phrases: PhraseBook;
         lexicalRelationships: LexicalRelationshipStore;
         lexicalRelationshipProcessor: LexicalRelationshipProcessor;
       };
@@ -758,6 +769,7 @@ export class WordSeeder {
     onProgress?: (phase: "words" | "relationships", processed: number, total: number) => void,
   ): Promise<{ wordsSeeded: number; relationshipsSeeded: number }> {
     const dictionary = domain.vocabulary.dictionary;
+    const phraseBook = domain.vocabulary.phrases;
     const store = domain.vocabulary.lexicalRelationships;
     const processor = domain.vocabulary.lexicalRelationshipProcessor;
 
@@ -784,13 +796,35 @@ export class WordSeeder {
     let relationshipsSeeded = 0;
 
     const synsets = await loadWordNetSynsets();
-    const synsetMembersById = new Map<string, Word[]>();
+    const synsetMembersById = new Map<string, Array<Word | Phrase>>();
 
     let processed = 0;
     for (const synset of synsets) {
-      const members: Word[] = [];
+      const members: Array<Word | Phrase> = [];
       for (const lemma of synset.lemmas) {
         if (lemma.length === 0) continue;
+        // A multi-word lemma ("toy poodle", "ice cream") is a Phrase,
+        // not a Word -- the same isMultiWord() split loadCache() already
+        // applies to the Common Vocabulary Cache (that method's own
+        // docstring), applied here to WordNet's own lemmas so a
+        // multi-word sense gets exactly the same treatment a single-word
+        // one does: full participation in this pass's SYNONYM wiring and
+        // pass 2's pointer-relationship wiring below, just stored in
+        // PhraseBook instead of Dictionary.
+        if (isMultiWordLemma(lemma)) {
+          const existingPhrase = phraseBook
+            .lookupAll(lemma)
+            .find((phrase) => phrase.partOfSpeech === synset.partOfSpeech && phrase.synsetId?.value === synset.synsetId);
+          if (existingPhrase !== undefined) {
+            members.push(existingPhrase);
+            continue;
+          }
+          const phrase = this.synsetMemberToPhrase(synset, lemma);
+          phraseBook.append(phrase);
+          members.push(phrase);
+          wordsSeeded += 1;
+          continue;
+        }
         const existing = dictionary
           .lookupAll(lemma)
           .find((word) => word.partOfSpeech === synset.partOfSpeech && word.synsetId?.value === synset.synsetId);
@@ -850,9 +884,9 @@ export class WordSeeder {
     processor: LexicalRelationshipProcessor,
     existingEdges: Set<string>,
     synset: WordNetSynset,
-    sourceMembers: readonly Word[],
+    sourceMembers: readonly (Word | Phrase)[],
     pointer: WordNetPointer,
-    synsetMembersById: ReadonlyMap<string, Word[]>,
+    synsetMembersById: ReadonlyMap<string, Array<Word | Phrase>>,
   ): number {
     const targetMembers = synsetMembersById.get(pointer.targetSynsetId);
     if (targetMembers === undefined || targetMembers.length === 0) return 0;
@@ -868,7 +902,7 @@ export class WordSeeder {
     const sourceWords = pointer.sourceWordIndex === 0 ? sourceMembers : indexedWord(sourceMembers, pointer.sourceWordIndex);
     const targetWords = pointer.targetWordIndex === 0 ? targetMembers : indexedWord(targetMembers, pointer.targetWordIndex);
 
-    const pairs: Array<readonly [Word, Word]> = [];
+    const pairs: Array<readonly [Word | Phrase, Word | Phrase]> = [];
     for (const sw of sourceWords) {
       for (const tw of targetWords) {
         if (sw.uuid.value === tw.uuid.value) continue;
@@ -901,7 +935,7 @@ export class WordSeeder {
    * relationshipKindForPointer's own swap convention for the same pair,
    * so both symbols resolve to the identical (word, category) tagging
    * regardless of which of the two entries the pointer was read from. */
-  private tagTopicDomain(sourceMembers: readonly Word[], targetMembers: readonly Word[], pointer: WordNetPointer): void {
+  private tagTopicDomain(sourceMembers: readonly (Word | Phrase)[], targetMembers: readonly (Word | Phrase)[], pointer: WordNetPointer): void {
     const sourceWords = pointer.sourceWordIndex === 0 ? sourceMembers : indexedWord(sourceMembers, pointer.sourceWordIndex);
     const targetWords = pointer.targetWordIndex === 0 ? targetMembers : indexedWord(targetMembers, pointer.targetWordIndex);
 
@@ -938,7 +972,7 @@ export class WordSeeder {
     processor: LexicalRelationshipProcessor,
     existingEdges: Set<string>,
     kind: LexicalRelationshipType,
-    pairs: Iterable<readonly [Word, Word]>,
+    pairs: Iterable<readonly [Word | Phrase, Word | Phrase]>,
   ): number {
     const symmetric = SYMMETRIC_RELATIONSHIP_KINDS.has(kind);
     let created = 0;
@@ -979,6 +1013,26 @@ export class WordSeeder {
   // the way a domainTag-per-synset scheme would.
   private synsetMemberToWord(synset: WordNetSynset, lemma: string): Word {
     return createWord({
+      text: lemma,
+      partOfSpeech: synset.partOfSpeech,
+      languageCode: { value: this.languageCode },
+      definition: synset.definition ? { value: synset.definition } : undefined,
+      usageNotes: synset.examples.map((example) => ({ value: example })),
+      synsetId: { value: synset.synsetId, ...WORDNET_SYNSET_ID_SCHEME },
+      isCommon: true,
+      sourceReferences: [WORDNET_SOURCE_REFERENCE],
+    });
+  }
+
+  /** synsetMemberToWord's own counterpart for a multi-word lemma --
+   * identical fields, mapped onto Phrase's own field set instead, so a
+   * multi-word synset member (isMultiWordLemma()'s own check, this
+   * class's pass 1) is seeded exactly like a single-word one: same
+   * definition/examples/synsetId/isCommon/sourceReferences, same
+   * eligibility for pass 2's pointer-relationship and topic-domain
+   * wiring (both now typed Word | Phrase throughout). */
+  private synsetMemberToPhrase(synset: WordNetSynset, lemma: string): Phrase {
+    return createPhrase({
       text: lemma,
       partOfSpeech: synset.partOfSpeech,
       languageCode: { value: this.languageCode },

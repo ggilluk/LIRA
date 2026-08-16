@@ -36,6 +36,8 @@ import type { RegisterCode } from "./register_code";
 import type { SourceReference } from "./source_reference";
 import type { VectorPrimitiveRootWord } from "./vector_primitive_root_word";
 import { newUuid } from "./uuid";
+import { phraseAsWord, type Phrase } from "./phrase";
+import type { PhraseBook } from "./phrase_book";
 
 // Splits a definition's prose into its own word tokens -- deliberately a
 // local regex, not a Linguistics-Layer LinguisticLexer import: Vocabulary
@@ -260,12 +262,28 @@ function categoryOf(kind: LexicalRelationshipType): number {
  * reciprocal pair (SYNONYM/ANTONYM, materialised in both directions) is
  * visible as both an outgoing and an incoming match under
  * direction="both". Either way, a caller asking "what Words is this
- * related to" wants each Word once. */
+ * related to" wants each Word once.
+ *
+ * `word` itself may be a Phrase, not just a Word -- a WordNet-seeded
+ * multi-word synset member (WordSeeder.seedWordNet) sits in the exact
+ * same LexicalRelationshipStore graph a Word does (its own uuid is
+ * just another relationship endpoint), so it can ask for its own
+ * hypernyms/synonyms/etc. exactly the way a Word can. The *other* side
+ * of a relationship can be a Phrase too; `phraseBook`, if given, is
+ * consulted only after `dictionary.findByUuid` has already failed --
+ * every caller that never touches Phrase-participating data keeps
+ * working unchanged by simply omitting it, since Dictionary alone
+ * resolves every pre-Phrase-seeding relationship graph exactly as
+ * before. A resolved Phrase is projected onto a Word-shaped view via
+ * phraseAsWord() (phrase.ts), preserving its own uuid, so a caller
+ * never needs to tell "this came from Dictionary" and "this came from
+ * PhraseBook" apart. */
 function relatedWords(
-  word: Word,
+  word: Word | Phrase,
   relationships: LexicalRelationshipStore,
   dictionary: Dictionary,
   options: RelatedWordsOptions = {},
+  phraseBook?: PhraseBook,
 ): readonly Word[] {
   const { relationshipType, group, category, direction = "outgoing" } = options;
   const myId = word.uuid.value;
@@ -285,44 +303,44 @@ function relatedWords(
   for (const wordId of otherIds) {
     if (seenIds.has(wordId)) continue;
     seenIds.add(wordId);
-    const other = dictionary.findByUuid(wordId);
+    const other = dictionary.findByUuid(wordId) ?? (phraseBook && phraseBook.findByUuid(wordId) ? phraseAsWord(phraseBook.findByUuid(wordId)!) : undefined);
     if (other !== undefined) resolved.push(other);
   }
   return resolved;
 }
 
-export function lemmaForms(word: Word, relationships: LexicalRelationshipStore, dictionary: Dictionary): readonly Word[] {
-  return relatedWords(word, relationships, dictionary, { relationshipType: LexicalRelationshipType.LEMMA_FORM });
+export function lemmaForms(word: Word | Phrase, relationships: LexicalRelationshipStore, dictionary: Dictionary, phraseBook?: PhraseBook): readonly Word[] {
+  return relatedWords(word, relationships, dictionary, { relationshipType: LexicalRelationshipType.LEMMA_FORM }, phraseBook);
 }
 
 /** Every Word that names `word` as its LEMMA_FORM -- the inverse
  * direction of lemmaForms(), read via LEMMA_FORM's own incoming edges
  * rather than a separately-seeded INFLECTION edge. */
-export function inflections(word: Word, relationships: LexicalRelationshipStore, dictionary: Dictionary): readonly Word[] {
+export function inflections(word: Word | Phrase, relationships: LexicalRelationshipStore, dictionary: Dictionary, phraseBook?: PhraseBook): readonly Word[] {
   return relatedWords(word, relationships, dictionary, {
     relationshipType: LexicalRelationshipType.LEMMA_FORM,
     direction: "incoming",
-  });
+  }, phraseBook);
 }
 
-export function morphologicalVariants(word: Word, relationships: LexicalRelationshipStore, dictionary: Dictionary): readonly Word[] {
-  return relatedWords(word, relationships, dictionary, { group: 0 });
+export function morphologicalVariants(word: Word | Phrase, relationships: LexicalRelationshipStore, dictionary: Dictionary, phraseBook?: PhraseBook): readonly Word[] {
+  return relatedWords(word, relationships, dictionary, { group: 0 }, phraseBook);
 }
 
-export function derivedForms(word: Word, relationships: LexicalRelationshipStore, dictionary: Dictionary): readonly Word[] {
-  return relatedWords(word, relationships, dictionary, { group: 0, category: 6 });
+export function derivedForms(word: Word | Phrase, relationships: LexicalRelationshipStore, dictionary: Dictionary, phraseBook?: PhraseBook): readonly Word[] {
+  return relatedWords(word, relationships, dictionary, { group: 0, category: 6 }, phraseBook);
 }
 
-export function synonyms(word: Word, relationships: LexicalRelationshipStore, dictionary: Dictionary): readonly Word[] {
-  return relatedWords(word, relationships, dictionary, { relationshipType: LexicalRelationshipType.SYNONYM, direction: "both" });
+export function synonyms(word: Word | Phrase, relationships: LexicalRelationshipStore, dictionary: Dictionary, phraseBook?: PhraseBook): readonly Word[] {
+  return relatedWords(word, relationships, dictionary, { relationshipType: LexicalRelationshipType.SYNONYM, direction: "both" }, phraseBook);
 }
 
-export function antonyms(word: Word, relationships: LexicalRelationshipStore, dictionary: Dictionary): readonly Word[] {
-  return relatedWords(word, relationships, dictionary, { relationshipType: LexicalRelationshipType.ANTONYM, direction: "both" });
+export function antonyms(word: Word | Phrase, relationships: LexicalRelationshipStore, dictionary: Dictionary, phraseBook?: PhraseBook): readonly Word[] {
+  return relatedWords(word, relationships, dictionary, { relationshipType: LexicalRelationshipType.ANTONYM, direction: "both" }, phraseBook);
 }
 
-export function hypernyms(word: Word, relationships: LexicalRelationshipStore, dictionary: Dictionary): readonly Word[] {
-  return relatedWords(word, relationships, dictionary, { relationshipType: LexicalRelationshipType.HYPERNYM });
+export function hypernyms(word: Word | Phrase, relationships: LexicalRelationshipStore, dictionary: Dictionary, phraseBook?: PhraseBook): readonly Word[] {
+  return relatedWords(word, relationships, dictionary, { relationshipType: LexicalRelationshipType.HYPERNYM }, phraseBook);
 }
 
 // A HYPONYM edge is never actually stored by WordSeeder.seedWordNet --
@@ -333,16 +351,16 @@ export function hypernyms(word: Word, relationships: LexicalRelationshipStore, d
 // word's hyponyms are exactly the other Words with an *incoming*
 // HYPERNYM edge to it -- symmetric with hypernyms() itself reading the
 // *outgoing* side of that same kind.
-export function hyponyms(word: Word, relationships: LexicalRelationshipStore, dictionary: Dictionary): readonly Word[] {
-  return relatedWords(word, relationships, dictionary, { relationshipType: LexicalRelationshipType.HYPERNYM, direction: "incoming" });
+export function hyponyms(word: Word | Phrase, relationships: LexicalRelationshipStore, dictionary: Dictionary, phraseBook?: PhraseBook): readonly Word[] {
+  return relatedWords(word, relationships, dictionary, { relationshipType: LexicalRelationshipType.HYPERNYM, direction: "incoming" }, phraseBook);
 }
 
-export function meronyms(word: Word, relationships: LexicalRelationshipStore, dictionary: Dictionary): readonly Word[] {
-  return relatedWords(word, relationships, dictionary, { relationshipType: LexicalRelationshipType.MERONYM, direction: "incoming" });
+export function meronyms(word: Word | Phrase, relationships: LexicalRelationshipStore, dictionary: Dictionary, phraseBook?: PhraseBook): readonly Word[] {
+  return relatedWords(word, relationships, dictionary, { relationshipType: LexicalRelationshipType.MERONYM, direction: "incoming" }, phraseBook);
 }
 
-export function holonyms(word: Word, relationships: LexicalRelationshipStore, dictionary: Dictionary): readonly Word[] {
-  return relatedWords(word, relationships, dictionary, { relationshipType: LexicalRelationshipType.HOLONYM, direction: "incoming" });
+export function holonyms(word: Word | Phrase, relationships: LexicalRelationshipStore, dictionary: Dictionary, phraseBook?: PhraseBook): readonly Word[] {
+  return relatedWords(word, relationships, dictionary, { relationshipType: LexicalRelationshipType.HOLONYM, direction: "incoming" }, phraseBook);
 }
 
 // Same fate as HYPONYM (hyponyms()'s own docstring): a TROPONYM edge is
@@ -351,32 +369,32 @@ export function holonyms(word: Word, relationships: LexicalRelationshipStore, di
 // verb-specific subset troponyms() promises is recovered by filtering
 // hyponyms() itself down to VERB Words, rather than a separately
 // stored fact.
-export function troponyms(word: Word, relationships: LexicalRelationshipStore, dictionary: Dictionary): readonly Word[] {
-  return hyponyms(word, relationships, dictionary).filter((other) => other.partOfSpeech === PartOfSpeech.VERB);
+export function troponyms(word: Word | Phrase, relationships: LexicalRelationshipStore, dictionary: Dictionary, phraseBook?: PhraseBook): readonly Word[] {
+  return hyponyms(word, relationships, dictionary, phraseBook).filter((other) => other.partOfSpeech === PartOfSpeech.VERB);
 }
 
-export function spellingVariants(word: Word, relationships: LexicalRelationshipStore, dictionary: Dictionary): readonly Word[] {
-  return relatedWords(word, relationships, dictionary, { group: 2, category: 0, direction: "both" });
+export function spellingVariants(word: Word | Phrase, relationships: LexicalRelationshipStore, dictionary: Dictionary, phraseBook?: PhraseBook): readonly Word[] {
+  return relatedWords(word, relationships, dictionary, { group: 2, category: 0, direction: "both" }, phraseBook);
 }
 
-export function abbreviations(word: Word, relationships: LexicalRelationshipStore, dictionary: Dictionary): readonly Word[] {
-  return relatedWords(word, relationships, dictionary, { relationshipType: LexicalRelationshipType.ABBREVIATION });
+export function abbreviations(word: Word | Phrase, relationships: LexicalRelationshipStore, dictionary: Dictionary, phraseBook?: PhraseBook): readonly Word[] {
+  return relatedWords(word, relationships, dictionary, { relationshipType: LexicalRelationshipType.ABBREVIATION }, phraseBook);
 }
 
-export function acronyms(word: Word, relationships: LexicalRelationshipStore, dictionary: Dictionary): readonly Word[] {
-  return relatedWords(word, relationships, dictionary, { relationshipType: LexicalRelationshipType.ACRONYM });
+export function acronyms(word: Word | Phrase, relationships: LexicalRelationshipStore, dictionary: Dictionary, phraseBook?: PhraseBook): readonly Word[] {
+  return relatedWords(word, relationships, dictionary, { relationshipType: LexicalRelationshipType.ACRONYM }, phraseBook);
 }
 
-export function contractions(word: Word, relationships: LexicalRelationshipStore, dictionary: Dictionary): readonly Word[] {
-  return relatedWords(word, relationships, dictionary, { relationshipType: LexicalRelationshipType.CONTRACTION });
+export function contractions(word: Word | Phrase, relationships: LexicalRelationshipStore, dictionary: Dictionary, phraseBook?: PhraseBook): readonly Word[] {
+  return relatedWords(word, relationships, dictionary, { relationshipType: LexicalRelationshipType.CONTRACTION }, phraseBook);
 }
 
-export function transliterations(word: Word, relationships: LexicalRelationshipStore, dictionary: Dictionary): readonly Word[] {
-  return relatedWords(word, relationships, dictionary, { relationshipType: LexicalRelationshipType.TRANSLITERATION });
+export function transliterations(word: Word | Phrase, relationships: LexicalRelationshipStore, dictionary: Dictionary, phraseBook?: PhraseBook): readonly Word[] {
+  return relatedWords(word, relationships, dictionary, { relationshipType: LexicalRelationshipType.TRANSLITERATION }, phraseBook);
 }
 
-export function relatedWordsOf(word: Word, relationships: LexicalRelationshipStore, dictionary: Dictionary): readonly Word[] {
-  return relatedWords(word, relationships, dictionary, { relationshipType: LexicalRelationshipType.RELATED, direction: "both" });
+export function relatedWordsOf(word: Word | Phrase, relationships: LexicalRelationshipStore, dictionary: Dictionary, phraseBook?: PhraseBook): readonly Word[] {
+  return relatedWords(word, relationships, dictionary, { relationshipType: LexicalRelationshipType.RELATED, direction: "both" }, phraseBook);
 }
 
 // -- Definition word breakdown (4.4) ---------------------------------

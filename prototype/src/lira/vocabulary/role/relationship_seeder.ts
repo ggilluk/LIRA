@@ -253,9 +253,14 @@ export class RelationshipSeeder {
 
   /** Whether `lexicalForm` (optionally narrowed by `partOfSpeech`)
    * names a real, seeded Phrase -- seedDomain()'s own signal to skip a
-   * spec silently rather than treat a Dictionary miss as a cache bug,
-   * since a Phrase endpoint has no Word uuid this store's edges could
-   * ever attach to. */
+   * spec silently rather than treat a Dictionary miss as a cache bug.
+   * A Phrase endpoint genuinely can carry a LexicalRelationship now
+   * (word_seeder.ts's own seedWordNet does exactly that), but this
+   * class's own `resolve()` only ever looks a spec's source/target Word
+   * up in `dictionary` -- the bundled Common Relationship Cache this
+   * class seeds from is hand-curated Word-to-Word data, a different
+   * source from WordNet, with no spec of its own naming a Phrase
+   * endpoint on purpose. */
   private isPhraseOnly(phraseBook: PhraseBook, lexicalForm: string, partOfSpeech?: PartOfSpeech): boolean {
     const candidates = phraseBook.lookupAll(lexicalForm);
     return partOfSpeech === undefined ? candidates.length > 0 : candidates.some((phrase) => phrase.partOfSpeech === partOfSpeech);
