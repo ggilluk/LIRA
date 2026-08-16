@@ -797,6 +797,17 @@ export class WordSeeder {
 
     const synsets = await loadWordNetSynsets();
     const synsetMembersById = new Map<string, Array<Word | Phrase>>();
+    // Every Phrase newly created by this call's own pass 1, in creation
+    // order -- linkPhraseWords() below can only resolve a Phrase's own
+    // constituent Words correctly once pass 1 has finished seeding every
+    // single-word synset member (a phrase like "toy poodle" can be
+    // processed before the standalone "toy"/"poodle" synsets, in
+    // whatever order loadWordNetSynsets() itself returns), so the
+    // linking itself is deferred to right after this loop rather than
+    // attempted inline. A Phrase found already-seeded from an earlier
+    // seedWordNet run (the `existingPhrase` branch below) is skipped --
+    // it was already linked the run that created it.
+    const newPhrases: Phrase[] = [];
 
     let processed = 0;
     for (const synset of synsets) {
@@ -822,6 +833,7 @@ export class WordSeeder {
           const phrase = this.synsetMemberToPhrase(synset, lemma);
           phraseBook.append(phrase);
           members.push(phrase);
+          newPhrases.push(phrase);
           wordsSeeded += 1;
           continue;
         }
@@ -847,6 +859,13 @@ export class WordSeeder {
         await new Promise((resolve) => setTimeout(resolve, 0));
       }
     }
+
+    // Every single-word synset member is seeded by now (the loop above
+    // ran to completion), so every newly-created Phrase's own
+    // constituent Words can be resolved with full Dictionary coverage --
+    // this.linkPhraseWords()'s own docstring on why this can't happen
+    // inline, above.
+    for (const phrase of newPhrases) this.linkPhraseWords(phrase, dictionary);
 
     processed = 0;
     for (const synset of synsets) {
@@ -994,6 +1013,25 @@ export class WordSeeder {
       created += 1;
     }
     return created;
+  }
+
+  /** Breaks `phrase`'s own `text` into its whitespace-separated
+   * tokens ("toy poodle" -> ["toy", "poodle"]) and resolves each one
+   * against `dictionary`, storing the result on `phrase.words` -- see
+   * that field's own docstring (data/phrase.ts) for why it's stored by
+   * uuid reference rather than computed on demand. `dictionary.lookup`
+   * matches case-insensitively and, for a token with more than one
+   * homograph, picks its own first-seeded sense (the same arbitrary-
+   * but-deterministic choice definitionWords() already makes for a
+   * definition token, word.ts) -- this is a structural decomposition of
+   * the phrase's own spelling, not a semantic claim about which sense
+   * of "toy" is meant. A token position stays undefined when
+   * `dictionary` has no Word for it at all (WordNet itself never
+   * lexicalizes some closed-class function words -- "rule of thumb"'s
+   * own "of" -- as a standalone sense). */
+  private linkPhraseWords(phrase: Phrase, dictionary: Dictionary): void {
+    const tokens = phrase.text.trim().split(/\s+/).filter((token) => token.length > 0);
+    phrase.words = tokens.map((token) => dictionary.lookup(token)?.uuid);
   }
 
   // domainTag deliberately left unset here -- unlike root_words.json's

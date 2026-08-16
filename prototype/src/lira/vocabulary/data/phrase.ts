@@ -81,6 +81,26 @@ export interface Phrase extends LinguisticUnit {
   // undefined for a Common Vocabulary Cache closed-class Phrase.
   domainTag?: Text;
   relatedDomainTags: readonly Text[];
+
+  // This Phrase's own `text` broken down into its constituent Words,
+  // one entry per whitespace-separated token, in the same left-to-right
+  // order they appear in `text` -- e.g. "toy poodle" -> [toy's own
+  // uuid, poodle's own uuid]. Stored *by reference* (an Identifier,
+  // the same "point at a uuid, don't embed a copy of the Word itself"
+  // convention LexicalRelationship's own sourceWordId/targetWordId
+  // already use -- resolved the same way, via Dictionary.findByUuid),
+  // not a duplicated Word snapshot that could drift out of sync with
+  // the Dictionary's own copy. A given position is undefined when no
+  // Word for that token exists in the seeding Dictionary (WordNet
+  // itself never lexicalizes some closed-class function words on their
+  // own) -- reported, not guessed, the same convention
+  // DefinitionWordReference already uses for an unresolved definition
+  // token (data/definition_word_reference.ts). Populated by
+  // WordSeeder.seedWordNet only, after its own pass 1 has finished
+  // seeding every single-word synset member -- always empty for a
+  // Common Vocabulary Cache closed-class Phrase, which has no
+  // per-token composition need of its own.
+  words: readonly (Identifier | undefined)[];
 }
 
 export type PhraseInit = Pick<Phrase, "text" | "partOfSpeech"> & Partial<Omit<Phrase, "text" | "partOfSpeech">>;
@@ -93,6 +113,7 @@ export function createPhrase(init: PhraseInit): Phrase {
     editorialLabels: [],
     sourceReferences: [],
     relatedDomainTags: [],
+    words: [],
     isCommon: false,
     uuid: init.uuid ?? { value: newUuid() },
     entryId: init.entryId ?? { value: newUuid() },

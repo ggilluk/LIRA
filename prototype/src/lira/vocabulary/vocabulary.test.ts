@@ -278,9 +278,10 @@ describe("WordSeeder against the bundled Common Vocabulary Cache", () => {
     const inSpiteOf = phraseBook.lookup("in spite of");
     expect(inSpiteOf?.partOfSpeech).toBe(PartOfSpeech.PREPOSITION);
 
-    // Dictionary itself never saw a multi-word Word, so its own phrase-
-    // span tracking (still meaningful for a WordNet multi-word lemma
-    // like "toy poodle", untouched by this migration) stays at its
+    // Dictionary itself never saw a multi-word Word (seedClosedClassWords
+    // alone is under test here, not seedWordNet -- a WordNet multi-word
+    // lemma like "toy poodle" is a Phrase too, word_seeder.ts's own
+    // seedWordNet), so its own phrase-span tracking stays at its
     // empty-Dictionary default.
     expect(dictionary.phraseSpanLimit).toBe(1);
     expect(phraseBook.spanLimit).toBeGreaterThanOrEqual(3); // "in spite of"
@@ -523,6 +524,19 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
 
     const poodle = dictionary.lookupAll("poodle").find((w) => w.synsetId?.value === "02115987-n");
     expect(poodle).toBeDefined();
+
+    // Broken down into its own constituent Words, stored by uuid
+    // reference (word_seeder.ts's own linkPhraseWords()) -- "toy" is
+    // itself a real standalone WordNet sense (both a noun and a verb,
+    // dict/data.noun and dict/data.verb), so this deliberately checks
+    // against dictionary.lookup("toy") itself -- linkPhraseWords()'s own
+    // first-homograph choice -- rather than asserting which particular
+    // sense that resolves to.
+    const toy = dictionary.lookup("toy");
+    expect(toy).toBeDefined();
+    expect(toyPoodle!.words).toHaveLength(2);
+    expect(toyPoodle!.words[0]?.value).toBe(toy!.uuid.value);
+    expect(toyPoodle!.words[1]?.value).toBe(poodle!.uuid.value);
 
     // Seeded exactly like a Word: hypernyms() works with the Phrase as
     // its own subject (relatedWords()'s own widened `word` param, word.ts).
