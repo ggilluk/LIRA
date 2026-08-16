@@ -2616,14 +2616,22 @@ function groupIdsBySense(ids, tree) {
 // the parent's -- backward along the tree's own left-to-right layout --
 // to actually depict that stored direction, not the reverse.
 //
-// One pass assigns every group's row via the classic recursive tree-
-// layout rule: a leaf gets the next unused row in traversal order (top
-// to bottom, matching the old list's own reading order), and a parent's
-// row is the midpoint of its children's rows, so a subtree's branches
-// fan out symmetrically around their parent instead of stair-stepping
-// downward. Depth fixes the column (x); row fixes the vertical position
-// (y) once scaled by each row's own height (a multi-member box is
-// taller than a single dot, same as clusterGraphSVG's own boxDims).
+// One pass assigns every group's row top-down, pre-order: a node is
+// placed at the next free row *before* its own children are laid out,
+// which then stack immediately beneath it -- not the classic centred-
+// dendrogram rule (a parent positioned at the midpoint of its already-
+// laid-out children), deliberately. WordNet's own broadest root, e.g.
+// "entity" for Hypernym, can have hundreds of thousands of descendants;
+// centring it over all of them buries its own row deep in the middle of
+// a many-thousand-pixel-tall diagram, nowhere near the top a reader
+// actually sees first -- exactly the "entity isn't at the top of the
+// hierarchy" bug this pre-order layout avoids. Pre-order also means the
+// row order matches the old indented text list's own top-to-bottom
+// reading order exactly (root, then its first child's whole subtree,
+// then its second child's, ...), just drawn instead of indented. Depth
+// fixes the column (x); row fixes the vertical position (y) once scaled
+// by each row's own height (a multi-member box is taller than a single
+// dot, same as clusterGraphSVG's own boxDims).
 //
 // Two independent guards keep this finite even though the underlying
 // graph isn't guaranteed to be a tree (or even acyclic) -- the same
@@ -2686,13 +2694,17 @@ function hierarchyTreeSVG(tree, inverted) {
     if ((!firstTimeSeen || depth > 14) && childGroups.length) return pushLeaf("seen");
     if (!childGroups.length) return pushLeaf(null);
 
+    // Place this node's own row *before* recursing -- pre-order, not
+    // the midpoint-of-children rule pushLeaf's sibling case doesn't
+    // need (a leaf has no children to be misplaced relative to).
+    const oy = cursorY + height / 2;
+    cursorY += height + ROW_GAP;
+    occY.set(occId, oy);
+    occurrences.push({ ...base, kind: null });
+
     const nextPath = new Set(pathSet);
     nextPath.add(key);
     const childOccIds = childGroups.map(g => visit(g, depth + 1, nextPath, globalSeen)).filter(Boolean);
-    const childYs = childOccIds.map(c => occY.get(c));
-    const oy = (Math.min(...childYs) + Math.max(...childYs)) / 2;
-    occY.set(occId, oy);
-    occurrences.push({ ...base, kind: null });
     childOccIds.forEach(childOccId => edges.push({ parentOccId: occId, childOccId }));
     return occId;
   }
