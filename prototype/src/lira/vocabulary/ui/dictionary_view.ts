@@ -1639,20 +1639,26 @@ footer {
   </section>
 
   <section class="panel" id="panel-phrases">
-    <div class="table-wrap">
-      <div class="cyclic-note" id="phrases-note" style="display:none"></div>
-      <table>
-        <thead>
-          <tr>
-            <th data-sort="lexical_form">Phrase</th>
-            <th data-sort="pos">Part of speech</th>
-            <th data-sort="definition">Definition</th>
-            <th>Labels</th>
-          </tr>
-        </thead>
-        <tbody id="phrases-body"></tbody>
-      </table>
-      <div class="empty-state" id="phrases-empty" style="display:none">No phrases match this search.</div>
+    <div class="words-layout">
+      <aside class="detail-panel">
+        <div class="detail-empty" id="detail-empty-phrases">Select a phrase below to see its relationships.</div>
+        <div id="detail-content-phrases" style="display:none"></div>
+      </aside>
+      <div class="table-wrap">
+        <div class="cyclic-note" id="phrases-note" style="display:none"></div>
+        <table>
+          <thead>
+            <tr>
+              <th data-sort="lexical_form">Phrase</th>
+              <th data-sort="pos">Part of speech</th>
+              <th data-sort="definition">Definition</th>
+              <th>Labels</th>
+            </tr>
+          </thead>
+          <tbody id="phrases-body"></tbody>
+        </table>
+        <div class="empty-state" id="phrases-empty" style="display:none">No phrases match this search.</div>
+      </div>
     </div>
   </section>
 
@@ -2184,9 +2190,15 @@ function filteredPhrases() {
   return PHRASES.filter(p => matchesPhraseQuery(p) && (!state.pos || p.pos === state.pos));
 }
 
+// data-word-id, not data-phrase-id -- a Phrase's own uuid lives in the
+// exact same shared selection every other tab reads/writes
+// (state.selectedWordId, selectWord()'s own docstring), so a Phrase row
+// picks up the identical CSS (tbody tr[data-word-id]{cursor:pointer},
+// .selected highlight) and click-delegation shape the Words table
+// already has, rather than needing its own parallel set of both.
 function phraseRowHtml(p) {
   return \`
-    <tr data-phrase-id="\${p.id}">
+    <tr data-word-id="\${p.id}" class="\${p.id === state.selectedWordId ? 'selected' : ''}">
       <td><span class="word-form">\${p.lexical_form}</span>\${p.is_common ? ' <span class="badge-common">common</span>' : ''}</td>
       <td>\${posPill(p.pos)}</td>
       <td class="definition">\${p.definition || p.gloss || '<span style="opacity:.5">&mdash;</span>'}</td>
@@ -2300,6 +2312,7 @@ document.addEventListener("lira-search-words-result", (e) => {
     // request for the identical word.
     if (state.selectedWordId === wordId) {
       renderDetailPanel("words");
+      renderDetailPanel("phrases");
       renderDetailPanel("hierarchy");
       renderDetailPanel("cyclic");
     }
@@ -2322,7 +2335,7 @@ document.addEventListener("lira-search-words-result", (e) => {
 // already see responds instantly instead of waiting on a round trip.
 function selectWord(wordId) {
   state.selectedWordId = wordId;
-  document.querySelectorAll("#words-body tr[data-word-id]").forEach(tr => {
+  document.querySelectorAll("#words-body tr[data-word-id], #phrases-body tr[data-word-id]").forEach(tr => {
     tr.classList.toggle("selected", tr.dataset.wordId === wordId);
   });
   renderAll();
@@ -3757,6 +3770,7 @@ function renderAll() {
   renderPhrases();
   renderRels();
   renderDetailPanel("words");
+  renderDetailPanel("phrases");
   renderDetailPanel("hierarchy");
   renderDetailPanel("cyclic");
   renderUnresolved();
@@ -3836,6 +3850,11 @@ document.getElementById("root-word-filter").addEventListener("change", (e) => {
 });
 
 document.getElementById("words-body").addEventListener("click", (e) => {
+  const row = e.target.closest("tr[data-word-id]");
+  if (row) selectWord(row.dataset.wordId);
+});
+
+document.getElementById("phrases-body").addEventListener("click", (e) => {
   const row = e.target.closest("tr[data-word-id]");
   if (row) selectWord(row.dataset.wordId);
 });
