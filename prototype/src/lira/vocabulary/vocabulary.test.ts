@@ -397,9 +397,7 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
       LexicalRelationshipType.PERTAINYM,
       LexicalRelationshipType.SIMILAR_TO,
       LexicalRelationshipType.INSTANCE_HYPERNYM,
-      LexicalRelationshipType.PART_MERONYM,
-      LexicalRelationshipType.MEMBER_MERONYM,
-      LexicalRelationshipType.SUBSTANCE_MERONYM,
+      LexicalRelationshipType.MERONYM,
       LexicalRelationshipType.ALSO_SEE,
       LexicalRelationshipType.VERB_GROUP,
       LexicalRelationshipType.ATTRIBUTE,
@@ -408,28 +406,40 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     ]) {
       expect(seenKinds.has(kind), `expected at least one ${LexicalRelationshipType[kind]} edge`).toBe(true);
     }
-    // HYPONYM/TROPONYM/INSTANCE_HYPONYM/PART_HOLONYM/MEMBER_HOLONYM/
-    // SUBSTANCE_HOLONYM are never seeded at all -- relationshipKindForPointer
-    // canonicalizes their own WordNet pointer symbols onto their
-    // complementary kind instead (this is the fix itself, not an
-    // implementation detail: a word's own relationship list no longer
-    // shows both "X is a type of Y" and the reciprocal "Y has hyponym
-    // X" as two separate entries for the identical fact). TOPIC_DOMAIN is
-    // never seeded either, for a different reason: seedPointerRelationship
-    // intercepts `;c`/`-c` pointers and tags the word itself
-    // (domainTag/relatedDomainTags) instead of creating an edge (see the
-    // dedicated "topic-domain pointers" test below).
+    // HYPONYM/TROPONYM/INSTANCE_HYPONYM/HOLONYM are never seeded at all --
+    // relationshipKindForPointer canonicalizes their own WordNet pointer
+    // symbols onto their complementary kind instead (this is the fix
+    // itself, not an implementation detail: a word's own relationship
+    // list no longer shows both "X is a type of Y" and the reciprocal "Y
+    // has hyponym X" as two separate entries for the identical fact --
+    // MERONYM/HOLONYM's own docstring, lexical_relationship_type.ts, on
+    // why a WordNet part/member/substance fact is one MERONYM edge with
+    // a qualifier, not three separate kinds each with their own never-
+    // seeded xHOLONYM complement). TOPIC_DOMAIN is never seeded either,
+    // for a different reason: seedPointerRelationship intercepts `;c`/
+    // `-c` pointers and tags the word itself (domainTag/relatedDomainTags)
+    // instead of creating an edge (see the dedicated "topic-domain
+    // pointers" test below).
     for (const kind of [
       LexicalRelationshipType.HYPONYM,
       LexicalRelationshipType.TROPONYM,
       LexicalRelationshipType.INSTANCE_HYPONYM,
-      LexicalRelationshipType.PART_HOLONYM,
-      LexicalRelationshipType.MEMBER_HOLONYM,
-      LexicalRelationshipType.SUBSTANCE_HOLONYM,
+      LexicalRelationshipType.HOLONYM,
       LexicalRelationshipType.TOPIC_DOMAIN,
     ]) {
       expect(seenKinds.has(kind), `expected no ${LexicalRelationshipType[kind]} edges at all`).toBe(false);
     }
+
+    // The part/member/substance distinction WordNet itself draws is
+    // recorded as a `meronymKind` qualifier on the shared MERONYM kind,
+    // not three separate relationship kinds (MERONYM's own docstring) --
+    // every seeded MERONYM edge should carry exactly one.
+    const meronymEdges = lexicalRelationships.all().filter((r) => r.relationshipType === LexicalRelationshipType.MERONYM);
+    expect(meronymEdges.length).toBeGreaterThan(0);
+    const seenMeronymKinds = new Set(
+      meronymEdges.map((r) => r.qualifiers.find((q) => q.name.value === "meronymKind")?.value.value),
+    );
+    expect(seenMeronymKinds).toEqual(new Set(["part", "member", "substance"]));
 
     // Topic-domain pointers (`;c`/`-c`) tag the word itself
     // (domainTag/relatedDomainTags) instead of becoming a relationship --

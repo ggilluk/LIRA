@@ -33,9 +33,10 @@ import { HolonymRootWord } from "../data/holonym_root_word";
 import { HypernymRootWord } from "../data/hypernym_root_word";
 import { InterrogativeRootWord } from "../data/interrogative_root_word";
 import { VectorPrimitiveRootWord } from "../data/vector_primitive_root_word";
+import type { AttributeValue } from "../data/attribute_value";
 import type { Dictionary } from "../data/dictionary";
 import { LexicalRelationshipStore } from "../data/lexical_relationship_store";
-import { LexicalRelationshipType } from "../data/lexical_relationship_type";
+import { LexicalRelationshipType, MERONYM_KIND_QUALIFIER, type MeronymKind } from "../data/lexical_relationship_type";
 import { copyPhraseWithFreshUuid, createPhrase, type Phrase } from "../data/phrase";
 import type { PhraseBook } from "../data/phrase_book";
 import type { SourceReference } from "../data/source_reference";
@@ -246,12 +247,19 @@ function derivationKind(sourcePos: PartOfSpeech, targetPos: PartOfSpeech): Lexic
  * troponymy (WordNet's own name for verb hyponymy, still marked `~`)
  * canonicalizes the same way: its own `@` counterpart is already
  * POS-agnostic HYPERNYM, so there's no separate TROPONYM case to keep
- * here either. */
+ * here either.
+ *
+ * `meronymKind`, set only for the six meronym/holonym symbols, is the
+ * MERONYM_KIND_QUALIFIER value seedPointerRelationship attaches to the
+ * resulting edge's own `qualifiers` -- MERONYM's own docstring
+ * (lexical_relationship_type.ts) on why "part of a larger whole" vs.
+ * "member of a group" vs. "substance a whole is made of" is a property
+ * of one MERONYM fact, not three separate relationship kinds. */
 function relationshipKindForPointer(
   symbol: string,
   sourcePos: PartOfSpeech,
   targetPos: PartOfSpeech,
-): { kind: LexicalRelationshipType; swap: boolean } | undefined {
+): { kind: LexicalRelationshipType; swap: boolean; meronymKind?: MeronymKind } | undefined {
   switch (symbol) {
     case "!":
       return { kind: LexicalRelationshipType.ANTONYM, swap: false };
@@ -264,17 +272,17 @@ function relationshipKindForPointer(
     case "~i":
       return { kind: LexicalRelationshipType.INSTANCE_HYPERNYM, swap: true };
     case "%p":
-      return { kind: LexicalRelationshipType.PART_MERONYM, swap: false };
+      return { kind: LexicalRelationshipType.MERONYM, swap: false, meronymKind: "part" };
     case "%m":
-      return { kind: LexicalRelationshipType.MEMBER_MERONYM, swap: false };
+      return { kind: LexicalRelationshipType.MERONYM, swap: false, meronymKind: "member" };
     case "%s":
-      return { kind: LexicalRelationshipType.SUBSTANCE_MERONYM, swap: false };
+      return { kind: LexicalRelationshipType.MERONYM, swap: false, meronymKind: "substance" };
     case "#p":
-      return { kind: LexicalRelationshipType.PART_MERONYM, swap: true };
+      return { kind: LexicalRelationshipType.MERONYM, swap: true, meronymKind: "part" };
     case "#m":
-      return { kind: LexicalRelationshipType.MEMBER_MERONYM, swap: true };
+      return { kind: LexicalRelationshipType.MERONYM, swap: true, meronymKind: "member" };
     case "#s":
-      return { kind: LexicalRelationshipType.SUBSTANCE_MERONYM, swap: true };
+      return { kind: LexicalRelationshipType.MERONYM, swap: true, meronymKind: "substance" };
     case "*":
       return { kind: LexicalRelationshipType.ENTAILMENT, swap: false };
     case ">":
@@ -928,7 +936,9 @@ export class WordSeeder {
         pairs.push(resolved.swap ? [tw, sw] : [sw, tw]);
       }
     }
-    return this.createEdges(processor, existingEdges, resolved.kind, pairs);
+    const qualifiers: readonly AttributeValue[] | undefined =
+      resolved.meronymKind !== undefined ? [{ name: { value: MERONYM_KIND_QUALIFIER }, value: { value: resolved.meronymKind } }] : undefined;
+    return this.createEdges(processor, existingEdges, resolved.kind, pairs, qualifiers);
   }
 
   /** `;c`/`-c` (topic-domain pointer) handling, split out of
@@ -992,6 +1002,7 @@ export class WordSeeder {
     existingEdges: Set<string>,
     kind: LexicalRelationshipType,
     pairs: Iterable<readonly [Word | Phrase, Word | Phrase]>,
+    qualifiers?: readonly AttributeValue[],
   ): number {
     const symmetric = SYMMETRIC_RELATIONSHIP_KINDS.has(kind);
     let created = 0;
@@ -1004,6 +1015,7 @@ export class WordSeeder {
         targetWordId: target.uuid.value,
         relationshipType: kind,
         sourceReferences: [WORDNET_SOURCE_REFERENCE],
+        qualifiers,
         confidence: WORDNET_SEEDER_DEFAULT_WEIGHT,
         provenance: WORDNET_SEEDER_DEFAULT_WEIGHT,
         temporal: WORDNET_SEEDER_DEFAULT_WEIGHT,

@@ -20,7 +20,7 @@ import type { Dictionary } from "../data/dictionary";
 import { EditorialLabel } from "../data/editorial_label";
 import type { LexicalRelationship } from "../data/lexical_relationship";
 import type { LexicalRelationshipStore } from "../data/lexical_relationship_store";
-import { LexicalRelationshipType, relationshipCategory, relationshipGroup } from "../data/lexical_relationship_type";
+import { LexicalRelationshipType, MERONYM_KIND_QUALIFIER, relationshipCategory, relationshipGroup } from "../data/lexical_relationship_type";
 import { PartOfSpeech } from "../data/part_of_speech";
 import { phraseAsWord, type Phrase } from "../data/phrase";
 import { PhraseBook } from "../data/phrase_book";
@@ -156,6 +156,13 @@ export interface RelationshipRecord {
   group: number;
   category: number;
   confidence: number;
+  // MERONYM_KIND_QUALIFIER's own value ("part"/"member"/"substance") for
+  // a WordNet-seeded MERONYM edge, or null for every other kind and for
+  // a hand-curated Common Vocabulary Cache MERONYM/HOLONYM fact (which
+  // draws no such distinction) -- lexical_relationship_type.ts's own
+  // MERONYM docstring on why this rides as a qualifier rather than its
+  // own relationship kind.
+  qualifier: string | null;
 }
 
 // One kind's total edge count across the whole LexicalRelationshipStore
@@ -242,17 +249,19 @@ const MAX_INTERACTIVE_WORDS = 20_000;
 // second, fully redundant edge). resolveHierarchy() needs to know this
 // to orient a tree correctly -- for any OTHER kind, the stored
 // (source, target) pair already reads source-as-parent/target-as-child
-// (the Relationships tab's own literal reading), but for these five,
+// (the Relationships tab's own literal reading), but for these three,
 // the *parent* is the edge's target and the *child* is its source --
 // backwards from every other kind, because there is no longer a
-// separately-stored HYPONYM/INSTANCE_HYPONYM/xHOLONYM edge whose own
-// (source, target) would already read the natural way.
+// separately-stored HYPONYM/INSTANCE_HYPONYM/HOLONYM edge whose own
+// (source, target) would already read the natural way. MERONYM covers
+// every WordNet part/member/substance fact alike now (its own
+// meronymKind qualifier distinguishes which, lexical_relationship_type.ts's
+// own docstring) -- there is no longer a separate PART_MERONYM/
+// MEMBER_MERONYM/SUBSTANCE_MERONYM kind to list here.
 const HIERARCHY_INVERTED_KINDS: ReadonlySet<LexicalRelationshipType> = new Set([
   LexicalRelationshipType.HYPERNYM,
   LexicalRelationshipType.INSTANCE_HYPERNYM,
-  LexicalRelationshipType.PART_MERONYM,
-  LexicalRelationshipType.MEMBER_MERONYM,
-  LexicalRelationshipType.SUBSTANCE_MERONYM,
+  LexicalRelationshipType.MERONYM,
 ]);
 
 // Kinds with no meaningful "broader/narrower" direction at all -- every
@@ -721,6 +730,7 @@ export class DictionaryView {
       group: relationshipGroup(rel.relationshipType),
       category: relationshipCategory(rel.relationshipType),
       confidence: Math.round(rel.systemProperties.confidenceWeight * 10000) / 10000,
+      qualifier: rel.qualifiers.find((q) => q.name.value === MERONYM_KIND_QUALIFIER)?.value.value ?? null,
     };
   }
 
@@ -1899,9 +1909,7 @@ function relPill(kind, group) {
 const RECIPROCAL_DISPLAY_KIND = {
   HYPERNYM: "HYPONYM",
   INSTANCE_HYPERNYM: "INSTANCE_HYPONYM",
-  PART_MERONYM: "PART_HOLONYM",
-  MEMBER_MERONYM: "MEMBER_HOLONYM",
-  SUBSTANCE_MERONYM: "SUBSTANCE_HOLONYM",
+  MERONYM: "HOLONYM",
 };
 
 function displayKind(kind, outgoing) {
@@ -1931,8 +1939,16 @@ const RELATIONSHIP_SENTENCES = {
   ANTONYM: (s, t) => \`\${s} is the opposite of \${t}.\`,
   HYPERNYM: (s, t) => \`\${s} is a type of \${t}.\`,
   HYPONYM: (s, t) => \`\${t} is a type of \${s}.\`,
-  MERONYM: (s, t) => \`\${s} is part of \${t}.\`,
-  HOLONYM: (s, t) => \`\${t} is part of \${s}.\`,
+  // WordNet distinguishes what kind of part-whole fact this is (a piece
+  // of a larger whole, a member of a group, or a substance a whole is
+  // made of) via a \`meronymKind\` qualifier on the same MERONYM kind,
+  // not three separate relationship kinds (MERONYM's own docstring,
+  // lexical_relationship_type.ts) -- \`q\` reads that qualifier straight
+  // from the row (relationshipRecordFor()'s own qualifier field,
+  // dictionary_view.ts), defaulting to the general "part of" phrasing
+  // for an unqualified, hand-curated Common Vocabulary Cache fact.
+  MERONYM: (s, t, q) => (q === "member" ? \`\${s} is a member of \${t}.\` : q === "substance" ? \`\${s} is made of \${t}.\` : \`\${s} is a part of \${t}.\`),
+  HOLONYM: (s, t, q) => (q === "member" ? \`\${t} is a member of \${s}.\` : q === "substance" ? \`\${t} is made of \${s}.\` : \`\${t} is a part of \${s}.\`),
   TROPONYM: (s, t) => \`\${t} is a specific manner of \${s}.\`,
   ENTAILMENT: (s, t) => \`\${s} entails \${t}.\`,
   CAUSE: (s, t) => \`\${s} causes \${t}.\`,
@@ -1942,12 +1958,6 @@ const RELATIONSHIP_SENTENCES = {
   SIMILAR_TO: (s, t) => \`\${s} is similar in meaning to \${t}.\`,
   INSTANCE_HYPERNYM: (s, t) => \`\${s} is an instance of \${t}.\`,
   INSTANCE_HYPONYM: (s, t) => \`\${t} is an instance of \${s}.\`,
-  PART_MERONYM: (s, t) => \`\${s} is a part of \${t}.\`,
-  PART_HOLONYM: (s, t) => \`\${t} is a part of \${s}.\`,
-  MEMBER_MERONYM: (s, t) => \`\${s} is a member of \${t}.\`,
-  MEMBER_HOLONYM: (s, t) => \`\${t} is a member of \${s}.\`,
-  SUBSTANCE_MERONYM: (s, t) => \`\${s} is made of \${t}.\`,
-  SUBSTANCE_HOLONYM: (s, t) => \`\${t} is made of \${s}.\`,
   ALSO_SEE: (s, t) => \`\${s} is related to \${t} -- see also.\`,
   VERB_GROUP: (s, t) => \`\${s} and \${t} are closely related senses.\`,
   ATTRIBUTE: (s, t) => \`\${s} is a value of the attribute \${t}.\`,
@@ -1999,9 +2009,9 @@ const RELATIONSHIP_SENTENCES = {
   DIACRITIC_VARIANT: (s, t) => \`\${t} is a diacritic variant of \${s}.\`,
 };
 
-function relationshipSentence(kind, sourceText, targetText) {
+function relationshipSentence(kind, sourceText, targetText, qualifier) {
   const template = RELATIONSHIP_SENTENCES[kind];
-  if (template) return template(sourceText, targetText);
+  if (template) return template(sourceText, targetText, qualifier);
   return \`\${sourceText} is \${titleCase(kind).toLowerCase()}-related to \${targetText}.\`;
 }
 
@@ -2513,7 +2523,7 @@ function relationshipsSectionHTML(rels) {
         \${senseIdBadge(r.otherSenseId)}
         \${domainPill(r.otherDomain)}
       </div>
-      <div class="rel-sentence">\${relationshipSentence(r.kind, r.source_text, r.target_text)}</div>
+      <div class="rel-sentence">\${relationshipSentence(r.kind, r.source_text, r.target_text, r.qualifier)}</div>
     </div>\`).join('');
 }
 
@@ -2689,9 +2699,9 @@ function buildClusters(kind) {
 // own DictionaryView.resolveHierarchy(), the class this file's own
 // render() method is a method of) -- kept as a literal duplicate rather
 // than shared, since that Set lives in TypeScript-enum-keyed code this
-// client script has no import access to; the five kind *names* below
+// client script has no import access to; the three kind *names* below
 // are the stable, load-bearing part, not the enum values behind them.
-const HIERARCHY_INVERTED_KINDS = new Set(["HYPERNYM", "INSTANCE_HYPERNYM", "PART_MERONYM", "MEMBER_MERONYM", "SUBSTANCE_MERONYM"]);
+const HIERARCHY_INVERTED_KINDS = new Set(["HYPERNYM", "INSTANCE_HYPERNYM", "MERONYM"]);
 
 // Mirrors the server-side SYMMETRIC_HIERARCHY_KINDS (same class,
 // same reasoning as HIERARCHY_INVERTED_KINDS just above for why this
@@ -2706,11 +2716,11 @@ const SYMMETRIC_HIERARCHY_KINDS = new Set(["SYNONYM", "ANTONYM", "VERB_GROUP", "
 // the parent, target_id the child for most kinds -- the same literal
 // (source, kind, target) triple the Relationships tab already shows --
 // *except* HIERARCHY_INVERTED_KINDS (HYPERNYM, INSTANCE_HYPERNYM,
-// PART_MERONYM, MEMBER_MERONYM, SUBSTANCE_MERONYM), which are stored
-// (narrower/part, kind, broader/whole) -- source is the *child* for
-// these, not the parent, so building the tree straight off source/target
-// would put narrower concepts to the tree's own root side and broader
-// ones toward the leaves, backwards from "broad root, narrow leaves".
+// MERONYM), which are stored (narrower/part, kind, broader/whole) --
+// source is the *child* for these, not the parent, so building the tree
+// straight off source/target would put narrower concepts to the tree's
+// own root side and broader ones toward the leaves, backwards from
+// "broad root, narrow leaves".
 // Mirrors resolveHierarchy()'s own server-side HIERARCHY_INVERTED_KINDS
 // swap (dictionary_view.ts's server-side class) so the under-capacity
 // and WordNet-scale paths agree on which side of a HYPERNYM-like edge

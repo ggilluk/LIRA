@@ -93,20 +93,21 @@ export enum LexicalRelationshipType {
   // -- Part-Whole (category 2)
   MERONYM = 80,
   HOLONYM = 81,
-  // WordNet splits part-whole into three kinds by what the "part" is --
-  // a piece of a larger whole (%p/#p: "wheel" part of "car"), a member
-  // of a group (%m/#m: "tree" member of "forest"), or a substance a
-  // whole is made of (%s/#s: "wood" substance of "table"). MERONYM/
-  // HOLONYM above stay the general Common-Vocabulary-Cache kind
-  // (unqualified, curated by hand); WordNet's own seeded data always
-  // arrives already split into one of these three, so it's seeded that
-  // way rather than collapsed back into the unqualified pair.
-  PART_MERONYM = 82,
-  PART_HOLONYM = 83,
-  MEMBER_MERONYM = 84,
-  MEMBER_HOLONYM = 85,
-  SUBSTANCE_MERONYM = 86,
-  SUBSTANCE_HOLONYM = 87,
+  // WordNet distinguishes part-whole facts by what the "part" is -- a
+  // piece of a larger whole (%p/#p: "wheel" part of "car"), a member of
+  // a group (%m/#m: "tree" member of "forest"), or a substance a whole
+  // is made of (%s/#s: "wood" substance of "table"). That distinction is
+  // real, but it's a *property of one MERONYM fact*, not a different
+  // relationship kind -- three separate kinds here would mean a caller
+  // asking "what are this Word's meronyms" has to know to check three
+  // kinds instead of one, and a mixed-kind whole (a "car" with a %p
+  // wheel, a %m member of some collection, say) couldn't be queried as
+  // one list at all. WordSeeder.seedWordNet stores every part/member/
+  // substance fact as this same MERONYM kind and records which one it
+  // is as a `meronymKind` qualifier (MERONYM_KIND_QUALIFIER below) on
+  // the LexicalRelationship's own `qualifiers` (data/lexical_relationship.ts) --
+  // the Common Vocabulary Cache's own hand-curated MERONYM/HOLONYM facts
+  // simply leave it unset, same as they always have.
   // -- Manner (category 3)
   TROPONYM = 88,
   // -- Entailment / Causation (category 4)
@@ -169,3 +170,18 @@ export function relationshipCategory(kind: LexicalRelationshipType): number {
 export function relationshipItem(kind: LexicalRelationshipType): number {
   return kind & 0b111;
 }
+
+// The AttributeValue.name (data/attribute_value.ts) WordSeeder.seedWordNet
+// attaches to a MERONYM LexicalRelationship's own `qualifiers`, recording
+// which of WordNet's three part-whole pointer families (%p/%m/%s, or
+// their #p/#m/#s reciprocals) produced it -- MERONYM's own docstring
+// above on why this is a qualifier, not a separate relationship kind.
+// Absent (qualifiers stays []) for a hand-curated Common Vocabulary
+// Cache MERONYM/HOLONYM fact, which draws no such distinction.
+export const MERONYM_KIND_QUALIFIER = "meronymKind";
+
+// MERONYM_KIND_QUALIFIER's own three possible AttributeValue.value
+// strings -- word_seeder.ts's own relationshipKindForPointer picks one
+// per WordNet pointer symbol (%p/#p -> "part", %m/#m -> "member",
+// %s/#s -> "substance").
+export type MeronymKind = "part" | "member" | "substance";
