@@ -564,6 +564,20 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     expect(toyPoodleNode).toBeDefined();
     expect(toyPoodleNode?.lexical_form).toBe("toy poodle");
     expect(hierarchy.nodes.map((n) => n.lexical_form)).toContain("poodle");
+
+    // The detail panel's own headword-linking feature ("toy poodle"
+    // links to "toy" and "poodle", the same way a definition's own word
+    // tokens already link to the Words they mention) -- searchWords()'s
+    // `wordId` branch attaches phrase_word_segments only when the
+    // resolved record came from a Phrase, built from that Phrase's own
+    // already-stored `words` references (phraseWordSegments()'s own
+    // docstring), not re-derived on the spot.
+    const detail = view.searchWords({ wordId: toyPoodle!.uuid.value }).words[0];
+    expect(detail.phrase_word_segments).toHaveLength(2);
+    expect(detail.phrase_word_segments![0]).toMatchObject({ text: "toy", word: true, resolved: true, word_id: toy!.uuid.value });
+    expect(detail.phrase_word_segments![1]).toMatchObject({ text: "poodle", word: true, resolved: true, word_id: poodle!.uuid.value, lexical_form: "poodle" });
+    // An ordinary Word's own record never carries this field.
+    expect(view.searchWords({ wordId: poodle!.uuid.value }).words[0].phrase_word_segments).toBeUndefined();
   }, 60000);
 });
 

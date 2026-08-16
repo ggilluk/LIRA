@@ -100,6 +100,15 @@ export interface WordRecord {
   sources: string[];
   relationship_count: number;
   definition_segments: DefinitionSegment[];
+  // Present only when this record was resolved from a Phrase, not a
+  // genuine Word (DictionaryView.searchWords()'s own `wordId` branch) --
+  // `text`/`lexical_form`'s own token-by-token breakdown into each
+  // constituent Word ("toy poodle" -> "toy", "poodle"), the headword
+  // counterpart of definition_segments above, built from that Phrase's
+  // own already-stored `words` references (phraseWordSegments()'s own
+  // docstring) rather than re-resolved from scratch. undefined for an
+  // ordinary Word, which has no sub-word composition of its own to show.
+  phrase_word_segments?: DefinitionSegment[];
   pad: { pleasure: number; arousal: number; dominance: number } | null;
 }
 
@@ -558,7 +567,19 @@ export class DictionaryView {
     limit?: number;
   }): { words: WordRecord[]; totalMatches: number } {
     if (options.wordId !== undefined) {
-      const word = this.resolveEntry(options.wordId);
+      // Checked directly against the Phrase itself, not via
+      // resolveEntry()'s own Word-shaped projection -- phraseAsWord()
+      // deliberately doesn't carry a Phrase's own `words` references
+      // (a plain Word has no sub-word composition to project), so
+      // building the phrase_word_segments a Phrase's own detail-panel
+      // headword needs (phraseWordSegments()'s own docstring) requires
+      // the original Phrase, not just its Word-shaped view.
+      const phrase = this.phrases.findByUuid(options.wordId);
+      if (phrase !== undefined) {
+        const record = this.wordRecordFor(phraseAsWord(phrase));
+        return { words: [{ ...record, phrase_word_segments: this.phraseWordSegments(phrase) }], totalMatches: 1 };
+      }
+      const word = this.dictionary.findByUuid(options.wordId);
       return word ? { words: [this.wordRecordFor(word)], totalMatches: 1 } : { words: [], totalMatches: 0 };
     }
 
@@ -620,6 +641,26 @@ export class DictionaryView {
     }
     if (lastEnd < text.length) segments.push({ text: text.slice(lastEnd) });
     return segments;
+  }
+
+  /** `phrase`'s own headword (`text`) broken into one DefinitionSegment
+   * per whitespace token, in the same order phrase.words itself was
+   * populated (WordSeeder.seedWordNet's own linkPhraseWords()) --
+   * reusing definitionWordSegment() as-is, so a Phrase's own headword
+   * links to its constituent Words exactly the way a Word's own
+   * definition text already links to the Words *it* mentions (same
+   * hover-tooltip rendering client-side, dictionary_view.ts's own
+   * definitionSegmentHTML). Reads the already-stored uuid references
+   * directly (Dictionary.findByUuid) rather than re-splitting `text`
+   * and re-resolving each token against `dictionary` from scratch --
+   * the whole reason those references were stored ahead of time. */
+  private phraseWordSegments(phrase: Phrase): DefinitionSegment[] {
+    const tokens = phrase.text.trim().split(/\s+/).filter((token) => token.length > 0);
+    return tokens.map((token, index) => {
+      const ref = phrase.words[index];
+      const resolved = ref !== undefined ? this.dictionary.findByUuid(ref.value) : undefined;
+      return this.definitionWordSegment(token, resolved);
+    });
   }
 
   private definitionWordSegment(surfaceText: string, resolved: Word | undefined): DefinitionSegment {
@@ -2483,9 +2524,24 @@ function relationshipsSectionHTML(rels) {
 // known, computed server-side off the real LexicalRelationshipStore
 // regardless of scale -- wordRecordFor()'s own relationshipCount) while
 // the list itself is still in flight.
+// A Phrase's own headword ("toy poodle") linked, token by token, to
+// each of its constituent Words -- word.phrase_word_segments's own
+// docstring (DictionaryView.phraseWordSegments, dictionary_view.ts) on
+// why this exists only for a Phrase-resolved record. Reuses
+// definitionSegmentHTML() as-is (same hover-tooltip markup a
+// definition's own word tokens already get), joined back together with
+// plain spaces -- phrase.words has no punctuation of its own to
+// preserve between tokens, just the whitespace isMultiWordLemma()
+// itself split on. Falls back to the plain lexical_form for an
+// ordinary Word, which never carries this field.
+function headwordHTML(word) {
+  if (!word.phrase_word_segments || !word.phrase_word_segments.length) return word.lexical_form;
+  return \`<span class="def-text">\${word.phrase_word_segments.map(definitionSegmentHTML).join(' ')}</span>\`;
+}
+
 function wordDetailHTML(word, rels, relCount) {
   return \`
-    <div class="detail-word">\${word.lexical_form}\${word.is_common ? ' <span class="badge-common">common</span>' : ''}\${word.is_root_word ? ' <span class="badge-root-word">root word</span>' : ''}\${word.is_derivable_noun ? ' <span class="badge-derivable-noun">derivable noun</span>' : ''}\${word.is_fully_hydrated ? '' : ' <span class="badge-common" style="color:#C2544B;border-color:#C2544B">hydration pending</span>'}</div>
+    <div class="detail-word">\${headwordHTML(word)}\${word.is_common ? ' <span class="badge-common">common</span>' : ''}\${word.is_root_word ? ' <span class="badge-root-word">root word</span>' : ''}\${word.is_derivable_noun ? ' <span class="badge-derivable-noun">derivable noun</span>' : ''}\${word.is_fully_hydrated ? '' : ' <span class="badge-common" style="color:#C2544B;border-color:#C2544B">hydration pending</span>'}</div>
     <div style="margin-top:6px">\${posPill(word.pos)} \${domainPill(word.domain)}</div>
     \${word.related_domains && word.related_domains.length ? \`<div class="detail-related-domains" style="margin-top:4px"><span style="opacity:.6">Also:</span> \${word.related_domains.map(domainPill).join(' ')}</div>\` : ''}
     <div class="detail-entry-id" title="Persistent Qualified Word Identity (domain + part of speech + word) -- stable across regenerations, unlike this word's transient graph id">Entry ID <code>\${word.entry_id}</code></div>
