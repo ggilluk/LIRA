@@ -36,6 +36,8 @@ import { VectorPrimitiveRootWord } from "../data/vector_primitive_root_word";
 import type { Dictionary } from "../data/dictionary";
 import { LexicalRelationshipStore } from "../data/lexical_relationship_store";
 import { LexicalRelationshipType } from "../data/lexical_relationship_type";
+import { copyPhraseWithFreshUuid, createPhrase, type Phrase } from "../data/phrase";
+import type { PhraseBook } from "../data/phrase_book";
 import type { SourceReference } from "../data/source_reference";
 import { copyWordWithFreshUuid, createWord, type Word } from "../data/word";
 import {
@@ -346,6 +348,12 @@ interface PromotedDoc {
 
 export class WordSeeder {
   private cache: Word[] | null = null;
+  // Every cached entry whose text spans more than one whitespace-
+  // separated token -- split out of `cache` at load time (loadCache()'s
+  // own docstring) rather than kept as ordinary multi-word Words, per
+  // Phrase's own docstring (data/phrase.ts) on why a closed-class
+  // multi-word item is now its own lexical category.
+  private cachePhrases: Phrase[] = [];
   private cacheFormLinks: FormLink[] = [];
   private promotedOverlay: PromotedDoc | null = null;
 
@@ -538,17 +546,39 @@ export class WordSeeder {
    * flattening as a FormLink (`cacheFormLinks`) for seedClosedClassWords
    * to wire into a target Dictionary's lemma index. Cached after the
    * first call -- cacheFormLinks is populated in lockstep with `cache`
-   * and never diverges from it. */
+   * and never diverges from it.
+   *
+   * An entry whose own text spans more than one whitespace-separated
+   * token ("in spite of") becomes a Phrase instead of a Word --
+   * appended to `cachePhrases`, read back via loadPhrases() below, not
+   * included in this method's own return value at all. A form nested
+   * under a multi-word base (vanishingly rare in the real cache today,
+   * but not assumed impossible) is classified the identical way,
+   * independently of its own base -- if either half of a FormLink ends
+   * up a Phrase rather than a Word, that link is simply never recorded
+   * (FormLink/Dictionary.linkForm are Word-to-Word only; a Phrase has
+   * no lemma-index concept of its own in this first pass). */
   loadCache(): readonly Word[] {
     if (this.cache !== null) return this.cache.slice();
 
     this.validateAssets();
     const words: Word[] = [];
+    const phrases: Phrase[] = [];
     const links: FormLink[] = [];
-    const pushEntry = (entry: WordFileEntry): void => {
+    const isMultiWord = (entry: WordFileEntry): boolean => /\s/.test((entry.text ?? entry.lexical_form).trim());
+    const pushOne = (entry: WordFileEntry): { entryId: string; isPhrase: boolean } => {
+      if (isMultiWord(entry)) {
+        phrases.push(this.entryToPhrase(entry));
+        return { entryId: entry.entry_id, isPhrase: true };
+      }
       words.push(this.entryToWord(entry));
+      return { entryId: entry.entry_id, isPhrase: false };
+    };
+    const pushEntry = (entry: WordFileEntry): void => {
+      const base = pushOne(entry);
       for (const form of entry.forms ?? []) {
-        words.push(this.entryToWord(form));
+        const pushedForm = pushOne(form);
+        if (base.isPhrase || pushedForm.isPhrase) continue;
         links.push({ baseEntryId: entry.entry_id, formEntryId: form.entry_id, derivationKinds: form.derivation_kinds });
       }
     };
@@ -558,8 +588,19 @@ export class WordSeeder {
     }
     for (const entry of this.loadPromotedDoc().words) pushEntry(entry);
     this.cache = words;
+    this.cachePhrases = phrases;
     this.cacheFormLinks = links;
     return words.slice();
+  }
+
+  /** Every cached multi-word entry as a Phrase, loading the cache first
+   * if this is the first call -- the Phrase counterpart of loadCache()
+   * itself, kept as its own method (not folded into loadCache()'s own
+   * return value) since the two are genuinely different lexical
+   * categories now, not one list a caller filters afterward. */
+  loadPhrases(): readonly Phrase[] {
+    this.loadCache();
+    return this.cachePhrases.slice();
   }
 
   /** Appends a fresh copy of every cached Word into `dictionary` that
@@ -596,7 +637,11 @@ export class WordSeeder {
    * WordNet itself only ever seeds NOUN/VERB/ADJECTIVE/ADVERB Words, so
    * there's nothing for this cache's own closed-class entries to
    * compete with there. */
-  seedClosedClassWords(dictionary: Dictionary, options?: { excludeOpenClasses?: boolean }): number {
+  seedClosedClassWords(
+    dictionary: Dictionary,
+    phraseBook: PhraseBook,
+    options?: { excludeOpenClasses?: boolean },
+  ): number {
     const excludeOpenClasses = options?.excludeOpenClasses ?? false;
     let seeded = 0;
     const insertedByEntryId = new Map<string, Word>();
@@ -617,11 +662,29 @@ export class WordSeeder {
       const form = insertedByEntryId.get(link.formEntryId);
       if (base && form) dictionary.linkForm(base, form, link.derivationKinds);
     }
+    // Phrases (Phrase's own docstring on why these are split out of
+    // `loadCache()` entirely rather than sharing Word's own dedup loop
+    // above): the identical excludeOpenClasses/alreadyPresent shape,
+    // just matched by (text, partOfSpeech) alone -- a Phrase has no
+    // domainTag to further disambiguate with, since none of today's
+    // real multi-word entries are ever true dictionary polysemes.
+    for (const phrase of this.loadPhrases()) {
+      if (excludeOpenClasses && OPEN_CLASSES.includes(phrase.partOfSpeech)) continue;
+      const alreadyPresent = phraseBook
+        .lookupAll(phrase.text)
+        .some((existing) => existing.partOfSpeech === phrase.partOfSpeech);
+      if (alreadyPresent) continue;
+      phraseBook.append(copyPhraseWithFreshUuid(phrase));
+      seeded += 1;
+    }
     return seeded;
   }
 
-  seedDomain(domain: { vocabulary: { dictionary: Dictionary } }, options?: { excludeOpenClasses?: boolean }): number {
-    return this.seedClosedClassWords(domain.vocabulary.dictionary, options);
+  seedDomain(
+    domain: { vocabulary: { dictionary: Dictionary; phrases: PhraseBook } },
+    options?: { excludeOpenClasses?: boolean },
+  ): number {
+    return this.seedClosedClassWords(domain.vocabulary.dictionary, domain.vocabulary.phrases, options);
   }
 
   /** Seeds `domain` from the bundled Princeton WordNet 3.1 dict/ files
@@ -1024,6 +1087,47 @@ export class WordSeeder {
         ? VectorPrimitiveRootWord[entry.vector_primitive_root_word as keyof typeof VectorPrimitiveRootWord]
         : undefined,
       isDerivableNoun: entry.is_derivable_noun ?? false,
+    });
+  }
+
+  /** entryToWord's own counterpart for a multi-word entry -- the same
+   * WordFileEntry schema (no separate Phrase asset schema exists;
+   * loadCache()'s own isMultiWord() check is what decides which of the
+   * two this becomes), mapped onto Phrase's own leaner field set:
+   * every field a closed-class multi-word item plausibly needs
+   * (text/lexicalForm/definition/gloss/usageNotes/register+dialect
+   * codes/editorialLabels/sourceReferences/isCommon), but none of
+   * Word's own root-word/PAD-affect/derivable-noun/pronunciation
+   * fields -- none of those are ever populated for a real multi-word
+   * Common Vocabulary Cache entry today, and Phrase has no field to
+   * carry them even if a future entry tried. */
+  private entryToPhrase(entry: WordFileEntry): Phrase {
+    const optText = (value: string | null | undefined) => (value ? { value } : undefined);
+
+    const sourceReferences = (entry.source_references ?? []).map((ref) => ({
+      sourceName: { value: ref.source_name },
+      sourceVersion: optText(ref.source_version),
+      externalIdentifier: ref.external_identifier ? { value: ref.external_identifier } : undefined,
+      referenceUri: ref.reference_uri ? { value: ref.reference_uri } : undefined,
+      licenceIdentifier: ref.licence_identifier ? { value: ref.licence_identifier } : undefined,
+    }));
+
+    return createPhrase({
+      text: entry.text ?? entry.lexical_form,
+      entryId: { value: entry.entry_id },
+      partOfSpeech: PartOfSpeech[entry.part_of_speech as keyof typeof PartOfSpeech],
+      version: optText(entry.version) ?? { value: "1.0" },
+      languageCode: { value: entry.language_code },
+      lexicalForm: { value: entry.lexical_form },
+      normalisedForm: { value: entry.normalised_form },
+      gloss: optText(entry.gloss),
+      definition: optText(entry.definition),
+      usageNotes: (entry.usage_notes ?? []).map((note) => ({ value: note })),
+      registerCodes: (entry.register_codes ?? []).map((code) => RegisterCode[code as keyof typeof RegisterCode]),
+      dialectCodes: (entry.dialect_codes ?? []).map((code) => ({ value: code })),
+      editorialLabels: (entry.editorial_labels ?? []).map((label) => EditorialLabel[label as keyof typeof EditorialLabel]),
+      sourceReferences,
+      isCommon: true,
     });
   }
 

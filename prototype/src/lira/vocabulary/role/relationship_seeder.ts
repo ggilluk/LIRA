@@ -14,6 +14,7 @@ import type { Dictionary } from "../data/dictionary";
 import { LexicalRelationshipStore } from "../data/lexical_relationship_store";
 import { LexicalRelationshipType } from "../data/lexical_relationship_type";
 import { PartOfSpeech } from "../data/part_of_speech";
+import type { PhraseBook } from "../data/phrase_book";
 import type { SourceReference } from "../data/source_reference";
 import type { Word } from "../data/word";
 import {
@@ -165,12 +166,23 @@ export class RelationshipSeeder {
    * option leaves NOUN/VERB/ADJECTIVE/ADVERB Words unseeded by design,
    * a large share of this Common Relationship Cache's own specs (most
    * of which relate open-class words) can no longer resolve, and that's
-   * expected, not a cache bug. */
+   * expected, not a cache bug.
+   *
+   * A spec naming a multi-word closed-class form ("in spite of", now a
+   * Phrase -- phrase.ts's own docstring) is a second, unconditional
+   * exception, regardless of `skipUnresolvable`: LexicalRelationshipStore
+   * only ever connects two Word uuids, so a curated fact like "despite
+   * SYNONYM in spite of" (semantic_relationships.json) has no graph
+   * node to attach its Phrase-side edge to in this first pass -- silently
+   * skipped, the same as any other spec this store's own shape simply
+   * can't represent, not surfaced as a cache-consistency bug the way an
+   * unresolvable Word genuinely would be. */
   async seedDomain(
     domain: {
       name: string;
       vocabulary: {
         dictionary: Dictionary;
+        phrases: PhraseBook;
         lexicalRelationships: LexicalRelationshipStore;
         lexicalRelationshipProcessor: LexicalRelationshipProcessor;
       };
@@ -179,6 +191,7 @@ export class RelationshipSeeder {
   ): Promise<number> {
     const skipUnresolvable = options?.skipUnresolvable ?? false;
     const dictionary = domain.vocabulary.dictionary;
+    const phraseBook = domain.vocabulary.phrases;
     const store = domain.vocabulary.lexicalRelationships;
     const processor = domain.vocabulary.lexicalRelationshipProcessor;
 
@@ -186,7 +199,7 @@ export class RelationshipSeeder {
     for (const spec of await this.loadRelationshipSpecs()) {
       const sourceWord = this.resolve(dictionary, spec.sourceForm, spec.sourcePos, spec.sourceDomainTag);
       if (sourceWord === undefined) {
-        if (skipUnresolvable) continue;
+        if (skipUnresolvable || this.isPhraseOnly(phraseBook, spec.sourceForm, spec.sourcePos)) continue;
         throw new Error(
           `cannot resolve source Word '${spec.sourceForm}'` +
             (spec.sourcePos !== undefined ? ` (${PartOfSpeech[spec.sourcePos]})` : "") +
@@ -196,7 +209,7 @@ export class RelationshipSeeder {
       }
       const targetWord = this.resolve(dictionary, spec.targetForm, spec.targetPos, spec.targetDomainTag);
       if (targetWord === undefined) {
-        if (skipUnresolvable) continue;
+        if (skipUnresolvable || this.isPhraseOnly(phraseBook, spec.targetForm, spec.targetPos)) continue;
         throw new Error(
           `cannot resolve target Word '${spec.targetForm}'` +
             (spec.targetPos !== undefined ? ` (${PartOfSpeech[spec.targetPos]})` : "") +
@@ -236,6 +249,16 @@ export class RelationshipSeeder {
     if (partOfSpeech === undefined) return dictionary.lookup(lexicalForm);
     const candidates = dictionary.lookupAll(lexicalForm).filter((word) => word.partOfSpeech === partOfSpeech);
     return candidates.find((word) => (word.domainTag?.value ?? undefined) === domainTag);
+  }
+
+  /** Whether `lexicalForm` (optionally narrowed by `partOfSpeech`)
+   * names a real, seeded Phrase -- seedDomain()'s own signal to skip a
+   * spec silently rather than treat a Dictionary miss as a cache bug,
+   * since a Phrase endpoint has no Word uuid this store's edges could
+   * ever attach to. */
+  private isPhraseOnly(phraseBook: PhraseBook, lexicalForm: string, partOfSpeech?: PartOfSpeech): boolean {
+    const candidates = phraseBook.lookupAll(lexicalForm);
+    return partOfSpeech === undefined ? candidates.length > 0 : candidates.some((phrase) => phrase.partOfSpeech === partOfSpeech);
   }
 
   private relationshipExists(

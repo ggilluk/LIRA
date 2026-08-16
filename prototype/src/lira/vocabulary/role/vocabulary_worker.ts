@@ -138,15 +138,31 @@ async function handleSeedCommonVocabulary(request: SeedCommonVocabularyRequest):
   try {
     post({ type: "status", state: "running", detail: `Seeding the Common Vocabulary Cache into ${domain.name}…` });
     const wordSeeder = new WordSeeder("en");
+    // Words and Phrases counted separately for the status messages
+    // below, not off seedDomain()'s own combined return value (it
+    // counts both together, by design -- an idempotency check just
+    // wants "did this add anything", not a words/phrases breakdown).
+    // Dictionary.totalEntries()/PhraseBook.totalEntries() before vs.
+    // after gives the accurate split without changing that method's
+    // own established single-number contract (vocabulary.test.ts's own
+    // assertions on it, in particular).
+    const wordCountBefore = domain.vocabulary.dictionary.totalEntries();
+    const phraseCountBefore = domain.vocabulary.phrases.totalEntries();
     // excludeOpenClasses: "Load WordNet" is this prototype's actual
     // source of truth for NOUN/VERB/ADJECTIVE/ADVERB coverage now
     // (word_seeder.ts's own seedClosedClassWords docstring) -- paired
     // with skipUnresolvable below, since most of the Common Relationship
     // Cache's own specs relate open-class words this call now leaves
     // unseeded by design.
-    const wordsSeeded = wordSeeder.seedDomain(domain, { excludeOpenClasses: true });
+    wordSeeder.seedDomain(domain, { excludeOpenClasses: true });
+    const wordsSeeded = domain.vocabulary.dictionary.totalEntries() - wordCountBefore;
+    const phrasesSeeded = domain.vocabulary.phrases.totalEntries() - phraseCountBefore;
 
-    post({ type: "status", state: "running", detail: `Seeded ${wordsSeeded} words into ${domain.name} — seeding relationships…` });
+    post({
+      type: "status",
+      state: "running",
+      detail: `Seeded ${wordsSeeded} words, ${phrasesSeeded} phrases into ${domain.name} — seeding relationships…`,
+    });
     const relationshipSeeder = new RelationshipSeeder("en");
     const relationshipsSeeded = await relationshipSeeder.seedDomain(domain, { skipUnresolvable: true });
 
@@ -156,6 +172,7 @@ async function handleSeedCommonVocabulary(request: SeedCommonVocabularyRequest):
     const physicsDomain = domains.get("Physics");
     if (domain.name === "Common" && physicsDomain && !physicsBootstrapped) {
       physicsDomain.vocabulary.dictionary.seedFrom(domain.vocabulary.dictionary);
+      physicsDomain.vocabulary.phrases.seedFrom(domain.vocabulary.phrases);
       physicsBootstrapped = true;
       renderCache.delete(physicsDomain.name);
       updatedDomains.push(physicsDomain);
@@ -164,7 +181,7 @@ async function handleSeedCommonVocabulary(request: SeedCommonVocabularyRequest):
     post({
       type: "status",
       state: "done",
-      detail: `Vocabulary seeded into ${domain.name} — ${wordsSeeded.toLocaleString()} words, ${relationshipsSeeded.toLocaleString()} relationships`,
+      detail: `Vocabulary seeded into ${domain.name} — ${wordsSeeded.toLocaleString()} words, ${phrasesSeeded.toLocaleString()} phrases, ${relationshipsSeeded.toLocaleString()} relationships`,
     });
     for (const updated of updatedDomains) post({ type: "domain-updated", domain: summaryOf(updated) });
   } catch (error) {
@@ -260,6 +277,7 @@ function handleRender(request: RenderRequest): void {
     const view = new DictionaryView(domain.vocabulary.dictionary, domain.vocabulary.lexicalRelationships, {
       title: `LIRA — ${domain.name}`,
       domainName: domain.name,
+      phrases: domain.vocabulary.phrases,
     });
     const [style, body, script] = view.renderFragment();
     const fragment: RenderedFragment = { style, body, script };

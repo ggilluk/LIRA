@@ -1,6 +1,8 @@
 import type { Dictionary } from "../data/dictionary";
+import { toSyntheticWord } from "../data/phrase";
+import type { PhraseBook } from "../data/phrase_book";
 import { definitionWords, type Word } from "../data/word";
-import type { WordIdentification } from "../data/word_identification";
+import { IdentificationSource, type WordIdentification } from "../data/word_identification";
 import { createWordLookupContext } from "../data/word_lookup_context";
 import type { AsyncDictionaryHydrator } from "./dictionary_hydrator";
 import { PartOfSpeechIdentifier } from "./part_of_speech_identifier";
@@ -22,6 +24,7 @@ export class DictionaryProcessor {
 
   constructor(
     private readonly dictionary: Dictionary,
+    private readonly phraseBook: PhraseBook,
     private readonly hydrator: AsyncDictionaryHydrator,
     private readonly domainName: string,
   ) {
@@ -69,16 +72,24 @@ export class DictionaryProcessor {
   /** The phrase-aware sibling of identifyWord: given the full raw token
    * sequence of a sentence and a start position within it, tries the
    * longest whitespace-joined span of consecutive raw tokens (bounded by
-   * `dictionary.phraseSpanLimit`, down to 2) against the Dictionary
-   * before falling back to a plain single-token identifyWord lookup --
-   * "in spite of" resolves as the one closed-class PREPOSITION Word it's
-   * seeded as (assets/common/en/prepositions.json), not three
-   * independent single-word lookups on "in"/"spite"/"of". Only the
-   * final single-token fallback ever queues external hydration: a
-   * two-word span that doesn't match anything ("in spite", i.e. the
-   * phrase minus its last word) is not itself a candidate lexical form,
-   * so it must not get treated as one just because the longer phrase
-   * search happened to probe it first.
+   * whichever of `phraseBook.spanLimit`/`dictionary.phraseSpanLimit` is
+   * greater, down to 2) against the seeded Vocabulary before falling
+   * back to a plain single-token identifyWord lookup -- "in spite of"
+   * resolves as the one Phrase it's seeded as (assets/common/en/
+   * prepositions.json, now via PhraseBook rather than a multi-word
+   * Word -- Phrase's own docstring, data/phrase.ts), not three
+   * independent single-word lookups on "in"/"spite"/"of". Checks
+   * `phraseBook` AND `dictionary` at every span, not phraseBook alone:
+   * a WordNet multi-word lemma ("toy poodle") is still an ordinary
+   * multi-word Word, seeded into Dictionary exactly as before (Phrase
+   * is closed-class-only, seedWordNet never creates one) -- so both
+   * sources can legitimately have the winning match at the same span,
+   * and both are offered as candidates when they do. Only the final
+   * single-token fallback ever queues external hydration: a two-word
+   * span that doesn't match anything ("in spite", i.e. the phrase minus
+   * its last word) is not itself a candidate lexical form, so it must
+   * not get treated as one just because the longer phrase search
+   * happened to probe it first.
    *
    * Returns the winning candidates together with `tokenSpan`, the
    * number of raw tokens actually consumed (1 for an ordinary word). */
@@ -89,7 +100,8 @@ export class DictionaryProcessor {
   ): { candidates: readonly WordIdentification[]; tokenSpan: number } {
     const sentenceIndex = options.sentenceIndex ?? 0;
     const isSentenceStart = options.isSentenceStart ?? false;
-    const maxSpan = Math.min(this.dictionary.phraseSpanLimit, rawTokens.length - startIndex);
+    const spanBound = Math.max(this.dictionary.phraseSpanLimit, this.phraseBook.spanLimit);
+    const maxSpan = Math.min(spanBound, rawTokens.length - startIndex);
 
     for (let span = maxSpan; span >= 2; span--) {
       const rawText = rawTokens.slice(startIndex, startIndex + span).join(" ");
@@ -103,7 +115,10 @@ export class DictionaryProcessor {
         precedingWords: rawTokens.slice(0, startIndex),
         followingWords: rawTokens.slice(startIndex + span),
       });
-      const candidates = this.partOfSpeechIdentifier.identifySeeded(context);
+      const candidates = [
+        ...this.phraseIdentifications(context.normalisedText),
+        ...this.partOfSpeechIdentifier.identifySeeded(context),
+      ];
       if (candidates.length > 0) return { candidates, tokenSpan: span };
     }
 
@@ -115,6 +130,24 @@ export class DictionaryProcessor {
       followingWords: rawTokens.slice(startIndex + 1),
     });
     return { candidates, tokenSpan: 1 };
+  }
+
+  /** Every Phrase matching `normalisedText`, each materialised as a
+   * WordIdentification via toSyntheticWord (phrase.ts's own docstring
+   * on why a fresh, one-off Word is the correct thing to hand a
+   * Linguistics-facing caller here, not a Dictionary lookup of any
+   * kind). No casing-evidence confidence boost the way
+   * PartOfSpeechIdentifier.identifySeeded gives PROPER_NOUN/SYMBOL --
+   * no real Phrase is ever seeded as either, so there's nothing for
+   * casing to support. */
+  private phraseIdentifications(normalisedText: string): readonly WordIdentification[] {
+    return this.phraseBook.lookupAll(normalisedText).map((phrase) => ({
+      word: toSyntheticWord(phrase),
+      partOfSpeech: phrase.partOfSpeech,
+      source: IdentificationSource.SEEDED_VOCABULARY,
+      confidence: 1.0,
+      reason: "Exact lexical-form and grammatical-category match in the seeded Phrase Book.",
+    }));
   }
 
   /** Registers `word` as a distinct sense of a lexical form already

@@ -22,6 +22,8 @@ import type { LexicalRelationship } from "../data/lexical_relationship";
 import type { LexicalRelationshipStore } from "../data/lexical_relationship_store";
 import { LexicalRelationshipType, relationshipCategory, relationshipGroup } from "../data/lexical_relationship_type";
 import { PartOfSpeech } from "../data/part_of_speech";
+import type { Phrase } from "../data/phrase";
+import { PhraseBook } from "../data/phrase_book";
 import { RegisterCode } from "../data/register_code";
 import { definitionWords, type Word } from "../data/word";
 
@@ -106,6 +108,28 @@ type DefinitionSegment =
   | { text: string; word: true; resolved: false }
   | { text: string; word: true; resolved: true; word_id: string; lexical_form: string; pos: string; domain: string | null; gloss: string };
 
+// Phrase's own client-facing record -- deliberately leaner than
+// WordRecord (no relationship_count/definition_segments/pad/domain):
+// a Phrase never participates in LexicalRelationshipStore (Phrase's
+// own docstring, data/phrase.ts, on why -- relationships stay Word-to-
+// Word only in this first pass), so the Phrases tab is a plain
+// searchable list, not a word-with-a-detail-panel view the way Words
+// is.
+export interface PhraseRecord {
+  id: string;
+  entry_id: string;
+  lexical_form: string;
+  text: string;
+  pos: string;
+  definition: string;
+  gloss: string;
+  register_codes: string[];
+  dialect_codes: string[];
+  editorial_labels: string[];
+  is_common: boolean;
+  sources: string[];
+}
+
 export interface RelationshipRecord {
   id: string;
   source_id: string;
@@ -173,6 +197,11 @@ export interface DictionaryViewOptions {
   title?: string;
   domainName?: string;
   unresolved?: readonly string[];
+  // Undefined/omitted means an empty Phrases tab -- every existing
+  // caller that predates Phrase (phrase.ts's own docstring) keeps
+  // working with zero changes, same reasoning DictionaryView's own
+  // constructor default gives this field.
+  phrases?: PhraseBook;
 }
 
 // A hard ceiling on how many Words this view will build full,
@@ -269,6 +298,8 @@ export class DictionaryView {
   // record to find here.
   private readonly unresolved: readonly string[];
 
+  private readonly phrases: PhraseBook;
+
   constructor(
     private readonly dictionary: Dictionary,
     private readonly relationships: LexicalRelationshipStore,
@@ -277,6 +308,7 @@ export class DictionaryView {
     this.title = options.title ?? "LIRA Dictionary";
     this.domainName = options.domainName ?? "Domain";
     this.unresolved = options.unresolved ?? [];
+    this.phrases = options.phrases ?? new PhraseBook();
   }
 
   /** The moment render() is actually called, not construction time --
@@ -301,6 +333,9 @@ export class DictionaryView {
 
     const words = overCapacity ? [] : this.wordRecords();
     const rels = overCapacity ? [] : this.relationshipRecords();
+    // No capacity gate -- phraseRecords()'s own docstring on why a
+    // Phrase count never approaches MAX_INTERACTIVE_WORDS.
+    const phrases = this.phraseRecords();
     const commonCount = allWords.filter((w) => w.isCommon).length;
     const posCounts = new Set(allWords.map((w) => w.partOfSpeech));
     // The Words tab's own pos-filter/domain-filter <select> options --
@@ -324,12 +359,14 @@ export class DictionaryView {
       TITLE: escapeHtml(this.title),
       COMPILED_AT: escapeHtml(this.compiledAt()),
       WORD_COUNT: String(totalWordCount),
+      PHRASE_COUNT: String(phrases.length),
       RELATIONSHIP_COUNT: String(totalRelationshipCount),
       COMMON_COUNT: String(commonCount),
       DOMAIN_SPECIFIC_COUNT: String(totalWordCount - commonCount),
       POS_COUNT: String(posCounts.size),
       UNRESOLVED_COUNT: String(this.unresolved.length),
       WORDS_JSON: JSON.stringify(words),
+      PHRASES_JSON: JSON.stringify(phrases),
       RELS_JSON: JSON.stringify(rels),
       POS_VALUES_JSON: JSON.stringify(posValues),
       DOMAIN_VALUES_JSON: JSON.stringify(domainValues),
@@ -450,6 +487,35 @@ export class DictionaryView {
       relationship_count: relationshipCount,
       definition_segments: this.definitionSegments(word),
       pad: this.padRecord(word),
+    };
+  }
+
+  /** Every Phrase in this Domain's PhraseBook, as a PhraseRecord --
+   * always the full list, no MAX_INTERACTIVE_WORDS-style capacity gate
+   * the way wordRecords() needs: closed-class multi-word entries are a
+   * few dozen at most (SUPPLEMENTARY_FILES' own scale, word_seeder.ts),
+   * nowhere near the tens-of-thousands-of-Words range that gate exists
+   * for, so there's no over-capacity Phrases path to build. */
+  private phraseRecords(): PhraseRecord[] {
+    const records = this.phrases.all().map((phrase) => this.phraseRecordFor(phrase));
+    records.sort((a, b) => a.lexical_form.toLowerCase().localeCompare(b.lexical_form.toLowerCase()));
+    return records;
+  }
+
+  private phraseRecordFor(phrase: Phrase): PhraseRecord {
+    return {
+      id: phrase.uuid.value,
+      entry_id: phrase.entryId.value,
+      lexical_form: phrase.lexicalForm?.value ?? phrase.text,
+      text: phrase.text,
+      pos: PartOfSpeech[phrase.partOfSpeech],
+      definition: phrase.definition?.value ?? "",
+      gloss: phrase.gloss?.value ?? "",
+      register_codes: phrase.registerCodes.map((code) => RegisterCode[code]),
+      dialect_codes: phrase.dialectCodes.map((code) => code.value),
+      editorial_labels: phrase.editorialLabels.map((label) => EditorialLabel[label]),
+      is_common: phrase.isCommon,
+      sources: phrase.sourceReferences.map((ref) => ref.sourceName.value),
     };
   }
 
@@ -1500,6 +1566,7 @@ footer {
 
   <div class="stat-row">
     <div class="stat"><div class="value" id="stat-words">@@WORD_COUNT@@</div><div class="label">Words</div></div>
+    <div class="stat"><div class="value" id="stat-phrases">@@PHRASE_COUNT@@</div><div class="label">Phrases</div></div>
     <div class="stat"><div class="value" id="stat-rels">@@RELATIONSHIP_COUNT@@</div><div class="label">Relationships</div></div>
     <div class="stat"><div class="value">@@COMMON_COUNT@@</div><div class="label">Common vocabulary</div></div>
     <div class="stat"><div class="value">@@DOMAIN_SPECIFIC_COUNT@@</div><div class="label">Domain-specific</div></div>
@@ -1516,6 +1583,7 @@ footer {
     <label class="root-word-toggle-label"><input type="checkbox" id="root-word-filter"> Root words only</label>
     <div class="tabs" role="tablist">
       <button id="tab-words" role="tab" aria-selected="true">Words</button>
+      <button id="tab-phrases" role="tab" aria-selected="false">Phrases</button>
       <button id="tab-rels" role="tab" aria-selected="false">Relationships</button>
       <button id="tab-hierarchy" role="tab" aria-selected="false">Hierarchy</button>
       <button id="tab-cyclic" role="tab" aria-selected="false">Cyclic</button>
@@ -1550,6 +1618,24 @@ footer {
         </table>
         <div class="empty-state" id="words-empty" style="display:none">@@WORDS_EMPTY_MESSAGE@@</div>
       </div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-phrases">
+    <div class="table-wrap">
+      <div class="cyclic-note" id="phrases-note" style="display:none"></div>
+      <table>
+        <thead>
+          <tr>
+            <th data-sort="lexical_form">Phrase</th>
+            <th data-sort="pos">Part of speech</th>
+            <th data-sort="definition">Definition</th>
+            <th>Labels</th>
+          </tr>
+        </thead>
+        <tbody id="phrases-body"></tbody>
+      </table>
+      <div class="empty-state" id="phrases-empty" style="display:none">No phrases match this search.</div>
     </div>
   </section>
 
@@ -1612,6 +1698,7 @@ footer {
 <script>
 /*@@SCRIPT_FRAGMENT_START@@*/
 const WORDS = @@WORDS_JSON@@;
+const PHRASES = @@PHRASES_JSON@@;
 const RELS = @@RELS_JSON@@;
 const UNRESOLVED = @@UNRESOLVED_JSON@@;
 const POS_COLORS = @@POS_COLORS_JSON@@;
@@ -2057,6 +2144,45 @@ function renderWords() {
   }
   body.innerHTML = shown.map(wordRowHtml).join('');
   document.getElementById("stat-words").textContent = rows.length;
+}
+
+// Phrases reuse the same free-text search fields (search-word/-gloss/
+// -definition) and the shared pos-filter Words already has -- both are
+// meaningful for a Phrase (Phrase's own docstring, data/phrase.ts, on
+// why it's still a real part-of-speech-tagged lexical entry) -- but not
+// domain-filter or the root-word toggle, neither of which a Phrase has
+// a field for. No MAX_INTERACTIVE_WORDS-style capacity split either --
+// phraseRecords()'s own server-side docstring on why the whole list is
+// always embedded, so there's exactly one Phrases rendering path, not
+// an over-capacity counterpart the way Words/Relationships each need.
+function matchesPhraseQuery(phrase) {
+  const { word: wordQuery, gloss: glossQuery, definition: definitionQuery } = state.search;
+  if (wordQuery && !phrase.lexical_form.toLowerCase().includes(wordQuery.toLowerCase())) return false;
+  if (glossQuery && !phrase.gloss.toLowerCase().includes(glossQuery.toLowerCase())) return false;
+  if (definitionQuery && !phrase.definition.toLowerCase().includes(definitionQuery.toLowerCase())) return false;
+  return true;
+}
+
+function filteredPhrases() {
+  return PHRASES.filter(p => matchesPhraseQuery(p) && (!state.pos || p.pos === state.pos));
+}
+
+function phraseRowHtml(p) {
+  return \`
+    <tr data-phrase-id="\${p.id}">
+      <td><span class="word-form">\${p.lexical_form}</span>\${p.is_common ? ' <span class="badge-common">common</span>' : ''}</td>
+      <td>\${posPill(p.pos)}</td>
+      <td class="definition">\${p.definition || p.gloss || '<span style="opacity:.5">&mdash;</span>'}</td>
+      <td>\${p.register_codes.concat(p.editorial_labels).map(t => \`<span class="tag">\${titleCase(t)}</span>\`).join('')}</td>
+    </tr>\`;
+}
+
+function renderPhrases() {
+  const rows = filteredPhrases().slice().sort((a, b) => a.lexical_form.toLowerCase().localeCompare(b.lexical_form.toLowerCase()));
+  const body = document.getElementById("phrases-body");
+  document.getElementById("phrases-empty").style.display = rows.length ? "none" : "block";
+  body.innerHTML = rows.map(phraseRowHtml).join('');
+  document.getElementById("stat-phrases").textContent = rows.length;
 }
 
 // How long to wait after the last keystroke before actually dispatching
@@ -3611,6 +3737,7 @@ function renderUnresolved() {
 
 function renderAll() {
   renderWords();
+  renderPhrases();
   renderRels();
   renderDetailPanel("words");
   renderDetailPanel("hierarchy");
@@ -3624,16 +3751,19 @@ function renderAll() {
 function selectTab(tab) {
   state.tab = tab;
   document.getElementById("tab-words").setAttribute("aria-selected", tab === "words");
+  document.getElementById("tab-phrases").setAttribute("aria-selected", tab === "phrases");
   document.getElementById("tab-rels").setAttribute("aria-selected", tab === "rels");
   document.getElementById("tab-hierarchy").setAttribute("aria-selected", tab === "hierarchy");
   document.getElementById("tab-cyclic").setAttribute("aria-selected", tab === "cyclic");
   document.getElementById("panel-words").classList.toggle("active", tab === "words");
+  document.getElementById("panel-phrases").classList.toggle("active", tab === "phrases");
   document.getElementById("panel-rels").classList.toggle("active", tab === "rels");
   document.getElementById("panel-hierarchy").classList.toggle("active", tab === "hierarchy");
   document.getElementById("panel-cyclic").classList.toggle("active", tab === "cyclic");
 }
 
 document.getElementById("tab-words").addEventListener("click", () => { selectTab("words"); });
+document.getElementById("tab-phrases").addEventListener("click", () => { selectTab("phrases"); });
 document.getElementById("tab-rels").addEventListener("click", () => { selectTab("rels"); });
 document.getElementById("tab-hierarchy").addEventListener("click", () => { selectTab("hierarchy"); });
 document.getElementById("tab-cyclic").addEventListener("click", () => { selectTab("cyclic"); });
@@ -3675,6 +3805,7 @@ document.getElementById("search-definition").addEventListener("input", (e) => {
 document.getElementById("pos-filter").addEventListener("change", (e) => {
   state.pos = e.target.value;
   renderWords();
+  renderPhrases();
 });
 
 document.getElementById("domain-filter").addEventListener("change", (e) => {
