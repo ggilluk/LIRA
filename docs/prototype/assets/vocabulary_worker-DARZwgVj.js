@@ -206,6 +206,8 @@ select#pos-filter, select#domain-filter {
 .panel.active { display: block; }
 .table-wrap {
   overflow-x: auto;
+  overflow-y: auto;
+  max-height: min(65vh, 640px);
   border: 1px solid var(--line);
   border-radius: var(--radius);
   background: var(--surface);
