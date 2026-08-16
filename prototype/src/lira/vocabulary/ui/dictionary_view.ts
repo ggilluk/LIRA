@@ -216,6 +216,33 @@ const HIERARCHY_INVERTED_KINDS: ReadonlySet<LexicalRelationshipType> = new Set([
   LexicalRelationshipType.SUBSTANCE_MERONYM,
 ]);
 
+// Kinds with no meaningful "broader/narrower" direction at all -- every
+// member of a mutually-related group is as broad or narrow as every
+// other, so resolveHierarchy() should offer its own cluster view
+// (buildClusters()'s own client-side equivalent) instead of a tree with
+// an arbitrary "root". SYNONYM (allPairs()'s own i<j-only pairing,
+// word_seeder.ts) and word_seeder.ts's own SYMMETRIC_RELATIONSHIP_KINDS
+// (ANTONYM, VERB_GROUP, ATTRIBUTE, ALSO_SEE, DERIVED_FORM) are all
+// stored as exactly ONE directed edge per fact, not two -- so
+// `rootCandidates.length === 0` (every node has both directions) is
+// NOT a reliable way to detect these anymore: a mutually-synonymous
+// clique of N words under i<j pairing always has at least one word
+// with no *incoming* edge (whichever sorts first), so the naive check
+// would pick that word as a "root" and draw a nonsensical tree instead
+// of falling back to clusters, exactly the "buttocks" -- a real WordNet
+// SYNONYM "root" -- bug this Set exists to prevent. Named explicitly,
+// not inferred, because inferring it from stored edge shape is exactly
+// what broke the first time (word_seeder.ts's own reciprocal-dedup fix
+// changed that shape without this method's own root detection noticing).
+const SYMMETRIC_HIERARCHY_KINDS: ReadonlySet<LexicalRelationshipType> = new Set([
+  LexicalRelationshipType.SYNONYM,
+  LexicalRelationshipType.ANTONYM,
+  LexicalRelationshipType.VERB_GROUP,
+  LexicalRelationshipType.ATTRIBUTE,
+  LexicalRelationshipType.ALSO_SEE,
+  LexicalRelationshipType.DERIVED_FORM,
+]);
+
 // resolveHierarchy()'s own default node cap when a caller doesn't pass
 // its own `limit` -- generous enough to show a genuinely useful subtree
 // (HIERARCHY_NODE_LIMIT's own client-side docstring, dictionary_view.ts's
@@ -704,6 +731,14 @@ export class DictionaryView {
     }
     const totalNodeCount = allNodeIds.size;
     if (totalEdgeCount === 0) return empty;
+    // Checked by kind, not inferred from the stored edge shape --
+    // SYMMETRIC_HIERARCHY_KINDS's own docstring on why
+    // `rootCandidates.length === 0` alone no longer reliably detects
+    // this. Applies regardless of `wordId`: a "centred" tree makes no
+    // more sense for a symmetric kind with a word selected than without
+    // one, and the cluster view this falls back to (buildClusters()'s
+    // own client-side equivalent) doesn't take a centring word anyway.
+    if (SYMMETRIC_HIERARCHY_KINDS.has(kindEnum)) return { ...empty, totalEdgeCount, totalNodeCount, fellBack: true };
 
     const ancestorChain: string[] = [];
     let startId: string;
@@ -2446,6 +2481,15 @@ function buildClusters(kind) {
 // are the stable, load-bearing part, not the enum values behind them.
 const HIERARCHY_INVERTED_KINDS = new Set(["HYPERNYM", "INSTANCE_HYPERNYM", "PART_MERONYM", "MEMBER_MERONYM", "SUBSTANCE_MERONYM"]);
 
+// Mirrors the server-side SYMMETRIC_HIERARCHY_KINDS (same class,
+// same reasoning as HIERARCHY_INVERTED_KINDS just above for why this
+// is a literal duplicate rather than a shared import) -- checked by
+// kind, not inferred from "no root candidates" (buildHierarchy()'s own
+// \`fellBack\` used to do exactly that, and broke the same way
+// resolveHierarchy()'s own version did once SYNONYM/ANTONYM/etc.
+// stopped being stored as two edges per fact).
+const SYMMETRIC_HIERARCHY_KINDS = new Set(["SYNONYM", "ANTONYM", "VERB_GROUP", "ATTRIBUTE", "ALSO_SEE", "DERIVED_FORM"]);
+
 // Builds the full forest for one relationship kind. source_id becomes
 // the parent, target_id the child for most kinds -- the same literal
 // (source, kind, target) triple the Relationships tab already shows --
@@ -2460,11 +2504,14 @@ const HIERARCHY_INVERTED_KINDS = new Set(["HYPERNYM", "INSTANCE_HYPERNYM", "PART
 // and WordNet-scale paths agree on which side of a HYPERNYM-like edge
 // is broader, not just this client script's own two rendering paths
 // agreeing with each other.
-// Roots are words with no incoming edge of this kind; a fully symmetric
-// kind (SYNONYM, ANTONYM -- every node has both directions) has none,
-// so this falls back to buildClusters instead of a forest of redundant
-// per-word roots (each of which would otherwise show largely the same
-// members as every other root in the same mutually-related group).
+// Roots are words with no incoming edge of this kind -- except
+// SYMMETRIC_HIERARCHY_KINDS (SYNONYM, ANTONYM, ...), which fall back to
+// buildClusters unconditionally regardless of what root-detection would
+// say, rather than a forest of redundant per-word roots (each of which
+// would otherwise show largely the same members as every other root in
+// the same mutually-related group). Named explicitly, not inferred from
+// "zero root candidates" -- SYMMETRIC_HIERARCHY_KINDS's own docstring
+// on why that check alone stopped being reliable.
 //
 // When state.selectedWordId names a word that's actually part of this
 // kind's graph, the returned tree is centred on it instead of showing
@@ -2505,7 +2552,7 @@ function buildHierarchy(kind) {
   });
   const byLabel = id => (wordById.get(id) || {}).lexical_form || "";
   let roots = [...nodeIds].filter(id => !hasIncoming.has(id));
-  const fellBack = roots.length === 0 && nodeIds.size > 0;
+  const fellBack = SYMMETRIC_HIERARCHY_KINDS.has(kind) ? nodeIds.size > 0 : roots.length === 0 && nodeIds.size > 0;
   let clusters = null;
   let centred = false;
   let shownNodeCount = nodeIds.size;

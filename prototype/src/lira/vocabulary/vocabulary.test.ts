@@ -800,6 +800,46 @@ describe("DictionaryView.resolveHierarchy", () => {
     expect(result.totalEdgeCount).toBe(2);
   });
 
+  it("still falls back with fellBack: true for a symmetric kind stored as only ONE directed edge per fact -- WordSeeder's own real storage shape, not the two-directions-stored shape a naive root check would need", () => {
+    // A real WordNet-seeded ANTONYM/SYNONYM/etc. fact is stored as a
+    // single directed edge (SYMMETRIC_RELATIONSHIP_KINDS's own dedup in
+    // word_seeder.ts, and allPairs()'s own i<j-only pairing for
+    // SYNONYM) -- "every node has both directions" is therefore never
+    // true for this data, so fellBack must be driven by
+    // SYMMETRIC_HIERARCHY_KINDS naming the kind explicitly, not by
+    // inferring it from "zero root candidates" (which, given only one
+    // direction stored, finds a real "root" -- whichever word happens
+    // to sort first -- and would otherwise draw a nonsensical tree
+    // instead of falling back to a cluster view).
+    const dictionary = new Dictionary();
+    const big = createWord({ text: "big", partOfSpeech: PartOfSpeech.ADJECTIVE });
+    const small = createWord({ text: "small", partOfSpeech: PartOfSpeech.ADJECTIVE });
+    dictionary.append(big);
+    dictionary.append(small);
+    const store = new LexicalRelationshipStore();
+    const processor = new LexicalRelationshipProcessor(store, new LexicalRelationshipSystemPropertyTensor());
+    processor.create({ sourceWordId: big.uuid.value, targetWordId: small.uuid.value, relationshipType: LexicalRelationshipType.ANTONYM, sourceReferences: [] });
+
+    const view = new DictionaryView(dictionary, store, { domainName: "Common" });
+    const result = view.resolveHierarchy({ kind: "ANTONYM" });
+    expect(result.fellBack).toBe(true);
+    expect(result.totalEdgeCount).toBe(1);
+
+    // Same for SYNONYM, seeded the real way (allPairs(), one direction).
+    const dictionary2 = new Dictionary();
+    const cat = createWord({ text: "cat", partOfSpeech: PartOfSpeech.NOUN });
+    const feline = createWord({ text: "feline", partOfSpeech: PartOfSpeech.NOUN });
+    dictionary2.append(cat);
+    dictionary2.append(feline);
+    const store2 = new LexicalRelationshipStore();
+    const processor2 = new LexicalRelationshipProcessor(store2, new LexicalRelationshipSystemPropertyTensor());
+    processor2.create({ sourceWordId: cat.uuid.value, targetWordId: feline.uuid.value, relationshipType: LexicalRelationshipType.SYNONYM, sourceReferences: [] });
+
+    const view2 = new DictionaryView(dictionary2, store2, { domainName: "Common" });
+    const result2 = view2.resolveHierarchy({ kind: "SYNONYM" });
+    expect(result2.fellBack).toBe(true);
+  });
+
   it("resolves against the real bundled WordNet-scale dataset, correctly oriented (broad root, narrow leaves) for a kind only stored in the child->parent direction", async () => {
     const dictionary = new Dictionary();
     const lexicalRelationships = new LexicalRelationshipStore();
@@ -842,5 +882,11 @@ describe("DictionaryView.resolveHierarchy", () => {
     expect(broadestRoot.roots.length).toBe(1);
     const broadestRootWord = broadestRoot.nodes.find((n) => n.id === broadestRoot.roots[0]);
     expect(broadestRootWord?.lexical_form).toBe("entity");
+
+    // SYNONYM against the real corpus: falls back to clusters, not a
+    // tree with some real WordNet word (e.g. "buttocks", an actual
+    // regression seen against this exact bundled dataset) standing in
+    // as a nonsensical "broadest root".
+    expect(view.resolveHierarchy({ kind: "SYNONYM" }).fellBack).toBe(true);
   }, 30000);
 });
