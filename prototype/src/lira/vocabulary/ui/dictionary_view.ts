@@ -249,18 +249,20 @@ const MAX_INTERACTIVE_WORDS = 20_000;
 // second, fully redundant edge). resolveHierarchy() needs to know this
 // to orient a tree correctly -- for any OTHER kind, the stored
 // (source, target) pair already reads source-as-parent/target-as-child
-// (the Relationships tab's own literal reading), but for these three,
+// (the Relationships tab's own literal reading), but for these two,
 // the *parent* is the edge's target and the *child* is its source --
 // backwards from every other kind, because there is no longer a
-// separately-stored HYPONYM/INSTANCE_HYPONYM/HOLONYM edge whose own
-// (source, target) would already read the natural way. MERONYM covers
-// every WordNet part/member/substance fact alike now (its own
-// meronymKind qualifier distinguishes which, lexical_relationship_type.ts's
-// own docstring) -- there is no longer a separate PART_MERONYM/
-// MEMBER_MERONYM/SUBSTANCE_MERONYM kind to list here.
+// separately-stored HYPONYM/HOLONYM edge whose own (source, target)
+// would already read the natural way. MERONYM covers every WordNet
+// part/member/substance fact alike now (its own meronymKind qualifier
+// distinguishes which, lexical_relationship_type.ts's own docstring) --
+// there is no longer a separate PART_MERONYM/MEMBER_MERONYM/
+// SUBSTANCE_MERONYM kind to list here. INSTANCE_HYPERNYM/
+// INSTANCE_HYPONYM (WordNet's own `@i`/`~i`, instance-of) are retired
+// too -- word_seeder.ts's own relationshipKindForPointer never seeds
+// them at all, so there is nothing of that kind to orient here either.
 const HIERARCHY_INVERTED_KINDS: ReadonlySet<LexicalRelationshipType> = new Set([
   LexicalRelationshipType.HYPERNYM,
-  LexicalRelationshipType.INSTANCE_HYPERNYM,
   LexicalRelationshipType.MERONYM,
 ]);
 
@@ -1908,7 +1910,6 @@ function relPill(kind, group) {
 // (LexicalRelationshipType's own bit-packing, lexical_relationship_type.ts).
 const RECIPROCAL_DISPLAY_KIND = {
   HYPERNYM: "HYPONYM",
-  INSTANCE_HYPERNYM: "INSTANCE_HYPONYM",
   MERONYM: "HOLONYM",
 };
 
@@ -1956,8 +1957,6 @@ const RELATIONSHIP_SENTENCES = {
   // Lexical Semantic -- WordNet-sourced (lexical_relationship_type.ts's
   // own docstring on PERTAINYM through USAGE_DOMAIN)
   SIMILAR_TO: (s, t) => \`\${s} is similar in meaning to \${t}.\`,
-  INSTANCE_HYPERNYM: (s, t) => \`\${s} is an instance of \${t}.\`,
-  INSTANCE_HYPONYM: (s, t) => \`\${t} is an instance of \${s}.\`,
   ALSO_SEE: (s, t) => \`\${s} is related to \${t} -- see also.\`,
   VERB_GROUP: (s, t) => \`\${s} and \${t} are closely related senses.\`,
   ATTRIBUTE: (s, t) => \`\${s} is a value of the attribute \${t}.\`,
@@ -2699,9 +2698,9 @@ function buildClusters(kind) {
 // own DictionaryView.resolveHierarchy(), the class this file's own
 // render() method is a method of) -- kept as a literal duplicate rather
 // than shared, since that Set lives in TypeScript-enum-keyed code this
-// client script has no import access to; the three kind *names* below
+// client script has no import access to; the two kind *names* below
 // are the stable, load-bearing part, not the enum values behind them.
-const HIERARCHY_INVERTED_KINDS = new Set(["HYPERNYM", "INSTANCE_HYPERNYM", "MERONYM"]);
+const HIERARCHY_INVERTED_KINDS = new Set(["HYPERNYM", "MERONYM"]);
 
 // Mirrors the server-side SYMMETRIC_HIERARCHY_KINDS (same class,
 // same reasoning as HIERARCHY_INVERTED_KINDS just above for why this
@@ -2715,8 +2714,8 @@ const SYMMETRIC_HIERARCHY_KINDS = new Set(["SYNONYM", "ANTONYM", "VERB_GROUP", "
 // Builds the full forest for one relationship kind. source_id becomes
 // the parent, target_id the child for most kinds -- the same literal
 // (source, kind, target) triple the Relationships tab already shows --
-// *except* HIERARCHY_INVERTED_KINDS (HYPERNYM, INSTANCE_HYPERNYM,
-// MERONYM), which are stored (narrower/part, kind, broader/whole) --
+// *except* HIERARCHY_INVERTED_KINDS (HYPERNYM, MERONYM), which are
+// stored (narrower/part, kind, broader/whole) --
 // source is the *child* for these, not the parent, so building the tree
 // straight off source/target would put narrower concepts to the tree's
 // own root side and broader ones toward the leaves, backwards from

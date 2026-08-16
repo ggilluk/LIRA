@@ -83,13 +83,14 @@ export enum LexicalRelationshipType {
   // -- Hierarchy (category 1)
   HYPERNYM = 72,
   HYPONYM = 73,
-  // WordNet's `@i`/`~i` pointers -- class-inclusion (HYPERNYM/HYPONYM,
-  // "a dog is a kind of mammal") vs instance-of ("Fido is an instance
-  // of dog", a named individual rather than a subtype) are genuinely
-  // different ontological relations, which is exactly why WordNet gives
-  // them their own pointer symbols instead of reusing `@`/`~`.
-  INSTANCE_HYPERNYM = 74,
-  INSTANCE_HYPONYM = 75,
+  // WordNet's `@i`/`~i` pointers (class-inclusion, HYPERNYM/HYPONYM's
+  // own "a dog is a kind of mammal", vs. instance-of, "Fido is an
+  // instance of dog" -- a named individual rather than a subtype) are
+  // deliberately never seeded (word_seeder.ts's own relationshipKindForPointer):
+  // an instance relation isn't a lexical fact about the word "dog" the
+  // way its hypernym/hyponym class-inclusion is, so this prototype
+  // draws no distinction here and 74/75 stay retired rather than
+  // reassigned to a different kind.
   // -- Part-Whole (category 2)
   MERONYM = 80,
   HOLONYM = 81,

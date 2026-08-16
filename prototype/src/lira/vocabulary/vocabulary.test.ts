@@ -396,7 +396,6 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     for (const kind of [
       LexicalRelationshipType.PERTAINYM,
       LexicalRelationshipType.SIMILAR_TO,
-      LexicalRelationshipType.INSTANCE_HYPERNYM,
       LexicalRelationshipType.MERONYM,
       LexicalRelationshipType.ALSO_SEE,
       LexicalRelationshipType.VERB_GROUP,
@@ -406,7 +405,7 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     ]) {
       expect(seenKinds.has(kind), `expected at least one ${LexicalRelationshipType[kind]} edge`).toBe(true);
     }
-    // HYPONYM/TROPONYM/INSTANCE_HYPONYM/HOLONYM are never seeded at all --
+    // HYPONYM/TROPONYM/HOLONYM are never seeded at all --
     // relationshipKindForPointer canonicalizes their own WordNet pointer
     // symbols onto their complementary kind instead (this is the fix
     // itself, not an implementation detail: a word's own relationship
@@ -419,11 +418,14 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // for a different reason: seedPointerRelationship intercepts `;c`/
     // `-c` pointers and tags the word itself (domainTag/relatedDomainTags)
     // instead of creating an edge (see the dedicated "topic-domain
-    // pointers" test below).
+    // pointers" test below). Instance-of (`@i`/`~i`) is never seeded
+    // either -- relationshipKindForPointer's own docstring on why
+    // LexicalRelationshipType's INSTANCE_HYPERNYM/INSTANCE_HYPONYM
+    // ordinals are retired rather than populated -- so seenKinds can
+    // never contain them at all (no enum member left to even ask about).
     for (const kind of [
       LexicalRelationshipType.HYPONYM,
       LexicalRelationshipType.TROPONYM,
-      LexicalRelationshipType.INSTANCE_HYPONYM,
       LexicalRelationshipType.HOLONYM,
       LexicalRelationshipType.TOPIC_DOMAIN,
     ]) {
@@ -440,6 +442,21 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
       meronymEdges.map((r) => r.qualifiers.find((q) => q.name.value === "meronymKind")?.value.value),
     );
     expect(seenMeronymKinds).toEqual(new Set(["part", "member", "substance"]));
+
+    // Instance-of (`@i`/`~i`) pointers are never seeded at all --
+    // relationshipKindForPointer's own docstring on why (word_seeder.ts).
+    // "Hegira" is a real, direct instance of "flight"/"escape" in the
+    // bundled data (dict/data.noun's own 00061368-n `@i` -> 00059563-n),
+    // so no relationship of any kind should exist between the two Words.
+    const hegira = dictionary.lookupAll("Hegira").find((word) => word.synsetId?.value === "00061368-n");
+    const flight = dictionary.lookupAll("flight").find((word) => word.synsetId?.value === "00059563-n");
+    expect(hegira).toBeDefined();
+    expect(flight).toBeDefined();
+    const hegiraFlightEdges = [
+      ...lexicalRelationships.outgoing(hegira!.uuid.value),
+      ...lexicalRelationships.incoming(hegira!.uuid.value),
+    ].filter((r) => r.sourceWordId.value === flight!.uuid.value || r.targetWordId.value === flight!.uuid.value);
+    expect(hegiraFlightEdges).toEqual([]);
 
     // Topic-domain pointers (`;c`/`-c`) tag the word itself
     // (domainTag/relatedDomainTags) instead of becoming a relationship --

@@ -215,13 +215,18 @@ function derivationKind(sourcePos: PartOfSpeech, targetPos: PartOfSpeech): Lexic
  * symbol this class doesn't recognise (none as of WordNet 3.1's own
  * documented pointer set, but seedWordNetPointerRelationships skips
  * rather than throws, so a future WordNet release adding a new symbol
- * degrades to "not seeded" instead of failing the whole run) *or* for
+ * degrades to "not seeded" instead of failing the whole run); for
  * `;c`/`-c` specifically, which seedPointerRelationship intercepts
  * before ever calling this function -- a topic-domain pointer tags the
  * word itself (Word.domainTag/relatedDomainTags) rather than becoming a
- * TOPIC_DOMAIN relationship edge; see tagTopicDomain's own docstring.
+ * TOPIC_DOMAIN relationship edge; see tagTopicDomain's own docstring;
  * `;r`/`-r`/`;u`/`-u` (region/usage domain) are unaffected by that
- * change and still become REGION_DOMAIN/USAGE_DOMAIN edges below.
+ * change and still become REGION_DOMAIN/USAGE_DOMAIN edges below; *or*
+ * for `@i`/`~i` (instance-of, as opposed to `@`/`~`'s own class-
+ * inclusion hypernymy/hyponymy) deliberately, on the same "not a
+ * lexical fact worth drawing a distinction over" grounds
+ * LexicalRelationshipType's own retired INSTANCE_HYPERNYM/
+ * INSTANCE_HYPONYM ordinals explain (lexical_relationship_type.ts).
  *
  * `swap: true` means the edge WordNet's own record implies runs target
  * -> source, not source -> target -- true for `-r`/`-u` ("member of
@@ -229,19 +234,18 @@ function derivationKind(sourcePos: PartOfSpeech, targetPos: PartOfSpeech): Lexic
  * recorded on the *other* synset's own entry; both symbols become the
  * same REGION_DOMAIN/USAGE_DOMAIN kind, always oriented word -> its
  * domain, regardless of which of the pair's two entries the pointer was
- * actually read from) -- and, for the same reason, for
- * `~`/`~i`/`#p`/`#m`/`#s` too: WordNet redundantly encodes
- * every hypernym/meronym fact from BOTH ends -- the child/part's own
- * `@`/`@i`/`%p`/`%m`/`%s` pointer to its parent/whole, *and* the
- * parent/whole's own `~`/`~i`/`#p`/`#m`/`#s` pointer back to each
- * child/part -- so canonicalizing the second listing onto the exact
- * same kind, swapped, means both pointers resolve to the identical
- * (child, HYPERNYM, parent) / (part, xMERONYM, whole) edge; the
- * existing `existingEdges` dedup in seedWordNet (keyed by the exact
- * (source, target, kind) triple) then recognises whichever pointer is
- * processed second as already covered, instead of creating a second,
- * fully redundant HYPONYM/TROPONYM/INSTANCE_HYPONYM/xHOLONYM edge for
- * the identical fact -- the "a word's own relationships also show the
+ * actually read from) -- and, for the same reason, for `~`/`#p`/`#m`/
+ * `#s` too: WordNet redundantly encodes every hypernym/meronym fact
+ * from BOTH ends -- the child/part's own `@`/`%p`/`%m`/`%s` pointer to
+ * its parent/whole, *and* the parent/whole's own `~`/`#p`/`#m`/`#s`
+ * pointer back to each child/part -- so canonicalizing the second
+ * listing onto the exact same kind, swapped, means both pointers
+ * resolve to the identical (child, HYPERNYM, parent) / (part, MERONYM,
+ * whole) edge; the existing `existingEdges` dedup in seedWordNet (keyed
+ * by the exact (source, target, kind) triple) then recognises whichever
+ * pointer is processed second as already covered, instead of creating a
+ * second, fully redundant HYPONYM/TROPONYM/HOLONYM edge for the
+ * identical fact -- the "a word's own relationships also show the
  * hypernyms of its hyponyms" bug this fix addresses (vocabulary.test.ts's
  * own regression check on the resulting counts). Verb-specific
  * troponymy (WordNet's own name for verb hyponymy, still marked `~`)
@@ -265,12 +269,10 @@ function relationshipKindForPointer(
       return { kind: LexicalRelationshipType.ANTONYM, swap: false };
     case "@":
       return { kind: LexicalRelationshipType.HYPERNYM, swap: false };
-    case "@i":
-      return { kind: LexicalRelationshipType.INSTANCE_HYPERNYM, swap: false };
     case "~":
       return { kind: LexicalRelationshipType.HYPERNYM, swap: true };
-    case "~i":
-      return { kind: LexicalRelationshipType.INSTANCE_HYPERNYM, swap: true };
+    // `@i`/`~i` (instance-of) fall through to `default` -- deliberately
+    // unrecognised, not seeded (this function's own docstring above).
     case "%p":
       return { kind: LexicalRelationshipType.MERONYM, swap: false, meronymKind: "part" };
     case "%m":
