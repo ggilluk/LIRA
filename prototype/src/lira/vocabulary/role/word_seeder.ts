@@ -377,6 +377,12 @@ function applyDomainTag(target: { domainTag?: Text; relatedDomainTags: readonly 
  * exactly as they were), the same accepted duplication WordNet's own
  * Sense/Word split still carries for definition/usageNotes today. */
 function registerUniqueSense(senseStore: SenseStore, entry: Word | Phrase): void {
+  // Phrase has no root-word concept at all (root_words.json's own 25
+  // entries are all single-word NOUNs) -- the `"words" in entry` check
+  // (word.ts's own relatedWords()/addCandidate() use the identical
+  // Phrase-vs-Word discriminator) is what tells the two apart here,
+  // since a Phrase's own `words` field doesn't exist on Word.
+  const isWord = !("words" in entry);
   const sense = createSense({
     domainTag: entry.domainTag,
     relatedDomainTags: entry.relatedDomainTags,
@@ -385,6 +391,11 @@ function registerUniqueSense(senseStore: SenseStore, entry: Word | Phrase): void
     usageNotes: entry.usageNotes,
     sourceReferences: entry.sourceReferences,
     isCommon: entry.isCommon,
+    isRootWord: isWord && entry.isRootWord,
+    interrogativeRootWord: isWord ? entry.interrogativeRootWord : undefined,
+    hypernymRootWord: isWord ? entry.hypernymRootWord : undefined,
+    holonymRootWord: isWord ? entry.holonymRootWord : undefined,
+    vectorPrimitiveRootWord: isWord ? entry.vectorPrimitiveRootWord : undefined,
   });
   senseStore.append(sense);
   senseStore.registerMember(sense, entry);

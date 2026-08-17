@@ -8,13 +8,23 @@
  * carries a `senseId` reference (word.ts's own field of that name)
  * instead of a duplicate copy.
  *
- * Deliberately additive, not yet a replacement: WordSeeder.seedWordNet
- * creates one Sense per synset and links every member to it, but a
- * WordNet-seeded Word/Phrase's own definition/usageNotes/domainTag/
- * relatedDomainTags fields are still populated exactly as before --
- * removing that duplication (and having every reader resolve through
- * the Sense instead) is a separate, later migration, not part of
- * introducing the concept itself.
+ * Every Word/Phrase gets a Sense now, WordNet-sourced (one per synset,
+ * shared by every member) and hand-curated alike (one per entry,
+ * word_seeder.ts's own registerUniqueSense -- a deliberate "for now"
+ * stopgap, not a claim that hand-curated synonyms now group the way
+ * WordNet's do). DictionaryView.senseFieldsFor()/isRootWordFor() are
+ * the read side: prefer a Word/Phrase's own Sense, fall back to its own
+ * fields only when senseId doesn't resolve in that Domain's own
+ * SenseStore (a cross-Domain copy -- VocabularyLayer's own Physics-
+ * from-Common bootstrap -- doesn't carry a matching Sense copy across
+ * yet, a known, accepted gap, the same one LexicalRelationshipStore
+ * already has). Only domainTag/relatedDomainTags actually stopped being
+ * written onto a WordNet-seeded Word/Phrase directly (their own
+ * docstring below) -- every other field here (definition/gloss/
+ * usageNotes, the root-word fields) is still duplicated onto the Word/
+ * Phrase too, everywhere, not just for hand-curated data; collapsing
+ * that duplication for good needs the cross-Domain gap above fixed
+ * first, so it hasn't been done yet.
  *
  * `synsetId` here plays the same "upstream external identity" role
  * Word.synsetId already does -- not to be confused with a Word/Phrase's
@@ -26,8 +36,12 @@
  * by this file. */
 
 import type { Identifier, Text } from "../../value_objects";
+import type { HolonymRootWord } from "./holonym_root_word";
+import type { HypernymRootWord } from "./hypernym_root_word";
+import type { InterrogativeRootWord } from "./interrogative_root_word";
 import type { SourceReference } from "./source_reference";
 import { newUuid } from "./uuid";
+import type { VectorPrimitiveRootWord } from "./vector_primitive_root_word";
 
 export interface Sense {
   // A per-Domain-graph-instance identity, freshly regenerated every
@@ -56,13 +70,16 @@ export interface Sense {
   // synset-wide topic-domain pointer (`;c`/`-c`), once per Sense rather
   // than once per member Word/Phrase (word_seeder.ts's own
   // applyDomainTag docstring on why: a topic domain is a property of
-  // the meaning, not of any one lemma that happens to spell it). A
-  // Word/Phrase's own domainTag/relatedDomainTags fields still exist and
-  // still matter -- every hand-curated Common Vocabulary Cache entry has
-  // no Sense at all and keeps using them directly -- but for a WordNet-
-  // seeded Word/Phrase they go unpopulated now; DictionaryView.domainTagsFor()
-  // reads through the Sense first, falling back to the Word/Phrase's own
-  // only when it has no Sense.
+  // the meaning, not of any one lemma that happens to spell it), and by
+  // registerUniqueSense for a hand-curated entry (copied straight from
+  // the Word/Phrase's own value). A WordNet-seeded Word/Phrase's own
+  // domainTag/relatedDomainTags go unpopulated now -- this Sense is the
+  // only place that fact lives; a hand-curated one keeps its own fields
+  // too, since it's cheap and there's no accumulation risk the way
+  // tagTopicDomain's repeated per-pointer writes had. Either way,
+  // DictionaryView.senseFieldsFor() reads through the Sense first,
+  // falling back to the Word/Phrase's own fields only when its senseId
+  // doesn't resolve.
   domainTag?: Text;
   relatedDomainTags: readonly Text[];
 
@@ -71,6 +88,22 @@ export interface Sense {
   // True only for a Sense loaded by WordSeeder -- never set true by
   // hand. Mirrors Word.isCommon/Phrase.isCommon exactly.
   isCommon: boolean;
+
+  // Word.isRootWord/interrogativeRootWord/hypernymRootWord/
+  // holonymRootWord/vectorPrimitiveRootWord's own exact counterparts --
+  // Phrase has no equivalent (root_words.json's own 25 entries are all
+  // single-word NOUNs), so DictionaryView.isRootWordFor() only ever
+  // takes a Word, never the wider Word | Phrase senseFieldsFor() does.
+  // "Which sense is the root-word one" is unambiguous here in practice
+  // (every root_words.json entry gets its own private, unshared Sense --
+  // registerUniqueSense's own docstring), unlike leaving isRootWord on
+  // the whole Word, which would wrongly flag every sense of a Word that
+  // happened to also carry unrelated meanings.
+  isRootWord: boolean;
+  interrogativeRootWord?: InterrogativeRootWord;
+  hypernymRootWord?: HypernymRootWord;
+  holonymRootWord?: HolonymRootWord;
+  vectorPrimitiveRootWord?: VectorPrimitiveRootWord;
 }
 
 export type SenseInit = Partial<Sense>;
@@ -81,6 +114,7 @@ export function createSense(init: SenseInit = {}): Sense {
     relatedDomainTags: [],
     sourceReferences: [],
     isCommon: false,
+    isRootWord: false,
     uuid: init.uuid ?? { value: newUuid() },
     entryId: init.entryId ?? { value: newUuid() },
     ...init,

@@ -276,10 +276,11 @@ describe("WordSeeder against the bundled Common Vocabulary Cache", () => {
     expect(first).toBeGreaterThan(0);
 
     // root_words.json's own "entity" carries a real domainTag
-    // ("root_word.common") -- its own Sense (word_seeder.ts's own
-    // registerUniqueSense) must carry the identical value, since
-    // DictionaryView.domainTagsFor() now prefers the Sense over the
-    // Word directly once a senseId is present.
+    // ("root_word.common"), a real definition, and isRootWord/
+    // hypernymRootWord -- its own Sense (word_seeder.ts's own
+    // registerUniqueSense) must carry all of it, since
+    // DictionaryView.senseFieldsFor()/isRootWordFor() now prefer the
+    // Sense over the Word directly once a senseId is present.
     const entity = dictionary.lookupAll("entity").find((w) => w.partOfSpeech === PartOfSpeech.NOUN);
     expect(entity).toBeDefined();
     expect(entity?.senseId).toBeDefined();
@@ -287,21 +288,29 @@ describe("WordSeeder against the bundled Common Vocabulary Cache", () => {
     expect(entitySense).toBeDefined();
     expect(entitySense?.domainTag?.value).toBe("root_word.common");
     expect(entitySense?.isCommon).toBe(true);
+    expect(entitySense?.definition?.value).toBe(entity?.definition?.value);
+    expect(entitySense?.isRootWord).toBe(true);
+    expect(entitySense?.hypernymRootWord).toBe(HypernymRootWord.ENTITY);
 
-    // "she" (pronouns.json, no domainTag of its own) gets its own
-    // distinct Sense too -- one per entry, never shared, unlike
-    // WordNet's own per-synset Sense (registerUniqueSense's own
-    // docstring).
+    // "she" (pronouns.json, no domainTag/root-word status of its own)
+    // gets its own distinct Sense too -- one per entry, never shared,
+    // unlike WordNet's own per-synset Sense (registerUniqueSense's own
+    // docstring) -- and isRootWord correctly comes back false, not
+    // merely undefined, for an ordinary closed-class Word's own Sense.
     const she = dictionary.lookup("she");
     expect(she?.senseId).toBeDefined();
     expect(she!.senseId!.value).not.toBe(entity!.senseId!.value);
     expect(senseStore.membersOf(she!.senseId!.value)).toEqual([she]);
+    expect(senseStore.findByUuid(she!.senseId!.value)?.isRootWord).toBe(false);
 
-    // A Phrase gets one too, same as a Word.
+    // A Phrase gets one too, same as a Word -- but never a root-word
+    // one, since Phrase has no such concept at all (registerUniqueSense's
+    // own docstring).
     const eachOther = phraseBook.lookup("each other");
     expect(eachOther?.senseId).toBeDefined();
     const eachOtherSense = senseStore.findByUuid(eachOther!.senseId!.value);
     expect(eachOtherSense).toBeDefined();
+    expect(eachOtherSense?.isRootWord).toBe(false);
 
     expect(senseStore.totalEntries()).toBe(dictionary.totalEntries() + phraseBook.totalEntries());
 
@@ -859,7 +868,7 @@ describe("DictionaryView.searchWords", () => {
 
     // "winger" (offset 10802147) carries FOUR topic-domain pointers,
     // now stored on its own Sense, not on the Word (word_seeder.ts's own
-    // tagTopicDomain docstring) -- DictionaryView.domainTagsFor() must
+    // tagTopicDomain docstring) -- DictionaryView.senseFieldsFor() must
     // resolve them through senseId, not word.domainTag directly (always
     // undefined for a WordNet-seeded Word after this migration).
     const winger = dictionary.lookupAll("winger").find((w) => w.synsetId?.value === "10802147-n");
@@ -872,6 +881,38 @@ describe("DictionaryView.searchWords", () => {
     expect(["soccer", "field hockey", "rugby", "football"]).toContain(record.domain);
     expect(new Set([record.domain, ...record.related_domains])).toEqual(new Set(["soccer", "field hockey", "rugby", "football"]));
   }, 30000);
+
+  it("a WordRecord's own is_root_word and rootWordsOnly filter read through the shared Sense, and definition/gloss survive when the SenseStore has no matching Sense at all (the Physics-from-Common cross-Domain gap senseFieldsFor()'s own docstring accepts)", () => {
+    const dictionary = new Dictionary();
+    const phraseBook = new PhraseBook();
+    const senseStore = new SenseStore();
+    new WordSeeder("en").seedDomain({ vocabulary: { dictionary, phrases: phraseBook, senses: senseStore } }, { excludeOpenClasses: true });
+
+    const entity = dictionary.lookupAll("entity").find((w) => w.partOfSpeech === PartOfSpeech.NOUN);
+    expect(entity).toBeDefined();
+
+    // With the matching SenseStore: is_root_word comes back true (read
+    // through the Sense, isRootWordFor()'s own docstring), the
+    // rootWordsOnly filter finds it, and definition/gloss resolve
+    // (dual-written onto both Word and Sense, senseFieldsFor()'s own
+    // docstring on why neither is stripped for hand-curated data).
+    const withSenses = new DictionaryView(dictionary, new LexicalRelationshipStore(), { domainName: "Common", phrases: phraseBook, senses: senseStore });
+    const recordWithSenses = withSenses.searchWords({ wordId: entity!.uuid.value }).words[0];
+    expect(recordWithSenses.is_root_word).toBe(true);
+    expect(recordWithSenses.definition).toBe(entity!.definition!.value);
+    expect(withSenses.searchWords({ rootWordsOnly: true }).words.map((w) => w.lexical_form)).toContain("entity");
+
+    // Without a matching SenseStore at all (a fresh, empty one -- the
+    // same shape a cross-Domain copy's own SenseStore has today) --
+    // is_root_word and definition still resolve correctly, falling back
+    // to entity's own fields (never stripped for hand-curated data)
+    // rather than silently going blank/false.
+    const withoutSenses = new DictionaryView(dictionary, new LexicalRelationshipStore(), { domainName: "Common", phrases: phraseBook, senses: new SenseStore() });
+    const recordWithoutSenses = withoutSenses.searchWords({ wordId: entity!.uuid.value }).words[0];
+    expect(recordWithoutSenses.is_root_word).toBe(true);
+    expect(recordWithoutSenses.definition).toBe(entity!.definition!.value);
+    expect(withoutSenses.searchWords({ rootWordsOnly: true }).words.map((w) => w.lexical_form)).toContain("entity");
+  });
 
   it("sense_id is null for a Word that didn't come from WordSeeder.seedWordNet", () => {
     const dictionary = new Dictionary();

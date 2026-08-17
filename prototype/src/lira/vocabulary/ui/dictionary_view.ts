@@ -513,6 +513,7 @@ export class DictionaryView {
   private wordRecordFor(word: Word): WordRecord {
     const wordId = word.uuid.value;
     const relationshipCount = this.relationships.outgoing(wordId).length + this.relationships.incoming(wordId).length;
+    const senseFields = this.senseFieldsFor(word);
     return {
       id: wordId,
       entry_id: word.entryId.value,
@@ -520,16 +521,16 @@ export class DictionaryView {
       text: word.text,
       pos: PartOfSpeech[word.partOfSpeech],
       sense_id: word.synsetId?.value ?? null,
-      definition: word.definition?.value ?? "",
-      gloss: word.gloss?.value ?? "",
+      definition: senseFields.definition?.value ?? "",
+      gloss: senseFields.gloss?.value ?? "",
       register_codes: word.registerCodes.map((code) => RegisterCode[code]),
       dialect_codes: word.dialectCodes.map((code) => code.value),
       editorial_labels: word.editorialLabels.map((label) => EditorialLabel[label]),
       is_common: word.isCommon,
-      is_root_word: word.isRootWord,
+      is_root_word: this.isRootWordFor(word),
       is_derivable_noun: word.isDerivableNoun,
       domain: this.domainLabel(word),
-      related_domains: this.domainTagsFor(word).relatedDomainTags.map((tag) => tag.value),
+      related_domains: senseFields.relatedDomainTags.map((tag) => tag.value),
       is_fully_hydrated: word.isFullyHydrated,
       sources: word.sourceReferences.map((ref) => ref.sourceName.value),
       relationship_count: relationshipCount,
@@ -555,14 +556,15 @@ export class DictionaryView {
   }
 
   private phraseRecordFor(phrase: Phrase): PhraseRecord {
+    const senseFields = this.senseFieldsFor(phrase);
     return {
       id: phrase.uuid.value,
       entry_id: phrase.entryId.value,
       lexical_form: phrase.lexicalForm?.value ?? phrase.text,
       text: phrase.text,
       pos: PartOfSpeech[phrase.partOfSpeech],
-      definition: phrase.definition?.value ?? "",
-      gloss: phrase.gloss?.value ?? "",
+      definition: senseFields.definition?.value ?? "",
+      gloss: senseFields.gloss?.value ?? "",
       register_codes: phrase.registerCodes.map((code) => RegisterCode[code]),
       dialect_codes: phrase.dialectCodes.map((code) => code.value),
       editorial_labels: phrase.editorialLabels.map((label) => EditorialLabel[label]),
@@ -634,7 +636,7 @@ export class DictionaryView {
     let totalMatches = 0;
     for (const word of this.dictionary.all()) {
       if (options.pos && PartOfSpeech[word.partOfSpeech] !== options.pos) continue;
-      if (options.rootWordsOnly && !word.isRootWord) continue;
+      if (options.rootWordsOnly && !this.isRootWordFor(word)) continue;
       if (options.domain && this.domainLabel(word) !== options.domain) continue;
       const lexicalForm = (word.lexicalForm?.value ?? word.text).toLowerCase();
       if (wordQuery && !lexicalForm.includes(wordQuery)) continue;
@@ -1114,19 +1116,55 @@ export class DictionaryView {
     return { nodes, edges, roots, totalEdgeCount, totalNodeCount, fellBack: false, truncated };
   }
 
-  /** The domainTag/relatedDomainTags that actually apply to `word` --
-   * preferring its Sense's own (WordSeeder.seedWordNet's own
-   * tagTopicDomain writes to the shared Sense now, once per synset-wide
-   * topic-domain pointer, not to every member Word/Phrase -- sense.ts's
-   * own docstring) and falling back to the Word/Phrase's own only when
-   * it has no Sense at all -- every hand-curated Common Vocabulary Cache
-   * entry, which predates Sense and has nowhere else to carry its own
-   * polysemy-disambiguating tag ("symbol.common", root_words.json's own
-   * "root_word.common", ...). */
-  private domainTagsFor(word: Word): { domainTag?: Text; relatedDomainTags: readonly Text[] } {
+  /** The Sense-owned fields that actually apply to `entry` (a Word or a
+   * Phrase) -- domainTag/relatedDomainTags, definition/gloss/usageNotes
+   * -- preferring its own Sense (WordSeeder's own tagTopicDomain,
+   * seedWordNet's own createSense call, and registerUniqueSense all
+   * populate a Sense with the identical values `entry`'s own fields
+   * already carry, WordNet-sourced and hand-curated alike -- sense.ts's
+   * own docstring) and falling back to `entry`'s own fields only when
+   * its senseId doesn't resolve in this Domain's own SenseStore. That
+   * fallback isn't just defensive: a Word/Phrase copied into a different
+   * Domain (VocabularyLayer's own Physics-from-Common bootstrap, in
+   * particular) doesn't yet carry a matching Sense copy across into that
+   * Domain's own SenseStore -- a known, accepted gap, the same one
+   * LexicalRelationshipStore already has for a cross-domain copy -- so
+   * `entry`'s own fields (never stripped, unlike WordNet's own
+   * domainTag/relatedDomainTags) are what keeps a Physics-side word's
+   * own definition/domain/etc. correct regardless. */
+  private senseFieldsFor(entry: Word | Phrase): {
+    domainTag?: Text;
+    relatedDomainTags: readonly Text[];
+    definition?: Text;
+    gloss?: Text;
+    usageNotes: readonly Text[];
+  } {
+    const sense = entry.senseId !== undefined ? this.senses.findByUuid(entry.senseId.value) : undefined;
+    if (sense !== undefined) {
+      return {
+        domainTag: sense.domainTag,
+        relatedDomainTags: sense.relatedDomainTags,
+        definition: sense.definition,
+        gloss: sense.gloss,
+        usageNotes: sense.usageNotes,
+      };
+    }
+    return {
+      domainTag: entry.domainTag,
+      relatedDomainTags: entry.relatedDomainTags,
+      definition: entry.definition,
+      gloss: entry.gloss,
+      usageNotes: entry.usageNotes,
+    };
+  }
+
+  /** isRootWord's own exact counterpart to senseFieldsFor() -- kept
+   * separate since Phrase has no notion of a root word at all (only one
+   * of root_words.json's 25 curated NOUN Words ever has this set), so
+   * this only ever takes a Word, not the wider Word | Phrase entry. */
+  private isRootWordFor(word: Word): boolean {
     const sense = word.senseId !== undefined ? this.senses.findByUuid(word.senseId.value) : undefined;
-    if (sense !== undefined) return { domainTag: sense.domainTag, relatedDomainTags: sense.relatedDomainTags };
-    return { domainTag: word.domainTag, relatedDomainTags: word.relatedDomainTags };
+    return sense?.isRootWord ?? word.isRootWord;
   }
 
   private domainLabel(word: Word | undefined): string | null {
@@ -1135,7 +1173,7 @@ export class DictionaryView {
     // A genuine polyseme's domainTag ("symbol.common") names its own
     // sense-disambiguating subdomain; every other Common word reads as
     // plain "Common", same as before this field existed.
-    return this.domainTagsFor(word).domainTag?.value ?? "Common";
+    return this.senseFieldsFor(word).domainTag?.value ?? "Common";
   }
 }
 
