@@ -143,7 +143,7 @@ async function handleSeedCommonVocabulary(request: SeedCommonVocabularyRequest):
     // below, not off seedDomain()'s own combined return value (it
     // counts both together, by design -- an idempotency check just
     // wants "did this add anything", not a words/phrases breakdown).
-    // Dictionary.totalEntries()/PhraseBook.totalEntries() before vs.
+    // Dictionary.totalEntries()/Phrases.totalEntries() before vs.
     // after gives the accurate split without changing that method's
     // own established single-number contract (vocabulary.test.ts's own
     // assertions on it, in particular).
@@ -339,7 +339,7 @@ function handleSearchWords(request: SearchWordsRequest): void {
 /** handleSearchWords()'s own exact counterpart for the Phrases tab --
  * see that function's own docstring; dispatched from
  * renderPhrasesOverCapacity() (dictionary_view.ts) whenever the target
- * Domain's own PhraseBook is over MAX_INTERACTIVE_WORDS_PHRASES. */
+ * Domain's own Phrases is over MAX_INTERACTIVE_WORDS_PHRASES. */
 function handleSearchPhrases(request: SearchPhrasesRequest): void {
   const domain = domains.get(request.domain);
   if (!domain) {

@@ -1,6 +1,6 @@
 import type { Dictionary } from "../data/dictionary";
 import { toSyntheticWord } from "../data/phrase";
-import type { PhraseBook } from "../data/phrase_book";
+import type { Phrases } from "../data/phrases";
 import { definitionWords, type Word } from "../data/word";
 import { IdentificationSource, type WordIdentification } from "../data/word_identification";
 import { createWordLookupContext } from "../data/word_lookup_context";
@@ -24,7 +24,7 @@ export class DictionaryProcessor {
 
   constructor(
     private readonly dictionary: Dictionary,
-    private readonly phraseBook: PhraseBook,
+    private readonly phraseBook: Phrases,
     private readonly hydrator: AsyncDictionaryHydrator,
     private readonly domainName: string,
   ) {
@@ -76,7 +76,7 @@ export class DictionaryProcessor {
    * greater, down to 2) against the seeded Vocabulary before falling
    * back to a plain single-token identifyWord lookup -- "in spite of"
    * resolves as the one Phrase it's seeded as (assets/common/en/
-   * prepositions.json, now via PhraseBook rather than a multi-word
+   * prepositions.json, now via Phrases rather than a multi-word
    * Word -- Phrase's own docstring, data/phrase.ts), not three
    * independent single-word lookups on "in"/"spite"/"of". Checks
    * `phraseBook` AND `dictionary` at every span, not phraseBook alone:

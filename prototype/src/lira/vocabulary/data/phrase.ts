@@ -7,7 +7,7 @@
  * separate lexical category from a single-word Word: it names a fixed
  * multi-token span that functions as one grammatical unit, the same
  * role a Word plays for a single token, but kept in its own store
- * (PhraseBook, phrase_book.ts) rather than Dictionary so a caller can
+ * (Phrases, phrases.ts) rather than Dictionary so a caller can
  * tell "this Domain's single-word lexicon" and "this Domain's
  * multi-word lexicon" apart without inspecting `text` for a space.
  *
@@ -135,7 +135,7 @@ export function createPhrase(init: PhraseInit): Phrase {
 /** A shallow copy of `phrase`, sharing every field's own object
  * identity except `uuid`, which becomes a fresh Identifier -- the
  * Phrase counterpart of copyWordWithFreshUuid (word.ts), used by
- * PhraseBook.seedFrom/WordSeeder.seedClosedClassWords for exactly the
+ * Phrases.seedFrom/WordSeeder.seedClosedClassWords for exactly the
  * same reason: two Domains' independent copies of "in spite of" must
  * never be confused as the same graph node. */
 export function copyPhraseWithFreshUuid(phrase: Phrase): Phrase {
@@ -148,7 +148,7 @@ export function copyPhraseWithFreshUuid(phrase: Phrase): Phrase {
  * WordIdentification's own `.word: Word` field. This is the token side
  * of the dual use this file's own docstring describes: Vocabulary's
  * durable, authoritative record of "in spite of" is the Phrase this
- * was built from (PhraseBook, not Dictionary), but Linguistics' own
+ * was built from (Phrases, not Dictionary), but Linguistics' own
  * reading tree has no separate notion of a multi-word Vocabulary entry
  * -- it materialises every resolved span, one word or several raw
  * tokens wide, as one Word-shaped LinguisticUnit either way. A fresh
@@ -180,7 +180,7 @@ export function toSyntheticWord(phrase: Phrase): Word {
  * it is the identity-preserving projection used wherever a Phrase
  * needs to be resolved and displayed exactly like a Word, because a
  * LexicalRelationship's sourceWordId/targetWordId is an opaque uuid
- * string that doesn't record which store (Dictionary or PhraseBook)
+ * string that doesn't record which store (Dictionary or Phrases)
  * it came from (LexicalRelationshipStore's own docstring). A WordNet-
  * seeded multi-word Phrase participates in the same SYNONYM/pointer
  * relationship graph a single-word synset member does

@@ -99,7 +99,7 @@ export interface SearchWordsRequest {
   limit?: number;
 }
 
-/** Resolves one Phrases-tab search against `domain`'s full PhraseBook,
+/** Resolves one Phrases-tab search against `domain`'s full Phrases,
  * server-side (DictionaryView.searchPhrases() -- that method's own
  * docstring on why: past MAX_INTERACTIVE_WORDS_PHRASES, there's no
  * embedded client-side PHRASES array left to filter in the browser at
@@ -107,7 +107,7 @@ export interface SearchWordsRequest {
  * own options directly -- SearchWordsRequest's own exact counterpart,
  * minus `wordId`/`domainLabel`/`rootWordsOnly` (a Phrase pivot-lookup
  * still goes through the shared SearchWordsRequest/`wordId` path,
- * DictionaryView.searchWords()'s own PhraseBook fallback -- there's
+ * DictionaryView.searchWords()'s own Phrases fallback -- there's
  * nothing Phrase-specific for a second `wordId` mode to do here -- and
  * Phrase has neither a domain nor an is-root-word field of its own). */
 export interface SearchPhrasesRequest {

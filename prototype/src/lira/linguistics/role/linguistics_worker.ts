@@ -28,7 +28,7 @@
 
 import { Dictionary } from "../../vocabulary/data/dictionary";
 import { PartOfSpeech } from "../../vocabulary/data/part_of_speech";
-import { PhraseBook } from "../../vocabulary/data/phrase_book";
+import { Phrases } from "../../vocabulary/data/phrases";
 import { AsyncDictionaryHydrator } from "../../vocabulary/role/dictionary_hydrator";
 import { DictionaryProcessor } from "../../vocabulary/role/dictionary_processor";
 import { WordSeeder } from "../../vocabulary/role/word_seeder";
@@ -80,7 +80,7 @@ function handleInit(): void {
   try {
     post({ type: "status", state: "running", detail: "Seeding the Common Vocabulary Cache…" });
     const dictionary = new Dictionary();
-    const phraseBook = new PhraseBook();
+    const phraseBook = new Phrases();
     const wordsSeeded = new WordSeeder("en").seedClosedClassWords(dictionary, phraseBook);
 
     post({ type: "status", state: "running", detail: `Seeded ${wordsSeeded} words — configuring grammar…` });

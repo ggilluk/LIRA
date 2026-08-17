@@ -7,7 +7,7 @@ import { PartOfSpeech } from "./data/part_of_speech";
 import { antonyms, createWord, holonyms, hypernyms, hyponyms, meronyms, synonyms } from "./data/word";
 import { HypernymRootWord } from "./data/hypernym_root_word";
 import { createPhrase } from "./data/phrase";
-import { PhraseBook } from "./data/phrase_book";
+import { Phrases } from "./data/phrases";
 import { SenseStore } from "./data/sense_store";
 import { AsyncDictionaryHydrator } from "./role/dictionary_hydrator";
 import { DictionaryProcessor } from "./role/dictionary_processor";
@@ -101,7 +101,7 @@ describe("DictionaryProcessor.identifyPhrase", () => {
     dictionary.append(createWord({ text: "in", partOfSpeech: PartOfSpeech.PREPOSITION }));
     dictionary.append(createWord({ text: "of", partOfSpeech: PartOfSpeech.PREPOSITION }));
     dictionary.append(createWord({ text: "in spite of", partOfSpeech: PartOfSpeech.PREPOSITION }));
-    const processor = new DictionaryProcessor(dictionary, new PhraseBook(), new AsyncDictionaryHydrator(dictionary), "Common");
+    const processor = new DictionaryProcessor(dictionary, new Phrases(), new AsyncDictionaryHydrator(dictionary), "Common");
 
     const rawTokens = ["he", "waited", "in", "spite", "of", "the", "rain"];
     const result = processor.identifyPhrase(rawTokens, 2);
@@ -115,7 +115,7 @@ describe("DictionaryProcessor.identifyPhrase", () => {
     const dictionary = new Dictionary();
     dictionary.append(createWord({ text: "cat", partOfSpeech: PartOfSpeech.NOUN }));
     const hydrator = new AsyncDictionaryHydrator(dictionary);
-    const processor = new DictionaryProcessor(dictionary, new PhraseBook(), hydrator, "Common");
+    const processor = new DictionaryProcessor(dictionary, new Phrases(), hydrator, "Common");
 
     const result = processor.identifyPhrase(["the", "cat", "sat"], 1);
 
@@ -127,7 +127,7 @@ describe("DictionaryProcessor.identifyPhrase", () => {
     const dictionary = new Dictionary();
     dictionary.append(createWord({ text: "spite", partOfSpeech: PartOfSpeech.NOUN }));
     dictionary.append(createWord({ text: "in spite of", partOfSpeech: PartOfSpeech.PREPOSITION }));
-    const processor = new DictionaryProcessor(dictionary, new PhraseBook(), new AsyncDictionaryHydrator(dictionary), "Common");
+    const processor = new DictionaryProcessor(dictionary, new Phrases(), new AsyncDictionaryHydrator(dictionary), "Common");
 
     // "in spite" (2 tokens) matches nothing on its own -- only the full
     // 3-token "in spite of" is seeded -- so the longest-match search
@@ -138,9 +138,9 @@ describe("DictionaryProcessor.identifyPhrase", () => {
     expect(result.candidates[0].word?.text).toBe("in spite of");
   });
 
-  it("resolves \"in spite of\" as one PREPOSITION span against the real bundled Common Vocabulary Cache -- now via PhraseBook, not a multi-word Word", () => {
+  it("resolves \"in spite of\" as one PREPOSITION span against the real bundled Common Vocabulary Cache -- now via Phrases, not a multi-word Word", () => {
     const dictionary = new Dictionary();
-    const phraseBook = new PhraseBook();
+    const phraseBook = new Phrases();
     new WordSeeder("en").seedClosedClassWords(dictionary, phraseBook);
     // "in spite of" is a Phrase now, not a Word (Phrase's own docstring,
     // data/phrase.ts) -- Dictionary itself never sees it.
@@ -197,7 +197,7 @@ describe("WordSeeder against the bundled Common Vocabulary Cache", () => {
   it("seeds the mandatory closed-class words and stays idempotent", () => {
     const seeder = new WordSeeder("en");
     const dictionary = new Dictionary();
-    const domain = { vocabulary: { dictionary, phrases: new PhraseBook() } };
+    const domain = { vocabulary: { dictionary, phrases: new Phrases() } };
 
     const first = seeder.seedDomain(domain);
     const second = seeder.seedDomain(domain);
@@ -209,7 +209,7 @@ describe("WordSeeder against the bundled Common Vocabulary Cache", () => {
 
   it("wires the real Common Vocabulary Cache's nested lemma groups into the seeded Dictionary's lemma index", () => {
     const dictionary = new Dictionary();
-    new WordSeeder("en").seedClosedClassWords(dictionary, new PhraseBook());
+    new WordSeeder("en").seedClosedClassWords(dictionary, new Phrases());
 
     // "measure" -> "measured" is nested in promoted_words.json with
     // BOTH PAST_TENSE_FORM and PAST_PARTICIPLE_FORM (the same surface
@@ -232,7 +232,7 @@ describe("WordSeeder against the bundled Common Vocabulary Cache", () => {
 
   it("seedClosedClassWords({ excludeOpenClasses: true }) skips every NOUN/VERB/ADJECTIVE/ADVERB cache entry except root_words.json's own curated root-word table", () => {
     const dictionary = new Dictionary();
-    new WordSeeder("en").seedClosedClassWords(dictionary, new PhraseBook(), { excludeOpenClasses: true });
+    new WordSeeder("en").seedClosedClassWords(dictionary, new Phrases(), { excludeOpenClasses: true });
 
     // promoted_words.json is entirely NOUN/VERB/ADJECTIVE/ADVERB --
     // WordSeeder.seedWordNet is now this prototype's source of truth for
@@ -261,13 +261,13 @@ describe("WordSeeder against the bundled Common Vocabulary Cache", () => {
     // seeded -- every other caller (Linguistics' own test fixtures in
     // particular) is completely unaffected by this option's existence.
     const unrestricted = new Dictionary();
-    new WordSeeder("en").seedClosedClassWords(unrestricted, new PhraseBook());
+    new WordSeeder("en").seedClosedClassWords(unrestricted, new Phrases());
     expect(unrestricted.lookupAll("measure").some((w) => w.partOfSpeech === PartOfSpeech.VERB)).toBe(true);
   });
 
   it("gives every hand-curated Word/Phrase its own unique Sense, carrying its domainTag/relatedDomainTags, when a SenseStore is supplied", () => {
     const dictionary = new Dictionary();
-    const phraseBook = new PhraseBook();
+    const phraseBook = new Phrases();
     const senseStore = new SenseStore();
     const seeder = new WordSeeder("en");
     const domain = { vocabulary: { dictionary, phrases: phraseBook, senses: senseStore } };
@@ -326,12 +326,12 @@ describe("WordSeeder against the bundled Common Vocabulary Cache", () => {
 
   it("seeds every multi-word closed-class entry as a Phrase, not a multi-word Word", () => {
     const dictionary = new Dictionary();
-    const phraseBook = new PhraseBook();
+    const phraseBook = new Phrases();
     new WordSeeder("en").seedClosedClassWords(dictionary, phraseBook);
 
     // "each other" (pronouns.json) and "in spite of" (prepositions.json)
     // are both real multi-word Common Vocabulary Cache entries -- both
-    // should land in the PhraseBook, neither in the Dictionary.
+    // should land in the Phrases, neither in the Dictionary.
     expect(dictionary.lookupAll("each other")).toHaveLength(0);
     expect(dictionary.lookupAll("in spite of")).toHaveLength(0);
     const eachOther = phraseBook.lookup("each other");
@@ -375,7 +375,7 @@ describe("loadWordNetSynsets against the bundled Princeton WordNet 3.1 dict/ fil
 describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/ files", () => {
   it("seeds every synset member as a Word carrying its synsetId, wires every WordNet pointer to a LexicalRelationship, and stays idempotent across both", async () => {
     const dictionary = new Dictionary();
-    const phraseBook = new PhraseBook();
+    const phraseBook = new Phrases();
     const senseStore = new SenseStore();
     const lexicalRelationships = new LexicalRelationshipStore();
     const lexicalRelationshipProcessor = new LexicalRelationshipProcessor(
@@ -648,7 +648,7 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
       lexicalRelationships,
       new LexicalRelationshipSystemPropertyTensor(),
     );
-    await new WordSeeder("en").seedWordNet({ vocabulary: { dictionary, phrases: new PhraseBook(), senses: senseStore, lexicalRelationships, lexicalRelationshipProcessor } });
+    await new WordSeeder("en").seedWordNet({ vocabulary: { dictionary, phrases: new Phrases(), senses: senseStore, lexicalRelationships, lexicalRelationshipProcessor } });
 
     const dog = dictionary.lookupAll("dog").find((w) => w.partOfSpeech === PartOfSpeech.NOUN && w.synsetId?.value === "02086723-n");
     expect(dog).toBeDefined();
@@ -678,7 +678,7 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
 
   it("a multi-word synset lemma seeds as a Phrase, not a Word, and behaves exactly like a Word in the relationship graph -- resolvable from both DictionaryView.searchRelationships and resolveHierarchy", async () => {
     const dictionary = new Dictionary();
-    const phraseBook = new PhraseBook();
+    const phraseBook = new Phrases();
     const senseStore = new SenseStore();
     const lexicalRelationships = new LexicalRelationshipStore();
     const lexicalRelationshipProcessor = new LexicalRelationshipProcessor(
@@ -775,7 +775,7 @@ describe("RelationshipSeeder against the bundled Common Relationship Cache", () 
   it("seeds relationships that resolve against a seeded Dictionary", async () => {
     const wordSeeder = new WordSeeder("en");
     const dictionary = new Dictionary();
-    const phrases = new PhraseBook();
+    const phrases = new Phrases();
     wordSeeder.seedDomain({ vocabulary: { dictionary, phrases } });
 
     const lexicalRelationships = new LexicalRelationshipStore();
@@ -799,7 +799,7 @@ describe("RelationshipSeeder against the bundled Common Relationship Cache", () 
   it("{ skipUnresolvable: true } skips (rather than throws on) a spec whose Word was deliberately left unseeded by WordSeeder's own excludeOpenClasses, mirroring the Vocabulary view's 'Seed Vocabulary' toolbar action", async () => {
     const wordSeeder = new WordSeeder("en");
     const dictionary = new Dictionary();
-    const phrases = new PhraseBook();
+    const phrases = new Phrases();
     wordSeeder.seedDomain({ vocabulary: { dictionary, phrases } }, { excludeOpenClasses: true });
 
     const lexicalRelationships = new LexicalRelationshipStore();
@@ -891,7 +891,7 @@ describe("DictionaryView.searchWords", () => {
       lexicalRelationships,
       new LexicalRelationshipSystemPropertyTensor(),
     );
-    await new WordSeeder("en").seedWordNet({ vocabulary: { dictionary, phrases: new PhraseBook(), senses: new SenseStore(), lexicalRelationships, lexicalRelationshipProcessor } });
+    await new WordSeeder("en").seedWordNet({ vocabulary: { dictionary, phrases: new Phrases(), senses: new SenseStore(), lexicalRelationships, lexicalRelationshipProcessor } });
 
     const view = new DictionaryView(dictionary, lexicalRelationships, { domainName: "Common" });
     const result = view.searchWords({ word: "large", limit: 50 });
@@ -912,7 +912,7 @@ describe("DictionaryView.searchWords", () => {
       lexicalRelationships,
       new LexicalRelationshipSystemPropertyTensor(),
     );
-    await new WordSeeder("en").seedWordNet({ vocabulary: { dictionary, phrases: new PhraseBook(), senses: senseStore, lexicalRelationships, lexicalRelationshipProcessor } });
+    await new WordSeeder("en").seedWordNet({ vocabulary: { dictionary, phrases: new Phrases(), senses: senseStore, lexicalRelationships, lexicalRelationshipProcessor } });
 
     // "winger" (offset 10802147) carries FOUR topic-domain pointers,
     // now stored on its own Sense, not on the Word (word_seeder.ts's own
@@ -932,7 +932,7 @@ describe("DictionaryView.searchWords", () => {
 
   it("a WordRecord's own is_root_word and rootWordsOnly filter read through the shared Sense, and definition/gloss survive when the SenseStore has no matching Sense at all (the Physics-from-Common cross-Domain gap senseFieldsFor()'s own docstring accepts)", () => {
     const dictionary = new Dictionary();
-    const phraseBook = new PhraseBook();
+    const phraseBook = new Phrases();
     const senseStore = new SenseStore();
     new WordSeeder("en").seedDomain({ vocabulary: { dictionary, phrases: phraseBook, senses: senseStore } }, { excludeOpenClasses: true });
 
@@ -972,9 +972,9 @@ describe("DictionaryView.searchWords", () => {
 });
 
 describe("DictionaryView.searchPhrases", () => {
-  it("resolves against the real bundled WordNet-scale PhraseBook without embedding it (regression check mirroring searchWords' own)", async () => {
+  it("resolves against the real bundled WordNet-scale Phrases without embedding it (regression check mirroring searchWords' own)", async () => {
     const dictionary = new Dictionary();
-    const phraseBook = new PhraseBook();
+    const phraseBook = new Phrases();
     const lexicalRelationships = new LexicalRelationshipStore();
     const lexicalRelationshipProcessor = new LexicalRelationshipProcessor(
       lexicalRelationships,
@@ -993,12 +993,12 @@ describe("DictionaryView.searchPhrases", () => {
     expect(result.phrases.some((p) => p.lexical_form === "toy poodle")).toBe(true);
   }, 60000);
 
-  it("render() gates the embedded PHRASES array behind the same MAX_INTERACTIVE_WORDS threshold wordRecords() already has, once a PhraseBook grows past it, while still reporting the true, uncapped total in the Phrases stat tile", () => {
+  it("render() gates the embedded PHRASES array behind the same MAX_INTERACTIVE_WORDS threshold wordRecords() already has, once a Phrases grows past it, while still reporting the true, uncapped total in the Phrases stat tile", () => {
     const dictionary = new Dictionary();
-    const phraseBook = new PhraseBook();
+    const phraseBook = new Phrases();
     // Fabricated, not WordNet-seeded -- exercises render()'s own
     // capacity gate directly, without paying the cost of a real WordNet
-    // seed just to get a PhraseBook this large.
+    // seed just to get a Phrases this large.
     for (let i = 0; i < 20001; i++) {
       phraseBook.append(createPhrase({ text: `phrase number ${i}`, partOfSpeech: PartOfSpeech.NOUN }));
     }
@@ -1080,7 +1080,7 @@ describe("DictionaryView.searchRelationships", () => {
       lexicalRelationships,
       new LexicalRelationshipSystemPropertyTensor(),
     );
-    await new WordSeeder("en").seedWordNet({ vocabulary: { dictionary, phrases: new PhraseBook(), senses: senseStore, lexicalRelationships, lexicalRelationshipProcessor } });
+    await new WordSeeder("en").seedWordNet({ vocabulary: { dictionary, phrases: new Phrases(), senses: senseStore, lexicalRelationships, lexicalRelationshipProcessor } });
 
     const view = new DictionaryView(dictionary, lexicalRelationships, { domainName: "Common", senses: senseStore });
     const large = dictionary.lookup("large");
@@ -1262,7 +1262,7 @@ describe("DictionaryView.resolveHierarchy", () => {
       lexicalRelationships,
       new LexicalRelationshipSystemPropertyTensor(),
     );
-    await new WordSeeder("en").seedWordNet({ vocabulary: { dictionary, phrases: new PhraseBook(), senses: senseStore, lexicalRelationships, lexicalRelationshipProcessor } });
+    await new WordSeeder("en").seedWordNet({ vocabulary: { dictionary, phrases: new Phrases(), senses: senseStore, lexicalRelationships, lexicalRelationshipProcessor } });
 
     const view = new DictionaryView(dictionary, lexicalRelationships, { domainName: "Common", senses: senseStore });
     const poodle = dictionary.lookupAll("poodle").find((w) => w.partOfSpeech === PartOfSpeech.NOUN);

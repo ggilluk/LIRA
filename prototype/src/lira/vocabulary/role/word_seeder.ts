@@ -39,7 +39,7 @@ import type { Dictionary } from "../data/dictionary";
 import { LexicalRelationshipStore } from "../data/lexical_relationship_store";
 import { LexicalRelationshipType, MERONYM_KIND_QUALIFIER, relationshipGroup, type MeronymKind } from "../data/lexical_relationship_type";
 import { copyPhraseWithFreshUuid, createPhrase, type Phrase } from "../data/phrase";
-import type { PhraseBook } from "../data/phrase_book";
+import type { Phrases } from "../data/phrases";
 import { createSense, type Sense } from "../data/sense";
 import type { SenseStore } from "../data/sense_store";
 import type { SourceReference } from "../data/source_reference";
@@ -728,7 +728,7 @@ export class WordSeeder {
    * compete with there. */
   seedClosedClassWords(
     dictionary: Dictionary,
-    phraseBook: PhraseBook,
+    phraseBook: Phrases,
     options?: { excludeOpenClasses?: boolean },
     senseStore?: SenseStore,
   ): number {
@@ -774,7 +774,7 @@ export class WordSeeder {
   }
 
   seedDomain(
-    domain: { vocabulary: { dictionary: Dictionary; phrases: PhraseBook; senses?: SenseStore } },
+    domain: { vocabulary: { dictionary: Dictionary; phrases: Phrases; senses?: SenseStore } },
     options?: { excludeOpenClasses?: boolean },
   ): number {
     return this.seedClosedClassWords(domain.vocabulary.dictionary, domain.vocabulary.phrases, options, domain.vocabulary.senses);
@@ -844,7 +844,7 @@ export class WordSeeder {
     domain: {
       vocabulary: {
         dictionary: Dictionary;
-        phrases: PhraseBook;
+        phrases: Phrases;
         senses: SenseStore;
         lexicalRelationships: LexicalRelationshipStore;
         lexicalRelationshipProcessor: LexicalRelationshipProcessor;
@@ -926,7 +926,7 @@ export class WordSeeder {
         // multi-word sense gets exactly the same treatment a single-word
         // one does: full participation in this pass's SYNONYM wiring and
         // pass 2's pointer-relationship wiring below, just stored in
-        // PhraseBook instead of Dictionary.
+        // Phrases instead of Dictionary.
         if (isMultiWordLemma(lemma)) {
           const existingPhrase = phraseBook
             .lookupAll(lemma)

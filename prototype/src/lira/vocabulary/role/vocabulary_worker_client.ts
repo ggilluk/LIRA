@@ -192,7 +192,7 @@ export class VocabularyWorkerClient {
   }
 
   /** searchWords()'s own exact counterpart for the Phrases tab, against
-   * `domainName`'s PhraseBook inside the worker
+   * `domainName`'s Phrases inside the worker
    * (DictionaryView.searchPhrases()'s own docstring) -- PortalShell's
    * own DOM-event bridge answers a "lira-search-phrases" event the
    * fragment's script dispatches (dictionary_view.ts's own

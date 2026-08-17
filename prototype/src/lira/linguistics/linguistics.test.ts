@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { Dictionary } from "../vocabulary/data/dictionary";
 import { PartOfSpeech } from "../vocabulary/data/part_of_speech";
-import { PhraseBook } from "../vocabulary/data/phrase_book";
+import { Phrases } from "../vocabulary/data/phrases";
 import { AsyncDictionaryHydrator } from "../vocabulary/role/dictionary_hydrator";
 import { DictionaryProcessor } from "../vocabulary/role/dictionary_processor";
 import { WordSeeder } from "../vocabulary/role/word_seeder";
@@ -17,7 +17,7 @@ import { createUserPrompt } from "./ui/user_prompt";
 
 function seededController(): LinguisticController {
   const dictionary = new Dictionary();
-  const phraseBook = new PhraseBook();
+  const phraseBook = new Phrases();
   new WordSeeder("en").seedClosedClassWords(dictionary, phraseBook);
   const hydrator = new AsyncDictionaryHydrator(dictionary);
   const processor = new DictionaryProcessor(dictionary, phraseBook, hydrator, "Common");

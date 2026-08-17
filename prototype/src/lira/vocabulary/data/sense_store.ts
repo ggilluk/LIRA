@@ -2,10 +2,10 @@ import type { Phrase } from "./phrase";
 import { copySenseWithFreshUuid, type Sense } from "./sense";
 import type { Word } from "./word";
 
-/** Sense storage: PhraseBook's own counterpart for Sense (sense.ts's
- * own docstring on why a Sense is kept apart from Dictionary/PhraseBook
+/** Sense storage: Phrases's own counterpart for Sense (sense.ts's
+ * own docstring on why a Sense is kept apart from Dictionary/Phrases
  * rather than folded into either). One SenseStore per Domain, alongside
- * that Domain's own Dictionary/PhraseBook (VocabularyLayer.senses,
+ * that Domain's own Dictionary/Phrases (VocabularyLayer.senses,
  * data/layer.ts).
  *
  * Indexed by synsetId as well as uuid -- WordSeeder.seedWordNet's own
@@ -71,7 +71,7 @@ export class SenseStore {
   }
 
   /** Bootstraps this SenseStore with a copy of every Sense in `other`
-   * -- Dictionary.seedFrom/PhraseBook.seedFrom's own exact counterpart,
+   * -- Dictionary.seedFrom/Phrases.seedFrom's own exact counterpart,
    * used the same way (VocabularyLayer's own Physics-from-Common
    * snapshot). */
   seedFrom(other: SenseStore): void {

@@ -24,7 +24,7 @@ import type { LexicalRelationshipStore } from "../data/lexical_relationship_stor
 import { LexicalRelationshipType, MERONYM_KIND_QUALIFIER, relationshipCategory, relationshipGroup } from "../data/lexical_relationship_type";
 import { PartOfSpeech } from "../data/part_of_speech";
 import { phraseAsWord, type Phrase } from "../data/phrase";
-import { PhraseBook } from "../data/phrase_book";
+import { Phrases } from "../data/phrases";
 import { RegisterCode } from "../data/register_code";
 import { SenseStore } from "../data/sense_store";
 import { definitionWords, type Word } from "../data/word";
@@ -126,7 +126,7 @@ type DefinitionSegment =
 // Phrase's own relationships (it does participate in
 // LexicalRelationshipStore now -- word_seeder.ts's own seedWordNet)
 // are still fully visible, just via the Relationships/Hierarchy tabs'
-// own resolveEntry() fallback to PhraseBook, not through this record.
+// own resolveEntry() fallback to Phrases, not through this record.
 export interface PhraseRecord {
   id: string;
   entry_id: string;
@@ -220,7 +220,7 @@ export interface DictionaryViewOptions {
   // caller that predates Phrase (phrase.ts's own docstring) keeps
   // working with zero changes, same reasoning DictionaryView's own
   // constructor default gives this field.
-  phrases?: PhraseBook;
+  phrases?: Phrases;
   // Sense's own exact counterpart -- undefined/omitted means every
   // existing caller that predates Sense keeps working unchanged
   // (resolveEntry()'s own docstring on why an omitted SenseStore simply
@@ -327,7 +327,7 @@ export class DictionaryView {
   // record to find here.
   private readonly unresolved: readonly string[];
 
-  private readonly phrases: PhraseBook;
+  private readonly phrases: Phrases;
   private readonly senses: SenseStore;
 
   constructor(
@@ -338,7 +338,7 @@ export class DictionaryView {
     this.title = options.title ?? "LIRA Dictionary";
     this.domainName = options.domainName ?? "Domain";
     this.unresolved = options.unresolved ?? [];
-    this.phrases = options.phrases ?? new PhraseBook();
+    this.phrases = options.phrases ?? new Phrases();
     this.senses = options.senses ?? new SenseStore();
   }
 
@@ -362,7 +362,7 @@ export class DictionaryView {
     const totalPhraseCount = this.phrases.totalEntries();
     const totalRelationshipCount = this.relationships.all().length;
     const overCapacity = totalWordCount > MAX_INTERACTIVE_WORDS;
-    // A WordNet-seeded Domain's own PhraseBook is tens of thousands of
+    // A WordNet-seeded Domain's own Phrases is tens of thousands of
     // entries now (WordSeeder.seedWordNet routes every multi-word synset
     // lemma there), not the "a few dozen at most" scale an earlier
     // version of phraseRecords() assumed -- phraseRecords()'s own
@@ -539,7 +539,7 @@ export class DictionaryView {
     };
   }
 
-  /** Every Phrase in this Domain's PhraseBook, as a PhraseRecord -- only
+  /** Every Phrase in this Domain's Phrases, as a PhraseRecord -- only
    * ever run under MAX_INTERACTIVE_WORDS_PHRASES, the same capacity gate
    * wordRecords() has (render()'s own overCapacityPhrases). A closed-
    * class multi-word entry alone is a few dozen at most
@@ -652,13 +652,13 @@ export class DictionaryView {
 
   /** searchWords()'s own counterpart for the Phrases tab, over
    * MAX_INTERACTIVE_WORDS_PHRASES -- resolves a search against every
-   * Phrase in the PhraseBook directly instead of a pre-embedded
+   * Phrase in the Phrases directly instead of a pre-embedded
    * client-side array, the same reasoning searchWords() itself
    * documents. Matching semantics (case-insensitive substring on
    * lexical_form/gloss/definition, exact pos) mirror the fragment's own
    * client-side matchesPhraseQuery()/filteredPhrases() exactly, so a
    * search behaves the same whether it ran client-side (a small
-   * PhraseBook) or here (WordNet scale, tens of thousands of Phrases).
+   * Phrases) or here (WordNet scale, tens of thousands of Phrases).
    * `phrases` is capped at `options.limit`; `totalMatches` is the true,
    * uncapped count. */
   searchPhrases(options: { word?: string; gloss?: string; definition?: string; pos?: string; limit?: number }): {
@@ -758,7 +758,7 @@ export class DictionaryView {
   }
 
   /** Resolves a relationship endpoint's uuid against this Domain's
-   * Dictionary first, falling back to its PhraseBook (projected onto a
+   * Dictionary first, falling back to its Phrases (projected onto a
    * Word-shaped view via phraseAsWord(), preserving the Phrase's own
    * uuid) only if the Dictionary lookup fails -- a WordNet-seeded
    * multi-word synset member (word_seeder.ts's own seedWordNet) can be
@@ -768,7 +768,7 @@ export class DictionaryView {
    * `dictionary.findByUuid` call.
    *
    * Falls back to SenseStore last, only once both Dictionary and
-   * PhraseBook have failed: a synset-wide Lexical Semantic fact is now
+   * Phrases have failed: a synset-wide Lexical Semantic fact is now
    * stored as a Sense-to-Sense edge, not a Word/Phrase-to-Word/Phrase one
    * (WordSeeder.seedPointerRelationship's own docstring), so `id` can
    * legitimately name a Sense rather than either. Resolved to that
@@ -1985,7 +1985,7 @@ const DOMAIN_COLORS = @@DOMAIN_COLORS_JSON@@;
 // instead of the empty arrays' own (misleadingly zero) length.
 const OVER_CAPACITY = @@OVER_CAPACITY_JSON@@;
 // Same reasoning as OVER_CAPACITY just above, checked against the
-// PhraseBook's own count instead -- PHRASES is deliberately [] whenever
+// Phrases's own count instead -- PHRASES is deliberately [] whenever
 // this is true (render()'s own overCapacityPhrases), not a truncated
 // slice, so the Phrases stat tile falls back to TOTAL_PHRASE_COUNT the
 // same way the Words tile already falls back to TOTAL_WORD_COUNT.
@@ -2429,7 +2429,7 @@ function renderWords() {
 // domain-filter or the root-word toggle, neither of which a Phrase has
 // a field for. Same MAX_INTERACTIVE_WORDS-style capacity split Words
 // has now too (renderPhrases()'s own OVER_CAPACITY_PHRASES branch below)
-// -- a WordNet-seeded PhraseBook is tens of thousands of entries, not
+// -- a WordNet-seeded Phrases is tens of thousands of entries, not
 // the "always embedded" scale an earlier version of this comment
 // assumed.
 function matchesPhraseQuery(phrase) {
@@ -2461,7 +2461,7 @@ function phraseRowHtml(p) {
 }
 
 // A generous safety cap, not a curation choice -- same reasoning as
-// MAX_WORD_ROWS_SHOWN above: a WordNet-seeded PhraseBook can carry tens
+// MAX_WORD_ROWS_SHOWN above: a WordNet-seeded Phrases can carry tens
 // of thousands of Phrases, and laying out that many <tr> elements in
 // one innerHTML assignment is what actually locks up the tab, not
 // anything about the data itself. Narrow with search/filters to reach a
@@ -2744,7 +2744,7 @@ const pendingDetailWordLookups = new Map(); // requestId -> wordId
 // Phrase's own detail data (relationship_count/definition_segments/
 // domain/pad/phrase_word_segments, wordDetailHTML()'s own fields) only
 // ever comes from the shared "lira-search-words"/wordId path
-// (DictionaryView.searchWords()'s own PhraseBook fallback, phraseAsWord()
+// (DictionaryView.searchWords()'s own Phrases fallback, phraseAsWord()
 // plus phraseWordSegments()) -- the Phrases tab's own search results
 // (renderPhrasesOverCapacity()'s "lira-search-phrases", plain
 // PhraseRecords, phraseRowHtml()'s own leaner shape) are enough for the

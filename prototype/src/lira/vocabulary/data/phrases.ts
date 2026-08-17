@@ -1,10 +1,10 @@
 import { copyPhraseWithFreshUuid, type Phrase } from "./phrase";
 
-/** Multi-word lexicon storage: PhraseBook is Dictionary's own
- * counterpart for Phrase (phrase.ts's own docstring on why the two are
- * kept apart rather than folding Phrase into Dictionary as just
- * another kind of Word). One PhraseBook per Domain, alongside that
- * Domain's own Dictionary (VocabularyLayer.phrases, data/layer.ts).
+/** Multi-word lexicon storage: Phrases is Dictionary's own counterpart
+ * for Phrase (phrase.ts's own docstring on why the two are kept apart
+ * rather than folding Phrase into Dictionary as just another kind of
+ * Word). One Phrases store per Domain, alongside that Domain's own
+ * Dictionary (VocabularyLayer.phrases, data/layer.ts).
  *
  * Deliberately a smaller surface than Dictionary: no formsByBase/
  * baseByForm lemma index (a closed-class multi-word phrase has no
@@ -17,7 +17,7 @@ import { copyPhraseWithFreshUuid, type Phrase } from "./phrase";
  * role Dictionary.phraseSpanLimit plays for a multi-word Word, kept
  * separate so a caller can combine both bounds without either store
  * needing to know the other exists. */
-export class PhraseBook {
+export class Phrases {
   private phrases: Phrase[] = [];
   private readonly byText = new Map<string, Phrase[]>();
   private readonly byUuid = new Map<string, Phrase>();
@@ -28,7 +28,7 @@ export class PhraseBook {
   }
 
   /** The greatest number of whitespace-separated words any appended
-   * Phrase's own `text` spans -- 0 when this PhraseBook is empty, so
+   * Phrase's own `text` spans -- 0 when this Phrases store is empty, so
    * combining it with Dictionary.phraseSpanLimit (Math.max) never
    * shrinks an existing search bound. */
   get spanLimit(): number {
@@ -68,10 +68,10 @@ export class PhraseBook {
     return this.phrases.length;
   }
 
-  /** Bootstraps this PhraseBook with a copy of every Phrase in `other`
+  /** Bootstraps this Phrases store with a copy of every Phrase in `other`
    * -- the Phrase counterpart of Dictionary.seedFrom, used the same
    * way (VocabularyLayer's own Physics-from-Common snapshot). */
-  seedFrom(other: PhraseBook): void {
+  seedFrom(other: Phrases): void {
     for (const phrase of other.phrases) this.append(copyPhraseWithFreshUuid(phrase));
   }
 }

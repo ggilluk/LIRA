@@ -14,7 +14,7 @@ import type { Dictionary } from "../data/dictionary";
 import { LexicalRelationshipStore } from "../data/lexical_relationship_store";
 import { LexicalRelationshipType } from "../data/lexical_relationship_type";
 import { PartOfSpeech } from "../data/part_of_speech";
-import type { PhraseBook } from "../data/phrase_book";
+import type { Phrases } from "../data/phrases";
 import type { SourceReference } from "../data/source_reference";
 import type { Word } from "../data/word";
 import {
@@ -182,7 +182,7 @@ export class RelationshipSeeder {
       name: string;
       vocabulary: {
         dictionary: Dictionary;
-        phrases: PhraseBook;
+        phrases: Phrases;
         lexicalRelationships: LexicalRelationshipStore;
         lexicalRelationshipProcessor: LexicalRelationshipProcessor;
       };
@@ -261,7 +261,7 @@ export class RelationshipSeeder {
    * class seeds from is hand-curated Word-to-Word data, a different
    * source from WordNet, with no spec of its own naming a Phrase
    * endpoint on purpose. */
-  private isPhraseOnly(phraseBook: PhraseBook, lexicalForm: string, partOfSpeech?: PartOfSpeech): boolean {
+  private isPhraseOnly(phraseBook: Phrases, lexicalForm: string, partOfSpeech?: PartOfSpeech): boolean {
     const candidates = phraseBook.lookupAll(lexicalForm);
     return partOfSpeech === undefined ? candidates.length > 0 : candidates.some((phrase) => phrase.partOfSpeech === partOfSpeech);
   }
