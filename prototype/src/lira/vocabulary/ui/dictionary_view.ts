@@ -2201,20 +2201,22 @@ function titleCase(s) {
 // HYPERNYM/HYPONYM/TROPONYM applies to nouns (HYPERNYM/HYPONYM) and
 // verbs (TROPONYM/HYPERNYM, troponymy being verb-specific hyponymy --
 // examples/troponym_verb_backfill.py's own module docstring);
-// MERONYM/HOLONYM applies to nouns. CAUSE/ENTAILMENT applies to verbs --
-// CAUSE is a subtype of ENTAILMENT (if X causes Y, X's occurrence
-// logically entails Y's), materialised as a same-direction companion
-// edge rather than TROPONYM's reversed one (examples/
-// cause_entailment_backfill.py's own module docstring). A kind not
-// listed here (SYNONYM, ANTONYM, RELATED, every morphological/
-// orthographic kind) has no distinct reciprocal-kind partner of its
-// own -- either genuinely symmetric (stored both directions under the
-// same kind) or paired with LEMMA_FORM generically -- so it stays in
-// the ungrouped list.
+// MERONYM/HOLONYM applies to nouns. A kind not listed here (SYNONYM,
+// ANTONYM, RELATED, CAUSE, ENTAILMENT, every morphological/orthographic
+// kind) has no distinct reciprocal-kind partner of its own -- either
+// genuinely symmetric (stored both directions under the same kind),
+// paired with LEMMA_FORM generically, or -- CAUSE and ENTAILMENT
+// specifically -- simply not a reciprocal pair at all: both apply to
+// verbs and often co-occur on the identical WordNet pointer pair
+// (\`>\` alongside \`*\`), but they name two distinct relations
+// (causation, logical entailment), not two directions of one relation
+// the way
+// HYPERNYM/HYPONYM or MERONYM/HOLONYM are -- grouping them here would
+// misleadingly imply CAUSE is "the opposite of" ENTAILMENT, which it
+// isn't; each stays in the plain ungrouped list instead.
 const KIND_PAIR_GROUPS = [
   { label: "Hypernym / Hyponym / Troponym", kinds: ["HYPERNYM", "HYPONYM", "TROPONYM"] },
   { label: "Meronym / Holonym", kinds: ["MERONYM", "HOLONYM"] },
-  { label: "Cause / Entailment", kinds: ["CAUSE", "ENTAILMENT"] },
 ];
 
 // Builds <option>s for every kind in \`counts\`, grouping any kind listed
