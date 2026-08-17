@@ -357,6 +357,39 @@ function applyDomainTag(target: { domainTag?: Text; relatedDomainTags: readonly 
   }
 }
 
+/** Gives `entry` (a freshly-inserted Common Vocabulary Cache Word/Phrase
+ * copy, seedClosedClassWords' own call sites) its own unique Sense --
+ * one per entry, never shared with any other Word/Phrase, unlike
+ * WordNet's own per-synset Sense (this cache has no synset/synonym-set
+ * concept of its own to group entries by). A deliberate "for now"
+ * stopgap so every seeded Word/Phrase has *a* Sense to resolve through
+ * (DictionaryView's own domainTagsFor(), in particular -- without this,
+ * a hand-curated entry's `senseId` stays undefined and every Sense-aware
+ * reader silently falls back to reading the Word/Phrase's own fields
+ * instead), not a claim that N hand-curated entries sharing a meaning
+ * now share one Sense the way WordNet synonyms do -- that grouping still
+ * lives entirely in RelationshipSeeder's own SYNONYM edges, untouched by
+ * this. Carries over every Sense-owned field the entry already holds
+ * (domainTag, relatedDomainTags, definition, gloss, usageNotes,
+ * sourceReferences, isCommon) so a Sense-aware reader sees the identical
+ * picture it would have read from the Word/Phrase directly -- both
+ * copies exist side by side afterwards (the entry's own fields are left
+ * exactly as they were), the same accepted duplication WordNet's own
+ * Sense/Word split still carries for definition/usageNotes today. */
+function registerUniqueSense(senseStore: SenseStore, entry: Word | Phrase): void {
+  const sense = createSense({
+    domainTag: entry.domainTag,
+    relatedDomainTags: entry.relatedDomainTags,
+    definition: entry.definition,
+    gloss: entry.gloss,
+    usageNotes: entry.usageNotes,
+    sourceReferences: entry.sourceReferences,
+    isCommon: entry.isCommon,
+  });
+  senseStore.append(sense);
+  senseStore.registerMember(sense, entry);
+}
+
 // Shared by seedWordNet's own pass 1 and loadCache()'s own isMultiWord()
 // (that method's own local copy of the identical check) -- kept as its
 // own top-level function here, rather than imported from loadCache's
@@ -675,6 +708,7 @@ export class WordSeeder {
     dictionary: Dictionary,
     phraseBook: PhraseBook,
     options?: { excludeOpenClasses?: boolean },
+    senseStore?: SenseStore,
   ): number {
     const excludeOpenClasses = options?.excludeOpenClasses ?? false;
     let seeded = 0;
@@ -689,6 +723,7 @@ export class WordSeeder {
       const copy = copyWordWithFreshUuid(word);
       dictionary.append(copy);
       insertedByEntryId.set(word.entryId.value, copy);
+      if (senseStore !== undefined) registerUniqueSense(senseStore, copy);
       seeded += 1;
     }
     for (const link of this.cacheFormLinks) {
@@ -708,17 +743,19 @@ export class WordSeeder {
         .lookupAll(phrase.text)
         .some((existing) => existing.partOfSpeech === phrase.partOfSpeech);
       if (alreadyPresent) continue;
-      phraseBook.append(copyPhraseWithFreshUuid(phrase));
+      const phraseCopy = copyPhraseWithFreshUuid(phrase);
+      phraseBook.append(phraseCopy);
+      if (senseStore !== undefined) registerUniqueSense(senseStore, phraseCopy);
       seeded += 1;
     }
     return seeded;
   }
 
   seedDomain(
-    domain: { vocabulary: { dictionary: Dictionary; phrases: PhraseBook } },
+    domain: { vocabulary: { dictionary: Dictionary; phrases: PhraseBook; senses?: SenseStore } },
     options?: { excludeOpenClasses?: boolean },
   ): number {
-    return this.seedClosedClassWords(domain.vocabulary.dictionary, domain.vocabulary.phrases, options);
+    return this.seedClosedClassWords(domain.vocabulary.dictionary, domain.vocabulary.phrases, options, domain.vocabulary.senses);
   }
 
   /** Seeds `domain` from the bundled Princeton WordNet 3.1 dict/ files

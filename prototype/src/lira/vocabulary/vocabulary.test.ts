@@ -265,6 +265,56 @@ describe("WordSeeder against the bundled Common Vocabulary Cache", () => {
     expect(unrestricted.lookupAll("measure").some((w) => w.partOfSpeech === PartOfSpeech.VERB)).toBe(true);
   });
 
+  it("gives every hand-curated Word/Phrase its own unique Sense, carrying its domainTag/relatedDomainTags, when a SenseStore is supplied", () => {
+    const dictionary = new Dictionary();
+    const phraseBook = new PhraseBook();
+    const senseStore = new SenseStore();
+    const seeder = new WordSeeder("en");
+    const domain = { vocabulary: { dictionary, phrases: phraseBook, senses: senseStore } };
+
+    const first = seeder.seedDomain(domain, { excludeOpenClasses: true });
+    expect(first).toBeGreaterThan(0);
+
+    // root_words.json's own "entity" carries a real domainTag
+    // ("root_word.common") -- its own Sense (word_seeder.ts's own
+    // registerUniqueSense) must carry the identical value, since
+    // DictionaryView.domainTagsFor() now prefers the Sense over the
+    // Word directly once a senseId is present.
+    const entity = dictionary.lookupAll("entity").find((w) => w.partOfSpeech === PartOfSpeech.NOUN);
+    expect(entity).toBeDefined();
+    expect(entity?.senseId).toBeDefined();
+    const entitySense = senseStore.findByUuid(entity!.senseId!.value);
+    expect(entitySense).toBeDefined();
+    expect(entitySense?.domainTag?.value).toBe("root_word.common");
+    expect(entitySense?.isCommon).toBe(true);
+
+    // "she" (pronouns.json, no domainTag of its own) gets its own
+    // distinct Sense too -- one per entry, never shared, unlike
+    // WordNet's own per-synset Sense (registerUniqueSense's own
+    // docstring).
+    const she = dictionary.lookup("she");
+    expect(she?.senseId).toBeDefined();
+    expect(she!.senseId!.value).not.toBe(entity!.senseId!.value);
+    expect(senseStore.membersOf(she!.senseId!.value)).toEqual([she]);
+
+    // A Phrase gets one too, same as a Word.
+    const eachOther = phraseBook.lookup("each other");
+    expect(eachOther?.senseId).toBeDefined();
+    const eachOtherSense = senseStore.findByUuid(eachOther!.senseId!.value);
+    expect(eachOtherSense).toBeDefined();
+
+    expect(senseStore.totalEntries()).toBe(dictionary.totalEntries() + phraseBook.totalEntries());
+
+    // Idempotent: re-seeding neither duplicates Senses nor reassigns
+    // already-registered ones.
+    const second = seeder.seedDomain(domain, { excludeOpenClasses: true });
+    expect(second).toBe(0);
+    expect(senseStore.totalEntries()).toBe(dictionary.totalEntries() + phraseBook.totalEntries());
+    expect(dictionary.lookupAll("entity").find((w) => w.partOfSpeech === PartOfSpeech.NOUN)?.senseId?.value).toBe(
+      entity!.senseId!.value,
+    );
+  });
+
   it("seeds every multi-word closed-class entry as a Phrase, not a multi-word Word", () => {
     const dictionary = new Dictionary();
     const phraseBook = new PhraseBook();
