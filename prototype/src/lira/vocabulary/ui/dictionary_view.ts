@@ -25,6 +25,7 @@ import { PartOfSpeech } from "../data/part_of_speech";
 import { phraseAsWord, type Phrase } from "../data/phrase";
 import { PhraseBook } from "../data/phrase_book";
 import { RegisterCode } from "../data/register_code";
+import { SenseStore } from "../data/sense_store";
 import { definitionWords, type Word } from "../data/word";
 
 const DEFINITION_TOKEN_PATTERN = /[^\W_]+/g;
@@ -219,6 +220,12 @@ export interface DictionaryViewOptions {
   // working with zero changes, same reasoning DictionaryView's own
   // constructor default gives this field.
   phrases?: PhraseBook;
+  // Sense's own exact counterpart -- undefined/omitted means every
+  // existing caller that predates Sense keeps working unchanged
+  // (resolveEntry()'s own docstring on why an omitted SenseStore simply
+  // means "no Sense-typed relationship endpoint will ever be seen",
+  // true for every pre-Sense Domain).
+  senses?: SenseStore;
 }
 
 // A hard ceiling on how many Words this view will build full,
@@ -320,6 +327,7 @@ export class DictionaryView {
   private readonly unresolved: readonly string[];
 
   private readonly phrases: PhraseBook;
+  private readonly senses: SenseStore;
 
   constructor(
     private readonly dictionary: Dictionary,
@@ -330,6 +338,7 @@ export class DictionaryView {
     this.domainName = options.domainName ?? "Domain";
     this.unresolved = options.unresolved ?? [];
     this.phrases = options.phrases ?? new PhraseBook();
+    this.senses = options.senses ?? new SenseStore();
   }
 
   /** The moment render() is actually called, not construction time --
@@ -753,12 +762,30 @@ export class DictionaryView {
    * either end of a LexicalRelationship exactly like a single-word
    * member, so every place that used to assume "every relationship
    * endpoint is a Word in this Dictionary" needs this instead of a bare
-   * `dictionary.findByUuid` call. */
+   * `dictionary.findByUuid` call.
+   *
+   * Falls back to SenseStore last, only once both Dictionary and
+   * PhraseBook have failed: a synset-wide Lexical Semantic fact is now
+   * stored as a Sense-to-Sense edge, not a Word/Phrase-to-Word/Phrase one
+   * (WordSeeder.seedPointerRelationship's own docstring), so `id` can
+   * legitimately name a Sense rather than either. Resolved to that
+   * Sense's own first-registered member (SenseStore.membersOf()) as a
+   * representative -- a deliberate simplification for this single-row
+   * display path, not a claim that member is somehow more "the" word
+   * than any of its fellow synonyms; searchRelationships()'s own
+   * `wordId` path expands a Sense edge out to every member instead of
+   * picking just one, since that path already has the querying Word on
+   * hand to reconstruct the full fan-out around. */
   private resolveEntry(id: string): Word | undefined {
     const word = this.dictionary.findByUuid(id);
     if (word !== undefined) return word;
     const phrase = this.phrases.findByUuid(id);
-    return phrase !== undefined ? phraseAsWord(phrase) : undefined;
+    if (phrase !== undefined) return phraseAsWord(phrase);
+    const sense = this.senses.findByUuid(id);
+    if (sense === undefined) return undefined;
+    const representative = this.senses.membersOf(sense.uuid.value)[0];
+    if (representative === undefined) return undefined;
+    return "words" in representative ? phraseAsWord(representative) : representative;
   }
 
   private relationshipRecords(): RelationshipRecord[] {
@@ -806,13 +833,52 @@ export class DictionaryView {
    * WordNet's ~1,260,000-relationship scale, nowhere near
    * MAX_INTERACTIVE_WORDS's own JSON.stringify ceiling since nothing
    * here embeds the result, only returns a capped slice of it). */
+  /** `wordId`'s own Sense-level relationships, expanded back out to one
+   * synthetic LexicalRelationship per fellow member of the Sense on the
+   * *other* end -- searchRelationships()'s own fast path needs this
+   * because `this.relationships.outgoing(wordId)`/`incoming(wordId)`
+   * alone only ever finds a direct Word/Phrase-to-Word/Phrase edge now;
+   * a synset-wide Lexical Semantic fact is stored under `wordId`'s own
+   * Sense instead (WordSeeder.seedPointerRelationship's own docstring).
+   * Each synthetic record keeps `wordId` itself pinned to whichever side
+   * it was actually on (not swapped to the Sense's representative
+   * member, unlike resolveEntry()'s own single-row simplification) and
+   * fans the *other* side out to every member SenseStore.membersOf()
+   * finds -- recovering the exact per-member row set the pre-Sense
+   * member x member encoding used to store explicitly. `uuid` gets the
+   * source edge's own uuid suffixed with the expanded member's uuid, not
+   * reused bare, since more than one synthetic record can now share one
+   * underlying Sense-to-Sense edge. */
+  private senseExpandedRelationships(word: Word): readonly LexicalRelationship[] {
+    if (word.senseId === undefined) return [];
+    const senseId = word.senseId.value;
+    const expanded: LexicalRelationship[] = [];
+    for (const rel of [...this.relationships.outgoing(senseId), ...this.relationships.incoming(senseId)]) {
+      const outgoingFromSense = rel.sourceWordId.value === senseId;
+      const otherSenseId = outgoingFromSense ? rel.targetWordId.value : rel.sourceWordId.value;
+      for (const member of this.senses.membersOf(otherSenseId)) {
+        expanded.push({
+          ...rel,
+          uuid: { value: `${rel.uuid.value}:${member.uuid.value}` },
+          sourceWordId: outgoingFromSense ? { value: word.uuid.value } : member.uuid,
+          targetWordId: outgoingFromSense ? member.uuid : { value: word.uuid.value },
+        });
+      }
+    }
+    return expanded;
+  }
+
   searchRelationships(options: { wordId?: string; query?: string; limit?: number }): { relationships: RelationshipRecord[]; totalMatches: number } {
     const limit = options.limit ?? 1000;
     const query = options.query?.trim().toLowerCase();
-    const candidates: readonly LexicalRelationship[] =
-      options.wordId !== undefined
-        ? [...this.relationships.outgoing(options.wordId), ...this.relationships.incoming(options.wordId)]
-        : this.relationships.all();
+    let candidates: readonly LexicalRelationship[];
+    if (options.wordId !== undefined) {
+      const word = this.resolveEntry(options.wordId);
+      const senseExpanded = word !== undefined ? this.senseExpandedRelationships(word) : [];
+      candidates = [...this.relationships.outgoing(options.wordId), ...this.relationships.incoming(options.wordId), ...senseExpanded];
+    } else {
+      candidates = this.relationships.all();
+    }
 
     const matches: RelationshipRecord[] = [];
     let totalMatches = 0;
@@ -937,8 +1003,26 @@ export class DictionaryView {
     let startId: string;
 
     if (options.wordId !== undefined) {
-      if (!allNodeIds.has(options.wordId)) return { ...empty, totalEdgeCount, totalNodeCount };
+      // `options.wordId` names a Word/Phrase, but this kind's own graph
+      // (`allNodeIds`, built from `this.relationships.all()` just above)
+      // can be keyed by Sense uuid instead for a synset-wide Lexical
+      // Semantic kind (WordSeeder.seedPointerRelationship's own
+      // docstring) -- if the Word/Phrase's own uuid isn't a node, fall
+      // back to its Sense's uuid before giving up. The tree then centres
+      // on that Sense (rendered via resolveEntry()'s own representative-
+      // member simplification below), not literally `options.wordId`
+      // itself, whenever the two differ -- a deliberate simplification,
+      // the same one searchRelationships() avoids by fanning out instead
+      // (senseExpandedRelationships()'s own docstring), acceptable here
+      // since a Hierarchy tree already collapses a whole synset onto one
+      // node by design.
       let cur = options.wordId;
+      if (!allNodeIds.has(cur)) {
+        const senseId = this.resolveEntry(options.wordId)?.senseId?.value;
+        if (senseId !== undefined && allNodeIds.has(senseId)) cur = senseId;
+      }
+      if (!allNodeIds.has(cur)) return { ...empty, totalEdgeCount, totalNodeCount };
+      startId = cur;
       const seen = new Set([cur]);
       for (;;) {
         const parents = parentsOf.get(cur);
@@ -950,7 +1034,6 @@ export class DictionaryView {
         cur = next;
       }
       ancestorChain.reverse();
-      startId = options.wordId;
     } else {
       const rootCandidates = [...allNodeIds].filter((id) => !parentsOf.has(id));
       if (rootCandidates.length === 0) return { ...empty, totalEdgeCount, totalNodeCount, fellBack: true };

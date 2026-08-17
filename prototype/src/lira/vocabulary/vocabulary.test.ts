@@ -328,18 +328,19 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
 
     const first = await seeder.seedWordNet(domain);
     expect(first.wordsSeeded).toBeGreaterThan(100000);
-    // Far beyond the SYNONYM-only total (~158,000) -- every other
-    // WordNet pointer type (hypernym, meronym, antonym, ...) is now
-    // wired too, word_seeder.ts's own seedWordNet docstring on its
-    // second pass. Below 1,000,000 (unlike an earlier version of this
-    // assertion): relationshipKindForPointer's own docstring on why
-    // WordNet's redundant both-ends pointer encoding no longer produces
-    // two edges per fact for the complementary-kind (HYPERNYM/HYPONYM,
-    // xMERONYM/xHOLONYM) and symmetric-kind (ANTONYM, VERB_GROUP,
-    // ATTRIBUTE, ALSO_SEE, DERIVED_FORM) pairs SYMMETRIC_RELATIONSHIP_KINDS
-    // covers.
-    expect(first.relationshipsSeeded).toBeGreaterThan(700000);
-    expect(first.relationshipsSeeded).toBeLessThan(900000);
+    // Far smaller than an earlier version of this assertion
+    // (~700,000-900,000): SYNONYM is no longer stored as an edge at all
+    // (SenseStore.registerMember()'s own docstring -- WordSeeder's own
+    // pass 1 relies on shared senseId alone), and a synset-wide Lexical
+    // Semantic fact (HYPERNYM, MERONYM, ANTONYM, ...) collapses to one
+    // Sense-to-Sense edge instead of a member x member cross product
+    // (WordSeeder.seedPointerRelationship's own docstring) -- the whole
+    // point of both changes. A lexical (word-specific) pointer
+    // occurrence, and every Morphological/Orthographic-group kind, are
+    // unaffected and still store one edge per member pair, which is why
+    // this is a real reduction, not a collapse to "one edge per kind".
+    expect(first.relationshipsSeeded).toBeGreaterThan(150000);
+    expect(first.relationshipsSeeded).toBeLessThan(300000);
     // wordsSeeded counts Words and multi-word Phrases together
     // (word_seeder.ts's own seedWordNet docstring on isMultiWordLemma) --
     // same combined-count convention seedClosedClassWords already uses.
@@ -360,7 +361,7 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     expect(big).toBeDefined();
     expect(big?.isCommon).toBe(true);
     expect(big?.synsetId?.schemeId).toBe("wn31");
-    expect(synonyms(big!, lexicalRelationships, dictionary).map((w) => w.text)).toEqual(["large"]);
+    expect(synonyms(big!, lexicalRelationships, dictionary, undefined, senseStore).map((w) => w.text)).toEqual(["large"]);
 
     // "big" and "large" are the same Sense (Sense's own docstring on
     // why this is the point of the class -- a shared meaning, not a
@@ -387,7 +388,7 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
       .lookupAll("physical entity")
       .find((phrase) => phrase.synsetId?.value === "00001930-n");
     expect(physicalEntity).toBeDefined();
-    expect(hypernyms(physicalEntity!, lexicalRelationships, dictionary).map((w) => w.text)).toEqual(["entity"]);
+    expect(hypernyms(physicalEntity!, lexicalRelationships, dictionary, undefined, senseStore).map((w) => w.text)).toEqual(["entity"]);
     // The reciprocal direction resolves too, off the identical stored
     // edge (hyponyms()'s own docstring) -- "entity" is never told apart
     // from "physical entity" by a second, separately-stored HYPONYM edge.
@@ -396,15 +397,15 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // word.ts) -- the whole point of this test.
     const entity = dictionary.lookupAll("entity").find((word) => word.synsetId?.value === "00001740-n");
     expect(entity).toBeDefined();
-    expect(hyponyms(entity!, lexicalRelationships, dictionary, phraseBook).map((w) => w.text)).toContain("physical entity");
+    expect(hyponyms(entity!, lexicalRelationships, dictionary, phraseBook, senseStore).map((w) => w.text)).toContain("physical entity");
 
     // 00001740-a "able" -- ANTONYM -> 00002098-a "unable" (both
     // directions -- antonyms() itself reads direction="both").
     const able = dictionary.lookupAll("able").find((word) => word.synsetId?.value === "00001740-a");
     expect(able).toBeDefined();
-    expect(antonyms(able!, lexicalRelationships, dictionary).map((w) => w.text)).toEqual(["unable"]);
+    expect(antonyms(able!, lexicalRelationships, dictionary, undefined, senseStore).map((w) => w.text)).toEqual(["unable"]);
     const unable = dictionary.lookupAll("unable").find((word) => word.synsetId?.value === "00002098-a");
-    expect(antonyms(unable!, lexicalRelationships, dictionary).map((w) => w.text)).toEqual(["able"]);
+    expect(antonyms(unable!, lexicalRelationships, dictionary, undefined, senseStore).map((w) => w.text)).toEqual(["able"]);
     // Only one ANTONYM edge is actually stored for this pair (a genuine
     // regression check for SYMMETRIC_RELATIONSHIP_KINDS -- antonyms()
     // reading direction="both" would still pass even if both directions
@@ -531,12 +532,13 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
 
   it("a word's own relationships never show both a hypernym/hyponym (or antonym/meronym/...) fact and its reciprocal listing as two separate entries", async () => {
     const dictionary = new Dictionary();
+    const senseStore = new SenseStore();
     const lexicalRelationships = new LexicalRelationshipStore();
     const lexicalRelationshipProcessor = new LexicalRelationshipProcessor(
       lexicalRelationships,
       new LexicalRelationshipSystemPropertyTensor(),
     );
-    await new WordSeeder("en").seedWordNet({ vocabulary: { dictionary, phrases: new PhraseBook(), senses: new SenseStore(), lexicalRelationships, lexicalRelationshipProcessor } });
+    await new WordSeeder("en").seedWordNet({ vocabulary: { dictionary, phrases: new PhraseBook(), senses: senseStore, lexicalRelationships, lexicalRelationshipProcessor } });
 
     const dog = dictionary.lookupAll("dog").find((w) => w.partOfSpeech === PartOfSpeech.NOUN && w.synsetId?.value === "02086723-n");
     expect(dog).toBeDefined();
@@ -544,8 +546,8 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // Both directions still resolve correctly (dog has real hypernyms
     // -- canine/canid/domestic animal -- and real hyponyms -- poodle,
     // among many others) ...
-    const dogHypernyms = hypernyms(dog!, lexicalRelationships, dictionary).map((w) => w.text);
-    const dogHyponyms = hyponyms(dog!, lexicalRelationships, dictionary).map((w) => w.text);
+    const dogHypernyms = hypernyms(dog!, lexicalRelationships, dictionary, undefined, senseStore).map((w) => w.text);
+    const dogHyponyms = hyponyms(dog!, lexicalRelationships, dictionary, undefined, senseStore).map((w) => w.text);
     expect(dogHypernyms).toContain("canine");
     expect(dogHyponyms).toContain("poodle");
 
@@ -567,13 +569,14 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
   it("a multi-word synset lemma seeds as a Phrase, not a Word, and behaves exactly like a Word in the relationship graph -- resolvable from both DictionaryView.searchRelationships and resolveHierarchy", async () => {
     const dictionary = new Dictionary();
     const phraseBook = new PhraseBook();
+    const senseStore = new SenseStore();
     const lexicalRelationships = new LexicalRelationshipStore();
     const lexicalRelationshipProcessor = new LexicalRelationshipProcessor(
       lexicalRelationships,
       new LexicalRelationshipSystemPropertyTensor(),
     );
     await new WordSeeder("en").seedWordNet({
-      vocabulary: { dictionary, phrases: phraseBook, senses: new SenseStore(), lexicalRelationships, lexicalRelationshipProcessor },
+      vocabulary: { dictionary, phrases: phraseBook, senses: senseStore, lexicalRelationships, lexicalRelationshipProcessor },
     });
 
     // 02116276-n "toy poodle" -- HYPERNYM -> 02115987-n "poodle" (dict/data.noun).
@@ -600,16 +603,21 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
 
     // Seeded exactly like a Word: hypernyms() works with the Phrase as
     // its own subject (relatedWords()'s own widened `word` param, word.ts).
-    expect(hypernyms(toyPoodle!, lexicalRelationships, dictionary).map((w) => w.text)).toEqual(["poodle"]);
+    // Synset 02115987-n itself has two lemmas -- "poodle" and "poodle
+    // dog" -- so the synset-wide HYPERNYM fact, stored as one Sense-to-
+    // Sense edge (WordSeeder.seedPointerRelationship's own docstring),
+    // expands to both members on read, not just the one this test
+    // happens to look up by name.
+    expect(hypernyms(toyPoodle!, lexicalRelationships, dictionary, undefined, senseStore).map((w) => w.text).sort()).toEqual(["poodle", "poodle dog"]);
     // And the reverse direction resolves the Phrase back via the
     // phraseBook fallback.
-    expect(hyponyms(poodle!, lexicalRelationships, dictionary, phraseBook).map((w) => w.text)).toContain("toy poodle");
+    expect(hyponyms(poodle!, lexicalRelationships, dictionary, phraseBook, senseStore).map((w) => w.text)).toContain("toy poodle");
 
     // The Vocabulary UI's own resolution paths (DictionaryView) see the
     // identical fact, regardless of which endpoint they start from --
     // both server-side, on-demand paths used at WordNet scale
     // (MAX_INTERACTIVE_WORDS), not just the small-Domain embedded path.
-    const view = new DictionaryView(dictionary, lexicalRelationships, { domainName: "Common", phrases: phraseBook });
+    const view = new DictionaryView(dictionary, lexicalRelationships, { domainName: "Common", phrases: phraseBook, senses: senseStore });
 
     const forToyPoodle = view.searchRelationships({ wordId: toyPoodle!.uuid.value });
     expect(forToyPoodle.totalMatches).toBeGreaterThan(0);
@@ -620,7 +628,14 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
 
     const hierarchy = view.resolveHierarchy({ kind: "HYPERNYM", wordId: toyPoodle!.uuid.value, limit: 50 });
     expect(hierarchy.fellBack).toBe(false);
-    const toyPoodleNode = hierarchy.nodes.find((n) => n.id === toyPoodle!.uuid.value);
+    // This kind's own graph is keyed by Sense uuid for a synset-wide
+    // fact (WordSeeder.seedPointerRelationship's own docstring) -- "toy
+    // poodle"'s own uuid isn't a node in it directly, so resolveHierarchy()
+    // falls back to its Sense's uuid instead (that method's own
+    // docstring), centring the tree on the Sense, rendered via
+    // resolveEntry()'s own representative-member simplification -- "toy
+    // poodle" itself here, its own synset's only lemma.
+    const toyPoodleNode = hierarchy.nodes.find((n) => n.id === toyPoodle!.senseId!.value);
     expect(toyPoodleNode).toBeDefined();
     expect(toyPoodleNode?.lexical_form).toBe("toy poodle");
     expect(hierarchy.nodes.map((n) => n.lexical_form)).toContain("poodle");
@@ -891,14 +906,15 @@ describe("DictionaryView.searchRelationships", () => {
 
   it("resolves against the real bundled WordNet-scale relationship graph without embedding it (regression check mirroring searchWords' own)", async () => {
     const dictionary = new Dictionary();
+    const senseStore = new SenseStore();
     const lexicalRelationships = new LexicalRelationshipStore();
     const lexicalRelationshipProcessor = new LexicalRelationshipProcessor(
       lexicalRelationships,
       new LexicalRelationshipSystemPropertyTensor(),
     );
-    await new WordSeeder("en").seedWordNet({ vocabulary: { dictionary, phrases: new PhraseBook(), senses: new SenseStore(), lexicalRelationships, lexicalRelationshipProcessor } });
+    await new WordSeeder("en").seedWordNet({ vocabulary: { dictionary, phrases: new PhraseBook(), senses: senseStore, lexicalRelationships, lexicalRelationshipProcessor } });
 
-    const view = new DictionaryView(dictionary, lexicalRelationships, { domainName: "Common" });
+    const view = new DictionaryView(dictionary, lexicalRelationships, { domainName: "Common", senses: senseStore });
     const large = dictionary.lookup("large");
     expect(large).toBeDefined();
 
@@ -1072,14 +1088,15 @@ describe("DictionaryView.resolveHierarchy", () => {
 
   it("resolves against the real bundled WordNet-scale dataset, correctly oriented (broad root, narrow leaves) for a kind only stored in the child->parent direction", async () => {
     const dictionary = new Dictionary();
+    const senseStore = new SenseStore();
     const lexicalRelationships = new LexicalRelationshipStore();
     const lexicalRelationshipProcessor = new LexicalRelationshipProcessor(
       lexicalRelationships,
       new LexicalRelationshipSystemPropertyTensor(),
     );
-    await new WordSeeder("en").seedWordNet({ vocabulary: { dictionary, phrases: new PhraseBook(), senses: new SenseStore(), lexicalRelationships, lexicalRelationshipProcessor } });
+    await new WordSeeder("en").seedWordNet({ vocabulary: { dictionary, phrases: new PhraseBook(), senses: senseStore, lexicalRelationships, lexicalRelationshipProcessor } });
 
-    const view = new DictionaryView(dictionary, lexicalRelationships, { domainName: "Common" });
+    const view = new DictionaryView(dictionary, lexicalRelationships, { domainName: "Common", senses: senseStore });
     const poodle = dictionary.lookupAll("poodle").find((w) => w.partOfSpeech === PartOfSpeech.NOUN);
     expect(poodle).toBeDefined();
 
@@ -1113,10 +1130,15 @@ describe("DictionaryView.resolveHierarchy", () => {
     const broadestRootWord = broadestRoot.nodes.find((n) => n.id === broadestRoot.roots[0]);
     expect(broadestRootWord?.lexical_form).toBe("entity");
 
-    // SYNONYM against the real corpus: falls back to clusters, not a
-    // tree with some real WordNet word (e.g. "buttocks", an actual
-    // regression seen against this exact bundled dataset) standing in
-    // as a nonsensical "broadest root".
-    expect(view.resolveHierarchy({ kind: "SYNONYM" }).fellBack).toBe(true);
+    // SYNONYM against the real corpus: no longer a stored edge at all
+    // (SenseStore.registerMember()'s own docstring -- WordSeeder's own
+    // pass 1 relies on shared senseId alone, not a per-pair edge), so
+    // this kind's own graph is simply empty now rather than falling
+    // back to a cluster view -- synonymy is still fully queryable, just
+    // through synonyms() (word.ts) and SenseStore.membersOf() directly,
+    // not through this edge-graph-only method.
+    const synonymHierarchy = view.resolveHierarchy({ kind: "SYNONYM" });
+    expect(synonymHierarchy.fellBack).toBe(false);
+    expect(synonymHierarchy.totalEdgeCount).toBe(0);
   }, 30000);
 });

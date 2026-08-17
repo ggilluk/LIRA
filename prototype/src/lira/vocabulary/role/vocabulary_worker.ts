@@ -289,6 +289,7 @@ function handleRender(request: RenderRequest): void {
       title: `LIRA — ${domain.name}`,
       domainName: domain.name,
       phrases: domain.vocabulary.phrases,
+      senses: domain.vocabulary.senses,
     });
     const [style, body, script] = view.renderFragment();
     const fragment: RenderedFragment = { style, body, script };
@@ -320,6 +321,7 @@ function handleSearchWords(request: SearchWordsRequest): void {
     title: `LIRA — ${domain.name}`,
     domainName: domain.name,
     phrases: domain.vocabulary.phrases,
+    senses: domain.vocabulary.senses,
   });
   const { words, totalMatches } = view.searchWords({
     wordId: request.wordId,
@@ -349,6 +351,7 @@ function handleSearchPhrases(request: SearchPhrasesRequest): void {
     title: `LIRA — ${domain.name}`,
     domainName: domain.name,
     phrases: domain.vocabulary.phrases,
+    senses: domain.vocabulary.senses,
   });
   const { phrases, totalMatches } = view.searchPhrases({
     word: request.word,
@@ -371,6 +374,7 @@ function handleSearchRelationships(request: SearchRelationshipsRequest): void {
     title: `LIRA — ${domain.name}`,
     domainName: domain.name,
     phrases: domain.vocabulary.phrases,
+    senses: domain.vocabulary.senses,
   });
   const { relationships, totalMatches } = view.searchRelationships({
     wordId: request.wordId,
@@ -401,6 +405,7 @@ function handleResolveHierarchy(request: ResolveHierarchyRequest): void {
     title: `LIRA — ${domain.name}`,
     domainName: domain.name,
     phrases: domain.vocabulary.phrases,
+    senses: domain.vocabulary.senses,
   });
   const result = view.resolveHierarchy({ kind: request.kind, wordId: request.wordId, limit: request.limit });
   post({ type: "resolve-hierarchy-result", requestId: request.requestId, ...result });

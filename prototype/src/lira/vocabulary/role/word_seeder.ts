@@ -36,10 +36,10 @@ import { VectorPrimitiveRootWord } from "../data/vector_primitive_root_word";
 import type { AttributeValue } from "../data/attribute_value";
 import type { Dictionary } from "../data/dictionary";
 import { LexicalRelationshipStore } from "../data/lexical_relationship_store";
-import { LexicalRelationshipType, MERONYM_KIND_QUALIFIER, type MeronymKind } from "../data/lexical_relationship_type";
+import { LexicalRelationshipType, MERONYM_KIND_QUALIFIER, relationshipGroup, type MeronymKind } from "../data/lexical_relationship_type";
 import { copyPhraseWithFreshUuid, createPhrase, type Phrase } from "../data/phrase";
 import type { PhraseBook } from "../data/phrase_book";
-import { createSense } from "../data/sense";
+import { createSense, type Sense } from "../data/sense";
 import type { SenseStore } from "../data/sense_store";
 import type { SourceReference } from "../data/source_reference";
 import { copyWordWithFreshUuid, createWord, type Word } from "../data/word";
@@ -53,6 +53,15 @@ import {
 } from "./asset_loader";
 import type { LexicalRelationshipProcessor } from "./lexical_relationship_processor";
 import { loadWordNetSynsets, type WordNetPointer, type WordNetSynset } from "./wordnet_loader";
+
+/** createEdges' own pair-member type -- a LexicalRelationship's
+ * sourceWordId/targetWordId are opaque uuid strings regardless of what
+ * they name, so createEdges itself only ever reads `.uuid.value` off
+ * each side; ordinarily that's a Word or Phrase, but seedPointerRelationship's
+ * own semantic-group-and-synset-wide branch (that method's own docstring)
+ * creates a single Sense-to-Sense edge instead of a member×member cross
+ * product, so this union includes Sense too. */
+type RelationshipEndpoint = Word | Phrase | Sense;
 
 /** One flattened nested form's link back to its base lemma, keyed by
  * entryId (the stable Qualified Word Identity, unaffected by
@@ -315,20 +324,6 @@ function relationshipKindForPointer(
     default:
       return undefined;
   }
-}
-
-/** Every unordered pair from `items`, each returned exactly once
- * (i < j, never (a, a) or both (a, b) and (b, a)) -- seedWordNet's own
- * SYNONYM-wiring pass (pass 1) uses this for a synset's own members;
- * synonyms() itself (word.ts) already reads SYNONYM as direction="both",
- * so one directed edge per pair is enough to make the relationship
- * discoverable from either endpoint. */
-function allPairs<T>(items: readonly T[]): Array<readonly [T, T]> {
-  const pairs: Array<readonly [T, T]> = [];
-  for (let i = 0; i < items.length; i++) {
-    for (let j = i + 1; j < items.length; j++) pairs.push([items[i], items[j]]);
-  }
-  return pairs;
 }
 
 /** The single Word at WordNetPointer's own 1-based `sourceWordIndex`/
@@ -886,11 +881,16 @@ export class WordSeeder {
       // Every member linked to this synset's own Sense, new or reused
       // (a reused member from an earlier seedWordNet run, before this
       // field existed, gets backfilled here too -- idempotent, safe to
-      // set on every re-seed).
-      for (const member of members) member.senseId = sense.uuid;
+      // register on every re-seed) -- SenseStore.registerMember()'s own
+      // docstring on why this replaces a stored SYNONYM edge per pair
+      // entirely: two members of the same Sense are synonyms *because*
+      // they share it, not because a separate fact says so. synonyms()
+      // (word.ts) now reads this membership index directly instead of
+      // a LexicalRelationshipType.SYNONYM edge for any WordNet-derived
+      // pair -- allPairs()'s own former call site here is gone, not
+      // replaced.
+      for (const member of members) senseStore.registerMember(sense, member);
       synsetMembersById.set(synset.synsetId, members);
-
-      relationshipsSeeded += this.createEdges(processor, existingEdges, LexicalRelationshipType.SYNONYM, allPairs(members));
 
       processed += 1;
       if (onProgress && (processed % PROGRESS_REPORT_INTERVAL === 0 || processed === synsets.length)) {
@@ -911,7 +911,7 @@ export class WordSeeder {
       const sourceMembers = synsetMembersById.get(synset.synsetId);
       if (sourceMembers !== undefined) {
         for (const pointer of synset.pointers) {
-          relationshipsSeeded += this.seedPointerRelationship(processor, existingEdges, synset, sourceMembers, pointer, synsetMembersById);
+          relationshipsSeeded += this.seedPointerRelationship(processor, existingEdges, synset, sourceMembers, pointer, synsetMembersById, senseStore);
         }
       }
 
@@ -937,7 +937,22 @@ export class WordSeeder {
    * because every member of a synset is already a mutual synonym of
    * every other (pass 1's own SYNONYM edges), so connecting all-to-all
    * carries the identical meaning connecting one representative pair
-   * would, just made explicit for each member instead of left implicit. */
+   * would, just made explicit for each member instead of left implicit --
+   * *except* when the resolved kind is itself Lexical Semantic
+   * (relationshipGroup(kind) === 1, lexical_relationship_type.ts): a
+   * synset-wide fact of that group is a fact about the two *senses*, not
+   * about any one member pair, so it's stored as a single Sense-to-Sense
+   * edge instead (found via SenseStore.findBySynsetId on each side) --
+   * word.ts's own relatedWords() family expands that one edge back out to
+   * every member on read (SenseStore.membersOf()), so callers still see
+   * the identical member×member result this member×member branch would
+   * have produced, just not stored that way. A *lexical* (word-specific)
+   * pointer occurrence -- sourceWordIndex or targetWordIndex nonzero --
+   * still becomes a direct Word/Phrase edge regardless of group, since it
+   * names one specific word's relationship, not the synset's as a whole;
+   * so does every Morphological/Orthographic-group kind (derivation,
+   * pertainym, ...) even when synset-wide, since those aren't semantic
+   * relationships at all (the user's own scoping instruction). */
   private seedPointerRelationship(
     processor: LexicalRelationshipProcessor,
     existingEdges: Set<string>,
@@ -945,6 +960,7 @@ export class WordSeeder {
     sourceMembers: readonly (Word | Phrase)[],
     pointer: WordNetPointer,
     synsetMembersById: ReadonlyMap<string, Array<Word | Phrase>>,
+    senseStore: SenseStore,
   ): number {
     const targetMembers = synsetMembersById.get(pointer.targetSynsetId);
     if (targetMembers === undefined || targetMembers.length === 0) return 0;
@@ -957,6 +973,17 @@ export class WordSeeder {
     const resolved = relationshipKindForPointer(pointer.symbol, synset.partOfSpeech, targetMembers[0].partOfSpeech);
     if (resolved === undefined) return 0;
 
+    const qualifiers: readonly AttributeValue[] | undefined =
+      resolved.meronymKind !== undefined ? [{ name: { value: MERONYM_KIND_QUALIFIER }, value: { value: resolved.meronymKind } }] : undefined;
+
+    if (pointer.sourceWordIndex === 0 && pointer.targetWordIndex === 0 && relationshipGroup(resolved.kind) === 1) {
+      const sourceSense = senseStore.findBySynsetId(synset.synsetId);
+      const targetSense = senseStore.findBySynsetId(pointer.targetSynsetId);
+      if (sourceSense === undefined || targetSense === undefined || sourceSense.uuid.value === targetSense.uuid.value) return 0;
+      const pair: readonly [Sense, Sense] = resolved.swap ? [targetSense, sourceSense] : [sourceSense, targetSense];
+      return this.createEdges(processor, existingEdges, resolved.kind, [pair], qualifiers);
+    }
+
     const sourceWords = pointer.sourceWordIndex === 0 ? sourceMembers : indexedWord(sourceMembers, pointer.sourceWordIndex);
     const targetWords = pointer.targetWordIndex === 0 ? targetMembers : indexedWord(targetMembers, pointer.targetWordIndex);
 
@@ -967,8 +994,6 @@ export class WordSeeder {
         pairs.push(resolved.swap ? [tw, sw] : [sw, tw]);
       }
     }
-    const qualifiers: readonly AttributeValue[] | undefined =
-      resolved.meronymKind !== undefined ? [{ name: { value: MERONYM_KIND_QUALIFIER }, value: { value: resolved.meronymKind } }] : undefined;
     return this.createEdges(processor, existingEdges, resolved.kind, pairs, qualifiers);
   }
 
@@ -1032,7 +1057,7 @@ export class WordSeeder {
     processor: LexicalRelationshipProcessor,
     existingEdges: Set<string>,
     kind: LexicalRelationshipType,
-    pairs: Iterable<readonly [Word | Phrase, Word | Phrase]>,
+    pairs: Iterable<readonly [RelationshipEndpoint, RelationshipEndpoint]>,
     qualifiers?: readonly AttributeValue[],
   ): number {
     const symmetric = SYMMETRIC_RELATIONSHIP_KINDS.has(kind);
