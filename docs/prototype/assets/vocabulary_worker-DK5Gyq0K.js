@@ -806,7 +806,7 @@ const DOMAIN_COLORS = @@DOMAIN_COLORS_JSON@@;
 // instead of the empty arrays' own (misleadingly zero) length.
 const OVER_CAPACITY = @@OVER_CAPACITY_JSON@@;
 // Same reasoning as OVER_CAPACITY just above, checked against the
-// PhraseBook's own count instead -- PHRASES is deliberately [] whenever
+// Phrases's own count instead -- PHRASES is deliberately [] whenever
 // this is true (render()'s own overCapacityPhrases), not a truncated
 // slice, so the Phrases stat tile falls back to TOTAL_PHRASE_COUNT the
 // same way the Words tile already falls back to TOTAL_WORD_COUNT.
@@ -1250,7 +1250,7 @@ function renderWords() {
 // domain-filter or the root-word toggle, neither of which a Phrase has
 // a field for. Same MAX_INTERACTIVE_WORDS-style capacity split Words
 // has now too (renderPhrases()'s own OVER_CAPACITY_PHRASES branch below)
-// -- a WordNet-seeded PhraseBook is tens of thousands of entries, not
+// -- a WordNet-seeded Phrases is tens of thousands of entries, not
 // the "always embedded" scale an earlier version of this comment
 // assumed.
 function matchesPhraseQuery(phrase) {
@@ -1282,7 +1282,7 @@ function phraseRowHtml(p) {
 }
 
 // A generous safety cap, not a curation choice -- same reasoning as
-// MAX_WORD_ROWS_SHOWN above: a WordNet-seeded PhraseBook can carry tens
+// MAX_WORD_ROWS_SHOWN above: a WordNet-seeded Phrases can carry tens
 // of thousands of Phrases, and laying out that many <tr> elements in
 // one innerHTML assignment is what actually locks up the tab, not
 // anything about the data itself. Narrow with search/filters to reach a
@@ -1565,7 +1565,7 @@ const pendingDetailWordLookups = new Map(); // requestId -> wordId
 // Phrase's own detail data (relationship_count/definition_segments/
 // domain/pad/phrase_word_segments, wordDetailHTML()'s own fields) only
 // ever comes from the shared "lira-search-words"/wordId path
-// (DictionaryView.searchWords()'s own PhraseBook fallback, phraseAsWord()
+// (DictionaryView.searchWords()'s own Phrases fallback, phraseAsWord()
 // plus phraseWordSegments()) -- the Phrases tab's own search results
 // (renderPhrasesOverCapacity()'s "lira-search-phrases", plain
 // PhraseRecords, phraseRowHtml()'s own leaner shape) are enough for the
