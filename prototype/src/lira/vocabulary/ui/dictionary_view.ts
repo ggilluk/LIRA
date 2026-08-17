@@ -16,6 +16,7 @@
  * the @@TOKEN@@ substitution values from a real Dictionary/
  * LexicalRelationshipStore instead of from dataclasses. */
 
+import type { Text } from "../../value_objects";
 import type { Dictionary } from "../data/dictionary";
 import { EditorialLabel } from "../data/editorial_label";
 import type { LexicalRelationship } from "../data/lexical_relationship";
@@ -528,7 +529,7 @@ export class DictionaryView {
       is_root_word: word.isRootWord,
       is_derivable_noun: word.isDerivableNoun,
       domain: this.domainLabel(word),
-      related_domains: word.relatedDomainTags.map((tag) => tag.value),
+      related_domains: this.domainTagsFor(word).relatedDomainTags.map((tag) => tag.value),
       is_fully_hydrated: word.isFullyHydrated,
       sources: word.sourceReferences.map((ref) => ref.sourceName.value),
       relationship_count: relationshipCount,
@@ -1113,13 +1114,28 @@ export class DictionaryView {
     return { nodes, edges, roots, totalEdgeCount, totalNodeCount, fellBack: false, truncated };
   }
 
+  /** The domainTag/relatedDomainTags that actually apply to `word` --
+   * preferring its Sense's own (WordSeeder.seedWordNet's own
+   * tagTopicDomain writes to the shared Sense now, once per synset-wide
+   * topic-domain pointer, not to every member Word/Phrase -- sense.ts's
+   * own docstring) and falling back to the Word/Phrase's own only when
+   * it has no Sense at all -- every hand-curated Common Vocabulary Cache
+   * entry, which predates Sense and has nowhere else to carry its own
+   * polysemy-disambiguating tag ("symbol.common", root_words.json's own
+   * "root_word.common", ...). */
+  private domainTagsFor(word: Word): { domainTag?: Text; relatedDomainTags: readonly Text[] } {
+    const sense = word.senseId !== undefined ? this.senses.findByUuid(word.senseId.value) : undefined;
+    if (sense !== undefined) return { domainTag: sense.domainTag, relatedDomainTags: sense.relatedDomainTags };
+    return { domainTag: word.domainTag, relatedDomainTags: word.relatedDomainTags };
+  }
+
   private domainLabel(word: Word | undefined): string | null {
     if (word === undefined) return null;
     if (!word.isCommon) return this.domainName;
     // A genuine polyseme's domainTag ("symbol.common") names its own
     // sense-disambiguating subdomain; every other Common word reads as
     // plain "Common", same as before this field existed.
-    return word.domainTag?.value ?? "Common";
+    return this.domainTagsFor(word).domainTag?.value ?? "Common";
   }
 }
 

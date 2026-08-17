@@ -485,14 +485,16 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     ].filter((r) => r.sourceWordId.value === flight!.uuid.value || r.targetWordId.value === flight!.uuid.value);
     expect(hegiraFlightEdges).toEqual([]);
 
-    // Topic-domain pointers (`;c`/`-c`) tag the word itself
-    // (domainTag/relatedDomainTags) instead of becoming a relationship --
-    // "infusion" (dict/data.noun offset 00324358) carries exactly one
-    // topic pointer, to the "medicine" (medical_specialty) category.
+    // Topic-domain pointers (`;c`/`-c`) tag the shared Sense now, once
+    // per synset-wide pointer, not the word itself (word_seeder.ts's own
+    // applyDomainTag/tagTopicDomain docstrings) -- "infusion" (dict/data.noun
+    // offset 00324358) carries exactly one topic pointer, to the
+    // "medicine" (medical_specialty) category.
     const infusion = dictionary.lookupAll("infusion").find((word) => word.synsetId?.value === "00324358-n");
     expect(infusion).toBeDefined();
-    expect(infusion?.domainTag?.value).toBe("medicine");
-    expect(infusion?.relatedDomainTags).toEqual([]);
+    const infusionSense = senseStore.findByUuid(infusion!.senseId!.value);
+    expect(infusionSense?.domainTag?.value).toBe("medicine");
+    expect(infusionSense?.relatedDomainTags).toEqual([]);
 
     // "winger" (offset 10802147) carries FOUR topic pointers -- it's a
     // wing position in soccer, field hockey, rugby, AND football. None
@@ -503,8 +505,9 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // `-c` pointer back to winger.
     const winger = dictionary.lookupAll("winger").find((word) => word.synsetId?.value === "10802147-n");
     expect(winger).toBeDefined();
-    expect(winger?.domainTag).toBeDefined();
-    const wingerDomains = [winger!.domainTag!.value, ...winger!.relatedDomainTags.map((tag) => tag.value)];
+    const wingerSense = senseStore.findByUuid(winger!.senseId!.value);
+    expect(wingerSense?.domainTag).toBeDefined();
+    const wingerDomains = [wingerSense!.domainTag!.value, ...wingerSense!.relatedDomainTags.map((tag) => tag.value)];
     expect(wingerDomains).toHaveLength(4);
     expect(new Set(wingerDomains).size).toBe(4);
     expect(new Set(wingerDomains)).toEqual(new Set(["soccer", "field hockey", "rugby", "football"]));
@@ -518,8 +521,8 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     expect(second.relationshipsSeeded).toBe(0);
     expect(dictionary.totalEntries() + phraseBook.totalEntries()).toBe(first.wordsSeeded);
     expect(senseStore.totalEntries()).toBe(first.sensesSeeded);
-    expect(infusion?.domainTag?.value).toBe("medicine");
-    expect(new Set([winger!.domainTag!.value, ...winger!.relatedDomainTags.map((tag) => tag.value)])).toEqual(
+    expect(infusionSense?.domainTag?.value).toBe("medicine");
+    expect(new Set([wingerSense!.domainTag!.value, ...wingerSense!.relatedDomainTags.map((tag) => tag.value)])).toEqual(
       new Set(["soccer", "field hockey", "rugby", "football"]),
     );
     expect(lexicalRelationships.totalRelationships()).toBe(first.relationshipsSeeded);
@@ -792,6 +795,32 @@ describe("DictionaryView.searchWords", () => {
     // (word.synsetId's own docstring) -- the vocabulary UI shows this
     // to the right of the word.
     expect(result.words.every((w) => typeof w.sense_id === "string" && w.sense_id.length > 0)).toBe(true);
+  }, 30000);
+
+  it("a WordRecord's own domain/related_domains read through the shared Sense, not the Word itself, for a WordNet-seeded polyseme", async () => {
+    const dictionary = new Dictionary();
+    const senseStore = new SenseStore();
+    const lexicalRelationships = new LexicalRelationshipStore();
+    const lexicalRelationshipProcessor = new LexicalRelationshipProcessor(
+      lexicalRelationships,
+      new LexicalRelationshipSystemPropertyTensor(),
+    );
+    await new WordSeeder("en").seedWordNet({ vocabulary: { dictionary, phrases: new PhraseBook(), senses: senseStore, lexicalRelationships, lexicalRelationshipProcessor } });
+
+    // "winger" (offset 10802147) carries FOUR topic-domain pointers,
+    // now stored on its own Sense, not on the Word (word_seeder.ts's own
+    // tagTopicDomain docstring) -- DictionaryView.domainTagsFor() must
+    // resolve them through senseId, not word.domainTag directly (always
+    // undefined for a WordNet-seeded Word after this migration).
+    const winger = dictionary.lookupAll("winger").find((w) => w.synsetId?.value === "10802147-n");
+    expect(winger).toBeDefined();
+    expect(winger?.domainTag).toBeUndefined();
+
+    const view = new DictionaryView(dictionary, lexicalRelationships, { domainName: "Common", senses: senseStore });
+    const record = view.searchWords({ wordId: winger!.uuid.value }).words[0];
+    expect(record.domain).not.toBeNull();
+    expect(["soccer", "field hockey", "rugby", "football"]).toContain(record.domain);
+    expect(new Set([record.domain, ...record.related_domains])).toEqual(new Set(["soccer", "field hockey", "rugby", "football"]));
   }, 30000);
 
   it("sense_id is null for a Word that didn't come from WordSeeder.seedWordNet", () => {

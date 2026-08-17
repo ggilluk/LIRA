@@ -33,6 +33,7 @@ import { HolonymRootWord } from "../data/holonym_root_word";
 import { HypernymRootWord } from "../data/hypernym_root_word";
 import { InterrogativeRootWord } from "../data/interrogative_root_word";
 import { VectorPrimitiveRootWord } from "../data/vector_primitive_root_word";
+import type { Text } from "../../value_objects";
 import type { AttributeValue } from "../data/attribute_value";
 import type { Dictionary } from "../data/dictionary";
 import { LexicalRelationshipStore } from "../data/lexical_relationship_store";
@@ -338,6 +339,22 @@ function relationshipKindForPointer(
 function indexedWord(members: readonly (Word | Phrase)[], oneBasedIndex: number): readonly (Word | Phrase)[] {
   const word = members[oneBasedIndex - 1];
   return word === undefined ? [] : [word];
+}
+
+/** Applies one topic-domain tag to `target` -- shared by tagTopicDomain's
+ * own Sense-level (synset-wide `;c`/`-c` pointer) and Word/Phrase-level
+ * (word-specific pointer) paths, since Sense/Word/Phrase all share the
+ * identical domainTag/relatedDomainTags shape. The first topic found for
+ * `target` sets domainTag; any different one after that is appended to
+ * relatedDomainTags instead of silently dropped. Idempotent on a re-seed
+ * with the identical tag -- both branches are no-ops the second time,
+ * so no separate "already processed" tracking is needed. */
+function applyDomainTag(target: { domainTag?: Text; relatedDomainTags: readonly Text[] }, categoryLemma: string): void {
+  if (target.domainTag === undefined) {
+    target.domainTag = { value: categoryLemma };
+  } else if (target.domainTag.value !== categoryLemma && !target.relatedDomainTags.some((tag) => tag.value === categoryLemma)) {
+    target.relatedDomainTags = [...target.relatedDomainTags, { value: categoryLemma }];
+  }
 }
 
 // Shared by seedWordNet's own pass 1 and loadCache()'s own isMultiWord()
@@ -966,7 +983,7 @@ export class WordSeeder {
     if (targetMembers === undefined || targetMembers.length === 0) return 0;
 
     if (pointer.symbol === ";c" || pointer.symbol === "-c") {
-      this.tagTopicDomain(sourceMembers, targetMembers, pointer);
+      this.tagTopicDomain(synset, sourceMembers, targetMembers, pointer, senseStore);
       return 0;
     }
 
@@ -1003,14 +1020,28 @@ export class WordSeeder {
    * LexicalRelationship edge (TOPIC_DOMAIN is consequently orphaned from
    * WordNet seeding, the same fate HYPONYM/TROPONYM/etc. already have --
    * relationshipKindForPointer's own docstring). It instead tags the
-   * word itself with the topic category's own representative lemma
-   * ("medicine", "chemistry", ...): the first topic pointer found for a
-   * given Word sets that Word's domainTag (mirroring how the Common
+   * topic category's own representative lemma ("medicine", "chemistry",
+   * ...) onto the tagged *Sense* now, not every one of its member Words/
+   * Phrases individually (Sense.domainTag/relatedDomainTags' own
+   * docstring on why this replaced the old per-member duplication -- a
+   * topic domain is a property of the meaning, not of any one lemma that
+   * happens to spell it): the first topic pointer found for a given
+   * Sense sets that Sense's domainTag (mirroring how the Common
    * Vocabulary Cache's own polysemy already uses domainTag for a single
    * subdomain name); any *additional* topic this same sense also carries
    * in WordNet -- rarer, but real: e.g. "winger" is a wing position in
    * soccer, hockey, rugby, AND field_hockey -- is appended to
-   * relatedDomainTags (word.ts) instead of silently dropped.
+   * relatedDomainTags instead of silently dropped.
+   *
+   * A *word-specific* topic pointer (either index nonzero -- rare, but
+   * the general pointer-index handling below doesn't assume it can't
+   * happen) still tags the one named Word/Phrase directly instead of the
+   * whole Sense, the same "only a synset-wide fact moves to Sense" rule
+   * seedPointerRelationship's own relationship-kind branch uses. A
+   * Word/Phrase with no Sense at all (every hand-curated Common
+   * Vocabulary Cache entry, which never reaches this method) keeps using
+   * its own domainTag/relatedDomainTags exactly as before -- untouched
+   * by this change.
    *
    * `;c` is recorded on the tagged word's own synset, pointing at the
    * topic-category synset (sourceMembers = the word(s), targetMembers =
@@ -1020,7 +1051,13 @@ export class WordSeeder {
    * relationshipKindForPointer's own swap convention for the same pair,
    * so both symbols resolve to the identical (word, category) tagging
    * regardless of which of the two entries the pointer was read from. */
-  private tagTopicDomain(sourceMembers: readonly (Word | Phrase)[], targetMembers: readonly (Word | Phrase)[], pointer: WordNetPointer): void {
+  private tagTopicDomain(
+    synset: WordNetSynset,
+    sourceMembers: readonly (Word | Phrase)[],
+    targetMembers: readonly (Word | Phrase)[],
+    pointer: WordNetPointer,
+    senseStore: SenseStore,
+  ): void {
     const sourceWords = pointer.sourceWordIndex === 0 ? sourceMembers : indexedWord(sourceMembers, pointer.sourceWordIndex);
     const targetWords = pointer.targetWordIndex === 0 ? targetMembers : indexedWord(targetMembers, pointer.targetWordIndex);
 
@@ -1030,13 +1067,15 @@ export class WordSeeder {
     if (categoryWord === undefined) return;
     const categoryLemma = categoryWord.text;
 
-    for (const word of taggedWords) {
-      if (word.domainTag === undefined) {
-        word.domainTag = { value: categoryLemma };
-      } else if (word.domainTag.value !== categoryLemma && !word.relatedDomainTags.some((tag) => tag.value === categoryLemma)) {
-        word.relatedDomainTags = [...word.relatedDomainTags, { value: categoryLemma }];
+    if (pointer.sourceWordIndex === 0 && pointer.targetWordIndex === 0) {
+      const taggedSynsetId = pointer.symbol === ";c" ? synset.synsetId : pointer.targetSynsetId;
+      const sense = senseStore.findBySynsetId(taggedSynsetId);
+      if (sense !== undefined) {
+        applyDomainTag(sense, categoryLemma);
+        return;
       }
     }
+    for (const word of taggedWords) applyDomainTag(word, categoryLemma);
   }
 
   /** Creates a LexicalRelationship for every (source, target) pair not

@@ -52,11 +52,17 @@ export interface Sense {
   usageNotes: readonly Text[];
 
   // Word.domainTag/Word.relatedDomainTags's own exact counterparts --
-  // present on the interface for symmetry with Word/Phrase, but not yet
-  // populated by WordSeeder.seedWordNet (tagTopicDomain still writes
-  // directly to each member Word/Phrase, not here); always
-  // undefined/empty until a later pass wires topic-domain tagging
-  // through the Sense instead.
+  // populated by WordSeeder.seedWordNet's own tagTopicDomain for a
+  // synset-wide topic-domain pointer (`;c`/`-c`), once per Sense rather
+  // than once per member Word/Phrase (word_seeder.ts's own
+  // applyDomainTag docstring on why: a topic domain is a property of
+  // the meaning, not of any one lemma that happens to spell it). A
+  // Word/Phrase's own domainTag/relatedDomainTags fields still exist and
+  // still matter -- every hand-curated Common Vocabulary Cache entry has
+  // no Sense at all and keeps using them directly -- but for a WordNet-
+  // seeded Word/Phrase they go unpopulated now; DictionaryView.domainTagsFor()
+  // reads through the Sense first, falling back to the Word/Phrase's own
+  // only when it has no Sense.
   domainTag?: Text;
   relatedDomainTags: readonly Text[];
 
