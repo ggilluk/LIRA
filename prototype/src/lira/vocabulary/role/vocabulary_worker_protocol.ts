@@ -3,7 +3,7 @@
  * both sides are typed against the same shapes instead of each guessing
  * at the other's message format. */
 
-import type { HierarchyEdge, HierarchyNode, PhraseRecord, RelationshipRecord, WordRecord } from "../ui/dictionary_view";
+import type { HierarchyEdge, HierarchyNode, PhraseRecord, RelationshipRecord, SenseRecord, WordRecord } from "../ui/dictionary_view";
 
 /** The Vocabulary Service's own status vocabulary -- deliberately not
  * knowledge/data/service_status.ts's `ServiceState` (which also has
@@ -121,6 +121,23 @@ export interface SearchPhrasesRequest {
   limit?: number;
 }
 
+/** SearchPhrasesRequest's own exact counterpart for the Senses tab
+ * (DictionaryView.searchSenses() -- past MAX_INTERACTIVE_WORDS, there's
+ * no embedded client-side SENSES array left to filter in the browser
+ * at all). A Sense-uuid pivot lookup (a Senses-tab row click) still
+ * goes through the shared SearchWordsRequest/`wordId` path, same as a
+ * Phrase's own -- DictionaryView.searchWords()'s own Senses fallback. */
+export interface SearchSensesRequest {
+  type: "search-senses";
+  requestId: string;
+  domain: string;
+  word?: string;
+  gloss?: string;
+  definition?: string;
+  pos?: string;
+  limit?: number;
+}
+
 /** Resolves one Relationships-tab search, or (given `wordId`) "every
  * relationship touching this one Word" -- the Words-tab detail panel's
  * own need, over MAX_INTERACTIVE_WORDS -- against `domain`'s full
@@ -158,6 +175,7 @@ export type VocabularyWorkerRequest =
   | SeedCommonVocabularyRequest
   | SearchWordsRequest
   | SearchPhrasesRequest
+  | SearchSensesRequest
   | SearchRelationshipsRequest
   | ResolveHierarchyRequest;
 
@@ -254,6 +272,16 @@ export interface SearchPhrasesResultMessage {
   totalMatches: number;
 }
 
+/** The response to a SearchSensesRequest -- same capped-`senses`/
+ * true-`totalMatches` shape as SearchPhrasesResultMessage, for the same
+ * reason. */
+export interface SearchSensesResultMessage {
+  type: "search-senses-result";
+  requestId: string;
+  senses: readonly SenseRecord[];
+  totalMatches: number;
+}
+
 /** The response to a SearchRelationshipsRequest -- same
  * capped-`relationships`/true-`totalMatches` shape as
  * SearchWordsResultMessage, for the same reason. */
@@ -287,5 +315,6 @@ export type VocabularyWorkerMessage =
   | DomainUpdatedMessage
   | SearchWordsResultMessage
   | SearchPhrasesResultMessage
+  | SearchSensesResultMessage
   | SearchRelationshipsResultMessage
   | ResolveHierarchyResultMessage;

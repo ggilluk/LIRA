@@ -26,6 +26,7 @@ import { PartOfSpeech } from "../data/part_of_speech";
 import { phraseAsWord, type Phrase } from "../data/phrase";
 import { Phrases } from "../data/phrases";
 import { RegisterCode } from "../data/register_code";
+import type { Sense } from "../data/sense";
 import { Senses } from "../data/senses";
 import { definitionWords, type Word } from "../data/word";
 
@@ -139,6 +140,35 @@ export interface PhraseRecord {
   dialect_codes: string[];
   editorial_labels: string[];
   is_common: boolean;
+  sources: string[];
+}
+
+// Sense's own client-facing record -- the Senses tab's own row shape.
+// Unlike WordRecord/PhraseRecord, a Sense has no `lexical_form` of its
+// own to sort/search by (Sense's own docstring, data/sense.ts, on why
+// it's the meaning, not any one spelling of it) -- `lexical_form` here
+// is instead every member's own lexical form joined together ("big,
+// large"), the Senses tab's own headline column, built fresh each call
+// from SenseStore.membersOf() rather than stored on Sense itself.
+// `pos` is similarly derived from the first member (every WordNet
+// synset is single-part-of-speech by construction; a hand-curated
+// Sense has exactly one member anyway, registerUniqueSense's own
+// docstring, word_seeder.ts) -- null only for the pathological case of
+// a Sense with no registered members at all.
+export interface SenseRecord {
+  id: string;
+  entry_id: string;
+  synset_id: string | null;
+  lexical_form: string;
+  pos: string | null;
+  gloss: string;
+  definition: string;
+  is_common: boolean;
+  is_root_word: boolean;
+  domain: string | null;
+  related_domains: string[];
+  member_count: number;
+  members: string[];
   sources: string[];
 }
 
@@ -373,10 +403,17 @@ export class DictionaryView {
     // elements in one innerHTML assignment, MAX_WORD_ROWS_SHOWN's own
     // client-side docstring).
     const overCapacityPhrases = totalPhraseCount > MAX_INTERACTIVE_WORDS;
+    // Same reasoning as overCapacityPhrases just above, checked against
+    // the Senses store's own count -- WordSeeder.seedWordNet seeds one
+    // Sense per synset, ~117,800 of them at WordNet scale, well past
+    // MAX_INTERACTIVE_WORDS.
+    const totalSenseCount = this.senses.totalEntries();
+    const overCapacitySenses = totalSenseCount > MAX_INTERACTIVE_WORDS;
 
     const words = overCapacity ? [] : this.wordRecords();
     const rels = overCapacity ? [] : this.relationshipRecords();
     const phrases = overCapacityPhrases ? [] : this.phraseRecords();
+    const senses = overCapacitySenses ? [] : this.senseRecords();
     const commonCount = allWords.filter((w) => w.isCommon).length;
     const posCounts = new Set(allWords.map((w) => w.partOfSpeech));
     // The Words tab's own pos-filter/domain-filter <select> options --
@@ -401,6 +438,7 @@ export class DictionaryView {
       COMPILED_AT: escapeHtml(this.compiledAt()),
       WORD_COUNT: String(totalWordCount),
       PHRASE_COUNT: String(totalPhraseCount),
+      SENSE_COUNT: String(totalSenseCount),
       RELATIONSHIP_COUNT: String(totalRelationshipCount),
       COMMON_COUNT: String(commonCount),
       DOMAIN_SPECIFIC_COUNT: String(totalWordCount - commonCount),
@@ -408,11 +446,13 @@ export class DictionaryView {
       UNRESOLVED_COUNT: String(this.unresolved.length),
       WORDS_JSON: JSON.stringify(words),
       PHRASES_JSON: JSON.stringify(phrases),
+      SENSES_JSON: JSON.stringify(senses),
       RELS_JSON: JSON.stringify(rels),
       POS_VALUES_JSON: JSON.stringify(posValues),
       DOMAIN_VALUES_JSON: JSON.stringify(domainValues),
       OVER_CAPACITY_JSON: JSON.stringify(overCapacity),
       OVER_CAPACITY_PHRASES_JSON: JSON.stringify(overCapacityPhrases),
+      OVER_CAPACITY_SENSES_JSON: JSON.stringify(overCapacitySenses),
       // Over capacity, the Words tab searches the full Dictionary
       // server-side per keystroke (searchWords(), renderWordsOverCapacity()
       // in the fragment's own script below) rather than embedding every
@@ -437,6 +477,12 @@ export class DictionaryView {
       PHRASES_EMPTY_MESSAGE: overCapacityPhrases
         ? escapeHtml(`No phrases match this search across all ${totalPhraseCount.toLocaleString()} phrases in this Domain.`)
         : "No phrases match this search.",
+      // Same reasoning as PHRASES_EMPTY_MESSAGE just above -- the Senses
+      // tab now searches server-side over capacity too (searchSenses(),
+      // renderSensesOverCapacity() below).
+      SENSES_EMPTY_MESSAGE: overCapacitySenses
+        ? escapeHtml(`No senses match this search across all ${totalSenseCount.toLocaleString()} senses in this Domain.`)
+        : "No senses match this search.",
       UNRESOLVED_JSON: JSON.stringify([...this.unresolved].sort()),
       // The Hierarchy/Cyclic tabs' own "Relationship kind" dropdowns --
       // computed off the full LexicalRelationshipStore regardless of
@@ -573,6 +619,42 @@ export class DictionaryView {
     };
   }
 
+  /** phraseRecords()'s own exact counterpart for the Senses tab -- every
+   * Sense in this Domain's Senses store, as a SenseRecord, only ever run
+   * under MAX_INTERACTIVE_WORDS (render()'s own overCapacitySenses). */
+  private senseRecords(): SenseRecord[] {
+    const records = this.senses.all().map((sense) => this.senseRecordFor(sense));
+    records.sort((a, b) => a.lexical_form.toLowerCase().localeCompare(b.lexical_form.toLowerCase()));
+    return records;
+  }
+
+  /** One Sense's full SenseRecord, including its own membership
+   * (`members`/`member_count`/`pos`, resolved via SenseStore.membersOf()) --
+   * unlike wordRecordFor()/phraseRecordFor(), this reads every field
+   * straight off `sense` itself rather than through senseFieldsFor(),
+   * since a Sense already *is* the thing senseFieldsFor() resolves a
+   * Word/Phrase through. */
+  private senseRecordFor(sense: Sense): SenseRecord {
+    const members = this.senses.membersOf(sense.uuid.value);
+    const domain = !sense.isCommon ? this.domainName : (sense.domainTag?.value ?? "Common");
+    return {
+      id: sense.uuid.value,
+      entry_id: sense.entryId.value,
+      synset_id: sense.synsetId?.value ?? null,
+      lexical_form: members.map((member) => member.lexicalForm?.value ?? member.text).join(", "),
+      pos: members.length > 0 ? PartOfSpeech[members[0].partOfSpeech] : null,
+      gloss: sense.gloss?.value ?? "",
+      definition: sense.definition?.value ?? "",
+      is_common: sense.isCommon,
+      is_root_word: sense.isRootWord,
+      domain,
+      related_domains: sense.relatedDomainTags.map((tag) => tag.value),
+      member_count: members.length,
+      members: members.map((member) => member.lexicalForm?.value ?? member.text),
+      sources: sense.sourceReferences.map((ref) => ref.sourceName.value),
+    };
+  }
+
   /** Resolves a Words-tab search against every Word in the Dictionary
    * directly, rather than against a pre-embedded client-side array --
    * the on-demand counterpart to wordRecords() for a Domain over
@@ -624,7 +706,25 @@ export class DictionaryView {
         return { words: [{ ...record, phrase_word_segments: this.phraseWordSegments(phrase) }], totalMatches: 1 };
       }
       const word = this.dictionary.findByUuid(options.wordId);
-      return word ? { words: [this.wordRecordFor(word)], totalMatches: 1 } : { words: [], totalMatches: 0 };
+      if (word !== undefined) return { words: [this.wordRecordFor(word)], totalMatches: 1 };
+      // `wordId` may also name a Sense directly -- the Senses tab's own
+      // row-click (senseRecordFor()'s own `id`), resolved to its first-
+      // registered member the same way resolveEntry() below falls back
+      // to a representative member for a Sense-typed relationship
+      // endpoint (that method's own docstring). Reuses this same
+      // branch's own Phrase-vs-Word handling for whichever kind the
+      // representative turns out to be, so a Sense whose one member is a
+      // Phrase still gets its own phrase_word_segments.
+      const sense = this.senses.findByUuid(options.wordId);
+      const representative = sense !== undefined ? this.senses.membersOf(sense.uuid.value)[0] : undefined;
+      if (representative !== undefined) {
+        if ("words" in representative) {
+          const record = this.wordRecordFor(phraseAsWord(representative));
+          return { words: [{ ...record, phrase_word_segments: this.phraseWordSegments(representative) }], totalMatches: 1 };
+        }
+        return { words: [this.wordRecordFor(representative)], totalMatches: 1 };
+      }
+      return { words: [], totalMatches: 0 };
     }
 
     const limit = options.limit ?? 1000;
@@ -684,6 +784,42 @@ export class DictionaryView {
     }
     matches.sort((a, b) => a.lexical_form.toLowerCase().localeCompare(b.lexical_form.toLowerCase()));
     return { phrases: matches, totalMatches };
+  }
+
+  /** searchPhrases()'s own counterpart for the Senses tab, over
+   * MAX_INTERACTIVE_WORDS -- resolves a search against every Sense in
+   * this Domain's Senses store directly instead of a pre-embedded
+   * client-side array, same reasoning as searchWords()/searchPhrases().
+   * `word` matches against the joined-member `lexical_form`
+   * (senseRecordFor()'s own docstring on why a Sense has no lexical
+   * form of its own); `gloss`/`definition` match the Sense's own fields
+   * directly, cheaper to check first since they don't need a
+   * SenseStore.membersOf() lookup the way `word`/`pos` do. `senses` is
+   * capped at `options.limit`; `totalMatches` is the true, uncapped
+   * count. */
+  searchSenses(options: { word?: string; gloss?: string; definition?: string; pos?: string; limit?: number }): {
+    senses: SenseRecord[];
+    totalMatches: number;
+  } {
+    const limit = options.limit ?? 1000;
+    const wordQuery = options.word?.trim().toLowerCase();
+    const glossQuery = options.gloss?.trim().toLowerCase();
+    const definitionQuery = options.definition?.trim().toLowerCase();
+
+    const matches: SenseRecord[] = [];
+    let totalMatches = 0;
+    for (const sense of this.senses.all()) {
+      if (glossQuery && !(sense.gloss?.value ?? "").toLowerCase().includes(glossQuery)) continue;
+      if (definitionQuery && !(sense.definition?.value ?? "").toLowerCase().includes(definitionQuery)) continue;
+      const record = this.senseRecordFor(sense);
+      if (options.pos && record.pos !== options.pos) continue;
+      if (wordQuery && !record.lexical_form.toLowerCase().includes(wordQuery)) continue;
+
+      totalMatches += 1;
+      if (matches.length < limit) matches.push(record);
+    }
+    matches.sort((a, b) => a.lexical_form.toLowerCase().localeCompare(b.lexical_form.toLowerCase()));
+    return { senses: matches, totalMatches };
   }
 
   /** This Word's Seeded Attributes for the PAD (Pleasure-Arousal-
@@ -1833,6 +1969,7 @@ footer {
   <div class="stat-row">
     <div class="stat"><div class="value" id="stat-words">@@WORD_COUNT@@</div><div class="label">Words</div></div>
     <div class="stat"><div class="value" id="stat-phrases">@@PHRASE_COUNT@@</div><div class="label">Phrases</div></div>
+    <div class="stat"><div class="value" id="stat-senses">@@SENSE_COUNT@@</div><div class="label">Senses</div></div>
     <div class="stat"><div class="value" id="stat-rels">@@RELATIONSHIP_COUNT@@</div><div class="label">Relationships</div></div>
     <div class="stat"><div class="value">@@COMMON_COUNT@@</div><div class="label">Common vocabulary</div></div>
     <div class="stat"><div class="value">@@DOMAIN_SPECIFIC_COUNT@@</div><div class="label">Domain-specific</div></div>
@@ -1850,6 +1987,7 @@ footer {
     <div class="tabs" role="tablist">
       <button id="tab-words" role="tab" aria-selected="true">Words</button>
       <button id="tab-phrases" role="tab" aria-selected="false">Phrases</button>
+      <button id="tab-senses" role="tab" aria-selected="false">Senses</button>
       <button id="tab-rels" role="tab" aria-selected="false">Relationships</button>
       <button id="tab-hierarchy" role="tab" aria-selected="false">Hierarchy</button>
       <button id="tab-cyclic" role="tab" aria-selected="false">Cyclic</button>
@@ -1907,6 +2045,31 @@ footer {
           <tbody id="phrases-body"></tbody>
         </table>
         <div class="empty-state" id="phrases-empty" style="display:none">@@PHRASES_EMPTY_MESSAGE@@</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-senses">
+    <div class="words-layout">
+      <aside class="detail-panel">
+        <div class="detail-empty" id="detail-empty-senses">Select a sense below to see its relationships.</div>
+        <div id="detail-content-senses" style="display:none"></div>
+      </aside>
+      <div class="table-wrap">
+        <div class="cyclic-note" id="senses-note" style="display:none"></div>
+        <table>
+          <thead>
+            <tr>
+              <th data-sort="lexical_form">Members</th>
+              <th data-sort="pos">Part of speech</th>
+              <th data-sort="domain">Domain</th>
+              <th data-sort="definition">Definition</th>
+              <th>Labels</th>
+            </tr>
+          </thead>
+          <tbody id="senses-body"></tbody>
+        </table>
+        <div class="empty-state" id="senses-empty" style="display:none">@@SENSES_EMPTY_MESSAGE@@</div>
       </div>
     </div>
   </section>
@@ -1971,6 +2134,7 @@ footer {
 /*@@SCRIPT_FRAGMENT_START@@*/
 const WORDS = @@WORDS_JSON@@;
 const PHRASES = @@PHRASES_JSON@@;
+const SENSES = @@SENSES_JSON@@;
 const RELS = @@RELS_JSON@@;
 const UNRESOLVED = @@UNRESOLVED_JSON@@;
 const POS_COLORS = @@POS_COLORS_JSON@@;
@@ -1990,8 +2154,12 @@ const OVER_CAPACITY = @@OVER_CAPACITY_JSON@@;
 // slice, so the Phrases stat tile falls back to TOTAL_PHRASE_COUNT the
 // same way the Words tile already falls back to TOTAL_WORD_COUNT.
 const OVER_CAPACITY_PHRASES = @@OVER_CAPACITY_PHRASES_JSON@@;
+// Same reasoning as OVER_CAPACITY_PHRASES just above, checked against
+// the Senses store's own count instead.
+const OVER_CAPACITY_SENSES = @@OVER_CAPACITY_SENSES_JSON@@;
 const TOTAL_WORD_COUNT = @@WORD_COUNT@@;
 const TOTAL_PHRASE_COUNT = @@PHRASE_COUNT@@;
+const TOTAL_SENSE_COUNT = @@SENSE_COUNT@@;
 const TOTAL_RELATIONSHIP_COUNT = @@RELATIONSHIP_COUNT@@;
 // The pos-filter/domain-filter <select> options -- computed server-side
 // off every Word in the Dictionary (render()'s own posValues/
@@ -2551,6 +2719,128 @@ document.addEventListener("lira-search-phrases-result", (e) => {
   renderDetailPanel("phrases");
 });
 
+// Senses reuse the same free-text search fields and pos-filter Phrases
+// already does (matchesPhraseQuery()'s own docstring on why both are
+// meaningful) -- \`word\` matches against \`lexical_form\`, itself every
+// member's own lexical form joined together (SenseRecord's own
+// docstring, dictionary_view.ts), not a spelling Sense has of its own.
+function matchesSenseQuery(sense) {
+  const { word: wordQuery, gloss: glossQuery, definition: definitionQuery } = state.search;
+  if (wordQuery && !sense.lexical_form.toLowerCase().includes(wordQuery.toLowerCase())) return false;
+  if (glossQuery && !sense.gloss.toLowerCase().includes(glossQuery.toLowerCase())) return false;
+  if (definitionQuery && !sense.definition.toLowerCase().includes(definitionQuery.toLowerCase())) return false;
+  return true;
+}
+
+function filteredSenses() {
+  return SENSES.filter(s => matchesSenseQuery(s) && (!state.pos || s.pos === state.pos) && (!state.rootWordsOnly || s.is_root_word));
+}
+
+// data-word-id, not data-sense-id -- phraseRowHtml()'s own exact
+// reasoning: a Sense's own uuid lives in the identical shared selection
+// every other tab reads/writes (state.selectedWordId), resolved to its
+// first-registered member's own full Word detail via the shared
+// "lira-search-words"/wordId path (DictionaryView.searchWords()'s own
+// Senses fallback), not a parallel selection/lookup mechanism of its
+// own.
+function senseRowHtml(s) {
+  return \`
+    <tr data-word-id="\${s.id}" class="\${s.id === state.selectedWordId ? 'selected' : ''}">
+      <td><span class="word-form">\${s.lexical_form}</span>\${s.is_common ? ' <span class="badge-common">common</span>' : ''}</td>
+      <td>\${s.pos ? posPill(s.pos) : ''}</td>
+      <td>\${domainPill(s.domain)}</td>
+      <td class="definition">\${s.definition || s.gloss || '<span style="opacity:.5">&mdash;</span>'}</td>
+      <td>\${s.is_root_word ? '<span class="badge-root-word">root word</span>' : ''}</td>
+    </tr>\`;
+}
+
+// MAX_PHRASE_ROWS_SHOWN's own exact counterpart, same reasoning -- a
+// WordNet-seeded Senses store can carry over a hundred thousand
+// entries.
+const MAX_SENSE_ROWS_SHOWN = 1000;
+
+function renderSenses() {
+  if (OVER_CAPACITY_SENSES) {
+    renderSensesOverCapacity();
+    return;
+  }
+  const rows = filteredSenses().slice().sort((a, b) => a.lexical_form.toLowerCase().localeCompare(b.lexical_form.toLowerCase()));
+  const shown = rows.slice(0, MAX_SENSE_ROWS_SHOWN);
+  const body = document.getElementById("senses-body");
+  document.getElementById("senses-empty").style.display = rows.length ? "none" : "block";
+  const note = document.getElementById("senses-note");
+  if (rows.length > shown.length) {
+    note.style.display = "block";
+    note.textContent = \`Showing the first \${shown.length.toLocaleString()} of \${rows.length.toLocaleString()} matching senses -- search or filter to narrow.\`;
+  } else {
+    note.style.display = "none";
+  }
+  body.innerHTML = shown.map(senseRowHtml).join('');
+  document.getElementById("stat-senses").textContent = rows.length;
+}
+
+// requestId of the most recently *dispatched* over-capacity Senses
+// search -- latestPhraseSearchRequestId's own exact counterpart, same
+// stale-response guard.
+let latestSenseSearchRequestId = null;
+let senseSearchDebounceTimer = null;
+
+// renderPhrasesOverCapacity()'s own exact counterpart for the Senses
+// tab -- dispatches a "lira-search-senses" DOM event instead of
+// filtering an already-embedded SENSES array (there isn't one, past
+// OVER_CAPACITY_SENSES).
+function renderSensesOverCapacity() {
+  if (senseSearchDebounceTimer !== null) clearTimeout(senseSearchDebounceTimer);
+  senseSearchDebounceTimer = setTimeout(() => {
+    const requestId = 'sense-search-' + Math.random().toString(36).slice(2);
+    latestSenseSearchRequestId = requestId;
+    document.getElementById("senses-note").style.display = "none";
+    document.getElementById("senses-empty").style.display = "none";
+    document.getElementById("senses-body").innerHTML =
+      '<tr><td colspan="5" style="text-align:center;padding:24px;color:var(--ink-muted,#5B6660)">Searching…</td></tr>';
+    document.dispatchEvent(new CustomEvent("lira-search-senses", {
+      detail: {
+        requestId,
+        word: state.search.word,
+        gloss: state.search.gloss,
+        definition: state.search.definition,
+        pos: state.pos,
+        limit: MAX_SENSE_ROWS_SHOWN,
+      },
+    }));
+  }, WORD_SEARCH_DEBOUNCE_MS);
+}
+
+// "lira-search-phrases-result"'s own exact counterpart for Senses --
+// renders the row list only; a selected Sense's own detail-panel data
+// always resolves via the shared "lira-search-words"/wordId path
+// instead (DictionaryView.searchWords()'s own Senses fallback), same
+// reasoning as the Phrases listener just above.
+document.addEventListener("lira-search-senses-result", (e) => {
+  const { requestId, senses, totalMatches } = e.detail;
+  if (requestId !== latestSenseSearchRequestId) return;
+
+  const body = document.getElementById("senses-body");
+  const empty = document.getElementById("senses-empty");
+  const note = document.getElementById("senses-note");
+  if (senses.length === 0) {
+    body.innerHTML = "";
+    empty.style.display = "block";
+    note.style.display = "none";
+  } else {
+    empty.style.display = "none";
+    body.innerHTML = senses.map(senseRowHtml).join('');
+    if (totalMatches > senses.length) {
+      note.style.display = "block";
+      note.textContent = \`Showing the first \${senses.length.toLocaleString()} of \${totalMatches.toLocaleString()} matching senses -- narrow your search to see the rest.\`;
+    } else {
+      note.style.display = "none";
+    }
+  }
+  document.getElementById("stat-senses").textContent = TOTAL_SENSE_COUNT;
+  renderDetailPanel("senses");
+});
+
 // How long to wait after the last keystroke before actually dispatching
 // an over-capacity search -- WORDS/RELS are both [] past
 // MAX_INTERACTIVE_WORDS, so unlike the local-array paths above (instant,
@@ -2643,13 +2933,14 @@ document.addEventListener("lira-search-words-result", (e) => {
     // Only re-render if this id is still the shared selection -- a
     // lookup answering a click that's since been superseded by a newer
     // one is simply dropped, same guard latestWordSearchRequestId
-    // applies above. All three detail panels share this one lookup
+    // applies above. All detail panels share this one lookup
     // (selectWord()'s own docstring on why selection is shared), so all
-    // three refresh together rather than each firing its own redundant
+    // of them refresh together rather than each firing its own redundant
     // request for the identical word.
     if (state.selectedWordId === wordId) {
       renderDetailPanel("words");
       renderDetailPanel("phrases");
+      renderDetailPanel("senses");
       renderDetailPanel("hierarchy");
       renderDetailPanel("cyclic");
     }
@@ -2672,7 +2963,7 @@ document.addEventListener("lira-search-words-result", (e) => {
 // already see responds instantly instead of waiting on a round trip.
 function selectWord(wordId) {
   state.selectedWordId = wordId;
-  document.querySelectorAll("#words-body tr[data-word-id], #phrases-body tr[data-word-id]").forEach(tr => {
+  document.querySelectorAll("#words-body tr[data-word-id], #phrases-body tr[data-word-id], #senses-body tr[data-word-id]").forEach(tr => {
     tr.classList.toggle("selected", tr.dataset.wordId === wordId);
   });
   renderAll();
@@ -4130,9 +4421,11 @@ function renderUnresolved() {
 function renderAll() {
   renderWords();
   renderPhrases();
+  renderSenses();
   renderRels();
   renderDetailPanel("words");
   renderDetailPanel("phrases");
+  renderDetailPanel("senses");
   renderDetailPanel("hierarchy");
   renderDetailPanel("cyclic");
   renderUnresolved();
@@ -4145,11 +4438,13 @@ function selectTab(tab) {
   state.tab = tab;
   document.getElementById("tab-words").setAttribute("aria-selected", tab === "words");
   document.getElementById("tab-phrases").setAttribute("aria-selected", tab === "phrases");
+  document.getElementById("tab-senses").setAttribute("aria-selected", tab === "senses");
   document.getElementById("tab-rels").setAttribute("aria-selected", tab === "rels");
   document.getElementById("tab-hierarchy").setAttribute("aria-selected", tab === "hierarchy");
   document.getElementById("tab-cyclic").setAttribute("aria-selected", tab === "cyclic");
   document.getElementById("panel-words").classList.toggle("active", tab === "words");
   document.getElementById("panel-phrases").classList.toggle("active", tab === "phrases");
+  document.getElementById("panel-senses").classList.toggle("active", tab === "senses");
   document.getElementById("panel-rels").classList.toggle("active", tab === "rels");
   document.getElementById("panel-hierarchy").classList.toggle("active", tab === "hierarchy");
   document.getElementById("panel-cyclic").classList.toggle("active", tab === "cyclic");
@@ -4157,6 +4452,7 @@ function selectTab(tab) {
 
 document.getElementById("tab-words").addEventListener("click", () => { selectTab("words"); });
 document.getElementById("tab-phrases").addEventListener("click", () => { selectTab("phrases"); });
+document.getElementById("tab-senses").addEventListener("click", () => { selectTab("senses"); });
 document.getElementById("tab-rels").addEventListener("click", () => { selectTab("rels"); });
 document.getElementById("tab-hierarchy").addEventListener("click", () => { selectTab("hierarchy"); });
 document.getElementById("tab-cyclic").addEventListener("click", () => { selectTab("cyclic"); });
@@ -4199,6 +4495,7 @@ document.getElementById("pos-filter").addEventListener("change", (e) => {
   state.pos = e.target.value;
   renderWords();
   renderPhrases();
+  renderSenses();
 });
 
 document.getElementById("domain-filter").addEventListener("change", (e) => {
@@ -4209,6 +4506,7 @@ document.getElementById("domain-filter").addEventListener("change", (e) => {
 document.getElementById("root-word-filter").addEventListener("change", (e) => {
   state.rootWordsOnly = e.target.checked;
   renderWords();
+  renderSenses();
 });
 
 document.getElementById("words-body").addEventListener("click", (e) => {
@@ -4217,6 +4515,11 @@ document.getElementById("words-body").addEventListener("click", (e) => {
 });
 
 document.getElementById("phrases-body").addEventListener("click", (e) => {
+  const row = e.target.closest("tr[data-word-id]");
+  if (row) selectWord(row.dataset.wordId);
+});
+
+document.getElementById("senses-body").addEventListener("click", (e) => {
   const row = e.target.closest("tr[data-word-id]");
   if (row) selectWord(row.dataset.wordId);
 });

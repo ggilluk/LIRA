@@ -43,6 +43,22 @@ interface LiraSearchPhrasesEventDetail {
   limit?: number;
 }
 
+// Mirrors the "lira-search-senses" CustomEvent's own `detail` shape --
+// dictionary_view.ts's renderSensesOverCapacity() is the one place that
+// dispatches it, same shape as LiraSearchPhrasesEventDetail just above
+// (a Sense-uuid pivot lookup still goes through the shared
+// LiraSearchWordsEventDetail/`wordId` path instead, DictionaryView.searchWords()'s
+// own Senses fallback -- SearchSensesRequest's own docstring,
+// vocabulary_worker_protocol.ts).
+interface LiraSearchSensesEventDetail {
+  requestId: string;
+  word?: string;
+  gloss?: string;
+  definition?: string;
+  pos?: string;
+  limit?: number;
+}
+
 // Mirrors the "lira-search-relationships" CustomEvent's own `detail`
 // shape -- dictionary_view.ts's renderRelsOverCapacity() (Relationships
 // tab search) and renderDetailPanel() (a selected Word's own relationship
@@ -211,6 +227,7 @@ export class PortalShell {
     });
     this.searchWordsBridge();
     this.searchPhrasesBridge();
+    this.searchSensesBridge();
     this.searchRelationshipsBridge();
     this.resolveHierarchyBridge();
   }
@@ -275,6 +292,33 @@ export class PortalShell {
           document.dispatchEvent(
             new CustomEvent("lira-search-phrases-result", {
               detail: { requestId: detail.requestId, phrases: result.phrases, totalMatches: result.totalMatches },
+            }),
+          );
+        });
+    });
+  }
+
+  /** searchWordsBridge()'s own exact counterpart for the fragment's own
+   * "lira-search-senses" event -- answers it with
+   * VocabularyWorkerClient.searchSenses() against whichever Domain is
+   * currently mounted, then dispatches "lira-search-senses-result" back
+   * with the same requestId. */
+  private searchSensesBridge(): void {
+    document.addEventListener("lira-search-senses", (event) => {
+      const detail = (event as CustomEvent<LiraSearchSensesEventDetail>).detail;
+      if (!this.currentVocabularyDomainName) return;
+      void this.vocabularyClient
+        .searchSenses(this.currentVocabularyDomainName, {
+          word: detail.word,
+          gloss: detail.gloss,
+          definition: detail.definition,
+          pos: detail.pos,
+          limit: detail.limit,
+        })
+        .then((result) => {
+          document.dispatchEvent(
+            new CustomEvent("lira-search-senses-result", {
+              detail: { requestId: detail.requestId, senses: result.senses, totalMatches: result.totalMatches },
             }),
           );
         });

@@ -8,6 +8,7 @@ import { antonyms, createWord, holonyms, hypernyms, hyponyms, meronyms, synonyms
 import { HypernymRootWord } from "./data/hypernym_root_word";
 import { createPhrase } from "./data/phrase";
 import { Phrases } from "./data/phrases";
+import { createSense } from "./data/sense";
 import { Senses } from "./data/senses";
 import { AsyncDictionaryHydrator } from "./role/dictionary_hydrator";
 import { DictionaryProcessor } from "./role/dictionary_processor";
@@ -1007,6 +1008,74 @@ describe("DictionaryView.searchPhrases", () => {
     const html = view.render();
     expect(html).toContain("const OVER_CAPACITY_PHRASES = true;");
     expect(html).toContain("const PHRASES = [];");
+    expect(html).toContain(">20001<");
+  });
+});
+
+describe("DictionaryView.searchSenses", () => {
+  it("resolves against the real bundled WordNet-scale Senses store without embedding it (regression check mirroring searchWords'/searchPhrases' own)", async () => {
+    const dictionary = new Dictionary();
+    const phraseBook = new Phrases();
+    const senseStore = new Senses();
+    const lexicalRelationships = new LexicalRelationshipStore();
+    const lexicalRelationshipProcessor = new LexicalRelationshipProcessor(
+      lexicalRelationships,
+      new LexicalRelationshipSystemPropertyTensor(),
+    );
+    await new WordSeeder("en").seedWordNet({
+      vocabulary: { dictionary, phrases: phraseBook, senses: senseStore, lexicalRelationships, lexicalRelationshipProcessor },
+    });
+    expect(senseStore.totalEntries()).toBeGreaterThan(100000);
+
+    const view = new DictionaryView(dictionary, lexicalRelationships, { domainName: "Common", phrases: phraseBook, senses: senseStore });
+    const wordResult = view.searchSenses({ word: "large", limit: 50 });
+    expect(wordResult.totalMatches).toBeGreaterThan(0);
+    expect(wordResult.senses.length).toBeLessThanOrEqual(50);
+    expect(wordResult.senses.every((s) => s.lexical_form.toLowerCase().includes("large"))).toBe(true);
+
+    // "big"/"large" (01385012-a, "above average in size") share one
+    // Sense (the WordSeeder.seedWordNet test's own bigSense assertions)
+    // -- its own SenseRecord should list both members (among that
+    // synset's other lemmas too) joined into `lexical_form`, with a
+    // real member_count and a consistent pos derived from them. Found
+    // by its own definition text, unique enough not to need a high
+    // limit the way the broad `word: "large"` search above does (a
+    // plain word search could plausibly sort this one sense past a
+    // small limit -- "big"/"large" are also both members of an
+    // unrelated "in an advanced stage of pregnancy" synset, and
+    // Senses sort by their own joined lexical_form, not synset offset).
+    const definitionResult = view.searchSenses({ definition: "above average in size", limit: 50 });
+    const bigLargeSense = definitionResult.senses.find((s) => s.synset_id === "01385012-a");
+    expect(bigLargeSense).toBeDefined();
+    expect(bigLargeSense?.member_count).toBe(bigLargeSense?.members.length);
+    expect(bigLargeSense?.member_count).toBeGreaterThanOrEqual(2);
+    expect(bigLargeSense?.pos).toBe("ADJECTIVE");
+    expect(bigLargeSense?.definition).toContain("above average in size");
+
+    // The Words tab's own detail panel resolves a Sense-uuid pivot
+    // (a Senses-tab row click) through the shared searchWords()/wordId
+    // path -- DictionaryView.searchWords()'s own Senses fallback --
+    // rather than a parallel lookup of its own.
+    const pivot = view.searchWords({ wordId: bigLargeSense!.id });
+    expect(pivot.totalMatches).toBe(1);
+    expect(["big", "large"]).toContain(pivot.words[0].lexical_form);
+    expect(pivot.words[0].relationship_count).toBeGreaterThan(0);
+  }, 60000);
+
+  it("render() gates the embedded SENSES array behind the same MAX_INTERACTIVE_WORDS threshold wordRecords()/phraseRecords() already have, once a Senses store grows past it, while still reporting the true, uncapped total in the Senses stat tile", () => {
+    const dictionary = new Dictionary();
+    const senseStore = new Senses();
+    // Fabricated, not WordNet-seeded -- exercises render()'s own
+    // capacity gate directly, without paying the cost of a real WordNet
+    // seed just to get a Senses store this large.
+    for (let i = 0; i < 20001; i++) {
+      senseStore.append(createSense({ definition: { value: `sense number ${i}` } }));
+    }
+    const view = new DictionaryView(dictionary, new LexicalRelationshipStore(), { domainName: "Common", senses: senseStore });
+
+    const html = view.render();
+    expect(html).toContain("const OVER_CAPACITY_SENSES = true;");
+    expect(html).toContain("const SENSES = [];");
     expect(html).toContain(">20001<");
   });
 });

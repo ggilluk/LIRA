@@ -31,6 +31,7 @@ import type {
   ResolveHierarchyRequest,
   SearchPhrasesRequest,
   SearchRelationshipsRequest,
+  SearchSensesRequest,
   SearchWordsRequest,
   SeedCommonVocabularyRequest,
   SeedWordNetRequest,
@@ -363,6 +364,33 @@ function handleSearchPhrases(request: SearchPhrasesRequest): void {
   post({ type: "search-phrases-result", requestId: request.requestId, phrases, totalMatches });
 }
 
+/** handleSearchPhrases()'s own exact counterpart for the Senses tab --
+ * dispatched from renderSensesOverCapacity() (dictionary_view.ts)
+ * whenever the target Domain's own Senses store is over
+ * MAX_INTERACTIVE_WORDS. */
+function handleSearchSenses(request: SearchSensesRequest): void {
+  const domain = domains.get(request.domain);
+  if (!domain) {
+    post({ type: "search-senses-result", requestId: request.requestId, senses: [], totalMatches: 0 });
+    return;
+  }
+
+  const view = new DictionaryView(domain.vocabulary.dictionary, domain.vocabulary.lexicalRelationships, {
+    title: `LIRA — ${domain.name}`,
+    domainName: domain.name,
+    phrases: domain.vocabulary.phrases,
+    senses: domain.vocabulary.senses,
+  });
+  const { senses, totalMatches } = view.searchSenses({
+    word: request.word,
+    gloss: request.gloss,
+    definition: request.definition,
+    pos: request.pos,
+    limit: request.limit,
+  });
+  post({ type: "search-senses-result", requestId: request.requestId, senses, totalMatches });
+}
+
 function handleSearchRelationships(request: SearchRelationshipsRequest): void {
   const domain = domains.get(request.domain);
   if (!domain) {
@@ -419,6 +447,7 @@ ctx.addEventListener("message", (event) => {
   else if (request.type === "seed-common-vocabulary") void handleSeedCommonVocabulary(request);
   else if (request.type === "search-words") handleSearchWords(request);
   else if (request.type === "search-phrases") handleSearchPhrases(request);
+  else if (request.type === "search-senses") handleSearchSenses(request);
   else if (request.type === "search-relationships") handleSearchRelationships(request);
   else if (request.type === "resolve-hierarchy") handleResolveHierarchy(request);
 });
