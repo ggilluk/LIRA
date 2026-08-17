@@ -84,6 +84,18 @@ export interface Word extends LinguisticUnit {
   // didn't come from WordSeeder.seedWordNet (role/word_seeder.ts).
   synsetId?: Identifier;
 
+  // A reference to the Sense (data/sense.ts) this Word lexicalizes --
+  // that Sense's own `uuid`, an internal graph reference, not a WordNet
+  // identifier string (synsetId above is that; sense.ts's own docstring
+  // on why the two are easy to conflate but distinct: synsetId is
+  // "which WordNet synset", senseId is "which Sense object in this
+  // Domain's own SenseStore"). Deliberately additive alongside every
+  // field below it still duplicates from that Sense (definition,
+  // usageNotes, domainTag, relatedDomainTags) -- Sense's own docstring
+  // on why removing that duplication is separate, later work. Undefined
+  // for a Word that didn't come from WordSeeder.seedWordNet.
+  senseId?: Identifier;
+
   version: Text;
   languageCode: Code;
   lexicalForm?: Text;

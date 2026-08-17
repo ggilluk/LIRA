@@ -39,6 +39,8 @@ import { LexicalRelationshipStore } from "../data/lexical_relationship_store";
 import { LexicalRelationshipType, MERONYM_KIND_QUALIFIER, type MeronymKind } from "../data/lexical_relationship_type";
 import { copyPhraseWithFreshUuid, createPhrase, type Phrase } from "../data/phrase";
 import type { PhraseBook } from "../data/phrase_book";
+import { createSense } from "../data/sense";
+import type { SenseStore } from "../data/sense_store";
 import type { SourceReference } from "../data/source_reference";
 import { copyWordWithFreshUuid, createWord, type Word } from "../data/word";
 import {
@@ -772,14 +774,16 @@ export class WordSeeder {
       vocabulary: {
         dictionary: Dictionary;
         phrases: PhraseBook;
+        senses: SenseStore;
         lexicalRelationships: LexicalRelationshipStore;
         lexicalRelationshipProcessor: LexicalRelationshipProcessor;
       };
     },
     onProgress?: (phase: "words" | "relationships", processed: number, total: number) => void,
-  ): Promise<{ wordsSeeded: number; relationshipsSeeded: number }> {
+  ): Promise<{ wordsSeeded: number; sensesSeeded: number; relationshipsSeeded: number }> {
     const dictionary = domain.vocabulary.dictionary;
     const phraseBook = domain.vocabulary.phrases;
+    const senseStore = domain.vocabulary.senses;
     const store = domain.vocabulary.lexicalRelationships;
     const processor = domain.vocabulary.lexicalRelationshipProcessor;
 
@@ -803,6 +807,7 @@ export class WordSeeder {
     }
 
     let wordsSeeded = 0;
+    let sensesSeeded = 0;
     let relationshipsSeeded = 0;
 
     const synsets = await loadWordNetSynsets();
@@ -821,6 +826,25 @@ export class WordSeeder {
 
     let processed = 0;
     for (const synset of synsets) {
+      // One Sense per synset, shared by every member -- Sense's own
+      // docstring on why this exists (the shared-meaning data every
+      // member used to duplicate its own copy of). Found-or-created the
+      // same way a member Word/Phrase already is, keyed on synsetId
+      // rather than (lemma, partOfSpeech, synsetId) since a synset has
+      // exactly one Sense regardless of how many lemmas name it.
+      let sense = senseStore.findBySynsetId(synset.synsetId);
+      if (sense === undefined) {
+        sense = createSense({
+          synsetId: { value: synset.synsetId, ...WORDNET_SYNSET_ID_SCHEME },
+          definition: synset.definition ? { value: synset.definition } : undefined,
+          usageNotes: synset.examples.map((example) => ({ value: example })),
+          isCommon: true,
+          sourceReferences: [WORDNET_SOURCE_REFERENCE],
+        });
+        senseStore.append(sense);
+        sensesSeeded += 1;
+      }
+
       const members: Array<Word | Phrase> = [];
       for (const lemma of synset.lemmas) {
         if (lemma.length === 0) continue;
@@ -859,6 +883,11 @@ export class WordSeeder {
         members.push(word);
         wordsSeeded += 1;
       }
+      // Every member linked to this synset's own Sense, new or reused
+      // (a reused member from an earlier seedWordNet run, before this
+      // field existed, gets backfilled here too -- idempotent, safe to
+      // set on every re-seed).
+      for (const member of members) member.senseId = sense.uuid;
       synsetMembersById.set(synset.synsetId, members);
 
       relationshipsSeeded += this.createEdges(processor, existingEdges, LexicalRelationshipType.SYNONYM, allPairs(members));
@@ -893,7 +922,7 @@ export class WordSeeder {
       }
     }
 
-    return { wordsSeeded, relationshipsSeeded };
+    return { wordsSeeded, sensesSeeded, relationshipsSeeded };
   }
 
   /** One WordNetPointer, resolved and (if not already present) created

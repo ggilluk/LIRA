@@ -6,16 +6,19 @@ import { Dictionary } from "./dictionary";
 import { LexicalRelationshipStore } from "./lexical_relationship_store";
 import { LexicalRelationshipSystemPropertyTensor } from "./lexical_relationship_tensor";
 import { PhraseBook } from "./phrase_book";
+import { SenseStore } from "./sense_store";
 
-/** Ported from vocabulary/data/layer.py. `phrases` has no Python
- * original -- it's this prototype's own addition, Dictionary's
- * multi-word counterpart (phrase.ts's own docstring on why a Phrase is
- * a separate lexical category, not just a Word whose text happens to
- * contain a space). */
+/** Ported from vocabulary/data/layer.py. `phrases`/`senses` have no
+ * Python original -- this prototype's own additions. `phrases` is
+ * Dictionary's multi-word counterpart (phrase.ts's own docstring on why
+ * a Phrase is a separate lexical category, not just a Word whose text
+ * happens to contain a space); `senses` holds the shared meaning behind
+ * a WordNet synset's own members (sense.ts's own docstring). */
 export class VocabularyLayer {
   agents: VocabularyAgent[] = [];
   dictionary = new Dictionary(); // the lexicon -- lexical inventory only (Rule 17)
   phrases = new PhraseBook();
+  senses = new SenseStore();
   hydrator: AsyncDictionaryHydrator;
   dictionaryProcessor: DictionaryProcessor;
 
