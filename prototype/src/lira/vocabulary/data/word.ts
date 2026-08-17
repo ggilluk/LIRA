@@ -414,12 +414,31 @@ export function hyponyms(word: Word | Phrase, relationships: LexicalRelationship
   return relatedWords(word, relationships, dictionary, { relationshipType: LexicalRelationshipType.HYPERNYM, direction: "incoming" }, phraseBook, senseStore);
 }
 
+// A MERONYM edge is stored (part, MERONYM, whole) -- relationshipKindForPointer's
+// own docstring (word_seeder.ts), verified directly against the bundled
+// dict/ files -- so `word`'s own meronyms (the parts *it* has) are the
+// *incoming* side (word is the whole, the target); holonyms()'s own
+// docstring below reads the *outgoing* side of the identical kind for
+// the opposite question.
 export function meronyms(word: Word | Phrase, relationships: LexicalRelationshipStore, dictionary: Dictionary, phraseBook?: PhraseBook, senseStore?: SenseStore): readonly Word[] {
   return relatedWords(word, relationships, dictionary, { relationshipType: LexicalRelationshipType.MERONYM, direction: "incoming" }, phraseBook, senseStore);
 }
 
+// A HOLONYM edge is never actually stored by WordSeeder.seedWordNet --
+// every WordNet part/member/substance fact becomes a MERONYM edge,
+// oriented (part, MERONYM, whole) (relationshipKindForPointer's own
+// docstring, word_seeder.ts). The Common Vocabulary Cache's own hand-
+// curated part-whole facts (relationships/semantic_relationships.json)
+// do store real HOLONYM edges too, but always paired with the identical
+// fact's own MERONYM edge in the opposite direction (RelationshipSeeder
+// authors both directly, rather than relying on this store to derive
+// one from the other) -- so reading the MERONYM side alone, direction
+// "outgoing" (word's own part-of-a-larger-whole facts, the reverse of
+// meronyms()'s own "incoming" above), already finds every holonym fact
+// regardless of source, without this needing to also query the
+// separately-stored HOLONYM kind.
 export function holonyms(word: Word | Phrase, relationships: LexicalRelationshipStore, dictionary: Dictionary, phraseBook?: PhraseBook, senseStore?: SenseStore): readonly Word[] {
-  return relatedWords(word, relationships, dictionary, { relationshipType: LexicalRelationshipType.HOLONYM, direction: "incoming" }, phraseBook, senseStore);
+  return relatedWords(word, relationships, dictionary, { relationshipType: LexicalRelationshipType.MERONYM, direction: "outgoing" }, phraseBook, senseStore);
 }
 
 // Same fate as HYPONYM (hyponyms()'s own docstring): a TROPONYM edge is

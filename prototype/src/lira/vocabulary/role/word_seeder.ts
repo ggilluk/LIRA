@@ -246,10 +246,10 @@ function derivationKind(sourcePos: PartOfSpeech, targetPos: PartOfSpeech): Lexic
  * recorded on the *other* synset's own entry; both symbols become the
  * same REGION_DOMAIN/USAGE_DOMAIN kind, always oriented word -> its
  * domain, regardless of which of the pair's two entries the pointer was
- * actually read from) -- and, for the same reason, for `~`/`#p`/`#m`/
- * `#s` too: WordNet redundantly encodes every hypernym/meronym fact
- * from BOTH ends -- the child/part's own `@`/`%p`/`%m`/`%s` pointer to
- * its parent/whole, *and* the parent/whole's own `~`/`#p`/`#m`/`#s`
+ * actually read from) -- and, for the same reason, for `~`/`%p`/`%m`/
+ * `%s` too: WordNet redundantly encodes every hypernym/meronym fact
+ * from BOTH ends -- the child/part's own `@`/`#p`/`#m`/`#s` pointer to
+ * its parent/whole, *and* the parent/whole's own `~`/`%p`/`%m`/`%s`
  * pointer back to each child/part -- so canonicalizing the second
  * listing onto the exact same kind, swapped, means both pointers
  * resolve to the identical (child, HYPERNYM, parent) / (part, MERONYM,
@@ -264,6 +264,17 @@ function derivationKind(sourcePos: PartOfSpeech, targetPos: PartOfSpeech): Lexic
  * canonicalizes the same way: its own `@` counterpart is already
  * POS-agnostic HYPERNYM, so there's no separate TROPONYM case to keep
  * here either.
+ *
+ * `%p`/`%m`/`%s` (not `#p`/`#m`/`#s`) are the ones that get `swap: true`
+ * here -- easy to get backwards, since it looks like the mirror image of
+ * `@`/`~` at a glance. Verified directly against the bundled dict/
+ * files: "hand" (05572223, the whole) carries `%p 05574137` (finger,
+ * the part) on its own entry, while "finger" (05574137, the part)
+ * carries `#p 05572223` (hand, the whole) back -- so `%p`/`%m`/`%s`
+ * behave like `~` (recorded on the broader/container entry, pointing
+ * down at what it contains), and `#p`/`#m`/`#s` behave like `@`
+ * (recorded on the specific/contained entry, pointing up at what
+ * contains it), not the other way around.
  *
  * `meronymKind`, set only for the six meronym/holonym symbols, is the
  * MERONYM_KIND_QUALIFIER value seedPointerRelationship attaches to the
@@ -286,17 +297,17 @@ function relationshipKindForPointer(
     // `@i`/`~i` (instance-of) fall through to `default` -- deliberately
     // unrecognised, not seeded (this function's own docstring above).
     case "%p":
-      return { kind: LexicalRelationshipType.MERONYM, swap: false, meronymKind: "part" };
-    case "%m":
-      return { kind: LexicalRelationshipType.MERONYM, swap: false, meronymKind: "member" };
-    case "%s":
-      return { kind: LexicalRelationshipType.MERONYM, swap: false, meronymKind: "substance" };
-    case "#p":
       return { kind: LexicalRelationshipType.MERONYM, swap: true, meronymKind: "part" };
-    case "#m":
+    case "%m":
       return { kind: LexicalRelationshipType.MERONYM, swap: true, meronymKind: "member" };
-    case "#s":
+    case "%s":
       return { kind: LexicalRelationshipType.MERONYM, swap: true, meronymKind: "substance" };
+    case "#p":
+      return { kind: LexicalRelationshipType.MERONYM, swap: false, meronymKind: "part" };
+    case "#m":
+      return { kind: LexicalRelationshipType.MERONYM, swap: false, meronymKind: "member" };
+    case "#s":
+      return { kind: LexicalRelationshipType.MERONYM, swap: false, meronymKind: "substance" };
     case "*":
       return { kind: LexicalRelationshipType.ENTAILMENT, swap: false };
     case ">":

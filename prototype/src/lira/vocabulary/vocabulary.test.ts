@@ -4,7 +4,7 @@ import { LexicalRelationshipStore } from "./data/lexical_relationship_store";
 import { LexicalRelationshipSystemPropertyTensor } from "./data/lexical_relationship_tensor";
 import { LexicalRelationshipType } from "./data/lexical_relationship_type";
 import { PartOfSpeech } from "./data/part_of_speech";
-import { antonyms, createWord, hypernyms, hyponyms, synonyms } from "./data/word";
+import { antonyms, createWord, holonyms, hypernyms, hyponyms, meronyms, synonyms } from "./data/word";
 import { HypernymRootWord } from "./data/hypernym_root_word";
 import { createPhrase } from "./data/phrase";
 import { PhraseBook } from "./data/phrase_book";
@@ -528,6 +528,54 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
       meronymEdges.map((r) => r.qualifiers.find((q) => q.name.value === "meronymKind")?.value.value),
     );
     expect(seenMeronymKinds).toEqual(new Set(["part", "member", "substance"]));
+
+    // MERONYM's own stored direction is (part, MERONYM, whole) --
+    // relationshipKindForPointer's own docstring, and the Common
+    // Vocabulary Cache's own documented convention (assets/common/en/
+    // relationships/README.md: "member --MERONYM--> group") -- a real
+    // regression check against getting `%p`/`#p`'s own swap backwards
+    // (easy to get wrong: `%p` sits on the *whole*'s own synset,
+    // pointing at the part, the mirror image of `@`/hypernym). Verified
+    // directly against the bundled dict/data.noun: "hand" (05572223)
+    // carries `%p` -> "finger" (05574137); "finger" carries `#p` ->
+    // "hand" back.
+    const hand = dictionary.lookupAll("hand").find((word) => word.synsetId?.value === "05572223-n");
+    const finger = dictionary.lookupAll("finger").find((word) => word.synsetId?.value === "05574137-n");
+    expect(hand).toBeDefined();
+    expect(finger).toBeDefined();
+    // The `%p`/`#p` pointer between "hand" and "finger" is synset-wide
+    // (both indices 0), so it's stored as a single Sense-to-Sense edge,
+    // not directly between the two Words (WordSeeder.seedPointerRelationship's
+    // own docstring, this file's own WordNet-relationship-migration
+    // tests above) -- checked at the Sense level here for that reason.
+    const handSense = senseStore.findByUuid(hand!.senseId!.value);
+    const fingerSense = senseStore.findByUuid(finger!.senseId!.value);
+    expect(handSense).toBeDefined();
+    expect(fingerSense).toBeDefined();
+    const handFingerEdge = lexicalRelationships
+      .all()
+      .find(
+        (r) =>
+          r.relationshipType === LexicalRelationshipType.MERONYM &&
+          ((r.sourceWordId.value === handSense!.uuid.value && r.targetWordId.value === fingerSense!.uuid.value) ||
+            (r.sourceWordId.value === fingerSense!.uuid.value && r.targetWordId.value === handSense!.uuid.value)),
+      );
+    expect(handFingerEdge).toBeDefined();
+    expect(handFingerEdge?.sourceWordId.value).toBe(fingerSense!.uuid.value);
+    expect(handFingerEdge?.targetWordId.value).toBe(handSense!.uuid.value);
+    // meronyms()/holonyms() (word.ts) already expand a Sense-to-Sense
+    // edge back out to its member Words on read (relatedWords()'s own
+    // senseStore-aware branch) -- reading that same stored direction
+    // from opposite ends: "hand"'s meronyms are its own parts (finger
+    // among them); "finger"'s holonyms are the wholes it's part of
+    // (hand among them).
+    expect(meronyms(hand!, lexicalRelationships, dictionary, undefined, senseStore).map((w) => w.text)).toContain("finger");
+    expect(holonyms(finger!, lexicalRelationships, dictionary, undefined, senseStore).map((w) => w.text)).toContain("hand");
+    // And not the other way around -- "finger"'s own meronyms don't
+    // include "hand" (finger isn't made of hands), nor does "hand"
+    // holonym-wise claim to be part of "finger".
+    expect(meronyms(finger!, lexicalRelationships, dictionary, undefined, senseStore).map((w) => w.text)).not.toContain("hand");
+    expect(holonyms(hand!, lexicalRelationships, dictionary, undefined, senseStore).map((w) => w.text)).not.toContain("finger");
 
     // Instance-of (`@i`/`~i`) pointers are never seeded at all --
     // relationshipKindForPointer's own docstring on why (word_seeder.ts).
