@@ -6,7 +6,7 @@ import { Dictionary } from "./dictionary";
 import { LexicalRelationshipStore } from "./lexical_relationship_store";
 import { LexicalRelationshipSystemPropertyTensor } from "./lexical_relationship_tensor";
 import { Phrases } from "./phrases";
-import { SenseStore } from "./sense_store";
+import { Senses } from "./senses";
 
 /** Ported from vocabulary/data/layer.py. `phrases`/`senses` have no
  * Python original -- this prototype's own additions. `phrases` is
@@ -18,7 +18,7 @@ export class VocabularyLayer {
   agents: VocabularyAgent[] = [];
   dictionary = new Dictionary(); // the lexicon -- lexical inventory only (Rule 17)
   phrases = new Phrases();
-  senses = new SenseStore();
+  senses = new Senses();
   hydrator: AsyncDictionaryHydrator;
   dictionaryProcessor: DictionaryProcessor;
 

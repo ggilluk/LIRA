@@ -4,7 +4,7 @@ import type { Word } from "./word";
 
 /** Sense storage: Phrases's own counterpart for Sense (sense.ts's
  * own docstring on why a Sense is kept apart from Dictionary/Phrases
- * rather than folded into either). One SenseStore per Domain, alongside
+ * rather than folded into either). One Senses store per Domain, alongside
  * that Domain's own Dictionary/Phrases (VocabularyLayer.senses,
  * data/layer.ts).
  *
@@ -19,7 +19,7 @@ import type { Word } from "./word";
  * answer "every other Word/Phrase that shares this one's own Sense"
  * without a stored SYNONYM edge for WordNet-derived synonymy at all
  * (word_seeder.ts's own seedWordNet, pass 1, no longer creates one). */
-export class SenseStore {
+export class Senses {
   private senses: Sense[] = [];
   private readonly byUuid = new Map<string, Sense>();
   private readonly bySynsetId = new Map<string, Sense>();
@@ -70,11 +70,11 @@ export class SenseStore {
     return this.membersBySenseId.get(senseId)?.slice() ?? [];
   }
 
-  /** Bootstraps this SenseStore with a copy of every Sense in `other`
+  /** Bootstraps this Senses store with a copy of every Sense in `other`
    * -- Dictionary.seedFrom/Phrases.seedFrom's own exact counterpart,
    * used the same way (VocabularyLayer's own Physics-from-Common
    * snapshot). */
-  seedFrom(other: SenseStore): void {
+  seedFrom(other: Senses): void {
     for (const sense of other.senses) this.append(copySenseWithFreshUuid(sense));
   }
 }

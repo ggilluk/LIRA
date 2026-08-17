@@ -26,7 +26,7 @@ import { PartOfSpeech } from "../data/part_of_speech";
 import { phraseAsWord, type Phrase } from "../data/phrase";
 import { Phrases } from "../data/phrases";
 import { RegisterCode } from "../data/register_code";
-import { SenseStore } from "../data/sense_store";
+import { Senses } from "../data/senses";
 import { definitionWords, type Word } from "../data/word";
 
 const DEFINITION_TOKEN_PATTERN = /[^\W_]+/g;
@@ -223,10 +223,10 @@ export interface DictionaryViewOptions {
   phrases?: Phrases;
   // Sense's own exact counterpart -- undefined/omitted means every
   // existing caller that predates Sense keeps working unchanged
-  // (resolveEntry()'s own docstring on why an omitted SenseStore simply
+  // (resolveEntry()'s own docstring on why an omitted Senses simply
   // means "no Sense-typed relationship endpoint will ever be seen",
   // true for every pre-Sense Domain).
-  senses?: SenseStore;
+  senses?: Senses;
 }
 
 // A hard ceiling on how many Words this view will build full,
@@ -328,7 +328,7 @@ export class DictionaryView {
   private readonly unresolved: readonly string[];
 
   private readonly phrases: Phrases;
-  private readonly senses: SenseStore;
+  private readonly senses: Senses;
 
   constructor(
     private readonly dictionary: Dictionary,
@@ -339,7 +339,7 @@ export class DictionaryView {
     this.domainName = options.domainName ?? "Domain";
     this.unresolved = options.unresolved ?? [];
     this.phrases = options.phrases ?? new Phrases();
-    this.senses = options.senses ?? new SenseStore();
+    this.senses = options.senses ?? new Senses();
   }
 
   /** The moment render() is actually called, not construction time --
@@ -767,12 +767,12 @@ export class DictionaryView {
    * endpoint is a Word in this Dictionary" needs this instead of a bare
    * `dictionary.findByUuid` call.
    *
-   * Falls back to SenseStore last, only once both Dictionary and
+   * Falls back to Senses last, only once both Dictionary and
    * Phrases have failed: a synset-wide Lexical Semantic fact is now
    * stored as a Sense-to-Sense edge, not a Word/Phrase-to-Word/Phrase one
    * (WordSeeder.seedPointerRelationship's own docstring), so `id` can
    * legitimately name a Sense rather than either. Resolved to that
-   * Sense's own first-registered member (SenseStore.membersOf()) as a
+   * Sense's own first-registered member (Senses.membersOf()) as a
    * representative -- a deliberate simplification for this single-row
    * display path, not a claim that member is somehow more "the" word
    * than any of its fellow synonyms; searchRelationships()'s own
@@ -846,7 +846,7 @@ export class DictionaryView {
    * Each synthetic record keeps `wordId` itself pinned to whichever side
    * it was actually on (not swapped to the Sense's representative
    * member, unlike resolveEntry()'s own single-row simplification) and
-   * fans the *other* side out to every member SenseStore.membersOf()
+   * fans the *other* side out to every member Senses.membersOf()
    * finds -- recovering the exact per-member row set the pre-Sense
    * member x member encoding used to store explicitly. `uuid` gets the
    * source edge's own uuid suffixed with the expanded member's uuid, not
@@ -1123,11 +1123,11 @@ export class DictionaryView {
    * populate a Sense with the identical values `entry`'s own fields
    * already carry, WordNet-sourced and hand-curated alike -- sense.ts's
    * own docstring) and falling back to `entry`'s own fields only when
-   * its senseId doesn't resolve in this Domain's own SenseStore. That
+   * its senseId doesn't resolve in this Domain's own Senses. That
    * fallback isn't just defensive: a Word/Phrase copied into a different
    * Domain (VocabularyLayer's own Physics-from-Common bootstrap, in
    * particular) doesn't yet carry a matching Sense copy across into that
-   * Domain's own SenseStore -- a known, accepted gap, the same one
+   * Domain's own Senses -- a known, accepted gap, the same one
    * LexicalRelationshipStore already has for a cross-domain copy -- so
    * `entry`'s own fields (never stripped, unlike WordNet's own
    * domainTag/relatedDomainTags) are what keeps a Physics-side word's

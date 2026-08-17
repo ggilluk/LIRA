@@ -38,7 +38,7 @@ import type { VectorPrimitiveRootWord } from "./vector_primitive_root_word";
 import { newUuid } from "./uuid";
 import { phraseAsWord, type Phrase } from "./phrase";
 import type { Phrases } from "./phrases";
-import type { SenseStore } from "./sense_store";
+import type { Senses } from "./senses";
 
 // Splits a definition's prose into its own word tokens -- deliberately a
 // local regex, not a Linguistics-Layer LinguisticLexer import: Vocabulary
@@ -90,7 +90,7 @@ export interface Word extends LinguisticUnit {
   // identifier string (synsetId above is that; sense.ts's own docstring
   // on why the two are easy to conflate but distinct: synsetId is
   // "which WordNet synset", senseId is "which Sense object in this
-  // Domain's own SenseStore"). Deliberately additive alongside every
+  // Domain's own Senses"). Deliberately additive alongside every
   // field below it still duplicates from that Sense (definition,
   // usageNotes, domainTag, relatedDomainTags) -- Sense's own docstring
   // on why removing that duplication is separate, later work. Undefined
@@ -301,11 +301,11 @@ function categoryOf(kind: LexicalRelationshipType): number {
  * Word/Phrase. When `word.senseId` is set, this also reads that same
  * Sense's own outgoing/incoming edges under the identical filter and
  * expands whichever Sense the far side names back out to every member
- * SenseStore.membersOf() knows about it -- recovering the exact
+ * Senses.membersOf() knows about it -- recovering the exact
  * member x member result the pre-Sense encoding stored explicitly,
  * computed at read time instead. SYNONYM is the one kind with no edge to
  * expand at all: WordSeeder no longer stores a SYNONYM edge for any
- * WordNet-derived pair (sense_store.ts's own SenseStore.registerMember()
+ * WordNet-derived pair (senses.ts's own Senses.registerMember()
  * docstring), so a SYNONYM query with a `senseStore` also always
  * includes every fellow member of `word`'s own Sense directly, sharing a
  * Sense *is* being a synonym. Omitting `senseStore` (every caller that
@@ -316,7 +316,7 @@ function relatedWords(
   dictionary: Dictionary,
   options: RelatedWordsOptions = {},
   phraseBook?: Phrases,
-  senseStore?: SenseStore,
+  senseStore?: Senses,
 ): readonly Word[] {
   const { relationshipType, group, category, direction = "outgoing" } = options;
   const myId = word.uuid.value;
@@ -390,15 +390,15 @@ export function derivedForms(word: Word | Phrase, relationships: LexicalRelation
   return relatedWords(word, relationships, dictionary, { group: 0, category: 6 }, phraseBook);
 }
 
-export function synonyms(word: Word | Phrase, relationships: LexicalRelationshipStore, dictionary: Dictionary, phraseBook?: Phrases, senseStore?: SenseStore): readonly Word[] {
+export function synonyms(word: Word | Phrase, relationships: LexicalRelationshipStore, dictionary: Dictionary, phraseBook?: Phrases, senseStore?: Senses): readonly Word[] {
   return relatedWords(word, relationships, dictionary, { relationshipType: LexicalRelationshipType.SYNONYM, direction: "both" }, phraseBook, senseStore);
 }
 
-export function antonyms(word: Word | Phrase, relationships: LexicalRelationshipStore, dictionary: Dictionary, phraseBook?: Phrases, senseStore?: SenseStore): readonly Word[] {
+export function antonyms(word: Word | Phrase, relationships: LexicalRelationshipStore, dictionary: Dictionary, phraseBook?: Phrases, senseStore?: Senses): readonly Word[] {
   return relatedWords(word, relationships, dictionary, { relationshipType: LexicalRelationshipType.ANTONYM, direction: "both" }, phraseBook, senseStore);
 }
 
-export function hypernyms(word: Word | Phrase, relationships: LexicalRelationshipStore, dictionary: Dictionary, phraseBook?: Phrases, senseStore?: SenseStore): readonly Word[] {
+export function hypernyms(word: Word | Phrase, relationships: LexicalRelationshipStore, dictionary: Dictionary, phraseBook?: Phrases, senseStore?: Senses): readonly Word[] {
   return relatedWords(word, relationships, dictionary, { relationshipType: LexicalRelationshipType.HYPERNYM }, phraseBook, senseStore);
 }
 
@@ -410,7 +410,7 @@ export function hypernyms(word: Word | Phrase, relationships: LexicalRelationshi
 // word's hyponyms are exactly the other Words with an *incoming*
 // HYPERNYM edge to it -- symmetric with hypernyms() itself reading the
 // *outgoing* side of that same kind.
-export function hyponyms(word: Word | Phrase, relationships: LexicalRelationshipStore, dictionary: Dictionary, phraseBook?: Phrases, senseStore?: SenseStore): readonly Word[] {
+export function hyponyms(word: Word | Phrase, relationships: LexicalRelationshipStore, dictionary: Dictionary, phraseBook?: Phrases, senseStore?: Senses): readonly Word[] {
   return relatedWords(word, relationships, dictionary, { relationshipType: LexicalRelationshipType.HYPERNYM, direction: "incoming" }, phraseBook, senseStore);
 }
 
@@ -420,7 +420,7 @@ export function hyponyms(word: Word | Phrase, relationships: LexicalRelationship
 // *incoming* side (word is the whole, the target); holonyms()'s own
 // docstring below reads the *outgoing* side of the identical kind for
 // the opposite question.
-export function meronyms(word: Word | Phrase, relationships: LexicalRelationshipStore, dictionary: Dictionary, phraseBook?: Phrases, senseStore?: SenseStore): readonly Word[] {
+export function meronyms(word: Word | Phrase, relationships: LexicalRelationshipStore, dictionary: Dictionary, phraseBook?: Phrases, senseStore?: Senses): readonly Word[] {
   return relatedWords(word, relationships, dictionary, { relationshipType: LexicalRelationshipType.MERONYM, direction: "incoming" }, phraseBook, senseStore);
 }
 
@@ -437,7 +437,7 @@ export function meronyms(word: Word | Phrase, relationships: LexicalRelationship
 // meronyms()'s own "incoming" above), already finds every holonym fact
 // regardless of source, without this needing to also query the
 // separately-stored HOLONYM kind.
-export function holonyms(word: Word | Phrase, relationships: LexicalRelationshipStore, dictionary: Dictionary, phraseBook?: Phrases, senseStore?: SenseStore): readonly Word[] {
+export function holonyms(word: Word | Phrase, relationships: LexicalRelationshipStore, dictionary: Dictionary, phraseBook?: Phrases, senseStore?: Senses): readonly Word[] {
   return relatedWords(word, relationships, dictionary, { relationshipType: LexicalRelationshipType.MERONYM, direction: "outgoing" }, phraseBook, senseStore);
 }
 
@@ -447,7 +447,7 @@ export function holonyms(word: Word | Phrase, relationships: LexicalRelationship
 // verb-specific subset troponyms() promises is recovered by filtering
 // hyponyms() itself down to VERB Words, rather than a separately
 // stored fact.
-export function troponyms(word: Word | Phrase, relationships: LexicalRelationshipStore, dictionary: Dictionary, phraseBook?: Phrases, senseStore?: SenseStore): readonly Word[] {
+export function troponyms(word: Word | Phrase, relationships: LexicalRelationshipStore, dictionary: Dictionary, phraseBook?: Phrases, senseStore?: Senses): readonly Word[] {
   return hyponyms(word, relationships, dictionary, phraseBook, senseStore).filter((other) => other.partOfSpeech === PartOfSpeech.VERB);
 }
 

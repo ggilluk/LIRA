@@ -15,7 +15,7 @@
  * WordNet's do). DictionaryView.senseFieldsFor()/isRootWordFor() are
  * the read side: prefer a Word/Phrase's own Sense, fall back to its own
  * fields only when senseId doesn't resolve in that Domain's own
- * SenseStore (a cross-Domain copy -- VocabularyLayer's own Physics-
+ * Senses (a cross-Domain copy -- VocabularyLayer's own Physics-
  * from-Common bootstrap -- doesn't carry a matching Sense copy across
  * yet, a known, accepted gap, the same one LexicalRelationshipStore
  * already has). Only domainTag/relatedDomainTags actually stopped being
@@ -45,8 +45,8 @@ import type { VectorPrimitiveRootWord } from "./vector_primitive_root_word";
 
 export interface Sense {
   // A per-Domain-graph-instance identity, freshly regenerated every
-  // time a Sense is copied into a Domain's own SenseStore
-  // (SenseStore.seedFrom) -- Word.uuid's own exact counterpart, same
+  // time a Sense is copied into a Domain's own Senses
+  // (Senses.seedFrom) -- Word.uuid's own exact counterpart, same
   // reasoning.
   uuid: Identifier;
 
@@ -123,7 +123,7 @@ export function createSense(init: SenseInit = {}): Sense {
 
 /** A shallow copy of `sense`, sharing every field's own object identity
  * except `uuid`, which becomes a fresh Identifier -- copyWordWithFreshUuid's
- * own exact counterpart (word.ts), used by SenseStore.seedFrom for the
+ * own exact counterpart (word.ts), used by Senses.seedFrom for the
  * same reason: two Domains' independent copies of the same sense must
  * never be confused as the same graph node. */
 export function copySenseWithFreshUuid(sense: Sense): Sense {

@@ -41,7 +41,7 @@ import { LexicalRelationshipType, MERONYM_KIND_QUALIFIER, relationshipGroup, typ
 import { copyPhraseWithFreshUuid, createPhrase, type Phrase } from "../data/phrase";
 import type { Phrases } from "../data/phrases";
 import { createSense, type Sense } from "../data/sense";
-import type { SenseStore } from "../data/sense_store";
+import type { Senses } from "../data/senses";
 import type { SourceReference } from "../data/source_reference";
 import { copyWordWithFreshUuid, createWord, type Word } from "../data/word";
 import {
@@ -387,7 +387,7 @@ function applyDomainTag(target: { domainTag?: Text; relatedDomainTags: readonly 
  * copies exist side by side afterwards (the entry's own fields are left
  * exactly as they were), the same accepted duplication WordNet's own
  * Sense/Word split still carries for definition/usageNotes today. */
-function registerUniqueSense(senseStore: SenseStore, entry: Word | Phrase): void {
+function registerUniqueSense(senseStore: Senses, entry: Word | Phrase): void {
   // Phrase has no root-word concept at all (root_words.json's own 25
   // entries are all single-word NOUNs) -- the `"words" in entry` check
   // (word.ts's own relatedWords()/addCandidate() use the identical
@@ -730,7 +730,7 @@ export class WordSeeder {
     dictionary: Dictionary,
     phraseBook: Phrases,
     options?: { excludeOpenClasses?: boolean },
-    senseStore?: SenseStore,
+    senseStore?: Senses,
   ): number {
     const excludeOpenClasses = options?.excludeOpenClasses ?? false;
     let seeded = 0;
@@ -774,7 +774,7 @@ export class WordSeeder {
   }
 
   seedDomain(
-    domain: { vocabulary: { dictionary: Dictionary; phrases: Phrases; senses?: SenseStore } },
+    domain: { vocabulary: { dictionary: Dictionary; phrases: Phrases; senses?: Senses } },
     options?: { excludeOpenClasses?: boolean },
   ): number {
     return this.seedClosedClassWords(domain.vocabulary.dictionary, domain.vocabulary.phrases, options, domain.vocabulary.senses);
@@ -845,7 +845,7 @@ export class WordSeeder {
       vocabulary: {
         dictionary: Dictionary;
         phrases: Phrases;
-        senses: SenseStore;
+        senses: Senses;
         lexicalRelationships: LexicalRelationshipStore;
         lexicalRelationshipProcessor: LexicalRelationshipProcessor;
       };
@@ -957,7 +957,7 @@ export class WordSeeder {
       // Every member linked to this synset's own Sense, new or reused
       // (a reused member from an earlier seedWordNet run, before this
       // field existed, gets backfilled here too -- idempotent, safe to
-      // register on every re-seed) -- SenseStore.registerMember()'s own
+      // register on every re-seed) -- Senses.registerMember()'s own
       // docstring on why this replaces a stored SYNONYM edge per pair
       // entirely: two members of the same Sense are synonyms *because*
       // they share it, not because a separate fact says so. synonyms()
@@ -1018,9 +1018,9 @@ export class WordSeeder {
    * (relationshipGroup(kind) === 1, lexical_relationship_type.ts): a
    * synset-wide fact of that group is a fact about the two *senses*, not
    * about any one member pair, so it's stored as a single Sense-to-Sense
-   * edge instead (found via SenseStore.findBySynsetId on each side) --
+   * edge instead (found via Senses.findBySynsetId on each side) --
    * word.ts's own relatedWords() family expands that one edge back out to
-   * every member on read (SenseStore.membersOf()), so callers still see
+   * every member on read (Senses.membersOf()), so callers still see
    * the identical member×member result this member×member branch would
    * have produced, just not stored that way. A *lexical* (word-specific)
    * pointer occurrence -- sourceWordIndex or targetWordIndex nonzero --
@@ -1036,7 +1036,7 @@ export class WordSeeder {
     sourceMembers: readonly (Word | Phrase)[],
     pointer: WordNetPointer,
     synsetMembersById: ReadonlyMap<string, Array<Word | Phrase>>,
-    senseStore: SenseStore,
+    senseStore: Senses,
   ): number {
     const targetMembers = synsetMembersById.get(pointer.targetSynsetId);
     if (targetMembers === undefined || targetMembers.length === 0) return 0;
@@ -1115,7 +1115,7 @@ export class WordSeeder {
     sourceMembers: readonly (Word | Phrase)[],
     targetMembers: readonly (Word | Phrase)[],
     pointer: WordNetPointer,
-    senseStore: SenseStore,
+    senseStore: Senses,
   ): void {
     const sourceWords = pointer.sourceWordIndex === 0 ? sourceMembers : indexedWord(sourceMembers, pointer.sourceWordIndex);
     const targetWords = pointer.targetWordIndex === 0 ? targetMembers : indexedWord(targetMembers, pointer.targetWordIndex);
