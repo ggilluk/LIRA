@@ -15,7 +15,7 @@ import { AsyncDictionaryHydrator } from "./role/dictionary_hydrator";
 import { DictionaryProcessor } from "./role/dictionary_processor";
 import { LexicalRelationshipProcessor } from "./role/lexical_relationship_processor";
 import { RelationshipSeeder } from "./role/relationship_seeder";
-import { WordSeeder } from "./role/word_seeder";
+import { classifyPhraseType, WordSeeder } from "./role/word_seeder";
 import { loadWordNetSynsets } from "./role/wordnet_loader";
 import { DictionaryView } from "./ui/dictionary_view";
 
@@ -52,7 +52,50 @@ describe("PhraseType", () => {
   });
 });
 
-describe("Dictionary", () => {
+describe("classifyPhraseType", () => {
+  const verbLemmas = new Set(["be", "begin", "boot", "date", "advantage"]);
+
+  it("maps NOUN/VERB straight to NOUN_PHRASE/VERB_PHRASE, even when the lemma opens with a preposition-lookalike word", () => {
+    // "down payment"/"near miss" are compound nouns (down/near modify
+    // the head noun), not prepositional phrases -- the real reason
+    // classifyPhraseType never applies the preposition check to NOUN.
+    expect(classifyPhraseType("down payment", PartOfSpeech.NOUN, verbLemmas)).toBe(PhraseType.NOUN_PHRASE);
+    expect(classifyPhraseType("toy poodle", PartOfSpeech.NOUN, verbLemmas)).toBe(PhraseType.NOUN_PHRASE);
+    // "abide by"/"out in" are phrasal verbs -- still verb-headed.
+    expect(classifyPhraseType("abide by", PartOfSpeech.VERB, verbLemmas)).toBe(PhraseType.VERB_PHRASE);
+    expect(classifyPhraseType("out in", PartOfSpeech.VERB, verbLemmas)).toBe(PhraseType.VERB_PHRASE);
+  });
+
+  it("reclassifies an ADJECTIVE/ADVERB lemma opening with a preposition as PREPOSITIONAL_PHRASE", () => {
+    expect(classifyPhraseType("at fault", PartOfSpeech.ADJECTIVE, verbLemmas)).toBe(PhraseType.PREPOSITIONAL_PHRASE);
+    expect(classifyPhraseType("out of print", PartOfSpeech.ADJECTIVE, verbLemmas)).toBe(PhraseType.PREPOSITIONAL_PHRASE);
+    expect(classifyPhraseType("by hand", PartOfSpeech.ADVERB, verbLemmas)).toBe(PhraseType.PREPOSITIONAL_PHRASE);
+    expect(classifyPhraseType("in the meantime", PartOfSpeech.ADVERB, verbLemmas)).toBe(PhraseType.PREPOSITIONAL_PHRASE);
+  });
+
+  it("falls back to the plain POS-based mapping for ADJECTIVE/ADVERB lemmas that don't open with a preposition", () => {
+    expect(classifyPhraseType("Central American", PartOfSpeech.ADJECTIVE, verbLemmas)).toBe(PhraseType.ADJECTIVE_PHRASE);
+    expect(classifyPhraseType("a lot", PartOfSpeech.ADVERB, verbLemmas)).toBe(PhraseType.ADVERB_PHRASE);
+  });
+
+  it("recognises a genuine infinitive (\"to\" + a real verb lemma) as INFINITIVE_PHRASE, ahead of the preposition check", () => {
+    expect(classifyPhraseType("to be sure", PartOfSpeech.ADVERB, verbLemmas)).toBe(PhraseType.INFINITIVE_PHRASE);
+    expect(classifyPhraseType("to begin with", PartOfSpeech.ADVERB, verbLemmas)).toBe(PhraseType.INFINITIVE_PHRASE);
+  });
+
+  it("does not mistake 'to' + a non-verb, or a denylisted to-lookalike, for an infinitive -- both fall through to PREPOSITIONAL_PHRASE", () => {
+    // "a" isn't a verb -- "to a fault"/"to a T" are prepositional, not infinitival.
+    expect(classifyPhraseType("to a fault", PartOfSpeech.ADVERB, verbLemmas)).toBe(PhraseType.PREPOSITIONAL_PHRASE);
+    // "date"/"boot"/"advantage" ARE real WordNet verbs, but these three
+    // specific lemmas are denylisted -- "to date"/"to boot"/"to
+    // advantage" use "to" as a preposition, not an infinitive marker.
+    expect(classifyPhraseType("to date", PartOfSpeech.ADVERB, verbLemmas)).toBe(PhraseType.PREPOSITIONAL_PHRASE);
+    expect(classifyPhraseType("to boot", PartOfSpeech.ADVERB, verbLemmas)).toBe(PhraseType.PREPOSITIONAL_PHRASE);
+    expect(classifyPhraseType("to advantage", PartOfSpeech.ADVERB, verbLemmas)).toBe(PhraseType.PREPOSITIONAL_PHRASE);
+  });
+});
+
+describe("PhraseType", () => {
   it("lookupAll returns every homograph sharing one surface text", () => {
     const dictionary = new Dictionary();
     dictionary.append(createWord({ text: "that", partOfSpeech: PartOfSpeech.DETERMINER }));
@@ -728,6 +771,21 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     const toyPoodle = phraseBook.lookupAll("toy poodle").find((phrase) => phrase.synsetId?.value === "02116276-n");
     expect(toyPoodle).toBeDefined();
     expect(toyPoodle?.isCommon).toBe(true);
+    expect(toyPoodle?.phraseType).toBe(PhraseType.NOUN_PHRASE);
+
+    // classifyPhraseType()'s own PREPOSITIONAL_PHRASE/INFINITIVE_PHRASE
+    // rules, spot-checked against real seeded Phrases rather than just
+    // the pure-function unit tests above -- "at fault" (01324381-s,
+    // dict/data.adj) is WordNet-tagged ADJECTIVE but structurally a
+    // Preposition + NP; "to be sure" (00151192-r, dict/data.adv) is
+    // WordNet-tagged ADVERB but structurally an infinitive.
+    const atFault = phraseBook.lookupAll("at fault").find((phrase) => phrase.synsetId?.value === "01324381-s");
+    expect(atFault?.partOfSpeech).toBe(PartOfSpeech.ADJECTIVE);
+    expect(atFault?.phraseType).toBe(PhraseType.PREPOSITIONAL_PHRASE);
+
+    const toBeSure = phraseBook.lookupAll("to be sure").find((phrase) => phrase.synsetId?.value === "00151192-r");
+    expect(toBeSure?.partOfSpeech).toBe(PartOfSpeech.ADVERB);
+    expect(toBeSure?.phraseType).toBe(PhraseType.INFINITIVE_PHRASE);
     expect(dictionary.lookupAll("toy poodle")).toEqual([]);
 
     const poodle = dictionary.lookupAll("poodle").find((w) => w.synsetId?.value === "02115987-n");

@@ -39,6 +39,7 @@ import type { Dictionary } from "../data/dictionary";
 import { LexicalRelationshipStore } from "../data/lexical_relationship_store";
 import { LexicalRelationshipType, MERONYM_KIND_QUALIFIER, relationshipGroup, type MeronymKind } from "../data/lexical_relationship_type";
 import { copyPhraseWithFreshUuid, createPhrase, type Phrase } from "../data/phrase";
+import { PhraseType } from "../data/phrase_type";
 import type { Phrases } from "../data/phrases";
 import { createSense, type Sense } from "../data/sense";
 import type { Senses } from "../data/senses";
@@ -218,6 +219,118 @@ function derivationKind(sourcePos: PartOfSpeech, targetPos: PartOfSpeech): Lexic
       return LexicalRelationshipType.ADVERBIAL_DERIVATION;
     default:
       return LexicalRelationshipType.DERIVED_FORM;
+  }
+}
+
+// classifyPhraseType()'s own closed class of single-word prepositions --
+// deliberately its own small, self-contained list rather than a read of
+// the Common Vocabulary Cache's prepositions.json (assets/common/en/):
+// seedWordNet is documented as a source fully independent of that cache
+// (this method's own docstring -- "never implied by seedDomain and must
+// be called on its own"), and this list only needs to answer one
+// narrow question (does a WordNet multi-word lemma's first token *read*
+// as a preposition) for a closed class that hasn't changed in decades,
+// not stay byte-for-byte in sync with the cache's own curated Word set.
+// Verified against the bundled dict/ files (examine-then-classify, not
+// guessed): every ADJECTIVE/ADVERB-tagged multi-word lemma opening with
+// one of these (dict/data.adj, dict/data.adv) reads as a genuine
+// Preposition + complement span on inspection -- "at fault", "in
+// advance", "out of the blue", "to the letter" -- while the handful of
+// NOUN-tagged lemmas sharing a leading word with this list ("down
+// payment", "near miss", "off year") are compound nouns, not
+// prepositional phrases (that leading word is a modifier, not a
+// governing preposition) -- exactly why classifyPhraseType only applies
+// this check for ADJECTIVE/ADVERB, never NOUN (see that function's own
+// docstring).
+const PHRASE_TYPE_PREPOSITIONS: ReadonlySet<string> = new Set([
+  "aboard", "about", "above", "across", "after", "against", "along", "alongside", "amid", "amidst",
+  "among", "amongst", "around", "as", "at", "atop", "before", "behind", "below", "beneath", "beside", "besides",
+  "between", "beyond", "by", "circa", "concerning", "despite", "down", "during", "except", "excepting", "following",
+  "from", "in", "including", "inside", "into", "like", "minus", "near", "notwithstanding", "of", "off", "on", "onto",
+  "opposite", "out", "outside", "over", "past", "pending", "per", "plus", "regarding", "round", "save", "since",
+  "than", "through", "throughout", "till", "to", "toward", "towards", "under", "underneath", "unlike", "until",
+  "unto", "up", "upon", "versus", "via", "with", "within", "without", "worth",
+]);
+
+// classifyPhraseType()'s own small denylist of "to "-led lemmas whose
+// second token happens to also be a real WordNet verb lemma (advantage,
+// boot, date are all attested WordNet verbs), but which are genuinely
+// NOT infinitive phrases -- "to date"/"to boot"/"to advantage" use "to"
+// as a preposition ("until now", "besides", "to good effect"), not the
+// infinitive marker, unlike the genuine infinitives they'd otherwise be
+// indistinguishable from by the verbLemmas check alone ("to be sure",
+// "to begin with"). Found by enumerating every "to_"-led multi-word
+// lemma in dict/data.adv (the only file any occur in) and checking each
+// by hand -- 3 false positives out of 36 candidates. A lemma denylisted
+// here still gets classified, just via classifyPhraseType's own
+// PREPOSITIONAL_PHRASE rule below instead (correctly, in all three
+// cases: "to" + NP is exactly what these are structurally).
+const INFINITIVE_LOOKALIKE_DENYLIST: ReadonlySet<string> = new Set(["to advantage", "to boot", "to date"]);
+
+/** Chooses this multi-word `lemma`'s PhraseType from its own words and
+ * `partOfSpeech` (already WordNet's own ss_type-derived classification,
+ * synsetMemberToPhrase's own caller) -- devised by enumerating every
+ * multi-word lemma actually present in the bundled dict/ files (data.noun/
+ * data.verb/data.adj/data.adv) and inspecting the real distribution
+ * rather than guessing:
+ *
+ * - NOUN (~60,400 unique multi-word lemmas): essentially all are plain
+ *   noun compounds ("18-karat gold", "toy poodle") -- even the ~50
+ *   sharing a leading word with PHRASE_TYPE_PREPOSITIONS ("down
+ *   payment", "near miss", "off year") are compound nouns headed by
+ *   their last word, not prepositional phrases, so NOUN always maps
+ *   straight to NOUN_PHRASE with no override.
+ * - VERB (~2,840 unique): overwhelmingly phrasal verbs ("abide by",
+ *   "account for", "add up") -- still verb-headed regardless of a
+ *   trailing particle/preposition, so VERB always maps straight to
+ *   VERB_PHRASE, no override either (and WordNet's own verb lemmas are
+ *   never infinitive-marked -- zero "to "-led VERB-tagged lemmas exist
+ *   in the bundled data, confirmed by direct inspection).
+ * - ADJECTIVE (~510 unique, "a"+"s" ss_types both collapse to ADJECTIVE
+ *   already, posForSsType): about a quarter open with a preposition
+ *   ("at fault", "in advance", "out of print") -- WordNet tags these
+ *   ADJECTIVE because that's the *function* they serve (predicate/
+ *   attributive), but their internal *structure* is Preposition + NP,
+ *   exactly PhraseType's own PREPOSITIONAL_PHRASE shape, checked ahead
+ *   of the POS-based default.
+ * - ADVERB (~695 unique): the same pattern, more pronounced -- over half
+ *   open with a preposition ("above all", "by hand", "in the meantime"),
+ *   checked the same way before falling back to ADVERB_PHRASE.
+ * - INFINITIVE_PHRASE has no WordNet ss_type of its own to key off at
+ *   all (there's no "infinitive" synset category) -- every genuine case
+ *   found ("to be sure", "to begin with") is WordNet-tagged ADVERB, so
+ *   this is checked structurally, ahead of everything else: "to" as the
+ *   first token, immediately followed by a real WordNet verb lemma
+ *   (`verbLemmas`, built from the very same synset list this call is
+ *   part of seeding), minus INFINITIVE_LOOKALIKE_DENYLIST's own three
+ *   false positives.
+ *
+ * Returns `undefined` only for a `partOfSpeech` WordNet itself never
+ * assigns to a multi-word lemma (PRONOUN, DETERMINER, ...) -- dead code
+ * against real WordNet data today, kept only so this function has a
+ * total, rather than partial, mapping over PartOfSpeech. */
+export function classifyPhraseType(lemma: string, partOfSpeech: PartOfSpeech, verbLemmas: ReadonlySet<string>): PhraseType | undefined {
+  const tokens = lemma.trim().toLowerCase().split(/\s+/);
+  if (tokens[0] === "to" && tokens.length > 1 && verbLemmas.has(tokens[1]) && !INFINITIVE_LOOKALIKE_DENYLIST.has(lemma.toLowerCase())) {
+    return PhraseType.INFINITIVE_PHRASE;
+  }
+  if (
+    (partOfSpeech === PartOfSpeech.ADJECTIVE || partOfSpeech === PartOfSpeech.ADVERB) &&
+    PHRASE_TYPE_PREPOSITIONS.has(tokens[0])
+  ) {
+    return PhraseType.PREPOSITIONAL_PHRASE;
+  }
+  switch (partOfSpeech) {
+    case PartOfSpeech.NOUN:
+      return PhraseType.NOUN_PHRASE;
+    case PartOfSpeech.VERB:
+      return PhraseType.VERB_PHRASE;
+    case PartOfSpeech.ADJECTIVE:
+      return PhraseType.ADJECTIVE_PHRASE;
+    case PartOfSpeech.ADVERB:
+      return PhraseType.ADVERB_PHRASE;
+    default:
+      return undefined;
   }
 }
 
@@ -882,6 +995,20 @@ export class WordSeeder {
     let relationshipsSeeded = 0;
 
     const synsets = await loadWordNetSynsets();
+    // classifyPhraseType()'s own INFINITIVE_PHRASE check -- every
+    // single-word VERB-tagged lemma across the whole dataset, lower-
+    // cased, built once up front rather than per-Phrase: this is the
+    // exact same synset list pass 1 is about to walk, so there's no
+    // Dictionary-population-order dependency to worry about (unlike a
+    // `dictionary.lookup()` check, which would give a different answer
+    // depending on whether "begin" happened to be seeded yet).
+    const verbLemmas = new Set<string>();
+    for (const synset of synsets) {
+      if (synset.partOfSpeech !== PartOfSpeech.VERB) continue;
+      for (const lemma of synset.lemmas) {
+        if (!isMultiWordLemma(lemma)) verbLemmas.add(lemma.toLowerCase());
+      }
+    }
     const synsetMembersById = new Map<string, Array<Word | Phrase>>();
     // Every Phrase newly created by this call's own pass 1, in creation
     // order -- linkPhraseWords() below can only resolve a Phrase's own
@@ -935,7 +1062,7 @@ export class WordSeeder {
             members.push(existingPhrase);
             continue;
           }
-          const phrase = this.synsetMemberToPhrase(synset, lemma);
+          const phrase = this.synsetMemberToPhrase(synset, lemma, verbLemmas);
           phraseBook.append(phrase);
           members.push(phrase);
           newPhrases.push(phrase);
@@ -1234,11 +1361,14 @@ export class WordSeeder {
    * class's pass 1) is seeded exactly like a single-word one: same
    * definition/examples/synsetId/isCommon/sourceReferences, same
    * eligibility for pass 2's pointer-relationship and topic-domain
-   * wiring (both now typed Word | Phrase throughout). */
-  private synsetMemberToPhrase(synset: WordNetSynset, lemma: string): Phrase {
+   * wiring (both now typed Word | Phrase throughout). Also, unlike a
+   * Word, gets a phraseType -- classifyPhraseType()'s own docstring on
+   * the ruleset, devised against this exact bundled dataset. */
+  private synsetMemberToPhrase(synset: WordNetSynset, lemma: string, verbLemmas: ReadonlySet<string>): Phrase {
     return createPhrase({
       text: lemma,
       partOfSpeech: synset.partOfSpeech,
+      phraseType: classifyPhraseType(lemma, synset.partOfSpeech, verbLemmas),
       languageCode: { value: this.languageCode },
       definition: synset.definition ? { value: synset.definition } : undefined,
       usageNotes: synset.examples.map((example) => ({ value: example })),
