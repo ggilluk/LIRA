@@ -5,7 +5,11 @@ import { LexicalRelationshipSystemPropertyTensor } from "./data/lexical_relation
 import { LexicalRelationshipType } from "./data/lexical_relationship_type";
 import { PartOfSpeech } from "./data/part_of_speech";
 import { antonyms, createWord, holonyms, hypernyms, hyponyms, meronyms, synonyms } from "./data/word";
+import { AdjectivePosition, isAdjective } from "./data/adjective";
+import { isAdverb } from "./data/adverb";
 import { HypernymRootWord } from "./data/hypernym_root_word";
+import { isNoun } from "./data/noun";
+import { isVerb } from "./data/verb";
 import { createPhrase } from "./data/phrase";
 import { Phrases } from "./data/phrases";
 import { PHRASE_TYPE_DETAILS, PhraseType } from "./data/phrase_type";
@@ -95,7 +99,7 @@ describe("classifyPhraseType", () => {
   });
 });
 
-describe("PhraseType", () => {
+describe("Dictionary", () => {
   it("lookupAll returns every homograph sharing one surface text", () => {
     const dictionary = new Dictionary();
     dictionary.append(createWord({ text: "that", partOfSpeech: PartOfSpeech.DETERMINER }));
@@ -874,6 +878,69 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     expect(detail.phrase_word_segments![1]).toMatchObject({ text: "poodle", word: true, resolved: true, word_id: poodle!.uuid.value, lexical_form: "poodle" });
     // An ordinary Word's own record never carries this field.
     expect(view.searchWords({ wordId: poodle!.uuid.value }).words[0].phrase_word_segments).toBeUndefined();
+  }, 60000);
+
+  it("seeds a Noun/Verb/Adjective/Adverb subtype per Word, populating Verb.frames and Adjective.syntacticPosition from real WordNet data previously discarded", async () => {
+    const dictionary = new Dictionary();
+    const phraseBook = new Phrases();
+    const senseStore = new Senses();
+    const lexicalRelationships = new LexicalRelationshipStore();
+    const lexicalRelationshipProcessor = new LexicalRelationshipProcessor(
+      lexicalRelationships,
+      new LexicalRelationshipSystemPropertyTensor(),
+    );
+    await new WordSeeder("en").seedWordNet({
+      vocabulary: { dictionary, phrases: phraseBook, senses: senseStore, lexicalRelationships, lexicalRelationshipProcessor },
+    });
+
+    // "breathe" (00001740-v) carries frame records 2/8, both wordIndex 0
+    // (the whole synset) -- dict/data.verb: "021 * ... 02 + 02 00 + 08 00".
+    const breathe = dictionary.lookupAll("breathe").find((w) => w.synsetId?.value === "00001740-v");
+    expect(breathe).toBeDefined();
+    expect(isVerb(breathe!)).toBe(true);
+    expect(isNoun(breathe!)).toBe(false);
+    if (!isVerb(breathe!)) throw new Error("unreachable");
+    expect(breathe.frames).toEqual(expect.arrayContaining(["Somebody ----s", "Somebody ----s something"]));
+    expect(breathe.frames).toHaveLength(2);
+
+    // 00027261-v ("stretch"/"extend") -- frame 8 applies to the whole
+    // synset (wordIndex 0), frame 2 to "stretch" alone (wordIndex 1,
+    // dict/data.verb's own "02 + 08 00 + 02 01"): "stretch" (lemma index
+    // 0) gets both; "extend" (lemma index 1) gets only the whole-synset
+    // one -- proving per-lemma resolution, not per-synset copying.
+    const stretch = dictionary.lookupAll("stretch").find((w) => w.synsetId?.value === "00027261-v");
+    const extend = dictionary.lookupAll("extend").find((w) => w.synsetId?.value === "00027261-v");
+    if (!isVerb(stretch!) || !isVerb(extend!)) throw new Error("unreachable");
+    expect(stretch.frames).toEqual(expect.arrayContaining(["Somebody ----s something", "Somebody ----s"]));
+    expect(stretch.frames).toHaveLength(2);
+    expect(extend.frames).toEqual(["Somebody ----s something"]);
+
+    // "afraid" (00078253-a) is WordNet-marked "afraid(p)" -- predicate-
+    // only. The marker itself must not survive into the spelling.
+    const afraid = dictionary.lookupAll("afraid").find((w) => w.synsetId?.value === "00078253-a");
+    expect(afraid).toBeDefined();
+    expect(isAdjective(afraid!)).toBe(true);
+    if (!isAdjective(afraid!)) throw new Error("unreachable");
+    expect(afraid.text).toBe("afraid");
+    expect(afraid.lexicalForm?.value).toBe("afraid");
+    expect(afraid.syntacticPosition).toBe(AdjectivePosition.PREDICATE_ONLY);
+
+    // "big" (01385012-a, already used elsewhere in this file) carries no
+    // WordNet position marker at all -- unrestricted, not just "false".
+    const big = dictionary.lookupAll("big").find((w) => w.synsetId?.value === "01385012-a");
+    expect(big).toBeDefined();
+    if (!isAdjective(big!)) throw new Error("unreachable");
+    expect(big.syntacticPosition).toBeUndefined();
+
+    // Every Noun/Adverb Word still narrows correctly, even with no
+    // extra field of its own populated yet.
+    const poodle = dictionary.lookupAll("poodle").find((w) => w.synsetId?.value === "02115987-n");
+    expect(isNoun(poodle!)).toBe(true);
+    expect(isVerb(poodle!)).toBe(false);
+    const someAdverb = dictionary.all().find((w) => w.partOfSpeech === PartOfSpeech.ADVERB);
+    expect(someAdverb).toBeDefined();
+    expect(isAdverb(someAdverb!)).toBe(true);
+    expect(isNoun(someAdverb!)).toBe(false);
   }, 60000);
 });
 

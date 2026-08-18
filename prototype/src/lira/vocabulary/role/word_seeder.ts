@@ -26,6 +26,9 @@
  * formsOf/lemmaOf) once both ends of a link have actually been
  * inserted. */
 
+import { createAdjective } from "../data/adjective";
+import { createAdverb } from "../data/adverb";
+import { createNoun } from "../data/noun";
 import { PartOfSpeech } from "../data/part_of_speech";
 import { RegisterCode } from "../data/register_code";
 import { EditorialLabel } from "../data/editorial_label";
@@ -44,6 +47,7 @@ import type { Phrases } from "../data/phrases";
 import { createSense, type Sense } from "../data/sense";
 import type { Senses } from "../data/senses";
 import type { SourceReference } from "../data/source_reference";
+import { VERB_FRAME_TEXT, createVerb } from "../data/verb";
 import { copyWordWithFreshUuid, createWord, type Word } from "../data/word";
 import {
   languageHasCommonCache,
@@ -1044,7 +1048,7 @@ export class WordSeeder {
       }
 
       const members: Array<Word | Phrase> = [];
-      for (const lemma of synset.lemmas) {
+      for (const [lemmaIndex, lemma] of synset.lemmas.entries()) {
         if (lemma.length === 0) continue;
         // A multi-word lemma ("toy poodle", "ice cream") is a Phrase,
         // not a Word -- the same isMultiWord() split loadCache() already
@@ -1076,7 +1080,7 @@ export class WordSeeder {
           members.push(existing);
           continue;
         }
-        const word = this.synsetMemberToWord(synset, lemma);
+        const word = this.synsetMemberToWord(synset, lemma, lemmaIndex);
         dictionary.append(word);
         members.push(word);
         wordsSeeded += 1;
@@ -1342,17 +1346,50 @@ export class WordSeeder {
   // sparse, small-vocabulary label ("medicine", "chemistry", ...), not
   // a per-synset identifier, so it doesn't fragment the Domain filter
   // the way a domainTag-per-synset scheme would.
-  private synsetMemberToWord(synset: WordNetSynset, lemma: string): Word {
-    return createWord({
+  /** `lemmaIndex` (0-based, `synset.lemmas`' own indexing) is what lets
+   * this pick out exactly one Word's own subset of synset.frames/
+   * lemmaPositions -- both are populated per-lemma, not per-synset (a
+   * frame or adjective position can genuinely differ between two
+   * members of the same synset, WordNetFrame's/Adjective's own
+   * docstrings on the real examples this was verified against), so two
+   * members processed here can end up with different Noun/Verb/
+   * Adjective/Adverb subtype fields even though every other field below
+   * (definition, synsetId, ...) is identical between them. */
+  private synsetMemberToWord(synset: WordNetSynset, lemma: string, lemmaIndex: number): Word {
+    const shared = {
       text: lemma,
-      partOfSpeech: synset.partOfSpeech,
       languageCode: { value: this.languageCode },
       definition: synset.definition ? { value: synset.definition } : undefined,
       usageNotes: synset.examples.map((example) => ({ value: example })),
       synsetId: { value: synset.synsetId, ...WORDNET_SYNSET_ID_SCHEME },
       isCommon: true,
       sourceReferences: [WORDNET_SOURCE_REFERENCE],
-    });
+    };
+    switch (synset.partOfSpeech) {
+      case PartOfSpeech.VERB: {
+        // wordIndex 0 means "every member of this synset"; a nonzero
+        // value is 1-based, matching lemmaIndex's own 0-based position
+        // plus one (WordNetFrame's own docstring, wordnet_loader.ts).
+        const frameNumbers = synset.frames
+          .filter((frame) => frame.wordIndex === 0 || frame.wordIndex === lemmaIndex + 1)
+          .map((frame) => frame.frameNumber);
+        const frames = [...new Set(frameNumbers)].map((n) => VERB_FRAME_TEXT[n]).filter((text): text is string => text !== undefined);
+        return createVerb({ ...shared, frames: frames.length > 0 ? frames : undefined });
+      }
+      case PartOfSpeech.ADJECTIVE:
+        return createAdjective({ ...shared, syntacticPosition: synset.lemmaPositions[lemmaIndex] });
+      case PartOfSpeech.ADVERB:
+        return createAdverb(shared);
+      case PartOfSpeech.NOUN:
+        return createNoun(shared);
+      default:
+        // posForSsType (wordnet_loader.ts) only ever produces NOUN/VERB/
+        // ADJECTIVE/ADVERB for a real synset (anything else throws
+        // there first) -- unreachable for real WordNet data, kept only
+        // so this switch has a total, not partial, mapping over
+        // PartOfSpeech's other 12 values.
+        return createNoun(shared);
+    }
   }
 
   /** synsetMemberToWord's own counterpart for a multi-word lemma --
@@ -1420,6 +1457,16 @@ export class WordSeeder {
     return true;
   }
 
+  /** Dispatches to createNoun/createVerb/createAdjective/createAdverb
+   * for the 4 open classes -- synsetMemberToWord's own dispatch, this
+   * path's exact counterpart -- and to plain createWord() for every
+   * other (closed) PartOfSpeech, which has no subtype of its own.
+   * `frames`/`syntacticPosition` are never set here (both fields'
+   * own docstrings, data/verb.ts and data/adjective.ts) -- neither is
+   * part of WordFileEntry's own schema, since only WordNet's dict/
+   * files carry that data; a Common Vocabulary Cache Verb/Adjective
+   * still gets its subtype's own type (for isVerb()/isAdjective()
+   * narrowing), just with those fields left undefined. */
   private entryToWord(entry: WordFileEntry): Word {
     const optText = (value: string | null | undefined) => (value ? { value } : undefined);
     const optCode = (value: string | null | undefined) => (value ? { value } : undefined);
@@ -1433,10 +1480,11 @@ export class WordSeeder {
       licenceIdentifier: ref.licence_identifier ? { value: ref.licence_identifier } : undefined,
     }));
 
-    return createWord({
+    const partOfSpeech = PartOfSpeech[entry.part_of_speech as keyof typeof PartOfSpeech];
+    const fields = {
       text: entry.text ?? entry.lexical_form,
       entryId: { value: entry.entry_id },
-      partOfSpeech: PartOfSpeech[entry.part_of_speech as keyof typeof PartOfSpeech],
+      partOfSpeech,
       version: optText(entry.version) ?? { value: "1.0" },
       languageCode: { value: entry.language_code },
       lexicalForm: { value: entry.lexical_form },
@@ -1475,7 +1523,19 @@ export class WordSeeder {
         ? VectorPrimitiveRootWord[entry.vector_primitive_root_word as keyof typeof VectorPrimitiveRootWord]
         : undefined,
       isDerivableNoun: entry.is_derivable_noun ?? false,
-    });
+    };
+    switch (partOfSpeech) {
+      case PartOfSpeech.NOUN:
+        return createNoun(fields);
+      case PartOfSpeech.VERB:
+        return createVerb(fields);
+      case PartOfSpeech.ADJECTIVE:
+        return createAdjective(fields);
+      case PartOfSpeech.ADVERB:
+        return createAdverb(fields);
+      default:
+        return createWord(fields);
+    }
   }
 
   /** entryToWord's own counterpart for a multi-word entry -- the same

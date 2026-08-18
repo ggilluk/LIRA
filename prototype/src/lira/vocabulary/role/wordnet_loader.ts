@@ -22,16 +22,17 @@
  * e.g. "noun.animal") and each word's own `lex_id` are read
  * positionally (needed to walk past them to the next field) but not
  * retained -- LIRA has no equivalent slot for either, and nothing here
- * needs them. The (verb-only) frame block is walked past the same way,
- * using its own `frame_cnt` -- never retained, and critically never
- * confused with the pointer block's own `+` symbol (WordNet reuses `+`
- * for two unrelated things: the "derivationally related form" pointer
- * `ptr_symbol` a synset can have any number of, and the frame-record
- * separator every frame entry starts with -- ordinary token scanning
- * for `+` can't tell them apart, so `p_cnt`/`frame_cnt` themselves are
- * what make each block's own length known in advance, and are read
- * positionally for exactly that reason). */
+ * needs them. The (verb-only) frame block IS retained now (as
+ * WordNetSynset.frames, below) -- critically never confused with the
+ * pointer block's own `+` symbol (WordNet reuses `+` for two unrelated
+ * things: the "derivationally related form" pointer `ptr_symbol` a
+ * synset can have any number of, and the frame-record separator every
+ * frame entry starts with -- ordinary token scanning for `+` can't tell
+ * them apart, so `p_cnt`/`frame_cnt` themselves are what make each
+ * block's own length known in advance, and are read positionally for
+ * exactly that reason). */
 
+import { AdjectivePosition } from "../data/adjective";
 import { PartOfSpeech } from "../data/part_of_speech";
 
 /** One relation a synset carries to another synset (or, for a lexical
@@ -53,6 +54,23 @@ export interface WordNetPointer {
   targetWordIndex: number;
 }
 
+// One raw entry from the verb-only frame block -- WordNet's own
+// `frame_cnt {+ frame_number word_number}...` records, kept exactly as
+// written rather than resolved to text here (that's Verb's own
+// VERB_FRAME_TEXT, data/verb.ts -- a Vocabulary-layer concern, not this
+// module's). `wordIndex` is WordNet's own `word_number`, hex-encoded
+// exactly like WordNetPointer's own sourceWordIndex/targetWordIndex
+// above (confirmed against real data -- word_number values like "0f"
+// only make sense as hex): 0 means "every member of this synset", a
+// nonzero value is the 1-based position of one specific member in
+// `lemmas` this frame applies to instead (WordSeeder.seedWordNet's own
+// synsetMemberToWord() is what narrows this down to one Word's own
+// applicable frames). `frameNumber` itself is a plain decimal 1-35.
+export interface WordNetFrame {
+  frameNumber: number;
+  wordIndex: number;
+}
+
 export interface WordNetSynset {
   // WordNet's own offset-pos key, e.g. "00001740-n" -- see Word.synsetId's
   // own docstring for the full format.
@@ -61,11 +79,25 @@ export interface WordNetSynset {
   // Underscores already replaced with spaces ("physical_entity" ->
   // "physical entity") and any trailing adjective syntactic-position
   // marker ("occupied(p)") stripped -- ready to use as a Word.text/
-  // lexicalForm as-is.
+  // lexicalForm as-is. The marker itself, when present, survives
+  // separately in `lemmaPositions` below rather than being discarded.
   lemmas: readonly string[];
+  // Parallel to `lemmas` (same length, same index order) -- the
+  // AdjectivePosition a lemma's own trailing "(a)"/"(p)"/"(ip)" marker
+  // named, or undefined for a lemma with no marker (every non-adjective
+  // lemma, and most adjective ones too -- only ~4% of dict/data.adj's
+  // own lemmas carry one at all). Adjective's own docstring
+  // (data/adjective.ts) on what each position means and how this was
+  // verified against the bundled dict/ files.
+  lemmaPositions: readonly (AdjectivePosition | undefined)[];
   definition: string;
   examples: readonly string[];
   pointers: readonly WordNetPointer[];
+  // The verb-only frame block, parsed but not yet resolved to text or
+  // narrowed to one Word -- always [] for a non-VERB synset. Verb's own
+  // docstring (data/verb.ts) on what this data is and how it was
+  // verified against the bundled dict/ files.
+  frames: readonly WordNetFrame[];
 }
 
 const DICT_FILENAMES = ["data.noun", "data.verb", "data.adj", "data.adv"] as const;
@@ -115,10 +147,22 @@ function posForSsType(ssType: string): PartOfSpeech {
   }
 }
 
-const POSITION_MARKER_PATTERN = /\([^()]*\)$/;
+// Confirmed exhaustive by direct scan of all four bundled dict/data.*
+// files (adjective.ts's own docstring): "a"/"p"/"ip" are the only
+// trailing parenthetical markers WordNet ever attaches directly to a
+// lemma token (no separating space, unlike a gloss's own parenthetical
+// asides), and only ever in dict/data.adj.
+const POSITION_MARKER_PATTERN = /\((a|p|ip)\)$/;
 
-function cleanLemma(rawWord: string): string {
-  return rawWord.replace(POSITION_MARKER_PATTERN, "").replace(/_/g, " ");
+function parseLemma(rawWord: string): { text: string; position?: AdjectivePosition } {
+  const match = rawWord.match(POSITION_MARKER_PATTERN);
+  const text = rawWord.replace(POSITION_MARKER_PATTERN, "").replace(/_/g, " ");
+  if (match === null) return { text };
+  const position =
+    match[1] === "a" ? AdjectivePosition.ATTRIBUTIVE_ONLY
+    : match[1] === "p" ? AdjectivePosition.PREDICATE_ONLY
+    : AdjectivePosition.IMMEDIATELY_POSTNOMINAL;
+  return { text, position };
 }
 
 /** Splits a synset's raw gloss ("a tangible and visible entity; an
@@ -155,10 +199,13 @@ function parseSynsetLine(line: string): WordNetSynset | undefined {
   const wordCount = parseInt(wordCountHex, 16);
 
   const lemmas: string[] = [];
+  const lemmaPositions: (AdjectivePosition | undefined)[] = [];
   for (let i = 0; i < wordCount; i++) {
     const rawWord = fields[4 + i * 2];
     if (rawWord === undefined) break;
-    lemmas.push(cleanLemma(rawWord));
+    const { text, position } = parseLemma(rawWord);
+    lemmas.push(text);
+    lemmaPositions.push(position);
   }
 
   // Positional from here on, not pattern-matched -- this module's own
@@ -183,17 +230,34 @@ function parseSynsetLine(line: string): WordNetSynset | undefined {
       targetWordIndex: parseInt(sourceTarget.slice(2, 4), 16),
     });
   }
-  // Verb-only: walk past (never retained -- this module's own docstring)
-  // frame_cnt frame records, each 3 tokens (`+`, frame_number,
-  // word_number), so `cursor` lands exactly where it would with no
-  // frame block at all for every other part of speech.
+  // Verb-only: frame_cnt frame records, each 3 tokens (`+`, frame_number,
+  // word_number) -- parsed now (WordNetFrame's own docstring), not just
+  // walked past to keep `cursor` correctly positioned for every other
+  // part of speech (which never has this block at all).
+  const frames: WordNetFrame[] = [];
   if (ssType === "v") {
     const frameCount = parseInt(fields[cursor], 10);
-    cursor += 1 + frameCount * 3;
+    cursor += 1;
+    for (let i = 0; i < frameCount; i++) {
+      const frameNumber = fields[cursor + 1];
+      const wordIndex = fields[cursor + 2];
+      cursor += 3;
+      if (frameNumber === undefined || wordIndex === undefined) break;
+      frames.push({ frameNumber: parseInt(frameNumber, 10), wordIndex: parseInt(wordIndex, 16) });
+    }
   }
 
   const { definition, examples } = parseGloss(line.slice(barIndex + 3));
-  return { synsetId: `${synsetOffset}-${ssType}`, partOfSpeech: posForSsType(ssType), lemmas, definition, examples, pointers };
+  return {
+    synsetId: `${synsetOffset}-${ssType}`,
+    partOfSpeech: posForSsType(ssType),
+    lemmas,
+    lemmaPositions,
+    definition,
+    examples,
+    pointers,
+    frames,
+  };
 }
 
 let cache: WordNetSynset[] | null = null;
