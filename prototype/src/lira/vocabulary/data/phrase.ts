@@ -35,6 +35,7 @@ import type { Code, Identifier, Text } from "../../value_objects";
 import type { LinguisticUnit } from "../../linguistics/data/linguistic_unit";
 import type { EditorialLabel } from "./editorial_label";
 import type { PartOfSpeech } from "./part_of_speech";
+import type { PhraseType } from "./phrase_type";
 import type { RegisterCode } from "./register_code";
 import type { SourceReference } from "./source_reference";
 import { createWord, type Word } from "./word";
@@ -42,6 +43,14 @@ import { newUuid } from "./uuid";
 
 export interface Phrase extends LinguisticUnit {
   partOfSpeech: PartOfSpeech;
+
+  // The grammatical shape this Phrase's own words take -- noun phrase,
+  // verb phrase, etc. (PhraseType's own docstring on how this differs
+  // from partOfSpeech above). Undefined for a Phrase never run through
+  // that classification -- every Phrase seeded so far, WordNet-derived
+  // or Common Vocabulary Cache alike, since neither seeding path
+  // performs constituency parsing today.
+  phraseType?: PhraseType;
 
   uuid: Identifier;
 

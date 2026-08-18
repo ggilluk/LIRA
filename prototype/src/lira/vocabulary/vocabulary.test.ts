@@ -8,6 +8,7 @@ import { antonyms, createWord, holonyms, hypernyms, hyponyms, meronyms, synonyms
 import { HypernymRootWord } from "./data/hypernym_root_word";
 import { createPhrase } from "./data/phrase";
 import { Phrases } from "./data/phrases";
+import { PHRASE_TYPE_DETAILS, PhraseType } from "./data/phrase_type";
 import { createSense } from "./data/sense";
 import { Senses } from "./data/senses";
 import { AsyncDictionaryHydrator } from "./role/dictionary_hydrator";
@@ -17,6 +18,39 @@ import { RelationshipSeeder } from "./role/relationship_seeder";
 import { WordSeeder } from "./role/word_seeder";
 import { loadWordNetSynsets } from "./role/wordnet_loader";
 import { DictionaryView } from "./ui/dictionary_view";
+
+describe("PhraseType", () => {
+  it("carries the same six numeric codes, in the same order, as Linguistics' own PhraseType", () => {
+    expect(PhraseType.NOUN_PHRASE).toBe(0);
+    expect(PhraseType.VERB_PHRASE).toBe(1);
+    expect(PhraseType.ADJECTIVE_PHRASE).toBe(2);
+    expect(PhraseType.ADVERB_PHRASE).toBe(3);
+    expect(PhraseType.PREPOSITIONAL_PHRASE).toBe(4);
+    expect(PhraseType.INFINITIVE_PHRASE).toBe(5);
+  });
+
+  it("PHRASE_TYPE_DETAILS has a populated definition/structure/example for every PhraseType value", () => {
+    const numericValues = Object.values(PhraseType).filter((v): v is number => typeof v === "number");
+    for (const value of numericValues) {
+      const details = PHRASE_TYPE_DETAILS[value as PhraseType];
+      expect(details.definition.length).toBeGreaterThan(0);
+      expect(details.structure.length).toBeGreaterThan(0);
+      expect(details.example.length).toBeGreaterThan(0);
+    }
+  });
+
+  it("a Phrase can carry a phraseType, defaulting to undefined when not classified", () => {
+    const unclassified = createPhrase({ text: "in spite of", partOfSpeech: PartOfSpeech.PREPOSITION });
+    expect(unclassified.phraseType).toBeUndefined();
+
+    const classified = createPhrase({
+      text: "the intelligent system",
+      partOfSpeech: PartOfSpeech.NOUN,
+      phraseType: PhraseType.NOUN_PHRASE,
+    });
+    expect(classified.phraseType).toBe(PhraseType.NOUN_PHRASE);
+  });
+});
 
 describe("Dictionary", () => {
   it("lookupAll returns every homograph sharing one surface text", () => {
