@@ -20,6 +20,7 @@
  * whole synset plus frame 2 for "stretch" alone, so "extend" (the
  * synset's other member) never gets frame 2. */
 
+import type { Text } from "../../value_objects";
 import { PartOfSpeech } from "./part_of_speech";
 import { createWord, type Word } from "./word";
 
@@ -30,6 +31,44 @@ export interface Verb extends Word {
   // that didn't come from WordSeeder.seedWordNet (every Common
   // Vocabulary Cache entry, which has no frame data of its own).
   frames?: readonly string[];
+
+  // The rest of this subtype's own row of fields from the Word Form to
+  // Part of Speech Matrix (data/word_form_part_of_speech_matrix.md) --
+  // undefined until a seeding/curation pass populates them, the same as
+  // `frames` for a non-WordNet-sourced Verb.
+
+  // The purpose is to identify the verb form used for an action,
+  // event, or state that occurs or exists in the present.
+  presentTenseForm?: Text;
+  // The purpose is to identify the verb form used for an action,
+  // event, or state that occurred or existed in the past.
+  pastTenseForm?: Text;
+  // The purpose is to identify the present-tense verb form used when
+  // the subject is one person or thing other than the speaker or
+  // listener.
+  thirdPersonSingularPresentForm?: Text;
+  // The purpose is to identify the verb form ending in -ing that is
+  // used to describe an action or state as ongoing.
+  presentParticipleForm?: Text;
+  // The purpose is to identify the verb form used to construct perfect
+  // tenses and passive expressions.
+  pastParticipleForm?: Text;
+  // The purpose is to identify the basic verb form used without the
+  // word "to", such as "run" in "can run".
+  bareInfinitiveForm?: Text;
+  // The purpose is to identify the word form used when the speaker
+  // refers to themselves or to a group that includes them. Applies
+  // only to a subset of verb paradigms (e.g. "am" for "be"), not every
+  // verb -- most English verbs don't inflect for person at all.
+  firstPersonForm?: Text;
+  // The purpose is to identify the word form used when referring to
+  // the person or people being addressed. Same subset-only caveat as
+  // firstPersonForm above.
+  secondPersonForm?: Text;
+  // The purpose is to identify the word form used when referring to a
+  // person, thing, place, or idea other than the speaker or listener.
+  // Same subset-only caveat as firstPersonForm above.
+  thirdPersonForm?: Text;
 }
 
 export type VerbInit = Pick<Verb, "text"> & Partial<Omit<Verb, "text" | "partOfSpeech">>;

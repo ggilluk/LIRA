@@ -28,8 +28,15 @@
 
 import { createAdjective } from "../data/adjective";
 import { createAdverb } from "../data/adverb";
+import { createConjunction } from "../data/conjunction";
+import { createDeterminer } from "../data/determiner";
+import { createInterjection } from "../data/interjection";
 import { createNoun } from "../data/noun";
+import { createNumeral } from "../data/numeral";
 import { PartOfSpeech } from "../data/part_of_speech";
+import { createParticle } from "../data/particle";
+import { createPreposition } from "../data/preposition";
+import { createPronoun } from "../data/pronoun";
 import { RegisterCode } from "../data/register_code";
 import { EditorialLabel } from "../data/editorial_label";
 import { HolonymRootWord } from "../data/holonym_root_word";
@@ -1533,7 +1540,26 @@ export class WordSeeder {
         return createAdjective(fields);
       case PartOfSpeech.ADVERB:
         return createAdverb(fields);
+      case PartOfSpeech.PRONOUN:
+        return createPronoun(fields);
+      case PartOfSpeech.DETERMINER:
+        return createDeterminer(fields);
+      case PartOfSpeech.PREPOSITION:
+        return createPreposition(fields);
+      case PartOfSpeech.CONJUNCTION:
+        return createConjunction(fields);
+      case PartOfSpeech.INTERJECTION:
+        return createInterjection(fields);
+      case PartOfSpeech.NUMERAL:
+        return createNumeral(fields);
+      case PartOfSpeech.PARTICLE:
+        return createParticle(fields);
       default:
+        // AUXILIARY, PROPER_NOUN, SYMBOL, PUNCTUATION, OTHER -- none of
+        // these appear in the Word Form to Part of Speech Matrix
+        // (data/word_form_part_of_speech_matrix.md) at all, so they have
+        // no subtype of their own; every entry of one of these classes
+        // (auxiliaries.json, symbols.json, ...) stays a plain Word.
         return createWord(fields);
     }
   }

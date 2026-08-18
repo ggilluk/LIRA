@@ -15,6 +15,7 @@
  * lemma token (never in data.noun/data.verb/data.adv), so this is safe
  * to treat as an exhaustive, closed set. */
 
+import type { Text } from "../../value_objects";
 import { PartOfSpeech } from "./part_of_speech";
 import { createWord, type Word } from "./word";
 
@@ -38,6 +39,25 @@ export enum AdjectivePosition {
 export interface Adjective extends Word {
   partOfSpeech: PartOfSpeech.ADJECTIVE;
   syntacticPosition?: AdjectivePosition;
+
+  // The rest of this subtype's own row of fields from the Word Form to
+  // Part of Speech Matrix (data/word_form_part_of_speech_matrix.md) --
+  // undefined until a seeding/curation pass populates them, the same as
+  // `syntacticPosition` for a non-WordNet-sourced Adjective.
+
+  // The purpose is to identify the basic adjective or adverb form that
+  // describes a quality without comparing it with another.
+  positiveDegreeForm?: Text;
+  // The purpose is to identify the adjective or adverb form used to
+  // compare the degree of a quality between two people, things,
+  // actions, or states. Applies only to gradable adjectives ("bigger"),
+  // not to every adjective ("more unique" is non-standard, not
+  // "uniquer").
+  comparativeDegreeForm?: Text;
+  // The purpose is to identify the adjective or adverb form used to
+  // identify the highest or lowest degree of a quality within a group.
+  // Same gradable-only caveat as comparativeDegreeForm above.
+  superlativeDegreeForm?: Text;
 }
 
 export type AdjectiveInit = Pick<Adjective, "text"> & Partial<Omit<Adjective, "text" | "partOfSpeech">>;

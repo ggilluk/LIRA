@@ -101,6 +101,18 @@ export interface Word extends LinguisticUnit {
   languageCode: Code;
   lexicalForm?: Text;
   normalisedForm?: Text;
+  // The purpose is to identify the standard dictionary form used to
+  // represent the word -- the one row of the Word Form to Part of
+  // Speech Matrix (data/word_form_part_of_speech_matrix.md) ticked for
+  // every part of speech without exception, so it lives here on Word
+  // itself rather than being repeated on every one of its POS-specific
+  // subtypes (Noun, Verb, Adjective, Adverb, Pronoun, ...). Distinct
+  // from `lexicalForm`/`text` above in name only for a base entry (they
+  // agree); the difference matters for an inflected form's own Word
+  // (e.g. "ran"), where this names its lemma ("run") rather than its
+  // own spelling -- undefined until a caller populates it, the same as
+  // every other *_Form field the matrix's own subtype fields carry.
+  baseLemmaCanonicalForm?: Text;
   scriptCode?: Code;
   pronunciations: readonly Pronunciation[];
   syllableRepresentation?: Text;

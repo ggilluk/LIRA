@@ -7,8 +7,15 @@ import { PartOfSpeech } from "./data/part_of_speech";
 import { antonyms, createWord, holonyms, hypernyms, hyponyms, meronyms, synonyms } from "./data/word";
 import { AdjectivePosition, isAdjective } from "./data/adjective";
 import { isAdverb } from "./data/adverb";
+import { isConjunction } from "./data/conjunction";
+import { isDeterminer } from "./data/determiner";
 import { HypernymRootWord } from "./data/hypernym_root_word";
+import { isInterjection } from "./data/interjection";
 import { isNoun } from "./data/noun";
+import { isNumeral } from "./data/numeral";
+import { isParticle } from "./data/particle";
+import { isPreposition } from "./data/preposition";
+import { isPronoun } from "./data/pronoun";
 import { isVerb } from "./data/verb";
 import { createPhrase } from "./data/phrase";
 import { Phrases } from "./data/phrases";
@@ -345,6 +352,32 @@ describe("WordSeeder against the bundled Common Vocabulary Cache", () => {
     const unrestricted = new Dictionary();
     new WordSeeder("en").seedClosedClassWords(unrestricted, new Phrases());
     expect(unrestricted.lookupAll("measure").some((w) => w.partOfSpeech === PartOfSpeech.VERB)).toBe(true);
+  });
+
+  it("seeds every closed class through its own Word Form to Part of Speech Matrix subtype (Pronoun, Determiner, Preposition, Conjunction, Interjection, Numeral, Particle)", () => {
+    const dictionary = new Dictionary();
+    new WordSeeder("en").seedClosedClassWords(dictionary, new Phrases());
+
+    expect(isPronoun(dictionary.lookup("she")!)).toBe(true);
+    expect(isDeterminer(dictionary.lookup("the")!)).toBe(true);
+    expect(isPreposition(dictionary.lookup("in")!)).toBe(true);
+    expect(isConjunction(dictionary.lookup("and")!)).toBe(true);
+    expect(isInterjection(dictionary.lookup("yes")!)).toBe(true);
+    // "one" is a deliberate homograph -- pronouns.json's own indefinite
+    // PRONOUN sense loads first and stays Dictionary.lookup()'s default
+    // (word_seeder.ts's own numerals.json comment), so the NUMERAL sense
+    // has to be found via lookupAll(), not lookup().
+    expect(isNumeral(dictionary.lookupAll("one").find((w) => w.partOfSpeech === PartOfSpeech.NUMERAL)!)).toBe(true);
+    expect(isParticle(dictionary.lookup("not")!)).toBe(true);
+
+    // A subtype's own fields are real, assignable Text fields -- not
+    // populated by this seeding path (none of the Common Vocabulary
+    // Cache's own JSON schemas carry them), but present and undefined,
+    // exactly like Noun.isCountable/Verb.frames for a non-WordNet Word.
+    const she = dictionary.lookup("she");
+    if (!isPronoun(she!)) throw new Error("unreachable");
+    expect(she.subjectiveCaseForm).toBeUndefined();
+    expect(she.baseLemmaCanonicalForm).toBeUndefined();
   });
 
   it("gives every hand-curated Word/Phrase its own unique Sense, carrying its domainTag/relatedDomainTags, when a Senses is supplied", () => {
