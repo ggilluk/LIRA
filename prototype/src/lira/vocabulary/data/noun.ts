@@ -21,14 +21,24 @@ export interface Noun extends Word {
   isCountable?: boolean;
 
   // The purpose is to identify the word form used when referring to
-  // one person, thing, place, or idea.
+  // one person, thing, place, or idea. Fully lexical, not spelling-
+  // derivable (the matrix's own Format/String Pattern rows are both
+  // `N/A`) -- a populated value's own `Text.formats` should stay unset.
   singularNumberForm?: Text;
   // The purpose is to identify the word form used when referring to
-  // more than one person, thing, place, or idea.
+  // more than one person, thing, place, or idea. Regular-case spelling
+  // rules #1-4 are regex-derivable (`/s$/i`, `/es$/i`, `/ies$/i`,
+  // `/ves$/i`) -- a populated regular-case value's own `Text.formats`
+  // should carry whichever of those matched; rules #5-6 (irregular /
+  // unchanged, "child"->"children", "sheep"->"sheep") have no format at
+  // all and need curated data instead.
   pluralNumberForm?: Text;
   // The purpose is to identify the noun, pronoun, or determiner form
   // used to show that something belongs or relates to a person or
-  // thing.
+  // thing. Rules #1-2 are regex-derivable (`/'s$/i`, `/s'$/i` for an
+  // existing plural) -- a populated value's own `Text.formats` should
+  // carry whichever matched. Rule #3 (an explicitly classified
+  // possessive spelling) is Pronoun/Determiner's own case, not Noun's.
   possessiveCaseForm?: Text;
 }
 

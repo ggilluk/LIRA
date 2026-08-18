@@ -17,16 +17,28 @@ export interface Adverb extends Word {
   partOfSpeech: PartOfSpeech.ADVERB;
 
   // The purpose is to identify the basic adjective or adverb form that
-  // describes a quality without comparing it with another.
+  // describes a quality without comparing it with another. Fully
+  // lexical, not spelling-derivable (the matrix's own Format/String
+  // Pattern rows are both `N/A`) -- a populated value's own
+  // `Text.formats` should stay unset.
   positiveDegreeForm?: Text;
   // The purpose is to identify the adjective or adverb form used to
   // compare the degree of a quality between two people, things,
   // actions, or states. Applies only to gradable adverbs ("faster"),
-  // not to every adverb.
+  // not to every adverb. Rules #1-4 are regex-derivable (`/er$/i` twice
+  // over, `/ier$/i`, a doubled-final-consonant pattern) -- a populated
+  // regular-case value's own `Text.formats` should carry whichever
+  // matched; rule #5 (irregular, "well"->"better") has no format and
+  // needs curated data instead.
   comparativeDegreeForm?: Text;
   // The purpose is to identify the adjective or adverb form used to
   // identify the highest or lowest degree of a quality within a group.
-  // Same gradable-only caveat as comparativeDegreeForm above.
+  // Same gradable-only caveat as comparativeDegreeForm above. Rules
+  // #1-4 are regex-derivable (`/est$/i` twice over, `/iest$/i`, a
+  // doubled-final-consonant pattern) -- a populated regular-case
+  // value's own `Text.formats` should carry whichever matched; rule #5
+  // (irregular, "well"->"best") has no format and needs curated data
+  // instead.
   superlativeDegreeForm?: Text;
 }
 

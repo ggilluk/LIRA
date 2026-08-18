@@ -112,6 +112,10 @@ export interface Word extends LinguisticUnit {
   // (e.g. "ran"), where this names its lemma ("run") rather than its
   // own spelling -- undefined until a caller populates it, the same as
   // every other *_Form field the matrix's own subtype fields carry.
+  // Fully lexical, not spelling-derivable at all (the matrix's own
+  // Format/String Pattern columns are both `N/A` for this row) -- a
+  // populated value's own `Text.formats` (value_objects/data/text.ts)
+  // should stay unset here, unlike a regular-case *_Form value below.
   baseLemmaCanonicalForm?: Text;
   scriptCode?: Code;
   pronunciations: readonly Pronunciation[];
