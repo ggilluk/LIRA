@@ -822,6 +822,18 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // (MAX_INTERACTIVE_WORDS), not just the small-Domain embedded path.
     const view = new DictionaryView(dictionary, lexicalRelationships, { domainName: "Common", phrases: phraseBook, senses: senseStore });
 
+    // The Phrases tab's own detail panel resolves exclusively through
+    // this wordId path (dictionary_view.ts's own wordForDetailPanel()
+    // docstring -- "panel === 'phrases' always falls through to
+    // wordLookupCache"), so phrase_type has to survive this exact
+    // round trip, not just the raw Phrase object checked above.
+    const atFaultSearch = view.searchWords({ wordId: atFault!.uuid.value });
+    expect(atFaultSearch.words).toHaveLength(1);
+    expect(atFaultSearch.words[0].phrase_type).toBe("PREPOSITIONAL_PHRASE");
+
+    const toyPoodleSearch = view.searchWords({ wordId: toyPoodle!.uuid.value });
+    expect(toyPoodleSearch.words[0].phrase_type).toBe("NOUN_PHRASE");
+
     const forToyPoodle = view.searchRelationships({ wordId: toyPoodle!.uuid.value });
     expect(forToyPoodle.totalMatches).toBeGreaterThan(0);
     const hypernymRow = forToyPoodle.relationships.find((r) => r.kind === "HYPERNYM");

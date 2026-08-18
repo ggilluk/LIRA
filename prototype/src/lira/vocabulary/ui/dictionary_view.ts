@@ -24,6 +24,7 @@ import type { LexicalRelationshipStore } from "../data/lexical_relationship_stor
 import { LexicalRelationshipType, MERONYM_KIND_QUALIFIER, relationshipCategory, relationshipGroup } from "../data/lexical_relationship_type";
 import { PartOfSpeech } from "../data/part_of_speech";
 import { phraseAsWord, type Phrase } from "../data/phrase";
+import { PhraseType } from "../data/phrase_type";
 import { Phrases } from "../data/phrases";
 import { RegisterCode } from "../data/register_code";
 import type { Sense } from "../data/sense";
@@ -112,6 +113,19 @@ export interface WordRecord {
   // docstring) rather than re-resolved from scratch. undefined for an
   // ordinary Word, which has no sub-word composition of its own to show.
   phrase_word_segments?: DefinitionSegment[];
+  // phrase_word_segments's own exact counterpart for Phrase.phraseType
+  // (word_seeder.ts's own classifyPhraseType, WordSeeder.seedWordNet) --
+  // the enum's own key string (e.g. "PREPOSITIONAL_PHRASE"), same
+  // PhraseType[...] convention `pos` above already uses for
+  // PartOfSpeech -- the client applies titleCase() at render time, not
+  // this. Present only when this record was resolved from a Phrase that
+  // HAS a phraseType; undefined for an ordinary Word (no such concept
+  // applies) and for a Phrase whose own phraseType is itself undefined
+  // (every Common Vocabulary Cache closed-class Phrase, and any
+  // WordNet-seeded one classifyPhraseType() couldn't classify -- neither
+  // exists in the bundled data today, but the field stays optional
+  // either way).
+  phrase_type?: string;
   pad: { pleasure: number; arousal: number; dominance: number } | null;
 }
 
@@ -703,7 +717,10 @@ export class DictionaryView {
       const phrase = this.phrases.findByUuid(options.wordId);
       if (phrase !== undefined) {
         const record = this.wordRecordFor(phraseAsWord(phrase));
-        return { words: [{ ...record, phrase_word_segments: this.phraseWordSegments(phrase) }], totalMatches: 1 };
+        return {
+          words: [{ ...record, phrase_word_segments: this.phraseWordSegments(phrase), phrase_type: this.phraseTypeLabel(phrase) }],
+          totalMatches: 1,
+        };
       }
       const word = this.dictionary.findByUuid(options.wordId);
       if (word !== undefined) return { words: [this.wordRecordFor(word)], totalMatches: 1 };
@@ -720,7 +737,10 @@ export class DictionaryView {
       if (representative !== undefined) {
         if ("words" in representative) {
           const record = this.wordRecordFor(phraseAsWord(representative));
-          return { words: [{ ...record, phrase_word_segments: this.phraseWordSegments(representative) }], totalMatches: 1 };
+          return {
+            words: [{ ...record, phrase_word_segments: this.phraseWordSegments(representative), phrase_type: this.phraseTypeLabel(representative) }],
+            totalMatches: 1,
+          };
         }
         return { words: [this.wordRecordFor(representative)], totalMatches: 1 };
       }
@@ -877,6 +897,18 @@ export class DictionaryView {
       const resolved = ref !== undefined ? this.dictionary.findByUuid(ref.value) : undefined;
       return this.definitionWordSegment(token, resolved);
     });
+  }
+
+  /** `phrase`'s own phraseType, as the enum's own key string (`pos`'s
+   * own PhraseType[...] convention, WordRecord.phrase_type's own
+   * docstring) -- `undefined` for a Phrase whose phraseType is itself
+   * undefined (every Common Vocabulary Cache closed-class Phrase, and
+   * any WordNet-seeded one classifyPhraseType() couldn't classify),
+   * kept as its own small method purely so both wordId-resolution call
+   * sites above read the identical one-liner phraseWordSegments()
+   * already gets its own for. */
+  private phraseTypeLabel(phrase: Phrase): string | undefined {
+    return phrase.phraseType !== undefined ? PhraseType[phrase.phraseType] : undefined;
   }
 
   private definitionWordSegment(surfaceText: string, resolved: Word | undefined): DefinitionSegment {
@@ -2253,6 +2285,18 @@ function posPill(pos) {
   return \`<span class="pill" style="background:\${color}">\${titleCase(pos)}</span>\`;
 }
 
+// word.phrase_type's own pill -- only ever set on a record resolved
+// from a Phrase (WordRecord.phrase_type's own docstring), so this is
+// only ever called from wordDetailHTML() alongside posPill()/domainPill(),
+// never for an ordinary Word. Its own fixed colour, distinct from both
+// POS_COLORS and DOMAIN_COLORS, since phraseType is neither -- it's a
+// third, independent classification (grammatical internal structure,
+// PhraseType's own docstring, vocabulary/data/phrase_type.ts) that can
+// appear alongside a Phrase's own partOfSpeech pill in the same row.
+function phraseTypePill(phraseType) {
+  return \`<span class="pill" style="background:#6E5A9E">\${titleCase(phraseType)}</span>\`;
+}
+
 // The Princeton WordNet 3.1 synset a Word/related-word came from
 // (WordRecord.sense_id / RelationshipRecord.*_sense_id), rendered as a
 // small muted tag to the right of its own word text -- "" (nothing
@@ -3141,7 +3185,7 @@ function headwordHTML(word) {
 function wordDetailHTML(word, rels, relCount) {
   return \`
     <div class="detail-word">\${headwordHTML(word)}\${word.is_common ? ' <span class="badge-common">common</span>' : ''}\${word.is_root_word ? ' <span class="badge-root-word">root word</span>' : ''}\${word.is_derivable_noun ? ' <span class="badge-derivable-noun">derivable noun</span>' : ''}\${word.is_fully_hydrated ? '' : ' <span class="badge-common" style="color:#C2544B;border-color:#C2544B">hydration pending</span>'}</div>
-    <div style="margin-top:6px">\${posPill(word.pos)} \${domainPill(word.domain)}</div>
+    <div style="margin-top:6px">\${posPill(word.pos)} \${domainPill(word.domain)}\${word.phrase_type ? ' ' + phraseTypePill(word.phrase_type) : ''}</div>
     \${word.related_domains && word.related_domains.length ? \`<div class="detail-related-domains" style="margin-top:4px"><span style="opacity:.6">Also:</span> \${word.related_domains.map(domainPill).join(' ')}</div>\` : ''}
     <div class="detail-entry-id" title="Persistent Qualified Word Identity (domain + part of speech + word) -- stable across regenerations, unlike this word's transient graph id">Entry ID <code>\${word.entry_id}</code></div>
     <div class="detail-definition">\${renderDefinition(word)}</div>
