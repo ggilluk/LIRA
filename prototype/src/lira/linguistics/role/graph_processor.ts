@@ -1,6 +1,6 @@
 import { PartOfSpeech } from "../../vocabulary/data/enums/part_of_speech";
 import type { DictionaryProcessor } from "../../vocabulary/role/dictionary_processor";
-import type { WordIdentification } from "../../vocabulary/data/word_identification";
+import type { WordIdentifier } from "../../vocabulary/role/word_identifier";
 import { createWord, type Word } from "../../vocabulary/data/word";
 import { createClause, type Clause } from "../data/clause";
 import { createDocument, type Document } from "../data/document";
@@ -111,7 +111,7 @@ export class GraphProcessor {
    * `reading.candidates[0]` (identifyWord's own top-ranked candidate),
    * which is what makes processToken byte-for-byte identical to its
    * pre-split behaviour. */
-  materialiseToken(reading: TokenReading, absoluteSeqNum: number, selectedCandidate?: WordIdentification): Word {
+  materialiseToken(reading: TokenReading, absoluteSeqNum: number, selectedCandidate?: WordIdentifier): Word {
     const candidate = selectedCandidate ?? (reading.candidates.length > 0 ? reading.candidates[0] : undefined);
 
     let node: Word;

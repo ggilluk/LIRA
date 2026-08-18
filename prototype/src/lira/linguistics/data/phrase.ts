@@ -1,6 +1,6 @@
 import type { PartOfSpeech } from "../../vocabulary/data/enums/part_of_speech";
 import type { Word } from "../../vocabulary/data/word";
-import type { WordIdentification } from "../../vocabulary/data/word_identification";
+import type { WordIdentifier } from "../../vocabulary/role/word_identifier";
 import type { Clause } from "./clause";
 import type { Interpretation } from "./interpretation";
 import type { LinguisticUnit } from "./linguistic_unit";
@@ -22,7 +22,7 @@ import type { ReadingContext } from "../role/reading_context";
 
 /** A sequence of Vocabulary words functioning as one grammatical unit
  * within a clause (Linguistics Layer developer specification, 4; spec
- * 12.1). References Vocabulary Words and WordIdentifications -- never
+ * 12.1). References Vocabulary Words and WordIdentifiers -- never
  * copies or replaces their lexical data (spec 12.2, Rule 17).
  *
  * Ported from linguistics/data/phrase.py. */
@@ -34,7 +34,7 @@ export interface Phrase extends LinguisticUnit {
   phraseType?: PhraseType;
   words: Word[];
   selectedPartsOfSpeech: readonly PartOfSpeech[];
-  selectedIdentifications: readonly WordIdentification[];
+  selectedIdentifications: readonly WordIdentifier[];
   headWord?: Word;
   headPartOfSpeech?: PartOfSpeech;
   modifiers: Phrase[];

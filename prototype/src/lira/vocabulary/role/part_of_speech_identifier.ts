@@ -1,7 +1,7 @@
 import type { Dictionary } from "../data/dictionary";
 import { PartOfSpeech } from "../data/enums/part_of_speech";
-import { IdentificationSource, type WordIdentification } from "../data/word_identification";
 import { isTitleCase, isUpperCase, type WordLookupContext } from "../data/word_lookup_context";
+import { IdentificationSource, type WordIdentifier } from "./word_identifier";
 
 /** Identifies candidate parts of speech for one token occurrence from
  * this Domain's Dictionary -- whether the matching Word was loaded by
@@ -19,10 +19,10 @@ import { isTitleCase, isUpperCase, type WordLookupContext } from "../data/word_l
 export class PartOfSpeechIdentifier {
   constructor(private readonly dictionary: Dictionary) {}
 
-  identifySeeded(context: WordLookupContext): readonly WordIdentification[] {
+  identifySeeded(context: WordLookupContext): readonly WordIdentifier[] {
     const seededWords = this.dictionary.lookupAll(context.normalisedText);
 
-    const candidates: WordIdentification[] = seededWords.map((word) => ({
+    const candidates: WordIdentifier[] = seededWords.map((word) => ({
       word,
       partOfSpeech: word.partOfSpeech,
       source: IdentificationSource.SEEDED_VOCABULARY,

@@ -154,7 +154,7 @@ export function copyPhraseWithFreshUuid(phrase: Phrase): Phrase {
 /** Materialises `phrase` as a synthetic, one-off Word -- never
  * inserted into any Dictionary, only ever handed to a Linguistics-
  * facing caller (DictionaryProcessor.identifyPhrase()) that expects a
- * WordIdentification's own `.word: Word` field. This is the token side
+ * WordIdentifier's own `.word: Word` field. This is the token side
  * of the dual use this file's own docstring describes: Vocabulary's
  * durable, authoritative record of "in spite of" is the Phrase this
  * was built from (Phrases, not Dictionary), but Linguistics' own

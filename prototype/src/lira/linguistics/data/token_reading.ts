@@ -1,5 +1,5 @@
 import { PartOfSpeech } from "../../vocabulary/data/enums/part_of_speech";
-import type { WordIdentification } from "../../vocabulary/data/word_identification";
+import type { WordIdentifier } from "../../vocabulary/role/word_identifier";
 
 /** One raw token occurrence together with EVERY seeded candidate
  * DictionaryProcessor.identifyWord returned for it -- the read path's
@@ -24,7 +24,7 @@ export interface TokenReading {
   // stable sort by occurrence-level orthographic confidence) --
   // sequencing never re-derives this ranking, only chooses among what
   // it already contains.
-  candidates: readonly WordIdentification[];
+  candidates: readonly WordIdentifier[];
   // How many raw tokens (GraphProcessor.processPhraseCandidates' own
   // input) this one reading actually consumes -- 1 for an ordinary
   // word, 2+ when a multi-word closed-class entry like "in spite of"
@@ -68,6 +68,6 @@ export function candidatePartsOfSpeech(reading: TokenReading): readonly PartOfSp
 
 /** The highest-ranked candidate carrying this part of speech, or
  * undefined if this token was never seeded under it. */
-export function identificationFor(reading: TokenReading, partOfSpeech: PartOfSpeech): WordIdentification | undefined {
+export function identificationFor(reading: TokenReading, partOfSpeech: PartOfSpeech): WordIdentifier | undefined {
   return reading.candidates.find((candidate) => candidate.partOfSpeech === partOfSpeech);
 }

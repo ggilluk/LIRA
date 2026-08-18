@@ -2,17 +2,17 @@ import type { Dictionary } from "../data/dictionary";
 import { toSyntheticWord } from "../data/phrase";
 import type { Phrases } from "../data/phrases";
 import { definitionWords, type Word } from "../data/word";
-import { IdentificationSource, type WordIdentification } from "../data/word_identification";
 import { createWordLookupContext } from "../data/word_lookup_context";
 import type { AsyncDictionaryHydrator } from "./dictionary_hydrator";
 import { PartOfSpeechIdentifier } from "./part_of_speech_identifier";
+import { IdentificationSource, type WordIdentifier } from "./word_identifier";
 
 /** Resolves a raw token occurrence to zero or more candidate Words,
  * queuing background hydration when nothing in this Domain's
  * Dictionary matches yet. Never guesses a grammatical category: an
  * unresolved occurrence gets no Word at all until either the
  * seeded/previously-hydrated Dictionary or external hydration actually
- * supplies one (see WordIdentification's own docstring). Punctuation is
+ * supplies one (see WordIdentifier's own docstring). Punctuation is
  * an ordinary Word (partOfSpeech=PUNCTUATION, seeded from
  * assets/common/en/punctuation.json, WordSeeder.MANDATORY_FILES) -- it
  * resolves through the same identifyWord path as any other mandatory
@@ -47,7 +47,7 @@ export class DictionaryProcessor {
       precedingWords?: readonly string[];
       followingWords?: readonly string[];
     } = {},
-  ): readonly WordIdentification[] {
+  ): readonly WordIdentifier[] {
     const context = createWordLookupContext({
       rawText: rawTokenText.trim(),
       normalisedText: rawTokenText.trim().toLowerCase(),
@@ -97,7 +97,7 @@ export class DictionaryProcessor {
     rawTokens: readonly string[],
     startIndex: number,
     options: { sentenceIndex?: number; isSentenceStart?: boolean } = {},
-  ): { candidates: readonly WordIdentification[]; tokenSpan: number } {
+  ): { candidates: readonly WordIdentifier[]; tokenSpan: number } {
     const sentenceIndex = options.sentenceIndex ?? 0;
     const isSentenceStart = options.isSentenceStart ?? false;
     const spanBound = Math.max(this.dictionary.phraseSpanLimit, this.phraseBook.spanLimit);
@@ -133,14 +133,14 @@ export class DictionaryProcessor {
   }
 
   /** Every Phrase matching `normalisedText`, each materialised as a
-   * WordIdentification via toSyntheticWord (phrase.ts's own docstring
+   * WordIdentifier via toSyntheticWord (phrase.ts's own docstring
    * on why a fresh, one-off Word is the correct thing to hand a
    * Linguistics-facing caller here, not a Dictionary lookup of any
    * kind). No casing-evidence confidence boost the way
    * PartOfSpeechIdentifier.identifySeeded gives PROPER_NOUN/SYMBOL --
    * no real Phrase is ever seeded as either, so there's nothing for
    * casing to support. */
-  private phraseIdentifications(normalisedText: string): readonly WordIdentification[] {
+  private phraseIdentifications(normalisedText: string): readonly WordIdentifier[] {
     return this.phraseBook.lookupAll(normalisedText).map((phrase) => ({
       word: toSyntheticWord(phrase),
       partOfSpeech: phrase.partOfSpeech,

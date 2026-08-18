@@ -9,6 +9,7 @@ export { VocabularyAgent } from "./agents";
 export { AsyncDictionaryHydrator } from "./role/dictionary_hydrator";
 export { DictionaryProcessor } from "./role/dictionary_processor";
 export { ExternalDictionaryAdapter } from "./role/external_dictionary_adapter";
+export { IdentificationSource, type WordIdentifier } from "./role/word_identifier";
 export { LexicalRelationshipProcessor } from "./role/lexical_relationship_processor";
 export { PartOfSpeechIdentifier } from "./role/part_of_speech_identifier";
 export { RelationshipSeeder } from "./role/relationship_seeder";
@@ -58,6 +59,5 @@ export {
   relatedWordsOf,
   definitionWords,
 } from "./data/word";
-export { IdentificationSource, type WordIdentification } from "./data/word_identification";
 export { type WordLookupContext, createWordLookupContext } from "./data/word_lookup_context";
 export { DictionaryView } from "./ui/dictionary_view";
