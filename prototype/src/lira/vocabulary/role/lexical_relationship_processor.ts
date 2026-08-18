@@ -2,7 +2,7 @@ import type { AttributeValue } from "../data/attribute_value";
 import type { LexicalRelationship } from "../data/lexical_relationship";
 import type { LexicalRelationshipStore } from "../data/lexical_relationship_store";
 import type { LexicalRelationshipSystemPropertyTensor } from "../data/lexical_relationship_tensor";
-import type { LexicalRelationshipType } from "../data/lexical_relationship_type";
+import type { LexicalRelationshipType } from "../data/enums/lexical_relationship_type";
 import type { SourceReference } from "../data/source_reference";
 import { SystemPropertiesRef } from "../data/system_properties_ref";
 import { newUuid } from "../data/uuid";

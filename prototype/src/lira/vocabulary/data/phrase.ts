@@ -33,10 +33,10 @@
 
 import type { Code, Identifier, Text } from "../../value_objects";
 import type { LinguisticUnit } from "../../linguistics/data/linguistic_unit";
-import type { EditorialLabel } from "./editorial_label";
-import type { PartOfSpeech } from "./part_of_speech";
-import type { PhraseType } from "./phrase_type";
-import type { RegisterCode } from "./register_code";
+import type { EditorialLabel } from "./enums/editorial_label";
+import type { PartOfSpeech } from "./enums/part_of_speech";
+import type { PhraseType } from "./enums/phrase_type";
+import type { RegisterCode } from "./enums/register_code";
 import type { SourceReference } from "./source_reference";
 import { createWord, type Word } from "./word";
 import { newUuid } from "./uuid";

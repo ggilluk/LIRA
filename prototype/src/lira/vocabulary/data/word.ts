@@ -24,17 +24,17 @@ import type { Code, Identifier, Number_, Text } from "../../value_objects";
 import type { LinguisticUnit } from "../../linguistics/data/linguistic_unit";
 import type { Dictionary } from "./dictionary";
 import type { DefinitionWordReference } from "./definition_word_reference";
-import type { EditorialLabel } from "./editorial_label";
-import type { HolonymRootWord } from "./holonym_root_word";
-import type { HypernymRootWord } from "./hypernym_root_word";
-import type { InterrogativeRootWord } from "./interrogative_root_word";
+import type { EditorialLabel } from "./enums/editorial_label";
+import type { HolonymRootWord } from "./enums/holonym_root_word";
+import type { HypernymRootWord } from "./enums/hypernym_root_word";
+import type { InterrogativeRootWord } from "./enums/interrogative_root_word";
 import { LexicalRelationshipStore } from "./lexical_relationship_store";
-import { LexicalRelationshipType } from "./lexical_relationship_type";
-import { PartOfSpeech } from "./part_of_speech";
+import { LexicalRelationshipType } from "./enums/lexical_relationship_type";
+import { PartOfSpeech } from "./enums/part_of_speech";
 import type { Pronunciation } from "./pronunciation";
-import type { RegisterCode } from "./register_code";
+import type { RegisterCode } from "./enums/register_code";
 import type { SourceReference } from "./source_reference";
-import type { VectorPrimitiveRootWord } from "./vector_primitive_root_word";
+import type { VectorPrimitiveRootWord } from "./enums/vector_primitive_root_word";
 import { newUuid } from "./uuid";
 import { phraseAsWord, type Phrase } from "./phrase";
 import type { Phrases } from "./phrases";
@@ -180,7 +180,7 @@ export interface Word extends LinguisticUnit {
 
   // True only for one of the 25 words seeded from
   // assets/common/en/root_words.json -- the Interrogative/Hypernym/
-  // Holonym/Vector-Primitive root word table (data/interrogative_root_word.ts's
+  // Holonym/Vector-Primitive root word table (data/enums/interrogative_root_word.ts's
   // own docstring). Never set true by hand elsewhere; every other Word
   // defaults to false via createWord(). See DictionaryView's own "Show
   // root words" filter, the reason this flag exists at all rather than

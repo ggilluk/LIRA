@@ -1,6 +1,6 @@
 import type { ExternalWordCandidate } from "../data/external_word_candidate";
 import { combinedConfidence } from "../data/external_word_candidate";
-import { PartOfSpeech } from "../data/part_of_speech";
+import { PartOfSpeech } from "../data/enums/part_of_speech";
 import type { SourceReference } from "../data/source_reference";
 import type { WordLookupContext } from "../data/word_lookup_context";
 

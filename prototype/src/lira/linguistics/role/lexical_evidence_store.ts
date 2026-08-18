@@ -1,4 +1,4 @@
-import type { PartOfSpeech } from "../../vocabulary/data/part_of_speech";
+import type { PartOfSpeech } from "../../vocabulary/data/enums/part_of_speech";
 import type { PhraseType } from "../data/phrase_type";
 
 /** LexicalEvidenceStore: the Proposed learning phase's `w_ij` --

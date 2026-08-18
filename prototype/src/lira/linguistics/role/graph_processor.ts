@@ -1,4 +1,4 @@
-import { PartOfSpeech } from "../../vocabulary/data/part_of_speech";
+import { PartOfSpeech } from "../../vocabulary/data/enums/part_of_speech";
 import type { DictionaryProcessor } from "../../vocabulary/role/dictionary_processor";
 import type { WordIdentification } from "../../vocabulary/data/word_identification";
 import { createWord, type Word } from "../../vocabulary/data/word";

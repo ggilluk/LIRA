@@ -36,12 +36,12 @@
  * by this file. */
 
 import type { Identifier, Text } from "../../value_objects";
-import type { HolonymRootWord } from "./holonym_root_word";
-import type { HypernymRootWord } from "./hypernym_root_word";
-import type { InterrogativeRootWord } from "./interrogative_root_word";
+import type { HolonymRootWord } from "./enums/holonym_root_word";
+import type { HypernymRootWord } from "./enums/hypernym_root_word";
+import type { InterrogativeRootWord } from "./enums/interrogative_root_word";
 import type { SourceReference } from "./source_reference";
 import { newUuid } from "./uuid";
-import type { VectorPrimitiveRootWord } from "./vector_primitive_root_word";
+import type { VectorPrimitiveRootWord } from "./enums/vector_primitive_root_word";
 
 export interface Sense {
   // A per-Domain-graph-instance identity, freshly regenerated every

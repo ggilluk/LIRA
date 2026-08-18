@@ -1,4 +1,4 @@
-import type { PartOfSpeech } from "./part_of_speech";
+import type { PartOfSpeech } from "./enums/part_of_speech";
 import type { Word } from "./word";
 
 /** Represents one candidate resolution of a raw token occurrence to a

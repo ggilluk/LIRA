@@ -1,4 +1,4 @@
-import type { PartOfSpeech } from "../../vocabulary/data/part_of_speech";
+import type { PartOfSpeech } from "../../vocabulary/data/enums/part_of_speech";
 import type { Word } from "../../vocabulary/data/word";
 import type { WordIdentification } from "../../vocabulary/data/word_identification";
 import type { Clause } from "./clause";

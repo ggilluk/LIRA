@@ -27,7 +27,7 @@
  * with the main thread and the Vocabulary worker. */
 
 import { Dictionary } from "../../vocabulary/data/dictionary";
-import { PartOfSpeech } from "../../vocabulary/data/part_of_speech";
+import { PartOfSpeech } from "../../vocabulary/data/enums/part_of_speech";
 import { Phrases } from "../../vocabulary/data/phrases";
 import { AsyncDictionaryHydrator } from "../../vocabulary/role/dictionary_hydrator";
 import { DictionaryProcessor } from "../../vocabulary/role/dictionary_processor";

@@ -6,7 +6,7 @@
  * exists purely so a caller can narrow a Word to "definitely a
  * conjunction" at the type level, the same as its siblings. */
 
-import { PartOfSpeech } from "./part_of_speech";
+import { PartOfSpeech } from "./enums/part_of_speech";
 import { createWord, type Word } from "./word";
 
 export interface Conjunction extends Word {

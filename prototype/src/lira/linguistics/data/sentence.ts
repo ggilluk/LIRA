@@ -1,4 +1,4 @@
-import type { PartOfSpeech } from "../../vocabulary/data/part_of_speech";
+import type { PartOfSpeech } from "../../vocabulary/data/enums/part_of_speech";
 import type { Word } from "../../vocabulary/data/word";
 import type { GrammarConfigurator } from "../role/grammar_configurator";
 import type { ReadingContext } from "../role/reading_context";

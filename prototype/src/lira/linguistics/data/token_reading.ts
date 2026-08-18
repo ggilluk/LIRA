@@ -1,4 +1,4 @@
-import { PartOfSpeech } from "../../vocabulary/data/part_of_speech";
+import { PartOfSpeech } from "../../vocabulary/data/enums/part_of_speech";
 import type { WordIdentification } from "../../vocabulary/data/word_identification";
 
 /** One raw token occurrence together with EVERY seeded candidate

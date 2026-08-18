@@ -18,15 +18,15 @@
 
 import type { Text } from "../../value_objects";
 import type { Dictionary } from "../data/dictionary";
-import { EditorialLabel } from "../data/editorial_label";
+import { EditorialLabel } from "../data/enums/editorial_label";
 import type { LexicalRelationship } from "../data/lexical_relationship";
 import type { LexicalRelationshipStore } from "../data/lexical_relationship_store";
-import { LexicalRelationshipType, MERONYM_KIND_QUALIFIER, relationshipCategory, relationshipGroup } from "../data/lexical_relationship_type";
-import { PartOfSpeech } from "../data/part_of_speech";
+import { LexicalRelationshipType, MERONYM_KIND_QUALIFIER, relationshipCategory, relationshipGroup } from "../data/enums/lexical_relationship_type";
+import { PartOfSpeech } from "../data/enums/part_of_speech";
 import { phraseAsWord, type Phrase } from "../data/phrase";
-import { PhraseType } from "../data/phrase_type";
+import { PhraseType } from "../data/enums/phrase_type";
 import { Phrases } from "../data/phrases";
-import { RegisterCode } from "../data/register_code";
+import { RegisterCode } from "../data/enums/register_code";
 import type { Sense } from "../data/sense";
 import { Senses } from "../data/senses";
 import { definitionWords, type Word } from "../data/word";
@@ -2300,7 +2300,7 @@ function posPill(pos) {
 // never for an ordinary Word. Its own fixed colour, distinct from both
 // POS_COLORS and DOMAIN_COLORS, since phraseType is neither -- it's a
 // third, independent classification (grammatical internal structure,
-// PhraseType's own docstring, vocabulary/data/phrase_type.ts) that can
+// PhraseType's own docstring, vocabulary/data/enums/phrase_type.ts) that can
 // appear alongside a Phrase's own partOfSpeech pill in the same row.
 function phraseTypePill(phraseType) {
   return \`<span class="pill" style="background:#6E5A9E">\${titleCase(phraseType)}</span>\`;

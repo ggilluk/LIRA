@@ -1,6 +1,6 @@
 import type { DictionaryProcessor } from "../../vocabulary/role/dictionary_processor";
 import type { LexicalRelationshipStore } from "../../vocabulary/data/lexical_relationship_store";
-import type { PartOfSpeech } from "../../vocabulary/data/part_of_speech";
+import type { PartOfSpeech } from "../../vocabulary/data/enums/part_of_speech";
 import type { Document } from "../data/document";
 import type { Paragraph } from "../data/paragraph";
 import type { Sentence } from "../data/sentence";

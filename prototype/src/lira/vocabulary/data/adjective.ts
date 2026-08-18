@@ -16,7 +16,7 @@
  * to treat as an exhaustive, closed set. */
 
 import type { Text } from "../../value_objects";
-import { PartOfSpeech } from "./part_of_speech";
+import { PartOfSpeech } from "./enums/part_of_speech";
 import { createWord, type Word } from "./word";
 
 // WordNet's own three syntactic-position restrictions for an adjective

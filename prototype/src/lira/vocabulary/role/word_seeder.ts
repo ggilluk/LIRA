@@ -33,23 +33,23 @@ import { createDeterminer } from "../data/determiner";
 import { createInterjection } from "../data/interjection";
 import { createNoun } from "../data/noun";
 import { createNumeral } from "../data/numeral";
-import { PartOfSpeech } from "../data/part_of_speech";
+import { PartOfSpeech } from "../data/enums/part_of_speech";
 import { createParticle } from "../data/particle";
 import { createPreposition } from "../data/preposition";
 import { createPronoun } from "../data/pronoun";
-import { RegisterCode } from "../data/register_code";
-import { EditorialLabel } from "../data/editorial_label";
-import { HolonymRootWord } from "../data/holonym_root_word";
-import { HypernymRootWord } from "../data/hypernym_root_word";
-import { InterrogativeRootWord } from "../data/interrogative_root_word";
-import { VectorPrimitiveRootWord } from "../data/vector_primitive_root_word";
+import { RegisterCode } from "../data/enums/register_code";
+import { EditorialLabel } from "../data/enums/editorial_label";
+import { HolonymRootWord } from "../data/enums/holonym_root_word";
+import { HypernymRootWord } from "../data/enums/hypernym_root_word";
+import { InterrogativeRootWord } from "../data/enums/interrogative_root_word";
+import { VectorPrimitiveRootWord } from "../data/enums/vector_primitive_root_word";
 import type { Text } from "../../value_objects";
 import type { AttributeValue } from "../data/attribute_value";
 import type { Dictionary } from "../data/dictionary";
 import { LexicalRelationshipStore } from "../data/lexical_relationship_store";
-import { LexicalRelationshipType, MERONYM_KIND_QUALIFIER, relationshipGroup, type MeronymKind } from "../data/lexical_relationship_type";
+import { LexicalRelationshipType, MERONYM_KIND_QUALIFIER, relationshipGroup, type MeronymKind } from "../data/enums/lexical_relationship_type";
 import { copyPhraseWithFreshUuid, createPhrase, type Phrase } from "../data/phrase";
-import { PhraseType } from "../data/phrase_type";
+import { PhraseType } from "../data/enums/phrase_type";
 import type { Phrases } from "../data/phrases";
 import { createSense, type Sense } from "../data/sense";
 import type { Senses } from "../data/senses";
@@ -114,7 +114,7 @@ export const MANDATORY_FILES = [
 //
 // root_words.json loads first -- the first (NOUN) words this cache
 // seeds under the new Interrogative/Hypernym/Holonym/Vector-Primitive
-// root word table (data/interrogative_root_word.ts's own docstring).
+// root word table (data/enums/interrogative_root_word.ts's own docstring).
 // Several of its 25 entries are deliberate homographs of an existing
 // NOUN sense seeded elsewhere (e.g. "operation" already exists in
 // promoted_words.json) -- each root_words.json entry carries its own

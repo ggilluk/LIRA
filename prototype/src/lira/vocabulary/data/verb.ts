@@ -21,7 +21,7 @@
  * synset's other member) never gets frame 2. */
 
 import type { Text } from "../../value_objects";
-import { PartOfSpeech } from "./part_of_speech";
+import { PartOfSpeech } from "./enums/part_of_speech";
 import { createWord, type Word } from "./word";
 
 export interface Verb extends Word {

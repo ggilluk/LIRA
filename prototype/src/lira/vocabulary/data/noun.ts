@@ -13,7 +13,7 @@
  * seeding/curation pass populates them, same as `isCountable`. */
 
 import type { Text } from "../../value_objects";
-import { PartOfSpeech } from "./part_of_speech";
+import { PartOfSpeech } from "./enums/part_of_speech";
 import { createWord, type Word } from "./word";
 
 export interface Noun extends Word {

@@ -1,5 +1,5 @@
 import type { Code, Text } from "../../value_objects";
-import type { PartOfSpeech } from "./part_of_speech";
+import type { PartOfSpeech } from "./enums/part_of_speech";
 import type { SourceReference } from "./source_reference";
 
 /** One externally-sourced grammatical-category candidate for a lexical

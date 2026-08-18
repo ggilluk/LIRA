@@ -33,7 +33,7 @@
  * exactly that reason). */
 
 import { AdjectivePosition } from "../data/adjective";
-import { PartOfSpeech } from "../data/part_of_speech";
+import { PartOfSpeech } from "../data/enums/part_of_speech";
 
 /** One relation a synset carries to another synset (or, for a lexical
  * -- word-specific, not whole-synset -- pointer, to one particular word

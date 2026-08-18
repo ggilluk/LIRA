@@ -10,7 +10,7 @@
  * siblings, ready for a value once one is available. */
 
 import type { Text } from "../../value_objects";
-import { PartOfSpeech } from "./part_of_speech";
+import { PartOfSpeech } from "./enums/part_of_speech";
 import { createWord, type Word } from "./word";
 
 export interface Adverb extends Word {

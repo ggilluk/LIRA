@@ -33,7 +33,7 @@
  * can collide with DictionaryView's own fragment classes mounted
  * alongside it. */
 
-import { PartOfSpeech } from "../../vocabulary/data/part_of_speech";
+import { PartOfSpeech } from "../../vocabulary/data/enums/part_of_speech";
 import type { LinguisticsWorkerClient } from "../role/linguistics_worker_client";
 import type {
   JsonBlock,

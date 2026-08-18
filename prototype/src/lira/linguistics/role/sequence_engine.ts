@@ -1,4 +1,4 @@
-import type { PartOfSpeech } from "../../vocabulary/data/part_of_speech";
+import type { PartOfSpeech } from "../../vocabulary/data/enums/part_of_speech";
 import { LinguisticScope } from "../data/linguistic_scope";
 import { PhraseType } from "../data/phrase_type";
 import { ObligationKind, type SequencingObligation } from "../data/sequencing_obligation";

@@ -18,22 +18,22 @@ export { loadWordNetSynsets, type WordNetSynset } from "./role/wordnet_loader";
 export type { AttributeValue } from "./data/attribute_value";
 export { type DefinitionWordReference, isResolved } from "./data/definition_word_reference";
 export { Dictionary } from "./data/dictionary";
-export { EditorialLabel } from "./data/editorial_label";
+export { EditorialLabel } from "./data/enums/editorial_label";
 export { type ExternalWordCandidate, combinedConfidence } from "./data/external_word_candidate";
-export { HolonymRootWord } from "./data/holonym_root_word";
-export { HypernymRootWord } from "./data/hypernym_root_word";
-export { InterrogativeRootWord } from "./data/interrogative_root_word";
+export { HolonymRootWord } from "./data/enums/holonym_root_word";
+export { HypernymRootWord } from "./data/enums/hypernym_root_word";
+export { InterrogativeRootWord } from "./data/enums/interrogative_root_word";
 export { VocabularyLayer } from "./data/layer";
 export type { LexicalRelationship } from "./data/lexical_relationship";
 export { LexicalRelationshipStore } from "./data/lexical_relationship_store";
 export { LexicalRelationshipSystemPropertyTensor } from "./data/lexical_relationship_tensor";
-export { LexicalRelationshipType, relationshipCategory, relationshipGroup, relationshipItem } from "./data/lexical_relationship_type";
-export { PartOfSpeech } from "./data/part_of_speech";
+export { LexicalRelationshipType, relationshipCategory, relationshipGroup, relationshipItem } from "./data/enums/lexical_relationship_type";
+export { PartOfSpeech } from "./data/enums/part_of_speech";
 export type { Pronunciation } from "./data/pronunciation";
-export { RegisterCode } from "./data/register_code";
+export { RegisterCode } from "./data/enums/register_code";
 export type { SourceReference } from "./data/source_reference";
 export { SystemPropertiesRef } from "./data/system_properties_ref";
-export { VectorPrimitiveRootWord } from "./data/vector_primitive_root_word";
+export { VectorPrimitiveRootWord } from "./data/enums/vector_primitive_root_word";
 export {
   type Word,
   type WordInit,

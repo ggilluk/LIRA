@@ -12,8 +12,8 @@
 
 import type { Dictionary } from "../data/dictionary";
 import { LexicalRelationshipStore } from "../data/lexical_relationship_store";
-import { LexicalRelationshipType } from "../data/lexical_relationship_type";
-import { PartOfSpeech } from "../data/part_of_speech";
+import { LexicalRelationshipType } from "../data/enums/lexical_relationship_type";
+import { PartOfSpeech } from "../data/enums/part_of_speech";
 import type { Phrases } from "../data/phrases";
 import type { SourceReference } from "../data/source_reference";
 import type { Word } from "../data/word";

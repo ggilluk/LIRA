@@ -1,4 +1,4 @@
-import { PartOfSpeech } from "../../vocabulary/data/part_of_speech";
+import { PartOfSpeech } from "../../vocabulary/data/enums/part_of_speech";
 import { ClauseType } from "../data/clause_type";
 import { LinguisticScope } from "../data/linguistic_scope";
 import { ObligationKind } from "../data/sequencing_obligation";
