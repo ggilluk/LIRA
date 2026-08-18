@@ -148,6 +148,13 @@ export interface PhraseRecord {
   lexical_form: string;
   text: string;
   pos: string;
+  // The enum's own key string (e.g. "PREPOSITIONAL_PHRASE"), same
+  // PhraseType[...] convention WordRecord.phrase_type already uses --
+  // undefined for a Phrase whose own phraseType is itself undefined
+  // (every Common Vocabulary Cache closed-class Phrase, and any
+  // WordNet-seeded one classifyPhraseType() couldn't classify,
+  // word_seeder.ts).
+  phrase_type?: string;
   definition: string;
   gloss: string;
   register_codes: string[];
@@ -623,6 +630,7 @@ export class DictionaryView {
       lexical_form: phrase.lexicalForm?.value ?? phrase.text,
       text: phrase.text,
       pos: PartOfSpeech[phrase.partOfSpeech],
+      phrase_type: this.phraseTypeLabel(phrase),
       definition: senseFields.definition?.value ?? "",
       gloss: senseFields.gloss?.value ?? "",
       register_codes: phrase.registerCodes.map((code) => RegisterCode[code]),
@@ -2070,6 +2078,7 @@ footer {
             <tr>
               <th data-sort="lexical_form">Phrase</th>
               <th data-sort="pos">Part of speech</th>
+              <th data-sort="phrase_type">Phrase type</th>
               <th data-sort="definition">Definition</th>
               <th>Labels</th>
             </tr>
@@ -2669,6 +2678,7 @@ function phraseRowHtml(p) {
     <tr data-word-id="\${p.id}" class="\${p.id === state.selectedWordId ? 'selected' : ''}">
       <td><span class="word-form">\${p.lexical_form}</span>\${p.is_common ? ' <span class="badge-common">common</span>' : ''}</td>
       <td>\${posPill(p.pos)}</td>
+      <td>\${p.phrase_type ? phraseTypePill(p.phrase_type) : '<span style="opacity:.5">&mdash;</span>'}</td>
       <td class="definition">\${p.definition || p.gloss || '<span style="opacity:.5">&mdash;</span>'}</td>
       <td>\${p.register_codes.concat(p.editorial_labels).map(t => \`<span class="tag">\${titleCase(t)}</span>\`).join('')}</td>
     </tr>\`;
@@ -2720,7 +2730,7 @@ function renderPhrasesOverCapacity() {
     document.getElementById("phrases-note").style.display = "none";
     document.getElementById("phrases-empty").style.display = "none";
     document.getElementById("phrases-body").innerHTML =
-      '<tr><td colspan="4" style="text-align:center;padding:24px;color:var(--ink-muted,#5B6660)">Searching…</td></tr>';
+      '<tr><td colspan="5" style="text-align:center;padding:24px;color:var(--ink-muted,#5B6660)">Searching…</td></tr>';
     document.dispatchEvent(new CustomEvent("lira-search-phrases", {
       detail: {
         requestId,

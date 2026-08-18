@@ -834,6 +834,12 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     const toyPoodleSearch = view.searchWords({ wordId: toyPoodle!.uuid.value });
     expect(toyPoodleSearch.words[0].phrase_type).toBe("NOUN_PHRASE");
 
+    // The Phrases tab's own row list (searchPhrases(), the over-capacity
+    // counterpart to phraseRecords()' embedded array) carries phrase_type
+    // too, not just the detail-panel's own wordId path above.
+    const atFaultRow = view.searchPhrases({ word: "at fault" }).phrases.find((p) => p.id === atFault!.uuid.value);
+    expect(atFaultRow?.phrase_type).toBe("PREPOSITIONAL_PHRASE");
+
     const forToyPoodle = view.searchRelationships({ wordId: toyPoodle!.uuid.value });
     expect(forToyPoodle.totalMatches).toBeGreaterThan(0);
     const hypernymRow = forToyPoodle.relationships.find((r) => r.kind === "HYPERNYM");
