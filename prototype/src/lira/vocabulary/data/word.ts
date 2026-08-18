@@ -519,3 +519,78 @@ export function definitionWords(word: Word, dictionary: Dictionary): readonly De
   }
   return references;
 }
+
+// -- Word Form to Part of Speech Matrix attribute validation (data/word_form_part_of_speech_matrix.md) --
+// Each POS subtype (noun.ts, verb.ts, ...) owns its own row of the
+// matrix's String Pattern column and its own validate<Class>() -- there
+// is deliberately no single file holding every class's patterns. What's
+// shared here is only the generic mechanism every one of those
+// validate<Class>() functions reuses: parsing a `Text.formats` entry
+// into a real RegExp, and checking one field's Text against one known
+// pattern set. This lives on Word, not split out further, because every
+// POS subtype file already imports from "./word" for `createWord`/`Word`
+// itself, so this adds no new cross-file dependency.
+
+/** One validation failure from validateFormText/validate<Class> below --
+ * `field` is the plain field name (e.g. "pluralNumberForm"), `reason`
+ * says which of the two ways a claimed Text.formats entry failed. */
+export interface WordFormIssue {
+  field: string;
+  reason: string;
+}
+
+/** Parses one `Text.formats` entry ("/s$/i") into a real RegExp --
+ * splits on the *last* "/" as the flags delimiter (none of any POS
+ * class's own word-form patterns ever contain a literal "/" in their
+ * body, so this is unambiguous for every pattern this codebase actually
+ * defines). Throws on a malformed pattern string (no leading "/") --
+ * deliberately, since a caller passing one is a programming error, not
+ * a validation outcome to report gracefully the way an unrecognised
+ * *pattern* (validateFormText's own concern) is. */
+export function parseFormatPattern(pattern: string): RegExp {
+  if (!pattern.startsWith("/")) throw new Error(`not a "/pattern/flags"-shaped format string: '${pattern}'`);
+  const lastSlash = pattern.lastIndexOf("/");
+  return new RegExp(pattern.slice(1, lastSlash), pattern.slice(lastSlash + 1));
+}
+
+/** Checks one Text value's own `formats` (if set at all -- unset is
+ * always valid, the same "no claim made" reading Text.formats's own
+ * docstring gives it) against `known`, the calling POS class's own
+ * recognised String Patterns for this one field (transcribed onto that
+ * class's own file, e.g. NOUN_FORM_PATTERNS in noun.ts, straight from
+ * the matrix's String Pattern column). Two distinct ways to fail: a
+ * claimed format isn't one of the patterns this (class, field) pair
+ * actually recognises at all (a typo, a pattern copied from the wrong
+ * field, or a field the matrix marks fully N/A/lexical, whose own array
+ * is always empty); or the claimed format IS recognised, but
+ * `text.value` itself doesn't actually match it (stale data -- the
+ * value changed after `formats` was set, or the two were never
+ * consistent to begin with). */
+export function validateFormText(field: string, text: Text, known: readonly string[]): WordFormIssue | undefined {
+  if (text.formats === undefined) return undefined;
+  for (const claimed of text.formats) {
+    if (!known.includes(claimed)) {
+      return {
+        field,
+        reason: `'${claimed}' is not a recognised String Pattern for '${field}' (word_form_part_of_speech_matrix.md)`,
+      };
+    }
+    if (!parseFormatPattern(claimed).test(text.value)) {
+      return { field, reason: `'${text.value}' does not match its own claimed format '${claimed}'` };
+    }
+  }
+  return undefined;
+}
+
+/** Validates the one *_Form field every POS subtype shares via Word
+ * itself: `baseLemmaCanonicalForm`. Fully lexical (that field's own
+ * docstring above) -- there is no derivable String Pattern for it at
+ * all, so this reports an issue whenever a populated value's own
+ * `formats` is set to anything, and nothing otherwise. Every POS
+ * subtype's own validate<Class>() (noun.ts, verb.ts, ...) calls this
+ * first, then checks its own additional *_Form fields on top. */
+export function validateWordFormAttributes(word: Word): readonly WordFormIssue[] {
+  if (word.baseLemmaCanonicalForm === undefined) return [];
+  const issue = validateFormText("baseLemmaCanonicalForm", word.baseLemmaCanonicalForm, []);
+  return issue === undefined ? [] : [issue];
+}

@@ -22,7 +22,7 @@
 
 import type { Text } from "../../value_objects";
 import { PartOfSpeech } from "./enums/part_of_speech";
-import { createWord, type Word } from "./word";
+import { createWord, validateFormText, validateWordFormAttributes, type Word, type WordFormIssue } from "./word";
 
 export interface Verb extends Word {
   partOfSpeech: PartOfSpeech.VERB;
@@ -107,6 +107,48 @@ export function createVerb(init: VerbInit): Verb {
 
 export function isVerb(word: Word): word is Verb {
   return word.partOfSpeech === PartOfSpeech.VERB;
+}
+
+// Verb's own row of the matrix's String Pattern column (data/word_form_part_of_speech_matrix.md),
+// scoped to exactly the rules that apply to Verb specifically -- see
+// each field's own docstring above for which numbered rule(s) these are
+// and why the rest of that row's rules (irregular, curated-only, or
+// another class's own) are simply absent here.
+export const VERB_FORM_PATTERNS: Readonly<Record<string, readonly string[]>> = {
+  presentTenseForm: [],
+  pastTenseForm: ["/ed$/i", "/ied$/i", "/([bcdfghjklmnpqrstvwxyz])\\1ed$/i"],
+  thirdPersonSingularPresentForm: ["/s$/i", "/es$/i", "/ies$/i"],
+  presentParticipleForm: ["/ing$/i", "/([bcdfghjklmnpqrstvwxyz])\\1ing$/i", "/ying$/i"],
+  pastParticipleForm: ["/ed$/i", "/ied$/i", "/(en|n)$/i"],
+  bareInfinitiveForm: [],
+  firstPersonForm: [],
+  secondPersonForm: [],
+  thirdPersonForm: [],
+};
+
+/** Validates every *_Form field this Verb carries -- its own row above,
+ * plus baseLemmaCanonicalForm via Word's own validateWordFormAttributes
+ * -- against VERB_FORM_PATTERNS. Returns every issue found, not just
+ * the first; empty means every populated field is internally consistent
+ * with the matrix, not that every field is populated (undefined is
+ * never an issue, validateFormText's own docstring). */
+export function validateVerb(verb: Verb): readonly WordFormIssue[] {
+  const issues: WordFormIssue[] = [...validateWordFormAttributes(verb)];
+  const check = (field: keyof typeof VERB_FORM_PATTERNS, text: Text | undefined): void => {
+    if (text === undefined) return;
+    const issue = validateFormText(field, text, VERB_FORM_PATTERNS[field]);
+    if (issue !== undefined) issues.push(issue);
+  };
+  check("presentTenseForm", verb.presentTenseForm);
+  check("pastTenseForm", verb.pastTenseForm);
+  check("thirdPersonSingularPresentForm", verb.thirdPersonSingularPresentForm);
+  check("presentParticipleForm", verb.presentParticipleForm);
+  check("pastParticipleForm", verb.pastParticipleForm);
+  check("bareInfinitiveForm", verb.bareInfinitiveForm);
+  check("firstPersonForm", verb.firstPersonForm);
+  check("secondPersonForm", verb.secondPersonForm);
+  check("thirdPersonForm", verb.thirdPersonForm);
+  return issues;
 }
 
 // WordNet 3.1's own fixed, documented table of 35 generic verb sentence

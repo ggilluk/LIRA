@@ -17,7 +17,7 @@
 
 import type { Text } from "../../value_objects";
 import { PartOfSpeech } from "./enums/part_of_speech";
-import { createWord, type Word } from "./word";
+import { createWord, validateFormText, validateWordFormAttributes, type Word, type WordFormIssue } from "./word";
 
 // WordNet's own three syntactic-position restrictions for an adjective
 // sense -- undefined on Adjective.syntacticPosition means unrestricted
@@ -80,4 +80,35 @@ export function createAdjective(init: AdjectiveInit): Adjective {
 
 export function isAdjective(word: Word): word is Adjective {
   return word.partOfSpeech === PartOfSpeech.ADJECTIVE;
+}
+
+// Adjective's own row of the matrix's String Pattern column (data/word_form_part_of_speech_matrix.md),
+// scoped to exactly the rules that apply to Adjective specifically --
+// see each field's own docstring above for which numbered rule(s) these
+// are and why the rest of that row's rules (irregular, curated-only, or
+// another class's own) are simply absent here.
+export const ADJECTIVE_FORM_PATTERNS: Readonly<Record<string, readonly string[]>> = {
+  positiveDegreeForm: [],
+  comparativeDegreeForm: ["/er$/i", "/ier$/i", "/([bcdfghjklmnpqrstvwxyz])\\1er$/i"],
+  superlativeDegreeForm: ["/est$/i", "/iest$/i", "/([bcdfghjklmnpqrstvwxyz])\\1est$/i"],
+};
+
+/** Validates every *_Form field this Adjective carries -- its own row
+ * above, plus baseLemmaCanonicalForm via Word's own
+ * validateWordFormAttributes -- against ADJECTIVE_FORM_PATTERNS.
+ * Returns every issue found, not just the first; empty means every
+ * populated field is internally consistent with the matrix, not that
+ * every field is populated (undefined is never an issue,
+ * validateFormText's own docstring). */
+export function validateAdjective(adjective: Adjective): readonly WordFormIssue[] {
+  const issues: WordFormIssue[] = [...validateWordFormAttributes(adjective)];
+  const check = (field: keyof typeof ADJECTIVE_FORM_PATTERNS, text: Text | undefined): void => {
+    if (text === undefined) return;
+    const issue = validateFormText(field, text, ADJECTIVE_FORM_PATTERNS[field]);
+    if (issue !== undefined) issues.push(issue);
+  };
+  check("positiveDegreeForm", adjective.positiveDegreeForm);
+  check("comparativeDegreeForm", adjective.comparativeDegreeForm);
+  check("superlativeDegreeForm", adjective.superlativeDegreeForm);
+  return issues;
 }

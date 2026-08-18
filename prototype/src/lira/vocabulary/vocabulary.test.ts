@@ -4,20 +4,19 @@ import { LexicalRelationshipStore } from "./data/lexical_relationship_store";
 import { LexicalRelationshipSystemPropertyTensor } from "./data/lexical_relationship_tensor";
 import { LexicalRelationshipType } from "./data/enums/lexical_relationship_type";
 import { PartOfSpeech } from "./data/enums/part_of_speech";
-import { antonyms, createWord, holonyms, hypernyms, hyponyms, meronyms, synonyms } from "./data/word";
-import { AdjectivePosition, createAdjective, isAdjective } from "./data/adjective";
-import { createAdverb, isAdverb } from "./data/adverb";
+import { antonyms, createWord, holonyms, hypernyms, hyponyms, meronyms, synonyms, validateFormText, validateWordFormAttributes } from "./data/word";
+import { AdjectivePosition, createAdjective, isAdjective, validateAdjective } from "./data/adjective";
+import { createAdverb, isAdverb, validateAdverb } from "./data/adverb";
 import { isConjunction } from "./data/conjunction";
-import { createDeterminer, isDeterminer } from "./data/determiner";
+import { createDeterminer, isDeterminer, validateDeterminer } from "./data/determiner";
 import { HypernymRootWord } from "./data/enums/hypernym_root_word";
 import { isInterjection } from "./data/interjection";
-import { createNoun, isNoun } from "./data/noun";
+import { NOUN_FORM_PATTERNS, createNoun, isNoun, validateNoun } from "./data/noun";
 import { isNumeral } from "./data/numeral";
 import { isParticle } from "./data/particle";
 import { isPreposition } from "./data/preposition";
-import { createPronoun, isPronoun } from "./data/pronoun";
-import { createVerb, isVerb } from "./data/verb";
-import { validateWordFormAttributes, validateWordFormText } from "./data/word_form_patterns";
+import { PRONOUN_FORM_PATTERNS, createPronoun, isPronoun, validatePronoun } from "./data/pronoun";
+import { VERB_FORM_PATTERNS, createVerb, isVerb, validateVerb } from "./data/verb";
 import { createPhrase } from "./data/phrase";
 import { Phrases } from "./data/phrases";
 import { PHRASE_TYPE_DETAILS, PhraseType } from "./data/enums/phrase_type";
@@ -107,54 +106,55 @@ describe("classifyPhraseType", () => {
   });
 });
 
-describe("validateWordFormText", () => {
+describe("validateFormText (word.ts) -- the mechanism every POS class's own validate<Class>() reuses", () => {
   it("treats an unset formats as always valid -- no claim made, nothing to check", () => {
-    expect(validateWordFormText("Noun.pluralNumberForm", { value: "dogs" })).toBeUndefined();
+    expect(validateFormText("pluralNumberForm", { value: "dogs" }, NOUN_FORM_PATTERNS.pluralNumberForm)).toBeUndefined();
   });
 
   it("accepts a recognised pattern that actually matches the value", () => {
-    expect(validateWordFormText("Noun.pluralNumberForm", { value: "dogs", formats: ["/s$/i"] })).toBeUndefined();
+    expect(
+      validateFormText("pluralNumberForm", { value: "dogs", formats: ["/s$/i"] }, NOUN_FORM_PATTERNS.pluralNumberForm),
+    ).toBeUndefined();
   });
 
   it("flags a recognised pattern that does not match the value", () => {
-    const issue = validateWordFormText("Noun.pluralNumberForm", { value: "dog", formats: ["/s$/i"] });
+    const issue = validateFormText("pluralNumberForm", { value: "dog", formats: ["/s$/i"] }, NOUN_FORM_PATTERNS.pluralNumberForm);
     expect(issue?.reason).toContain("does not match its own claimed format");
   });
 
   it("flags a format string that isn't a recognised String Pattern for that field", () => {
     // /ed$/i is a real pattern -- just not one of Noun.pluralNumberForm's own.
-    const issue = validateWordFormText("Noun.pluralNumberForm", { value: "walked", formats: ["/ed$/i"] });
+    const issue = validateFormText("pluralNumberForm", { value: "walked", formats: ["/ed$/i"] }, NOUN_FORM_PATTERNS.pluralNumberForm);
     expect(issue?.reason).toContain("is not a recognised String Pattern");
   });
 
   it("flags any claimed format on a field the matrix marks fully N/A (empty pattern array)", () => {
-    const issue = validateWordFormText("Word.baseLemmaCanonicalForm", { value: "dog", formats: ["/s$/i"] });
+    const issue = validateFormText("baseLemmaCanonicalForm", { value: "dog", formats: ["/s$/i"] }, []);
     expect(issue?.reason).toContain("is not a recognised String Pattern");
-  });
-
-  it("flags an entirely unknown (class, field) key", () => {
-    const issue = validateWordFormText("Noun.notARealField", { value: "dog", formats: ["/s$/i"] });
-    expect(issue?.reason).toContain("no word-form patterns are registered");
   });
 
   it("scopes patterns per (class, field), not just per field name -- Noun's own apostrophe rule is not valid on Pronoun's identically-named field", () => {
     // Noun.possessiveCaseForm genuinely accepts this (the apostrophe rule).
-    expect(validateWordFormText("Noun.possessiveCaseForm", { value: "dog's", formats: ["/'s$/i"] })).toBeUndefined();
+    expect(
+      validateFormText("possessiveCaseForm", { value: "dog's", formats: ["/'s$/i"] }, NOUN_FORM_PATTERNS.possessiveCaseForm),
+    ).toBeUndefined();
     // Pronoun.possessiveCaseForm only recognises the closed fixed-word
     // lookup (rule #3) -- the apostrophe rule is Noun's own case, not
     // Pronoun's (pronoun.ts's own docstring).
-    const issue = validateWordFormText("Pronoun.possessiveCaseForm", { value: "dog's", formats: ["/'s$/i"] });
+    const issue = validateFormText("possessiveCaseForm", { value: "dog's", formats: ["/'s$/i"] }, PRONOUN_FORM_PATTERNS.possessiveCaseForm);
     expect(issue?.reason).toContain("is not a recognised String Pattern");
   });
 
   it("recognises the doubled-final-consonant pattern (Past Tense Form rule #4)", () => {
-    expect(validateWordFormText("Verb.pastTenseForm", { value: "stopped", formats: ["/([bcdfghjklmnpqrstvwxyz])\\1ed$/i"] })).toBeUndefined();
+    expect(
+      validateFormText("pastTenseForm", { value: "stopped", formats: ["/([bcdfghjklmnpqrstvwxyz])\\1ed$/i"] }, VERB_FORM_PATTERNS.pastTenseForm),
+    ).toBeUndefined();
   });
 });
 
-describe("validateWordFormAttributes", () => {
+describe("validate<Class>() -- each POS class's own attribute validation", () => {
   it("returns no issues for a Word with nothing populated", () => {
-    expect(validateWordFormAttributes(createNoun({ text: "dog" }))).toEqual([]);
+    expect(validateNoun(createNoun({ text: "dog" }))).toEqual([]);
   });
 
   it("returns no issues when every populated field's formats are internally consistent", () => {
@@ -163,7 +163,7 @@ describe("validateWordFormAttributes", () => {
       pluralNumberForm: { value: "dogs", formats: ["/s$/i"] },
       possessiveCaseForm: { value: "dog's", formats: ["/'s$/i"] },
     });
-    expect(validateWordFormAttributes(dog)).toEqual([]);
+    expect(validateNoun(dog)).toEqual([]);
   });
 
   it("collects every issue found, not just the first", () => {
@@ -172,45 +172,46 @@ describe("validateWordFormAttributes", () => {
       pluralNumberForm: { value: "dog", formats: ["/s$/i"] }, // value doesn't match
       possessiveCaseForm: { value: "dog's", formats: ["/self$/i"] }, // unrecognised pattern for this field
     });
-    const issues = validateWordFormAttributes(dog);
+    const issues = validateNoun(dog);
     expect(issues).toHaveLength(2);
-    expect(issues.map((i) => i.field)).toEqual(["Noun.pluralNumberForm", "Noun.possessiveCaseForm"]);
+    expect(issues.map((i) => i.field)).toEqual(["pluralNumberForm", "possessiveCaseForm"]);
   });
 
   it("checks a Verb's own fields, including the fully-regex-derivable Present Participle Form", () => {
     const run = createVerb({ text: "run", presentParticipleForm: { value: "running", formats: ["/([bcdfghjklmnpqrstvwxyz])\\1ing$/i"] } });
-    expect(validateWordFormAttributes(run)).toEqual([]);
+    expect(validateVerb(run)).toEqual([]);
 
     const badRun = createVerb({ text: "run", presentParticipleForm: { value: "runing", formats: ["/([bcdfghjklmnpqrstvwxyz])\\1ing$/i"] } });
-    expect(validateWordFormAttributes(badRun)).toHaveLength(1);
+    expect(validateVerb(badRun)).toHaveLength(1);
   });
 
   it("checks an Adjective's degree forms", () => {
     const big = createAdjective({ text: "big", comparativeDegreeForm: { value: "bigger", formats: ["/([bcdfghjklmnpqrstvwxyz])\\1er$/i"] } });
-    expect(validateWordFormAttributes(big)).toEqual([]);
+    expect(validateAdjective(big)).toEqual([]);
   });
 
   it("checks a Pronoun's own closed fixed-word-lookup fields", () => {
     const she = createPronoun({ text: "she", subjectiveCaseForm: { value: "she", formats: ["/^(I|we|you|he|she|it|they)$/i"] } });
-    expect(validateWordFormAttributes(she)).toEqual([]);
+    expect(validatePronoun(she)).toEqual([]);
 
     const badShe = createPronoun({ text: "she", subjectiveCaseForm: { value: "her", formats: ["/^(I|we|you|he|she|it|they)$/i"] } });
-    expect(validateWordFormAttributes(badShe)).toHaveLength(1);
+    expect(validatePronoun(badShe)).toHaveLength(1);
   });
 
   it("checks a Determiner's own possessive field, scoped to only the fixed-word rule", () => {
     const their = createDeterminer({ text: "their", possessiveCaseForm: { value: "their", formats: ["/^(my|mine|your|yours|his|her|hers|its|our|ours|their|theirs)$/i"] } });
-    expect(validateWordFormAttributes(their)).toEqual([]);
+    expect(validateDeterminer(their)).toEqual([]);
   });
 
-  it("checks Word.baseLemmaCanonicalForm regardless of POS subtype", () => {
+  it("checks Word.baseLemmaCanonicalForm regardless of POS subtype, via validateWordFormAttributes shared through every validate<Class>()", () => {
     const dog = createNoun({ text: "dog", baseLemmaCanonicalForm: { value: "dog", formats: ["/s$/i"] } });
     expect(validateWordFormAttributes(dog)).toHaveLength(1);
+    expect(validateNoun(dog)).toHaveLength(1);
   });
 
   it("checks an Adverb's degree forms the same way as Adjective's", () => {
     const fast = createAdverb({ text: "fast", superlativeDegreeForm: { value: "fastest", formats: ["/est$/i"] } });
-    expect(validateWordFormAttributes(fast)).toEqual([]);
+    expect(validateAdverb(fast)).toEqual([]);
   });
 });
 
