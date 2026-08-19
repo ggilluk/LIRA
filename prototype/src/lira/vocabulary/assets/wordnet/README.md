@@ -11,13 +11,19 @@ hypernym, meronym, antonym, and the rest of WordNet's pointer symbol
 set) every other `LexicalRelationship` kind WordNet expresses between
 two synsets or two specific words within them.
 
-`dict/index.{noun,verb,adj,adv,sense}` are bundled for
-provenance/completeness but still not read by any code path --
-`wordnet_loader.ts` derives everything it needs (a synset's own member
-lemmas, gloss, and pointer records) directly from the `data.*` files;
-the index files' own reverse lemma -> synset lookup and sense-frequency
-data (which sense of a polysemous word is used most often) have no LIRA
-counterpart to seed yet.
+`dict/index.{noun,verb,adj,adv}` are bundled for provenance/completeness
+but still not read by any code path -- `wordnet_loader.ts` derives
+everything it needs (a synset's own member lemmas, gloss, and pointer
+records) directly from the `data.*` files; the index files' own reverse
+lemma -> synset lookup has no LIRA counterpart to seed yet.
+
+`dict/index.sense` **is** read, separately from the four above --
+`wordnet_loader.ts`'s own `loadSenseFrequencies()` sums its `tag_cnt`
+column (how often a sense_key was tagged in WordNet's own SemCor
+semantic concordance corpus) per synset, seeding `Sense.senseFrequency`
+(`data/sense.ts`) and, via `WordSeeder.seedWordNet`'s own
+`orderSensesByFrequency`, the order of a polysemous Word/Phrase's own
+`senseIds` -- see those two docstrings for the full mechanism.
 
 **Source:** requested as `https://wordnetcode.princeton.edu/wn3.1.dict.tar.gz`,
 but that host is blocked by this sandbox's outbound network policy.

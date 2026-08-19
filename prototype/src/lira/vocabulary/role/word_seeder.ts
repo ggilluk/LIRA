@@ -43,7 +43,7 @@ import { HolonymRootWord } from "../data/enums/holonym_root_word";
 import { HypernymRootWord } from "../data/enums/hypernym_root_word";
 import { InterrogativeRootWord } from "../data/enums/interrogative_root_word";
 import { VectorPrimitiveRootWord } from "../data/enums/vector_primitive_root_word";
-import type { Text } from "../../value_objects";
+import type { Identifier, Text } from "../../value_objects";
 import type { AttributeValue } from "../data/attribute_value";
 import type { Dictionary } from "../data/dictionary";
 import { LexicalRelationshipStore } from "../data/lexical_relationship_store";
@@ -1049,6 +1049,7 @@ export class WordSeeder {
           usageNotes: synset.examples.map((example) => ({ value: example })),
           isCommon: true,
           sourceReferences: [WORDNET_SOURCE_REFERENCE],
+          senseFrequency: synset.senseFrequency,
         });
         senseStore.append(sense);
         sensesSeeded += 1;
@@ -1146,6 +1147,22 @@ export class WordSeeder {
     // this.linkPhraseWords()'s own docstring on why this can't happen
     // inline, above.
     for (const phrase of newPhrases) this.linkPhraseWords(phrase, dictionary);
+
+    // senseIds accumulates in whatever order pass 1's own synset loop
+    // above happened to visit each one -- byte-offset order within a
+    // dict/data.* file, not a meaningful ordering (Word.senseIds's own
+    // docstring on why "first-seeded" isn't the same thing as "most
+    // representative"). Now that every Word/Phrase's own full senseIds
+    // list is final, this reorders each one by real usage centrality --
+    // Sense.senseFrequency, highest first (that field's own docstring) --
+    // and keeps synsetId in sync with the new senseIds[0] so both still
+    // name the same "primary sense" (Word.synsetId's own documented
+    // invariant). Unlike the Adjective/Adverb Gradability Update's own
+    // post-relationships pass, this needs nothing from pass 2 below --
+    // senseFrequency is already known once a Sense exists at all -- so
+    // it runs here, right after pass 1, not after relationships too.
+    for (const word of dictionary.all()) this.orderSensesByFrequency(word, senseStore);
+    for (const phrase of phraseBook.all()) this.orderSensesByFrequency(phrase, senseStore);
 
     processed = 0;
     for (const synset of synsets) {
@@ -1393,6 +1410,33 @@ export class WordSeeder {
   private linkPhraseWords(phrase: Phrase, dictionary: Dictionary): void {
     const tokens = phrase.text.trim().split(/\s+/).filter((token) => token.length > 0);
     phrase.words = tokens.map((token) => dictionary.lookup(token)?.uuid);
+  }
+
+  /** Reorders `entry.senseIds` (Word.senseIds's own docstring) by
+   * descending Sense.senseFrequency -- highest-frequency Sense first,
+   * ties broken by keeping their existing relative order (a stable
+   * sort, so a re-seed that finds no new sense_frequency data leaves an
+   * already-correct ordering untouched). A senseId that doesn't resolve
+   * in `senseStore` at all (shouldn't happen for anything seedWordNet
+   * itself just registered, but defensive the same way sensesFor()'s
+   * own read side is, ui/dictionary_view.ts) sorts as frequency 0,
+   * same as a real Sense WordNet never tagged.
+   *
+   * Also reassigns `entry.synsetId` to the now-primary Sense's own
+   * synsetId, keeping it in sync with the new `senseIds[0]` -- both
+   * fields are documented (Word.synsetId's own docstring) as always
+   * naming the same "primary sense", and reordering senseIds without
+   * this would silently break that invariant for every Word/Phrase this
+   * pass actually reorders (anything monosemous is unaffected either
+   * way -- a single senseId's own "order" is a no-op). A no-op for a
+   * Word/Phrase with fewer than two senseIds, the ordinary case for
+   * every non-polysemous entry. */
+  private orderSensesByFrequency(entry: Word | Phrase, senseStore: Senses): void {
+    if (entry.senseIds.length < 2) return;
+    const frequencyOf = (senseId: Identifier): number => senseStore.findByUuid(senseId.value)?.senseFrequency ?? 0;
+    const sorted = [...entry.senseIds].sort((a, b) => frequencyOf(b) - frequencyOf(a));
+    entry.senseIds = sorted;
+    entry.synsetId = senseStore.findByUuid(sorted[0].value)?.synsetId ?? entry.synsetId;
   }
 
   // domainTag deliberately left unset here -- unlike root_words.json's

@@ -65,6 +65,33 @@ export interface Sense {
   definition?: Text;
   usageNotes: readonly Text[];
 
+  // How often this Sense's own meaning was tagged in Princeton
+  // WordNet's semantic concordance corpus (SemCor) -- a genuine
+  // frequency count, not a qualitative tag. Word senses aren't equally
+  // common: of every occurrence of "bank", most name one particular
+  // meaning far more often than its others, and this is that evidence,
+  // sourced from WordNet's own bundled dict/index.sense file (one line
+  // per lemma's own sense_key/synset_offset/sense_number/tag_cnt;
+  // WordNetSynset.senseFrequency's own docstring, role/wordnet_loader.ts).
+  // Summed across every lemma that lexicalizes this Sense's own
+  // synsetId, not any one lemma's own count alone -- WordNet's raw data
+  // is inherently per-lemma ("bank" and "banking_concern" get separate
+  // tag_cnt entries even where they lexicalize the identical synset),
+  // and a Sense is the one shared object standing in for the meaning
+  // itself, not for any single lemma that spells it (this interface's
+  // own docstring). WordSeeder.seedWordNet's own post-seeding pass uses
+  // this to order every polysemous Word/Phrase's own senseIds by real
+  // usage centrality (Word.senseIds's own docstring), highest first,
+  // rather than by incidental seeding order.
+  //
+  // 0, not undefined, for a Sense WordNet itself never tagged at all in
+  // the concordance -- a common, real outcome (most senses of most
+  // words have zero tagged occurrences), not a parsing gap; undefined
+  // only for a Sense that didn't come from WordSeeder.seedWordNet in the
+  // first place, mirroring synsetId's own "undefined means no WordNet
+  // source" convention.
+  senseFrequency?: number;
+
   // Word.domainTag/Word.relatedDomainTags's own exact counterparts --
   // populated by WordSeeder.seedWordNet's own tagTopicDomain for a
   // synset-wide topic-domain pointer (`;c`/`-c`), once per Sense rather

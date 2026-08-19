@@ -1501,10 +1501,63 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // no two carry the identical definition text.
     expect(new Set(bigSenses.map((sense) => sense.uuid.value)).size).toBe(bigSenses.length);
     expect(new Set(bigSenses.map((sense) => sense.definition?.value)).size).toBe(bigSenses.length);
-    // "big"'s own first (primary) sense is still "above average in
-    // size" -- synsetId's own "primary sense snapshot" reading
-    // (Word.synsetId's own docstring) matches senseIds[0].
+    // "big"'s own first (primary) sense is "above average in size" --
+    // by far its own highest Sense.senseFrequency (real WordNet
+    // dict/index.sense tag_cnt data: 107 for "big" alone, 246 summed
+    // with "large" also lexicalizing that synset, versus single digits
+    // for every other sense "big" carries) -- not an accident of
+    // seeding order (WordSeeder.seedWordNet's own orderSensesByFrequency).
+    // synsetId's own "primary sense snapshot" reading (Word.synsetId's
+    // own docstring) matches senseIds[0] as a result.
     expect(big.synsetId?.value).toBe(senseStore.findByUuid(big.senseIds[0].value)?.synsetId?.value);
+  }, 60000);
+
+  it("orders a polysemous Word's own senseIds by real usage centrality (Sense.senseFrequency), not by seeding order", async () => {
+    const dictionary = new Dictionary();
+    const senseStore = new Senses();
+    const lexicalRelationships = new LexicalRelationshipStore();
+    const lexicalRelationshipProcessor = new LexicalRelationshipProcessor(
+      lexicalRelationships,
+      new LexicalRelationshipSystemPropertyTensor(),
+    );
+    await new WordSeeder("en").seedWordNet({
+      vocabulary: { dictionary, phrases: new Phrases(), senses: senseStore, lexicalRelationships, lexicalRelationshipProcessor },
+    });
+
+    // "bank" (NOUN) -- verified directly against the bundled
+    // dict/index.sense, not guessed: summed across every lemma sharing
+    // each synset, "sloping land beside water" (09236472-n) totals 25
+    // (bank alone), "depository financial institution" (08437235-n)
+    // totals 20 (bank's own 20; banking_concern/banking_company/
+    // depository_financial_institution each contribute 0), a distant
+    // third "the funds held by a gambling house" (09236341-n) totals 2,
+    // and every remaining sense totals 0 or 1. This is real corpus data,
+    // not a hand-picked example that confirms the intuitive "bank is
+    // usually a financial institution" expectation -- it isn't, in the
+    // bundled SemCor counts specifically.
+    const bank = dictionary.lookupAll("bank").find((w) => w.partOfSpeech === PartOfSpeech.NOUN)!;
+    expect(bank).toBeDefined();
+    expect(bank.senseIds.length).toBeGreaterThanOrEqual(4);
+    const orderedSynsetIds = bank.senseIds.map((id) => senseStore.findByUuid(id.value)?.synsetId?.value);
+    expect(orderedSynsetIds.slice(0, 4)).toEqual(["09236472-n", "08437235-n", "09236341-n", "08479077-n"]);
+
+    const riverbankSense = senseStore.findBySynsetId("09236472-n")!;
+    const financialSense = senseStore.findBySynsetId("08437235-n")!;
+    expect(riverbankSense.senseFrequency).toBe(25);
+    expect(financialSense.senseFrequency).toBe(20);
+
+    // synsetId stays in sync with the new senseIds[0] -- both are
+    // documented (Word.synsetId's own docstring) as always naming the
+    // same "primary sense".
+    expect(bank.synsetId?.value).toBe("09236472-n");
+
+    // The UI-facing read side (DictionaryView.sensesFor()) agrees:
+    // entry 1 is marked primary and carries the same frequency value.
+    const view = new DictionaryView(dictionary, lexicalRelationships, { domainName: "Common", senses: senseStore });
+    const record = view.searchWords({ wordId: bank.uuid.value }).words[0];
+    expect(record.senses[0].is_primary).toBe(true);
+    expect(record.senses[0].frequency).toBe(25);
+    expect(record.senses[1].frequency).toBe(20);
   }, 60000);
 });
 

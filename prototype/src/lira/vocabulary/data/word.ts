@@ -72,14 +72,20 @@ export interface Word extends LinguisticUnit {
   // many Domains end up holding their own runtime copy of it.
   entryId: Identifier;
 
-  // The Princeton WordNet 3.1 synset that *first* produced this Word,
-  // when known ("00001740-n" -- an 8-digit zero-padded byte offset, a
-  // hyphen, then the synset's ss_type letter: n/v/a/s/r). Set once, at
-  // creation, and never updated afterwards -- a Word is now unique by
-  // (partOfSpeech, lemma), not by synset (WordSeeder.seedWordNet's own
-  // find-or-create, role/word_seeder.ts), so a polysemous lemma's Word
-  // can go on to lexicalize several more synsets after this one, each
-  // added to `senseIds` below. This field stays as a "primary sense"
+  // The Princeton WordNet 3.1 synset naming this Word's own *primary*
+  // sense, when known ("00001740-n" -- an 8-digit zero-padded byte
+  // offset, a hyphen, then the synset's ss_type letter: n/v/a/s/r).
+  // Registered at creation time (whichever synset first produced this
+  // Word -- a Word is unique by (partOfSpeech, lemma), not by synset,
+  // WordSeeder.seedWordNet's own find-or-create, role/word_seeder.ts, so
+  // a polysemous lemma's Word goes on to lexicalize several more synsets
+  // after this one, each added to `senseIds` below), then updated once
+  // more by WordSeeder.seedWordNet's own orderSensesByFrequency, once
+  // that Word's full senseIds list is known, to instead name whichever
+  // Sense turned out to have the highest Sense.senseFrequency (that
+  // field's own docstring, data/sense.ts) -- the two coincide whenever
+  // the first-seeded sense also happens to be the most frequent one, the
+  // ordinary case, but not always. This field stays as a "primary sense"
   // snapshot for the callers that only ever needed one representative
   // synset id (DictionaryView's own WordRecord.sense_id, the Hierarchy
   // tree's node-id fallback) -- it is never a complete picture of every
@@ -93,17 +99,23 @@ export interface Word extends LinguisticUnit {
   // on why the two are easy to conflate but distinct: synsetId is
   // "which WordNet synset", a senseIds entry is "which Sense object in
   // this Domain's own Senses"). More than one entry is the ordinary
-  // case for a polysemous lemma, not an edge case -- Senses.registerMember()
-  // appends here (idempotently) once per synset this Word's own
-  // (partOfSpeech, lemma) turns out to lexicalize, in first-seeded
-  // order, so `senseIds[0]` is always the same Sense `synsetId` above
-  // names. Deliberately additive alongside every field below it still
-  // duplicates from a Sense (definition, usageNotes, domainTag,
+  // case for a polysemous lemma, not an edge case --
+  // Senses.registerMember() appends here (idempotently) once per synset
+  // this Word's own (partOfSpeech, lemma) turns out to lexicalize, in
+  // whatever order pass 1 happened to visit each synset in; WordSeeder.seedWordNet's
+  // own orderSensesByFrequency then reorders the whole list by
+  // descending Sense.senseFrequency once it's known in full, so
+  // `senseIds[0]` ends up the highest-frequency Sense -- real usage
+  // centrality, not an accident of seeding order -- and always the same
+  // Sense `synsetId` above names (that field's own docstring on how the
+  // two stay in sync). Deliberately additive alongside every field below
+  // it still duplicates from a Sense (definition, usageNotes, domainTag,
   // relatedDomainTags) -- Sense's own docstring on why removing that
   // duplication is separate, later work; a Word with several senses
-  // duplicates only its *first* Sense's copy of those fields, the same
-  // "primary sense" simplification synsetId above already accepts.
-  // Empty for a Word that didn't come from WordSeeder.seedWordNet.
+  // duplicates only its *first* (highest-frequency) Sense's copy of
+  // those fields, the same "primary sense" simplification synsetId above
+  // already accepts. Empty for a Word that didn't come from
+  // WordSeeder.seedWordNet.
   senseIds: readonly Identifier[];
 
   version: Text;

@@ -76,6 +76,17 @@ export interface WordNetSynset {
   // own docstring for the full format.
   synsetId: string;
   partOfSpeech: PartOfSpeech;
+  // How often this synset's own meaning was tagged in Princeton
+  // WordNet's semantic concordance corpus (SemCor), summed across every
+  // lemma that lexicalizes it -- parsed from the bundled dict/index.sense
+  // file (loadSenseFrequencies() below), not this file's own
+  // synset_offset/gloss lines (data.* itself carries no frequency data
+  // at all). Sense.senseFrequency's own docstring (data/sense.ts) on why
+  // this is a sum across every lemma sharing the synset rather than one
+  // lemma's own count alone. 0, not a special value, for a synset
+  // index.sense never tags at all -- a real, common outcome, not a
+  // parsing gap.
+  senseFrequency: number;
   // Underscores already replaced with spaces ("physical_entity" ->
   // "physical entity") and any trailing adjective syntactic-position
   // marker ("occupied(p)") stripped -- ready to use as a Word.text/
@@ -123,6 +134,82 @@ async function readDictFile(filename: string): Promise<string> {
   const key = Object.keys(dictFileLoaders).find((path) => path.endsWith(suffix));
   if (key === undefined) throw new Error(`WordNet dict file missing: ${filename}`);
   return dictFileLoaders[key]();
+}
+
+// dictFileLoaders' own exact counterpart, scoped to the one
+// frequency-data file separately -- index.sense isn't a data.* file
+// (this module's own docstring on that format), so it needs its own
+// lazy glob rather than widening dictFileLoaders' own pattern to match
+// a file shaped completely differently.
+const indexSenseLoader = import.meta.glob<string>("../assets/wordnet/dict/index.sense", {
+  query: "?raw",
+  import: "default",
+});
+
+async function readIndexSenseFile(): Promise<string> {
+  const suffix = "/assets/wordnet/dict/index.sense";
+  const key = Object.keys(indexSenseLoader).find((path) => path.endsWith(suffix));
+  if (key === undefined) throw new Error("WordNet dict file missing: index.sense");
+  return indexSenseLoader[key]();
+}
+
+// WordNet's own sense_key encodes ss_type as a single leading digit
+// (the character right after the lemma's own "%") rather than the
+// letter data.* files use -- verified directly against the bundled
+// dict/index.sense (e.g. "tall%3:00:00:: 02393670 1 73" is the
+// ADJECTIVE "tall", whose own data.adj record at that exact offset is
+// independently confirmed ss_type "a"; "tall%5:00:00:rhetorical:00" at
+// a different offset is independently confirmed ss_type "s", WordNet's
+// satellite-adjective variant). Mapped here so a parsed synsetId always
+// matches parseSynsetLine's own `${offset}-${ssType}` format exactly.
+const SENSE_KEY_SS_TYPE_DIGIT_TO_LETTER: Readonly<Record<string, string>> = { "1": "n", "2": "v", "3": "a", "4": "r", "5": "s" };
+
+/** One dict/index.sense line, parsed -- WordNet's own
+ * `sense_key synset_offset sense_number tag_cnt` format, where
+ * `sense_key` is itself `lemma%ss_type:lex_filenum:lex_id:head_word:head_id`.
+ * Only `ss_type` (to resolve the letter loadSenseFrequencies() needs to
+ * match parseSynsetLine's own synsetId) and `tag_cnt` (the actual
+ * frequency count) are read; `sense_number` is WordNet's own
+ * already-computed per-lemma rank (descending tag_cnt) and `lex_filenum`/
+ * `lex_id`/`head_word`/`head_id` are positional filler this module has
+ * no use for, the same "walked past, not retained" treatment
+ * parseSynsetLine's own docstring gives lex_filenum/lex_id there.
+ * Returns undefined for a malformed line or an unrecognised ss_type
+ * digit (defensive only -- every real line in the bundled file parses). */
+function parseIndexSenseLine(line: string): { synsetId: string; tagCount: number } | undefined {
+  const fields = line.trim().split(/\s+/);
+  const [senseKey, synsetOffset, , tagCountRaw] = fields;
+  if (senseKey === undefined || synsetOffset === undefined || tagCountRaw === undefined) return undefined;
+  const ssTypeDigit = senseKey.split("%")[1]?.[0];
+  const ssType = ssTypeDigit !== undefined ? SENSE_KEY_SS_TYPE_DIGIT_TO_LETTER[ssTypeDigit] : undefined;
+  if (ssType === undefined) return undefined;
+  return { synsetId: `${synsetOffset}-${ssType}`, tagCount: parseInt(tagCountRaw, 10) };
+}
+
+let senseFrequencyCache: ReadonlyMap<string, number> | null = null;
+
+/** Every synsetId's own senseFrequency (WordNetSynset's own docstring on
+ * what that means and why it's a sum) -- parsed once from dict/index.sense,
+ * cached the same way loadWordNetSynsets()'s own `cache` is. Summing
+ * every sense_key's own tag_cnt that shares a synsetId is what turns
+ * WordNet's inherently per-lemma frequency data (index.sense's own
+ * docstring on why: "bank" and "banking_concern" get separate tag_cnt
+ * entries even where they lexicalize the identical synset) into one
+ * meaningful synset-level number -- how often *this meaning*, regardless
+ * of which synonym spelled it, was tagged in the corpus. */
+async function loadSenseFrequencies(): Promise<ReadonlyMap<string, number>> {
+  if (senseFrequencyCache !== null) return senseFrequencyCache;
+  const text = await readIndexSenseFile();
+  const totals = new Map<string, number>();
+  for (const line of text.split("\n")) {
+    const trimmed = line.trim();
+    if (trimmed.length === 0) continue;
+    const parsed = parseIndexSenseLine(trimmed);
+    if (parsed === undefined) continue;
+    totals.set(parsed.synsetId, (totals.get(parsed.synsetId) ?? 0) + parsed.tagCount);
+  }
+  senseFrequencyCache = totals;
+  return totals;
 }
 
 function posForSsType(ssType: string): PartOfSpeech {
@@ -191,7 +278,7 @@ function parseGloss(rawGloss: string): { definition: string; examples: readonly 
 // know how many header lines precede the data in a given file.
 const SYNSET_LINE_PATTERN = /^\d{8}\s/;
 
-function parseSynsetLine(line: string): WordNetSynset | undefined {
+function parseSynsetLine(line: string, senseFrequencies: ReadonlyMap<string, number>): WordNetSynset | undefined {
   const barIndex = line.indexOf(" | ");
   if (barIndex === -1) return undefined;
   const fields = line.slice(0, barIndex).trim().split(/\s+/);
@@ -247,9 +334,10 @@ function parseSynsetLine(line: string): WordNetSynset | undefined {
     }
   }
 
+  const synsetId = `${synsetOffset}-${ssType}`;
   const { definition, examples } = parseGloss(line.slice(barIndex + 3));
   return {
-    synsetId: `${synsetOffset}-${ssType}`,
+    synsetId,
     partOfSpeech: posForSsType(ssType),
     lemmas,
     lemmaPositions,
@@ -257,6 +345,7 @@ function parseSynsetLine(line: string): WordNetSynset | undefined {
     examples,
     pointers,
     frames,
+    senseFrequency: senseFrequencies.get(synsetId) ?? 0,
   };
 }
 
@@ -271,12 +360,15 @@ let cache: WordNetSynset[] | null = null;
 export async function loadWordNetSynsets(): Promise<readonly WordNetSynset[]> {
   if (cache !== null) return cache;
 
-  const texts = await Promise.all(DICT_FILENAMES.map((filename) => readDictFile(filename)));
+  const [texts, senseFrequencies] = await Promise.all([
+    Promise.all(DICT_FILENAMES.map((filename) => readDictFile(filename))),
+    loadSenseFrequencies(),
+  ]);
   const synsets: WordNetSynset[] = [];
   for (const text of texts) {
     for (const line of text.split("\n")) {
       if (!SYNSET_LINE_PATTERN.test(line)) continue;
-      const synset = parseSynsetLine(line);
+      const synset = parseSynsetLine(line, senseFrequencies);
       if (synset !== undefined) synsets.push(synset);
     }
   }

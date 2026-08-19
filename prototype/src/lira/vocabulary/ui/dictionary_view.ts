@@ -184,6 +184,20 @@ export interface WordSenseSummary {
   definition: string;
   gloss: string;
   domain: string;
+  // Sense.senseFrequency's own docstring (data/sense.ts) -- how often
+  // this exact meaning was tagged in WordNet's own semantic concordance
+  // corpus, summed across every lemma that lexicalizes it. `null`, not
+  // `0`, for a Sense that didn't come from WordSeeder.seedWordNet at all
+  // (mirrors that field's own undefined-vs-0 distinction, since a plain
+  // client-facing record has no `undefined` of its own -- JSON drops
+  // it); a real `0` still means "WordNet tagged it, just never in the
+  // concordance," a materially different fact from "no WordNet
+  // frequency data exists for this Sense at all." `senseIds`'s own
+  // order already reflects this (WordSeeder.seedWordNet's own
+  // orderSensesByFrequency, role/word_seeder.ts) -- highest first, so
+  // `is_primary` below and this field agree by construction rather than
+  // by coincidence.
+  frequency: number | null;
   // Fellow members of this one Sense, this Word/Phrase itself excluded --
   // the sense-scoped synonym fact (Senses.membersOf()'s own docstring,
   // data/senses.ts) other Senses this same Word also carries have no part
@@ -256,6 +270,10 @@ export interface SenseRecord {
   member_count: number;
   members: string[];
   sources: string[];
+  // Sense.senseFrequency's own docstring (data/sense.ts) --
+  // WordSenseSummary.frequency's own exact counterpart for the Senses
+  // tab's own row shape, same null-vs-0 distinction.
+  sense_frequency: number | null;
 }
 
 export interface RelationshipRecord {
@@ -688,10 +706,12 @@ export class DictionaryView {
   }
 
   /** Every Sense `entry` lexicalizes, in `entry.senseIds`'s own order
-   * (Word.senseIds's own docstring: first-seeded, so index 0 is always
-   * the same Sense senseFieldsFor() already reads for `definition`/
-   * `domain` above -- `is_primary` marks that one explicitly, rather
-   * than leaving the reader to guess whether entry #1 here is special).
+   * (Word.senseIds's own docstring: ordered by descending
+   * Sense.senseFrequency once WordSeeder.seedWordNet's own
+   * orderSensesByFrequency has run, so index 0 is always the same Sense
+   * senseFieldsFor() already reads for `definition`/`domain` above --
+   * `is_primary` marks that one explicitly, rather than leaving the
+   * reader to guess whether entry #1 here is special).
    * A senseId that doesn't resolve in this Domain's own Senses (the
    * Physics-from-Common cross-Domain gap senseFieldsFor()'s own
    * docstring already accepts) is skipped, not shown half-empty --
@@ -711,6 +731,7 @@ export class DictionaryView {
         definition: sense.definition?.value ?? "",
         gloss: sense.gloss?.value ?? "",
         domain,
+        frequency: sense.senseFrequency ?? null,
         synonyms: this.senses
           .membersOf(senseId.value)
           .filter((member) => member.uuid.value !== entry.uuid.value)
@@ -816,6 +837,7 @@ export class DictionaryView {
       member_count: members.length,
       members: members.map((member) => member.lexicalForm?.value ?? member.text),
       sources: sense.sourceReferences.map((ref) => ref.sourceName.value),
+      sense_frequency: sense.senseFrequency ?? null,
     };
   }
 
@@ -1358,8 +1380,8 @@ export class DictionaryView {
       // node by design.
       let cur = options.wordId;
       if (!allNodeIds.has(cur)) {
-        // senseIds[0] -- the primary/first-seeded sense (Word.senseIds's
-        // own docstring) -- same "collapse a whole synset onto one node"
+        // senseIds[0] -- the primary, highest-Sense.senseFrequency sense
+        // (Word.senseIds's own docstring) -- same "collapse a whole synset onto one node"
         // simplification this fallback already documents above.
         const senseId = this.resolveEntry(options.wordId)?.senseIds[0]?.value;
         if (senseId !== undefined && allNodeIds.has(senseId)) cur = senseId;
@@ -1479,8 +1501,8 @@ export class DictionaryView {
     gloss?: Text;
     usageNotes: readonly Text[];
   } {
-    // senseIds[0] -- the primary/first-seeded sense (Word.senseIds's own
-    // docstring) -- for a polysemous entry, WordRecord/PhraseRecord is
+    // senseIds[0] -- the primary, highest-Sense.senseFrequency sense
+    // (Word.senseIds's own docstring) -- for a polysemous entry, WordRecord/PhraseRecord is
     // still one row, so this picks the one Sense whose fields that row
     // shows; every other sense is reachable via searchSenses() directly.
     const primarySenseId = entry.senseIds[0];
@@ -2018,6 +2040,11 @@ summary.detail-section-title::marker { color: var(--ink-muted); }
   color: var(--ink-muted);
 }
 .sense-synonyms { margin-left: 6px; }
+.sense-frequency {
+  margin-left: 6px;
+  font-variant-numeric: tabular-nums;
+}
+.sense-frequency::before { content: "\\2022  "; }
 .sense-rels {
   margin-top: 4px;
 }
@@ -2345,6 +2372,7 @@ footer {
               <th data-sort="pos">Part of speech</th>
               <th data-sort="domain">Domain</th>
               <th data-sort="definition">Definition</th>
+              <th data-sort="sense_frequency" style="text-align:right">Frequency</th>
               <th>Labels</th>
             </tr>
           </thead>
@@ -3046,6 +3074,7 @@ function senseRowHtml(s) {
       <td>\${s.pos ? posPill(s.pos) : ''}</td>
       <td>\${domainPill(s.domain)}</td>
       <td class="definition">\${s.definition || s.gloss || '<span style="opacity:.5">&mdash;</span>'}</td>
+      <td style="text-align:right;font-variant-numeric:tabular-nums">\${s.sense_frequency === null ? '<span style="opacity:.5">&mdash;</span>' : s.sense_frequency.toLocaleString()}</td>
       <td>\${s.is_root_word ? '<span class="badge-root-word">root word</span>' : ''}</td>
     </tr>\`;
 }
@@ -3093,7 +3122,7 @@ function renderSensesOverCapacity() {
     document.getElementById("senses-note").style.display = "none";
     document.getElementById("senses-empty").style.display = "none";
     document.getElementById("senses-body").innerHTML =
-      '<tr><td colspan="5" style="text-align:center;padding:24px;color:var(--ink-muted,#5B6660)">Searching…</td></tr>';
+      '<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--ink-muted,#5B6660)">Searching…</td></tr>';
     document.dispatchEvent(new CustomEvent("lira-search-senses", {
       detail: {
         requestId,
@@ -3312,7 +3341,7 @@ function sensesSectionHTML(word, rels) {
         <li class="sense-row\${s.is_primary ? ' primary' : ''}">
           <span class="sense-number">\${i + 1}\${s.is_primary ? ' <span class="sense-primary-tag">primary</span>' : ''}</span>
           <span class="sense-definition">\${s.definition || '<span style="opacity:.6">No definition.</span>'}</span>
-          <span class="sense-meta">\${domainPill(s.domain)}\${s.synonyms.length ? \` <span class="sense-synonyms">synonyms: \${s.synonyms.map(syn => \`<button class="link-btn" data-pivot-id="\${syn.id}">\${syn.text}</button>\`).join(', ')}</span>\` : ''}</span>
+          <span class="sense-meta">\${domainPill(s.domain)}\${s.frequency !== null ? \` <span class="sense-frequency" title="WordNet tagged-occurrence count (SemCor semantic concordance)">freq \${s.frequency.toLocaleString()}</span>\` : ''}\${s.synonyms.length ? \` <span class="sense-synonyms">synonyms: \${s.synonyms.map(syn => \`<button class="link-btn" data-pivot-id="\${syn.id}">\${syn.text}</button>\`).join(', ')}</span>\` : ''}</span>
           <details class="sense-rels"\${s.is_primary ? ' open' : ''}>
             <summary>Relationships (\${count})</summary>
             <div class="detail-relationships-section">\${relationshipsSectionHTML(senseRels)}</div>
