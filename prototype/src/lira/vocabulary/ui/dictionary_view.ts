@@ -283,15 +283,18 @@ export interface RelationshipRecord {
   qualifier: string | null;
   // Which of the *subject* Word/Phrase's own several Senses
   // (Word.senseIds's own docstring) this row's edge actually came from
-  // -- that Sense's own short definition text, or null for a genuine
-  // direct Word/Phrase-to-Word/Phrase edge (always unambiguous, no Sense
-  // expansion involved) or for a query with no single subject Word at
-  // all (a plain Relationships-tab search with no `wordId`). Only ever
-  // set by searchRelationships()'s own `wordId` path, off
-  // senseExpandedRelationships()'s own per-sense loop -- the one place
-  // that already knows exactly which Sense produced a given synthetic
-  // row.
-  via_sense: string | null;
+  // -- that Sense's own uuid, matching one of WordRecord.senses's own
+  // `id` entries for the same Word (so the client can group a Word's
+  // relationships under its own Senses section, sensesSectionHTML()'s
+  // own docstring, without a second id-to-definition lookup) -- or null
+  // for a genuine direct Word/Phrase-to-Word/Phrase edge (always
+  // unambiguous, no Sense expansion involved) or for a query with no
+  // single subject Word at all (a plain Relationships-tab search with no
+  // `wordId`). Only ever set by searchRelationships()'s own `wordId`
+  // path, off senseExpandedRelationships()'s own per-sense loop -- the
+  // one place that already knows exactly which Sense produced a given
+  // synthetic row.
+  via_sense_id: string | null;
 }
 
 // One kind's total edge count across the whole LexicalRelationshipStore
@@ -1135,7 +1138,7 @@ export class DictionaryView {
       category: relationshipCategory(rel.relationshipType),
       confidence: Math.round(rel.systemProperties.confidenceWeight * 10000) / 10000,
       qualifier: rel.qualifiers.find((q) => q.name.value === MERONYM_KIND_QUALIFIER)?.value.value ?? null,
-      via_sense: null,
+      via_sense_id: null,
     };
   }
 
@@ -1170,18 +1173,19 @@ export class DictionaryView {
    * underlying Sense-to-Sense edge. Unions this across every Sense in
    * `word.senseIds` -- a polysemous Word (Word.senseIds's own docstring)
    * has more than one to expand, not just the single one this used to
-   * read off `word.senseId`. `viaSenseDefinition` is that per-Sense
-   * loop's own byproduct: which of `word`'s several Senses actually
-   * produced a given synthetic row, keyed by that row's own `uuid.value`
-   * -- searchRelationships()'s own RelationshipRecord.via_sense reads
-   * this, so a polysemous Word's relationship list can say which meaning
-   * a given hypernym/antonym/etc. actually belongs to. */
-  private senseExpandedRelationships(word: Word): { relationships: readonly LexicalRelationship[]; viaSenseDefinition: ReadonlyMap<string, string> } {
+   * read off `word.senseId`. `viaSenseId` is that per-Sense loop's own
+   * byproduct: which of `word`'s several Senses actually produced a
+   * given synthetic row, keyed by that row's own `uuid.value` and valued
+   * by the producing Sense's own uuid -- searchRelationships()'s own
+   * RelationshipRecord.via_sense_id reads this, so the Words-tab detail
+   * panel can group a polysemous Word's relationships under the Sense
+   * each one actually belongs to (sensesSectionHTML()'s own docstring,
+   * embedded client script). */
+  private senseExpandedRelationships(word: Word): { relationships: readonly LexicalRelationship[]; viaSenseId: ReadonlyMap<string, string> } {
     const expanded: LexicalRelationship[] = [];
-    const viaSenseDefinition = new Map<string, string>();
+    const viaSenseId = new Map<string, string>();
     for (const ownSenseId of word.senseIds) {
       const senseId = ownSenseId.value;
-      const ownSenseDefinition = this.senses.findByUuid(senseId)?.definition?.value;
       for (const rel of [...this.relationships.outgoing(senseId), ...this.relationships.incoming(senseId)]) {
         const outgoingFromSense = rel.sourceWordId.value === senseId;
         const otherSenseId = outgoingFromSense ? rel.targetWordId.value : rel.sourceWordId.value;
@@ -1193,23 +1197,23 @@ export class DictionaryView {
             sourceWordId: outgoingFromSense ? { value: word.uuid.value } : member.uuid,
             targetWordId: outgoingFromSense ? member.uuid : { value: word.uuid.value },
           });
-          if (ownSenseDefinition !== undefined) viaSenseDefinition.set(uuid.value, ownSenseDefinition);
+          viaSenseId.set(uuid.value, senseId);
         }
       }
     }
-    return { relationships: expanded, viaSenseDefinition };
+    return { relationships: expanded, viaSenseId };
   }
 
   searchRelationships(options: { wordId?: string; query?: string; limit?: number }): { relationships: RelationshipRecord[]; totalMatches: number } {
     const limit = options.limit ?? 1000;
     const query = options.query?.trim().toLowerCase();
     let candidates: readonly LexicalRelationship[];
-    let viaSenseDefinition: ReadonlyMap<string, string> = new Map();
+    let viaSenseId: ReadonlyMap<string, string> = new Map();
     if (options.wordId !== undefined) {
       const word = this.resolveEntry(options.wordId);
-      const senseExpanded = word !== undefined ? this.senseExpandedRelationships(word) : { relationships: [], viaSenseDefinition: new Map() };
+      const senseExpanded = word !== undefined ? this.senseExpandedRelationships(word) : { relationships: [], viaSenseId: new Map() };
       candidates = [...this.relationships.outgoing(options.wordId), ...this.relationships.incoming(options.wordId), ...senseExpanded.relationships];
-      viaSenseDefinition = senseExpanded.viaSenseDefinition;
+      viaSenseId = senseExpanded.viaSenseId;
     } else {
       candidates = this.relationships.all();
     }
@@ -1218,8 +1222,8 @@ export class DictionaryView {
     let totalMatches = 0;
     for (const rel of candidates) {
       const record = this.relationshipRecordFor(rel);
-      const viaSense = viaSenseDefinition.get(rel.uuid.value);
-      if (viaSense !== undefined) record.via_sense = viaSense;
+      const senseId = viaSenseId.get(rel.uuid.value);
+      if (senseId !== undefined) record.via_sense_id = senseId;
       if (query) {
         const sourceHit = record.source_text.toLowerCase().includes(query);
         const targetHit = record.target_text.toLowerCase().includes(query);
@@ -1898,6 +1902,12 @@ tbody tr[data-word-id].selected { background: color-mix(in srgb, var(--accent) 1
   color: var(--ink-muted);
   margin: 16px 0 6px;
 }
+summary.detail-section-title {
+  cursor: pointer;
+  user-select: none;
+  margin: 16px 0 4px;
+}
+summary.detail-section-title::marker { color: var(--ink-muted); }
 .rel-entry {
   padding: 7px 0;
   border-bottom: 1px solid var(--line);
@@ -1916,12 +1926,6 @@ tbody tr[data-word-id].selected { background: color-mix(in srgb, var(--accent) 1
   color: var(--ink-muted);
   font-size: 0.8rem;
   line-height: 1.4;
-}
-.rel-sense-note {
-  margin: 2px 0 0 20px;
-  color: var(--ink-muted);
-  font-size: 0.76rem;
-  font-style: italic;
 }
 .pad-row {
   display: flex;
@@ -2014,6 +2018,22 @@ tbody tr[data-word-id].selected { background: color-mix(in srgb, var(--accent) 1
   color: var(--ink-muted);
 }
 .sense-synonyms { margin-left: 6px; }
+.sense-rels {
+  margin-top: 4px;
+}
+.sense-rels summary {
+  cursor: pointer;
+  user-select: none;
+  font-size: 0.74rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--ink-muted);
+}
+.sense-rels summary::marker { color: var(--ink-muted); }
+.sense-rels .detail-relationships-section,
+.sense-rels .detail-empty {
+  margin-top: 4px;
+}
 .def-text { line-height: 1.7; }
 .def-word {
   position: relative;
@@ -3264,17 +3284,41 @@ function padMeterRow(posLabel, negLabel, value) {
     </div>\`;
 }
 
-function sensesSectionHTML(word) {
-  if (!word.senses || word.senses.length <= 1) return '';
+// \`rels\` follows relationshipsSectionHTML's own null/[]/populated
+// convention -- null while still loading over capacity, so a sense's own
+// nested relationship count shows "…" rather than a wrong "0" until the
+// real fetch resolves. Always renders at least one sense row (even a
+// monosemous Word's own single, always-primary sense) -- Word.senses is
+// never empty for a Word that came through WordSeeder, and the one
+// existing definition line above already duplicates entry #1's own text,
+// so showing it again here is deliberate, not redundant: it's what turns
+// "the definition" into "sense 1 of N", and it's the only place a
+// monosemous Word's own relationships (now always grouped under a
+// Sense, RelationshipRecord.via_sense_id's own docstring) are shown at
+// all. Each sense's own relationships are nested in a native
+// \`<details>\` -- collapsible with zero extra JS, open by default only
+// for the primary sense (the one most callers care about first), closed
+// for the rest so a highly polysemous Word ("big", ~15 senses) doesn't
+// dump fifteen expanded relationship lists at once.
+function sensesSectionHTML(word, rels) {
+  if (!word.senses || !word.senses.length) return '';
   return \`
     <div class="detail-section-title">Senses (\${word.senses.length})</div>
     <ol class="sense-list">
-      \${word.senses.map((s, i) => \`
+      \${word.senses.map((s, i) => {
+        const senseRels = rels === null ? null : rels.filter(r => r.via_sense_id === s.id);
+        const count = senseRels === null ? '…' : senseRels.length;
+        return \`
         <li class="sense-row\${s.is_primary ? ' primary' : ''}">
           <span class="sense-number">\${i + 1}\${s.is_primary ? ' <span class="sense-primary-tag">primary</span>' : ''}</span>
           <span class="sense-definition">\${s.definition || '<span style="opacity:.6">No definition.</span>'}</span>
           <span class="sense-meta">\${domainPill(s.domain)}\${s.synonyms.length ? \` <span class="sense-synonyms">synonyms: \${s.synonyms.map(syn => \`<button class="link-btn" data-pivot-id="\${syn.id}">\${syn.text}</button>\`).join(', ')}</span>\` : ''}</span>
-        </li>\`).join('')}
+          <details class="sense-rels"\${s.is_primary ? ' open' : ''}>
+            <summary>Relationships (\${count})</summary>
+            <div class="detail-relationships-section">\${relationshipsSectionHTML(senseRels)}</div>
+          </details>
+        </li>\`;
+      }).join('')}
     </ol>
   \`;
 }
@@ -3403,14 +3447,7 @@ function fetchDetailRelsIfNeeded(wordId) {
 // still loading over capacity (relationshipsSectionHTML's own "Loading…"
 // branch) -- distinct from \`[]\`, which means the fetch already resolved
 // and there really are none.
-// \`showSenseAnnotation\` -- true only when the Word this relationship
-// list belongs to carries more than one Sense (Word.senseIds's own
-// docstring) -- a monosemous Word's own relationship list needs no
-// annotation at all (every row already, unambiguously, belongs to its
-// one sense), so this stays false and \`r.via_sense\` is never rendered
-// even when the server did set it (a symmetric edge can still touch a
-// polysemous word on the *other* end).
-function relationshipsSectionHTML(rels, showSenseAnnotation) {
+function relationshipsSectionHTML(rels) {
   if (rels === null) return '<div class="detail-empty" style="padding:8px 0">Loading relationships…</div>';
   if (rels.length === 0) return '<div class="detail-empty" style="padding:8px 0">No relationships recorded.</div>';
   return rels.map(r => \`
@@ -3423,7 +3460,6 @@ function relationshipsSectionHTML(rels, showSenseAnnotation) {
         \${domainPill(r.otherDomain)}
       </div>
       <div class="rel-sentence">\${relationshipSentence(r.kind, r.source_text, r.target_text, r.qualifier)}</div>
-      \${showSenseAnnotation && r.via_sense ? \`<div class="rel-sense-note">(sense: \${r.via_sense})</div>\` : ''}
     </div>\`).join('');
 }
 
@@ -3449,6 +3485,20 @@ function headwordHTML(word) {
   return \`<span class="def-text">\${word.phrase_word_segments.map(definitionSegmentHTML).join(' ')}</span>\`;
 }
 
+// General (non-sense) relationships only -- every semantic (Lexical
+// Semantic-group) fact now arrives Sense-expanded and lives nested under
+// its own owning sense instead (sensesSectionHTML()'s own docstring); a
+// direct edge with no via_sense_id at all (Morphological/Orthographic-
+// group kinds -- derivation, spelling variants, ... -- always stay
+// direct, WordSeeder.seedPointerRelationship's own docstring) is what's
+// left here. \`relCount\`/word.relationship_count is already scoped to
+// exactly this (DictionaryView.wordRecordFor()'s own relationshipCount,
+// a direct-edges-only count), so no server-side change was needed to
+// keep the header number matching what this section actually shows.
+function generalRelationships(rels) {
+  return rels === null ? null : rels.filter(r => !r.via_sense_id);
+}
+
 function wordDetailHTML(word, rels, relCount) {
   return \`
     <div class="detail-word">\${headwordHTML(word)}\${word.is_common ? ' <span class="badge-common">common</span>' : ''}\${word.is_root_word ? ' <span class="badge-root-word">root word</span>' : ''}\${word.is_derivable_noun ? ' <span class="badge-derivable-noun">derivable noun</span>' : ''}\${word.is_fully_hydrated ? '' : ' <span class="badge-common" style="color:#C2544B;border-color:#C2544B">hydration pending</span>'}</div>
@@ -3456,13 +3506,15 @@ function wordDetailHTML(word, rels, relCount) {
     \${word.related_domains && word.related_domains.length ? \`<div class="detail-related-domains" style="margin-top:4px"><span style="opacity:.6">Also:</span> \${word.related_domains.map(domainPill).join(' ')}</div>\` : ''}
     <div class="detail-entry-id" title="Persistent Qualified Word Identity (domain + part of speech + word) -- stable across regenerations, unlike this word's transient graph id">Entry ID <code>\${word.entry_id}</code></div>
     <div class="detail-definition">\${renderDefinition(word)}</div>
-    \${sensesSectionHTML(word)}
+    \${sensesSectionHTML(word, rels)}
     \${padSectionHTML(word)}
     \${wordFormsSectionHTML(word)}
     <div class="detail-section-title">Provenance</div>
     <div class="detail-definition" style="margin-top:0">\${word.sources && word.sources.length ? word.sources.map(s => \`<span class="tag">\${s}</span>\`).join('') : '<span style="opacity:.6">No source recorded.</span>'}</div>
-    <div class="detail-section-title">Relationships (<span class="detail-rel-count">\${relCount}</span>)</div>
-    <div class="detail-relationships-section">\${relationshipsSectionHTML(rels, word.senses && word.senses.length > 1)}</div>
+    <details class="rel-general" open>
+      <summary class="detail-section-title">Other Relationships (<span class="detail-rel-count">\${relCount}</span>)</summary>
+      <div class="detail-relationships-section">\${relationshipsSectionHTML(generalRelationships(rels))}</div>
+    </details>
   \`;
 }
 
@@ -4708,16 +4760,28 @@ document.addEventListener("lira-search-relationships-result", (e) => {
     if (state.selectedWordId !== wordId) return;
     refreshHierarchyKindCounts();
     // Every detail panel currently showing this word gets the same
-    // targeted patch -- a plain DOM update, not another renderDetailPanel()
-    // call, which would also needlessly re-resolve the Word itself.
+    // patch -- a full wordDetailHTML() re-render off the already-
+    // resolved Word (no re-fetch, no re-resolve, same cheap "plain DOM
+    // update" this used to be for the old flat relationships list), not
+    // another renderDetailPanel() call. A narrow .detail-relationships-section
+    // replace stopped being enough once relationships were also nested
+    // per-sense (sensesSectionHTML()'s own docstring) -- each sense's
+    // own count/list needs the same refresh the general section does,
+    // so the whole panel body is rebuilt from the one already-known
+    // Word instead.
+    // totalMatches counts every candidate searchRelationships() returned
+    // -- general AND sense-expanded together -- so it's not the right
+    // number for the "Other Relationships" header any more (that's
+    // scoped to general only now, generalRelationships()'s own
+    // docstring); recount from the received rels themselves instead,
+    // matching what that section actually goes on to show.
+    const generalCount = generalRelationships(rels).length;
     ["words", "hierarchy", "cyclic"].forEach(panel => {
       const content = document.getElementById(\`detail-content-\${panel}\`);
       if (!content || content.style.display === "none") return;
-      const section = content.querySelector(".detail-relationships-section");
       const panelWord = wordForDetailPanel(panel);
-      if (section) section.innerHTML = relationshipsSectionHTML(rels, panelWord && panelWord.senses && panelWord.senses.length > 1);
-      const countLabel = content.querySelector(".detail-rel-count");
-      if (countLabel) countLabel.textContent = totalMatches.toLocaleString();
+      if (!panelWord) return;
+      content.innerHTML = wordDetailHTML(panelWord, rels, generalCount);
       wireDetailPivotButtons(content);
     });
   }

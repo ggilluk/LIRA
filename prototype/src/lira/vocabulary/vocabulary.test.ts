@@ -1708,7 +1708,7 @@ describe("DictionaryView.searchRelationships", () => {
     expect(view.searchRelationships({ wordId: small.uuid.value }).totalMatches).toBe(1);
   });
 
-  it("via_sense names which of a polysemous Word's own several Senses a Sense-expanded relationship came from, and stays null for a genuine direct edge", () => {
+  it("via_sense_id names which of a polysemous Word's own several Senses a Sense-expanded relationship came from, and stays null for a genuine direct edge", () => {
     const dictionary = new Dictionary();
     const senseStore = new Senses();
     const big = createAdjective({ text: "big" });
@@ -1735,7 +1735,7 @@ describe("DictionaryView.searchRelationships", () => {
     // production shape -- WordSeeder.seedPointerRelationship's own
     // sourceSense.uuid/targetSense.uuid convention, word_seeder.ts) --
     // fans out to "big" via senseExpandedRelationships(), tagged with
-    // the "size" Sense's own definition.
+    // the "size" Sense's own uuid.
     processor.create({ sourceWordId: sizeSense.uuid.value, targetWordId: smallSense.uuid.value, relationshipType: LexicalRelationshipType.ANTONYM, sourceReferences: [] });
     // A genuine direct edge, unrelated to any Sense expansion.
     processor.create({ sourceWordId: big.uuid.value, targetWordId: large.uuid.value, relationshipType: LexicalRelationshipType.SYNONYM, sourceReferences: [] });
@@ -1744,9 +1744,9 @@ describe("DictionaryView.searchRelationships", () => {
     const result = view.searchRelationships({ wordId: big.uuid.value });
 
     const antonymRow = result.relationships.find((r) => r.kind === "ANTONYM");
-    expect(antonymRow?.via_sense).toBe("above average in size");
+    expect(antonymRow?.via_sense_id).toBe(sizeSense.uuid.value);
     const synonymRow = result.relationships.find((r) => r.kind === "SYNONYM");
-    expect(synonymRow?.via_sense).toBeNull();
+    expect(synonymRow?.via_sense_id).toBeNull();
   });
 
   it("matches `query` against source text, target text, or kind, across the whole store when `wordId` is omitted", () => {
