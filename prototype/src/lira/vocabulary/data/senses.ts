@@ -24,6 +24,7 @@ export class Senses {
   private readonly byUuid = new Map<string, Sense>();
   private readonly bySynsetId = new Map<string, Sense>();
   private readonly membersBySenseId = new Map<string, Array<Word | Phrase>>();
+  private readonly memberMetadata = new Map<string, Readonly<Record<string, unknown>>>();
 
   all(): readonly Sense[] {
     return this.senses.slice();
@@ -47,20 +48,50 @@ export class Senses {
     return this.senses.length;
   }
 
-  /** Records that `member` lexicalizes `sense` -- sets `member.senseId`
-   * (the field itself, word.ts's/phrase.ts's own docstring) and adds it
-   * to that Sense's own membership index. Idempotent: calling this
-   * again for a member already registered under the same Sense (a
-   * reused Word/Phrase on a seedWordNet re-run) doesn't duplicate the
-   * membership entry. */
+  /** Records that `member` lexicalizes `sense` -- appends `sense.uuid`
+   * onto `member.senseIds` (the field itself, word.ts's/phrase.ts's own
+   * docstring) and adds `member` to that Sense's own membership index.
+   * A Word/Phrase is now unique by (partOfSpeech, lemma), not by Sense
+   * (WordSeeder.seedWordNet's own find-or-create, role/word_seeder.ts),
+   * so `member` having already been registered under a *different*
+   * Sense before this call is the ordinary case for a polysemous lemma,
+   * not an edge case -- this only ever appends, never overwrites.
+   * Idempotent either way: calling this again for a member already
+   * registered under this exact same Sense (a reused Word/Phrase on a
+   * seedWordNet re-run) doesn't duplicate either the `senseIds` entry
+   * or the membership entry. */
   registerMember(sense: Sense, member: Word | Phrase): void {
-    member.senseId = sense.uuid;
+    if (!member.senseIds.some((id) => id.value === sense.uuid.value)) {
+      member.senseIds = [...member.senseIds, sense.uuid];
+    }
     const bucket = this.membersBySenseId.get(sense.uuid.value);
     if (bucket === undefined) {
       this.membersBySenseId.set(sense.uuid.value, [member]);
     } else if (!bucket.some((existing) => existing.uuid.value === member.uuid.value)) {
       bucket.push(member);
     }
+  }
+
+  /** Opaque, per-(Sense, member) metadata -- deliberately untyped here
+   * (`Senses` sits lower in the layering than any one POS subtype, so it
+   * shouldn't need to import e.g. Verb/Adjective just to type this):
+   * Verb.framesForSense()/Adjective.syntacticPositionForSense() (verb.ts/
+   * adjective.ts) are the typed readers, and WordSeeder.seedWordNet
+   * (role/word_seeder.ts) is the only writer, called once per synset
+   * member right after registerMember() for that same (sense, member)
+   * pair. Exists because a fact like a verb's own applicable sentence
+   * frames, or an adjective's own syntactic position restriction, is
+   * genuinely a property of *this word in this sense*, not of the word
+   * standing alone -- two different Senses the same Word now lexicalizes
+   * (Word.senseIds's own docstring) can carry two different answers. */
+  setMemberMetadata(senseId: string, memberUuid: string, metadata: Readonly<Record<string, unknown>>): void {
+    this.memberMetadata.set(`${senseId}|${memberUuid}`, metadata);
+  }
+
+  /** setMemberMetadata()'s own read side -- undefined when nothing was
+   * ever set for this exact (senseId, memberUuid) pair. */
+  metadataFor(senseId: string, memberUuid: string): Readonly<Record<string, unknown>> | undefined {
+    return this.memberMetadata.get(`${senseId}|${memberUuid}`);
   }
 
   /** Every Word/Phrase registered as lexicalizing the Sense named by

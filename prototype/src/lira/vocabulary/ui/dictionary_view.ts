@@ -1093,21 +1093,25 @@ export class DictionaryView {
    * member x member encoding used to store explicitly. `uuid` gets the
    * source edge's own uuid suffixed with the expanded member's uuid, not
    * reused bare, since more than one synthetic record can now share one
-   * underlying Sense-to-Sense edge. */
+   * underlying Sense-to-Sense edge. Unions this across every Sense in
+   * `word.senseIds` -- a polysemous Word (Word.senseIds's own docstring)
+   * has more than one to expand, not just the single one this used to
+   * read off `word.senseId`. */
   private senseExpandedRelationships(word: Word): readonly LexicalRelationship[] {
-    if (word.senseId === undefined) return [];
-    const senseId = word.senseId.value;
     const expanded: LexicalRelationship[] = [];
-    for (const rel of [...this.relationships.outgoing(senseId), ...this.relationships.incoming(senseId)]) {
-      const outgoingFromSense = rel.sourceWordId.value === senseId;
-      const otherSenseId = outgoingFromSense ? rel.targetWordId.value : rel.sourceWordId.value;
-      for (const member of this.senses.membersOf(otherSenseId)) {
-        expanded.push({
-          ...rel,
-          uuid: { value: `${rel.uuid.value}:${member.uuid.value}` },
-          sourceWordId: outgoingFromSense ? { value: word.uuid.value } : member.uuid,
-          targetWordId: outgoingFromSense ? member.uuid : { value: word.uuid.value },
-        });
+    for (const ownSenseId of word.senseIds) {
+      const senseId = ownSenseId.value;
+      for (const rel of [...this.relationships.outgoing(senseId), ...this.relationships.incoming(senseId)]) {
+        const outgoingFromSense = rel.sourceWordId.value === senseId;
+        const otherSenseId = outgoingFromSense ? rel.targetWordId.value : rel.sourceWordId.value;
+        for (const member of this.senses.membersOf(otherSenseId)) {
+          expanded.push({
+            ...rel,
+            uuid: { value: `${rel.uuid.value}:${member.uuid.value}` },
+            sourceWordId: outgoingFromSense ? { value: word.uuid.value } : member.uuid,
+            targetWordId: outgoingFromSense ? member.uuid : { value: word.uuid.value },
+          });
+        }
       }
     }
     return expanded;
@@ -1263,7 +1267,10 @@ export class DictionaryView {
       // node by design.
       let cur = options.wordId;
       if (!allNodeIds.has(cur)) {
-        const senseId = this.resolveEntry(options.wordId)?.senseId?.value;
+        // senseIds[0] -- the primary/first-seeded sense (Word.senseIds's
+        // own docstring) -- same "collapse a whole synset onto one node"
+        // simplification this fallback already documents above.
+        const senseId = this.resolveEntry(options.wordId)?.senseIds[0]?.value;
         if (senseId !== undefined && allNodeIds.has(senseId)) cur = senseId;
       }
       if (!allNodeIds.has(cur)) return { ...empty, totalEdgeCount, totalNodeCount };
@@ -1381,7 +1388,12 @@ export class DictionaryView {
     gloss?: Text;
     usageNotes: readonly Text[];
   } {
-    const sense = entry.senseId !== undefined ? this.senses.findByUuid(entry.senseId.value) : undefined;
+    // senseIds[0] -- the primary/first-seeded sense (Word.senseIds's own
+    // docstring) -- for a polysemous entry, WordRecord/PhraseRecord is
+    // still one row, so this picks the one Sense whose fields that row
+    // shows; every other sense is reachable via searchSenses() directly.
+    const primarySenseId = entry.senseIds[0];
+    const sense = primarySenseId !== undefined ? this.senses.findByUuid(primarySenseId.value) : undefined;
     if (sense !== undefined) {
       return {
         domainTag: sense.domainTag,
@@ -1405,7 +1417,8 @@ export class DictionaryView {
    * of root_words.json's 25 curated NOUN Words ever has this set), so
    * this only ever takes a Word, not the wider Word | Phrase entry. */
   private isRootWordFor(word: Word): boolean {
-    const sense = word.senseId !== undefined ? this.senses.findByUuid(word.senseId.value) : undefined;
+    const primarySenseId = word.senseIds[0];
+    const sense = primarySenseId !== undefined ? this.senses.findByUuid(primarySenseId.value) : undefined;
     return sense?.isRootWord ?? word.isRootWord;
   }
 

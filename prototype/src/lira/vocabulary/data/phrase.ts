@@ -67,11 +67,11 @@ export interface Phrase extends LinguisticUnit {
   // Common Vocabulary Cache closed-class Phrase, in particular).
   synsetId?: Identifier;
 
-  // Word.senseId's own exact counterpart -- a reference to the Sense
-  // (data/sense.ts) this Phrase lexicalizes, distinct from synsetId
-  // above (sense.ts's own docstring on the distinction). Undefined for
-  // a Phrase that didn't come from WordSeeder.seedWordNet.
-  senseId?: Identifier;
+  // Word.senseIds's own exact counterpart -- every Sense (data/sense.ts)
+  // this Phrase lexicalizes, distinct from synsetId above (sense.ts's
+  // own docstring on the distinction). Empty for a Phrase that didn't
+  // come from WordSeeder.seedWordNet.
+  senseIds: readonly Identifier[];
 
   version: Text;
   languageCode: Code;
@@ -129,6 +129,7 @@ export function createPhrase(init: PhraseInit): Phrase {
     sourceReferences: [],
     relatedDomainTags: [],
     words: [],
+    senseIds: [],
     isCommon: false,
     uuid: init.uuid ?? { value: newUuid() },
     entryId: init.entryId ?? { value: newUuid() },
@@ -206,7 +207,7 @@ export function phraseAsWord(phrase: Phrase): Word {
     uuid: phrase.uuid,
     entryId: phrase.entryId,
     synsetId: phrase.synsetId,
-    senseId: phrase.senseId,
+    senseIds: phrase.senseIds,
     partOfSpeech: phrase.partOfSpeech,
     version: phrase.version,
     languageCode: phrase.languageCode,

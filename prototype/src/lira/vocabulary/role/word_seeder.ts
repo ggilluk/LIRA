@@ -1066,31 +1066,58 @@ export class WordSeeder {
         // pass 2's pointer-relationship wiring below, just stored in
         // Phrases instead of Dictionary.
         if (isMultiWordLemma(lemma)) {
-          const existingPhrase = phraseBook
-            .lookupAll(lemma)
-            .find((phrase) => phrase.partOfSpeech === synset.partOfSpeech && phrase.synsetId?.value === synset.synsetId);
+          // Unique by (partOfSpeech, lemma) now, not by (partOfSpeech,
+          // lemma, synsetId) -- Word's own exact counterpart, just below
+          // (that branch's own comment on why the synsetId condition is
+          // gone). `phrase.text === lemma` on top of Phrases.lookupAll()'s
+          // own case-insensitive search restores case sensitivity for the
+          // actual identity match -- lookupAll() alone would conflate two
+          // genuinely distinct lemmas differing only by case (a real bug
+          // this exact shape caused for Word, this branch's own sibling
+          // just below: WordNet's "hegira"/"Hegira" are two distinct
+          // lemmas -- offsets 00061234-n and 00061368-n -- that
+          // lookupAll("Hegira") alone cannot tell apart).
+          const existingPhrase = phraseBook.lookupAll(lemma).find((phrase) => phrase.partOfSpeech === synset.partOfSpeech && phrase.text === lemma);
+          let phrase: Phrase;
           if (existingPhrase !== undefined) {
-            members.push(existingPhrase);
-            continue;
+            phrase = existingPhrase;
+          } else {
+            phrase = this.synsetMemberToPhrase(synset, lemma, verbLemmas);
+            phraseBook.append(phrase);
+            newPhrases.push(phrase);
+            wordsSeeded += 1;
           }
-          const phrase = this.synsetMemberToPhrase(synset, lemma, verbLemmas);
-          phraseBook.append(phrase);
           members.push(phrase);
-          newPhrases.push(phrase);
-          wordsSeeded += 1;
           continue;
         }
-        const existing = dictionary
-          .lookupAll(lemma)
-          .find((word) => word.partOfSpeech === synset.partOfSpeech && word.synsetId?.value === synset.synsetId);
+        // Unique by (partOfSpeech, lemma), not by (partOfSpeech, lemma,
+        // synsetId) -- a polysemous lemma (Word.senseIds's own docstring)
+        // reuses the identical Word across every synset it turns out to
+        // lexicalize, rather than getting a separate Word per synset the
+        // way this used to work (this switch's own former synsetId
+        // condition). frames/syntacticPosition (Verb.framesForSense()/
+        // Adjective.syntacticPositionForSense()) are captured below
+        // either way, new Word or reused -- they're a fact about this one
+        // (word, sense) pairing specifically, not about the Word alone.
+        // `word.text === lemma` on top of Dictionary.lookupAll()'s own
+        // case-insensitive search restores case sensitivity for the
+        // actual identity match -- lookupAll() alone conflates two
+        // genuinely distinct lemmas differing only by case (verified
+        // directly against dict/data.noun: "hegira"/"Hegira", offsets
+        // 00061234-n and 00061368-n, are two real, separate lemmas, not
+        // one lemma seen twice).
+        const existing = dictionary.lookupAll(lemma).find((word) => word.partOfSpeech === synset.partOfSpeech && word.text === lemma);
+        let word: Word;
         if (existing !== undefined) {
-          members.push(existing);
-          continue;
+          word = existing;
+        } else {
+          word = this.synsetMemberToWord(synset, lemma);
+          dictionary.append(word);
+          wordsSeeded += 1;
         }
-        const word = this.synsetMemberToWord(synset, lemma, lemmaIndex);
-        dictionary.append(word);
         members.push(word);
-        wordsSeeded += 1;
+        const senseMetadata = this.memberSenseMetadata(synset, lemmaIndex);
+        if (senseMetadata !== undefined) senseStore.setMemberMetadata(sense.uuid.value, word.uuid.value, senseMetadata);
       }
       // Every member linked to this synset's own Sense, new or reused
       // (a reused member from an earlier seedWordNet run, before this
@@ -1353,16 +1380,14 @@ export class WordSeeder {
   // sparse, small-vocabulary label ("medicine", "chemistry", ...), not
   // a per-synset identifier, so it doesn't fragment the Domain filter
   // the way a domainTag-per-synset scheme would.
-  /** `lemmaIndex` (0-based, `synset.lemmas`' own indexing) is what lets
-   * this pick out exactly one Word's own subset of synset.frames/
-   * lemmaPositions -- both are populated per-lemma, not per-synset (a
-   * frame or adjective position can genuinely differ between two
-   * members of the same synset, WordNetFrame's/Adjective's own
-   * docstrings on the real examples this was verified against), so two
-   * members processed here can end up with different Noun/Verb/
-   * Adjective/Adverb subtype fields even though every other field below
-   * (definition, synsetId, ...) is identical between them. */
-  private synsetMemberToWord(synset: WordNetSynset, lemma: string, lemmaIndex: number): Word {
+  /** A brand-new Word for `lemma` in `synset`'s own part of speech --
+   * called only the first time a given (partOfSpeech, lemma) pair is
+   * seen (this method's own call site's own comment); every later
+   * synset that reuses the identical pair reuses the identical Word
+   * instead. Carries no frames/syntacticPosition of its own any more --
+   * memberSenseMetadata() below captures those separately, once per
+   * (word, sense) pairing, new Word or reused. */
+  private synsetMemberToWord(synset: WordNetSynset, lemma: string): Word {
     const shared = {
       text: lemma,
       languageCode: { value: this.languageCode },
@@ -1373,18 +1398,10 @@ export class WordSeeder {
       sourceReferences: [WORDNET_SOURCE_REFERENCE],
     };
     switch (synset.partOfSpeech) {
-      case PartOfSpeech.VERB: {
-        // wordIndex 0 means "every member of this synset"; a nonzero
-        // value is 1-based, matching lemmaIndex's own 0-based position
-        // plus one (WordNetFrame's own docstring, wordnet_loader.ts).
-        const frameNumbers = synset.frames
-          .filter((frame) => frame.wordIndex === 0 || frame.wordIndex === lemmaIndex + 1)
-          .map((frame) => frame.frameNumber);
-        const frames = [...new Set(frameNumbers)].map((n) => VERB_FRAME_TEXT[n]).filter((text): text is string => text !== undefined);
-        return generateVerbForms(createVerb({ ...shared, frames: frames.length > 0 ? frames : undefined }));
-      }
+      case PartOfSpeech.VERB:
+        return generateVerbForms(createVerb(shared));
       case PartOfSpeech.ADJECTIVE:
-        return generateAdjectiveForms(createAdjective({ ...shared, syntacticPosition: synset.lemmaPositions[lemmaIndex] }));
+        return generateAdjectiveForms(createAdjective(shared));
       case PartOfSpeech.ADVERB:
         return generateAdverbForms(createAdverb(shared));
       case PartOfSpeech.NOUN:
@@ -1397,6 +1414,35 @@ export class WordSeeder {
         // PartOfSpeech's other 12 values.
         return generateNounForms(createNoun(shared));
     }
+  }
+
+  /** The per-(word, sense) metadata Senses.setMemberMetadata() stores
+   * (data/senses.ts's own docstring on why this lives there and not on
+   * the Word itself) -- undefined for a Noun/Adverb (neither carries any
+   * such metadata) or for a Verb/Adjective member with nothing to
+   * record for this specific synset/lemmaIndex pairing. `lemmaIndex`
+   * (0-based, `synset.lemmas`' own indexing) is what lets this pick out
+   * exactly one member's own subset of synset.frames/lemmaPositions --
+   * both are populated per-lemma, not per-synset (a frame or adjective
+   * position can genuinely differ between two members of the same
+   * synset, WordNetFrame's/Adjective's own docstrings on the real
+   * examples this was verified against). */
+  private memberSenseMetadata(synset: WordNetSynset, lemmaIndex: number): Readonly<Record<string, unknown>> | undefined {
+    if (synset.partOfSpeech === PartOfSpeech.VERB) {
+      // wordIndex 0 means "every member of this synset"; a nonzero
+      // value is 1-based, matching lemmaIndex's own 0-based position
+      // plus one (WordNetFrame's own docstring, wordnet_loader.ts).
+      const frameNumbers = synset.frames
+        .filter((frame) => frame.wordIndex === 0 || frame.wordIndex === lemmaIndex + 1)
+        .map((frame) => frame.frameNumber);
+      const frames = [...new Set(frameNumbers)].map((n) => VERB_FRAME_TEXT[n]).filter((text): text is string => text !== undefined);
+      return frames.length > 0 ? { frames } : undefined;
+    }
+    if (synset.partOfSpeech === PartOfSpeech.ADJECTIVE) {
+      const syntacticPosition = synset.lemmaPositions[lemmaIndex];
+      return syntacticPosition !== undefined ? { syntacticPosition } : undefined;
+    }
+    return undefined;
   }
 
   /** synsetMemberToWord's own counterpart for a multi-word lemma --

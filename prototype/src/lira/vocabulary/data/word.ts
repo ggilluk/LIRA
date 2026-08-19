@@ -72,30 +72,39 @@ export interface Word extends LinguisticUnit {
   // many Domains end up holding their own runtime copy of it.
   entryId: Identifier;
 
-  // The Princeton WordNet 3.1 synset this Word corresponds to, when
-  // known ("00001740-n" -- an 8-digit zero-padded byte offset, a
-  // hyphen, then the synset's ss_type letter: n/v/a/s/r). A WordNet
-  // synset -- literally "a set of one or more synonyms" -- IS a LIRA
-  // Domain+Word: both name one sense, not one spelling, which is why
-  // LIRA models a WordNet synset as a set of Words joined by SYNONYM
-  // LexicalRelationships (word.ts's own synonyms()) rather than as a
-  // separate concept of its own -- synsetId is just that sense's
-  // upstream WordNet identity carried along, the same role entryId
-  // plays for the Common Vocabulary Cache. Undefined for a Word that
-  // didn't come from WordSeeder.seedWordNet (role/word_seeder.ts).
+  // The Princeton WordNet 3.1 synset that *first* produced this Word,
+  // when known ("00001740-n" -- an 8-digit zero-padded byte offset, a
+  // hyphen, then the synset's ss_type letter: n/v/a/s/r). Set once, at
+  // creation, and never updated afterwards -- a Word is now unique by
+  // (partOfSpeech, lemma), not by synset (WordSeeder.seedWordNet's own
+  // find-or-create, role/word_seeder.ts), so a polysemous lemma's Word
+  // can go on to lexicalize several more synsets after this one, each
+  // added to `senseIds` below. This field stays as a "primary sense"
+  // snapshot for the callers that only ever needed one representative
+  // synset id (DictionaryView's own WordRecord.sense_id, the Hierarchy
+  // tree's node-id fallback) -- it is never a complete picture of every
+  // synset this Word now belongs to; `senseIds` is. Undefined for a
+  // Word that didn't come from WordSeeder.seedWordNet.
   synsetId?: Identifier;
 
-  // A reference to the Sense (data/sense.ts) this Word lexicalizes --
-  // that Sense's own `uuid`, an internal graph reference, not a WordNet
+  // Every Sense (data/sense.ts) this Word lexicalizes, each entry that
+  // Sense's own `uuid` -- an internal graph reference, not a WordNet
   // identifier string (synsetId above is that; sense.ts's own docstring
   // on why the two are easy to conflate but distinct: synsetId is
-  // "which WordNet synset", senseId is "which Sense object in this
-  // Domain's own Senses"). Deliberately additive alongside every
-  // field below it still duplicates from that Sense (definition,
-  // usageNotes, domainTag, relatedDomainTags) -- Sense's own docstring
-  // on why removing that duplication is separate, later work. Undefined
-  // for a Word that didn't come from WordSeeder.seedWordNet.
-  senseId?: Identifier;
+  // "which WordNet synset", a senseIds entry is "which Sense object in
+  // this Domain's own Senses"). More than one entry is the ordinary
+  // case for a polysemous lemma, not an edge case -- Senses.registerMember()
+  // appends here (idempotently) once per synset this Word's own
+  // (partOfSpeech, lemma) turns out to lexicalize, in first-seeded
+  // order, so `senseIds[0]` is always the same Sense `synsetId` above
+  // names. Deliberately additive alongside every field below it still
+  // duplicates from a Sense (definition, usageNotes, domainTag,
+  // relatedDomainTags) -- Sense's own docstring on why removing that
+  // duplication is separate, later work; a Word with several senses
+  // duplicates only its *first* Sense's copy of those fields, the same
+  // "primary sense" simplification synsetId above already accepts.
+  // Empty for a Word that didn't come from WordSeeder.seedWordNet.
+  senseIds: readonly Identifier[];
 
   version: Text;
   languageCode: Code;
@@ -225,6 +234,7 @@ export function createWord(init: WordInit): Word {
     editorialLabels: [],
     relatedDomainTags: [],
     sourceReferences: [],
+    senseIds: [],
     isCommon: false,
     isFullyHydrated: true,
     isRootWord: false,
@@ -314,18 +324,18 @@ function categoryOf(kind: LexicalRelationshipType): number {
  * MERONYM, ANTONYM, ...) is now stored as one Sense-to-Sense edge, not a
  * member x member cross product, so a plain `word`-keyed lookup of
  * `relationships` alone would miss it entirely for any WordNet-seeded
- * Word/Phrase. When `word.senseId` is set, this also reads that same
- * Sense's own outgoing/incoming edges under the identical filter and
- * expands whichever Sense the far side names back out to every member
- * Senses.membersOf() knows about it -- recovering the exact
- * member x member result the pre-Sense encoding stored explicitly,
- * computed at read time instead. SYNONYM is the one kind with no edge to
- * expand at all: WordSeeder no longer stores a SYNONYM edge for any
+ * Word/Phrase. This reads that same expansion for *every* Sense in
+ * `word.senseIds` (a polysemous Word lexicalizes more than one, Word.senseIds's
+ * own docstring), unioning the results across all of them -- a caller
+ * asking a multi-sense Word for its hypernyms sees every sense's own
+ * hypernyms together, not just one. SYNONYM is the one kind with no edge
+ * to expand at all: WordSeeder no longer stores a SYNONYM edge for any
  * WordNet-derived pair (senses.ts's own Senses.registerMember()
  * docstring), so a SYNONYM query with a `senseStore` also always
- * includes every fellow member of `word`'s own Sense directly, sharing a
- * Sense *is* being a synonym. Omitting `senseStore` (every caller that
- * predates Sense) keeps today's exact direct-edge-only behaviour. */
+ * includes every fellow member of each of `word`'s own Senses directly,
+ * sharing a Sense *is* being a synonym. Omitting `senseStore` (every
+ * caller that predates Sense) keeps today's exact direct-edge-only
+ * behaviour. */
 function relatedWords(
   word: Word | Phrase,
   relationships: LexicalRelationshipStore,
@@ -360,24 +370,26 @@ function relatedWords(
     }
   }
 
-  if (senseStore !== undefined && word.senseId !== undefined) {
-    const senseId = word.senseId.value;
-    if (relationshipType === LexicalRelationshipType.SYNONYM) {
-      for (const member of senseStore.membersOf(senseId)) addCandidate(member);
-    }
-    const otherSenseIds: string[] = [];
-    if (direction === "outgoing" || direction === "both") {
-      for (const r of relationships.outgoing(senseId)) {
-        if (relationshipMatches(r, relationshipType, group, category)) otherSenseIds.push(r.targetWordId.value);
+  if (senseStore !== undefined) {
+    for (const ownSenseId of word.senseIds) {
+      const senseId = ownSenseId.value;
+      if (relationshipType === LexicalRelationshipType.SYNONYM) {
+        for (const member of senseStore.membersOf(senseId)) addCandidate(member);
       }
-    }
-    if (direction === "incoming" || direction === "both") {
-      for (const r of relationships.incoming(senseId)) {
-        if (relationshipMatches(r, relationshipType, group, category)) otherSenseIds.push(r.sourceWordId.value);
+      const otherSenseIds: string[] = [];
+      if (direction === "outgoing" || direction === "both") {
+        for (const r of relationships.outgoing(senseId)) {
+          if (relationshipMatches(r, relationshipType, group, category)) otherSenseIds.push(r.targetWordId.value);
+        }
       }
-    }
-    for (const otherSenseId of otherSenseIds) {
-      for (const member of senseStore.membersOf(otherSenseId)) addCandidate(member);
+      if (direction === "incoming" || direction === "both") {
+        for (const r of relationships.incoming(senseId)) {
+          if (relationshipMatches(r, relationshipType, group, category)) otherSenseIds.push(r.sourceWordId.value);
+        }
+      }
+      for (const otherSenseId of otherSenseIds) {
+        for (const member of senseStore.membersOf(otherSenseId)) addCandidate(member);
+      }
     }
   }
 

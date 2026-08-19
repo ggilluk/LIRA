@@ -1,13 +1,20 @@
-/** Adjective: Word's own ADJECTIVE-specific subtype, carrying
- * `syntacticPosition` -- a real WordNet-sourced property this codebase
- * used to discard outright. Princeton WordNet 3.1's dict/data.adj marks
- * some lemmas with a trailing, space-free parenthetical -- "afraid(p)",
- * "galore(ip)" -- restricting where that specific sense of the
- * adjective can sit relative to the noun it modifies. wordnet_loader.ts's
- * own cleanLemma() already stripped this marker before this field
- * existed; it's parsed into WordNetSynset.lemmaPositions now instead,
- * and WordSeeder.seedWordNet's own synsetMemberToWord() reads it from
- * there when constructing an Adjective specifically.
+/** Adjective: Word's own ADJECTIVE-specific subtype. Also home to
+ * `syntacticPositionForSense()` below -- a real WordNet-sourced property
+ * this codebase used to discard outright. Princeton WordNet 3.1's
+ * dict/data.adj marks some lemmas with a trailing, space-free
+ * parenthetical -- "afraid(p)", "galore(ip)" -- restricting where that
+ * specific sense of the adjective can sit relative to the noun it
+ * modifies. wordnet_loader.ts's own cleanLemma() already stripped this
+ * marker before this existed; it's parsed into WordNetSynset.lemmaPositions
+ * now instead, and WordSeeder.seedWordNet's own synsetMemberToWord()
+ * reads it from there, storing the result on the Senses store as per-
+ * membership metadata (Senses.setMemberMetadata()'s own docstring,
+ * data/senses.ts) rather than on the Adjective itself -- an Adjective is
+ * now unique by (partOfSpeech, lemma) and can lexicalize several senses
+ * (Word.senseIds's own docstring), and a syntactic-position restriction
+ * is a fact about one specific sense ("afraid" is predicate-only in its
+ * "frightened" sense but has no such restriction in some other sense
+ * sharing that spelling), not the spelling as a whole.
  *
  * Verified directly against the bundled dict/ files, not guessed: a
  * scan of all four dict/data.* files found `(a)`/`(p)`/`(ip)` are the
@@ -17,6 +24,7 @@
 
 import type { Text } from "../../value_objects";
 import { PartOfSpeech } from "./enums/part_of_speech";
+import type { Senses } from "./senses";
 import {
   createWord,
   regularDegreeForm,
@@ -27,9 +35,10 @@ import {
 } from "./word";
 
 // WordNet's own three syntactic-position restrictions for an adjective
-// sense -- undefined on Adjective.syntacticPosition means unrestricted
-// (attributive AND predicative both fine), the common case; only ~4%
-// of dict/data.adj's own lemmas carry one of these three markers at all.
+// sense -- undefined (syntacticPositionForSense's own return) means
+// unrestricted (attributive AND predicative both fine), the common
+// case; only ~4% of dict/data.adj's own lemmas carry one of these three
+// markers at all.
 export enum AdjectivePosition {
   // WordNet "(a)" -- only directly before the noun it modifies
   // ("former" in "the former president", never "the president is former").
@@ -45,7 +54,6 @@ export enum AdjectivePosition {
 
 export interface Adjective extends Word {
   partOfSpeech: PartOfSpeech.ADJECTIVE;
-  syntacticPosition?: AdjectivePosition;
 
   // The rest of this subtype's own row of fields from the Word Form to
   // Part of Speech Matrix (data/word_form_part_of_speech_matrix.md) --
@@ -87,6 +95,18 @@ export function createAdjective(init: AdjectiveInit): Adjective {
 
 export function isAdjective(word: Word): word is Adjective {
   return word.partOfSpeech === PartOfSpeech.ADJECTIVE;
+}
+
+/** `adjective`'s own syntactic-position restriction *for this one
+ * sense*, or undefined for no restriction -- Senses.setMemberMetadata()'s
+ * own read side (data/senses.ts), written once per (Adjective, Sense)
+ * pair by WordSeeder.seedWordNet's own synsetMemberToWord(). `senseId`
+ * is one of `adjective.senseIds`'s own entries (Word.senseIds's own
+ * docstring on why an Adjective can carry more than one); passing a
+ * senseId this Adjective doesn't actually lexicalize just returns
+ * undefined, the same as no restriction ever having been recorded. */
+export function syntacticPositionForSense(senses: Senses, adjective: Adjective, senseId: string): AdjectivePosition | undefined {
+  return senses.metadataFor(senseId, adjective.uuid.value)?.syntacticPosition as AdjectivePosition | undefined;
 }
 
 // Adjective's own row of the matrix's String Pattern column (data/word_form_part_of_speech_matrix.md),

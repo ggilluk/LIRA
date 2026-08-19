@@ -1,14 +1,19 @@
-/** Verb: Word's own VERB-specific subtype, carrying `frames` -- a real
- * WordNet-sourced property this codebase used to discard outright.
- * Princeton WordNet 3.1's dict/data.verb records, per synset, which of
- * its own 35 standard "generic verb frame" sentence patterns
- * ("Somebody ----s something") that synset's meaning fits -- sometimes
- * naming the whole synset, sometimes one specific member word only.
- * wordnet_loader.ts's own docstring used to say this block is "never
- * retained"; it's parsed into WordNetSynset.frames now instead, and
- * WordSeeder.seedWordNet's own synsetMemberToWord() resolves each
- * Verb's own subset of applicable frame numbers against VERB_FRAME_TEXT
- * below when constructing it.
+/** Verb: Word's own VERB-specific subtype. Also home to `framesForSense()`
+ * below -- a real WordNet-sourced property this codebase used to
+ * discard outright. Princeton WordNet 3.1's dict/data.verb records, per
+ * synset, which of its own 35 standard "generic verb frame" sentence
+ * patterns ("Somebody ----s something") that synset's meaning fits --
+ * sometimes naming the whole synset, sometimes one specific member word
+ * only. wordnet_loader.ts's own docstring used to say this block is
+ * "never retained"; it's parsed into WordNetSynset.frames now instead,
+ * and WordSeeder.seedWordNet's own synsetMemberToWord() resolves each
+ * (Verb, sense) pair's own subset of applicable frame numbers against
+ * VERB_FRAME_TEXT below, storing the result on the Senses store as
+ * per-membership metadata (Senses.setMemberMetadata()'s own docstring,
+ * data/senses.ts) rather than on the Verb itself -- a Verb is now
+ * unique by (partOfSpeech, lemma) and can lexicalize several senses
+ * (Word.senseIds's own docstring), and frame applicability is a fact
+ * about one specific sense, not the spelling as a whole.
  *
  * Verified directly against the bundled dict/ files, not guessed:
  * "breathe" (00001740-v) carries frames 2/8, resolving to "Somebody
@@ -22,6 +27,7 @@
 
 import type { Text } from "../../value_objects";
 import { PartOfSpeech } from "./enums/part_of_speech";
+import type { Senses } from "./senses";
 import {
   createWord,
   endsInConsonantY,
@@ -34,11 +40,6 @@ import {
 
 export interface Verb extends Word {
   partOfSpeech: PartOfSpeech.VERB;
-  // Resolved text of every WordNet generic verb frame this specific
-  // Verb (not just its synset) participates in -- undefined for a Verb
-  // that didn't come from WordSeeder.seedWordNet (every Common
-  // Vocabulary Cache entry, which has no frame data of its own).
-  frames?: readonly string[];
 
   // The rest of this subtype's own row of fields from the Word Form to
   // Part of Speech Matrix (data/word_form_part_of_speech_matrix.md) --
@@ -116,6 +117,20 @@ export function createVerb(init: VerbInit): Verb {
 
 export function isVerb(word: Word): word is Verb {
   return word.partOfSpeech === PartOfSpeech.VERB;
+}
+
+/** Resolved text of every WordNet generic verb frame `verb` participates
+ * in *for this one sense* -- Senses.setMemberMetadata()'s own read side
+ * (data/senses.ts), written once per (Verb, Sense) pair by
+ * WordSeeder.seedWordNet's own synsetMemberToWord(). `senseId` is one of
+ * `verb.senseIds`'s own entries (Word.senseIds's own docstring on why a
+ * Verb can carry more than one); passing a senseId this Verb doesn't
+ * actually lexicalize just returns undefined, the same as no frame data
+ * ever having been set. Undefined for a Verb that didn't come from
+ * WordSeeder.seedWordNet (every Common Vocabulary Cache entry, which has
+ * no frame data of its own). */
+export function framesForSense(senses: Senses, verb: Verb, senseId: string): readonly string[] | undefined {
+  return senses.metadataFor(senseId, verb.uuid.value)?.frames as readonly string[] | undefined;
 }
 
 // Verb's own row of the matrix's String Pattern column (data/word_form_part_of_speech_matrix.md),

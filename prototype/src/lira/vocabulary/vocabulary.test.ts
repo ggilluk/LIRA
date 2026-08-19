@@ -4,8 +4,8 @@ import { LexicalRelationshipStore } from "./data/lexical_relationship_store";
 import { LexicalRelationshipSystemPropertyTensor } from "./data/lexical_relationship_tensor";
 import { LexicalRelationshipType } from "./data/enums/lexical_relationship_type";
 import { PartOfSpeech } from "./data/enums/part_of_speech";
-import { antonyms, createWord, holonyms, hypernyms, hyponyms, meronyms, synonyms, validateFormText, validateWordFormAttributes } from "./data/word";
-import { AdjectivePosition, createAdjective, generateAdjectiveForms, isAdjective, validateAdjective } from "./data/adjective";
+import { antonyms, createWord, holonyms, hypernyms, hyponyms, meronyms, synonyms, validateFormText, validateWordFormAttributes, type Word } from "./data/word";
+import { AdjectivePosition, createAdjective, generateAdjectiveForms, isAdjective, syntacticPositionForSense, validateAdjective } from "./data/adjective";
 import { createAdverb, generateAdverbForms, isAdverb, validateAdverb } from "./data/adverb";
 import { isConjunction } from "./data/conjunction";
 import { createDeterminer, isDeterminer, validateDeterminer } from "./data/determiner";
@@ -16,8 +16,8 @@ import { isNumeral } from "./data/numeral";
 import { isParticle } from "./data/particle";
 import { isPreposition } from "./data/preposition";
 import { PRONOUN_FORM_PATTERNS, createPronoun, isPronoun, validatePronoun } from "./data/pronoun";
-import { VERB_FORM_PATTERNS, createVerb, generateVerbForms, isVerb, validateVerb } from "./data/verb";
-import { createPhrase } from "./data/phrase";
+import { VERB_FORM_PATTERNS, createVerb, framesForSense, generateVerbForms, isVerb, validateVerb } from "./data/verb";
+import { createPhrase, type Phrase } from "./data/phrase";
 import { Phrases } from "./data/phrases";
 import { PHRASE_TYPE_DETAILS, PhraseType } from "./data/enums/phrase_type";
 import { createSense } from "./data/sense";
@@ -637,8 +637,10 @@ describe("WordSeeder against the bundled Common Vocabulary Cache", () => {
     // Sense over the Word directly once a senseId is present.
     const entity = dictionary.lookupAll("entity").find((w) => w.partOfSpeech === PartOfSpeech.NOUN);
     expect(entity).toBeDefined();
-    expect(entity?.senseId).toBeDefined();
-    const entitySense = senseStore.findByUuid(entity!.senseId!.value);
+    // A hand-curated entry gets exactly one, private Sense of its own
+    // (registerUniqueSense's own docstring) -- senseIds[0] is it.
+    expect(entity?.senseIds).toHaveLength(1);
+    const entitySense = senseStore.findByUuid(entity!.senseIds[0].value);
     expect(entitySense).toBeDefined();
     expect(entitySense?.domainTag?.value).toBe("root_word.common");
     expect(entitySense?.isCommon).toBe(true);
@@ -652,17 +654,17 @@ describe("WordSeeder against the bundled Common Vocabulary Cache", () => {
     // docstring) -- and isRootWord correctly comes back false, not
     // merely undefined, for an ordinary closed-class Word's own Sense.
     const she = dictionary.lookup("she");
-    expect(she?.senseId).toBeDefined();
-    expect(she!.senseId!.value).not.toBe(entity!.senseId!.value);
-    expect(senseStore.membersOf(she!.senseId!.value)).toEqual([she]);
-    expect(senseStore.findByUuid(she!.senseId!.value)?.isRootWord).toBe(false);
+    expect(she?.senseIds).toHaveLength(1);
+    expect(she!.senseIds[0].value).not.toBe(entity!.senseIds[0].value);
+    expect(senseStore.membersOf(she!.senseIds[0].value)).toEqual([she]);
+    expect(senseStore.findByUuid(she!.senseIds[0].value)?.isRootWord).toBe(false);
 
     // A Phrase gets one too, same as a Word -- but never a root-word
     // one, since Phrase has no such concept at all (registerUniqueSense's
     // own docstring).
     const eachOther = phraseBook.lookup("each other");
-    expect(eachOther?.senseId).toBeDefined();
-    const eachOtherSense = senseStore.findByUuid(eachOther!.senseId!.value);
+    expect(eachOther?.senseIds).toHaveLength(1);
+    const eachOtherSense = senseStore.findByUuid(eachOther!.senseIds[0].value);
     expect(eachOtherSense).toBeDefined();
     expect(eachOtherSense?.isRootWord).toBe(false);
 
@@ -673,8 +675,8 @@ describe("WordSeeder against the bundled Common Vocabulary Cache", () => {
     const second = seeder.seedDomain(domain, { excludeOpenClasses: true });
     expect(second).toBe(0);
     expect(senseStore.totalEntries()).toBe(dictionary.totalEntries() + phraseBook.totalEntries());
-    expect(dictionary.lookupAll("entity").find((w) => w.partOfSpeech === PartOfSpeech.NOUN)?.senseId?.value).toBe(
-      entity!.senseId!.value,
+    expect(dictionary.lookupAll("entity").find((w) => w.partOfSpeech === PartOfSpeech.NOUN)?.senseIds[0].value).toBe(
+      entity!.senseIds[0].value,
     );
   });
 
@@ -766,27 +768,53 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // Sense at all -- none do in the bundled data, but this only
     // asserts the real order of magnitude, not the exact figure).
     expect(first.sensesSeeded).toBeGreaterThan(100000);
+
+    // A Word/Phrase is now unique by (partOfSpeech, lemma), not by
+    // synset (Word.senseIds's own docstring) -- resolving "the Word for
+    // lemma X in synset Y" now goes through the synset's own Sense
+    // first, then that Sense's own membership, rather than filtering
+    // dictionary.lookupAll(X) by a per-Word synsetId that no longer
+    // disambiguates a polysemous lemma's several synsets.
+    const wordForSynset = (synsetId: string, lemma: string): Word => {
+      const sense = senseStore.findBySynsetId(synsetId);
+      const member = sense && senseStore.membersOf(sense.uuid.value).find((m) => m.text === lemma);
+      if (member === undefined || "words" in member) throw new Error(`no Word for "${lemma}" in synset ${synsetId}`);
+      return member;
+    };
+    const phraseForSynset = (synsetId: string, lemma: string): Phrase => {
+      const sense = senseStore.findBySynsetId(synsetId);
+      const member = sense && senseStore.membersOf(sense.uuid.value).find((m) => m.text === lemma);
+      if (member === undefined || !("words" in member)) throw new Error(`no Phrase for "${lemma}" in synset ${synsetId}`);
+      return member;
+    };
     expect(senseStore.totalEntries()).toBe(first.sensesSeeded);
 
-    const big = dictionary
-      .lookupAll("big")
-      .find((word) => word.partOfSpeech === PartOfSpeech.ADJECTIVE && word.synsetId?.value === "01385012-a");
-    expect(big).toBeDefined();
-    expect(big?.isCommon).toBe(true);
-    expect(big?.synsetId?.schemeId).toBe("wn31");
-    expect(synonyms(big!, lexicalRelationships, dictionary, undefined, senseStore).map((w) => w.text)).toEqual(["large"]);
+    const big = wordForSynset("01385012-a", "big");
+    expect(big.isCommon).toBe(true);
+    expect(big.synsetId?.schemeId).toBe("wn31");
+    // synonyms() now unions every sense "big" carries (Word.senseIds's
+    // own docstring, relatedWords()'s own generalization, word.ts) --
+    // "big" ADJECTIVE is genuinely polysemous ("above average in size",
+    // "pregnant", "generous", "grown up", "boastful", ...), so its own
+    // Word-level synonym list is every one of those senses' synonyms
+    // together now, not just "above average in size"'s own "large". The
+    // *sense-scoped* check right below is the one that actually proves
+    // "big and large share a Sense".
+    expect(synonyms(big, lexicalRelationships, dictionary, undefined, senseStore).map((w) => w.text)).toContain("large");
 
     // "big" and "large" are the same Sense (Sense's own docstring on
     // why this is the point of the class -- a shared meaning, not a
     // duplicated copy of one per member), resolvable via the Word's own
-    // new senseId reference.
-    const large = dictionary
-      .lookupAll("large")
-      .find((word) => word.partOfSpeech === PartOfSpeech.ADJECTIVE && word.synsetId?.value === "01385012-a");
-    expect(large).toBeDefined();
-    expect(big?.senseId).toBeDefined();
-    expect(large?.senseId?.value).toBe(big?.senseId?.value);
-    const bigSense = senseStore.findByUuid(big!.senseId!.value);
+    // senseIds reference.
+    const large = wordForSynset("01385012-a", "large");
+    expect(big.senseIds.length).toBeGreaterThan(0);
+    const bigSenseId = senseStore.findBySynsetId("01385012-a")!.uuid.value;
+    expect(big.senseIds.map((id) => id.value)).toContain(bigSenseId);
+    expect(large.senseIds.map((id) => id.value)).toContain(bigSenseId);
+    // The sense-scoped synonym fact: every fellow member of *this one*
+    // Sense, not big's own other, unrelated senses.
+    expect(senseStore.membersOf(bigSenseId).map((m) => m.text)).toEqual(expect.arrayContaining(["big", "large"]));
+    const bigSense = senseStore.findByUuid(bigSenseId);
     expect(bigSense).toBeDefined();
     expect(bigSense?.synsetId?.value).toBe("01385012-a");
     expect(bigSense?.definition?.value).toContain("above average in size");
@@ -797,28 +825,23 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // (word_seeder.ts's own isMultiWordLemma() split) -- still wired
     // into the HYPERNYM graph exactly like a single-word synset member,
     // so hypernyms() resolves it as its own subject directly.
-    const physicalEntity = phraseBook
-      .lookupAll("physical entity")
-      .find((phrase) => phrase.synsetId?.value === "00001930-n");
-    expect(physicalEntity).toBeDefined();
-    expect(hypernyms(physicalEntity!, lexicalRelationships, dictionary, undefined, senseStore).map((w) => w.text)).toEqual(["entity"]);
+    const physicalEntity = phraseForSynset("00001930-n", "physical entity");
+    expect(hypernyms(physicalEntity, lexicalRelationships, dictionary, undefined, senseStore).map((w) => w.text)).toEqual(["entity"]);
     // The reciprocal direction resolves too, off the identical stored
     // edge (hyponyms()'s own docstring) -- "entity" is never told apart
     // from "physical entity" by a second, separately-stored HYPONYM edge.
     // Resolving the Phrase-typed hyponym back into a displayable Word
     // needs the phraseBook fallback (relatedWords()'s own docstring,
     // word.ts) -- the whole point of this test.
-    const entity = dictionary.lookupAll("entity").find((word) => word.synsetId?.value === "00001740-n");
-    expect(entity).toBeDefined();
-    expect(hyponyms(entity!, lexicalRelationships, dictionary, phraseBook, senseStore).map((w) => w.text)).toContain("physical entity");
+    const entity = wordForSynset("00001740-n", "entity");
+    expect(hyponyms(entity, lexicalRelationships, dictionary, phraseBook, senseStore).map((w) => w.text)).toContain("physical entity");
 
     // 00001740-a "able" -- ANTONYM -> 00002098-a "unable" (both
     // directions -- antonyms() itself reads direction="both").
-    const able = dictionary.lookupAll("able").find((word) => word.synsetId?.value === "00001740-a");
-    expect(able).toBeDefined();
-    expect(antonyms(able!, lexicalRelationships, dictionary, undefined, senseStore).map((w) => w.text)).toEqual(["unable"]);
-    const unable = dictionary.lookupAll("unable").find((word) => word.synsetId?.value === "00002098-a");
-    expect(antonyms(unable!, lexicalRelationships, dictionary, undefined, senseStore).map((w) => w.text)).toEqual(["able"]);
+    const able = wordForSynset("00001740-a", "able");
+    expect(antonyms(able, lexicalRelationships, dictionary, undefined, senseStore).map((w) => w.text)).toEqual(["unable"]);
+    const unable = wordForSynset("00002098-a", "unable");
+    expect(antonyms(unable, lexicalRelationships, dictionary, undefined, senseStore).map((w) => w.text)).toEqual(["able"]);
     // Only one ANTONYM edge is actually stored for this pair (a genuine
     // regression check for SYMMETRIC_RELATIONSHIP_KINDS -- antonyms()
     // reading direction="both" would still pass even if both directions
@@ -893,57 +916,51 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // directly against the bundled dict/data.noun: "hand" (05572223)
     // carries `%p` -> "finger" (05574137); "finger" carries `#p` ->
     // "hand" back.
-    const hand = dictionary.lookupAll("hand").find((word) => word.synsetId?.value === "05572223-n");
-    const finger = dictionary.lookupAll("finger").find((word) => word.synsetId?.value === "05574137-n");
-    expect(hand).toBeDefined();
-    expect(finger).toBeDefined();
+    const hand = wordForSynset("05572223-n", "hand");
+    const finger = wordForSynset("05574137-n", "finger");
     // The `%p`/`#p` pointer between "hand" and "finger" is synset-wide
     // (both indices 0), so it's stored as a single Sense-to-Sense edge,
     // not directly between the two Words (WordSeeder.seedPointerRelationship's
     // own docstring, this file's own WordNet-relationship-migration
     // tests above) -- checked at the Sense level here for that reason.
-    const handSense = senseStore.findByUuid(hand!.senseId!.value);
-    const fingerSense = senseStore.findByUuid(finger!.senseId!.value);
-    expect(handSense).toBeDefined();
-    expect(fingerSense).toBeDefined();
+    const handSense = senseStore.findBySynsetId("05572223-n")!;
+    const fingerSense = senseStore.findBySynsetId("05574137-n")!;
     const handFingerEdge = lexicalRelationships
       .all()
       .find(
         (r) =>
           r.relationshipType === LexicalRelationshipType.MERONYM &&
-          ((r.sourceWordId.value === handSense!.uuid.value && r.targetWordId.value === fingerSense!.uuid.value) ||
-            (r.sourceWordId.value === fingerSense!.uuid.value && r.targetWordId.value === handSense!.uuid.value)),
+          ((r.sourceWordId.value === handSense.uuid.value && r.targetWordId.value === fingerSense.uuid.value) ||
+            (r.sourceWordId.value === fingerSense.uuid.value && r.targetWordId.value === handSense.uuid.value)),
       );
     expect(handFingerEdge).toBeDefined();
-    expect(handFingerEdge?.sourceWordId.value).toBe(fingerSense!.uuid.value);
-    expect(handFingerEdge?.targetWordId.value).toBe(handSense!.uuid.value);
+    expect(handFingerEdge?.sourceWordId.value).toBe(fingerSense.uuid.value);
+    expect(handFingerEdge?.targetWordId.value).toBe(handSense.uuid.value);
     // meronyms()/holonyms() (word.ts) already expand a Sense-to-Sense
     // edge back out to its member Words on read (relatedWords()'s own
     // senseStore-aware branch) -- reading that same stored direction
     // from opposite ends: "hand"'s meronyms are its own parts (finger
     // among them); "finger"'s holonyms are the wholes it's part of
     // (hand among them).
-    expect(meronyms(hand!, lexicalRelationships, dictionary, undefined, senseStore).map((w) => w.text)).toContain("finger");
-    expect(holonyms(finger!, lexicalRelationships, dictionary, undefined, senseStore).map((w) => w.text)).toContain("hand");
+    expect(meronyms(hand, lexicalRelationships, dictionary, undefined, senseStore).map((w) => w.text)).toContain("finger");
+    expect(holonyms(finger, lexicalRelationships, dictionary, undefined, senseStore).map((w) => w.text)).toContain("hand");
     // And not the other way around -- "finger"'s own meronyms don't
     // include "hand" (finger isn't made of hands), nor does "hand"
     // holonym-wise claim to be part of "finger".
-    expect(meronyms(finger!, lexicalRelationships, dictionary, undefined, senseStore).map((w) => w.text)).not.toContain("hand");
-    expect(holonyms(hand!, lexicalRelationships, dictionary, undefined, senseStore).map((w) => w.text)).not.toContain("finger");
+    expect(meronyms(finger, lexicalRelationships, dictionary, undefined, senseStore).map((w) => w.text)).not.toContain("hand");
+    expect(holonyms(hand, lexicalRelationships, dictionary, undefined, senseStore).map((w) => w.text)).not.toContain("finger");
 
     // Instance-of (`@i`/`~i`) pointers are never seeded at all --
     // relationshipKindForPointer's own docstring on why (word_seeder.ts).
     // "Hegira" is a real, direct instance of "flight"/"escape" in the
     // bundled data (dict/data.noun's own 00061368-n `@i` -> 00059563-n),
     // so no relationship of any kind should exist between the two Words.
-    const hegira = dictionary.lookupAll("Hegira").find((word) => word.synsetId?.value === "00061368-n");
-    const flight = dictionary.lookupAll("flight").find((word) => word.synsetId?.value === "00059563-n");
-    expect(hegira).toBeDefined();
-    expect(flight).toBeDefined();
+    const hegira = wordForSynset("00061368-n", "Hegira");
+    const flight = wordForSynset("00059563-n", "flight");
     const hegiraFlightEdges = [
-      ...lexicalRelationships.outgoing(hegira!.uuid.value),
-      ...lexicalRelationships.incoming(hegira!.uuid.value),
-    ].filter((r) => r.sourceWordId.value === flight!.uuid.value || r.targetWordId.value === flight!.uuid.value);
+      ...lexicalRelationships.outgoing(hegira.uuid.value),
+      ...lexicalRelationships.incoming(hegira.uuid.value),
+    ].filter((r) => r.sourceWordId.value === flight.uuid.value || r.targetWordId.value === flight.uuid.value);
     expect(hegiraFlightEdges).toEqual([]);
 
     // Topic-domain pointers (`;c`/`-c`) tag the shared Sense now, once
@@ -951,9 +968,10 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // applyDomainTag/tagTopicDomain docstrings) -- "infusion" (dict/data.noun
     // offset 00324358) carries exactly one topic pointer, to the
     // "medicine" (medical_specialty) category.
-    const infusion = dictionary.lookupAll("infusion").find((word) => word.synsetId?.value === "00324358-n");
-    expect(infusion).toBeDefined();
-    const infusionSense = senseStore.findByUuid(infusion!.senseId!.value);
+    const infusion = wordForSynset("00324358-n", "infusion");
+    const infusionSenseId = senseStore.findBySynsetId("00324358-n")!.uuid.value;
+    expect(infusion.senseIds.map((id) => id.value)).toContain(infusionSenseId);
+    const infusionSense = senseStore.findByUuid(infusionSenseId);
     expect(infusionSense?.domainTag?.value).toBe("medicine");
     expect(infusionSense?.relatedDomainTags).toEqual([]);
 
@@ -964,9 +982,10 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // outcome whether a given (word, category) fact is discovered via
     // winger's own `;c` pointer or via the category synset's reciprocal
     // `-c` pointer back to winger.
-    const winger = dictionary.lookupAll("winger").find((word) => word.synsetId?.value === "10802147-n");
-    expect(winger).toBeDefined();
-    const wingerSense = senseStore.findByUuid(winger!.senseId!.value);
+    const winger = wordForSynset("10802147-n", "winger");
+    const wingerSenseId = senseStore.findBySynsetId("10802147-n")!.uuid.value;
+    expect(winger.senseIds.map((id) => id.value)).toContain(wingerSenseId);
+    const wingerSense = senseStore.findByUuid(wingerSenseId);
     expect(wingerSense?.domainTag).toBeDefined();
     const wingerDomains = [wingerSense!.domainTag!.value, ...wingerSense!.relatedDomainTags.map((tag) => tag.value)];
     expect(wingerDomains).toHaveLength(4);
@@ -987,11 +1006,9 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
       new Set(["soccer", "field hockey", "rugby", "football"]),
     );
     expect(lexicalRelationships.totalRelationships()).toBe(first.relationshipsSeeded);
-    // Re-seeding never disturbs an already-assigned senseId either --
+    // Re-seeding never disturbs an already-assigned senseIds either --
     // "big"/"large" still share the identical Sense they did before.
-    expect(dictionary.lookupAll("big").find((w) => w.synsetId?.value === "01385012-a")?.senseId?.value).toBe(
-      bigSense!.uuid.value,
-    );
+    expect(wordForSynset("01385012-a", "big").senseIds.map((id) => id.value)).toContain(bigSense!.uuid.value);
   }, 60000);
 
   it("a word's own relationships never show both a hypernym/hyponym (or antonym/meronym/...) fact and its reciprocal listing as two separate entries", async () => {
@@ -1132,7 +1149,7 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // docstring), centring the tree on the Sense, rendered via
     // resolveEntry()'s own representative-member simplification -- "toy
     // poodle" itself here, its own synset's only lemma.
-    const toyPoodleNode = hierarchy.nodes.find((n) => n.id === toyPoodle!.senseId!.value);
+    const toyPoodleNode = hierarchy.nodes.find((n) => n.id === toyPoodle!.senseIds[0].value);
     expect(toyPoodleNode).toBeDefined();
     expect(toyPoodleNode?.lexical_form).toBe("toy poodle");
     expect(hierarchy.nodes.map((n) => n.lexical_form)).toContain("poodle");
@@ -1152,7 +1169,7 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     expect(view.searchWords({ wordId: poodle!.uuid.value }).words[0].phrase_word_segments).toBeUndefined();
   }, 60000);
 
-  it("seeds a Noun/Verb/Adjective/Adverb subtype per Word, populating Verb.frames and Adjective.syntacticPosition from real WordNet data previously discarded", async () => {
+  it("seeds a Noun/Verb/Adjective/Adverb subtype per Word, populating per-sense frames/syntacticPosition from real WordNet data previously discarded", async () => {
     const dictionary = new Dictionary();
     const phraseBook = new Phrases();
     const senseStore = new Senses();
@@ -1164,55 +1181,110 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     await new WordSeeder("en").seedWordNet({
       vocabulary: { dictionary, phrases: phraseBook, senses: senseStore, lexicalRelationships, lexicalRelationshipProcessor },
     });
+    const wordForSynset = (synsetId: string, lemma: string): Word => {
+      const sense = senseStore.findBySynsetId(synsetId);
+      const member = sense && senseStore.membersOf(sense.uuid.value).find((m) => m.text === lemma);
+      if (member === undefined || "words" in member) throw new Error(`no Word for "${lemma}" in synset ${synsetId}`);
+      return member;
+    };
 
     // "breathe" (00001740-v) carries frame records 2/8, both wordIndex 0
     // (the whole synset) -- dict/data.verb: "021 * ... 02 + 02 00 + 08 00".
-    const breathe = dictionary.lookupAll("breathe").find((w) => w.synsetId?.value === "00001740-v");
-    expect(breathe).toBeDefined();
-    expect(isVerb(breathe!)).toBe(true);
-    expect(isNoun(breathe!)).toBe(false);
-    if (!isVerb(breathe!)) throw new Error("unreachable");
-    expect(breathe.frames).toEqual(expect.arrayContaining(["Somebody ----s", "Somebody ----s something"]));
-    expect(breathe.frames).toHaveLength(2);
+    const breathe = wordForSynset("00001740-v", "breathe");
+    expect(isVerb(breathe)).toBe(true);
+    expect(isNoun(breathe)).toBe(false);
+    if (!isVerb(breathe)) throw new Error("unreachable");
+    const breatheFrames = framesForSense(senseStore, breathe, senseStore.findBySynsetId("00001740-v")!.uuid.value);
+    expect(breatheFrames).toEqual(expect.arrayContaining(["Somebody ----s", "Somebody ----s something"]));
+    expect(breatheFrames).toHaveLength(2);
 
     // 00027261-v ("stretch"/"extend") -- frame 8 applies to the whole
     // synset (wordIndex 0), frame 2 to "stretch" alone (wordIndex 1,
     // dict/data.verb's own "02 + 08 00 + 02 01"): "stretch" (lemma index
     // 0) gets both; "extend" (lemma index 1) gets only the whole-synset
     // one -- proving per-lemma resolution, not per-synset copying.
-    const stretch = dictionary.lookupAll("stretch").find((w) => w.synsetId?.value === "00027261-v");
-    const extend = dictionary.lookupAll("extend").find((w) => w.synsetId?.value === "00027261-v");
-    if (!isVerb(stretch!) || !isVerb(extend!)) throw new Error("unreachable");
-    expect(stretch.frames).toEqual(expect.arrayContaining(["Somebody ----s something", "Somebody ----s"]));
-    expect(stretch.frames).toHaveLength(2);
-    expect(extend.frames).toEqual(["Somebody ----s something"]);
+    const stretchSenseId = senseStore.findBySynsetId("00027261-v")!.uuid.value;
+    const stretch = wordForSynset("00027261-v", "stretch");
+    const extend = wordForSynset("00027261-v", "extend");
+    if (!isVerb(stretch) || !isVerb(extend)) throw new Error("unreachable");
+    const stretchFrames = framesForSense(senseStore, stretch, stretchSenseId);
+    expect(stretchFrames).toEqual(expect.arrayContaining(["Somebody ----s something", "Somebody ----s"]));
+    expect(stretchFrames).toHaveLength(2);
+    expect(framesForSense(senseStore, extend, stretchSenseId)).toEqual(["Somebody ----s something"]);
+
+    // "stretch" is itself polysemous (Word.senseIds's own docstring) --
+    // 00101188-v is a second, distinct verb sense of the identical
+    // lemma+POS, now the same merged Word as 00027261-v above rather
+    // than a separate one, carrying its OWN, different frame set (just
+    // frame 2, whole-synset, dict/data.verb's own "01 + 02 00") --
+    // proving frames are stored per (word, sense), not per Word.
+    expect(stretch.senseIds.length).toBeGreaterThan(1);
+    const secondStretchSenseId = senseStore.findBySynsetId("00101188-v")!.uuid.value;
+    expect(stretch.senseIds.map((id) => id.value)).toContain(secondStretchSenseId);
+    expect(framesForSense(senseStore, stretch, secondStretchSenseId)).toEqual(["Somebody ----s"]);
+    // Querying the first sense's own frames off the same Word still
+    // gives the first sense's own answer, unaffected by the second.
+    expect(framesForSense(senseStore, stretch, stretchSenseId)).toEqual(stretchFrames);
 
     // "afraid" (00078253-a) is WordNet-marked "afraid(p)" -- predicate-
     // only. The marker itself must not survive into the spelling.
-    const afraid = dictionary.lookupAll("afraid").find((w) => w.synsetId?.value === "00078253-a");
-    expect(afraid).toBeDefined();
-    expect(isAdjective(afraid!)).toBe(true);
-    if (!isAdjective(afraid!)) throw new Error("unreachable");
+    const afraidSenseId = senseStore.findBySynsetId("00078253-a")!.uuid.value;
+    const afraid = wordForSynset("00078253-a", "afraid");
+    expect(isAdjective(afraid)).toBe(true);
+    if (!isAdjective(afraid)) throw new Error("unreachable");
     expect(afraid.text).toBe("afraid");
     expect(afraid.lexicalForm?.value).toBe("afraid");
-    expect(afraid.syntacticPosition).toBe(AdjectivePosition.PREDICATE_ONLY);
+    expect(syntacticPositionForSense(senseStore, afraid, afraidSenseId)).toBe(AdjectivePosition.PREDICATE_ONLY);
 
     // "big" (01385012-a, already used elsewhere in this file) carries no
     // WordNet position marker at all -- unrestricted, not just "false".
-    const big = dictionary.lookupAll("big").find((w) => w.synsetId?.value === "01385012-a");
-    expect(big).toBeDefined();
-    if (!isAdjective(big!)) throw new Error("unreachable");
-    expect(big.syntacticPosition).toBeUndefined();
+    const bigSenseId = senseStore.findBySynsetId("01385012-a")!.uuid.value;
+    const big = wordForSynset("01385012-a", "big");
+    if (!isAdjective(big)) throw new Error("unreachable");
+    expect(syntacticPositionForSense(senseStore, big, bigSenseId)).toBeUndefined();
 
     // Every Noun/Adverb Word still narrows correctly, even with no
     // extra field of its own populated yet.
-    const poodle = dictionary.lookupAll("poodle").find((w) => w.synsetId?.value === "02115987-n");
-    expect(isNoun(poodle!)).toBe(true);
-    expect(isVerb(poodle!)).toBe(false);
+    const poodle = wordForSynset("02115987-n", "poodle");
+    expect(isNoun(poodle)).toBe(true);
+    expect(isVerb(poodle)).toBe(false);
     const someAdverb = dictionary.all().find((w) => w.partOfSpeech === PartOfSpeech.ADVERB);
     expect(someAdverb).toBeDefined();
     expect(isAdverb(someAdverb!)).toBe(true);
     expect(isNoun(someAdverb!)).toBe(false);
+  }, 60000);
+
+  it("a polysemous lemma seeds as exactly one Word, carrying every one of its real WordNet senses by reference", async () => {
+    const dictionary = new Dictionary();
+    const senseStore = new Senses();
+    const lexicalRelationships = new LexicalRelationshipStore();
+    const lexicalRelationshipProcessor = new LexicalRelationshipProcessor(
+      lexicalRelationships,
+      new LexicalRelationshipSystemPropertyTensor(),
+    );
+    await new WordSeeder("en").seedWordNet({
+      vocabulary: { dictionary, phrases: new Phrases(), senses: senseStore, lexicalRelationships, lexicalRelationshipProcessor },
+    });
+
+    // "big" (ADJECTIVE) has many real WordNet senses ("above average in
+    // size", "important", "generous", ...) -- one Word now, not one per
+    // synset (Word.senseIds's own docstring), so lookupAll("big") has
+    // exactly one ADJECTIVE entry, whose own senseIds names every one of
+    // those senses, each resolving to its own distinct, real Sense.
+    const bigs = dictionary.lookupAll("big").filter((w) => w.partOfSpeech === PartOfSpeech.ADJECTIVE);
+    expect(bigs).toHaveLength(1);
+    const big = bigs[0];
+    expect(big.senseIds.length).toBeGreaterThan(1);
+    const bigSenses = big.senseIds.map((id) => senseStore.findByUuid(id.value)!);
+    expect(bigSenses.every((sense) => sense !== undefined)).toBe(true);
+    // Every sense is genuinely distinct -- no duplicate Sense uuids, and
+    // no two carry the identical definition text.
+    expect(new Set(bigSenses.map((sense) => sense.uuid.value)).size).toBe(bigSenses.length);
+    expect(new Set(bigSenses.map((sense) => sense.definition?.value)).size).toBe(bigSenses.length);
+    // "big"'s own first (primary) sense is still "above average in
+    // size" -- synsetId's own "primary sense snapshot" reading
+    // (Word.synsetId's own docstring) matches senseIds[0].
+    expect(big.synsetId?.value).toBe(senseStore.findByUuid(big.senseIds[0].value)?.synsetId?.value);
   }, 60000);
 });
 
