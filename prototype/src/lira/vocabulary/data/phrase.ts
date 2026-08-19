@@ -35,6 +35,7 @@ import type { Code, Identifier, Text } from "../../value_objects";
 import type { LinguisticUnit } from "../../linguistics/data/linguistic_unit";
 import type { EditorialLabel } from "./enums/editorial_label";
 import type { PartOfSpeech } from "./enums/part_of_speech";
+import type { PhraseRole } from "./enums/phrase_role";
 import type { PhraseType } from "./enums/phrase_type";
 import type { RegisterCode } from "./enums/register_code";
 import type { SourceReference } from "./source_reference";
@@ -125,6 +126,26 @@ export interface Phrase extends LinguisticUnit {
   // Common Vocabulary Cache closed-class Phrase, which has no
   // per-token composition need of its own.
   words: readonly (Identifier | undefined)[];
+
+  // The PhraseRole (enums/phrase_role.ts) each position in `words` plays
+  // within this Phrase's own structure -- same length and index
+  // alignment as `words` itself, one entry per whitespace-separated
+  // token. `undefined` at a position means that word retains only its
+  // own Part of Speech, no separate Phrase Role (the "No Role" Common
+  // Rule, data/phrase_type_patterns_and_word_roles.md) -- either because
+  // it's a token `words` itself couldn't resolve, or because the Head
+  // Identification Rule/Word Role Assignment for this Phrase's own
+  // `phraseType` genuinely doesn't assign that position a role (a
+  // post-head Noun in a Prepositional Phrase, for instance). Exactly one
+  // position holds PhraseRole.HEAD when `phraseType` is defined and at
+  // least one word resolves to that type's own Head part of speech --
+  // never more than one, per that document's own "Head" Common Rule.
+  // Populated by WordSeeder.seedWordNet's own classifyPhraseRoles()
+  // (role/word_seeder.ts, that function's own docstring for the full
+  // per-PhraseType Head/Modifier/Particle/Determiner rules), right after
+  // `words` itself is resolved -- always empty for a Common Vocabulary
+  // Cache closed-class Phrase, `words`'s own exact counterpart there.
+  wordRoles: readonly (PhraseRole | undefined)[];
 }
 
 export type PhraseInit = Pick<Phrase, "text" | "partOfSpeech"> & Partial<Omit<Phrase, "text" | "partOfSpeech">>;
@@ -138,6 +159,7 @@ export function createPhrase(init: PhraseInit): Phrase {
     sourceReferences: [],
     relatedDomainTags: [],
     words: [],
+    wordRoles: [],
     senseIds: [],
     isCommon: false,
     uuid: init.uuid ?? { value: newUuid() },

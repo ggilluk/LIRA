@@ -20,6 +20,7 @@ import { VERB_FORM_PATTERNS, createVerb, framesForSense, generateVerbForms, isVe
 import { createPhrase, type Phrase } from "./data/phrase";
 import { Phrases } from "./data/phrases";
 import { PHRASE_TYPE_DETAILS, PhraseType } from "./data/enums/phrase_type";
+import { PhraseRole } from "./data/enums/phrase_role";
 import { isNounPhrase } from "./data/noun_phrase";
 import { isVerbPhrase } from "./data/verb_phrase";
 import { isAdjectivePhrase } from "./data/adjective_phrase";
@@ -32,7 +33,7 @@ import { AsyncDictionaryHydrator } from "./role/dictionary_hydrator";
 import { DictionaryProcessor } from "./role/dictionary_processor";
 import { LexicalRelationshipProcessor } from "./role/lexical_relationship_processor";
 import { RelationshipSeeder } from "./role/relationship_seeder";
-import { classifyPhraseType, WordSeeder } from "./role/word_seeder";
+import { classifyPhraseRoles, classifyPhraseType, WordSeeder } from "./role/word_seeder";
 import { loadWordNetSynsets } from "./role/wordnet_loader";
 import { DictionaryView } from "./ui/dictionary_view";
 
@@ -1333,6 +1334,14 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // already give Word.
     expect(isNounPhrase(toyPoodle!)).toBe(true);
     expect(isVerbPhrase(toyPoodle!)).toBe(false);
+    // classifyPhraseRoles()'s own NounPhrase Head rule -- "poodle" (the
+    // last Noun-capable token, no Preposition present) is the Head;
+    // "toy" precedes it, so it's a Modifier (data/noun_phrase.ts's own
+    // "toy" is genuinely a Noun/Verb homograph, but classifyPhraseRoles
+    // checks every possible part of speech, not just dictionary.lookup's
+    // own arbitrary single pick, so this holds regardless of which one
+    // that pick happened to land on).
+    expect(toyPoodle!.wordRoles).toEqual([PhraseRole.MODIFIER, PhraseRole.HEAD]);
 
     // classifyPhraseType()'s own PREPOSITIONAL_PHRASE/INFINITIVE_PHRASE
     // rules, spot-checked against real seeded Phrases rather than just
@@ -1349,12 +1358,26 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // AdjectivePhrase, precisely because its own internal structure is
     // Preposition + NP, not (Degree modifiers) + Adjective.
     expect(isAdjectivePhrase(atFault!)).toBe(false);
+    // "at" is never itself a WordNet lemma (verified directly against
+    // dict/data.adj -- no standalone "at" sense exists), so its
+    // PREPOSITION-capability comes entirely from classifyPhraseRoles()'s
+    // own PHRASE_TYPE_PREPOSITIONS closed set, not Dictionary lookup --
+    // still resolves to Head. "fault" retains its own POS (a post-head
+    // Noun gets no PrepositionalPhrase role, that Word Role Assignment
+    // column's own "remaining words retain their POS" rule).
+    expect(atFault!.wordRoles).toEqual([PhraseRole.HEAD, undefined]);
 
     const toBeSure = phraseBook.lookupAll("to be sure").find((phrase) => phrase.synsetId?.value === "00151192-r");
     expect(toBeSure?.partOfSpeech).toBe(PartOfSpeech.ADVERB);
     expect(toBeSure?.phraseType).toBe(PhraseType.INFINITIVE_PHRASE);
     expect(isInfinitivePhrase(toBeSure!)).toBe(true);
     expect(isAdverbPhrase(toBeSure!)).toBe(false);
+    // InfinitivePhrase's own fixed rule (data/infinitive_phrase.ts's own
+    // docstring): "to" is always a Particle, never a Head candidate;
+    // Head is the first Verb-capable token after it ("be"). "sure"
+    // retains its own POS -- not covered by this codebase's own Word
+    // Patterns table, which has no InfinitivePhrase rows.
+    expect(toBeSure!.wordRoles).toEqual([PhraseRole.PARTICLE, PhraseRole.HEAD, undefined]);
     expect(dictionary.lookupAll("toy poodle")).toEqual([]);
 
     const poodle = dictionary.lookupAll("poodle").find((w) => w.synsetId?.value === "02115987-n");
@@ -1443,6 +1466,82 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     expect(detail.phrase_word_segments![1]).toMatchObject({ text: "poodle", word: true, resolved: true, word_id: poodle!.uuid.value, lexical_form: "poodle" });
     // An ordinary Word's own record never carries this field.
     expect(view.searchWords({ wordId: poodle!.uuid.value }).words[0].phrase_word_segments).toBeUndefined();
+  }, 60000);
+
+  it("classifyPhraseRoles() assigns Head/Modifier/Particle/Determiner per data/phrase_type_patterns_and_word_roles.md's own per-PhraseType rules, against real seeded WordNet Phrases", async () => {
+    const dictionary = new Dictionary();
+    const phraseBook = new Phrases();
+    const senseStore = new Senses();
+    const lexicalRelationships = new LexicalRelationshipStore();
+    const lexicalRelationshipProcessor = new LexicalRelationshipProcessor(
+      lexicalRelationships,
+      new LexicalRelationshipSystemPropertyTensor(),
+    );
+    await new WordSeeder("en").seedWordNet({
+      vocabulary: { dictionary, phrases: phraseBook, senses: senseStore, lexicalRelationships, lexicalRelationshipProcessor },
+    });
+
+    // "give up" (02686624-v, dict/data.verb) -- VerbPhrase's own "Adverb
+    // immediately followed by a Preposition is a Particle" rule doesn't
+    // fire here (nothing follows "up"), so it's a Modifier instead;
+    // "give" is the Head even though dictionary.lookup("give") alone
+    // would arbitrarily resolve to give's own rare NOUN sense ("there's
+    // a lot of give in the rope") -- classifyPhraseRoles() checks every
+    // possible part of speech per token, not that one arbitrary pick,
+    // so it still finds "give"'s VERB sense and heads it correctly.
+    const giveUp = phraseBook.lookupAll("give up").find((phrase) => phrase.synsetId?.value === "02686624-v");
+    expect(giveUp?.phraseType).toBe(PhraseType.VERB_PHRASE);
+    expect(giveUp!.wordRoles).toEqual([PhraseRole.HEAD, PhraseRole.MODIFIER]);
+
+    // "look up to" (01831800-v, dict/data.verb) -- same Head rule as
+    // "give up", but here "up" *is* immediately followed by a token
+    // capable of reading as a Preposition ("to", via
+    // PHRASE_TYPE_PREPOSITIONS -- "to" is never itself a WordNet lemma),
+    // so this time it's a Particle, not a Modifier. "to" itself retains
+    // its own POS -- a post-Head Preposition in a VerbPhrase gets no
+    // role of its own, the same as atFault's own trailing "fault" above.
+    const lookUpTo = phraseBook.lookupAll("look up to").find((phrase) => phrase.synsetId?.value === "01831800-v");
+    expect(lookUpTo?.phraseType).toBe(PhraseType.VERB_PHRASE);
+    expect(lookUpTo!.wordRoles).toEqual([PhraseRole.HEAD, PhraseRole.PARTICLE, undefined]);
+
+    // "long ago" (00022855-r, dict/data.adv) -- AdverbPhrase's own
+    // premodifying case: "ago" is the Head (the later of two Adverb-
+    // capable tokens, no Preposition present), "long" -- itself also
+    // Noun/Verb/Adjective-capable, but that doesn't matter, only its
+    // Adverb-capability does here -- is a Modifier.
+    const longAgo = phraseBook.lookupAll("long ago").find((phrase) => phrase.synsetId?.value === "00022855-r");
+    expect(longAgo?.phraseType).toBe(PhraseType.ADVERB_PHRASE);
+    expect(longAgo!.wordRoles).toEqual([PhraseRole.MODIFIER, PhraseRole.HEAD]);
+
+    // "in the meantime" (00065346-r, dict/data.adv) -- PrepositionalPhrase
+    // with a genuine Determiner in the middle: "in" heads it (via the
+    // same PHRASE_TYPE_PREPOSITIONS closed-set path "at"/"to" use above,
+    // "in" is never itself a standalone WordNet lemma either), "the" is
+    // a Determiner (PHRASE_TYPE_DETERMINERS, word_seeder.ts -- WordNet
+    // doesn't lexicalize determiners as standalone senses any more than
+    // it does prepositions), and "meantime" retains its own POS.
+    const inTheMeantime = phraseBook.lookupAll("in the meantime").find((phrase) => phrase.synsetId?.value === "00065346-r");
+    expect(inTheMeantime?.phraseType).toBe(PhraseType.PREPOSITIONAL_PHRASE);
+    expect(inTheMeantime!.wordRoles).toEqual([PhraseRole.HEAD, PhraseRole.DETERMINER, undefined]);
+
+    // classifyPhraseRoles() itself, called directly (not just through
+    // the full seeding pipeline above), for the one documented ambiguity
+    // its own docstring names: two adjacent Adverb-capable tokens with
+    // no Preposition are structurally identical whether premodifying
+    // ("very quickly") or postmodifying ("quickly enough") -- resolved
+    // only for the closed-set "enough" case, defaulting to
+    // premodifying (later token is Head) otherwise. Exercised as a pure
+    // function here since no real bundled WordNet lemma happens to be
+    // "X enough" as its own multi-word entry.
+    expect(classifyPhraseRoles(PhraseType.ADVERB_PHRASE, ["quickly", "enough"], dictionary)).toEqual([PhraseRole.HEAD, PhraseRole.MODIFIER]);
+    expect(classifyPhraseRoles(PhraseType.ADVERB_PHRASE, ["very", "quickly"], dictionary)).toEqual([PhraseRole.MODIFIER, PhraseRole.HEAD]);
+
+    // A Common Vocabulary Cache closed-class Phrase never goes through
+    // linkPhraseWords()/classifyPhraseRoles() at all (no constituency-
+    // parsing pass of its own, `words`'s own docstring) -- wordRoles
+    // stays empty, `words`'s own exact counterpart.
+    const handCrafted = createPhrase({ text: "in spite of", partOfSpeech: PartOfSpeech.PREPOSITION, phraseType: PhraseType.PREPOSITIONAL_PHRASE });
+    expect(handCrafted.wordRoles).toEqual([]);
   }, 60000);
 
   it("seeds a Noun/Verb/Adjective/Adverb subtype per Word, populating per-sense frames/syntacticPosition from real WordNet data previously discarded", async () => {

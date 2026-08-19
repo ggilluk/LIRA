@@ -5,18 +5,24 @@ is what actually determines `Phrase.phraseType` (`data/phrase.ts`,
 `enums/phrase_type.ts`), and how every other word inside the phrase gets
 assigned a Phrase Role distinct from its own stored Part of Speech.
 
-This is a design specification, not yet a fully implemented data model
--- `classifyPhraseType()` (role/word_seeder.ts) already assigns a
-Phrase's own `phraseType` from real WordNet data (that function's own
-docstring, and `data/noun_phrase.ts` through `data/infinitive_phrase.ts`,
-one subtype class per row below), and the four roles named below
-(`enums/phrase_role.ts`) exist as an enum, but nothing in this codebase
-yet stores a per-word `PhraseRole` on a phrase's own constituent words,
-nor a Head pointer from a Phrase to the one member Word that produced
-its classification. This document exists to specify that gap precisely
-enough to build against later, the same role
-`word_form_part_of_speech_matrix.md` (this same directory) serves for
-its own not-yet-implemented Exception Lookup tables.
+Fully implemented, not just specified: `classifyPhraseType()`
+(role/word_seeder.ts) assigns a Phrase's own `phraseType` from real
+WordNet data (that function's own docstring, and `data/noun_phrase.ts`
+through `data/infinitive_phrase.ts`, one subtype class per row below),
+and `classifyPhraseRoles()` (role/word_seeder.ts, called from
+`linkPhraseWords()` right after `phrase.words` itself is resolved)
+assigns every constituent word its own `PhraseRole`
+(`enums/phrase_role.ts`), stored index-aligned with `words` on
+`phrase.wordRoles` (`data/phrase.ts`) -- the Head is simply whichever
+position holds `PhraseRole.HEAD`, so no separate Head pointer field was
+needed. Only for a Phrase seeded by `WordSeeder.seedWordNet`, the same
+scope `phraseType`/`words` themselves are already limited to -- a Common
+Vocabulary Cache closed-class Phrase has no constituency-parsing pass of
+its own and so has empty `wordRoles`, `words`'s own exact counterpart
+there. `classifyPhraseRoles()`'s own docstring documents the one
+genuine ambiguity this table's rules alone can't resolve (two adjacent
+Adverb-capable tokens with no Preposition, AdverbPhrase's own Word
+Patterns rows 1 and 2) and how it's broken.
 
 Every Phrase Type Class below names one `data/*_phrase.ts` subtype
 (`NounPhrase`, `VerbPhrase`, `AdjectivePhrase`, `AdverbPhrase`,
