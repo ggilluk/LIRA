@@ -23,10 +23,14 @@
  * to treat as an exhaustive, closed set. */
 
 import type { Text } from "../../value_objects";
+import { LexicalRelationshipType } from "./enums/lexical_relationship_type";
 import { PartOfSpeech } from "./enums/part_of_speech";
+import type { LexicalRelationshipStore } from "./lexical_relationship_store";
 import type { Senses } from "./senses";
 import {
   createWord,
+  isPeriphrasticComparison,
+  periphrasticDegreeForm,
   regularDegreeForm,
   validateFormText,
   validateWordFormAttributes,
@@ -116,8 +120,8 @@ export function syntacticPositionForSense(senses: Senses, adjective: Adjective, 
 // another class's own) are simply absent here.
 export const ADJECTIVE_FORM_PATTERNS: Readonly<Record<string, readonly string[]>> = {
   positiveDegreeForm: [],
-  comparativeDegreeForm: ["/er$/i", "/ier$/i", "/([bcdfghjklmnpqrstvwxyz])\\1er$/i"],
-  superlativeDegreeForm: ["/est$/i", "/iest$/i", "/([bcdfghjklmnpqrstvwxyz])\\1est$/i"],
+  comparativeDegreeForm: ["/er$/i", "/ier$/i", "/([bcdfghjklmnpqrstvwxyz])\\1er$/i", "/^more\\s+.+$/i"],
+  superlativeDegreeForm: ["/est$/i", "/iest$/i", "/([bcdfghjklmnpqrstvwxyz])\\1est$/i", "/^most\\s+.+$/i"],
 };
 
 /** Validates every *_Form field this Adjective carries -- its own row
@@ -140,41 +144,147 @@ export function validateAdjective(adjective: Adjective): readonly WordFormIssue[
   return issues;
 }
 
+// WordNet noun synsets an Attribute-linked noun sense must trace back
+// to (itself or a Hypernym ancestor) to count as an "ordered scalar
+// dimension" -- verified directly against the bundled dict/data.noun,
+// not guessed: offset 00033914 is "measure, quantity, amount" ("how
+// much there is or how many there are of something that you can
+// quantify"), offset 05097645 is "magnitude" ("the property of relative
+// size or extent (whether large or small)"). Between them these anchor
+// every attribute noun a genuinely gradable adjective was checked
+// against while building this (temperature, speed, age, price, ... all
+// climb to "measure, quantity, amount"; size/height/weight/depth/... all
+// climb to "magnitude" -- "height" itself does by exactly two Hypernym
+// hops, "height" -> "dimension" -> "magnitude", the same chain "tall"'s
+// own Attribute pointer resolves through). A *direct* Attribute noun
+// that's already one of these two, or a direct hyponym of one, counts
+// without climbing any further -- reaching a noun explicitly named
+// "measure" is never required, only sufficient.
+const SCALAR_DIMENSION_NOUN_SYNSET_IDS: ReadonlySet<string> = new Set([
+  "00033914-n", // measure, quantity, amount
+  "05097645-n", // magnitude
+]);
+
+// A generous but finite bound on how many Hypernym hops isScalarDimensionNoun
+// climbs from one Attribute-linked noun sense before giving up -- purely
+// a cycle/runaway guard (WordNet's own noun hierarchy is a DAG in
+// principle, though never observed to cycle in the bundled dict/
+// files), not a real truncation: every anchor above sits within a
+// handful of hops of any noun that could plausibly reach it.
+const MAX_HYPERNYM_CLIMB = 16;
+
+/** Whether `nounSenseId` (a Sense.uuid) itself, or one of its Hypernym
+ * ancestors reached by breadth-first climbing `relationships`' own
+ * outgoing HYPERNYM edges, is one of SCALAR_DIMENSION_NOUN_SYNSET_IDS
+ * above -- the "Hypernym* -> Scalar/Ordered Dimension" half of
+ * determineGradability()'s own structural test
+ * ("Adjective Sense -> Attribute -> Noun Sense -> Hypernym* ->
+ * Scalar/Ordered Dimension"). A HYPERNYM edge here is always Sense-to-
+ * Sense (WordSeeder.seedPointerRelationship's own synset-level-pointer
+ * branch, role/word_seeder.ts), the same as the ATTRIBUTE edge
+ * determineGradability() itself already reads -- so `nounSenseId` and
+ * every ancestor id this visits are Sense uuids throughout, never a
+ * Word/Phrase uuid. */
+function isScalarDimensionNoun(senses: Senses, relationships: LexicalRelationshipStore, nounSenseId: string): boolean {
+  const visited = new Set<string>();
+  let frontier = [nounSenseId];
+  for (let depth = 0; depth < MAX_HYPERNYM_CLIMB && frontier.length > 0; depth += 1) {
+    const next: string[] = [];
+    for (const senseId of frontier) {
+      if (visited.has(senseId)) continue;
+      visited.add(senseId);
+      const sense = senses.findByUuid(senseId);
+      if (sense?.synsetId !== undefined && SCALAR_DIMENSION_NOUN_SYNSET_IDS.has(sense.synsetId.value)) return true;
+      for (const edge of relationships.outgoing(senseId)) {
+        if (edge.relationshipType === LexicalRelationshipType.HYPERNYM) next.push(edge.targetWordId.value);
+      }
+    }
+    frontier = next;
+  }
+  return false;
+}
+
+/** Section 1 of the Gradability Update: whether `adjective` is
+ * semantically gradable at all -- true only once at least one of its
+ * own Senses (never the primary sense alone, `adjective.senseIds`'s own
+ * full list) carries a WordNet Attribute pointer to a noun sense that
+ * itself represents an ordered scalar dimension
+ * (isScalarDimensionNoun() above). Must be settled before any *_Form
+ * generation is attempted (Required Processing Order) -- generateAdjectiveForms()
+ * below takes this as an explicit precomputed argument rather than
+ * discovering it itself precisely so that ordering can't be skipped by
+ * accident.
+ *
+ * Checks both `outgoing` and `incoming` for each own Sense, not
+ * `outgoing` alone -- ATTRIBUTE is one of WordSeeder's own
+ * SYMMETRIC_RELATIONSHIP_KINDS (role/word_seeder.ts's own docstring:
+ * WordNet lists a `=` Attribute pointer on *both* the adjective's own
+ * synset record and the noun's own reciprocal record, and WordSeeder
+ * dedups the second occurrence as already covered rather than storing
+ * it a second time), so which of the two real, matching WordNet
+ * pointers happens to get processed first during seeding -- and
+ * therefore which direction the one stored edge ends up facing --
+ * depends on synset file order, not on anything this function should
+ * have to know or care about. Every ATTRIBUTE edge this reads is
+ * Sense-to-Sense (isScalarDimensionNoun's own docstring on why), so this
+ * only ever looks at `senseId.value` on both ends, never a Word/Phrase
+ * uuid. */
+export function determineGradability(senses: Senses, relationships: LexicalRelationshipStore, adjective: Adjective): boolean {
+  for (const senseId of adjective.senseIds) {
+    const edges = [...relationships.outgoing(senseId.value), ...relationships.incoming(senseId.value)];
+    for (const edge of edges) {
+      if (edge.relationshipType !== LexicalRelationshipType.ATTRIBUTE) continue;
+      const nounSenseId = edge.sourceWordId.value === senseId.value ? edge.targetWordId.value : edge.sourceWordId.value;
+      if (isScalarDimensionNoun(senses, relationships, nounSenseId)) return true;
+    }
+  }
+  return false;
+}
+
 /** Fills in this Adjective's own derivable *_Form fields wherever still
  * undefined, from its own base lemma (`adjective.text`) --
- * WordSeeder's own seeding entry points (role/word_seeder.ts) call this
- * right after createAdjective(), so every seeded Adjective (WordNet or
- * Common Vocabulary Cache alike) gets its regular-case degree forms
- * populated automatically, without a hand-authored Adjective built
- * elsewhere (a test fixture, say) acquiring fields it never asked for
- * just by calling createAdjective(). Only ever fills a field that's
- * still undefined -- an explicitly-set value (from `init`, or an
- * earlier call) is never overwritten. comparativeDegreeForm/
- * superlativeDegreeForm are generated unconditionally from spelling
- * (regularDegreeForm, word.ts) -- this assumes every Adjective is
- * gradable, which the matrix's own Required Linguistic Data column
- * ("Gradability Classification") says isn't actually knowable without
- * curated data this codebase doesn't have, so a non-gradable
- * Adjective ("wooden") still gets a mechanically well-formed value here
- * ("woodener") even though it reads oddly -- a later curation pass that
- * adds real gradability data can suppress it then. Every value this
- * produces is provably one of that field's own recognised String
- * Patterns (ADJECTIVE_FORM_PATTERNS above), by construction --
- * generateAdjectiveForms() and validateAdjective() both draw on the
- * exact same matrix rows (regularDegreeForm's own docstring, word.ts),
- * so a freshly-generated Adjective always passes its own
- * validateAdjective() unchanged. */
-export function generateAdjectiveForms(adjective: Adjective): Adjective {
+ * WordSeeder's own seeding entry points (role/word_seeder.ts) call this,
+ * so every seeded Adjective (WordNet or Common Vocabulary Cache alike)
+ * gets its degree forms populated automatically, without a hand-
+ * authored Adjective built elsewhere (a test fixture, say) acquiring
+ * fields it never asked for just by calling createAdjective(). Only
+ * ever fills a field that's still undefined -- an explicitly-set value
+ * (from `init`, or an earlier call) is never overwritten.
+ *
+ * `gradable` is `determineGradability()`'s own precomputed answer for
+ * this Adjective (Required Processing Order: Gradability must already
+ * be settled by the time this runs, not decided here). When `false`,
+ * Positive Degree Form is the only field this ever populates --
+ * Comparative/Superlative Degree Form stay absent rather than getting a
+ * mechanically well-formed but semantically invalid value ("wooden" ->
+ * "woodener"), the exact bug this parameter exists to close. When
+ * `true`, isPeriphrasticComparison() (word.ts) picks the comparison
+ * strategy (synthetic "-er"/"-est" vs. periphrastic "more"/"most") and
+ * regularDegreeForm()/periphrasticDegreeForm() (word.ts) produce the
+ * actual spelling for whichever one applies -- regularDegreeForm() can
+ * still abstain on its own separate spelling grounds (its own
+ * docstring), so a gradable Adjective can legitimately end up with
+ * Positive Degree Form only too, same as a non-gradable one, just for a
+ * different reason. Every value this produces is provably one of that
+ * field's own recognised String Patterns (ADJECTIVE_FORM_PATTERNS
+ * above), by construction -- generateAdjectiveForms() and
+ * validateAdjective() both draw on the exact same matrix rows, so a
+ * freshly-generated Adjective always passes its own validateAdjective()
+ * unchanged. */
+export function generateAdjectiveForms(adjective: Adjective, gradable: boolean): Adjective {
   const lemma = adjective.text;
   const generated: Partial<Adjective> = {};
   if (adjective.positiveDegreeForm === undefined) generated.positiveDegreeForm = { value: lemma };
-  if (adjective.comparativeDegreeForm === undefined) {
-    const comparative = regularDegreeForm(lemma, true);
-    if (comparative !== undefined) generated.comparativeDegreeForm = comparative;
-  }
-  if (adjective.superlativeDegreeForm === undefined) {
-    const superlative = regularDegreeForm(lemma, false);
-    if (superlative !== undefined) generated.superlativeDegreeForm = superlative;
+  if (gradable) {
+    const periphrastic = isPeriphrasticComparison(lemma);
+    if (adjective.comparativeDegreeForm === undefined) {
+      const comparative = periphrastic ? periphrasticDegreeForm(lemma, true) : regularDegreeForm(lemma, true);
+      if (comparative !== undefined) generated.comparativeDegreeForm = comparative;
+    }
+    if (adjective.superlativeDegreeForm === undefined) {
+      const superlative = periphrastic ? periphrasticDegreeForm(lemma, false) : regularDegreeForm(lemma, false);
+      if (superlative !== undefined) generated.superlativeDegreeForm = superlative;
+    }
   }
   return { ...adjective, ...generated };
 }

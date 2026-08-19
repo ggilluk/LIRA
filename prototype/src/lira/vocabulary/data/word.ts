@@ -682,7 +682,11 @@ export function shouldDoubleFinalConsonant(word: string): "double" | "abstain" |
  * "better", is a second, separate reason no value is ever generated for
  * those lemmas -- there's no spelling signal to detect an irregular
  * lemma at all, so this function is never even called for one; every
- * lemma it IS called for is presumed regular). */
+ * lemma it IS called for is presumed regular). Callers must only reach
+ * this for a lemma isPeriphrasticComparison() below has already ruled
+ * OUT of periphrastic comparison -- it has no opinion of its own on
+ * synthetic vs. periphrastic, only on which synthetic spelling rule
+ * applies once synthetic has already been decided. */
 export function regularDegreeForm(lemma: string, comparative: boolean): Text | undefined {
   const plainSuffix = comparative ? "er" : "est";
   const eSuffix = comparative ? "r" : "st";
@@ -696,4 +700,67 @@ export function regularDegreeForm(lemma: string, comparative: boolean): Text | u
   if (doubling === "abstain") return undefined;
   if (doubling === "double") return { value: `${lemma}${lemma.slice(-1)}${plainSuffix}`, formats: [doubledFormat] };
   return { value: `${lemma}${plainSuffix}`, formats: [`/${plainSuffix}$/i`] };
+}
+
+/** A purely orthographic syllable-count proxy -- contiguous vowel-
+ * letter runs (`y` counted as a vowel here, unlike isMonosyllabic()
+ * above: by the time a caller reaches this function, endsInConsonantY()
+ * has already claimed every lemma ending consonant+y for its own
+ * "-ier"/"-iest" rule, so any `y` isPeriphrasticComparison() below still
+ * sees is medial, e.g. "syllable", and does belong in the count), with a
+ * bare final "e" not counted as its own syllable ("large" is one
+ * syllable, not two). Not real syllabification (a vowel digraph like
+ * "ea"/"ou" still collapses to one run, which is usually but not always
+ * right), but the matrix's own Required Linguistic Data for the
+ * comparison-strategy choice ("Degree Strategy Classification") isn't
+ * real curated data this codebase has, so this is the same "best
+ * available spelling signal" approach isMonosyllabic()/
+ * shouldDoubleFinalConsonant() above already take, scoped to the one
+ * question isPeriphrasticComparison() actually needs answered. */
+export function syllableCount(word: string): number {
+  const trimmed = /[^aeiou]e$/i.test(word) ? word.slice(0, -1) : word;
+  const runs = trimmed.match(/[aeiouy]+/gi) ?? [];
+  return Math.max(runs.length, 1);
+}
+
+// A monosyllabic lemma always takes "-er"/"-est"; a two-syllable lemma
+// still does when it ends in one of these (English's own real
+// exceptions to "long words use more/most" -- "narrow" -> "narrower",
+// not "more narrow"; "gentle" -> "gentler"; "clever" -> "cleverer").
+// Every other two-syllable lemma, and every lemma of three or more
+// syllables, takes periphrastic comparison instead ("beautiful" ->
+// "more beautiful", never "beautifuler").
+const SYNTHETIC_TWO_SYLLABLE_ENDINGS = /(er|le|ow)$/i;
+
+/** Adjective.comparativeDegreeForm/superlativeDegreeForm's own
+ * Comparison Type decision -- English's two mutually exclusive degree
+ * strategies (word_form_part_of_speech_matrix.md's own "Comparative/
+ * Superlative Periphrastic Form" rows: "more beautiful"/"most
+ * beautiful" for longer adjectives, alongside "-er"/"-est" for shorter
+ * ones) -- called before regularDegreeForm() above, never after: which
+ * one applies must be settled before any orthographic transformation is
+ * attempted (Required Processing Order), not inferred from whichever
+ * one happens to produce a well-formed spelling. `false` (synthetic)
+ * doesn't guarantee regularDegreeForm() actually returns a value --
+ * that function can still abstain on its own separate spelling grounds
+ * (its own docstring) -- it only means periphrastic comparison is not
+ * the right strategy for this lemma. */
+export function isPeriphrasticComparison(lemma: string): boolean {
+  if (endsInConsonantY(lemma)) return false;
+  const syllables = syllableCount(lemma);
+  if (syllables <= 1) return false;
+  if (syllables === 2 && SYNTHETIC_TWO_SYLLABLE_ENDINGS.test(lemma)) return false;
+  return true;
+}
+
+/** Adjective.comparativeDegreeForm/superlativeDegreeForm's own
+ * periphrastic Generation Transform -- only ever called once
+ * isPeriphrasticComparison() above has already said `true`. Unlike
+ * regularDegreeForm(), never abstains: "more"/"most" prefixing has no
+ * spelling precondition of its own, the way doubling a final consonant
+ * does. */
+export function periphrasticDegreeForm(lemma: string, comparative: boolean): Text {
+  const adverb = comparative ? "more" : "most";
+  const format = comparative ? "/^more\\s+.+$/i" : "/^most\\s+.+$/i";
+  return { value: `${adverb} ${lemma}`, formats: [format] };
 }

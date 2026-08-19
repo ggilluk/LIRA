@@ -26,7 +26,7 @@
  * formsOf/lemmaOf) once both ends of a link have actually been
  * inserted. */
 
-import { createAdjective, generateAdjectiveForms } from "../data/adjective";
+import { createAdjective, determineGradability, generateAdjectiveForms, isAdjective } from "../data/adjective";
 import { createAdverb, generateAdverbForms } from "../data/adverb";
 import { createConjunction } from "../data/conjunction";
 import { createDeterminer } from "../data/determiner";
@@ -1163,6 +1163,26 @@ export class WordSeeder {
       }
     }
 
+    // Every Adjective's Comparative/Superlative Degree Form is decided
+    // here, not back in pass 1's own synsetMemberToWord() -- only now,
+    // with every Sense fully wired to every Word that lexicalizes it
+    // (senseIds) and every Attribute/Hypernym pointer above actually
+    // seeded, is determineGradability() (data/adjective.ts) able to
+    // answer the question at all (Required Processing Order, that
+    // file's own docstring). Skips a Word already carrying either
+    // field -- a curated value (a future Common Vocabulary Cache
+    // override, say) is never overwritten, matching
+    // generateAdjectiveForms()'s own "only fills what's still
+    // undefined" contract.
+    for (const word of dictionary.all()) {
+      if (!isAdjective(word)) continue;
+      if (word.comparativeDegreeForm !== undefined && word.superlativeDegreeForm !== undefined) continue;
+      const gradable = determineGradability(senseStore, store, word);
+      const generated = generateAdjectiveForms(word, gradable);
+      word.comparativeDegreeForm = generated.comparativeDegreeForm;
+      word.superlativeDegreeForm = generated.superlativeDegreeForm;
+    }
+
     return { wordsSeeded, sensesSeeded, relationshipsSeeded };
   }
 
@@ -1386,7 +1406,18 @@ export class WordSeeder {
    * synset that reuses the identical pair reuses the identical Word
    * instead. Carries no frames/syntacticPosition of its own any more --
    * memberSenseMetadata() below captures those separately, once per
-   * (word, sense) pairing, new Word or reused. */
+   * (word, sense) pairing, new Word or reused.
+   *
+   * An ADJECTIVE gets only its Positive Degree Form here
+   * (generateAdjectiveForms(..., false)) -- determineGradability()
+   * (data/adjective.ts) needs this Word's own full senseIds list and the
+   * WordNet Attribute/Hypernym relationship graph, neither of which
+   * exists yet this early (this method runs during pass 1, seneIds and
+   * relationships are still being built; Required Processing Order,
+   * data/adjective.ts's own docstring). applyAdjectiveGradability()
+   * below revisits every seeded Adjective once pass 2 has finished
+   * wiring relationships and fills Comparative/Superlative Degree Form
+   * in then, once gradability is actually knowable. */
   private synsetMemberToWord(synset: WordNetSynset, lemma: string): Word {
     const shared = {
       text: lemma,
@@ -1401,7 +1432,7 @@ export class WordSeeder {
       case PartOfSpeech.VERB:
         return generateVerbForms(createVerb(shared));
       case PartOfSpeech.ADJECTIVE:
-        return generateAdjectiveForms(createAdjective(shared));
+        return generateAdjectiveForms(createAdjective(shared), false);
       case PartOfSpeech.ADVERB:
         return generateAdverbForms(createAdverb(shared));
       case PartOfSpeech.NOUN:
@@ -1583,7 +1614,17 @@ export class WordSeeder {
       case PartOfSpeech.VERB:
         return generateVerbForms(createVerb(fields));
       case PartOfSpeech.ADJECTIVE:
-        return generateAdjectiveForms(createAdjective(fields));
+        // No WordNet Attribute/Hypernym relationship graph exists for a
+        // Common Vocabulary Cache entry (this whole path is a hand-
+        // curated words.json, not a WordNet synset) -- determineGradability()
+        // (data/adjective.ts) has nothing to check, so this defaults to
+        // non-gradable rather than guessing "yes" the way this codebase
+        // used to (Gradability Evaluation step 6: no established scalar
+        // dimension means Gradable = false). A future curation pass that
+        // hand-authors comparativeDegreeForm/superlativeDegreeForm
+        // directly on a words.json entry still wins here -- this only
+        // ever fills a field that's still undefined.
+        return generateAdjectiveForms(createAdjective(fields), false);
       case PartOfSpeech.ADVERB:
         return generateAdverbForms(createAdverb(fields));
       case PartOfSpeech.PRONOUN:

@@ -5,7 +5,7 @@ import { LexicalRelationshipSystemPropertyTensor } from "./data/lexical_relation
 import { LexicalRelationshipType } from "./data/enums/lexical_relationship_type";
 import { PartOfSpeech } from "./data/enums/part_of_speech";
 import { antonyms, createWord, holonyms, hypernyms, hyponyms, meronyms, synonyms, validateFormText, validateWordFormAttributes, type Word } from "./data/word";
-import { AdjectivePosition, createAdjective, generateAdjectiveForms, isAdjective, syntacticPositionForSense, validateAdjective } from "./data/adjective";
+import { AdjectivePosition, createAdjective, determineGradability, generateAdjectiveForms, isAdjective, syntacticPositionForSense, validateAdjective, type Adjective } from "./data/adjective";
 import { createAdverb, generateAdverbForms, isAdverb, validateAdverb } from "./data/adverb";
 import { isConjunction } from "./data/conjunction";
 import { createDeterminer, isDeterminer, validateDeterminer } from "./data/determiner";
@@ -301,15 +301,19 @@ describe("generate<Class>Forms() -- deriving *_Form values from a base lemma", (
   });
 
   it("Adjective/Adverb: regular comparative/superlative rules, including the shared doubling and y-ending cases", () => {
-    const big = generateAdjectiveForms(createAdjective({ text: "big" }));
+    // gradable=true throughout -- this test is only about which
+    // orthographic rule regularDegreeForm() picks once synthetic
+    // comparison has already been decided, not about
+    // determineGradability() itself (its own dedicated tests below).
+    const big = generateAdjectiveForms(createAdjective({ text: "big" }), true);
     expect(big.comparativeDegreeForm).toEqual({ value: "bigger", formats: ["/([bcdfghjklmnpqrstvwxyz])\\1er$/i"] });
     expect(big.superlativeDegreeForm).toEqual({ value: "biggest", formats: ["/([bcdfghjklmnpqrstvwxyz])\\1est$/i"] });
 
-    const happy = generateAdjectiveForms(createAdjective({ text: "happy" }));
+    const happy = generateAdjectiveForms(createAdjective({ text: "happy" }), true);
     expect(happy.comparativeDegreeForm).toEqual({ value: "happier", formats: ["/ier$/i"] });
     expect(happy.superlativeDegreeForm).toEqual({ value: "happiest", formats: ["/iest$/i"] });
 
-    const large = generateAdjectiveForms(createAdjective({ text: "large" }));
+    const large = generateAdjectiveForms(createAdjective({ text: "large" }), true);
     expect(large.comparativeDegreeForm).toEqual({ value: "larger", formats: ["/er$/i"] });
 
     const fast = generateAdverbForms(createAdverb({ text: "fast" }));
@@ -317,12 +321,108 @@ describe("generate<Class>Forms() -- deriving *_Form values from a base lemma", (
     expect(fast.superlativeDegreeForm).toEqual({ value: "fastest", formats: ["/est$/i"] });
   });
 
+  it("Adjective: a non-gradable adjective only ever gets a Positive Degree Form -- no mechanically well-formed but invalid Comparative/Superlative", () => {
+    const ablative = generateAdjectiveForms(createAdjective({ text: "ablative" }), false);
+    expect(ablative.positiveDegreeForm).toEqual({ value: "ablative" });
+    expect(ablative.comparativeDegreeForm).toBeUndefined();
+    expect(ablative.superlativeDegreeForm).toBeUndefined();
+    expect(validateAdjective(ablative)).toEqual([]);
+  });
+
+  it("Adjective: isPeriphrasticComparison picks more/most for longer adjectives, -er/-est for shorter ones, matching the matrix's own examples", () => {
+    // 1 syllable -- synthetic.
+    const tall = generateAdjectiveForms(createAdjective({ text: "tall" }), true);
+    expect(tall.comparativeDegreeForm).toEqual({ value: "taller", formats: ["/er$/i"] });
+    expect(tall.superlativeDegreeForm).toEqual({ value: "tallest", formats: ["/est$/i"] });
+
+    // 2 syllables ending in "ow" -- still synthetic, one of English's
+    // own real exceptions to "long words use more/most".
+    const narrow = generateAdjectiveForms(createAdjective({ text: "narrow" }), true);
+    expect(narrow.comparativeDegreeForm).toEqual({ value: "narrower", formats: ["/er$/i"] });
+    expect(narrow.superlativeDegreeForm).toEqual({ value: "narrowest", formats: ["/est$/i"] });
+
+    // 3 syllables, no synthetic-eligible ending -- periphrastic.
+    const accepting = generateAdjectiveForms(createAdjective({ text: "accepting" }), true);
+    expect(accepting.comparativeDegreeForm).toEqual({ value: "more accepting", formats: ["/^more\\s+.+$/i"] });
+    expect(accepting.superlativeDegreeForm).toEqual({ value: "most accepting", formats: ["/^most\\s+.+$/i"] });
+    expect(validateAdjective(accepting)).toEqual([]);
+  });
+
   it("every generated Word passes its own validate<Class>() unchanged -- generation and validation are built from the same matrix rows", () => {
     expect(validateNoun(generateNounForms(createNoun({ text: "city" })))).toEqual([]);
     expect(validateVerb(generateVerbForms(createVerb({ text: "stop" })))).toEqual([]);
     expect(validateVerb(generateVerbForms(createVerb({ text: "eat" })))).toEqual([]);
-    expect(validateAdjective(generateAdjectiveForms(createAdjective({ text: "happy" })))).toEqual([]);
+    expect(validateAdjective(generateAdjectiveForms(createAdjective({ text: "happy" }), true))).toEqual([]);
     expect(validateAdverb(generateAdverbForms(createAdverb({ text: "fast" })))).toEqual([]);
+  });
+
+  it("Adjective: determineGradability checks every sense, not just the primary one, and climbs Hypernym* to find a scalar dimension", () => {
+    const senses = new Senses();
+    const relationships = new LexicalRelationshipStore();
+    const processor = new LexicalRelationshipProcessor(relationships, new LexicalRelationshipSystemPropertyTensor());
+
+    // "grandiloquent" -- Sense 1 (primary, non-scalar: an Attribute
+    // noun that isn't a scalar dimension at all) and Sense 2 (a real
+    // scalar Attribute noun, but reachable only two Hypernym hops up --
+    // mirrors "tall" -Attribute-> "stature, height" -Hypernym->
+    // "dimension" -Hypernym-> "magnitude" in the real bundled WordNet
+    // data). Gradability must be found from Sense 2 even though it is
+    // never the primary sense.
+    const grandiloquent = createAdjective({ text: "grandiloquent" });
+    const primarySense = createSense({ definition: { value: "pompous" } });
+    const scalarSense = createSense({ definition: { value: "elevated in style" } });
+    senses.append(primarySense);
+    senses.append(scalarSense);
+    senses.registerMember(primarySense, grandiloquent);
+    senses.registerMember(scalarSense, grandiloquent);
+    expect(grandiloquent.senseIds[0].value).toBe(primarySense.uuid.value);
+
+    const style = createNoun({ text: "style" });
+    const styleSense = createSense({ definition: { value: "a way of expressing something" } });
+    senses.append(styleSense);
+    senses.registerMember(styleSense, style);
+    processor.create({ sourceWordId: primarySense.uuid.value, targetWordId: styleSense.uuid.value, relationshipType: LexicalRelationshipType.ATTRIBUTE, sourceReferences: [] });
+
+    const elevation = createNoun({ text: "elevation" });
+    const elevationSense = createSense({ definition: { value: "the degree to which something is elevated" } });
+    senses.append(elevationSense);
+    senses.registerMember(elevationSense, elevation);
+    processor.create({ sourceWordId: scalarSense.uuid.value, targetWordId: elevationSense.uuid.value, relationshipType: LexicalRelationshipType.ATTRIBUTE, sourceReferences: [] });
+
+    const dimension = createNoun({ text: "dimension" });
+    const dimensionSense = createSense({ definition: { value: "the magnitude of something in a particular direction" } });
+    senses.append(dimensionSense);
+    senses.registerMember(dimensionSense, dimension);
+    processor.create({ sourceWordId: elevationSense.uuid.value, targetWordId: dimensionSense.uuid.value, relationshipType: LexicalRelationshipType.HYPERNYM, sourceReferences: [] });
+
+    const magnitude = createNoun({ text: "magnitude", synsetId: { value: "05097645-n" } });
+    const magnitudeSense = createSense({ definition: { value: "the property of relative size or extent" }, synsetId: { value: "05097645-n" } });
+    senses.append(magnitudeSense);
+    senses.registerMember(magnitudeSense, magnitude);
+    processor.create({ sourceWordId: dimensionSense.uuid.value, targetWordId: magnitudeSense.uuid.value, relationshipType: LexicalRelationshipType.HYPERNYM, sourceReferences: [] });
+
+    expect(determineGradability(senses, relationships, grandiloquent)).toBe(true);
+
+    // "chartreuse" -- one sense, a genuine Attribute noun ("color"),
+    // but "color" never climbs to either scalar-dimension anchor
+    // (colors aren't an ordered dimension) -- must come out non-gradable.
+    const chartreuse = createAdjective({ text: "chartreuse" });
+    const colorAdjSense = createSense({ definition: { value: "yellowish green" } });
+    senses.append(colorAdjSense);
+    senses.registerMember(colorAdjSense, chartreuse);
+    const color = createNoun({ text: "color" });
+    const colorSense = createSense({ definition: { value: "a visual attribute of things" } });
+    senses.append(colorSense);
+    senses.registerMember(colorSense, color);
+    processor.create({ sourceWordId: colorAdjSense.uuid.value, targetWordId: colorSense.uuid.value, relationshipType: LexicalRelationshipType.ATTRIBUTE, sourceReferences: [] });
+    expect(determineGradability(senses, relationships, chartreuse)).toBe(false);
+
+    // "wooden" -- no Attribute pointer at all -- non-gradable.
+    const wooden = createAdjective({ text: "wooden" });
+    const woodenSense = createSense({ definition: { value: "made of wood" } });
+    senses.append(woodenSense);
+    senses.registerMember(woodenSense, wooden);
+    expect(determineGradability(senses, relationships, wooden)).toBe(false);
   });
 
   it("WordSeeder.seedWordNet wires generation in automatically -- a real seeded Noun/Verb gets its regular-case forms populated, and a real irregular verb gets its true irregular form, not a spelling-rule guess", async () => {
@@ -851,6 +951,30 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
       ...lexicalRelationships.incoming(able!.uuid.value),
     ].filter((r) => r.relationshipType === LexicalRelationshipType.ANTONYM && (r.sourceWordId.value === unable!.uuid.value || r.targetWordId.value === unable!.uuid.value));
     expect(antonymEdgesBetween).toHaveLength(1);
+
+    // Adjective Gradability Update: "big"/"large" (01385012-a) carries a
+    // real WordNet Attribute pointer to "size" (05106204-n), which is
+    // itself one Hypernym hop from "magnitude" (05097645-n) --
+    // determineGradability()'s own anchor set (data/adjective.ts) -- so
+    // seedWordNet's own post-relationships pass should have populated
+    // both Degree Form fields, synthetically (monosyllabic -> "-er"/
+    // "-est", isPeriphrasticComparison's own docstring).
+    expect(isAdjective(big)).toBe(true);
+    expect((big as Adjective).positiveDegreeForm).toEqual({ value: "big" });
+    expect((big as Adjective).comparativeDegreeForm).toEqual({ value: "bigger", formats: ["/([bcdfghjklmnpqrstvwxyz])\\1er$/i"] });
+    expect((big as Adjective).superlativeDegreeForm).toEqual({ value: "biggest", formats: ["/([bcdfghjklmnpqrstvwxyz])\\1est$/i"] });
+
+    // "wooden" (both real WordNet senses, 01145111-a "lacking ease or
+    // grace" and 02586927-a "made ... of wood") carries no Attribute
+    // pointer at all -- verified directly against the bundled
+    // dict/data.adj, not guessed -- so it must come out non-gradable:
+    // Positive Degree Form only, never a mechanically well-formed but
+    // invalid "woodener"/"woodenest" (the exact bug this Gradability
+    // Update closes).
+    const wooden = dictionary.lookup("wooden")! as Adjective;
+    expect(wooden.positiveDegreeForm).toEqual({ value: "wooden" });
+    expect(wooden.comparativeDegreeForm).toBeUndefined();
+    expect(wooden.superlativeDegreeForm).toBeUndefined();
 
     // Every new WordNet-sourced kind actually appears at least once --
     // a regression check against relationshipKindForPointer silently
