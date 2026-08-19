@@ -35,7 +35,7 @@
  * either -- it's still populated straight from Word.synsetId, unchanged
  * by this file. */
 
-import type { Identifier, Text } from "../../value_objects";
+import type { Identifier, Number_, Text } from "../../value_objects";
 import type { HolonymRootWord } from "./enums/holonym_root_word";
 import type { HypernymRootWord } from "./enums/hypernym_root_word";
 import type { InterrogativeRootWord } from "./enums/interrogative_root_word";
@@ -131,6 +131,30 @@ export interface Sense {
   hypernymRootWord?: HypernymRootWord;
   holonymRootWord?: HolonymRootWord;
   vectorPrimitiveRootWord?: VectorPrimitiveRootWord;
+
+  // Seeded Attributes: this Sense's own approximate, hand/heuristically
+  // assigned position in the PAD (Pleasure-Arousal-Dominance) affective
+  // space (Mehrabian & Russell) -- previously Word's own field (moved
+  // here since affect is a fact about the *meaning*, the same reasoning
+  // domainTag/relatedDomainTags above already moved on: "quick" the
+  // adjective and "quick" a hypothetical distinct sense sharing that
+  // spelling could carry genuinely different affect, the way any two
+  // unrelated meanings can). Populated only for a hand-curated Common
+  // Vocabulary Cache entry (WordSeeder.seedWordNet's own registerUniqueSense,
+  // role/word_seeder.ts, reading the source word file's own
+  // seeded_pleasure_displeasure_weight/seeded_arousal_non_arousal_weight/
+  // seeded_dominance_submissive_weight) -- undefined for every WordNet-
+  // seeded Sense, the same "no PAD value assigned yet" reading these
+  // fields already had on Word (0.0 is the seeded value for a genuinely
+  // neutral word, not "unset"). Unlike domainTag/relatedDomainTags,
+  // there is no Word/Phrase-level fallback field any more -- a Word/
+  // Phrase copied into a different Domain without its own Sense copy
+  // (senseFieldsFor()'s own docstring, ui/dictionary_view.ts, on that
+  // known cross-Domain gap) simply shows no PAD value there until that
+  // gap is closed, rather than carrying a second, duplicated copy.
+  seededPleasureDispleasureWeight?: Number_;
+  seededArousalNonArousalWeight?: Number_;
+  seededDominanceSubmissiveWeight?: Number_;
 }
 
 export type SenseInit = Partial<Sense>;

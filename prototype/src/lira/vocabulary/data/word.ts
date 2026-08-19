@@ -190,15 +190,6 @@ export interface Word extends LinguisticUnit {
   // Word's meaning/partOfSpeech from the external dictionary API yet.
   isFullyHydrated: boolean;
 
-  // Seeded Attributes: this Word's approximate, hand/heuristically
-  // assigned position in the PAD (Pleasure-Arousal-Dominance) affective
-  // space (Mehrabian & Russell). undefined means no PAD value has been
-  // assigned yet, not "neutral" (0.0 is the seeded value for a
-  // genuinely neutral word).
-  seededPleasureDispleasureWeight?: Number_;
-  seededArousalNonArousalWeight?: Number_;
-  seededDominanceSubmissiveWeight?: Number_;
-
   // True only for one of the 25 words seeded from
   // assets/common/en/root_words.json -- the Interrogative/Hypernym/
   // Holonym/Vector-Primitive root word table (data/enums/interrogative_root_word.ts's

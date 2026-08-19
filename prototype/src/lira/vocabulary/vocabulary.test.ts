@@ -704,6 +704,40 @@ describe("WordSeeder against the bundled Common Vocabulary Cache", () => {
     expect(dictionary.lookup("measured")?.partOfSpeech).toBe(PartOfSpeech.VERB);
   });
 
+  it("PAD (Pleasure-Arousal-Dominance) lives on Sense, not on Word -- registerUniqueSense carries a hand-curated entry's own raw value across", () => {
+    const dictionary = new Dictionary();
+    const senseStore = new Senses();
+    new WordSeeder("en").seedClosedClassWords(dictionary, new Phrases(), undefined, senseStore);
+
+    // "achieve" (VERB, promoted_words.json) is a real, non-neutral PAD
+    // entry -- verified directly against the bundled JSON, not guessed:
+    // 0.6/0.4/0.5.
+    const achieve = dictionary.lookupAll("achieve").find((w) => w.partOfSpeech === PartOfSpeech.VERB)!;
+    expect(achieve).toBeDefined();
+    expect((achieve as unknown as Record<string, unknown>).seededPleasureDispleasureWeight).toBeUndefined();
+
+    const sense = senseStore.findByUuid(achieve.senseIds[0]!.value)!;
+    expect(sense).toBeDefined();
+    expect(sense.seededPleasureDispleasureWeight?.value).toBe(0.6);
+    expect(sense.seededArousalNonArousalWeight?.value).toBe(0.4);
+    expect(sense.seededDominanceSubmissiveWeight?.value).toBe(0.5);
+
+    // The UI-facing read side (DictionaryView.padRecord(), via
+    // WordRecord.pad) resolves through the Sense the identical way.
+    const lexicalRelationships = new LexicalRelationshipStore();
+    const view = new DictionaryView(dictionary, lexicalRelationships, { domainName: "Common", senses: senseStore });
+    const record = view.searchWords({ wordId: achieve.uuid.value }).words[0];
+    expect(record.pad).toEqual({ pleasure: 0.6, arousal: 0.4, dominance: 0.5 });
+
+    // A genuinely neutral word ("word"/NOUN, metalinguistic_nouns.json,
+    // 0.0/0.0/0.0) still resolves as a real value, not null -- 0.0 is a
+    // seeded neutral reading, distinct from no PAD ever having been
+    // assigned at all.
+    const word = dictionary.lookupAll("word").find((w) => w.partOfSpeech === PartOfSpeech.NOUN)!;
+    const wordSense = senseStore.findByUuid(word.senseIds[0]!.value)!;
+    expect(wordSense.seededPleasureDispleasureWeight?.value).toBe(0.0);
+  });
+
   it("seedClosedClassWords({ excludeOpenClasses: true }) skips every NOUN/VERB/ADJECTIVE/ADVERB cache entry except root_words.json's own curated root-word table", () => {
     const dictionary = new Dictionary();
     new WordSeeder("en").seedClosedClassWords(dictionary, new Phrases(), { excludeOpenClasses: true });

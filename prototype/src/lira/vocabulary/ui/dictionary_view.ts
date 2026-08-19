@@ -1014,12 +1014,24 @@ export class DictionaryView {
     return { senses: matches, totalMatches };
   }
 
-  /** This Word's Seeded Attributes for the PAD (Pleasure-Arousal-
-   * Dominance) affective framework, or null if none has been assigned
-   * yet (0.0 is a genuine "neutral" value, distinct from an unassigned
-   * undefined). */
-  private padRecord(word: Word): { pleasure: number; arousal: number; dominance: number } | null {
-    const { seededPleasureDispleasureWeight: p, seededArousalNonArousalWeight: a, seededDominanceSubmissiveWeight: d } = word;
+  /** `entry`'s own primary Sense's own Seeded Attributes for the PAD
+   * (Pleasure-Arousal-Dominance) affective framework -- PAD lives on
+   * Sense now, not on Word/Phrase directly (Sense.seededPleasureDispleasureWeight's
+   * own docstring, data/sense.ts), so this resolves through
+   * `entry.senseIds[0]` the same way senseFieldsFor()/isRootWordFor() do
+   * (their own docstrings on why index 0 specifically). null when
+   * there's no resolvable Sense at all, or its own PAD fields are
+   * undefined (no PAD value has ever been assigned to this meaning) --
+   * 0.0 is a genuine "neutral" value, distinct from either. Unlike
+   * senseFieldsFor()'s own domainTag/relatedDomainTags, there is no
+   * Word/Phrase-level fallback to fall back to any more -- a Word/Phrase
+   * copied cross-Domain without its own Sense (that same known gap)
+   * simply shows no PAD here. */
+  private padRecord(entry: Word | Phrase): { pleasure: number; arousal: number; dominance: number } | null {
+    const primarySenseId = entry.senseIds[0];
+    const sense = primarySenseId !== undefined ? this.senses.findByUuid(primarySenseId.value) : undefined;
+    if (sense === undefined) return null;
+    const { seededPleasureDispleasureWeight: p, seededArousalNonArousalWeight: a, seededDominanceSubmissiveWeight: d } = sense;
     if (p === undefined || a === undefined || d === undefined) return null;
     return { pleasure: p.value, arousal: a.value, dominance: d.value };
   }

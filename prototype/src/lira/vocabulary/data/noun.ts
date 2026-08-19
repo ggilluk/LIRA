@@ -4,8 +4,7 @@
  * undefined on every Noun WordSeeder produces; the field exists so a
  * future curation pass has somewhere to write "chair" (countable) vs.
  * "water" (uncountable) to, the same "declared before it's populated"
- * shape seededPleasureDispleasureWeight and its siblings already have
- * on Word itself.
+ * shape this codebase's other not-yet-seeded fields already have.
  *
  * `singularNumberForm`/`pluralNumberForm`/`possessiveCaseForm` are this
  * subtype's own row of fields from the Word Form to Part of Speech

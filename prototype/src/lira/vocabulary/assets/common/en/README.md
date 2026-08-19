@@ -591,7 +591,11 @@ inflected surface form of each concept already present in the cache;
 229 words (across `metalinguistic_interjections.json` and
 `promoted_words.json`) received a non-neutral value, the rest default
 to neutral. See `examples/pad_seeding.py` for the full method and
-`vocabulary/data/word.py`'s own field docstrings.
+`vocabulary/data/word.py`'s own field docstrings. (This TS prototype's
+own in-memory representation has since moved these three fields off
+`Word`/`Phrase` onto `Sense` -- `Sense.seededPleasureDispleasureWeight`'s
+own docstring, `data/sense.ts` -- the JSON field names themselves,
+described above, are unchanged.)
 
 `v1` / `schema_version 2.0.0` / `asset_version 1.19.0` -- promoted
 `head` (NOUN, "The upper part of the human body, or the front or

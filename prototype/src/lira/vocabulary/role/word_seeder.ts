@@ -510,8 +510,22 @@ function applyDomainTag(target: { domainTag?: Text; relatedDomainTags: readonly 
  * picture it would have read from the Word/Phrase directly -- both
  * copies exist side by side afterwards (the entry's own fields are left
  * exactly as they were), the same accepted duplication WordNet's own
- * Sense/Word split still carries for definition/usageNotes today. */
-function registerUniqueSense(senseStore: Senses, entry: Word | Phrase): void {
+ * Sense/Word split still carries for definition/usageNotes today.
+ *
+ * `pad`, unlike every other field this copies, doesn't come from `entry`
+ * itself at all -- neither Word nor Phrase carries PAD any more
+ * (Sense.seededPleasureDispleasureWeight's own docstring, data/sense.ts)
+ * -- so the caller (seedClosedClassWords) passes it separately, read
+ * from WordSeeder's own cachePad side-channel (recordPad()'s own
+ * docstring) by entryId. This is the one place a hand-curated entry's
+ * raw PAD value actually reaches a Sense; undefined (the every-call-site
+ * default) leaves every one of the Sense's own three PAD fields
+ * undefined too, same as a WordNet-seeded Sense always has. */
+function registerUniqueSense(
+  senseStore: Senses,
+  entry: Word | Phrase,
+  pad?: { pleasure?: number; arousal?: number; dominance?: number },
+): void {
   // Phrase has no root-word concept at all (root_words.json's own 25
   // entries are all single-word NOUNs) -- the `"words" in entry` check
   // (word.ts's own relatedWords()/addCandidate() use the identical
@@ -531,6 +545,9 @@ function registerUniqueSense(senseStore: Senses, entry: Word | Phrase): void {
     hypernymRootWord: isWord ? entry.hypernymRootWord : undefined,
     holonymRootWord: isWord ? entry.holonymRootWord : undefined,
     vectorPrimitiveRootWord: isWord ? entry.vectorPrimitiveRootWord : undefined,
+    seededPleasureDispleasureWeight: pad?.pleasure !== undefined ? { value: pad.pleasure } : undefined,
+    seededArousalNonArousalWeight: pad?.arousal !== undefined ? { value: pad.arousal } : undefined,
+    seededDominanceSubmissiveWeight: pad?.dominance !== undefined ? { value: pad.dominance } : undefined,
   });
   senseStore.append(sense);
   senseStore.registerMember(sense, entry);
@@ -568,6 +585,15 @@ export class WordSeeder {
   // multi-word item is now its own lexical category.
   private cachePhrases: Phrase[] = [];
   private cacheFormLinks: FormLink[] = [];
+  // Every cached entry's own raw PAD (Pleasure-Arousal-Dominance) triple,
+  // keyed by entryId -- entryToWord()/entryToPhrase() populate this in
+  // lockstep with `cache`/`cachePhrases` themselves (cacheFormLinks' own
+  // docstring, same reasoning), since neither Word nor Phrase carries
+  // PAD as its own field any more (Sense.seededPleasureDispleasureWeight's
+  // own docstring, data/sense.ts, on why it moved) -- seedClosedClassWords
+  // reads this back to pass into registerUniqueSense, the one place a
+  // hand-curated entry's PAD actually reaches its own Sense.
+  private cachePad = new Map<string, { pleasure?: number; arousal?: number; dominance?: number }>();
   private promotedOverlay: PromotedDoc | null = null;
 
   constructor(
@@ -869,7 +895,7 @@ export class WordSeeder {
       const copy = copyWordWithFreshUuid(word);
       dictionary.append(copy);
       insertedByEntryId.set(word.entryId.value, copy);
-      if (senseStore !== undefined) registerUniqueSense(senseStore, copy);
+      if (senseStore !== undefined) registerUniqueSense(senseStore, copy, this.cachePad.get(word.entryId.value));
       seeded += 1;
     }
     for (const link of this.cacheFormLinks) {
@@ -891,7 +917,7 @@ export class WordSeeder {
       if (alreadyPresent) continue;
       const phraseCopy = copyPhraseWithFreshUuid(phrase);
       phraseBook.append(phraseCopy);
-      if (senseStore !== undefined) registerUniqueSense(senseStore, phraseCopy);
+      if (senseStore !== undefined) registerUniqueSense(senseStore, phraseCopy, this.cachePad.get(phrase.entryId.value));
       seeded += 1;
     }
     return seeded;
@@ -1601,6 +1627,32 @@ export class WordSeeder {
     return true;
   }
 
+  /** Reads `entry`'s own raw seeded_pleasure_displeasure_weight/
+   * seeded_arousal_non_arousal_weight/seeded_dominance_submissive_weight
+   * straight off the WordFileEntry JSON into `cachePad`, keyed by
+   * entryId -- entryToWord()/entryToPhrase()'s own call sites, both
+   * before either has finished building a Word/Phrase that (unlike
+   * before this Sense-Frequency-era PAD migration) no longer has
+   * anywhere of its own to hold this. A no-op when all three are null/
+   * undefined -- WordNet-seeded entries never call this at all, and a
+   * hand-curated one that genuinely carries no PAD data (none do today,
+   * assets/common/en/README.md's own "every entry now carries an
+   * explicit value" note -- but nothing here assumes that stays true
+   * forever) simply has nothing recorded rather than a spurious all-
+   * undefined map entry. */
+  private recordPad(entry: WordFileEntry): void {
+    const pleasure = entry.seeded_pleasure_displeasure_weight;
+    const arousal = entry.seeded_arousal_non_arousal_weight;
+    const dominance = entry.seeded_dominance_submissive_weight;
+    if (pleasure === null && arousal === null && dominance === null) return;
+    if (pleasure === undefined && arousal === undefined && dominance === undefined) return;
+    this.cachePad.set(entry.entry_id, {
+      pleasure: pleasure ?? undefined,
+      arousal: arousal ?? undefined,
+      dominance: dominance ?? undefined,
+    });
+  }
+
   /** Dispatches to createNoun/createVerb/createAdjective/createAdverb
    * for the 4 open classes -- synsetMemberToWord's own dispatch, this
    * path's exact counterpart -- and to plain createWord() for every
@@ -1615,6 +1667,7 @@ export class WordSeeder {
     const optText = (value: string | null | undefined) => (value ? { value } : undefined);
     const optCode = (value: string | null | undefined) => (value ? { value } : undefined);
     const optNumber = (value: number | null | undefined) => (value === null || value === undefined ? undefined : { value });
+    this.recordPad(entry);
 
     const sourceReferences = (entry.source_references ?? []).map((ref) => ({
       sourceName: { value: ref.source_name },
@@ -1650,9 +1703,6 @@ export class WordSeeder {
       sourceReferences,
       isCommon: true,
       domainTag: optText(entry.domain_tag),
-      seededPleasureDispleasureWeight: optNumber(entry.seeded_pleasure_displeasure_weight),
-      seededArousalNonArousalWeight: optNumber(entry.seeded_arousal_non_arousal_weight),
-      seededDominanceSubmissiveWeight: optNumber(entry.seeded_dominance_submissive_weight),
       isRootWord: entry.is_root_word ?? false,
       interrogativeRootWord: entry.interrogative_root_word
         ? InterrogativeRootWord[entry.interrogative_root_word as keyof typeof InterrogativeRootWord]
@@ -1722,12 +1772,18 @@ export class WordSeeder {
    * every field a closed-class multi-word item plausibly needs
    * (text/lexicalForm/definition/gloss/usageNotes/register+dialect
    * codes/editorialLabels/sourceReferences/isCommon), but none of
-   * Word's own root-word/PAD-affect/derivable-noun/pronunciation
-   * fields -- none of those are ever populated for a real multi-word
-   * Common Vocabulary Cache entry today, and Phrase has no field to
-   * carry them even if a future entry tried. */
+   * Word's own root-word/derivable-noun/pronunciation fields -- none of
+   * those are ever populated for a real multi-word Common Vocabulary
+   * Cache entry today, and Phrase has no field to carry them even if a
+   * future entry tried. PAD is the one exception: it lives on Sense now
+   * (Sense.seededPleasureDispleasureWeight's own docstring, data/sense.ts),
+   * not on Word or Phrase, so recordPad() below wires a multi-word
+   * entry's own raw value through the identical path entryToWord()'s
+   * does, ready for registerUniqueSense to pick up regardless of which
+   * of the two this entry became. */
   private entryToPhrase(entry: WordFileEntry): Phrase {
     const optText = (value: string | null | undefined) => (value ? { value } : undefined);
+    this.recordPad(entry);
 
     const sourceReferences = (entry.source_references ?? []).map((ref) => ({
       sourceName: { value: ref.source_name },
@@ -1782,9 +1838,18 @@ export class WordSeeder {
       frequency_scale: word.frequencyScale?.value ?? null,
       etymology_text: word.etymologyText?.value ?? null,
       first_recorded_use: word.firstRecordedUse?.value ?? null,
-      seeded_pleasure_displeasure_weight: word.seededPleasureDispleasureWeight?.value ?? null,
-      seeded_arousal_non_arousal_weight: word.seededArousalNonArousalWeight?.value ?? null,
-      seeded_dominance_submissive_weight: word.seededDominanceSubmissiveWeight?.value ?? null,
+      // PAD lives on Sense now (Sense.seededPleasureDispleasureWeight's
+      // own docstring, data/sense.ts), not on Word -- this method only
+      // ever receives a bare Word (promoteWord()'s own signature, its
+      // one caller), with no Senses store to resolve a PAD value through
+      // even if it wanted to. Currently moot in practice: promoteWord()
+      // has no caller anywhere in this codebase yet (this module's own
+      // docstring on why it's a stub -- no writable filesystem to
+      // persist a promotion to), but if that changes, whoever wires it
+      // up will need to thread a Senses store through here too.
+      seeded_pleasure_displeasure_weight: null,
+      seeded_arousal_non_arousal_weight: null,
+      seeded_dominance_submissive_weight: null,
       is_root_word: word.isRootWord,
       interrogative_root_word: word.interrogativeRootWord !== undefined ? InterrogativeRootWord[word.interrogativeRootWord] : null,
       hypernym_root_word: word.hypernymRootWord !== undefined ? HypernymRootWord[word.hypernymRootWord] : null,
