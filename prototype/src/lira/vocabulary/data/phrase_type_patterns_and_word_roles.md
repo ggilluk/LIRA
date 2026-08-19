@@ -34,6 +34,63 @@ one-for-one.
 | AdverbPhrase | Identify the adverb that determines the complete phrase's adverb classification. | Adverb[Head] | Adverb, Preposition, Noun | Qualifying adverbs -> Modifier; other words retain their POS. An expression used adverbially is not automatically an AdverbPhrase. | Adverb[Modifier] + (Adverb[Head]) |
 | PrepositionalPhrase | Identify the preposition that determines the complete phrase's prepositional classification. | Preposition[Head] | Preposition, Noun, Pronoun, Determiner, Adjective, Adverb | Qualifying words -> Modifier; determiners retain Determiner; remaining words retain their POS. | (Preposition[Head]) + Determiner + Adjective[Modifier] + Noun |
 
+## Word Patterns
+
+Each Phrase Type Class above names one representative Example Pattern;
+this table expands that into the fuller set of concrete word-order
+patterns real phrases of that class take, still following the same
+Pattern Notation Common Rule (PartOfSpeech[Role], Head in parentheses).
+Not exhaustive -- English allows more orderings than any finite table
+can enumerate -- but each row names a genuinely distinct constituent
+shape, not a restatement of another row with different words substituted
+in.
+
+| Phrase Type | Word Pattern |
+|---|---|
+| Noun Phrase | Noun[Modifier] + (Noun[Head]) |
+| Noun Phrase | Adjective[Modifier] + (Noun[Head]) |
+| Noun Phrase | Noun[Modifier] + Noun[Modifier] + (Noun[Head]) |
+| Noun Phrase | Adjective[Modifier] + Adjective[Modifier] + (Noun[Head]) |
+| Noun Phrase | Adverb[Modifier] + Adjective[Modifier] + (Noun[Head]) |
+| Noun Phrase | (Noun[Head]) + Preposition + Noun |
+| Noun Phrase | (Noun[Head]) + Preposition + Determiner + Noun |
+| Verb Phrase | (Verb[Head]) + Noun |
+| Verb Phrase | (Verb[Head]) + Adverb[Modifier] |
+| Verb Phrase | (Verb[Head]) + Preposition |
+| Verb Phrase | (Verb[Head]) + Adverb[Particle] + Preposition |
+| Verb Phrase | (Verb[Head]) + Adjective |
+| Verb Phrase | (Verb[Head]) + Determiner + Noun |
+| Verb Phrase | (Verb[Head]) + Preposition + Noun |
+| Adjective Phrase | Adverb[Modifier] + (Adjective[Head]) |
+| Adjective Phrase | Adjective[Modifier] + (Adjective[Head]) |
+| Adjective Phrase | (Adjective[Head]) + Preposition |
+| Adjective Phrase | (Adjective[Head]) + Preposition + Noun |
+| Adjective Phrase | Adverb[Modifier] + (Adjective[Head]) + Preposition |
+| Adjective Phrase | Adverb[Modifier] + (Adjective[Head]) + Preposition + Noun |
+| Adverb Phrase | Adverb[Modifier] + (Adverb[Head]) |
+| Adverb Phrase | (Adverb[Head]) + Adverb[Modifier] |
+| Adverb Phrase | (Adverb[Head]) + Preposition + Noun |
+| Prepositional Phrase | (Preposition[Head]) + Noun |
+| Prepositional Phrase | (Preposition[Head]) + Pronoun |
+| Prepositional Phrase | (Preposition[Head]) + Determiner + Noun |
+| Prepositional Phrase | (Preposition[Head]) + Adjective[Modifier] + Noun |
+| Prepositional Phrase | (Preposition[Head]) + Determiner + Adjective[Modifier] + Noun |
+| Prepositional Phrase | Adverb[Modifier] + (Preposition[Head]) + Noun |
+| Prepositional Phrase | (Preposition[Head]) + Noun + Preposition + Noun |
+
+Two rows are worth flagging on their own: Verb Phrase's own "(Verb[Head])
++ Adverb[Particle] + Preposition" row is the one Word Pattern in this
+table that assigns Particle rather than Modifier to the adverb slot --
+the Common Rules table's own Particle row ("the appropriate non-head
+component of a multiword verb") is exactly this case, a phrasal-verb
+particle ("give up", "look after") rather than a genuine degree/manner
+Modifier. Prepositional Phrase's own last row, "(Preposition[Head]) +
+Noun + Preposition + Noun", is the one pattern here with two
+Prepositions -- only the first carries `[Head]`; the second heads its
+own embedded/nested Prepositional Phrase (structurally identical to
+this table's very first Prepositional Phrase row) rather than sharing
+the outer phrase's Head.
+
 `InfinitivePhrase` has no row here for the same reason its own file's
 docstring gives for carrying no single Word POS mirror: WordNet has no
 "infinitive" `ss_type` of its own, so every real `InfinitivePhrase` this
