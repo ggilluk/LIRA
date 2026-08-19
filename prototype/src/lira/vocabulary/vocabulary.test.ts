@@ -1515,6 +1515,54 @@ describe("DictionaryView.searchWords", () => {
 
     expect(view.searchWords({ word: "big" }).words[0].sense_id).toBeNull();
   });
+
+  it("a WordRecord's own senses lists every Sense a polysemous Word lexicalizes, marking exactly one primary", () => {
+    const dictionary = new Dictionary();
+    const senseStore = new Senses();
+    const big = createAdjective({ text: "big" });
+    const large = createAdjective({ text: "large" });
+    const enceinte = createAdjective({ text: "enceinte" });
+    dictionary.append(big);
+    dictionary.append(large);
+    dictionary.append(enceinte);
+
+    const sizeSense = createSense({ definition: { value: "above average in size" }, isCommon: true });
+    const pregnantSense = createSense({ definition: { value: "in an advanced stage of pregnancy" }, isCommon: true });
+    senseStore.append(sizeSense);
+    senseStore.append(pregnantSense);
+    senseStore.registerMember(sizeSense, big);
+    senseStore.registerMember(sizeSense, large);
+    senseStore.registerMember(pregnantSense, big);
+    senseStore.registerMember(pregnantSense, enceinte);
+
+    const view = new DictionaryView(dictionary, new LexicalRelationshipStore(), { domainName: "Common", senses: senseStore });
+    const record = view.searchWords({ wordId: big.uuid.value }).words[0];
+
+    expect(record.senses).toHaveLength(2);
+    expect(record.senses[0]).toMatchObject({ is_primary: true, definition: "above average in size" });
+    expect(record.senses[0].synonyms).toEqual([{ id: large.uuid.value, text: "large" }]);
+    expect(record.senses[1]).toMatchObject({ is_primary: false, definition: "in an advanced stage of pregnancy" });
+    expect(record.senses[1].synonyms).toEqual([{ id: enceinte.uuid.value, text: "enceinte" }]);
+
+    // A monosemous Word still gets exactly one entry, still marked primary.
+    const largeRecord = view.searchWords({ wordId: large.uuid.value }).words[0];
+    expect(largeRecord.senses).toEqual([expect.objectContaining({ is_primary: true, definition: "above average in size" })]);
+  });
+
+  it("a Phrase's own detail record gets senses too, resolved via phraseAsWord() the same way relationships already are", () => {
+    const dictionary = new Dictionary();
+    const phraseBook = new Phrases();
+    const senseStore = new Senses();
+    const toyPoodle = createPhrase({ text: "toy poodle", partOfSpeech: PartOfSpeech.NOUN });
+    phraseBook.append(toyPoodle);
+    const sense = createSense({ definition: { value: "a small breed of poodle" }, isCommon: true });
+    senseStore.append(sense);
+    senseStore.registerMember(sense, toyPoodle);
+
+    const view = new DictionaryView(dictionary, new LexicalRelationshipStore(), { domainName: "Common", phrases: phraseBook, senses: senseStore });
+    const record = view.searchWords({ wordId: toyPoodle.uuid.value }).words[0];
+    expect(record.senses).toEqual([expect.objectContaining({ is_primary: true, definition: "a small breed of poodle" })]);
+  });
 });
 
 describe("DictionaryView.searchPhrases", () => {
@@ -1658,6 +1706,47 @@ describe("DictionaryView.searchRelationships", () => {
     expect(forLarge.relationships[0].target_text).toBe("large");
 
     expect(view.searchRelationships({ wordId: small.uuid.value }).totalMatches).toBe(1);
+  });
+
+  it("via_sense names which of a polysemous Word's own several Senses a Sense-expanded relationship came from, and stays null for a genuine direct edge", () => {
+    const dictionary = new Dictionary();
+    const senseStore = new Senses();
+    const big = createAdjective({ text: "big" });
+    const large = createAdjective({ text: "large" });
+    const small = createAdjective({ text: "small" });
+    const enceinte = createAdjective({ text: "enceinte" });
+    [big, large, small, enceinte].forEach((w) => dictionary.append(w));
+
+    const sizeSense = createSense({ definition: { value: "above average in size" }, isCommon: true });
+    const pregnantSense = createSense({ definition: { value: "in an advanced stage of pregnancy" }, isCommon: true });
+    const smallSense = createSense({ definition: { value: "below average in size" }, isCommon: true });
+    senseStore.append(sizeSense);
+    senseStore.append(pregnantSense);
+    senseStore.append(smallSense);
+    senseStore.registerMember(sizeSense, big);
+    senseStore.registerMember(sizeSense, large);
+    senseStore.registerMember(pregnantSense, big);
+    senseStore.registerMember(pregnantSense, enceinte);
+    senseStore.registerMember(smallSense, small);
+
+    const store = new LexicalRelationshipStore();
+    const processor = new LexicalRelationshipProcessor(store, new LexicalRelationshipSystemPropertyTensor());
+    // A Sense-to-Sense ANTONYM edge, both sides Sense uuids (the real
+    // production shape -- WordSeeder.seedPointerRelationship's own
+    // sourceSense.uuid/targetSense.uuid convention, word_seeder.ts) --
+    // fans out to "big" via senseExpandedRelationships(), tagged with
+    // the "size" Sense's own definition.
+    processor.create({ sourceWordId: sizeSense.uuid.value, targetWordId: smallSense.uuid.value, relationshipType: LexicalRelationshipType.ANTONYM, sourceReferences: [] });
+    // A genuine direct edge, unrelated to any Sense expansion.
+    processor.create({ sourceWordId: big.uuid.value, targetWordId: large.uuid.value, relationshipType: LexicalRelationshipType.SYNONYM, sourceReferences: [] });
+
+    const view = new DictionaryView(dictionary, store, { domainName: "Common", senses: senseStore });
+    const result = view.searchRelationships({ wordId: big.uuid.value });
+
+    const antonymRow = result.relationships.find((r) => r.kind === "ANTONYM");
+    expect(antonymRow?.via_sense).toBe("above average in size");
+    const synonymRow = result.relationships.find((r) => r.kind === "SYNONYM");
+    expect(synonymRow?.via_sense).toBeNull();
   });
 
   it("matches `query` against source text, target text, or kind, across the whole store when `wordId` is omitted", () => {

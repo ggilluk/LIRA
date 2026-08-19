@@ -158,12 +158,40 @@ export interface WordRecord {
   // of these fields today, so this is empty for every Word until a
   // future seeding/curation pass writes to them.
   word_forms: WordFormEntry[];
+  // Every Sense (data/sense.ts) this Word lexicalizes, in Word.senseIds's
+  // own order (DictionaryView.sensesFor()'s own docstring on how this is
+  // built) -- one entry per real WordNet sense for a polysemous Word
+  // ("big" ADJECTIVE: "above average in size", "pregnant", "generous",
+  // ...), not just the one `definition`/`domain` above already shows
+  // (that's always senses[0], Word.senseIds's own "primary sense" doc).
+  // A Phrase's own detail panel gets this too -- it's resolved into a
+  // WordRecord via phraseAsWord() (phrase.ts) before reaching here, not
+  // a separate PhraseRecord field. Empty only for a Word/Phrase that
+  // never lexicalized any Sense at all (predates WordSeeder.seedWordNet/
+  // registerUniqueSense, or a hand-authored test fixture).
+  senses: WordSenseSummary[];
 }
 
 export interface WordFormEntry {
   field: string;
   label: string;
   value: string;
+}
+
+export interface WordSenseSummary {
+  id: string;
+  is_primary: boolean;
+  definition: string;
+  gloss: string;
+  domain: string;
+  // Fellow members of this one Sense, this Word/Phrase itself excluded --
+  // the sense-scoped synonym fact (Senses.membersOf()'s own docstring,
+  // data/senses.ts) other Senses this same Word also carries have no part
+  // in. Carries `id` (that member's own uuid) alongside its display text
+  // so the client can render it as the same clickable data-pivot-id
+  // button every other related-word row already uses
+  // (wireDetailPivotButtons(), this file's own embedded client script).
+  synonyms: { id: string; text: string }[];
 }
 
 type DefinitionSegment =
@@ -253,6 +281,17 @@ export interface RelationshipRecord {
   // MERONYM docstring on why this rides as a qualifier rather than its
   // own relationship kind.
   qualifier: string | null;
+  // Which of the *subject* Word/Phrase's own several Senses
+  // (Word.senseIds's own docstring) this row's edge actually came from
+  // -- that Sense's own short definition text, or null for a genuine
+  // direct Word/Phrase-to-Word/Phrase edge (always unambiguous, no Sense
+  // expansion involved) or for a query with no single subject Word at
+  // all (a plain Relationships-tab search with no `wordId`). Only ever
+  // set by searchRelationships()'s own `wordId` path, off
+  // senseExpandedRelationships()'s own per-sense loop -- the one place
+  // that already knows exactly which Sense produced a given synthetic
+  // row.
+  via_sense: string | null;
 }
 
 // One kind's total edge count across the whole LexicalRelationshipStore
@@ -641,7 +680,41 @@ export class DictionaryView {
       definition_segments: this.definitionSegments(word),
       pad: this.padRecord(word),
       word_forms: this.wordFormsFor(word),
+      senses: this.sensesFor(word),
     };
+  }
+
+  /** Every Sense `entry` lexicalizes, in `entry.senseIds`'s own order
+   * (Word.senseIds's own docstring: first-seeded, so index 0 is always
+   * the same Sense senseFieldsFor() already reads for `definition`/
+   * `domain` above -- `is_primary` marks that one explicitly, rather
+   * than leaving the reader to guess whether entry #1 here is special).
+   * A senseId that doesn't resolve in this Domain's own Senses (the
+   * Physics-from-Common cross-Domain gap senseFieldsFor()'s own
+   * docstring already accepts) is skipped, not shown half-empty --
+   * every entry returned here has real definition/gloss/domain data to
+   * show. `synonyms` is that Sense's own membership (Senses.membersOf()),
+   * `entry` itself excluded -- deliberately scoped to just this one
+   * Sense, not `entry`'s other, unrelated senses. */
+  private sensesFor(entry: Word | Phrase): WordSenseSummary[] {
+    const summaries: WordSenseSummary[] = [];
+    entry.senseIds.forEach((senseId, index) => {
+      const sense = this.senses.findByUuid(senseId.value);
+      if (sense === undefined) return;
+      const domain = !sense.isCommon ? this.domainName : (sense.domainTag?.value ?? "Common");
+      summaries.push({
+        id: senseId.value,
+        is_primary: index === 0,
+        definition: sense.definition?.value ?? "",
+        gloss: sense.gloss?.value ?? "",
+        domain,
+        synonyms: this.senses
+          .membersOf(senseId.value)
+          .filter((member) => member.uuid.value !== entry.uuid.value)
+          .map((member) => ({ id: member.uuid.value, text: member.lexicalForm?.value ?? member.text })),
+      });
+    });
+    return summaries;
   }
 
   /** Every populated *_Form Text field for `word`'s own concrete POS
@@ -1062,6 +1135,7 @@ export class DictionaryView {
       category: relationshipCategory(rel.relationshipType),
       confidence: Math.round(rel.systemProperties.confidenceWeight * 10000) / 10000,
       qualifier: rel.qualifiers.find((q) => q.name.value === MERONYM_KIND_QUALIFIER)?.value.value ?? null,
+      via_sense: null,
     };
   }
 
@@ -1096,35 +1170,46 @@ export class DictionaryView {
    * underlying Sense-to-Sense edge. Unions this across every Sense in
    * `word.senseIds` -- a polysemous Word (Word.senseIds's own docstring)
    * has more than one to expand, not just the single one this used to
-   * read off `word.senseId`. */
-  private senseExpandedRelationships(word: Word): readonly LexicalRelationship[] {
+   * read off `word.senseId`. `viaSenseDefinition` is that per-Sense
+   * loop's own byproduct: which of `word`'s several Senses actually
+   * produced a given synthetic row, keyed by that row's own `uuid.value`
+   * -- searchRelationships()'s own RelationshipRecord.via_sense reads
+   * this, so a polysemous Word's relationship list can say which meaning
+   * a given hypernym/antonym/etc. actually belongs to. */
+  private senseExpandedRelationships(word: Word): { relationships: readonly LexicalRelationship[]; viaSenseDefinition: ReadonlyMap<string, string> } {
     const expanded: LexicalRelationship[] = [];
+    const viaSenseDefinition = new Map<string, string>();
     for (const ownSenseId of word.senseIds) {
       const senseId = ownSenseId.value;
+      const ownSenseDefinition = this.senses.findByUuid(senseId)?.definition?.value;
       for (const rel of [...this.relationships.outgoing(senseId), ...this.relationships.incoming(senseId)]) {
         const outgoingFromSense = rel.sourceWordId.value === senseId;
         const otherSenseId = outgoingFromSense ? rel.targetWordId.value : rel.sourceWordId.value;
         for (const member of this.senses.membersOf(otherSenseId)) {
+          const uuid = { value: `${rel.uuid.value}:${member.uuid.value}` };
           expanded.push({
             ...rel,
-            uuid: { value: `${rel.uuid.value}:${member.uuid.value}` },
+            uuid,
             sourceWordId: outgoingFromSense ? { value: word.uuid.value } : member.uuid,
             targetWordId: outgoingFromSense ? member.uuid : { value: word.uuid.value },
           });
+          if (ownSenseDefinition !== undefined) viaSenseDefinition.set(uuid.value, ownSenseDefinition);
         }
       }
     }
-    return expanded;
+    return { relationships: expanded, viaSenseDefinition };
   }
 
   searchRelationships(options: { wordId?: string; query?: string; limit?: number }): { relationships: RelationshipRecord[]; totalMatches: number } {
     const limit = options.limit ?? 1000;
     const query = options.query?.trim().toLowerCase();
     let candidates: readonly LexicalRelationship[];
+    let viaSenseDefinition: ReadonlyMap<string, string> = new Map();
     if (options.wordId !== undefined) {
       const word = this.resolveEntry(options.wordId);
-      const senseExpanded = word !== undefined ? this.senseExpandedRelationships(word) : [];
-      candidates = [...this.relationships.outgoing(options.wordId), ...this.relationships.incoming(options.wordId), ...senseExpanded];
+      const senseExpanded = word !== undefined ? this.senseExpandedRelationships(word) : { relationships: [], viaSenseDefinition: new Map() };
+      candidates = [...this.relationships.outgoing(options.wordId), ...this.relationships.incoming(options.wordId), ...senseExpanded.relationships];
+      viaSenseDefinition = senseExpanded.viaSenseDefinition;
     } else {
       candidates = this.relationships.all();
     }
@@ -1133,6 +1218,8 @@ export class DictionaryView {
     let totalMatches = 0;
     for (const rel of candidates) {
       const record = this.relationshipRecordFor(rel);
+      const viaSense = viaSenseDefinition.get(rel.uuid.value);
+      if (viaSense !== undefined) record.via_sense = viaSense;
       if (query) {
         const sourceHit = record.source_text.toLowerCase().includes(query);
         const targetHit = record.target_text.toLowerCase().includes(query);
@@ -1830,6 +1917,12 @@ tbody tr[data-word-id].selected { background: color-mix(in srgb, var(--accent) 1
   font-size: 0.8rem;
   line-height: 1.4;
 }
+.rel-sense-note {
+  margin: 2px 0 0 20px;
+  color: var(--ink-muted);
+  font-size: 0.76rem;
+  font-style: italic;
+}
 .pad-row {
   display: flex;
   align-items: center;
@@ -1888,6 +1981,39 @@ tbody tr[data-word-id].selected { background: color-mix(in srgb, var(--accent) 1
 .word-form-row .word-form-value {
   font-family: var(--font-mono);
 }
+.sense-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.sense-row {
+  padding: 7px 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 0.83rem;
+}
+.sense-row:last-child { border-bottom: none; }
+.sense-row.primary { font-weight: 600; }
+.sense-number {
+  color: var(--ink-muted);
+  font-variant-numeric: tabular-nums;
+  margin-right: 6px;
+}
+.sense-primary-tag {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--accent);
+  font-weight: 700;
+  margin-left: 2px;
+}
+.sense-definition { font-weight: 400; }
+.sense-meta {
+  display: block;
+  margin-top: 2px;
+  font-size: 0.78rem;
+  color: var(--ink-muted);
+}
+.sense-synonyms { margin-left: 6px; }
 .def-text { line-height: 1.7; }
 .def-word {
   position: relative;
@@ -3138,6 +3264,21 @@ function padMeterRow(posLabel, negLabel, value) {
     </div>\`;
 }
 
+function sensesSectionHTML(word) {
+  if (!word.senses || word.senses.length <= 1) return '';
+  return \`
+    <div class="detail-section-title">Senses (\${word.senses.length})</div>
+    <ol class="sense-list">
+      \${word.senses.map((s, i) => \`
+        <li class="sense-row\${s.is_primary ? ' primary' : ''}">
+          <span class="sense-number">\${i + 1}\${s.is_primary ? ' <span class="sense-primary-tag">primary</span>' : ''}</span>
+          <span class="sense-definition">\${s.definition || '<span style="opacity:.6">No definition.</span>'}</span>
+          <span class="sense-meta">\${domainPill(s.domain)}\${s.synonyms.length ? \` <span class="sense-synonyms">synonyms: \${s.synonyms.map(syn => \`<button class="link-btn" data-pivot-id="\${syn.id}">\${syn.text}</button>\`).join(', ')}</span>\` : ''}</span>
+        </li>\`).join('')}
+    </ol>
+  \`;
+}
+
 function padSectionHTML(word) {
   if (!word.pad) {
     return '<div class="detail-section-title">Affect (PAD, seeded)</div><div class="detail-empty" style="padding:4px 0">No PAD value seeded yet.</div>';
@@ -3262,7 +3403,14 @@ function fetchDetailRelsIfNeeded(wordId) {
 // still loading over capacity (relationshipsSectionHTML's own "Loading…"
 // branch) -- distinct from \`[]\`, which means the fetch already resolved
 // and there really are none.
-function relationshipsSectionHTML(rels) {
+// \`showSenseAnnotation\` -- true only when the Word this relationship
+// list belongs to carries more than one Sense (Word.senseIds's own
+// docstring) -- a monosemous Word's own relationship list needs no
+// annotation at all (every row already, unambiguously, belongs to its
+// one sense), so this stays false and \`r.via_sense\` is never rendered
+// even when the server did set it (a symmetric edge can still touch a
+// polysemous word on the *other* end).
+function relationshipsSectionHTML(rels, showSenseAnnotation) {
   if (rels === null) return '<div class="detail-empty" style="padding:8px 0">Loading relationships…</div>';
   if (rels.length === 0) return '<div class="detail-empty" style="padding:8px 0">No relationships recorded.</div>';
   return rels.map(r => \`
@@ -3275,6 +3423,7 @@ function relationshipsSectionHTML(rels) {
         \${domainPill(r.otherDomain)}
       </div>
       <div class="rel-sentence">\${relationshipSentence(r.kind, r.source_text, r.target_text, r.qualifier)}</div>
+      \${showSenseAnnotation && r.via_sense ? \`<div class="rel-sense-note">(sense: \${r.via_sense})</div>\` : ''}
     </div>\`).join('');
 }
 
@@ -3307,12 +3456,13 @@ function wordDetailHTML(word, rels, relCount) {
     \${word.related_domains && word.related_domains.length ? \`<div class="detail-related-domains" style="margin-top:4px"><span style="opacity:.6">Also:</span> \${word.related_domains.map(domainPill).join(' ')}</div>\` : ''}
     <div class="detail-entry-id" title="Persistent Qualified Word Identity (domain + part of speech + word) -- stable across regenerations, unlike this word's transient graph id">Entry ID <code>\${word.entry_id}</code></div>
     <div class="detail-definition">\${renderDefinition(word)}</div>
+    \${sensesSectionHTML(word)}
     \${padSectionHTML(word)}
     \${wordFormsSectionHTML(word)}
     <div class="detail-section-title">Provenance</div>
     <div class="detail-definition" style="margin-top:0">\${word.sources && word.sources.length ? word.sources.map(s => \`<span class="tag">\${s}</span>\`).join('') : '<span style="opacity:.6">No source recorded.</span>'}</div>
     <div class="detail-section-title">Relationships (<span class="detail-rel-count">\${relCount}</span>)</div>
-    <div class="detail-relationships-section">\${relationshipsSectionHTML(rels)}</div>
+    <div class="detail-relationships-section">\${relationshipsSectionHTML(rels, word.senses && word.senses.length > 1)}</div>
   \`;
 }
 
@@ -4564,7 +4714,8 @@ document.addEventListener("lira-search-relationships-result", (e) => {
       const content = document.getElementById(\`detail-content-\${panel}\`);
       if (!content || content.style.display === "none") return;
       const section = content.querySelector(".detail-relationships-section");
-      if (section) section.innerHTML = relationshipsSectionHTML(rels);
+      const panelWord = wordForDetailPanel(panel);
+      if (section) section.innerHTML = relationshipsSectionHTML(rels, panelWord && panelWord.senses && panelWord.senses.length > 1);
       const countLabel = content.querySelector(".detail-rel-count");
       if (countLabel) countLabel.textContent = totalMatches.toLocaleString();
       wireDetailPivotButtons(content);
