@@ -69,10 +69,15 @@ own way, using whichever real WordNet signal actually exists for that
 class, rather than one shared mechanism:
 
 - **Adjective** (data/adjective.ts): `determineGradability()` looks for
-  a WordNet Attribute pointer, checked across every one of an
-  Adjective's own Senses (not the primary sense alone), to a noun sense
-  that itself represents an ordered scalar dimension ("tall"
-  -Attribute-> "height" -Hypernym*-> "magnitude").
+  a WordNet Attribute pointer at all, checked across every one of an
+  Adjective's own Senses (not the primary sense alone) -- "tall"
+  -Attribute-> "stature, height". Having the pointer is the signal on
+  its own; it does not also climb the target noun's own Hypernym chain
+  looking for a specific scalar-dimension ancestor -- an earlier version
+  of this function did, and wrongly called "tall" itself non-gradable as
+  a result ("stature, height" climbs to "bodily_property" -> "property"
+  instead of any narrower anchor a real scalar noun like "size" reaches).
+  `determineGradability()`'s own docstring has the full history.
 - **Adverb** (data/adverb.ts): WordNet gives an adverb no Attribute
   pointer of its own at all (verified directly against the bundled
   dict/data.adv -- zero `=` pointers exist there), so `determineGradability()`

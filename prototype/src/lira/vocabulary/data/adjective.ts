@@ -144,76 +144,44 @@ export function validateAdjective(adjective: Adjective): readonly WordFormIssue[
   return issues;
 }
 
-// WordNet noun synsets an Attribute-linked noun sense must trace back
-// to (itself or a Hypernym ancestor) to count as an "ordered scalar
-// dimension" -- verified directly against the bundled dict/data.noun,
-// not guessed: offset 00033914 is "measure, quantity, amount" ("how
-// much there is or how many there are of something that you can
-// quantify"), offset 05097645 is "magnitude" ("the property of relative
-// size or extent (whether large or small)"). Between them these anchor
-// every attribute noun a genuinely gradable adjective was checked
-// against while building this (temperature, speed, age, price, ... all
-// climb to "measure, quantity, amount"; size/height/weight/depth/... all
-// climb to "magnitude" -- "height" itself does by exactly two Hypernym
-// hops, "height" -> "dimension" -> "magnitude", the same chain "tall"'s
-// own Attribute pointer resolves through). A *direct* Attribute noun
-// that's already one of these two, or a direct hyponym of one, counts
-// without climbing any further -- reaching a noun explicitly named
-// "measure" is never required, only sufficient.
-const SCALAR_DIMENSION_NOUN_SYNSET_IDS: ReadonlySet<string> = new Set([
-  "00033914-n", // measure, quantity, amount
-  "05097645-n", // magnitude
-]);
-
-// A generous but finite bound on how many Hypernym hops isScalarDimensionNoun
-// climbs from one Attribute-linked noun sense before giving up -- purely
-// a cycle/runaway guard (WordNet's own noun hierarchy is a DAG in
-// principle, though never observed to cycle in the bundled dict/
-// files), not a real truncation: every anchor above sits within a
-// handful of hops of any noun that could plausibly reach it.
-const MAX_HYPERNYM_CLIMB = 16;
-
-/** Whether `nounSenseId` (a Sense.uuid) itself, or one of its Hypernym
- * ancestors reached by breadth-first climbing `relationships`' own
- * outgoing HYPERNYM edges, is one of SCALAR_DIMENSION_NOUN_SYNSET_IDS
- * above -- the "Hypernym* -> Scalar/Ordered Dimension" half of
- * determineGradability()'s own structural test
- * ("Adjective Sense -> Attribute -> Noun Sense -> Hypernym* ->
- * Scalar/Ordered Dimension"). A HYPERNYM edge here is always Sense-to-
- * Sense (WordSeeder.seedPointerRelationship's own synset-level-pointer
- * branch, role/word_seeder.ts), the same as the ATTRIBUTE edge
- * determineGradability() itself already reads -- so `nounSenseId` and
- * every ancestor id this visits are Sense uuids throughout, never a
- * Word/Phrase uuid. */
-function isScalarDimensionNoun(senses: Senses, relationships: LexicalRelationshipStore, nounSenseId: string): boolean {
-  const visited = new Set<string>();
-  let frontier = [nounSenseId];
-  for (let depth = 0; depth < MAX_HYPERNYM_CLIMB && frontier.length > 0; depth += 1) {
-    const next: string[] = [];
-    for (const senseId of frontier) {
-      if (visited.has(senseId)) continue;
-      visited.add(senseId);
-      const sense = senses.findByUuid(senseId);
-      if (sense?.synsetId !== undefined && SCALAR_DIMENSION_NOUN_SYNSET_IDS.has(sense.synsetId.value)) return true;
-      for (const edge of relationships.outgoing(senseId)) {
-        if (edge.relationshipType === LexicalRelationshipType.HYPERNYM) next.push(edge.targetWordId.value);
-      }
-    }
-    frontier = next;
-  }
-  return false;
-}
-
 /** Section 1 of the Gradability Update: whether `adjective` is
- * semantically gradable at all -- true only once at least one of its
- * own Senses (never the primary sense alone, `adjective.senseIds`'s own
- * full list) carries a WordNet Attribute pointer to a noun sense that
- * itself represents an ordered scalar dimension
- * (isScalarDimensionNoun() above). Must be settled before any *_Form
- * generation is attempted (Required Processing Order) -- generateAdjectiveForms()
- * below takes this as an explicit precomputed argument rather than
- * discovering it itself precisely so that ordering can't be skipped by
- * accident.
+ * semantically gradable at all -- true once at least one of its own
+ * Senses (never the primary sense alone, `adjective.senseIds`'s own
+ * full list) carries a WordNet Attribute pointer at all. Must be
+ * settled before any *_Form generation is attempted (Required
+ * Processing Order) -- generateAdjectiveForms() below takes this as an
+ * explicit precomputed argument rather than discovering it itself
+ * precisely so that ordering can't be skipped by accident.
+ *
+ * Having the pointer at all is the signal, not a starting point that
+ * then needs confirming by climbing its target's own Hypernym chain.
+ * WordNet's `=` pointer exists specifically to link an adjective to
+ * "the noun naming the attribute/dimension it's a value of"
+ * (LexicalRelationshipType.ATTRIBUTE's own docstring,
+ * enums/lexical_relationship_type.ts) -- a broad sample of real
+ * Attribute targets taken directly from the bundled dict/data.adj (not
+ * guessed) is uniformly genuine scalar/degree nouns regardless of which
+ * branch of the noun hierarchy they sit in ("carefulness",
+ * "liveliness", "convenience", "stature, height", "cheerfulness", ...),
+ * so no further structural check adds real precision.
+ *
+ * An earlier version of this function instead required climbing
+ * Hypernym* from the Attribute noun to one of two narrow anchor synsets
+ * ("magnitude"/"measure, quantity, amount") before counting it --
+ * reachable from "big"'s own Attribute noun ("size") in one hop, but
+ * NOT from "tall"'s own Attribute noun ("stature, height"), which
+ * climbs to "bodily_property" -> "property" instead, a sibling branch
+ * of the noun hierarchy that never crosses into the magnitude branch at
+ * all. That version therefore called "tall" non-gradable -- contradicting
+ * this very feature's own worked example ("Tall[Adjective, Sense 4] ->
+ * Attribute -> Height[Noun] -> Scalar Dimension" => "Gradable(tall) =
+ * true"). Widening the anchor set doesn't fix this either: the only
+ * hypernym "stature, height" and "size" both eventually share is
+ * "property" itself (04923519-n) / "attribute" (00024444-n) -- which
+ * every Attribute-linked noun climbs to sooner or later, scalar or not,
+ * so accepting it as an anchor would make the Hypernym* check
+ * unconditionally true and accepting anything narrower re-introduces
+ * the exact same gap.
  *
  * Checks both `outgoing` and `incoming` for each own Sense, not
  * `outgoing` alone -- ATTRIBUTE is one of WordSeeder's own
@@ -225,18 +193,11 @@ function isScalarDimensionNoun(senses: Senses, relationships: LexicalRelationshi
  * pointers happens to get processed first during seeding -- and
  * therefore which direction the one stored edge ends up facing --
  * depends on synset file order, not on anything this function should
- * have to know or care about. Every ATTRIBUTE edge this reads is
- * Sense-to-Sense (isScalarDimensionNoun's own docstring on why), so this
- * only ever looks at `senseId.value` on both ends, never a Word/Phrase
- * uuid. */
-export function determineGradability(senses: Senses, relationships: LexicalRelationshipStore, adjective: Adjective): boolean {
+ * have to know or care about. */
+export function determineGradability(relationships: LexicalRelationshipStore, adjective: Adjective): boolean {
   for (const senseId of adjective.senseIds) {
     const edges = [...relationships.outgoing(senseId.value), ...relationships.incoming(senseId.value)];
-    for (const edge of edges) {
-      if (edge.relationshipType !== LexicalRelationshipType.ATTRIBUTE) continue;
-      const nounSenseId = edge.sourceWordId.value === senseId.value ? edge.targetWordId.value : edge.sourceWordId.value;
-      if (isScalarDimensionNoun(senses, relationships, nounSenseId)) return true;
-    }
+    if (edges.some((edge) => edge.relationshipType === LexicalRelationshipType.ATTRIBUTE)) return true;
   }
   return false;
 }

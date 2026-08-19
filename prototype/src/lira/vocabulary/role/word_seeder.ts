@@ -1180,13 +1180,13 @@ export class WordSeeder {
     for (const word of dictionary.all()) {
       if (isAdjective(word)) {
         if (word.comparativeDegreeForm !== undefined && word.superlativeDegreeForm !== undefined) continue;
-        const gradable = determineGradability(senseStore, store, word);
+        const gradable = determineGradability(store, word);
         const generated = generateAdjectiveForms(word, gradable);
         word.comparativeDegreeForm = generated.comparativeDegreeForm;
         word.superlativeDegreeForm = generated.superlativeDegreeForm;
       } else if (isAdverb(word)) {
         if (word.comparativeDegreeForm !== undefined && word.superlativeDegreeForm !== undefined) continue;
-        const gradable = determineAdverbGradability(senseStore, store, dictionary, word);
+        const gradable = determineAdverbGradability(store, dictionary, word);
         const generated = generateAdverbForms(word, gradable);
         word.comparativeDegreeForm = generated.comparativeDegreeForm;
         word.superlativeDegreeForm = generated.superlativeDegreeForm;

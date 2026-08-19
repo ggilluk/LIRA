@@ -15,7 +15,6 @@ import type { Dictionary } from "./dictionary";
 import { LexicalRelationshipType } from "./enums/lexical_relationship_type";
 import { PartOfSpeech } from "./enums/part_of_speech";
 import type { LexicalRelationshipStore } from "./lexical_relationship_store";
-import type { Senses } from "./senses";
 import {
   createWord,
   isPeriphrasticComparison,
@@ -116,12 +115,12 @@ export function validateAdverb(adverb: Adverb): readonly WordFormIssue[] {
  * comes out non-gradable, matching Gradability Evaluation step 6's own
  * default (data/adjective.ts's docstring): no established scalar
  * dimension means Gradable = false. */
-export function determineGradability(senses: Senses, relationships: LexicalRelationshipStore, dictionary: Dictionary, adverb: Adverb): boolean {
+export function determineGradability(relationships: LexicalRelationshipStore, dictionary: Dictionary, adverb: Adverb): boolean {
   for (const edge of relationships.outgoing(adverb.uuid.value)) {
     if (edge.relationshipType !== LexicalRelationshipType.PERTAINYM) continue;
     const target = dictionary.findByUuid(edge.targetWordId.value);
     if (target === undefined || !isAdjective(target)) continue;
-    if (isAdjectiveGradable(senses, relationships, target)) return true;
+    if (isAdjectiveGradable(relationships, target)) return true;
   }
   // Flat-adverb fallback: some adverbs ("fast", "hard", "late", "early")
   // share their base Adjective's exact spelling rather than deriving
@@ -135,7 +134,7 @@ export function determineGradability(senses: Senses, relationships: LexicalRelat
   // own "hegira"/"Hegira" case, its own docstring).
   for (const candidate of dictionary.lookupAll(adverb.text)) {
     if (!isAdjective(candidate) || candidate.text !== adverb.text) continue;
-    if (isAdjectiveGradable(senses, relationships, candidate)) return true;
+    if (isAdjectiveGradable(relationships, candidate)) return true;
   }
   return false;
 }

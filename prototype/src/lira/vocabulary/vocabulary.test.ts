@@ -376,18 +376,18 @@ describe("generate<Class>Forms() -- deriving *_Form values from a base lemma", (
     expect(validateAdverb(generateAdverbForms(createAdverb({ text: "fast" }), true))).toEqual([]);
   });
 
-  it("Adjective: determineGradability checks every sense, not just the primary one, and climbs Hypernym* to find a scalar dimension", () => {
+  it("Adjective: determineGradability checks every sense, not just the primary one, is direction-agnostic, and requires nothing more than the Attribute pointer itself", () => {
     const senses = new Senses();
     const relationships = new LexicalRelationshipStore();
     const processor = new LexicalRelationshipProcessor(relationships, new LexicalRelationshipSystemPropertyTensor());
 
-    // "grandiloquent" -- Sense 1 (primary, non-scalar: an Attribute
-    // noun that isn't a scalar dimension at all) and Sense 2 (a real
-    // scalar Attribute noun, but reachable only two Hypernym hops up --
-    // mirrors "tall" -Attribute-> "stature, height" -Hypernym->
-    // "dimension" -Hypernym-> "magnitude" in the real bundled WordNet
-    // data). Gradability must be found from Sense 2 even though it is
-    // never the primary sense.
+    // "grandiloquent" -- Sense 1 (primary, no Attribute pointer at all)
+    // and Sense 2 (carries a real Attribute pointer). Gradability must
+    // be found from Sense 2 even though it is never the primary sense --
+    // no Hypernym climbing is needed or attempted any more (the pointer
+    // itself is the signal, determineGradability()'s own docstring on
+    // why an earlier, narrower version of this function wrongly called
+    // "tall" itself non-gradable).
     const grandiloquent = createAdjective({ text: "grandiloquent" });
     const primarySense = createSense({ definition: { value: "pompous" } });
     const scalarSense = createSense({ definition: { value: "elevated in style" } });
@@ -397,52 +397,31 @@ describe("generate<Class>Forms() -- deriving *_Form values from a base lemma", (
     senses.registerMember(scalarSense, grandiloquent);
     expect(grandiloquent.senseIds[0].value).toBe(primarySense.uuid.value);
 
-    const style = createNoun({ text: "style" });
-    const styleSense = createSense({ definition: { value: "a way of expressing something" } });
-    senses.append(styleSense);
-    senses.registerMember(styleSense, style);
-    processor.create({ sourceWordId: primarySense.uuid.value, targetWordId: styleSense.uuid.value, relationshipType: LexicalRelationshipType.ATTRIBUTE, sourceReferences: [] });
-
     const elevation = createNoun({ text: "elevation" });
     const elevationSense = createSense({ definition: { value: "the degree to which something is elevated" } });
     senses.append(elevationSense);
     senses.registerMember(elevationSense, elevation);
     processor.create({ sourceWordId: scalarSense.uuid.value, targetWordId: elevationSense.uuid.value, relationshipType: LexicalRelationshipType.ATTRIBUTE, sourceReferences: [] });
+    expect(determineGradability(relationships, grandiloquent)).toBe(true);
 
-    const dimension = createNoun({ text: "dimension" });
-    const dimensionSense = createSense({ definition: { value: "the magnitude of something in a particular direction" } });
-    senses.append(dimensionSense);
-    senses.registerMember(dimensionSense, dimension);
-    processor.create({ sourceWordId: elevationSense.uuid.value, targetWordId: dimensionSense.uuid.value, relationshipType: LexicalRelationshipType.HYPERNYM, sourceReferences: [] });
-
-    const magnitude = createNoun({ text: "magnitude", synsetId: { value: "05097645-n" } });
-    const magnitudeSense = createSense({ definition: { value: "the property of relative size or extent" }, synsetId: { value: "05097645-n" } });
-    senses.append(magnitudeSense);
-    senses.registerMember(magnitudeSense, magnitude);
-    processor.create({ sourceWordId: dimensionSense.uuid.value, targetWordId: magnitudeSense.uuid.value, relationshipType: LexicalRelationshipType.HYPERNYM, sourceReferences: [] });
-
-    expect(determineGradability(senses, relationships, grandiloquent)).toBe(true);
-
-    // "chartreuse" -- one sense, a genuine Attribute noun ("color"),
-    // but "color" never climbs to either scalar-dimension anchor
-    // (colors aren't an ordered dimension) -- must come out non-gradable.
-    const chartreuse = createAdjective({ text: "chartreuse" });
-    const colorAdjSense = createSense({ definition: { value: "yellowish green" } });
-    senses.append(colorAdjSense);
-    senses.registerMember(colorAdjSense, chartreuse);
-    const color = createNoun({ text: "color" });
-    const colorSense = createSense({ definition: { value: "a visual attribute of things" } });
-    senses.append(colorSense);
-    senses.registerMember(colorSense, color);
-    processor.create({ sourceWordId: colorAdjSense.uuid.value, targetWordId: colorSense.uuid.value, relationshipType: LexicalRelationshipType.ATTRIBUTE, sourceReferences: [] });
-    expect(determineGradability(senses, relationships, chartreuse)).toBe(false);
+    // Direction-agnostic: ATTRIBUTE is one of WordSeeder's own
+    // SYMMETRIC_RELATIONSHIP_KINDS (role/word_seeder.ts), so a real
+    // pair's one stored edge can end up facing either way -- an
+    // Attribute edge stored *into* this Adjective's own Sense
+    // (incoming) must count exactly the same as one stored out of it.
+    const reversed = createAdjective({ text: "reversed-case" });
+    const reversedSense = createSense({ definition: { value: "exists only to test incoming-edge direction" } });
+    senses.append(reversedSense);
+    senses.registerMember(reversedSense, reversed);
+    processor.create({ sourceWordId: elevationSense.uuid.value, targetWordId: reversedSense.uuid.value, relationshipType: LexicalRelationshipType.ATTRIBUTE, sourceReferences: [] });
+    expect(determineGradability(relationships, reversed)).toBe(true);
 
     // "wooden" -- no Attribute pointer at all -- non-gradable.
     const wooden = createAdjective({ text: "wooden" });
     const woodenSense = createSense({ definition: { value: "made of wood" } });
     senses.append(woodenSense);
     senses.registerMember(woodenSense, wooden);
-    expect(determineGradability(senses, relationships, wooden)).toBe(false);
+    expect(determineGradability(relationships, wooden)).toBe(false);
   });
 
   it("Adverb: determineGradability inherits from a Pertainym-linked Adjective, or falls back to a same-spelling flat Adjective when there's no Pertainym pointer at all", () => {
@@ -452,9 +431,9 @@ describe("generate<Class>Forms() -- deriving *_Form values from a base lemma", (
     const processor = new LexicalRelationshipProcessor(relationships, new LexicalRelationshipSystemPropertyTensor());
 
     // "-ly"-derived case: "quickly" PERTAINYM-> "quick" (Word-to-Word,
-    // never Sense-to-Sense -- word.ts's own determineGradability()
-    // docstring on why Pertainym differs from Attribute/Hypernym here).
-    // "quick" itself carries a real scalar Attribute chain.
+    // never Sense-to-Sense -- adverb.ts's own determineGradability()
+    // docstring on why Pertainym differs from Attribute here). "quick"
+    // itself carries a real Attribute pointer.
     const quickly = createAdverb({ text: "quickly" });
     const quick = createAdjective({ text: "quick" });
     dictionary.append(quick);
@@ -466,13 +445,8 @@ describe("generate<Class>Forms() -- deriving *_Form values from a base lemma", (
     senses.append(speedSense);
     senses.registerMember(speedSense, speed);
     processor.create({ sourceWordId: quickSense.uuid.value, targetWordId: speedSense.uuid.value, relationshipType: LexicalRelationshipType.ATTRIBUTE, sourceReferences: [] });
-    const magnitude = createNoun({ text: "magnitude", synsetId: { value: "05097645-n" } });
-    const magnitudeSense = createSense({ definition: { value: "the property of relative size or extent" }, synsetId: { value: "05097645-n" } });
-    senses.append(magnitudeSense);
-    senses.registerMember(magnitudeSense, magnitude);
-    processor.create({ sourceWordId: speedSense.uuid.value, targetWordId: magnitudeSense.uuid.value, relationshipType: LexicalRelationshipType.HYPERNYM, sourceReferences: [] });
     processor.create({ sourceWordId: quickly.uuid.value, targetWordId: quick.uuid.value, relationshipType: LexicalRelationshipType.PERTAINYM, sourceReferences: [] });
-    expect(determineAdverbGradability(senses, relationships, dictionary, quickly)).toBe(true);
+    expect(determineAdverbGradability(relationships, dictionary, quickly)).toBe(true);
 
     // Flat-adverb case: "wide" (adverb) has no Pertainym pointer of its
     // own at all, but shares its exact spelling with a gradable "wide"
@@ -484,13 +458,17 @@ describe("generate<Class>Forms() -- deriving *_Form values from a base lemma", (
     const wideSense = createSense({ definition: { value: "having a great extent from side to side" } });
     senses.append(wideSense);
     senses.registerMember(wideSense, wideAdjective);
-    processor.create({ sourceWordId: wideSense.uuid.value, targetWordId: magnitudeSense.uuid.value, relationshipType: LexicalRelationshipType.ATTRIBUTE, sourceReferences: [] });
-    expect(determineAdverbGradability(senses, relationships, dictionary, wideAdverb)).toBe(true);
+    const width = createNoun({ text: "width" });
+    const widthSense = createSense({ definition: { value: "the extent of something from side to side" } });
+    senses.append(widthSense);
+    senses.registerMember(widthSense, width);
+    processor.create({ sourceWordId: wideSense.uuid.value, targetWordId: widthSense.uuid.value, relationshipType: LexicalRelationshipType.ATTRIBUTE, sourceReferences: [] });
+    expect(determineAdverbGradability(relationships, dictionary, wideAdverb)).toBe(true);
 
     // No Pertainym pointer and no same-spelling Adjective at all --
     // nothing to inherit from, stays non-gradable.
     const somehow = createAdverb({ text: "somehow" });
-    expect(determineAdverbGradability(senses, relationships, dictionary, somehow)).toBe(false);
+    expect(determineAdverbGradability(relationships, dictionary, somehow)).toBe(false);
   });
 
   it("WordSeeder.seedWordNet wires generation in automatically -- a real seeded Noun/Verb gets its regular-case forms populated, and a real irregular verb gets its true irregular form, not a spelling-rule guess", async () => {
@@ -1021,16 +999,32 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     expect(antonymEdgesBetween).toHaveLength(1);
 
     // Adjective Gradability Update: "big"/"large" (01385012-a) carries a
-    // real WordNet Attribute pointer to "size" (05106204-n), which is
-    // itself one Hypernym hop from "magnitude" (05097645-n) --
-    // determineGradability()'s own anchor set (data/adjective.ts) -- so
-    // seedWordNet's own post-relationships pass should have populated
-    // both Degree Form fields, synthetically (monosyllabic -> "-er"/
-    // "-est", isPeriphrasticComparison's own docstring).
+    // real WordNet Attribute pointer to "size" (05106204-n) --
+    // determineGradability() (data/adjective.ts) requires nothing more
+    // than the pointer itself -- so seedWordNet's own post-relationships
+    // pass should have populated both Degree Form fields, synthetically
+    // (monosyllabic -> "-er"/"-est", isPeriphrasticComparison's own
+    // docstring).
     expect(isAdjective(big)).toBe(true);
     expect((big as Adjective).positiveDegreeForm).toEqual({ value: "big" });
     expect((big as Adjective).comparativeDegreeForm).toEqual({ value: "bigger", formats: ["/([bcdfghjklmnpqrstvwxyz])\\1er$/i"] });
     expect((big as Adjective).superlativeDegreeForm).toEqual({ value: "biggest", formats: ["/([bcdfghjklmnpqrstvwxyz])\\1est$/i"] });
+
+    // "tall" (02393670-a) carries its own real Attribute pointer to
+    // "stature, height" (05009517-n) -- this is this feature's own
+    // worked example ("Tall[Adjective, Sense 4] -> Attribute ->
+    // Height[Noun] -> Scalar Dimension" => "Gradable(tall) = true"), and
+    // a genuine regression check: an earlier version of determineGradability()
+    // required climbing "stature, height"'s own Hypernym chain to one of
+    // two narrow anchor synsets, but that chain climbs to
+    // "bodily_property" -> "property" instead -- a sibling branch that
+    // never reaches either anchor -- so it wrongly called "tall"
+    // non-gradable.
+    const tall = dictionary.lookupAll("tall").find((w) => isAdjective(w)) as Adjective;
+    expect(tall).toBeDefined();
+    expect(tall.positiveDegreeForm).toEqual({ value: "tall" });
+    expect(tall.comparativeDegreeForm).toEqual({ value: "taller", formats: ["/er$/i"] });
+    expect(tall.superlativeDegreeForm).toEqual({ value: "tallest", formats: ["/est$/i"] });
 
     // "wooden" (both real WordNet senses, 01145111-a "lacking ease or
     // grace" and 02586927-a "made ... of wood") carries no Attribute
@@ -1071,9 +1065,8 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // derivation -- and carries no Pertainym pointer of its own at all
     // (verified directly against the bundled dict/data.adv). Adverb's
     // own determineGradability() falls back to the same-spelling
-    // Adjective ("wide", 02571278-a: Attribute -> "width" -> Hypernym ->
-    // "dimension" -> Hypernym -> "magnitude", the same anchor "big"
-    // reaches above) for exactly this case.
+    // Adjective ("wide", 02571278-a, which carries its own real
+    // Attribute pointer to "width") for exactly this case.
     const wideAdverb = dictionary.lookupAll("wide").find((w) => isAdverb(w)) as Adverb;
     expect(wideAdverb).toBeDefined();
     expect(wideAdverb.comparativeDegreeForm).toEqual({ value: "wider", formats: ["/er$/i"] });
