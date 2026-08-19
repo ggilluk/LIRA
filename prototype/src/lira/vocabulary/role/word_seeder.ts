@@ -27,7 +27,7 @@
  * inserted. */
 
 import { createAdjective, determineGradability, generateAdjectiveForms, isAdjective } from "../data/adjective";
-import { createAdverb, generateAdverbForms } from "../data/adverb";
+import { createAdverb, determineGradability as determineAdverbGradability, generateAdverbForms, isAdverb } from "../data/adverb";
 import { createConjunction } from "../data/conjunction";
 import { createDeterminer } from "../data/determiner";
 import { createInterjection } from "../data/interjection";
@@ -1163,24 +1163,34 @@ export class WordSeeder {
       }
     }
 
-    // Every Adjective's Comparative/Superlative Degree Form is decided
-    // here, not back in pass 1's own synsetMemberToWord() -- only now,
-    // with every Sense fully wired to every Word that lexicalizes it
-    // (senseIds) and every Attribute/Hypernym pointer above actually
-    // seeded, is determineGradability() (data/adjective.ts) able to
-    // answer the question at all (Required Processing Order, that
-    // file's own docstring). Skips a Word already carrying either
-    // field -- a curated value (a future Common Vocabulary Cache
+    // Every Adjective's and Adverb's Comparative/Superlative Degree Form
+    // is decided here, not back in pass 1's own synsetMemberToWord() --
+    // only now, with every Sense fully wired to every Word that
+    // lexicalizes it (senseIds) and every Attribute/Hypernym/Pertainym
+    // pointer above actually seeded, are determineGradability()
+    // (data/adjective.ts) and its Adverb counterpart (data/adverb.ts --
+    // that file's own docstring on why gradability is derived
+    // differently there, via Pertainym rather than Attribute) able to
+    // answer the question at all (Required Processing Order,
+    // data/adjective.ts's own docstring). Skips a Word already carrying
+    // either field -- a curated value (a future Common Vocabulary Cache
     // override, say) is never overwritten, matching
-    // generateAdjectiveForms()'s own "only fills what's still
-    // undefined" contract.
+    // generateAdjectiveForms()'s/generateAdverbForms()'s own "only fills
+    // what's still undefined" contract.
     for (const word of dictionary.all()) {
-      if (!isAdjective(word)) continue;
-      if (word.comparativeDegreeForm !== undefined && word.superlativeDegreeForm !== undefined) continue;
-      const gradable = determineGradability(senseStore, store, word);
-      const generated = generateAdjectiveForms(word, gradable);
-      word.comparativeDegreeForm = generated.comparativeDegreeForm;
-      word.superlativeDegreeForm = generated.superlativeDegreeForm;
+      if (isAdjective(word)) {
+        if (word.comparativeDegreeForm !== undefined && word.superlativeDegreeForm !== undefined) continue;
+        const gradable = determineGradability(senseStore, store, word);
+        const generated = generateAdjectiveForms(word, gradable);
+        word.comparativeDegreeForm = generated.comparativeDegreeForm;
+        word.superlativeDegreeForm = generated.superlativeDegreeForm;
+      } else if (isAdverb(word)) {
+        if (word.comparativeDegreeForm !== undefined && word.superlativeDegreeForm !== undefined) continue;
+        const gradable = determineAdverbGradability(senseStore, store, dictionary, word);
+        const generated = generateAdverbForms(word, gradable);
+        word.comparativeDegreeForm = generated.comparativeDegreeForm;
+        word.superlativeDegreeForm = generated.superlativeDegreeForm;
+      }
     }
 
     return { wordsSeeded, sensesSeeded, relationshipsSeeded };
@@ -1434,7 +1444,13 @@ export class WordSeeder {
       case PartOfSpeech.ADJECTIVE:
         return generateAdjectiveForms(createAdjective(shared), false);
       case PartOfSpeech.ADVERB:
-        return generateAdverbForms(createAdverb(shared));
+        // Same deferral as ADJECTIVE just above, for the same reason --
+        // Adverb's own determineGradability() (data/adverb.ts) needs
+        // this Word's own Pertainym edges, which don't exist yet this
+        // early (pass 2 hasn't run). The post-relationships pass below
+        // (this method's own final loop) revisits every seeded Adverb
+        // too, once relationships are fully wired.
+        return generateAdverbForms(createAdverb(shared), false);
       case PartOfSpeech.NOUN:
         return generateNounForms(createNoun(shared));
       default:
@@ -1626,7 +1642,11 @@ export class WordSeeder {
         // ever fills a field that's still undefined.
         return generateAdjectiveForms(createAdjective(fields), false);
       case PartOfSpeech.ADVERB:
-        return generateAdverbForms(createAdverb(fields));
+        // Same reasoning as ADJECTIVE just above: no WordNet Pertainym
+        // graph exists for a hand-curated Common Vocabulary Cache entry,
+        // so Adverb.determineGradability() (data/adverb.ts) has nothing
+        // to check either -- defaults to non-gradable.
+        return generateAdverbForms(createAdverb(fields), false);
       case PartOfSpeech.PRONOUN:
         return createPronoun(fields);
       case PartOfSpeech.DETERMINER:

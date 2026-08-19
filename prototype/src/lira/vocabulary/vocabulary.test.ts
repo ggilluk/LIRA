@@ -6,7 +6,7 @@ import { LexicalRelationshipType } from "./data/enums/lexical_relationship_type"
 import { PartOfSpeech } from "./data/enums/part_of_speech";
 import { antonyms, createWord, holonyms, hypernyms, hyponyms, meronyms, synonyms, validateFormText, validateWordFormAttributes, type Word } from "./data/word";
 import { AdjectivePosition, createAdjective, determineGradability, generateAdjectiveForms, isAdjective, syntacticPositionForSense, validateAdjective, type Adjective } from "./data/adjective";
-import { createAdverb, generateAdverbForms, isAdverb, validateAdverb } from "./data/adverb";
+import { createAdverb, determineGradability as determineAdverbGradability, generateAdverbForms, isAdverb, validateAdverb, type Adverb } from "./data/adverb";
 import { isConjunction } from "./data/conjunction";
 import { createDeterminer, isDeterminer, validateDeterminer } from "./data/determiner";
 import { HypernymRootWord } from "./data/enums/hypernym_root_word";
@@ -316,7 +316,7 @@ describe("generate<Class>Forms() -- deriving *_Form values from a base lemma", (
     const large = generateAdjectiveForms(createAdjective({ text: "large" }), true);
     expect(large.comparativeDegreeForm).toEqual({ value: "larger", formats: ["/er$/i"] });
 
-    const fast = generateAdverbForms(createAdverb({ text: "fast" }));
+    const fast = generateAdverbForms(createAdverb({ text: "fast" }), true);
     expect(fast.comparativeDegreeForm).toEqual({ value: "faster", formats: ["/er$/i"] });
     expect(fast.superlativeDegreeForm).toEqual({ value: "fastest", formats: ["/est$/i"] });
   });
@@ -348,12 +348,32 @@ describe("generate<Class>Forms() -- deriving *_Form values from a base lemma", (
     expect(validateAdjective(accepting)).toEqual([]);
   });
 
+  it("Adverb: a non-gradable adverb only ever gets a Positive Degree Form, same gating as Adjective", () => {
+    const anisotropically = generateAdverbForms(createAdverb({ text: "anisotropically" }), false);
+    expect(anisotropically.positiveDegreeForm).toEqual({ value: "anisotropically" });
+    expect(anisotropically.comparativeDegreeForm).toBeUndefined();
+    expect(anisotropically.superlativeDegreeForm).toBeUndefined();
+    expect(validateAdverb(anisotropically)).toEqual([]);
+  });
+
+  it("Adverb: a lemma ending \"-ly\" is always periphrastic, never routed through Adjective's own \"y\" rule (there is no \"quicklier\")", () => {
+    const scarcely = generateAdverbForms(createAdverb({ text: "scarcely" }), true);
+    expect(scarcely.comparativeDegreeForm).toEqual({ value: "more scarcely", formats: ["/^more\\s+.+$/i"] });
+    expect(scarcely.superlativeDegreeForm).toEqual({ value: "most scarcely", formats: ["/^most\\s+.+$/i"] });
+    expect(validateAdverb(scarcely)).toEqual([]);
+
+    // A non-"-ly" adverb still goes through the ordinary synthetic path.
+    const fast = generateAdverbForms(createAdverb({ text: "fast" }), true);
+    expect(fast.comparativeDegreeForm).toEqual({ value: "faster", formats: ["/er$/i"] });
+    expect(fast.superlativeDegreeForm).toEqual({ value: "fastest", formats: ["/est$/i"] });
+  });
+
   it("every generated Word passes its own validate<Class>() unchanged -- generation and validation are built from the same matrix rows", () => {
     expect(validateNoun(generateNounForms(createNoun({ text: "city" })))).toEqual([]);
     expect(validateVerb(generateVerbForms(createVerb({ text: "stop" })))).toEqual([]);
     expect(validateVerb(generateVerbForms(createVerb({ text: "eat" })))).toEqual([]);
     expect(validateAdjective(generateAdjectiveForms(createAdjective({ text: "happy" }), true))).toEqual([]);
-    expect(validateAdverb(generateAdverbForms(createAdverb({ text: "fast" })))).toEqual([]);
+    expect(validateAdverb(generateAdverbForms(createAdverb({ text: "fast" }), true))).toEqual([]);
   });
 
   it("Adjective: determineGradability checks every sense, not just the primary one, and climbs Hypernym* to find a scalar dimension", () => {
@@ -423,6 +443,54 @@ describe("generate<Class>Forms() -- deriving *_Form values from a base lemma", (
     senses.append(woodenSense);
     senses.registerMember(woodenSense, wooden);
     expect(determineGradability(senses, relationships, wooden)).toBe(false);
+  });
+
+  it("Adverb: determineGradability inherits from a Pertainym-linked Adjective, or falls back to a same-spelling flat Adjective when there's no Pertainym pointer at all", () => {
+    const dictionary = new Dictionary();
+    const senses = new Senses();
+    const relationships = new LexicalRelationshipStore();
+    const processor = new LexicalRelationshipProcessor(relationships, new LexicalRelationshipSystemPropertyTensor());
+
+    // "-ly"-derived case: "quickly" PERTAINYM-> "quick" (Word-to-Word,
+    // never Sense-to-Sense -- word.ts's own determineGradability()
+    // docstring on why Pertainym differs from Attribute/Hypernym here).
+    // "quick" itself carries a real scalar Attribute chain.
+    const quickly = createAdverb({ text: "quickly" });
+    const quick = createAdjective({ text: "quick" });
+    dictionary.append(quick);
+    const quickSense = createSense({ definition: { value: "accomplished with speed" } });
+    senses.append(quickSense);
+    senses.registerMember(quickSense, quick);
+    const speed = createNoun({ text: "speed" });
+    const speedSense = createSense({ definition: { value: "a rate of moving" } });
+    senses.append(speedSense);
+    senses.registerMember(speedSense, speed);
+    processor.create({ sourceWordId: quickSense.uuid.value, targetWordId: speedSense.uuid.value, relationshipType: LexicalRelationshipType.ATTRIBUTE, sourceReferences: [] });
+    const magnitude = createNoun({ text: "magnitude", synsetId: { value: "05097645-n" } });
+    const magnitudeSense = createSense({ definition: { value: "the property of relative size or extent" }, synsetId: { value: "05097645-n" } });
+    senses.append(magnitudeSense);
+    senses.registerMember(magnitudeSense, magnitude);
+    processor.create({ sourceWordId: speedSense.uuid.value, targetWordId: magnitudeSense.uuid.value, relationshipType: LexicalRelationshipType.HYPERNYM, sourceReferences: [] });
+    processor.create({ sourceWordId: quickly.uuid.value, targetWordId: quick.uuid.value, relationshipType: LexicalRelationshipType.PERTAINYM, sourceReferences: [] });
+    expect(determineAdverbGradability(senses, relationships, dictionary, quickly)).toBe(true);
+
+    // Flat-adverb case: "wide" (adverb) has no Pertainym pointer of its
+    // own at all, but shares its exact spelling with a gradable "wide"
+    // (adjective) -- the fallback finds it by (partOfSpeech, spelling)
+    // rather than by any edge.
+    const wideAdverb = createAdverb({ text: "wide" });
+    const wideAdjective = createAdjective({ text: "wide" });
+    dictionary.append(wideAdjective);
+    const wideSense = createSense({ definition: { value: "having a great extent from side to side" } });
+    senses.append(wideSense);
+    senses.registerMember(wideSense, wideAdjective);
+    processor.create({ sourceWordId: wideSense.uuid.value, targetWordId: magnitudeSense.uuid.value, relationshipType: LexicalRelationshipType.ATTRIBUTE, sourceReferences: [] });
+    expect(determineAdverbGradability(senses, relationships, dictionary, wideAdverb)).toBe(true);
+
+    // No Pertainym pointer and no same-spelling Adjective at all --
+    // nothing to inherit from, stays non-gradable.
+    const somehow = createAdverb({ text: "somehow" });
+    expect(determineAdverbGradability(senses, relationships, dictionary, somehow)).toBe(false);
   });
 
   it("WordSeeder.seedWordNet wires generation in automatically -- a real seeded Noun/Verb gets its regular-case forms populated, and a real irregular verb gets its true irregular form, not a spelling-rule guess", async () => {
@@ -975,6 +1043,41 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     expect(wooden.positiveDegreeForm).toEqual({ value: "wooden" });
     expect(wooden.comparativeDegreeForm).toBeUndefined();
     expect(wooden.superlativeDegreeForm).toBeUndefined();
+
+    // Adverb Gradability Update (data/adverb.ts): "scarcely" (00003317-r)
+    // carries a real WordNet Pertainym pointer to "scarce" (adjective) --
+    // WordNet gives no adverb an Attribute pointer of its own at all
+    // (verified directly against the bundled dict/data.adv, zero `=`
+    // pointers exist there), so an Adverb's own gradability is inherited
+    // through that Pertainym link to its base Adjective instead. "scarce"
+    // is itself gradable, so "scarcely" is too -- and being "-ly"-ending,
+    // it goes periphrastic ("more scarcely"), not through Adjective's own
+    // "y" rule (there is no real "scarcelier").
+    const scarcely = dictionary.lookup("scarcely")! as Adverb;
+    expect(isAdverb(scarcely)).toBe(true);
+    expect(scarcely.comparativeDegreeForm).toEqual({ value: "more scarcely", formats: ["/^more\\s+.+$/i"] });
+    expect(scarcely.superlativeDegreeForm).toEqual({ value: "most scarcely", formats: ["/^most\\s+.+$/i"] });
+
+    // "anisotropically" (00003675-r) carries a Pertainym pointer to
+    // "anisotropic", which carries no Attribute pointer of its own --
+    // non-gradable, correctly inherited through the Pertainym hop.
+    const anisotropically = dictionary.lookup("anisotropically")! as Adverb;
+    expect(anisotropically.positiveDegreeForm).toEqual({ value: "anisotropically" });
+    expect(anisotropically.comparativeDegreeForm).toBeUndefined();
+    expect(anisotropically.superlativeDegreeForm).toBeUndefined();
+
+    // "wide" (00497722-r) is a flat adverb -- identical spelling to its
+    // base Adjective ("wide roads"/"wandered wide") rather than a "-ly"
+    // derivation -- and carries no Pertainym pointer of its own at all
+    // (verified directly against the bundled dict/data.adv). Adverb's
+    // own determineGradability() falls back to the same-spelling
+    // Adjective ("wide", 02571278-a: Attribute -> "width" -> Hypernym ->
+    // "dimension" -> Hypernym -> "magnitude", the same anchor "big"
+    // reaches above) for exactly this case.
+    const wideAdverb = dictionary.lookupAll("wide").find((w) => isAdverb(w)) as Adverb;
+    expect(wideAdverb).toBeDefined();
+    expect(wideAdverb.comparativeDegreeForm).toEqual({ value: "wider", formats: ["/er$/i"] });
+    expect(wideAdverb.superlativeDegreeForm).toEqual({ value: "widest", formats: ["/est$/i"] });
 
     // Every new WordNet-sourced kind actually appears at least once --
     // a regression check against relationshipKindForPointer silently
