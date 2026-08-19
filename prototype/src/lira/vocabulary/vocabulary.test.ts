@@ -722,12 +722,13 @@ describe("WordSeeder against the bundled Common Vocabulary Cache", () => {
     expect(sense.seededArousalNonArousalWeight?.value).toBe(0.4);
     expect(sense.seededDominanceSubmissiveWeight?.value).toBe(0.5);
 
-    // The UI-facing read side (DictionaryView.padRecord(), via
-    // WordRecord.pad) resolves through the Sense the identical way.
+    // The UI-facing read side (DictionaryView.sensesFor(), via
+    // WordRecord.senses[i].pad) resolves through the Sense the identical
+    // way -- per sense, not a single word-level reading any more.
     const lexicalRelationships = new LexicalRelationshipStore();
     const view = new DictionaryView(dictionary, lexicalRelationships, { domainName: "Common", senses: senseStore });
     const record = view.searchWords({ wordId: achieve.uuid.value }).words[0];
-    expect(record.pad).toEqual({ pleasure: 0.6, arousal: 0.4, dominance: 0.5 });
+    expect(record.senses[0].pad).toEqual({ pleasure: 0.6, arousal: 0.4, dominance: 0.5 });
 
     // A genuinely neutral word ("word"/NOUN, metalinguistic_nouns.json,
     // 0.0/0.0/0.0) still resolves as a real value, not null -- 0.0 is a

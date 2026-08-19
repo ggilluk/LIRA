@@ -144,7 +144,6 @@ export interface WordRecord {
   // exists in the bundled data today, but the field stays optional
   // either way).
   phrase_type?: string;
-  pad: { pleasure: number; arousal: number; dominance: number } | null;
   // Every *_Form Text field this Word's own concrete POS subtype
   // carries a populated value for, in the Word Form to Part of Speech
   // Matrix's own field order (data/word_form_part_of_speech_matrix.md)
@@ -198,6 +197,18 @@ export interface WordSenseSummary {
   // `is_primary` below and this field agree by construction rather than
   // by coincidence.
   frequency: number | null;
+  // This Sense's own Seeded Attributes for the PAD (Pleasure-Arousal-
+  // Dominance) affective framework (Sense.seededPleasureDispleasureWeight's
+  // own docstring, data/sense.ts) -- null when no PAD value has ever
+  // been assigned to this specific meaning (every WordNet-seeded Sense,
+  // and most hand-curated ones too), not "neutral" (0/0/0 is a genuine
+  // seeded-neutral reading, distinct from null). PAD moved here from a
+  // single word-level reading (padRecord()'s own former "just the
+  // primary sense" simplification) precisely so a polysemous Word's own
+  // several, genuinely different-affect meanings ("cool" the
+  // temperature vs. "cool" the approval) each show their own value
+  // instead of only ever showing entry #1's.
+  pad: { pleasure: number; arousal: number; dominance: number } | null;
   // Fellow members of this one Sense, this Word/Phrase itself excluded --
   // the sense-scoped synonym fact (Senses.membersOf()'s own docstring,
   // data/senses.ts) other Senses this same Word also carries have no part
@@ -214,7 +225,7 @@ type DefinitionSegment =
   | { text: string; word: true; resolved: true; word_id: string; lexical_form: string; pos: string; domain: string | null; gloss: string };
 
 // Phrase's own client-facing record -- deliberately leaner than
-// WordRecord (no relationship_count/definition_segments/pad/domain):
+// WordRecord (no relationship_count/definition_segments/domain):
 // the Phrases tab itself stays a plain searchable list, not a
 // word-with-a-detail-panel view the way Words is. A WordNet-seeded
 // Phrase's own relationships (it does participate in
@@ -672,7 +683,7 @@ export class DictionaryView {
    * Dictionary path, only ever run under MAX_INTERACTIVE_WORDS) and
    * searchWords() (the single-Word-at-a-time path, run regardless of
    * scale) both build from, so a WordRecord looks identical -- same
-   * fields, same relationship_count/definition_segments/pad logic --
+   * fields, same relationship_count/definition_segments logic --
    * whichever path produced it. */
   private wordRecordFor(word: Word): WordRecord {
     const wordId = word.uuid.value;
@@ -699,7 +710,6 @@ export class DictionaryView {
       sources: word.sourceReferences.map((ref) => ref.sourceName.value),
       relationship_count: relationshipCount,
       definition_segments: this.definitionSegments(word),
-      pad: this.padRecord(word),
       word_forms: this.wordFormsFor(word),
       senses: this.sensesFor(word),
     };
@@ -725,6 +735,7 @@ export class DictionaryView {
       const sense = this.senses.findByUuid(senseId.value);
       if (sense === undefined) return;
       const domain = !sense.isCommon ? this.domainName : (sense.domainTag?.value ?? "Common");
+      const { seededPleasureDispleasureWeight: p, seededArousalNonArousalWeight: a, seededDominanceSubmissiveWeight: d } = sense;
       summaries.push({
         id: senseId.value,
         is_primary: index === 0,
@@ -732,6 +743,7 @@ export class DictionaryView {
         gloss: sense.gloss?.value ?? "",
         domain,
         frequency: sense.senseFrequency ?? null,
+        pad: p !== undefined && a !== undefined && d !== undefined ? { pleasure: p.value, arousal: a.value, dominance: d.value } : null,
         synonyms: this.senses
           .membersOf(senseId.value)
           .filter((member) => member.uuid.value !== entry.uuid.value)
@@ -1014,27 +1026,6 @@ export class DictionaryView {
     return { senses: matches, totalMatches };
   }
 
-  /** `entry`'s own primary Sense's own Seeded Attributes for the PAD
-   * (Pleasure-Arousal-Dominance) affective framework -- PAD lives on
-   * Sense now, not on Word/Phrase directly (Sense.seededPleasureDispleasureWeight's
-   * own docstring, data/sense.ts), so this resolves through
-   * `entry.senseIds[0]` the same way senseFieldsFor()/isRootWordFor() do
-   * (their own docstrings on why index 0 specifically). null when
-   * there's no resolvable Sense at all, or its own PAD fields are
-   * undefined (no PAD value has ever been assigned to this meaning) --
-   * 0.0 is a genuine "neutral" value, distinct from either. Unlike
-   * senseFieldsFor()'s own domainTag/relatedDomainTags, there is no
-   * Word/Phrase-level fallback to fall back to any more -- a Word/Phrase
-   * copied cross-Domain without its own Sense (that same known gap)
-   * simply shows no PAD here. */
-  private padRecord(entry: Word | Phrase): { pleasure: number; arousal: number; dominance: number } | null {
-    const primarySenseId = entry.senseIds[0];
-    const sense = primarySenseId !== undefined ? this.senses.findByUuid(primarySenseId.value) : undefined;
-    if (sense === undefined) return null;
-    const { seededPleasureDispleasureWeight: p, seededArousalNonArousalWeight: a, seededDominanceSubmissiveWeight: d } = sense;
-    if (p === undefined || a === undefined || d === undefined) return null;
-    return { pleasure: p.value, arousal: a.value, dominance: d.value };
-  }
 
   /** Reconstructs word.definition's text as an ordered list of
    * segments -- plain text (punctuation, whitespace) interleaved with
@@ -2073,6 +2064,19 @@ summary.detail-section-title::marker { color: var(--ink-muted); }
 .sense-rels .detail-empty {
   margin-top: 4px;
 }
+.sense-pad {
+  margin-top: 4px;
+}
+.sense-pad summary {
+  cursor: pointer;
+  user-select: none;
+  font-size: 0.74rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--ink-muted);
+}
+.sense-pad summary::marker { color: var(--ink-muted); }
+.sense-pad .pad-meters { margin-top: 4px; }
 .def-text { line-height: 1.7; }
 .def-word {
   position: relative;
@@ -3336,11 +3340,16 @@ function padMeterRow(posLabel, negLabel, value) {
 // "the definition" into "sense 1 of N", and it's the only place a
 // monosemous Word's own relationships (now always grouped under a
 // Sense, RelationshipRecord.via_sense_id's own docstring) are shown at
-// all. Each sense's own relationships are nested in a native
-// \`<details>\` -- collapsible with zero extra JS, open by default only
-// for the primary sense (the one most callers care about first), closed
-// for the rest so a highly polysemous Word ("big", ~15 senses) doesn't
-// dump fifteen expanded relationship lists at once.
+// all. Each sense's own relationships -- and, when seeded, its own PAD
+// (Pleasure-Arousal-Dominance) affect reading, WordSenseSummary.pad's
+// own docstring on why this moved from a single word-level section to
+// here -- are nested in a native \`<details>\` each, collapsible with
+// zero extra JS, open by default only for the primary sense (the one
+// most callers care about first), closed for the rest so a highly
+// polysemous Word ("big", ~15 senses) doesn't dump fifteen expanded
+// blocks at once. No PAD \`<details>\` at all for a sense with none
+// seeded (every WordNet-seeded sense, most hand-curated ones too) --
+// nothing to show, so nothing to collapse.
 function sensesSectionHTML(word, rels) {
   if (!word.senses || !word.senses.length) return '';
   return \`
@@ -3358,21 +3367,18 @@ function sensesSectionHTML(word, rels) {
             <summary>Relationships (\${count})</summary>
             <div class="detail-relationships-section">\${relationshipsSectionHTML(senseRels)}</div>
           </details>
+          \${s.pad ? \`
+          <details class="sense-pad"\${s.is_primary ? ' open' : ''}>
+            <summary>Affect (PAD, seeded)</summary>
+            <div class="pad-meters">
+              \${padMeterRow('Pleasure', 'Displeasure', s.pad.pleasure)}
+              \${padMeterRow('Arousal', 'Non-Arousal', s.pad.arousal)}
+              \${padMeterRow('Dominance', 'Submissive', s.pad.dominance)}
+            </div>
+          </details>\` : ''}
         </li>\`;
       }).join('')}
     </ol>
-  \`;
-}
-
-function padSectionHTML(word) {
-  if (!word.pad) {
-    return '<div class="detail-section-title">Affect (PAD, seeded)</div><div class="detail-empty" style="padding:4px 0">No PAD value seeded yet.</div>';
-  }
-  return \`
-    <div class="detail-section-title">Affect (PAD, seeded)</div>
-    \${padMeterRow('Pleasure', 'Displeasure', word.pad.pleasure)}
-    \${padMeterRow('Arousal', 'Non-Arousal', word.pad.arousal)}
-    \${padMeterRow('Dominance', 'Submissive', word.pad.dominance)}
   \`;
 }
 
@@ -3548,7 +3554,6 @@ function wordDetailHTML(word, rels, relCount) {
     <div class="detail-entry-id" title="Persistent Qualified Word Identity (domain + part of speech + word) -- stable across regenerations, unlike this word's transient graph id">Entry ID <code>\${word.entry_id}</code></div>
     <div class="detail-definition">\${renderDefinition(word)}</div>
     \${sensesSectionHTML(word, rels)}
-    \${padSectionHTML(word)}
     \${wordFormsSectionHTML(word)}
     <div class="detail-section-title">Provenance</div>
     <div class="detail-definition" style="margin-top:0">\${word.sources && word.sources.length ? word.sources.map(s => \`<span class="tag">\${s}</span>\`).join('') : '<span style="opacity:.6">No source recorded.</span>'}</div>
