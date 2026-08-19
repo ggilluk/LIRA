@@ -1204,6 +1204,30 @@ describe("DictionaryView.searchWords", () => {
     expect(result.totalMatches).toBe(10);
   });
 
+  it("a WordRecord's own word_forms carries every populated *_Form field for its POS subtype, labelled and in matrix field order, and stays empty when nothing is seeded", () => {
+    const dictionary = new Dictionary();
+    const dog = createNoun({
+      text: "dog",
+      baseLemmaCanonicalForm: { value: "dog" },
+      pluralNumberForm: { value: "dogs", formats: ["/s$/i"] },
+      possessiveCaseForm: { value: "dog's", formats: ["/'s$/i"] },
+    });
+    const cat = createNoun({ text: "cat" });
+    dictionary.append(dog);
+    dictionary.append(cat);
+    const view = new DictionaryView(dictionary, new LexicalRelationshipStore(), { domainName: "Common" });
+
+    const dogRecord = view.searchWords({ wordId: dog.uuid.value }).words[0];
+    expect(dogRecord.word_forms).toEqual([
+      { field: "baseLemmaCanonicalForm", label: "Base Lemma Canonical Form", value: "dog" },
+      { field: "pluralNumberForm", label: "Plural Number Form", value: "dogs" },
+      { field: "possessiveCaseForm", label: "Possessive Case Form", value: "dog's" },
+    ]);
+
+    const catRecord = view.searchWords({ wordId: cat.uuid.value }).words[0];
+    expect(catRecord.word_forms).toEqual([]);
+  });
+
   it("resolves against the real bundled WordNet-scale dataset without embedding it (regression check for the RangeError MAX_INTERACTIVE_WORDS exists to avoid)", async () => {
     const dictionary = new Dictionary();
     const lexicalRelationships = new LexicalRelationshipStore();

@@ -17,18 +17,24 @@
  * LexicalRelationshipStore instead of from dataclasses. */
 
 import type { Text } from "../../value_objects";
+import { ADJECTIVE_FORM_PATTERNS, isAdjective } from "../data/adjective";
+import { ADVERB_FORM_PATTERNS, isAdverb } from "../data/adverb";
 import type { Dictionary } from "../data/dictionary";
+import { DETERMINER_FORM_PATTERNS, isDeterminer } from "../data/determiner";
 import { EditorialLabel } from "../data/enums/editorial_label";
 import type { LexicalRelationship } from "../data/lexical_relationship";
 import type { LexicalRelationshipStore } from "../data/lexical_relationship_store";
 import { LexicalRelationshipType, MERONYM_KIND_QUALIFIER, relationshipCategory, relationshipGroup } from "../data/enums/lexical_relationship_type";
+import { NOUN_FORM_PATTERNS, isNoun } from "../data/noun";
 import { PartOfSpeech } from "../data/enums/part_of_speech";
 import { phraseAsWord, type Phrase } from "../data/phrase";
 import { PhraseType } from "../data/enums/phrase_type";
 import { Phrases } from "../data/phrases";
+import { PRONOUN_FORM_PATTERNS, isPronoun } from "../data/pronoun";
 import { RegisterCode } from "../data/enums/register_code";
 import type { Sense } from "../data/sense";
 import { Senses } from "../data/senses";
+import { VERB_FORM_PATTERNS, isVerb } from "../data/verb";
 import { definitionWords, type Word } from "../data/word";
 
 const DEFINITION_TOKEN_PATTERN = /[^\W_]+/g;
@@ -55,6 +61,18 @@ const POS_COLORS: Record<string, string> = {
   [PartOfSpeech[PartOfSpeech.PUNCTUATION]]: "#9A9A9A",
   [PartOfSpeech[PartOfSpeech.OTHER]]: "#7A7A7A",
 };
+
+/** "pluralNumberForm" -> "Plural Number Form" -- every *_Form field name
+ * this codebase defines is camelCase built from Title Case words (each
+ * one already capitalized after the first, camelCase's own convention),
+ * so splitting on an uppercase letter and capitalizing the first
+ * character recovers exactly the Word Form to Part of Speech Matrix's
+ * own row names (data/word_form_part_of_speech_matrix.md) without
+ * needing a second, hand-maintained label table. */
+function formFieldLabel(field: string): string {
+  const spaced = field.replace(/([A-Z])/g, " $1");
+  return spaced.charAt(0).toUpperCase() + spaced.slice(1);
+}
 
 function escapeHtml(value: string): string {
   return value
@@ -127,6 +145,25 @@ export interface WordRecord {
   // either way).
   phrase_type?: string;
   pad: { pleasure: number; arousal: number; dominance: number } | null;
+  // Every *_Form Text field this Word's own concrete POS subtype
+  // carries a populated value for, in the Word Form to Part of Speech
+  // Matrix's own field order (data/word_form_part_of_speech_matrix.md)
+  // -- DictionaryView.wordFormsFor()'s own docstring on how this is
+  // built. Always includes baseLemmaCanonicalForm when set (every POS
+  // carries that one), plus whichever of that subtype's own fields
+  // (Noun/Verb/Adjective/Adverb/Pronoun/Determiner -- the other five POS
+  // classes declare no *_Form field of their own beyond
+  // baseLemmaCanonicalForm) are populated. Empty for a Word with
+  // nothing seeded yet -- no seeding path (word_seeder.ts) populates any
+  // of these fields today, so this is empty for every Word until a
+  // future seeding/curation pass writes to them.
+  word_forms: WordFormEntry[];
+}
+
+export interface WordFormEntry {
+  field: string;
+  label: string;
+  value: string;
 }
 
 type DefinitionSegment =
@@ -603,7 +640,36 @@ export class DictionaryView {
       relationship_count: relationshipCount,
       definition_segments: this.definitionSegments(word),
       pad: this.padRecord(word),
+      word_forms: this.wordFormsFor(word),
     };
+  }
+
+  /** Every populated *_Form Text field for `word`'s own concrete POS
+   * subtype, in the Word Form to Part of Speech Matrix's own field
+   * order (data/word_form_part_of_speech_matrix.md) -- baseLemmaCanonicalForm
+   * first (every POS subtype carries that one, on Word itself), then
+   * whichever of that subtype's own fields are set, read off each POS
+   * class's own exported *_FORM_PATTERNS (noun.ts, verb.ts, ...) rather
+   * than a duplicated field list of this method's own -- that Record's
+   * keys are exactly the *_Form fields that class declares. A field with
+   * no populated value is simply absent, not shown as empty. */
+  private wordFormsFor(word: Word): WordFormEntry[] {
+    const fields: string[] = ["baseLemmaCanonicalForm"];
+    if (isNoun(word)) fields.push(...Object.keys(NOUN_FORM_PATTERNS));
+    else if (isVerb(word)) fields.push(...Object.keys(VERB_FORM_PATTERNS));
+    else if (isAdjective(word)) fields.push(...Object.keys(ADJECTIVE_FORM_PATTERNS));
+    else if (isAdverb(word)) fields.push(...Object.keys(ADVERB_FORM_PATTERNS));
+    else if (isPronoun(word)) fields.push(...Object.keys(PRONOUN_FORM_PATTERNS));
+    else if (isDeterminer(word)) fields.push(...Object.keys(DETERMINER_FORM_PATTERNS));
+
+    const record = word as unknown as Record<string, Text | undefined>;
+    const forms: WordFormEntry[] = [];
+    for (const field of fields) {
+      const text = record[field];
+      if (text === undefined) continue;
+      forms.push({ field, label: formFieldLabel(field), value: text.value });
+    }
+    return forms;
   }
 
   /** Every Phrase in this Domain's Phrases, as a PhraseRecord -- only
@@ -1794,6 +1860,21 @@ tbody tr[data-word-id].selected { background: color-mix(in srgb, var(--accent) 1
   background: var(--accent);
 }
 .pad-fill.negative { background: #C2544B; }
+.word-form-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 0.83rem;
+  margin: 4px 0;
+}
+.word-form-row .word-form-label {
+  width: 190px;
+  flex: none;
+  color: var(--ink-muted);
+}
+.word-form-row .word-form-value {
+  font-family: var(--font-mono);
+}
 .def-text { line-height: 1.7; }
 .def-word {
   position: relative;
@@ -3056,6 +3137,20 @@ function padSectionHTML(word) {
   \`;
 }
 
+function wordFormsSectionHTML(word) {
+  if (!word.word_forms || !word.word_forms.length) {
+    return '<div class="detail-section-title">Word Forms</div><div class="detail-empty" style="padding:4px 0">No word forms seeded yet.</div>';
+  }
+  return \`
+    <div class="detail-section-title">Word Forms</div>
+    \${word.word_forms.map(f => \`
+      <div class="word-form-row">
+        <span class="word-form-label">\${f.label}</span>
+        <span class="word-form-value">\${f.value}</span>
+      </div>\`).join('')}
+  \`;
+}
+
 // Search results currently shown in the Words tab, over capacity only --
 // renderDetailPanel("words") reads a clicked row's own Word data from
 // here instead of WORDS (always [] past MAX_INTERACTIVE_WORDS), kept in
@@ -3200,6 +3295,7 @@ function wordDetailHTML(word, rels, relCount) {
     <div class="detail-entry-id" title="Persistent Qualified Word Identity (domain + part of speech + word) -- stable across regenerations, unlike this word's transient graph id">Entry ID <code>\${word.entry_id}</code></div>
     <div class="detail-definition">\${renderDefinition(word)}</div>
     \${padSectionHTML(word)}
+    \${wordFormsSectionHTML(word)}
     <div class="detail-section-title">Provenance</div>
     <div class="detail-definition" style="margin-top:0">\${word.sources && word.sources.length ? word.sources.map(s => \`<span class="tag">\${s}</span>\`).join('') : '<span style="opacity:.6">No source recorded.</span>'}</div>
     <div class="detail-section-title">Relationships (<span class="detail-rel-count">\${relCount}</span>)</div>
