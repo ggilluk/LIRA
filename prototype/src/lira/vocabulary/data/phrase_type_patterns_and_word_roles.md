@@ -5,15 +5,16 @@ is what actually determines `Phrase.phraseType` (`data/phrase.ts`,
 `enums/phrase_type.ts`), and how every other word inside the phrase gets
 assigned a Phrase Role distinct from its own stored Part of Speech.
 
-This is a design specification, not yet an implemented data model --
-`classifyPhraseType()` (role/word_seeder.ts) already assigns a Phrase's
-own `phraseType` from real WordNet data (that function's own docstring,
-and `data/noun_phrase.ts` through `data/infinitive_phrase.ts`, one
-subtype class per row below), but nothing in this codebase yet stores a
-per-word Head/Modifier/Particle/Determiner role for a phrase's own
-constituent words, nor a Head pointer from a Phrase to the one member
-Word that produced its classification. This document exists to specify
-that gap precisely enough to build against later, the same role
+This is a design specification, not yet a fully implemented data model
+-- `classifyPhraseType()` (role/word_seeder.ts) already assigns a
+Phrase's own `phraseType` from real WordNet data (that function's own
+docstring, and `data/noun_phrase.ts` through `data/infinitive_phrase.ts`,
+one subtype class per row below), and the four roles named below
+(`enums/phrase_role.ts`) exist as an enum, but nothing in this codebase
+yet stores a per-word `PhraseRole` on a phrase's own constituent words,
+nor a Head pointer from a Phrase to the one member Word that produced
+its classification. This document exists to specify that gap precisely
+enough to build against later, the same role
 `word_form_part_of_speech_matrix.md` (this same directory) serves for
 its own not-yet-implemented Exception Lookup tables.
 
