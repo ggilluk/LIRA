@@ -14,7 +14,7 @@
 
 import type { Text } from "../../value_objects";
 import { PartOfSpeech } from "./enums/part_of_speech";
-import { createWord, validateFormText, validateWordFormAttributes, type Word, type WordFormIssue } from "./word";
+import { createWord, endsInConsonantY, validateFormText, validateWordFormAttributes, type Word, type WordFormIssue } from "./word";
 
 export interface Noun extends Word {
   partOfSpeech: PartOfSpeech.NOUN;
@@ -80,4 +80,44 @@ export function validateNoun(noun: Noun): readonly WordFormIssue[] {
   check("pluralNumberForm", noun.pluralNumberForm);
   check("possessiveCaseForm", noun.possessiveCaseForm);
   return issues;
+}
+
+/** pluralNumberForm's own Generation Transform (data/word_form_part_of_speech_matrix.md),
+ * regular-case rules #1-3 only -- rule #4 (`f`/`fe` -> `ves`) needs
+ * "lexical qualification" the matrix's own row admits isn't spelling
+ * alone ("roof" takes plain -s, "knife" takes -ves, and both end the
+ * same way), so a lemma matching that shape is left undefined rather
+ * than guessed either way; rules #5-6 (irregular/unchanged) have no
+ * spelling signal to detect at all. */
+function generatedPluralNumberForm(lemma: string): Text | undefined {
+  if (endsInConsonantY(lemma)) return { value: `${lemma.slice(0, -1)}ies`, formats: ["/ies$/i"] };
+  if (/(s|x|z|ch|sh)$/i.test(lemma)) return { value: `${lemma}es`, formats: ["/es$/i"] };
+  if (/(f|fe)$/i.test(lemma)) return undefined;
+  return { value: `${lemma}s`, formats: ["/s$/i"] };
+}
+
+/** Fills in this Noun's own derivable *_Form fields wherever still
+ * undefined, from its own base lemma (`noun.text`) -- WordSeeder's own
+ * seeding entry points (role/word_seeder.ts) call this right after
+ * createNoun(), so every seeded Noun (WordNet or Common Vocabulary
+ * Cache alike) gets its regular-case forms populated automatically,
+ * without a hand-authored Noun built elsewhere (a test fixture, say)
+ * acquiring fields it never asked for just by calling createNoun().
+ * Only ever fills a field that's still undefined -- an explicitly-set
+ * value (from `init`, or an earlier call) is never overwritten. Every
+ * value this produces is provably one of that field's own recognised
+ * String Patterns (NOUN_FORM_PATTERNS above), by construction --
+ * generateNounForms() and validateNoun() are built from the exact same
+ * matrix rows, so a freshly-generated Noun always passes its own
+ * validateNoun() unchanged. */
+export function generateNounForms(noun: Noun): Noun {
+  const lemma = noun.text;
+  const generated: Partial<Noun> = {};
+  if (noun.singularNumberForm === undefined) generated.singularNumberForm = { value: lemma };
+  if (noun.pluralNumberForm === undefined) {
+    const plural = generatedPluralNumberForm(lemma);
+    if (plural !== undefined) generated.pluralNumberForm = plural;
+  }
+  if (noun.possessiveCaseForm === undefined) generated.possessiveCaseForm = { value: `${lemma}'s`, formats: ["/'s$/i"] };
+  return { ...noun, ...generated };
 }

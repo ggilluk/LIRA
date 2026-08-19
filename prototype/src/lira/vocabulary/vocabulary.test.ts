@@ -5,18 +5,18 @@ import { LexicalRelationshipSystemPropertyTensor } from "./data/lexical_relation
 import { LexicalRelationshipType } from "./data/enums/lexical_relationship_type";
 import { PartOfSpeech } from "./data/enums/part_of_speech";
 import { antonyms, createWord, holonyms, hypernyms, hyponyms, meronyms, synonyms, validateFormText, validateWordFormAttributes } from "./data/word";
-import { AdjectivePosition, createAdjective, isAdjective, validateAdjective } from "./data/adjective";
-import { createAdverb, isAdverb, validateAdverb } from "./data/adverb";
+import { AdjectivePosition, createAdjective, generateAdjectiveForms, isAdjective, validateAdjective } from "./data/adjective";
+import { createAdverb, generateAdverbForms, isAdverb, validateAdverb } from "./data/adverb";
 import { isConjunction } from "./data/conjunction";
 import { createDeterminer, isDeterminer, validateDeterminer } from "./data/determiner";
 import { HypernymRootWord } from "./data/enums/hypernym_root_word";
 import { isInterjection } from "./data/interjection";
-import { NOUN_FORM_PATTERNS, createNoun, isNoun, validateNoun } from "./data/noun";
+import { NOUN_FORM_PATTERNS, createNoun, generateNounForms, isNoun, validateNoun } from "./data/noun";
 import { isNumeral } from "./data/numeral";
 import { isParticle } from "./data/particle";
 import { isPreposition } from "./data/preposition";
 import { PRONOUN_FORM_PATTERNS, createPronoun, isPronoun, validatePronoun } from "./data/pronoun";
-import { VERB_FORM_PATTERNS, createVerb, isVerb, validateVerb } from "./data/verb";
+import { VERB_FORM_PATTERNS, createVerb, generateVerbForms, isVerb, validateVerb } from "./data/verb";
 import { createPhrase } from "./data/phrase";
 import { Phrases } from "./data/phrases";
 import { PHRASE_TYPE_DETAILS, PhraseType } from "./data/enums/phrase_type";
@@ -213,6 +213,136 @@ describe("validate<Class>() -- each POS class's own attribute validation", () =>
     const fast = createAdverb({ text: "fast", superlativeDegreeForm: { value: "fastest", formats: ["/est$/i"] } });
     expect(validateAdverb(fast)).toEqual([]);
   });
+});
+
+describe("generate<Class>Forms() -- deriving *_Form values from a base lemma", () => {
+  it("Noun: regular plural rules (-s, -es, -ies) and the always-on possessive", () => {
+    expect(generateNounForms(createNoun({ text: "dog" })).pluralNumberForm).toEqual({ value: "dogs", formats: ["/s$/i"] });
+    expect(generateNounForms(createNoun({ text: "box" })).pluralNumberForm).toEqual({ value: "boxes", formats: ["/es$/i"] });
+    expect(generateNounForms(createNoun({ text: "city" })).pluralNumberForm).toEqual({ value: "cities", formats: ["/ies$/i"] });
+    expect(generateNounForms(createNoun({ text: "dog" })).possessiveCaseForm).toEqual({ value: "dog's", formats: ["/'s$/i"] });
+    expect(generateNounForms(createNoun({ text: "dog" })).singularNumberForm).toEqual({ value: "dog" });
+  });
+
+  it("Noun: abstains on pluralNumberForm for an f/fe-ending lemma -- roof/roofs vs. knife/knives can't be told apart from spelling alone", () => {
+    expect(generateNounForms(createNoun({ text: "knife" })).pluralNumberForm).toBeUndefined();
+    expect(generateNounForms(createNoun({ text: "roof" })).pluralNumberForm).toBeUndefined();
+  });
+
+  it("Noun: never overwrites a field the caller already set", () => {
+    const child = createNoun({ text: "child", pluralNumberForm: { value: "children" } });
+    expect(generateNounForms(child).pluralNumberForm).toEqual({ value: "children" });
+  });
+
+  it("Verb: regular past/participle/third-person/present-participle rules", () => {
+    const walk = generateVerbForms(createVerb({ text: "walk" }));
+    expect(walk.pastTenseForm).toEqual({ value: "walked", formats: ["/ed$/i"] });
+    expect(walk.pastParticipleForm).toEqual({ value: "walked", formats: ["/ed$/i"] });
+    expect(walk.thirdPersonSingularPresentForm).toEqual({ value: "walks", formats: ["/s$/i"] });
+    expect(walk.presentParticipleForm).toEqual({ value: "walking", formats: ["/ing$/i"] });
+    expect(walk.presentTenseForm).toEqual({ value: "walk" });
+    expect(walk.bareInfinitiveForm).toEqual({ value: "walk" });
+
+    const love = generateVerbForms(createVerb({ text: "love" }));
+    expect(love.pastTenseForm).toEqual({ value: "loved", formats: ["/ed$/i"] });
+
+    const try_ = generateVerbForms(createVerb({ text: "try" }));
+    expect(try_.pastTenseForm).toEqual({ value: "tried", formats: ["/ied$/i"] });
+    expect(try_.thirdPersonSingularPresentForm).toEqual({ value: "tries", formats: ["/ies$/i"] });
+  });
+
+  it("Verb: doubles the final consonant for a monosyllabic CVC lemma, but abstains for a polysyllabic one that ends the same way", () => {
+    const stop = generateVerbForms(createVerb({ text: "stop" }));
+    expect(stop.pastTenseForm).toEqual({ value: "stopped", formats: ["/([bcdfghjklmnpqrstvwxyz])\\1ed$/i"] });
+    expect(stop.presentParticipleForm).toEqual({ value: "stopping", formats: ["/([bcdfghjklmnpqrstvwxyz])\\1ing$/i"] });
+
+    // "differ"/"open" end the identical consonant-vowel-consonant shape
+    // "stop" does, but are two syllables, not one -- real English
+    // doesn't double here ("differed"/"opened", not "differred"/
+    // "openned"), and telling a genuine doubling case like "occur" apart
+    // from these needs real stress data this codebase doesn't have, so
+    // both fields are left undefined rather than guessed either way.
+    const differ = generateVerbForms(createVerb({ text: "differ" }));
+    expect(differ.pastTenseForm).toBeUndefined();
+    expect(differ.presentParticipleForm).toBeUndefined();
+  });
+
+  it("Verb: presentParticipleForm's ie -> ying rule, and abstains on the vowel-before-e silent-e ambiguity", () => {
+    expect(generateVerbForms(createVerb({ text: "lie" })).presentParticipleForm).toEqual({ value: "lying", formats: ["/ying$/i"] });
+    expect(generateVerbForms(createVerb({ text: "tie" })).presentParticipleForm).toEqual({ value: "tying", formats: ["/ying$/i"] });
+    // "agree"/"argue" both end in a vowel immediately before the final
+    // "e" -- English keeps the e for some ("agreeing") and drops it for
+    // others ("arguing"), which needs real Silent-E Classification data
+    // this codebase doesn't have, so both abstain rather than guess.
+    expect(generateVerbForms(createVerb({ text: "agree" })).presentParticipleForm).toBeUndefined();
+    expect(generateVerbForms(createVerb({ text: "argue" })).presentParticipleForm).toBeUndefined();
+  });
+
+  it("Verb: checks IRREGULAR_VERB_FORMS before ever falling through to the regular -ed rules", () => {
+    const eat = generateVerbForms(createVerb({ text: "eat" }));
+    expect(eat.pastTenseForm).toEqual({ value: "ate" });
+    expect(eat.pastParticipleForm).toEqual({ value: "eaten" });
+
+    const run = generateVerbForms(createVerb({ text: "run" }));
+    expect(run.pastTenseForm).toEqual({ value: "ran" });
+    expect(run.pastParticipleForm).toEqual({ value: "run" });
+  });
+
+  it("Verb: \"have\" and \"be\" both get hand-written irregular values no general rule could produce", () => {
+    const have = generateVerbForms(createVerb({ text: "have" }));
+    expect(have.pastTenseForm).toEqual({ value: "had" });
+    expect(have.thirdPersonSingularPresentForm).toEqual({ value: "has" });
+
+    const be = generateVerbForms(createVerb({ text: "be" }));
+    expect(be.pastTenseForm).toBeUndefined();
+    expect(be.pastParticipleForm).toBeUndefined();
+    expect(be.thirdPersonSingularPresentForm).toBeUndefined();
+    expect(be.presentParticipleForm).toEqual({ value: "being", formats: ["/ing$/i"] });
+  });
+
+  it("Adjective/Adverb: regular comparative/superlative rules, including the shared doubling and y-ending cases", () => {
+    const big = generateAdjectiveForms(createAdjective({ text: "big" }));
+    expect(big.comparativeDegreeForm).toEqual({ value: "bigger", formats: ["/([bcdfghjklmnpqrstvwxyz])\\1er$/i"] });
+    expect(big.superlativeDegreeForm).toEqual({ value: "biggest", formats: ["/([bcdfghjklmnpqrstvwxyz])\\1est$/i"] });
+
+    const happy = generateAdjectiveForms(createAdjective({ text: "happy" }));
+    expect(happy.comparativeDegreeForm).toEqual({ value: "happier", formats: ["/ier$/i"] });
+    expect(happy.superlativeDegreeForm).toEqual({ value: "happiest", formats: ["/iest$/i"] });
+
+    const large = generateAdjectiveForms(createAdjective({ text: "large" }));
+    expect(large.comparativeDegreeForm).toEqual({ value: "larger", formats: ["/er$/i"] });
+
+    const fast = generateAdverbForms(createAdverb({ text: "fast" }));
+    expect(fast.comparativeDegreeForm).toEqual({ value: "faster", formats: ["/er$/i"] });
+    expect(fast.superlativeDegreeForm).toEqual({ value: "fastest", formats: ["/est$/i"] });
+  });
+
+  it("every generated Word passes its own validate<Class>() unchanged -- generation and validation are built from the same matrix rows", () => {
+    expect(validateNoun(generateNounForms(createNoun({ text: "city" })))).toEqual([]);
+    expect(validateVerb(generateVerbForms(createVerb({ text: "stop" })))).toEqual([]);
+    expect(validateVerb(generateVerbForms(createVerb({ text: "eat" })))).toEqual([]);
+    expect(validateAdjective(generateAdjectiveForms(createAdjective({ text: "happy" })))).toEqual([]);
+    expect(validateAdverb(generateAdverbForms(createAdverb({ text: "fast" })))).toEqual([]);
+  });
+
+  it("WordSeeder.seedWordNet wires generation in automatically -- a real seeded Noun/Verb gets its regular-case forms populated, and a real irregular verb gets its true irregular form, not a spelling-rule guess", async () => {
+    const dictionary = new Dictionary();
+    const lexicalRelationships = new LexicalRelationshipStore();
+    const lexicalRelationshipProcessor = new LexicalRelationshipProcessor(
+      lexicalRelationships,
+      new LexicalRelationshipSystemPropertyTensor(),
+    );
+    await new WordSeeder("en").seedWordNet({
+      vocabulary: { dictionary, phrases: new Phrases(), senses: new Senses(), lexicalRelationships, lexicalRelationshipProcessor },
+    });
+
+    const dog = dictionary.lookupAll("dog").find(isNoun);
+    expect(dog?.pluralNumberForm).toEqual({ value: "dogs", formats: ["/s$/i"] });
+
+    const run = dictionary.lookupAll("run").find(isVerb);
+    expect(run?.pastTenseForm).toEqual({ value: "ran" });
+    expect(run?.pastParticipleForm).toEqual({ value: "run" });
+  }, 30000);
 });
 
 describe("Dictionary", () => {

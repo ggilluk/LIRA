@@ -17,7 +17,14 @@
 
 import type { Text } from "../../value_objects";
 import { PartOfSpeech } from "./enums/part_of_speech";
-import { createWord, validateFormText, validateWordFormAttributes, type Word, type WordFormIssue } from "./word";
+import {
+  createWord,
+  regularDegreeForm,
+  validateFormText,
+  validateWordFormAttributes,
+  type Word,
+  type WordFormIssue,
+} from "./word";
 
 // WordNet's own three syntactic-position restrictions for an adjective
 // sense -- undefined on Adjective.syntacticPosition means unrestricted
@@ -111,4 +118,43 @@ export function validateAdjective(adjective: Adjective): readonly WordFormIssue[
   check("comparativeDegreeForm", adjective.comparativeDegreeForm);
   check("superlativeDegreeForm", adjective.superlativeDegreeForm);
   return issues;
+}
+
+/** Fills in this Adjective's own derivable *_Form fields wherever still
+ * undefined, from its own base lemma (`adjective.text`) --
+ * WordSeeder's own seeding entry points (role/word_seeder.ts) call this
+ * right after createAdjective(), so every seeded Adjective (WordNet or
+ * Common Vocabulary Cache alike) gets its regular-case degree forms
+ * populated automatically, without a hand-authored Adjective built
+ * elsewhere (a test fixture, say) acquiring fields it never asked for
+ * just by calling createAdjective(). Only ever fills a field that's
+ * still undefined -- an explicitly-set value (from `init`, or an
+ * earlier call) is never overwritten. comparativeDegreeForm/
+ * superlativeDegreeForm are generated unconditionally from spelling
+ * (regularDegreeForm, word.ts) -- this assumes every Adjective is
+ * gradable, which the matrix's own Required Linguistic Data column
+ * ("Gradability Classification") says isn't actually knowable without
+ * curated data this codebase doesn't have, so a non-gradable
+ * Adjective ("wooden") still gets a mechanically well-formed value here
+ * ("woodener") even though it reads oddly -- a later curation pass that
+ * adds real gradability data can suppress it then. Every value this
+ * produces is provably one of that field's own recognised String
+ * Patterns (ADJECTIVE_FORM_PATTERNS above), by construction --
+ * generateAdjectiveForms() and validateAdjective() both draw on the
+ * exact same matrix rows (regularDegreeForm's own docstring, word.ts),
+ * so a freshly-generated Adjective always passes its own
+ * validateAdjective() unchanged. */
+export function generateAdjectiveForms(adjective: Adjective): Adjective {
+  const lemma = adjective.text;
+  const generated: Partial<Adjective> = {};
+  if (adjective.positiveDegreeForm === undefined) generated.positiveDegreeForm = { value: lemma };
+  if (adjective.comparativeDegreeForm === undefined) {
+    const comparative = regularDegreeForm(lemma, true);
+    if (comparative !== undefined) generated.comparativeDegreeForm = comparative;
+  }
+  if (adjective.superlativeDegreeForm === undefined) {
+    const superlative = regularDegreeForm(lemma, false);
+    if (superlative !== undefined) generated.superlativeDegreeForm = superlative;
+  }
+  return { ...adjective, ...generated };
 }

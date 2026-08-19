@@ -26,12 +26,12 @@
  * formsOf/lemmaOf) once both ends of a link have actually been
  * inserted. */
 
-import { createAdjective } from "../data/adjective";
-import { createAdverb } from "../data/adverb";
+import { createAdjective, generateAdjectiveForms } from "../data/adjective";
+import { createAdverb, generateAdverbForms } from "../data/adverb";
 import { createConjunction } from "../data/conjunction";
 import { createDeterminer } from "../data/determiner";
 import { createInterjection } from "../data/interjection";
-import { createNoun } from "../data/noun";
+import { createNoun, generateNounForms } from "../data/noun";
 import { createNumeral } from "../data/numeral";
 import { PartOfSpeech } from "../data/enums/part_of_speech";
 import { createParticle } from "../data/particle";
@@ -54,7 +54,7 @@ import type { Phrases } from "../data/phrases";
 import { createSense, type Sense } from "../data/sense";
 import type { Senses } from "../data/senses";
 import type { SourceReference } from "../data/source_reference";
-import { VERB_FRAME_TEXT, createVerb } from "../data/verb";
+import { VERB_FRAME_TEXT, createVerb, generateVerbForms } from "../data/verb";
 import { copyWordWithFreshUuid, createWord, type Word } from "../data/word";
 import {
   languageHasCommonCache,
@@ -1381,21 +1381,21 @@ export class WordSeeder {
           .filter((frame) => frame.wordIndex === 0 || frame.wordIndex === lemmaIndex + 1)
           .map((frame) => frame.frameNumber);
         const frames = [...new Set(frameNumbers)].map((n) => VERB_FRAME_TEXT[n]).filter((text): text is string => text !== undefined);
-        return createVerb({ ...shared, frames: frames.length > 0 ? frames : undefined });
+        return generateVerbForms(createVerb({ ...shared, frames: frames.length > 0 ? frames : undefined }));
       }
       case PartOfSpeech.ADJECTIVE:
-        return createAdjective({ ...shared, syntacticPosition: synset.lemmaPositions[lemmaIndex] });
+        return generateAdjectiveForms(createAdjective({ ...shared, syntacticPosition: synset.lemmaPositions[lemmaIndex] }));
       case PartOfSpeech.ADVERB:
-        return createAdverb(shared);
+        return generateAdverbForms(createAdverb(shared));
       case PartOfSpeech.NOUN:
-        return createNoun(shared);
+        return generateNounForms(createNoun(shared));
       default:
         // posForSsType (wordnet_loader.ts) only ever produces NOUN/VERB/
         // ADJECTIVE/ADVERB for a real synset (anything else throws
         // there first) -- unreachable for real WordNet data, kept only
         // so this switch has a total, not partial, mapping over
         // PartOfSpeech's other 12 values.
-        return createNoun(shared);
+        return generateNounForms(createNoun(shared));
     }
   }
 
@@ -1533,13 +1533,13 @@ export class WordSeeder {
     };
     switch (partOfSpeech) {
       case PartOfSpeech.NOUN:
-        return createNoun(fields);
+        return generateNounForms(createNoun(fields));
       case PartOfSpeech.VERB:
-        return createVerb(fields);
+        return generateVerbForms(createVerb(fields));
       case PartOfSpeech.ADJECTIVE:
-        return createAdjective(fields);
+        return generateAdjectiveForms(createAdjective(fields));
       case PartOfSpeech.ADVERB:
-        return createAdverb(fields);
+        return generateAdverbForms(createAdverb(fields));
       case PartOfSpeech.PRONOUN:
         return createPronoun(fields);
       case PartOfSpeech.DETERMINER:

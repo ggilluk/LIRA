@@ -594,3 +594,94 @@ export function validateWordFormAttributes(word: Word): readonly WordFormIssue[]
   const issue = validateFormText("baseLemmaCanonicalForm", word.baseLemmaCanonicalForm, []);
   return issue === undefined ? [] : [issue];
 }
+
+// -- Regular English suffix generation, shared by every open-class POS
+// subtype's own generate<Class>Forms() (noun.ts, verb.ts, adjective.ts,
+// adverb.ts) -- pure spelling heuristics, not part-of-speech-specific
+// (a doubled final consonant works the same way whether it's feeding
+// "-ed"/"-ing" or "-er"/"-est"), so the mechanism lives here once rather
+// than duplicated across those four files. Each generator itself
+// (noun.ts's generatedPluralNumberForm, ...) stays in its own class
+// file -- what's shared is only "is this lemma safe to double", not any
+// per-field decision of what to actually build from that answer.
+
+/** The lemma ends in a consonant immediately before a final "y"
+ * ("try", "happy") -- the precondition every *_Form generator checks
+ * before its own "y" -> "ies"/"ied"/"ier"/"iest" branch (a lemma ending
+ * in a *vowel* + "y", like "play"/"grey", takes the plain "-s"/"-ed"/...
+ * suffix instead: "plays", not "plaies"). */
+export function endsInConsonantY(word: string): boolean {
+  return /[^aeiou]y$/i.test(word);
+}
+
+/** Porter Stemmer's own "cvc" test (Porter, 1980): the lemma ends
+ * consonant-vowel-consonant, where that final consonant is not w, x, or
+ * y (English never doubles those: "row" -> "rowed", "fix" -> "fixed",
+ * "play" -> "played"). */
+function endsInCvc(word: string): boolean {
+  return /(^|[^aeiou])[aeiou][bcdfghjklmnprstvz]$/i.test(word);
+}
+
+/** A purely orthographic proxy for "one syllable" -- counts contiguous
+ * vowel-letter runs (`y` deliberately excluded; endsInConsonantY()
+ * above is the branch that already handles a lemma ending in "y", so a
+ * word reaching this check never needs `y` treated as a vowel of its
+ * own) and treats exactly one as "monosyllabic enough to trust". Not
+ * real syllabification (a vowel digraph can still throw the count off
+ * for some words), but shouldDoubleFinalConsonant() below only ever
+ * uses this to decide whether to double a final consonant, and only
+ * when it returns true -- an overcount would wrongly withhold doubling
+ * from a genuine monosyllable, never wrongly apply it to one, so the
+ * only failure mode this lets through is the safe one. */
+function isMonosyllabic(word: string): boolean {
+  return (word.match(/[aeiou]+/gi) ?? []).length === 1;
+}
+
+/** Whether a *_Form generator should double `word`'s own final
+ * consonant before appending a regular suffix ("run" -> "running",
+ * "big" -> "bigger") -- true only when the lemma both ends
+ * consonant-vowel-consonant (endsInCvc()) AND is monosyllabic by the
+ * heuristic above; "abstain" for a lemma that ends CVC but isn't
+ * (heuristically) monosyllabic, since real English doubling for a
+ * longer word depends on which syllable is stressed, not just spelling
+ * -- "occur" -> "occurred" doubles, "differ" -> "differed" doesn't, and
+ * both pass the identical CVC spelling test. Every regular-suffix
+ * generator that calls this (verb.ts's regularEdForm/regularIngForm,
+ * word.ts's own regularDegreeForm below) treats "not double, and not a
+ * CVC lemma at all either" as the ordinary plain-suffix case, and
+ * "ends CVC but isn't monosyllabic" as an outright abstention -- the
+ * matrix's own Required Linguistic Data for every rule this backs
+ * ("Syllable Count; Stress Pattern; Final Phoneme/Letter Pattern",
+ * word_form_part_of_speech_matrix.md) isn't data this codebase has for
+ * any WordNet-seeded Word today, so guessing wrong is the one outcome
+ * every caller here deliberately avoids. */
+export function shouldDoubleFinalConsonant(word: string): "double" | "abstain" | "plain" {
+  if (!endsInCvc(word)) return "plain";
+  return isMonosyllabic(word) ? "double" : "abstain";
+}
+
+/** Adjective.comparativeDegreeForm/superlativeDegreeForm's own
+ * Generation Transform (word_form_part_of_speech_matrix.md), and
+ * Adverb's identical counterpart -- shared here since the two classes'
+ * own degree paradigm is spelled exactly the same way, rather than
+ * duplicated in both adjective.ts and adverb.ts. Returns undefined only
+ * for shouldDoubleFinalConsonant()'s own "abstain" case (word_form_part_of_speech_matrix.md's
+ * own rule #5, an irregular comparative/superlative like "good" ->
+ * "better", is a second, separate reason no value is ever generated for
+ * those lemmas -- there's no spelling signal to detect an irregular
+ * lemma at all, so this function is never even called for one; every
+ * lemma it IS called for is presumed regular). */
+export function regularDegreeForm(lemma: string, comparative: boolean): Text | undefined {
+  const plainSuffix = comparative ? "er" : "est";
+  const eSuffix = comparative ? "r" : "st";
+  const ySuffix = comparative ? "ier" : "iest";
+  const doubledFormat = comparative
+    ? "/([bcdfghjklmnpqrstvwxyz])\\1er$/i"
+    : "/([bcdfghjklmnpqrstvwxyz])\\1est$/i";
+  if (endsInConsonantY(lemma)) return { value: `${lemma.slice(0, -1)}${ySuffix}`, formats: [`/${ySuffix}$/i`] };
+  if (/e$/i.test(lemma)) return { value: `${lemma}${eSuffix}`, formats: [`/${plainSuffix}$/i`] };
+  const doubling = shouldDoubleFinalConsonant(lemma);
+  if (doubling === "abstain") return undefined;
+  if (doubling === "double") return { value: `${lemma}${lemma.slice(-1)}${plainSuffix}`, formats: [doubledFormat] };
+  return { value: `${lemma}${plainSuffix}`, formats: [`/${plainSuffix}$/i`] };
+}

@@ -11,7 +11,14 @@
 
 import type { Text } from "../../value_objects";
 import { PartOfSpeech } from "./enums/part_of_speech";
-import { createWord, validateFormText, validateWordFormAttributes, type Word, type WordFormIssue } from "./word";
+import {
+  createWord,
+  regularDegreeForm,
+  validateFormText,
+  validateWordFormAttributes,
+  type Word,
+  type WordFormIssue,
+} from "./word";
 
 export interface Adverb extends Word {
   partOfSpeech: PartOfSpeech.ADVERB;
@@ -81,4 +88,26 @@ export function validateAdverb(adverb: Adverb): readonly WordFormIssue[] {
   check("comparativeDegreeForm", adverb.comparativeDegreeForm);
   check("superlativeDegreeForm", adverb.superlativeDegreeForm);
   return issues;
+}
+
+/** Adjective's own generateAdjectiveForms() (adjective.ts), Adverb's
+ * exact counterpart -- both classes' degree paradigm is spelled
+ * identically (regularDegreeForm, word.ts), including the same
+ * "assumes every lemma is gradable" caveat that function's own
+ * docstring covers; see generateAdjectiveForms() for the full
+ * reasoning, not repeated here. WordSeeder's own seeding entry points
+ * (role/word_seeder.ts) call this right after createAdverb(). */
+export function generateAdverbForms(adverb: Adverb): Adverb {
+  const lemma = adverb.text;
+  const generated: Partial<Adverb> = {};
+  if (adverb.positiveDegreeForm === undefined) generated.positiveDegreeForm = { value: lemma };
+  if (adverb.comparativeDegreeForm === undefined) {
+    const comparative = regularDegreeForm(lemma, true);
+    if (comparative !== undefined) generated.comparativeDegreeForm = comparative;
+  }
+  if (adverb.superlativeDegreeForm === undefined) {
+    const superlative = regularDegreeForm(lemma, false);
+    if (superlative !== undefined) generated.superlativeDegreeForm = superlative;
+  }
+  return { ...adverb, ...generated };
 }
