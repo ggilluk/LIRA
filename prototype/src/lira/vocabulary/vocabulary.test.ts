@@ -20,6 +20,12 @@ import { VERB_FORM_PATTERNS, createVerb, framesForSense, generateVerbForms, isVe
 import { createPhrase, type Phrase } from "./data/phrase";
 import { Phrases } from "./data/phrases";
 import { PHRASE_TYPE_DETAILS, PhraseType } from "./data/enums/phrase_type";
+import { isNounPhrase } from "./data/noun_phrase";
+import { isVerbPhrase } from "./data/verb_phrase";
+import { isAdjectivePhrase } from "./data/adjective_phrase";
+import { isAdverbPhrase } from "./data/adverb_phrase";
+import { isPrepositionalPhrase } from "./data/prepositional_phrase";
+import { isInfinitivePhrase } from "./data/infinitive_phrase";
 import { createSense } from "./data/sense";
 import { Senses } from "./data/senses";
 import { AsyncDictionaryHydrator } from "./role/dictionary_hydrator";
@@ -1320,6 +1326,13 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     expect(toyPoodle).toBeDefined();
     expect(toyPoodle?.isCommon).toBe(true);
     expect(toyPoodle?.phraseType).toBe(PhraseType.NOUN_PHRASE);
+    // synsetMemberToPhrase()'s own dispatch actually instantiated this
+    // one real seeded Phrase via createNounPhrase() (data/noun_phrase.ts),
+    // not plain createPhrase() -- isNounPhrase() narrows it back, the
+    // same PhraseType-mirrors-PartOfSpeech pattern isNoun()/isVerb()/...
+    // already give Word.
+    expect(isNounPhrase(toyPoodle!)).toBe(true);
+    expect(isVerbPhrase(toyPoodle!)).toBe(false);
 
     // classifyPhraseType()'s own PREPOSITIONAL_PHRASE/INFINITIVE_PHRASE
     // rules, spot-checked against real seeded Phrases rather than just
@@ -1330,10 +1343,18 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     const atFault = phraseBook.lookupAll("at fault").find((phrase) => phrase.synsetId?.value === "01324381-s");
     expect(atFault?.partOfSpeech).toBe(PartOfSpeech.ADJECTIVE);
     expect(atFault?.phraseType).toBe(PhraseType.PREPOSITIONAL_PHRASE);
+    expect(isPrepositionalPhrase(atFault!)).toBe(true);
+    // Narrowing is by phraseType, never by partOfSpeech -- "at fault"
+    // is WordNet-tagged ADJECTIVE (checked above) but is not an
+    // AdjectivePhrase, precisely because its own internal structure is
+    // Preposition + NP, not (Degree modifiers) + Adjective.
+    expect(isAdjectivePhrase(atFault!)).toBe(false);
 
     const toBeSure = phraseBook.lookupAll("to be sure").find((phrase) => phrase.synsetId?.value === "00151192-r");
     expect(toBeSure?.partOfSpeech).toBe(PartOfSpeech.ADVERB);
     expect(toBeSure?.phraseType).toBe(PhraseType.INFINITIVE_PHRASE);
+    expect(isInfinitivePhrase(toBeSure!)).toBe(true);
+    expect(isAdverbPhrase(toBeSure!)).toBe(false);
     expect(dictionary.lookupAll("toy poodle")).toEqual([]);
 
     const poodle = dictionary.lookupAll("poodle").find((w) => w.synsetId?.value === "02115987-n");

@@ -46,10 +46,19 @@ export interface Phrase extends LinguisticUnit {
 
   // The grammatical shape this Phrase's own words take -- noun phrase,
   // verb phrase, etc. (PhraseType's own docstring on how this differs
-  // from partOfSpeech above). Undefined for a Phrase never run through
-  // that classification -- every Phrase seeded so far, WordNet-derived
-  // or Common Vocabulary Cache alike, since neither seeding path
-  // performs constituency parsing today.
+  // from partOfSpeech above). Populated by WordSeeder.seedWordNet's own
+  // classifyPhraseType() (role/word_seeder.ts) for every multi-word
+  // WordNet synset lemma -- structurally derived from the lemma's own
+  // tokens and part of speech, not guessed (that function's own
+  // docstring on the real dict/ distribution this was built from).
+  // Undefined for a Common Vocabulary Cache closed-class Phrase, which
+  // has no constituency-parsing pass of its own, and for the handful of
+  // WordNet parts of speech classifyPhraseType() itself never maps
+  // (dead code against real WordNet data today -- every real multi-word
+  // lemma is NOUN/VERB/ADJECTIVE/ADVERB). data/noun_phrase.ts and its
+  // five siblings (one per PhraseType member) narrow a Phrase down by
+  // this field the same way data/noun.ts and its own siblings narrow a
+  // Word down by partOfSpeech.
   phraseType?: PhraseType;
 
   uuid: Identifier;

@@ -27,8 +27,14 @@
  * inserted. */
 
 import { createAdjective, determineGradability, generateAdjectiveForms, isAdjective } from "../data/adjective";
+import { createAdjectivePhrase } from "../data/adjective_phrase";
 import { createAdverb, determineGradability as determineAdverbGradability, generateAdverbForms, isAdverb } from "../data/adverb";
+import { createAdverbPhrase } from "../data/adverb_phrase";
 import { createConjunction } from "../data/conjunction";
+import { createInfinitivePhrase } from "../data/infinitive_phrase";
+import { createNounPhrase } from "../data/noun_phrase";
+import { createPrepositionalPhrase } from "../data/prepositional_phrase";
+import { createVerbPhrase } from "../data/verb_phrase";
 import { createDeterminer } from "../data/determiner";
 import { createInterjection } from "../data/interjection";
 import { createNoun, generateNounForms } from "../data/noun";
@@ -1570,19 +1576,45 @@ export class WordSeeder {
    * eligibility for pass 2's pointer-relationship and topic-domain
    * wiring (both now typed Word | Phrase throughout). Also, unlike a
    * Word, gets a phraseType -- classifyPhraseType()'s own docstring on
-   * the ruleset, devised against this exact bundled dataset. */
+   * the ruleset, devised against this exact bundled dataset -- and,
+   * unlike synsetMemberToWord's own switch on the statically-known
+   * synset.partOfSpeech, dispatches on that *result* (only knowable at
+   * runtime, and possibly undefined -- classifyPhraseType()'s own
+   * docstring on the few PartOfSpeech values it never maps) to the
+   * matching data/*_phrase.ts constructor, the same "every PhraseType
+   * gets its own narrowed subtype" mirror data/noun.ts and its four
+   * siblings already are for Word. */
   private synsetMemberToPhrase(synset: WordNetSynset, lemma: string, verbLemmas: ReadonlySet<string>): Phrase {
-    return createPhrase({
+    const shared = {
       text: lemma,
       partOfSpeech: synset.partOfSpeech,
-      phraseType: classifyPhraseType(lemma, synset.partOfSpeech, verbLemmas),
       languageCode: { value: this.languageCode },
       definition: synset.definition ? { value: synset.definition } : undefined,
       usageNotes: synset.examples.map((example) => ({ value: example })),
       synsetId: { value: synset.synsetId, ...WORDNET_SYNSET_ID_SCHEME },
       isCommon: true,
       sourceReferences: [WORDNET_SOURCE_REFERENCE],
-    });
+    };
+    switch (classifyPhraseType(lemma, synset.partOfSpeech, verbLemmas)) {
+      case PhraseType.NOUN_PHRASE:
+        return createNounPhrase(shared);
+      case PhraseType.VERB_PHRASE:
+        return createVerbPhrase(shared);
+      case PhraseType.ADJECTIVE_PHRASE:
+        return createAdjectivePhrase(shared);
+      case PhraseType.ADVERB_PHRASE:
+        return createAdverbPhrase(shared);
+      case PhraseType.PREPOSITIONAL_PHRASE:
+        return createPrepositionalPhrase(shared);
+      case PhraseType.INFINITIVE_PHRASE:
+        return createInfinitivePhrase(shared);
+      default:
+        // classifyPhraseType()'s own docstring: undefined only for a
+        // partOfSpeech WordNet never assigns to a multi-word lemma --
+        // dead code against real WordNet data today, kept only so this
+        // switch has a total, not partial, mapping over its own result.
+        return createPhrase(shared);
+    }
   }
 
   /** Adds `word` to the in-memory promoted-words overlay if it belongs
