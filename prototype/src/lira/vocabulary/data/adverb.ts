@@ -12,9 +12,9 @@
 import type { Identifier, Text } from "../../value_objects";
 import { determineGradability as isAdjectiveGradable, isAdjective } from "./adjective";
 import type { Dictionary } from "./dictionary";
-import { LexicalRelationshipType } from "./enums/lexical_relationship_type";
 import { PartOfSpeech } from "./enums/part_of_speech";
 import type { LexicalRelationshipStore } from "./lexical_relationship_store";
+import type { Senses } from "./senses";
 import {
   createWord,
   isPeriphrasticComparison,
@@ -122,10 +122,13 @@ export function validateAdverb(adverb: Adverb): readonly WordFormIssue[] {
  * bundled dict/data.adv, not guessed -- zero `=` pointers exist there).
  * What it does give a manner adverb like "quickly" is a Pertainym
  * pointer (WordNet's `\` symbol) back to the adjective it's derived
- * from ("quick") -- always a lexical, word-specific pointer (unlike
- * Attribute/Hypernym, which are synset-wide), so it resolves through
- * `dictionary` to a Word directly, never a Sense. This Adverb's own
- * gradability is inherited from whichever Pertainym-linked Adjective(s)
+ * from ("quick") -- read here from Sense.pertainsTo (data/sense.ts's
+ * own docstring on why that field lives on Sense rather than on Adverb
+ * itself: the target genuinely differs from one sense of a polysemous
+ * adverb to another, so this walks `adverb.senseIds` and checks each
+ * one's own `pertainsTo` rather than a single Adverb-wide pointer).
+ * This Adverb's own gradability is inherited from whichever
+ * Pertainym-linked Adjective(s), across every one of its own senses,
  * are themselves gradable (determineGradability(), adjective.ts) --
  * true as soon as one is, the same "any one is enough, not just the
  * first" shape that function's own "not the primary sense alone" rule
@@ -134,12 +137,15 @@ export function validateAdverb(adverb: Adverb): readonly WordFormIssue[] {
  * comes out non-gradable, matching Gradability Evaluation step 6's own
  * default (data/adjective.ts's docstring): no established scalar
  * dimension means Gradable = false. */
-export function determineGradability(relationships: LexicalRelationshipStore, dictionary: Dictionary, adverb: Adverb): boolean {
-  for (const edge of relationships.outgoing(adverb.uuid.value)) {
-    if (edge.relationshipType !== LexicalRelationshipType.PERTAINYM) continue;
-    const target = dictionary.findByUuid(edge.targetWordId.value);
-    if (target === undefined || !isAdjective(target)) continue;
-    if (isAdjectiveGradable(relationships, target)) return true;
+export function determineGradability(relationships: LexicalRelationshipStore, dictionary: Dictionary, senses: Senses, adverb: Adverb): boolean {
+  for (const senseId of adverb.senseIds) {
+    const sense = senses.findByUuid(senseId.value);
+    if (sense === undefined) continue;
+    for (const pertainsToId of sense.pertainsTo) {
+      const target = dictionary.findByUuid(pertainsToId.value);
+      if (target === undefined || !isAdjective(target)) continue;
+      if (isAdjectiveGradable(relationships, target)) return true;
+    }
   }
   // Flat-adverb fallback: some adverbs ("fast", "hard", "late", "early")
   // share their base Adjective's exact spelling rather than deriving

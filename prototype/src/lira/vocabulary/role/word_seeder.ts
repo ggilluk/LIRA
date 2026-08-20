@@ -709,8 +709,11 @@ function relationshipKindForPointer(
       return { kind: LexicalRelationshipType.SIMILAR_TO, swap: false };
     case "=":
       return { kind: LexicalRelationshipType.ATTRIBUTE, swap: false };
-    case "\\":
-      return { kind: LexicalRelationshipType.PERTAINYM, swap: false };
+    // "\\" (Pertainym) is deliberately absent -- intercepted earlier in
+    // seedPointerRelationship's own dispatch (applyPertainym's own
+    // docstring, this file) before this function is ever called for it,
+    // the same "handled before reaching here" treatment ";c"/"-c"
+    // already get in that same dispatch.
     case "+":
     case "<":
       return { kind: derivationKind(sourcePos, targetPos), swap: false };
@@ -1505,7 +1508,7 @@ export class WordSeeder {
         word.superlativeDegreeForm = generated.superlativeDegreeForm;
       } else if (isAdverb(word)) {
         if (word.comparativeDegreeForm !== undefined && word.superlativeDegreeForm !== undefined) continue;
-        const gradable = determineAdverbGradability(store, dictionary, word);
+        const gradable = determineAdverbGradability(store, dictionary, senseStore, word);
         const generated = generateAdverbForms(word, gradable);
         word.comparativeDegreeForm = generated.comparativeDegreeForm;
         word.superlativeDegreeForm = generated.superlativeDegreeForm;
@@ -1541,8 +1544,13 @@ export class WordSeeder {
    * still becomes a direct Word/Phrase edge regardless of group, since it
    * names one specific word's relationship, not the synset's as a whole;
    * so does every Morphological/Orthographic-group kind (derivation,
-   * pertainym, ...) even when synset-wide, since those aren't semantic
-   * relationships at all (the user's own scoping instruction). */
+   * ...) even when synset-wide, since those aren't semantic
+   * relationships at all (the user's own scoping instruction). Pertainym
+   * (`\`) is the one exception to "becomes an edge" entirely -- it never
+   * did produce a synset-wide (0000) pointer in the bundled data to
+   * begin with, and is intercepted before reaching here regardless,
+   * writing straight onto the owning Sense instead (applyPertainym's
+   * own docstring, this file, on why). */
   private seedPointerRelationship(
     processor: LexicalRelationshipProcessor,
     existingEdges: Set<string>,
@@ -1557,6 +1565,11 @@ export class WordSeeder {
 
     if (pointer.symbol === ";c" || pointer.symbol === "-c") {
       this.tagTopicDomain(synset, sourceMembers, targetMembers, pointer, senseStore);
+      return 0;
+    }
+
+    if (pointer.symbol === "\\") {
+      this.applyPertainym(synset, targetMembers, pointer, senseStore);
       return 0;
     }
 
@@ -1649,6 +1662,46 @@ export class WordSeeder {
       }
     }
     for (const word of taggedWords) applyDomainTag(word, categoryLemma);
+  }
+
+  /** `\` (Pertainym) handling, split out of seedPointerRelationship's
+   * general edge-creation path the same way tagTopicDomain's own `;c`/
+   * `-c` handling already is -- Sense.pertainsTo's own docstring
+   * (data/sense.ts) has the full reasoning for why this writes straight
+   * onto the source Sense instead of creating a LexicalRelationship edge
+   * at all: a Pertainym target genuinely differs from one sense of a
+   * polysemous word to another (verified directly against the bundled
+   * dict/ files -- "aural"'s two senses pertain to "aura" and "ear"
+   * respectively), so a Word-level edge (indistinguishable from any
+   * other of that Word's own senses, the same shape every other
+   * Morphological-group kind already has) would silently conflate them.
+   *
+   * `synset` is always the pointer's own owning synset here (this
+   * method's own call site, inside the per-synset/per-pointer loop), so
+   * `senseStore.findBySynsetId(synset.synsetId)` always resolves the
+   * exact Sense this one `\` pointer belongs to -- never the arbitrary
+   * "first sense seeded" ambiguity a Word-level lookup would have.
+   * `pointer.sourceWordIndex` is deliberately not consulted at all:
+   * every member lemma of a multi-lemma synset gets its own separate
+   * pointer entry in the raw data (confirmed directly -- Pertainym's
+   * source index is never 0000), so this runs once per lemma and each
+   * call's own target(s) simply accumulate onto the one shared Sense,
+   * deduplicated by uuid -- the union of every member lemma's own
+   * pertainym target(s), which is what "this meaning pertains to..."
+   * means once the fact is being recorded once per Sense rather than
+   * once per lemma. `pointer.targetWordIndex` IS consulted, the same
+   * `indexedWord` resolution seedPointerRelationship's own general path
+   * uses, since a Pertainym pointer's target is always a specific word
+   * within the target synset (never 0000 either), not the sense as a
+   * whole. */
+  private applyPertainym(synset: WordNetSynset, targetMembers: readonly (Word | Phrase)[], pointer: WordNetPointer, senseStore: Senses): void {
+    const sourceSense = senseStore.findBySynsetId(synset.synsetId);
+    if (sourceSense === undefined) return;
+    const targetWords = pointer.targetWordIndex === 0 ? targetMembers : indexedWord(targetMembers, pointer.targetWordIndex);
+    const additions = targetWords.filter((target) => !sourceSense.pertainsTo.some((id) => id.value === target.uuid.value));
+    if (additions.length === 0) return;
+    sourceSense.pertainsTo = [...sourceSense.pertainsTo, ...additions.map((target) => target.uuid)];
+    sourceSense.pertainsToIndicator = true;
   }
 
   /** Creates a LexicalRelationship for every (source, target) pair not

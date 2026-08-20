@@ -431,16 +431,18 @@ describe("generate<Class>Forms() -- deriving *_Form values from a base lemma", (
     expect(determineGradability(relationships, wooden)).toBe(false);
   });
 
-  it("Adverb: determineGradability inherits from a Pertainym-linked Adjective, or falls back to a same-spelling flat Adjective when there's no Pertainym pointer at all", () => {
+  it("Adverb: determineGradability inherits from a Pertainym-linked Adjective (read from the adverb's own Sense.pertainsTo, not a Word-to-Word edge), or falls back to a same-spelling flat Adjective when there's no Pertainym pointer at all", () => {
     const dictionary = new Dictionary();
     const senses = new Senses();
     const relationships = new LexicalRelationshipStore();
     const processor = new LexicalRelationshipProcessor(relationships, new LexicalRelationshipSystemPropertyTensor());
 
-    // "-ly"-derived case: "quickly" PERTAINYM-> "quick" (Word-to-Word,
-    // never Sense-to-Sense -- adverb.ts's own determineGradability()
-    // docstring on why Pertainym differs from Attribute here). "quick"
-    // itself carries a real Attribute pointer.
+    // "-ly"-derived case: "quickly" pertains to "quick" -- recorded on
+    // "quickly"'s own Sense (Sense.pertainsTo's own docstring, data/sense.ts,
+    // on why Pertainym lives there rather than on Adverb/Word directly:
+    // the target genuinely differs from one sense of a polysemous word
+    // to another, so a Word-level field can't represent it correctly).
+    // "quick" itself carries a real Attribute pointer.
     const quickly = createAdverb({ text: "quickly" });
     const quick = createAdjective({ text: "quick" });
     dictionary.append(quick);
@@ -452,8 +454,10 @@ describe("generate<Class>Forms() -- deriving *_Form values from a base lemma", (
     senses.append(speedSense);
     senses.registerMember(speedSense, speed);
     processor.create({ sourceWordId: quickSense.uuid.value, targetWordId: speedSense.uuid.value, relationshipType: LexicalRelationshipType.ATTRIBUTE, sourceReferences: [] });
-    processor.create({ sourceWordId: quickly.uuid.value, targetWordId: quick.uuid.value, relationshipType: LexicalRelationshipType.PERTAINYM, sourceReferences: [] });
-    expect(determineAdverbGradability(relationships, dictionary, quickly)).toBe(true);
+    const quicklySense = createSense({ definition: { value: "with rapidity" }, pertainsTo: [quick.uuid], pertainsToIndicator: true });
+    senses.append(quicklySense);
+    senses.registerMember(quicklySense, quickly);
+    expect(determineAdverbGradability(relationships, dictionary, senses, quickly)).toBe(true);
 
     // Flat-adverb case: "wide" (adverb) has no Pertainym pointer of its
     // own at all, but shares its exact spelling with a gradable "wide"
@@ -470,12 +474,12 @@ describe("generate<Class>Forms() -- deriving *_Form values from a base lemma", (
     senses.append(widthSense);
     senses.registerMember(widthSense, width);
     processor.create({ sourceWordId: wideSense.uuid.value, targetWordId: widthSense.uuid.value, relationshipType: LexicalRelationshipType.ATTRIBUTE, sourceReferences: [] });
-    expect(determineAdverbGradability(relationships, dictionary, wideAdverb)).toBe(true);
+    expect(determineAdverbGradability(relationships, dictionary, senses, wideAdverb)).toBe(true);
 
     // No Pertainym pointer and no same-spelling Adjective at all --
     // nothing to inherit from, stays non-gradable.
     const somehow = createAdverb({ text: "somehow" });
-    expect(determineAdverbGradability(relationships, dictionary, somehow)).toBe(false);
+    expect(determineAdverbGradability(relationships, dictionary, senses, somehow)).toBe(false);
   });
 
   it("WordSeeder.seedWordNet wires generation in automatically -- a real seeded Noun/Verb gets its regular-case forms populated, and a real irregular verb gets its true irregular form, not a spelling-rule guess", async () => {
@@ -1082,17 +1086,23 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
 
     // Adverb Gradability Update (data/adverb.ts): "scarcely" (00003317-r)
     // carries a real WordNet Pertainym pointer to "scarce" (adjective) --
-    // WordNet gives no adverb an Attribute pointer of its own at all
-    // (verified directly against the bundled dict/data.adv, zero `=`
-    // pointers exist there), so an Adverb's own gradability is inherited
-    // through that Pertainym link to its base Adjective instead. "scarce"
-    // is itself gradable, so "scarcely" is too -- and being "-ly"-ending,
+    // recorded on "scarcely"'s own Sense (Sense.pertainsTo's own
+    // docstring, data/sense.ts), not a Word-to-Word edge. WordNet gives
+    // no adverb an Attribute pointer of its own at all (verified
+    // directly against the bundled dict/data.adv, zero `=` pointers
+    // exist there), so an Adverb's own gradability is inherited through
+    // that Pertainym link to its base Adjective instead. "scarce" is
+    // itself gradable, so "scarcely" is too -- and being "-ly"-ending,
     // it goes periphrastic ("more scarcely"), not through Adjective's own
     // "y" rule (there is no real "scarcelier").
     const scarcely = dictionary.lookup("scarcely")! as Adverb;
     expect(isAdverb(scarcely)).toBe(true);
     expect(scarcely.comparativeDegreeForm).toEqual({ value: "more scarcely", formats: ["/^more\\s+.+$/i"] });
     expect(scarcely.superlativeDegreeForm).toEqual({ value: "most scarcely", formats: ["/^most\\s+.+$/i"] });
+    const scarce = dictionary.lookupAll("scarce").find(isAdjective);
+    const scarcelySense = senseStore.findBySynsetId("00003317-r");
+    expect(scarcelySense?.pertainsToIndicator).toBe(true);
+    expect(scarcelySense?.pertainsTo.map((id) => id.value)).toContain(scarce?.uuid.value);
 
     // "anisotropically" (00003675-r) carries a Pertainym pointer to
     // "anisotropic", which carries no Attribute pointer of its own --
@@ -1101,6 +1111,10 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     expect(anisotropically.positiveDegreeForm).toEqual({ value: "anisotropically" });
     expect(anisotropically.comparativeDegreeForm).toBeUndefined();
     expect(anisotropically.superlativeDegreeForm).toBeUndefined();
+    const anisotropic = dictionary.lookupAll("anisotropic").find(isAdjective);
+    const anisotropicallySense = senseStore.findBySynsetId("00003675-r");
+    expect(anisotropicallySense?.pertainsToIndicator).toBe(true);
+    expect(anisotropicallySense?.pertainsTo.map((id) => id.value)).toContain(anisotropic?.uuid.value);
 
     // "wide" (00497722-r) is a flat adverb -- identical spelling to its
     // base Adjective ("wide roads"/"wandered wide") rather than a "-ly"
@@ -1113,13 +1127,15 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     expect(wideAdverb).toBeDefined();
     expect(wideAdverb.comparativeDegreeForm).toEqual({ value: "wider", formats: ["/er$/i"] });
     expect(wideAdverb.superlativeDegreeForm).toEqual({ value: "widest", formats: ["/est$/i"] });
+    const wideAdverbSense = senseStore.findBySynsetId("00497722-r");
+    expect(wideAdverbSense?.pertainsToIndicator).toBe(false);
+    expect(wideAdverbSense?.pertainsTo).toEqual([]);
 
     // Every new WordNet-sourced kind actually appears at least once --
     // a regression check against relationshipKindForPointer silently
     // mapping a symbol to the wrong (or an existing, wrong) kind.
     const seenKinds = new Set(lexicalRelationships.all().map((r) => r.relationshipType));
     for (const kind of [
-      LexicalRelationshipType.PERTAINYM,
       LexicalRelationshipType.SIMILAR_TO,
       LexicalRelationshipType.MERONYM,
       LexicalRelationshipType.ALSO_SEE,
@@ -1139,13 +1155,17 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // MERONYM/HOLONYM's own docstring, lexical_relationship_type.ts, on
     // why a WordNet part/member/substance fact is one MERONYM edge with
     // a qualifier, not three separate kinds each with their own never-
-    // seeded xHOLONYM complement). TOPIC_DOMAIN is never seeded either,
-    // for a different reason: seedPointerRelationship intercepts `;c`/
-    // `-c` pointers and tags the word itself (domainTag/relatedDomainTags)
-    // instead of creating an edge (see the dedicated "topic-domain
-    // pointers" test below). Instance-of (`@i`/`~i`) is never seeded
-    // either -- relationshipKindForPointer's own docstring on why
-    // LexicalRelationshipType's INSTANCE_HYPERNYM/INSTANCE_HYPONYM
+    // seeded xHOLONYM complement). TOPIC_DOMAIN and PERTAINYM are never
+    // seeded either, for a different reason each: seedPointerRelationship
+    // intercepts `;c`/`-c` pointers and tags the word itself
+    // (domainTag/relatedDomainTags) instead of creating an edge (see the
+    // dedicated "topic-domain pointers" test below), and intercepts `\`
+    // the same way, writing straight onto the source Sense's own
+    // pertainsTo (applyPertainym's own docstring, role/word_seeder.ts,
+    // and the scarcely/anisotropically/wide assertions above) rather
+    // than creating a PERTAINYM edge at all. Instance-of (`@i`/`~i`) is
+    // never seeded either -- relationshipKindForPointer's own docstring
+    // on why LexicalRelationshipType's INSTANCE_HYPERNYM/INSTANCE_HYPONYM
     // ordinals are retired rather than populated -- so seenKinds can
     // never contain them at all (no enum member left to even ask about).
     for (const kind of [
@@ -1153,6 +1173,7 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
       LexicalRelationshipType.TROPONYM,
       LexicalRelationshipType.HOLONYM,
       LexicalRelationshipType.TOPIC_DOMAIN,
+      LexicalRelationshipType.PERTAINYM,
     ]) {
       expect(seenKinds.has(kind), `expected no ${LexicalRelationshipType[kind]} edges at all`).toBe(false);
     }
