@@ -33,13 +33,12 @@ export interface Adverb extends Word {
   // Noun.isDerivedFromVerb's own docstring (data/noun.ts) has the full
   // shared rationale (deriveMorphologicalPointers()/findDerivationTarget(),
   // role/word_seeder.ts) every one of these fields, on every POS
-  // subtype, is built from. Undefined/false for every Common Vocabulary
+  // subtype, is built from, including why this is deliberately one
+  // field, not two (an earlier iteration also had isAdjectivised, reading
+  // WordNet's own reciprocal DERIVED_FORM pointer for the same
+  // relationship Adjective.isAdverbialised already captures from the
+  // other word's own side). Undefined/false for every Common Vocabulary
   // Cache closed-class Adverb.
-
-  // The Adjective this Adverb adjectivises into -- a real WordNet
-  // ADJECTIVAL_DERIVATION pointer, source=this Adverb.
-  isAdjectivised?: Identifier;
-  isAdjectivisedIndicator: boolean;
 
   // This Adverb's own uuid, per the Adjective it adverbialises from
   // ("quickly" <- "quick") -- Adjective.isAdverbialised's own exact
@@ -77,7 +76,6 @@ export type AdverbInit = Pick<Adverb, "text"> & Partial<Omit<Adverb, "text" | "p
 
 export function createAdverb(init: AdverbInit): Adverb {
   const adverb = createWord({ ...init, partOfSpeech: PartOfSpeech.ADVERB }) as Adverb;
-  if (adverb.isAdjectivisedIndicator === undefined) adverb.isAdjectivisedIndicator = false;
   if (adverb.isDerivedFromAdjectiveIndicator === undefined) adverb.isDerivedFromAdjectiveIndicator = false;
   return adverb;
 }

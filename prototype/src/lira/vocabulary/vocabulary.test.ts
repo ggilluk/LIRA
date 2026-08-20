@@ -1661,7 +1661,7 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     expect(isNoun(someAdverb!)).toBe(false);
   }, 60000);
 
-  it("deriveMorphologicalPointers() reads back all eight real Noun/Verb/Adjective/Adverb derivation pairs from WordSeeder.seedWordNet's own already-seeded relationship graph, without creating a second edge", async () => {
+  it("deriveMorphologicalPointers() reads back all four real Noun/Verb/Adjective/Adverb derivation pairs from WordSeeder.seedWordNet's own already-seeded relationship graph, without creating a second edge or double-counting WordNet's own reciprocal pointer recording", async () => {
     const dictionary = new Dictionary();
     const phraseBook = new Phrases();
     const senseStore = new Senses();
@@ -1674,20 +1674,16 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
       vocabulary: { dictionary, phrases: phraseBook, senses: senseStore, lexicalRelationships, lexicalRelationshipProcessor },
     });
 
-    // Four real WordNet pairs, verified against the bundled dict/ files
-    // to each cover two of the eight rows this function implements --
-    // every one of the eight relationship kinds this table names
-    // (NOMINALISATION x2 source POS, ADJECTIVAL_DERIVATION x3, ADVERBIAL_DERIVATION,
-    // DERIVED_FORM x2 -- deriveMorphologicalPointers()'s own docstring)
-    // genuinely fires for at least one of these four pairs. A recurring,
-    // genuine WordNet property these four all happen to demonstrate:
-    // the *same* two words very often carry independently-seeded
-    // pointers in *both* directions, each classified under whichever
-    // kind derivationKind()'s own target-based rule assigns that
-    // direction -- "able"/"ability" really does have both a
-    // NOMINALISATION edge (able -> ability) and a reciprocal
-    // ADJECTIVAL_DERIVATION edge (ability -> able), not a bug, just two
-    // real, distinct facts about the same pair.
+    // Four real WordNet pairs, one per surviving relationship
+    // (deriveMorphologicalPointers()'s own docstring on exactly these
+    // four, and on why an earlier iteration's other four -- each built
+    // on the generic DERIVED_FORM kind -- were removed: WordNet records
+    // its own `+` Derived-Form pointer reciprocally, once under each
+    // word's own synset, and derivationKind() (role/word_seeder.ts)
+    // picks a *different* kind for each direction, so a DERIVED_FORM-
+    // based field never named a new fact, only restated whichever of
+    // these four an already-passing assertion below already covers,
+    // under a second, spurious name).
     const able = dictionary.lookupAll("able").find((w): w is Adjective => isAdjective(w));
     const ability = dictionary.lookupAll("ability").find((w): w is Noun => isNoun(w));
     const respire = dictionary.lookupAll("respire").find((w): w is Verb => isVerb(w));
@@ -1698,7 +1694,7 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     const hyperventilation = dictionary.lookupAll("hyperventilation").find((w): w is Noun => isNoun(w));
     for (const word of [able, ability, respire, respiratory, unbearable, unbearably, hyperventilate, hyperventilation]) expect(word).toBeDefined();
 
-    // Row 1 -- Verb.isNominalised / Noun.isDerivedFromVerb (NOMINALISATION).
+    // Verb.isNominalised / Noun.isDerivedFromVerb (NOMINALISATION).
     expect(hyperventilate!.isNominalised?.value).toBe(hyperventilation!.uuid.value);
     expect(hyperventilate!.isNominalisedIndicator).toBe(true);
     expect(hyperventilation!.isDerivedFromVerb?.value).toBe(hyperventilate!.uuid.value);
@@ -1710,66 +1706,52 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
         .outgoing(hyperventilate!.uuid.value)
         .filter((edge) => edge.relationshipType === LexicalRelationshipType.NOMINALISATION && edge.targetWordId.value === hyperventilation!.uuid.value),
     ).toHaveLength(1);
+    // Noun no longer has an isVerbalised field, and Verb no longer has
+    // isDerivedFromNoun -- both removed, each an earlier iteration's
+    // own DERIVED_FORM-sourced restatement of the identical fact just
+    // checked above.
+    expect((hyperventilation as unknown as Record<string, unknown>).isVerbalised).toBeUndefined();
+    expect((hyperventilate as unknown as Record<string, unknown>).isDerivedFromNoun).toBeUndefined();
 
-    // Row 7 -- Noun.isVerbalised / Verb.isDerivedFromNoun (DERIVED_FORM,
-    // "both" direction -- DERIVED_FORM is symmetric, so this same
-    // hyperventilate/hyperventilation pair's own reciprocal pointer
-    // could have been stored either way; findDerivationTarget()'s own
-    // docstring on why checking only one fixed direction would be wrong
-    // for this kind specifically).
-    expect(hyperventilation!.isVerbalised?.value).toBe(hyperventilate!.uuid.value);
-    expect(hyperventilation!.isVerbalisedIndicator).toBe(true);
-    expect(hyperventilate!.isDerivedFromNoun?.value).toBe(hyperventilation!.uuid.value);
-    expect(hyperventilate!.isDerivedFromNounIndicator).toBe(true);
-
-    // Row 2 -- Adjective.isNominalised / Noun.isDerivedFromAdjective
+    // Adjective.isNominalised / Noun.isDerivedFromAdjective
     // (NOMINALISATION, source=Adjective this time -- the exact
     // disambiguation findDerivationTarget()'s own otherPos check exists
-    // for, since this is the identical relationship kind row 1 uses).
+    // for, since this is the identical relationship kind checked above).
     expect(able!.isNominalised?.value).toBe(ability!.uuid.value);
     expect(able!.isNominalisedIndicator).toBe(true);
     expect(ability!.isDerivedFromAdjective?.value).toBe(able!.uuid.value);
     expect(ability!.isDerivedFromAdjectiveIndicator).toBe(true);
+    // Noun no longer has an isAdjectivised field, and Adjective no
+    // longer has isDerivedFromNoun -- both removed as this same pair's
+    // own ADJECTIVAL_DERIVATION-classified reciprocal restatement.
+    expect((ability as unknown as Record<string, unknown>).isAdjectivised).toBeUndefined();
+    expect((able as unknown as Record<string, unknown>).isDerivedFromNoun).toBeUndefined();
 
-    // Row 4 -- Noun.isAdjectivised / Adjective.isDerivedFromNoun
-    // (ADJECTIVAL_DERIVATION) -- the same able/ability pair's own
-    // reciprocal-direction pointer, a genuinely separate edge from row
-    // 2's own NOMINALISATION one (this test's own opening comment).
-    expect(ability!.isAdjectivised?.value).toBe(able!.uuid.value);
-    expect(ability!.isAdjectivisedIndicator).toBe(true);
-    expect(able!.isDerivedFromNoun?.value).toBe(ability!.uuid.value);
-    expect(able!.isDerivedFromNounIndicator).toBe(true);
-
-    // Row 3 -- Verb.isAdjectivised / Adjective.isDerivedFromVerb
-    // (ADJECTIVAL_DERIVATION, source=Verb -- disambiguated from row 4's
-    // own Noun-sourced case the same way row 1/2 disambiguate NOMINALISATION).
+    // Verb.isAdjectivised / Adjective.isDerivedFromVerb
+    // (ADJECTIVAL_DERIVATION, source=Verb -- disambiguated from a
+    // Noun-sourced ADJECTIVAL_DERIVATION edge the same way the two
+    // NOMINALISATION checks above disambiguate by source).
     expect(respire!.isAdjectivised?.value).toBe(respiratory!.uuid.value);
     expect(respire!.isAdjectivisedIndicator).toBe(true);
     expect(respiratory!.isDerivedFromVerb?.value).toBe(respire!.uuid.value);
     expect(respiratory!.isDerivedFromVerbIndicator).toBe(true);
+    // Adjective no longer has an isVerbalised field, and Verb no longer
+    // has isDerivedFromAdjective -- both removed as this same pair's own
+    // DERIVED_FORM-classified reciprocal restatement.
+    expect((respiratory as unknown as Record<string, unknown>).isVerbalised).toBeUndefined();
+    expect((respire as unknown as Record<string, unknown>).isDerivedFromAdjective).toBeUndefined();
 
-    // Row 8 -- Adjective.isVerbalised / Verb.isDerivedFromAdjective
-    // (DERIVED_FORM, "both" direction) -- the same respire/respiratory
-    // pair's own reciprocal pointer.
-    expect(respiratory!.isVerbalised?.value).toBe(respire!.uuid.value);
-    expect(respiratory!.isVerbalisedIndicator).toBe(true);
-    expect(respire!.isDerivedFromAdjective?.value).toBe(respiratory!.uuid.value);
-    expect(respire!.isDerivedFromAdjectiveIndicator).toBe(true);
-
-    // Row 6 -- Adjective.isAdverbialised / Adverb.isDerivedFromAdjective
+    // Adjective.isAdverbialised / Adverb.isDerivedFromAdjective
     // (ADVERBIAL_DERIVATION).
     expect(unbearable!.isAdverbialised?.value).toBe(unbearably!.uuid.value);
     expect(unbearable!.isAdverbialisedIndicator).toBe(true);
     expect(unbearably!.isDerivedFromAdjective?.value).toBe(unbearable!.uuid.value);
     expect(unbearably!.isDerivedFromAdjectiveIndicator).toBe(true);
-
-    // Row 5 -- Adverb.isAdjectivised / Adjective.isDerivedFromAdverb
-    // (ADJECTIVAL_DERIVATION, source=Adverb) -- the same unbearable/
-    // unbearably pair's own reciprocal pointer.
-    expect(unbearably!.isAdjectivised?.value).toBe(unbearable!.uuid.value);
-    expect(unbearably!.isAdjectivisedIndicator).toBe(true);
-    expect(unbearable!.isDerivedFromAdverb?.value).toBe(unbearably!.uuid.value);
-    expect(unbearable!.isDerivedFromAdverbIndicator).toBe(true);
+    // Adverb no longer has an isAdjectivised field, and Adjective no
+    // longer has isDerivedFromAdverb -- both removed as this same
+    // pair's own ADJECTIVAL_DERIVATION-classified reciprocal restatement.
+    expect((unbearably as unknown as Record<string, unknown>).isAdjectivised).toBeUndefined();
+    expect((unbearable as unknown as Record<string, unknown>).isDerivedFromAdverb).toBeUndefined();
 
     // A Word this pass found nothing for keeps every field at its own
     // "not derived" default -- undefined pointer, false indicator --
@@ -1787,7 +1769,6 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     const handCraftedNoun = createNoun({ text: "widget" });
     expect(handCraftedNoun.isDerivedFromVerb).toBeUndefined();
     expect(handCraftedNoun.isDerivedFromVerbIndicator).toBe(false);
-    expect(handCraftedNoun.isVerbalisedIndicator).toBe(false);
     const handCraftedVerb = createVerb({ text: "widgetize" });
     expect(handCraftedVerb.isNominalised).toBeUndefined();
     expect(handCraftedVerb.isNominalisedIndicator).toBe(false);
@@ -1795,24 +1776,21 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     expect(handCraftedAdjective.isNominalisedIndicator).toBe(false);
     expect(handCraftedAdjective.isAdverbialisedIndicator).toBe(false);
     const handCraftedAdverb = createAdverb({ text: "widgetily" });
-    expect(handCraftedAdverb.isAdjectivisedIndicator).toBe(false);
     expect(handCraftedAdverb.isDerivedFromAdjectiveIndicator).toBe(false);
 
     // WordRecord.derivations (morphologicalDerivations(), ui/dictionary_view.ts)
     // -- read through the same wordId path the detail panel itself
     // uses, not the raw Word fields checked above. hyperventilation
-    // (Noun) carries two entries (isDerivedFromVerb, isVerbalised, rows
-    // 1 and 7 both firing for the same Word); an ordinary closed-class
-    // Adjective carries none.
+    // (Noun) carries exactly one entry now (isDerivedFromVerb) -- not
+    // two, confirming the earlier duplicate ("Is Derived From Verb" and
+    // "Is Verbalised" both showing "hyperventilate") is actually gone,
+    // not just relabelled. An ordinary closed-class Adjective carries
+    // none.
     const view = new DictionaryView(dictionary, lexicalRelationships, { domainName: "Common", phrases: phraseBook, senses: senseStore });
     const hyperventilationRecord = view.searchWords({ wordId: hyperventilation!.uuid.value }).words[0];
-    expect(hyperventilationRecord.derivations).toEqual(
-      expect.arrayContaining([
-        { attribute: "isDerivedFromVerb", label: "Is Derived From Verb", target: { id: hyperventilate!.uuid.value, text: "hyperventilate" } },
-        { attribute: "isVerbalised", label: "Is Verbalised", target: { id: hyperventilate!.uuid.value, text: "hyperventilate" } },
-      ]),
-    );
-    expect(hyperventilationRecord.derivations).toHaveLength(2);
+    expect(hyperventilationRecord.derivations).toEqual([
+      { attribute: "isDerivedFromVerb", label: "Is Derived From Verb", target: { id: hyperventilate!.uuid.value, text: "hyperventilate" } },
+    ]);
 
     const someClosedClassAdjective = createAdjective({ text: "sample-adjective" });
     dictionary.append(someClosedClassAdjective);

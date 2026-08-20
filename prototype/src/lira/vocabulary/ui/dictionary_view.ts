@@ -751,11 +751,20 @@ export class DictionaryView {
 
   /** WordRecord.derivations (that field's own docstring above) -- every
    * morphological-derivation pointer field `word`'s own concrete POS
-   * subtype carries (Noun.isDerivedFromVerb and its seven siblings
+   * subtype carries (Noun.isDerivedFromVerb and its three siblings
    * across data/noun.ts, data/verb.ts, data/adjective.ts, data/adverb.ts
    * -- WordSeeder.deriveMorphologicalPointers()'s own docstring,
-   * role/word_seeder.ts, names exactly which eight pairs these are and
-   * why), resolved against this Dictionary the same way every other
+   * role/word_seeder.ts, names exactly which four pairs these are and
+   * why only four survive, not eight: WordNet records its `+`
+   * Derived-Form pointer reciprocally, once from each word's own side,
+   * and derivationKind() there classifies a pointer by the *target's*
+   * own part of speech alone -- so reading both sides of the same real
+   * fact independently used to produce two differently-named rows for
+   * one relationship (e.g. "abandon" Verb->Noun read as NOMINALISATION,
+   * "abandonment" Noun->Verb read as the generic DERIVED_FORM catch-all).
+   * Every DERIVED_FORM-sourced field was removed; what's left is exactly
+   * one canonical field pair per genuine linguistic relationship),
+   * resolved against this Dictionary the same way every other
    * pivot-button target already is. `addIfSet` skips a field that's
    * undefined (no qualifying WordNet edge found for this Word) and, in
    * the one case it shouldn't happen for anything WordSeeder.seedWordNet
@@ -774,22 +783,14 @@ export class DictionaryView {
     if (isNoun(word)) {
       addIfSet("isDerivedFromVerb", word.isDerivedFromVerb);
       addIfSet("isDerivedFromAdjective", word.isDerivedFromAdjective);
-      addIfSet("isAdjectivised", word.isAdjectivised);
-      addIfSet("isVerbalised", word.isVerbalised);
     } else if (isVerb(word)) {
       addIfSet("isNominalised", word.isNominalised);
       addIfSet("isAdjectivised", word.isAdjectivised);
-      addIfSet("isDerivedFromNoun", word.isDerivedFromNoun);
-      addIfSet("isDerivedFromAdjective", word.isDerivedFromAdjective);
     } else if (isAdjective(word)) {
       addIfSet("isNominalised", word.isNominalised);
       addIfSet("isAdverbialised", word.isAdverbialised);
-      addIfSet("isVerbalised", word.isVerbalised);
       addIfSet("isDerivedFromVerb", word.isDerivedFromVerb);
-      addIfSet("isDerivedFromNoun", word.isDerivedFromNoun);
-      addIfSet("isDerivedFromAdverb", word.isDerivedFromAdverb);
     } else if (isAdverb(word)) {
-      addIfSet("isAdjectivised", word.isAdjectivised);
       addIfSet("isDerivedFromAdjective", word.isDerivedFromAdjective);
     }
     return derivations;

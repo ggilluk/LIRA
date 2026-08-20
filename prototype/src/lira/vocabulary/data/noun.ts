@@ -37,6 +37,27 @@ export interface Noun extends Word {
   // keeps only the first one found, the same arbitrary-but-deterministic
   // "pick one" convention Dictionary.lookup() already uses for a
   // homograph.
+  //
+  // Deliberately only two fields, not four -- Noun.isAdjectivised and
+  // Noun.isVerbalised existed in an earlier iteration of this block and
+  // were removed: WordNet records its own `+` Derived-Form pointer
+  // reciprocally (once under the source word's own synset, once again
+  // under the target's), and derivationKind() (role/word_seeder.ts)
+  // picks a *different* LexicalRelationshipType for each direction --
+  // so a Noun/Verb pair like "abandon"/"abandonment" produces both a
+  // NOMINALISATION edge (verb->noun) and a separate DERIVED_FORM edge
+  // (noun->verb) for the exact same underlying fact, not two distinct
+  // ones. DERIVED_FORM itself is WordNet's own catch-all for "target
+  // isn't Noun/Adjective/Adverb," not a genuine morphological category
+  // the way Nominalisation/Adjectivisation/Adverbialisation are, so
+  // building a "Verbalised"/"Adjectivised" field on top of it here
+  // duplicated Verb.isNominalised/Adjective.isDerivedFromNoun's own
+  // fact under a second, spurious name instead of describing anything
+  // new. Correct linguistics, not WordNet's own storage convention, is
+  // what these fields model -- there is exactly one derivational
+  // relationship between two words, read from whichever single edge
+  // NOMINALISATION/ADJECTIVAL_DERIVATION/ADVERBIAL_DERIVATION actually
+  // produces, never from DERIVED_FORM.
 
   // This Noun's own uuid, per the Verb it nominalizes from ("decision"
   // <- "decide"). Distinct from Word.isDerivableNoun (that field's own
@@ -52,22 +73,13 @@ export interface Noun extends Word {
 
   // This Noun's own uuid, per the Adjective it nominalizes from ("happiness"
   // <- "happy") -- isDerivedFromVerb's own exact counterpart for the
-  // other real source part of speech NOMINALISATION covers.
+  // other real source part of speech NOMINALISATION covers. The Noun-side
+  // half of the one real Noun<->Adjective relationship -- Adjective is
+  // treated as the canonical base form (Adjective.isNominalised, not a
+  // separate Noun.isAdjectivised), matching how much more heavily
+  // populated real WordNet data is in this direction.
   isDerivedFromAdjective?: Identifier;
   isDerivedFromAdjectiveIndicator: boolean;
-
-  // The Adjective this Noun adjectivises into ("wood" -> "wooden") -- a
-  // real WordNet ADJECTIVAL_DERIVATION pointer, source=this Noun.
-  isAdjectivised?: Identifier;
-  isAdjectivisedIndicator: boolean;
-
-  // The Verb this Noun verbalises into ("email" the noun -> "email" the
-  // verb) -- read from WordNet's generic DERIVED_FORM kind (the fallback
-  // every target part of speech other than Noun/Adjective/Adverb gets,
-  // derivationKind()'s own docstring), filtered to a target that
-  // actually resolves to a Verb.
-  isVerbalised?: Identifier;
-  isVerbalisedIndicator: boolean;
 
   // The purpose is to identify the word form used when referring to
   // one person, thing, place, or idea. Fully lexical, not spelling-
@@ -97,8 +109,6 @@ export function createNoun(init: NounInit): Noun {
   const noun = createWord({ ...init, partOfSpeech: PartOfSpeech.NOUN }) as Noun;
   if (noun.isDerivedFromVerbIndicator === undefined) noun.isDerivedFromVerbIndicator = false;
   if (noun.isDerivedFromAdjectiveIndicator === undefined) noun.isDerivedFromAdjectiveIndicator = false;
-  if (noun.isAdjectivisedIndicator === undefined) noun.isAdjectivisedIndicator = false;
-  if (noun.isVerbalisedIndicator === undefined) noun.isVerbalisedIndicator = false;
   return noun;
 }
 

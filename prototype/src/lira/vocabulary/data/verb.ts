@@ -45,7 +45,13 @@ export interface Verb extends Word {
   // pointer pair -- Noun.isDerivedFromVerb's own docstring (data/noun.ts)
   // has the full shared rationale (deriveMorphologicalPointers()/
   // findDerivationTarget(), role/word_seeder.ts) every one of these
-  // fields, on every POS subtype, is built from. Undefined/false for
+  // fields, on every POS subtype, is built from, and the full reasoning
+  // for why this is deliberately two fields, not four (an earlier
+  // iteration had Verb.isDerivedFromNoun/isDerivedFromAdjective too,
+  // reading WordNet's own reciprocal DERIVED_FORM pointer as if it were
+  // a second, independent fact when it's actually the same relationship
+  // Noun.isDerivedFromVerb/Adjective.isDerivedFromVerb already capture,
+  // just recorded from the other word's own side). Undefined/false for
   // every Common Vocabulary Cache closed-class Verb; a Verb with more
   // than one qualifying edge keeps only the first one found.
 
@@ -61,20 +67,10 @@ export interface Verb extends Word {
   isNominalisedIndicator: boolean;
 
   // The Adjective this Verb adjectivises into ("interest" -> "interesting")
-  // -- a real WordNet ADJECTIVAL_DERIVATION pointer, source=this Verb.
+  // -- a real WordNet ADJECTIVAL_DERIVATION pointer, source=this Verb --
+  // Adjective.isDerivedFromVerb's own exact reverse.
   isAdjectivised?: Identifier;
   isAdjectivisedIndicator: boolean;
-
-  // This Verb's own uuid, per the Noun that verbalises into it ("email"
-  // the noun -> "email" the verb) -- Noun.isVerbalised's own exact
-  // reverse, read from WordNet's generic DERIVED_FORM kind.
-  isDerivedFromNoun?: Identifier;
-  isDerivedFromNounIndicator: boolean;
-
-  // This Verb's own uuid, per the Adjective that verbalises into it --
-  // Adjective.isVerbalised's own exact reverse, same DERIVED_FORM kind.
-  isDerivedFromAdjective?: Identifier;
-  isDerivedFromAdjectiveIndicator: boolean;
 
   // The rest of this subtype's own row of fields from the Word Form to
   // Part of Speech Matrix (data/word_form_part_of_speech_matrix.md) --
@@ -150,8 +146,6 @@ export function createVerb(init: VerbInit): Verb {
   const verb = createWord({ ...init, partOfSpeech: PartOfSpeech.VERB }) as Verb;
   if (verb.isNominalisedIndicator === undefined) verb.isNominalisedIndicator = false;
   if (verb.isAdjectivisedIndicator === undefined) verb.isAdjectivisedIndicator = false;
-  if (verb.isDerivedFromNounIndicator === undefined) verb.isDerivedFromNounIndicator = false;
-  if (verb.isDerivedFromAdjectiveIndicator === undefined) verb.isDerivedFromAdjectiveIndicator = false;
   return verb;
 }
 
