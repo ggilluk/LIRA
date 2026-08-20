@@ -82,7 +82,11 @@ function summaryOf(domain: SeededDomain): VocabularyDomainSummary {
     name: domain.name,
     parentName: domain.parentName,
     wordCount: domain.vocabulary.dictionary.totalEntries(),
-    relationshipCount: domain.vocabulary.lexicalRelationships.totalRelationships(),
+    // semanticRelationships, not lexicalRelationships -- the latter is
+    // seeding-internal scratch state now (VocabularyLayer's own
+    // docstring, data/layer.ts), so counting it here would surface a
+    // number nothing else in the UI shows any more.
+    relationshipCount: domain.vocabulary.semanticRelationships.totalRelationships(),
   };
 }
 
@@ -286,7 +290,7 @@ function handleRender(request: RenderRequest): void {
   }
 
   try {
-    const view = new DictionaryView(domain.vocabulary.dictionary, domain.vocabulary.lexicalRelationships, {
+    const view = new DictionaryView(domain.vocabulary.dictionary, domain.vocabulary.semanticRelationships, {
       title: `LIRA — ${domain.name}`,
       domainName: domain.name,
       phrases: domain.vocabulary.phrases,
@@ -318,7 +322,7 @@ function handleSearchWords(request: SearchWordsRequest): void {
     return;
   }
 
-  const view = new DictionaryView(domain.vocabulary.dictionary, domain.vocabulary.lexicalRelationships, {
+  const view = new DictionaryView(domain.vocabulary.dictionary, domain.vocabulary.semanticRelationships, {
     title: `LIRA — ${domain.name}`,
     domainName: domain.name,
     phrases: domain.vocabulary.phrases,
@@ -348,7 +352,7 @@ function handleSearchPhrases(request: SearchPhrasesRequest): void {
     return;
   }
 
-  const view = new DictionaryView(domain.vocabulary.dictionary, domain.vocabulary.lexicalRelationships, {
+  const view = new DictionaryView(domain.vocabulary.dictionary, domain.vocabulary.semanticRelationships, {
     title: `LIRA — ${domain.name}`,
     domainName: domain.name,
     phrases: domain.vocabulary.phrases,
@@ -375,7 +379,7 @@ function handleSearchSenses(request: SearchSensesRequest): void {
     return;
   }
 
-  const view = new DictionaryView(domain.vocabulary.dictionary, domain.vocabulary.lexicalRelationships, {
+  const view = new DictionaryView(domain.vocabulary.dictionary, domain.vocabulary.semanticRelationships, {
     title: `LIRA — ${domain.name}`,
     domainName: domain.name,
     phrases: domain.vocabulary.phrases,
@@ -398,7 +402,7 @@ function handleSearchRelationships(request: SearchRelationshipsRequest): void {
     return;
   }
 
-  const view = new DictionaryView(domain.vocabulary.dictionary, domain.vocabulary.lexicalRelationships, {
+  const view = new DictionaryView(domain.vocabulary.dictionary, domain.vocabulary.semanticRelationships, {
     title: `LIRA — ${domain.name}`,
     domainName: domain.name,
     phrases: domain.vocabulary.phrases,
@@ -429,7 +433,7 @@ function handleResolveHierarchy(request: ResolveHierarchyRequest): void {
     return;
   }
 
-  const view = new DictionaryView(domain.vocabulary.dictionary, domain.vocabulary.lexicalRelationships, {
+  const view = new DictionaryView(domain.vocabulary.dictionary, domain.vocabulary.semanticRelationships, {
     title: `LIRA — ${domain.name}`,
     domainName: domain.name,
     phrases: domain.vocabulary.phrases,

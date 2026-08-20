@@ -155,44 +155,6 @@ export interface Sense {
   seededPleasureDispleasureWeight?: Number_;
   seededArousalNonArousalWeight?: Number_;
   seededDominanceSubmissiveWeight?: Number_;
-
-  // WordNet's own "pertainym" pointer (`\`) -- an adjective's relational
-  // noun base ("presidential" pertains to "president") or a manner
-  // adverb's adjective base ("quickly" pertains to "quick"). Lives here,
-  // on Sense, rather than on Word/Adjective/Adverb the way
-  // isNominalised/isAdjectivised/isAdverbialised/isDerivedFromVerb/
-  // isDerivedFromAdjective do (data/noun.ts's own docstring on those) --
-  // because unlike every one of those, a Pertainym target genuinely
-  // differs from one sense of a polysemous word to another, verified
-  // directly against the bundled dict/ files: "aural" sense 1
-  // ("relating to or characterized by an aura") pertains to the noun
-  // "aura", while its sense 2 ("of or pertaining to hearing or the
-  // ear") pertains to the unrelated noun "ear" -- 572 of the 656
-  // lemmas carrying a Pertainym pointer on two or more of their own
-  // senses show this same per-sense divergence, not a rare exception. A
-  // Word-level field would have to arbitrarily collapse onto one target
-  // and be silently wrong for every other sense that also carries one.
-  //
-  // A list, not a single Identifier, because a small minority of senses
-  // (142 of the 6,168 that carry any Pertainym pointer at all, verified
-  // directly) genuinely pertain to more than one target from the
-  // identical sense -- "mellowness" pertains to three distinct senses
-  // of "mellow" at once. Populated by WordSeeder.seedWordNet's own
-  // applyPertainym (role/word_seeder.ts) as it processes each `\`
-  // pointer directly, one sense at a time -- unlike
-  // deriveMorphologicalPointers()'s own read-back-after-the-fact
-  // approach for the Word-level fields above, this never goes through
-  // a LexicalRelationship edge at all (the same "write straight onto
-  // the Sense, don't create an edge" treatment `;c`/`-c` topic-domain
-  // pointers already get, tagTopicDomain's own docstring) -- a
-  // Pertainym fact is always word-specific (source/target index never
-  // 0000 in the bundled data, confirmed directly), so there is no
-  // synset-wide edge shape for it to fall back to the way a Lexical
-  // Semantic kind's group-1 branch does. Undefined/empty for a
-  // hand-curated Common Vocabulary Cache Sense, which carries no
-  // Pertainym data of its own yet.
-  pertainsTo: readonly Identifier[];
-  pertainsToIndicator: boolean;
 }
 
 export type SenseInit = Partial<Sense>;
@@ -204,8 +166,6 @@ export function createSense(init: SenseInit = {}): Sense {
     sourceReferences: [],
     isCommon: false,
     isRootWord: false,
-    pertainsTo: [],
-    pertainsToIndicator: false,
     uuid: init.uuid ?? { value: newUuid() },
     entryId: init.entryId ?? { value: newUuid() },
     ...init,

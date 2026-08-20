@@ -1,24 +1,20 @@
-import {
-  ACTIVATION_COL,
-  CONFIDENCE_COL,
-  LexicalRelationshipSystemPropertyTensor,
-  PROVENANCE_COL,
-  TEMPORAL_COL,
-} from "./lexical_relationship_tensor";
+import { ACTIVATION_COL, CONFIDENCE_COL, PROVENANCE_COL, TEMPORAL_COL } from "./lexical_relationship_tensor";
+import type { RelationshipSystemPropertyTensor } from "./relationship_system_property_tensor";
 
-/** SystemPropertiesRef: a LexicalRelationship's by-reference view into
- * LexicalRelationshipSystemPropertyTensor (Rule 14) -- reading
- * confidenceWeight reads the live tensor cell; writing it writes the
- * live cell, immediately visible to every other reference to that same
- * row. Only LexicalRelationship carries one of these; Dictionary and
- * Word do not (Design Principle 8).
+/** SystemPropertiesRef: a LexicalRelationship or SemanticRelationship's
+ * by-reference view into its own system-properties tensor
+ * (RelationshipSystemPropertyTensor's own docstring on why one class
+ * serves both) (Rule 14) -- reading confidenceWeight reads the live
+ * tensor cell; writing it writes the live cell, immediately visible to
+ * every other reference to that same row. Only a relationship record
+ * carries one of these; Dictionary and Word do not (Design Principle 8).
  *
  * Ported from vocabulary/data/system_properties_ref.py. Python's
  * @property/setter pairs become get/set accessors here -- same
  * by-reference semantics. */
 export class SystemPropertiesRef {
   constructor(
-    private readonly store: LexicalRelationshipSystemPropertyTensor,
+    private readonly store: RelationshipSystemPropertyTensor,
     private readonly row: number,
   ) {}
 

@@ -54,6 +54,7 @@ import type { AttributeValue } from "../data/attribute_value";
 import type { Dictionary } from "../data/dictionary";
 import { LexicalRelationshipStore } from "../data/lexical_relationship_store";
 import { LexicalRelationshipType, MERONYM_KIND_QUALIFIER, relationshipGroup, type MeronymKind } from "../data/enums/lexical_relationship_type";
+import { SemanticRelationshipKind } from "../data/enums/semantic_relationship_kind";
 import { copyPhraseWithFreshUuid, createPhrase, type Phrase } from "../data/phrase";
 import { PhraseRole } from "../data/enums/phrase_role";
 import { PhraseType } from "../data/enums/phrase_type";
@@ -63,6 +64,7 @@ import type { Senses } from "../data/senses";
 import type { SourceReference } from "../data/source_reference";
 import { VERB_FRAME_TEXT, createVerb, generateVerbForms, isVerb } from "../data/verb";
 import { copyWordWithFreshUuid, createWord, type Word } from "../data/word";
+import type { SemanticRelationshipStore } from "../data/semantic_relationship_store";
 import {
   languageHasCommonCache,
   readWordDirJson,
@@ -72,6 +74,7 @@ import {
   type WordManifestDocument,
 } from "./asset_loader";
 import type { LexicalRelationshipProcessor } from "./lexical_relationship_processor";
+import type { SemanticRelationshipProcessor } from "./semantic_relationship_processor";
 import { loadWordNetSynsets, type WordNetPointer, type WordNetSynset } from "./wordnet_loader";
 
 /** createEdges' own pair-member type -- a LexicalRelationship's
@@ -671,6 +674,40 @@ function nonHeadPhraseRole(
  * (lexical_relationship_type.ts) on why "part of a larger whole" vs.
  * "member of a group" vs. "substance a whole is made of" is a property
  * of one MERONYM fact, not three separate relationship kinds. */
+
+// Every LexicalRelationshipType that also names a true sense-to-sense
+// semantic fact gets its own SemanticRelationshipKind counterpart here
+// (SemanticRelationshipKind's own docstring on why PERTAINYM moved into
+// that enum even though relationshipKindForPointer resolves it as a
+// LexicalRelationshipType, same as every other kind, at the
+// seeding-internal LexicalRelationship layer). A kind absent here (every
+// Morphological/Orthographic kind) simply has no semantic copy to make.
+// relationshipKindForPointer's own WordNet-pointer resolution never
+// actually produces SYNONYM/HYPONYM/HOLONYM/TROPONYM (canonicalised onto
+// HYPERNYM/MERONYM instead, each one's own docstring above) -- those
+// four entries exist only for RelationshipSeeder's own hand-curated data
+// (relationship_seeder.ts's own semantic-copy step, the one other
+// exporting this map), which really does store all four as their own
+// kinds.
+export const LEXICAL_TO_SEMANTIC_KIND: Partial<Record<LexicalRelationshipType, SemanticRelationshipKind>> = {
+  [LexicalRelationshipType.SYNONYM]: SemanticRelationshipKind.SYNONYM,
+  [LexicalRelationshipType.ANTONYM]: SemanticRelationshipKind.ANTONYM,
+  [LexicalRelationshipType.HYPERNYM]: SemanticRelationshipKind.HYPERNYM,
+  [LexicalRelationshipType.HYPONYM]: SemanticRelationshipKind.HYPONYM,
+  [LexicalRelationshipType.MERONYM]: SemanticRelationshipKind.MERONYM,
+  [LexicalRelationshipType.HOLONYM]: SemanticRelationshipKind.HOLONYM,
+  [LexicalRelationshipType.TROPONYM]: SemanticRelationshipKind.TROPONYM,
+  [LexicalRelationshipType.ENTAILMENT]: SemanticRelationshipKind.ENTAILMENT,
+  [LexicalRelationshipType.CAUSE]: SemanticRelationshipKind.CAUSE,
+  [LexicalRelationshipType.RELATED]: SemanticRelationshipKind.RELATED,
+  [LexicalRelationshipType.ALSO_SEE]: SemanticRelationshipKind.ALSO_SEE,
+  [LexicalRelationshipType.VERB_GROUP]: SemanticRelationshipKind.VERB_GROUP,
+  [LexicalRelationshipType.SIMILAR_TO]: SemanticRelationshipKind.SIMILAR_TO,
+  [LexicalRelationshipType.ATTRIBUTE]: SemanticRelationshipKind.ATTRIBUTE,
+  [LexicalRelationshipType.REGION_DOMAIN]: SemanticRelationshipKind.REGION_DOMAIN,
+  [LexicalRelationshipType.USAGE_DOMAIN]: SemanticRelationshipKind.USAGE_DOMAIN,
+  [LexicalRelationshipType.PERTAINYM]: SemanticRelationshipKind.PERTAINYM,
+};
 function relationshipKindForPointer(
   symbol: string,
   sourcePos: PartOfSpeech,
@@ -709,11 +746,17 @@ function relationshipKindForPointer(
       return { kind: LexicalRelationshipType.SIMILAR_TO, swap: false };
     case "=":
       return { kind: LexicalRelationshipType.ATTRIBUTE, swap: false };
-    // "\\" (Pertainym) is deliberately absent -- intercepted earlier in
-    // seedPointerRelationship's own dispatch (applyPertainym's own
-    // docstring, this file) before this function is ever called for it,
-    // the same "handled before reaching here" treatment ";c"/"-c"
-    // already get in that same dispatch.
+    // WordNet's own Pertainym pointer -- always word-specific in the
+    // bundled data (source/target index never 0000, verified directly),
+    // so this seeds exactly like ANTONYM does: a direct, per-lemma
+    // LexicalRelationship edge here, full precision preserved (this
+    // method's own docstring, seedPointerRelationship, on why every edge
+    // seeded here is seeding-internal working state now, later copied
+    // out to its own permanent home -- a SemanticRelationship for
+    // PERTAINYM specifically, SemanticRelationshipKind's own docstring
+    // on why it moved out of this group).
+    case "\\":
+      return { kind: LexicalRelationshipType.PERTAINYM, swap: false };
     case "+":
     case "<":
       return { kind: derivationKind(sourcePos, targetPos), swap: false };
@@ -1266,6 +1309,8 @@ export class WordSeeder {
         senses: Senses;
         lexicalRelationships: LexicalRelationshipStore;
         lexicalRelationshipProcessor: LexicalRelationshipProcessor;
+        semanticRelationships: SemanticRelationshipStore;
+        semanticRelationshipProcessor: SemanticRelationshipProcessor;
       };
     },
     onProgress?: (phase: "words" | "relationships", processed: number, total: number) => void,
@@ -1275,6 +1320,9 @@ export class WordSeeder {
     const senseStore = domain.vocabulary.senses;
     const store = domain.vocabulary.lexicalRelationships;
     const processor = domain.vocabulary.lexicalRelationshipProcessor;
+    const semanticStore = domain.vocabulary.semanticRelationships;
+    const semanticProcessor = domain.vocabulary.semanticRelationshipProcessor;
+    const semanticExistingEdges = new Set<string>();
 
     // LexicalRelationshipStore.outgoing() is indexed (O(1) amortized,
     // lexical_relationship_store.ts's own docstring) rather than a raw
@@ -1463,7 +1511,17 @@ export class WordSeeder {
       const sourceMembers = synsetMembersById.get(synset.synsetId);
       if (sourceMembers !== undefined) {
         for (const pointer of synset.pointers) {
-          relationshipsSeeded += this.seedPointerRelationship(processor, existingEdges, synset, sourceMembers, pointer, synsetMembersById, senseStore);
+          relationshipsSeeded += this.seedPointerRelationship(
+            processor,
+            existingEdges,
+            synset,
+            sourceMembers,
+            pointer,
+            synsetMembersById,
+            senseStore,
+            semanticProcessor,
+            semanticExistingEdges,
+          );
         }
       }
 
@@ -1502,13 +1560,13 @@ export class WordSeeder {
     for (const word of dictionary.all()) {
       if (isAdjective(word)) {
         if (word.comparativeDegreeForm !== undefined && word.superlativeDegreeForm !== undefined) continue;
-        const gradable = determineGradability(store, word);
+        const gradable = determineGradability(semanticStore, word);
         const generated = generateAdjectiveForms(word, gradable);
         word.comparativeDegreeForm = generated.comparativeDegreeForm;
         word.superlativeDegreeForm = generated.superlativeDegreeForm;
       } else if (isAdverb(word)) {
         if (word.comparativeDegreeForm !== undefined && word.superlativeDegreeForm !== undefined) continue;
-        const gradable = determineAdverbGradability(store, dictionary, senseStore, word);
+        const gradable = determineAdverbGradability(semanticStore, dictionary, senseStore, word);
         const generated = generateAdverbForms(word, gradable);
         word.comparativeDegreeForm = generated.comparativeDegreeForm;
         word.superlativeDegreeForm = generated.superlativeDegreeForm;
@@ -1544,13 +1602,21 @@ export class WordSeeder {
    * still becomes a direct Word/Phrase edge regardless of group, since it
    * names one specific word's relationship, not the synset's as a whole;
    * so does every Morphological/Orthographic-group kind (derivation,
-   * ...) even when synset-wide, since those aren't semantic
-   * relationships at all (the user's own scoping instruction). Pertainym
-   * (`\`) is the one exception to "becomes an edge" entirely -- it never
-   * did produce a synset-wide (0000) pointer in the bundled data to
-   * begin with, and is intercepted before reaching here regardless,
-   * writing straight onto the owning Sense instead (applyPertainym's
-   * own docstring, this file, on why). */
+   * pertainym, ...) even when synset-wide, since those aren't semantic
+   * relationships at all (the user's own scoping instruction). Every
+   * edge created here -- Morphological, Orthographic, and Lexical
+   * Semantic alike -- is seeding-internal working state now, not this
+   * Domain's own permanent queryable model any more (VocabularyLayer's
+   * own docstring, data/layer.ts, on the split this reflects): a copy
+   * pass at the end of seedWordNet() (deriveMorphologicalPointers()/
+   * copySemanticRelationships(), this file's own docstrings) reads every
+   * edge created here back out exactly once, onto either the seeded
+   * Word/Phrase's own POS-class attribute fields (Morphological/
+   * Orthographic) or a genuine SemanticRelationship (Lexical Semantic,
+   * data/semantic_relationship.ts, including PERTAINYM -- moved there
+   * from this group, SemanticRelationshipKind's own docstring on why),
+   * after which nothing outside this seeding pass reads this method's
+   * own LexicalRelationship edges again. */
   private seedPointerRelationship(
     processor: LexicalRelationshipProcessor,
     existingEdges: Set<string>,
@@ -1559,6 +1625,8 @@ export class WordSeeder {
     pointer: WordNetPointer,
     synsetMembersById: ReadonlyMap<string, Array<Word | Phrase>>,
     senseStore: Senses,
+    semanticProcessor: SemanticRelationshipProcessor,
+    semanticExistingEdges: Set<string>,
   ): number {
     const targetMembers = synsetMembersById.get(pointer.targetSynsetId);
     if (targetMembers === undefined || targetMembers.length === 0) return 0;
@@ -1568,16 +1636,13 @@ export class WordSeeder {
       return 0;
     }
 
-    if (pointer.symbol === "\\") {
-      this.applyPertainym(synset, targetMembers, pointer, senseStore);
-      return 0;
-    }
-
     const resolved = relationshipKindForPointer(pointer.symbol, synset.partOfSpeech, targetMembers[0].partOfSpeech);
     if (resolved === undefined) return 0;
 
     const qualifiers: readonly AttributeValue[] | undefined =
       resolved.meronymKind !== undefined ? [{ name: { value: MERONYM_KIND_QUALIFIER }, value: { value: resolved.meronymKind } }] : undefined;
+
+    this.copySemanticRelationship(semanticProcessor, semanticExistingEdges, synset, pointer, resolved, senseStore, qualifiers);
 
     if (pointer.sourceWordIndex === 0 && pointer.targetWordIndex === 0 && relationshipGroup(resolved.kind) === 1) {
       const sourceSense = senseStore.findBySynsetId(synset.synsetId);
@@ -1598,6 +1663,59 @@ export class WordSeeder {
       }
     }
     return this.createEdges(processor, existingEdges, resolved.kind, pairs, qualifiers);
+  }
+
+  /** Copies one resolved pointer's own fact into a genuine
+   * SemanticRelationship (Sense-to-Sense), alongside whichever
+   * LexicalRelationship (Word-to-Word) edge(s) seedPointerRelationship's
+   * own general path creates for it -- a no-op for every kind that isn't
+   * one of the true sense-to-sense semantic facts (LEXICAL_TO_SEMANTIC_KIND's
+   * own docstring on exactly which those are). Deliberately independent
+   * of `pointer.sourceWordIndex`/`targetWordIndex`: `synset` is always
+   * the pointer's own owning synset regardless of which lemma within it
+   * a word-specific occurrence names (WordNetPointer's own docstring,
+   * wordnet_loader.ts), so `senseStore.findBySynsetId(synset.synsetId)`
+   * always resolves the correct Sense either way -- this is what lets a
+   * kind like ANTONYM (verified directly against the bundled data: 100%
+   * word-specific, never synset-wide) still collapse cleanly onto its
+   * one true (sourceSense, targetSense) fact, the same as a synset-wide
+   * kind like HYPERNYM does, without needing its own separate handling.
+   * `semanticExistingEdges` is this method's own (sourceSense, targetSense,
+   * kind) dedup set, parallel to seedPointerRelationship's own
+   * `existingEdges` but keyed by Sense uuids instead of Word/Phrase ones --
+   * several word-specific LexicalRelationship pairs from the same synset
+   * pair (e.g. "above"/"below" ANTONYM plus a fellow synonym's own
+   * identical-meaning ANTONYM pointer) fold onto the identical one
+   * SemanticRelationship rather than creating a duplicate for each. */
+  private copySemanticRelationship(
+    semanticProcessor: SemanticRelationshipProcessor,
+    semanticExistingEdges: Set<string>,
+    synset: WordNetSynset,
+    pointer: WordNetPointer,
+    resolved: { kind: LexicalRelationshipType; swap: boolean; meronymKind?: MeronymKind },
+    senseStore: Senses,
+    qualifiers: readonly AttributeValue[] | undefined,
+  ): void {
+    const semanticKind = LEXICAL_TO_SEMANTIC_KIND[resolved.kind];
+    if (semanticKind === undefined) return;
+    const sourceSense = senseStore.findBySynsetId(synset.synsetId);
+    const targetSense = senseStore.findBySynsetId(pointer.targetSynsetId);
+    if (sourceSense === undefined || targetSense === undefined || sourceSense.uuid.value === targetSense.uuid.value) return;
+    const [source, target] = resolved.swap ? [targetSense, sourceSense] : [sourceSense, targetSense];
+    const key = `${source.uuid.value}|${target.uuid.value}|${semanticKind}`;
+    if (semanticExistingEdges.has(key)) return;
+    semanticExistingEdges.add(key);
+    semanticProcessor.create({
+      sourceSenseId: source.uuid.value,
+      targetSenseId: target.uuid.value,
+      relationshipType: semanticKind,
+      sourceReferences: [WORDNET_SOURCE_REFERENCE],
+      qualifiers,
+      confidence: WORDNET_SEEDER_DEFAULT_WEIGHT,
+      provenance: WORDNET_SEEDER_DEFAULT_WEIGHT,
+      temporal: WORDNET_SEEDER_DEFAULT_WEIGHT,
+      activation: WORDNET_SEEDER_DEFAULT_WEIGHT,
+    });
   }
 
   /** `;c`/`-c` (topic-domain pointer) handling, split out of
@@ -1662,46 +1780,6 @@ export class WordSeeder {
       }
     }
     for (const word of taggedWords) applyDomainTag(word, categoryLemma);
-  }
-
-  /** `\` (Pertainym) handling, split out of seedPointerRelationship's
-   * general edge-creation path the same way tagTopicDomain's own `;c`/
-   * `-c` handling already is -- Sense.pertainsTo's own docstring
-   * (data/sense.ts) has the full reasoning for why this writes straight
-   * onto the source Sense instead of creating a LexicalRelationship edge
-   * at all: a Pertainym target genuinely differs from one sense of a
-   * polysemous word to another (verified directly against the bundled
-   * dict/ files -- "aural"'s two senses pertain to "aura" and "ear"
-   * respectively), so a Word-level edge (indistinguishable from any
-   * other of that Word's own senses, the same shape every other
-   * Morphological-group kind already has) would silently conflate them.
-   *
-   * `synset` is always the pointer's own owning synset here (this
-   * method's own call site, inside the per-synset/per-pointer loop), so
-   * `senseStore.findBySynsetId(synset.synsetId)` always resolves the
-   * exact Sense this one `\` pointer belongs to -- never the arbitrary
-   * "first sense seeded" ambiguity a Word-level lookup would have.
-   * `pointer.sourceWordIndex` is deliberately not consulted at all:
-   * every member lemma of a multi-lemma synset gets its own separate
-   * pointer entry in the raw data (confirmed directly -- Pertainym's
-   * source index is never 0000), so this runs once per lemma and each
-   * call's own target(s) simply accumulate onto the one shared Sense,
-   * deduplicated by uuid -- the union of every member lemma's own
-   * pertainym target(s), which is what "this meaning pertains to..."
-   * means once the fact is being recorded once per Sense rather than
-   * once per lemma. `pointer.targetWordIndex` IS consulted, the same
-   * `indexedWord` resolution seedPointerRelationship's own general path
-   * uses, since a Pertainym pointer's target is always a specific word
-   * within the target synset (never 0000 either), not the sense as a
-   * whole. */
-  private applyPertainym(synset: WordNetSynset, targetMembers: readonly (Word | Phrase)[], pointer: WordNetPointer, senseStore: Senses): void {
-    const sourceSense = senseStore.findBySynsetId(synset.synsetId);
-    if (sourceSense === undefined) return;
-    const targetWords = pointer.targetWordIndex === 0 ? targetMembers : indexedWord(targetMembers, pointer.targetWordIndex);
-    const additions = targetWords.filter((target) => !sourceSense.pertainsTo.some((id) => id.value === target.uuid.value));
-    if (additions.length === 0) return;
-    sourceSense.pertainsTo = [...sourceSense.pertainsTo, ...additions.map((target) => target.uuid)];
-    sourceSense.pertainsToIndicator = true;
   }
 
   /** Creates a LexicalRelationship for every (source, target) pair not

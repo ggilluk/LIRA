@@ -15,6 +15,7 @@ import { LexicalRelationshipStore } from "../data/lexical_relationship_store";
 import { LexicalRelationshipType } from "../data/enums/lexical_relationship_type";
 import { PartOfSpeech } from "../data/enums/part_of_speech";
 import type { Phrases } from "../data/phrases";
+import type { SemanticRelationshipStore } from "../data/semantic_relationship_store";
 import type { SourceReference } from "../data/source_reference";
 import type { Word } from "../data/word";
 import {
@@ -26,6 +27,8 @@ import {
   type RelationshipManifestDocument,
 } from "./asset_loader";
 import type { LexicalRelationshipProcessor } from "./lexical_relationship_processor";
+import type { SemanticRelationshipProcessor } from "./semantic_relationship_processor";
+import { LEXICAL_TO_SEMANTIC_KIND } from "./word_seeder";
 
 export const CATEGORY_FILES = [
   "morphological_relationships.json",
@@ -185,6 +188,8 @@ export class RelationshipSeeder {
         phrases: Phrases;
         lexicalRelationships: LexicalRelationshipStore;
         lexicalRelationshipProcessor: LexicalRelationshipProcessor;
+        semanticRelationships: SemanticRelationshipStore;
+        semanticRelationshipProcessor: SemanticRelationshipProcessor;
       };
     },
     options?: { skipUnresolvable?: boolean },
@@ -194,6 +199,7 @@ export class RelationshipSeeder {
     const phraseBook = domain.vocabulary.phrases;
     const store = domain.vocabulary.lexicalRelationships;
     const processor = domain.vocabulary.lexicalRelationshipProcessor;
+    const semanticProcessor = domain.vocabulary.semanticRelationshipProcessor;
 
     const resolved: Array<[Word, Word, LexicalRelationshipType]> = [];
     for (const spec of await this.loadRelationshipSpecs()) {
@@ -221,22 +227,77 @@ export class RelationshipSeeder {
     }
 
     let seeded = 0;
+    const semanticExistingEdges = new Set<string>();
     for (const [sourceWord, targetWord, relationshipType] of resolved) {
-      if (this.relationshipExists(store, sourceWord.uuid.value, targetWord.uuid.value, relationshipType)) continue;
+      if (!this.relationshipExists(store, sourceWord.uuid.value, targetWord.uuid.value, relationshipType)) {
+        processor.create({
+          sourceWordId: sourceWord.uuid.value,
+          targetWordId: targetWord.uuid.value,
+          relationshipType,
+          sourceReferences: [CACHE_SOURCE_REFERENCE],
+          confidence: SEEDER_DEFAULT_WEIGHT,
+          provenance: SEEDER_DEFAULT_WEIGHT,
+          temporal: SEEDER_DEFAULT_WEIGHT,
+          activation: SEEDER_DEFAULT_WEIGHT,
+        });
+        seeded += 1;
+      }
 
-      processor.create({
-        sourceWordId: sourceWord.uuid.value,
-        targetWordId: targetWord.uuid.value,
-        relationshipType,
-        sourceReferences: [CACHE_SOURCE_REFERENCE],
-        confidence: SEEDER_DEFAULT_WEIGHT,
-        provenance: SEEDER_DEFAULT_WEIGHT,
-        temporal: SEEDER_DEFAULT_WEIGHT,
-        activation: SEEDER_DEFAULT_WEIGHT,
-      });
-      seeded += 1;
+      this.copyOntoPermanentModel(semanticProcessor, semanticExistingEdges, sourceWord, targetWord, relationshipType);
     }
     return seeded;
+  }
+
+  /** Every curated fact this cache seeds also lands on its own permanent
+   * home -- a POS-class attribute for CONTRACTION (Word.contractionOf's
+   * own docstring, data/word.ts, on why it's Word-level and many-to-many)
+   * or a genuine SemanticRelationship for a true sense-to-sense semantic
+   * kind (LEXICAL_TO_SEMANTIC_KIND's own docstring, word_seeder.ts, on
+   * exactly which those are and why this cache uses four kinds --
+   * SYNONYM/HYPONYM/HOLONYM -- WordNet-seeded data never actually
+   * produces) -- the same split WordSeeder.seedWordNet's own
+   * copySemanticRelationship applies to WordNet-sourced facts, applied
+   * here to hand-curated ones instead. Each curated Word gets exactly
+   * one private Sense of its own (registerUniqueSense, word_seeder.ts),
+   * so `senseIds[0]` is never the "arbitrary primary sense of several"
+   * simplification it would be for a genuinely polysemous WordNet Word --
+   * there's only ever the one. A Word with no Sense at all yet (this
+   * cache runs after WordSeeder.seedDomain's own Word seeding, but a
+   * caller that skips Sense registration entirely is defensively
+   * possible) silently contributes nothing rather than throwing --
+   * missing Sense data is a Word-seeding gap, not something this cache
+   * seeding pass should surface as its own error. */
+  private copyOntoPermanentModel(
+    semanticProcessor: SemanticRelationshipProcessor,
+    semanticExistingEdges: Set<string>,
+    sourceWord: Word,
+    targetWord: Word,
+    relationshipType: LexicalRelationshipType,
+  ): void {
+    if (relationshipType === LexicalRelationshipType.CONTRACTION) {
+      if (targetWord.contractionOf.some((id) => id.value === sourceWord.uuid.value)) return;
+      targetWord.contractionOf = [...targetWord.contractionOf, sourceWord.uuid];
+      return;
+    }
+
+    const semanticKind = LEXICAL_TO_SEMANTIC_KIND[relationshipType];
+    if (semanticKind === undefined) return;
+    const sourceSenseId = sourceWord.senseIds[0];
+    const targetSenseId = targetWord.senseIds[0];
+    if (sourceSenseId === undefined || targetSenseId === undefined || sourceSenseId.value === targetSenseId.value) return;
+    const key = `${sourceSenseId.value}|${targetSenseId.value}|${semanticKind}`;
+    if (semanticExistingEdges.has(key)) return;
+    semanticExistingEdges.add(key);
+    semanticProcessor.create({
+      sourceSenseId: sourceSenseId.value,
+      targetSenseId: targetSenseId.value,
+      relationshipType: semanticKind,
+      sourceReferences: [CACHE_SOURCE_REFERENCE],
+      confidence: SEEDER_DEFAULT_WEIGHT,
+      provenance: SEEDER_DEFAULT_WEIGHT,
+      temporal: SEEDER_DEFAULT_WEIGHT,
+      activation: SEEDER_DEFAULT_WEIGHT,
+    });
   }
 
   /** Resolves one spec endpoint against `dictionary`. Without a

@@ -12,9 +12,10 @@
 import type { Identifier, Text } from "../../value_objects";
 import { determineGradability as isAdjectiveGradable, isAdjective } from "./adjective";
 import type { Dictionary } from "./dictionary";
+import { SemanticRelationshipKind } from "./enums/semantic_relationship_kind";
 import { PartOfSpeech } from "./enums/part_of_speech";
-import type { LexicalRelationshipStore } from "./lexical_relationship_store";
 import type { Senses } from "./senses";
+import type { SemanticRelationshipStore } from "./semantic_relationship_store";
 import {
   createWord,
   isPeriphrasticComparison,
@@ -120,31 +121,35 @@ export function validateAdverb(adverb: Adverb): readonly WordFormIssue[] {
  * Adverb's own file rather than being shared: WordNet gives an adverb
  * no Attribute pointer of its own at all (verified directly against the
  * bundled dict/data.adv, not guessed -- zero `=` pointers exist there).
- * What it does give a manner adverb like "quickly" is a Pertainym
- * pointer (WordNet's `\` symbol) back to the adjective it's derived
- * from ("quick") -- read here from Sense.pertainsTo (data/sense.ts's
- * own docstring on why that field lives on Sense rather than on Adverb
- * itself: the target genuinely differs from one sense of a polysemous
- * adverb to another, so this walks `adverb.senseIds` and checks each
- * one's own `pertainsTo` rather than a single Adverb-wide pointer).
- * This Adverb's own gradability is inherited from whichever
- * Pertainym-linked Adjective(s), across every one of its own senses,
- * are themselves gradable (determineGradability(), adjective.ts) --
- * true as soon as one is, the same "any one is enough, not just the
- * first" shape that function's own "not the primary sense alone" rule
- * has. An Adverb with no Pertainym pointer at all (rare in the bundled
- * data -- well under 1% of adverbs) has nothing to inherit from and
- * comes out non-gradable, matching Gradability Evaluation step 6's own
- * default (data/adjective.ts's docstring): no established scalar
- * dimension means Gradable = false. */
-export function determineGradability(relationships: LexicalRelationshipStore, dictionary: Dictionary, senses: Senses, adverb: Adverb): boolean {
+ * What it does give a manner adverb like "quickly" is a Pertainym fact
+ * (WordNet's `\` symbol, seeded as a genuine SemanticRelationship --
+ * SemanticRelationshipKind.PERTAINYM's own docstring on why this moved
+ * off LexicalRelationshipType entirely) back to the adjective it's
+ * derived from ("quick") -- read here as `relationships.outgoing(senseId.value)`
+ * for each of `adverb.senseIds` in turn (a Pertainym target genuinely
+ * differs from one sense of a polysemous adverb to another, so this
+ * checks every one of its own senses rather than a single Adverb-wide
+ * fact), resolving each fact's own target *Sense* to its member Words
+ * via `senses.membersOf()` -- a SemanticRelationship connects two
+ * Senses, not two Words, so the Adjective(s) that actually lexicalize
+ * the target meaning are read back out from there. This Adverb's own
+ * gradability is inherited from whichever Pertainym-linked Adjective(s),
+ * across every one of its own senses, are themselves gradable
+ * (determineGradability(), adjective.ts) -- true as soon as one is, the
+ * same "any one is enough, not just the first" shape that function's
+ * own "not the primary sense alone" rule has. An Adverb with no
+ * Pertainym fact at all (rare in the bundled data -- well under 1% of
+ * adverbs) has nothing to inherit from and comes out non-gradable,
+ * matching Gradability Evaluation step 6's own default (data/adjective.ts's
+ * docstring): no established scalar dimension means Gradable = false. */
+export function determineGradability(relationships: SemanticRelationshipStore, dictionary: Dictionary, senses: Senses, adverb: Adverb): boolean {
   for (const senseId of adverb.senseIds) {
-    const sense = senses.findByUuid(senseId.value);
-    if (sense === undefined) continue;
-    for (const pertainsToId of sense.pertainsTo) {
-      const target = dictionary.findByUuid(pertainsToId.value);
-      if (target === undefined || !isAdjective(target)) continue;
-      if (isAdjectiveGradable(relationships, target)) return true;
+    for (const edge of relationships.outgoing(senseId.value)) {
+      if (edge.relationshipType !== SemanticRelationshipKind.PERTAINYM) continue;
+      for (const target of senses.membersOf(edge.targetSenseId.value)) {
+        if ("words" in target || !isAdjective(target)) continue;
+        if (isAdjectiveGradable(relationships, target)) return true;
+      }
     }
   }
   // Flat-adverb fallback: some adverbs ("fast", "hard", "late", "early")

@@ -1,7 +1,7 @@
-/** DictionaryView: renders a Dictionary and its LexicalRelationshipStore
+/** DictionaryView: renders a Dictionary and its SemanticRelationshipStore
  * as a single self-contained HTML page (vocabulary/documentation/README.md
  * covers the data this reads; see vocabulary/ui/README.md for the
- * Python original this was ported from). All Word and LexicalRelationship
+ * Python original this was ported from). All Word and SemanticRelationship
  * data is embedded as JSON and searched/filtered/sorted client-side in
  * vanilla JS -- no server, no external requests -- so render() returns
  * a fully self-contained document. Uses only system font stacks (no
@@ -14,7 +14,19 @@
  * PAGE_TEMPLATE below (mechanical extraction, not a rewrite), and ports
  * only the *Python* surface: the DictionaryView class that assembles
  * the @@TOKEN@@ substitution values from a real Dictionary/
- * LexicalRelationshipStore instead of from dataclasses. */
+ * SemanticRelationshipStore instead of from dataclasses.
+ *
+ * LexicalRelationshipStore (Word-to-Word morphological/orthographic
+ * facts) is deliberately absent from this class entirely --
+ * VocabularyLayer's own docstring (data/layer.ts) on why: it's
+ * seeding-internal working state now, never read again once
+ * WordSeeder/RelationshipSeeder return. Every fact this view used to
+ * read from it is now either a genuine SemanticRelationship (every true
+ * sense-to-sense semantic kind, SemanticRelationshipKind's own
+ * docstring) or a direct POS-class attribute this view already reads
+ * off the Word/Phrase itself (isNominalised and its siblings, Word.contractionOf,
+ * ..., each field's own docstring in data/noun.ts, data/verb.ts,
+ * data/adjective.ts, data/adverb.ts, data/word.ts). */
 
 import type { Identifier, Text } from "../../value_objects";
 import { ADJECTIVE_FORM_PATTERNS, isAdjective } from "../data/adjective";
@@ -22,9 +34,9 @@ import { ADVERB_FORM_PATTERNS, isAdverb } from "../data/adverb";
 import type { Dictionary } from "../data/dictionary";
 import { DETERMINER_FORM_PATTERNS, isDeterminer } from "../data/determiner";
 import { EditorialLabel } from "../data/enums/editorial_label";
-import type { LexicalRelationship } from "../data/lexical_relationship";
-import type { LexicalRelationshipStore } from "../data/lexical_relationship_store";
-import { LexicalRelationshipType, MERONYM_KIND_QUALIFIER, relationshipCategory, relationshipGroup } from "../data/enums/lexical_relationship_type";
+import type { SemanticRelationship } from "../data/semantic_relationship";
+import type { SemanticRelationshipStore } from "../data/semantic_relationship_store";
+import { SemanticRelationshipKind, SEMANTIC_MERONYM_KIND_QUALIFIER } from "../data/enums/semantic_relationship_kind";
 import { NOUN_FORM_PATTERNS, isNoun } from "../data/noun";
 import { PartOfSpeech } from "../data/enums/part_of_speech";
 import { phraseAsWord, type Phrase } from "../data/phrase";
@@ -255,27 +267,6 @@ export interface WordSenseSummary {
   // button every other related-word row already uses
   // (wireDetailPivotButtons(), this file's own embedded client script).
   synonyms: { id: string; text: string }[];
-  // Sense.pertainsTo's own docstring (data/sense.ts) -- this Sense's own
-  // Pertainym target(s) ("aural"'s "relating to an aura" sense pertains
-  // to the noun "aura"; its unrelated "relating to hearing" sense
-  // pertains to "ear"), resolved against this Dictionary the same way
-  // every other pivot-button target already is (morphologicalDerivations()'s
-  // own docstring above has the shared reasoning for silently omitting
-  // an Identifier that fails to resolve here). Lives on the Sense, not
-  // on Word/Adverb, for the exact reason Sense.pertainsTo itself does --
-  // scoped per-sense here rather than folded into the Word-level
-  // `derivations` field, so a polysemous word's own several, genuinely
-  // different Pertainym targets never collapse into one ambiguous list.
-  // sensesSectionHTML()'s own client-side rendering synthesizes each
-  // entry here into that sense's own Relationships list (alongside its
-  // genuine LexicalRelationship-backed rows) rather than a separate line
-  // of its own -- Pertainym is a real relationship fact even though it
-  // isn't stored as a LexicalRelationship edge (Sense.pertainsTo's own
-  // docstring on why), so it belongs in that list, not missing from it.
-  // Empty for a Sense with no Pertainym pointer of its own at all (most
-  // Senses -- Pertainym is comparatively rare) -- contributes nothing to
-  // that sense's own Relationships list or count in that case.
-  pertains_to: { id: string; text: string }[];
 }
 
 type DefinitionSegment =
@@ -288,7 +279,7 @@ type DefinitionSegment =
 // the Phrases tab itself stays a plain searchable list, not a
 // word-with-a-detail-panel view the way Words is. A WordNet-seeded
 // Phrase's own relationships (it does participate in
-// LexicalRelationshipStore now -- word_seeder.ts's own seedWordNet)
+// SemanticRelationshipStore now -- word_seeder.ts's own seedWordNet)
 // are still fully visible, just via the Relationships/Hierarchy tabs'
 // own resolveEntry() fallback to Phrases, not through this record.
 export interface PhraseRecord {
@@ -385,7 +376,7 @@ export interface RelationshipRecord {
   via_sense_id: string | null;
 }
 
-// One kind's total edge count across the whole LexicalRelationshipStore
+// One kind's total edge count across the whole SemanticRelationshipStore
 // -- resolveHierarchy()'s own docstring on why this exists: the
 // Hierarchy/Cyclic tabs' own "Relationship kind" dropdowns need to know
 // which kinds exist (and how many edges each has) regardless of
@@ -462,7 +453,7 @@ export interface DictionaryViewOptions {
 // JS engine's own maximum string length. The stat tiles above the tabs
 // stay accurate regardless (render()'s own totalWordCount/
 // totalRelationshipCount, computed directly off the Dictionary/
-// LexicalRelationshipStore, never off the capped arrays) -- only the
+// SemanticRelationshipStore, never off the capped arrays) -- only the
 // interactive browse-every-word experience is unavailable past this
 // ceiling, not the counts.
 const MAX_INTERACTIVE_WORDS = 20_000;
@@ -487,9 +478,9 @@ const MAX_INTERACTIVE_WORDS = 20_000;
 // INSTANCE_HYPONYM (WordNet's own `@i`/`~i`, instance-of) are retired
 // too -- word_seeder.ts's own relationshipKindForPointer never seeds
 // them at all, so there is nothing of that kind to orient here either.
-const HIERARCHY_INVERTED_KINDS: ReadonlySet<LexicalRelationshipType> = new Set([
-  LexicalRelationshipType.HYPERNYM,
-  LexicalRelationshipType.MERONYM,
+const HIERARCHY_INVERTED_KINDS: ReadonlySet<SemanticRelationshipKind> = new Set([
+  SemanticRelationshipKind.HYPERNYM,
+  SemanticRelationshipKind.MERONYM,
 ]);
 
 // Kinds with no meaningful "broader/narrower" direction at all -- every
@@ -510,13 +501,17 @@ const HIERARCHY_INVERTED_KINDS: ReadonlySet<LexicalRelationshipType> = new Set([
 // not inferred, because inferring it from stored edge shape is exactly
 // what broke the first time (word_seeder.ts's own reciprocal-dedup fix
 // changed that shape without this method's own root detection noticing).
-const SYMMETRIC_HIERARCHY_KINDS: ReadonlySet<LexicalRelationshipType> = new Set([
-  LexicalRelationshipType.SYNONYM,
-  LexicalRelationshipType.ANTONYM,
-  LexicalRelationshipType.VERB_GROUP,
-  LexicalRelationshipType.ATTRIBUTE,
-  LexicalRelationshipType.ALSO_SEE,
-  LexicalRelationshipType.DERIVED_FORM,
+// DERIVED_FORM (a LexicalRelationshipType-only, word-to-word kind now)
+// dropped from this list -- SemanticRelationshipKind has no counterpart
+// for it at all, the Hierarchy tab's own kind dropdown can never offer
+// it any more (relationshipKindCounts()'s own docstring on why: it only
+// ever enumerates this.relationships, SemanticRelationshipStore now).
+const SYMMETRIC_HIERARCHY_KINDS: ReadonlySet<SemanticRelationshipKind> = new Set([
+  SemanticRelationshipKind.SYNONYM,
+  SemanticRelationshipKind.ANTONYM,
+  SemanticRelationshipKind.VERB_GROUP,
+  SemanticRelationshipKind.ATTRIBUTE,
+  SemanticRelationshipKind.ALSO_SEE,
 ]);
 
 // resolveHierarchy()'s own default node cap when a caller doesn't pass
@@ -527,8 +522,8 @@ const SYMMETRIC_HIERARCHY_KINDS: ReadonlySet<LexicalRelationshipType> = new Set(
 const DEFAULT_HIERARCHY_NODE_LIMIT = 500;
 
 /** Builds the HTML page. Construct with the Dictionary and
- * LexicalRelationshipStore to display -- typically a Domain's
- * `domain.vocabulary.dictionary` and `domain.vocabulary.lexicalRelationships`
+ * SemanticRelationshipStore to display -- typically a Domain's
+ * `domain.vocabulary.dictionary` and `domain.vocabulary.semanticRelationships`
  * -- call `render()` for the HTML string. */
 export class DictionaryView {
   private readonly title: string;
@@ -550,7 +545,7 @@ export class DictionaryView {
 
   constructor(
     private readonly dictionary: Dictionary,
-    private readonly relationships: LexicalRelationshipStore,
+    private readonly relationships: SemanticRelationshipStore,
     options: DictionaryViewOptions = {},
   ) {
     this.title = options.title ?? "LIRA Dictionary";
@@ -571,7 +566,7 @@ export class DictionaryView {
   }
 
   render(): string {
-    // Computed directly off the Dictionary/LexicalRelationshipStore,
+    // Computed directly off the Dictionary/SemanticRelationshipStore,
     // never off wordRecords()/relationshipRecords() -- MAX_INTERACTIVE_WORDS's
     // own docstring on why those two stay accurate even when the full
     // interactive record set below is deliberately skipped.
@@ -673,7 +668,7 @@ export class DictionaryView {
         : "No senses match this search.",
       UNRESOLVED_JSON: JSON.stringify([...this.unresolved].sort()),
       // The Hierarchy/Cyclic tabs' own "Relationship kind" dropdowns --
-      // computed off the full LexicalRelationshipStore regardless of
+      // computed off the full SemanticRelationshipStore regardless of
       // overCapacity, same reasoning as POS_VALUES/DOMAIN_VALUES just
       // above (relationshipKindCounts()'s own docstring: past
       // MAX_INTERACTIVE_WORDS there's no client-embedded RELS array
@@ -746,7 +741,15 @@ export class DictionaryView {
    * whichever path produced it. */
   private wordRecordFor(word: Word): WordRecord {
     const wordId = word.uuid.value;
-    const relationshipCount = this.relationships.outgoing(wordId).length + this.relationships.incoming(wordId).length;
+    // SemanticRelationshipStore is Sense-keyed, not Word-keyed (every
+    // fact this view reads through it now, DictionaryView's own class
+    // docstring on why) -- so this word's own relationship count is the
+    // sum across every one of its own senses, not a single direct
+    // lookup by `wordId` the way it used to be.
+    const relationshipCount = word.senseIds.reduce(
+      (total, senseId) => total + this.relationships.outgoing(senseId.value).length + this.relationships.incoming(senseId.value).length,
+      0,
+    );
     const senseFields = this.senseFieldsFor(word);
     return {
       id: wordId,
@@ -819,6 +822,13 @@ export class DictionaryView {
     } else if (isAdverb(word)) {
       addIfSet("isDerivedFromAdjective", word.isDerivedFromAdjective);
     }
+    // Word.contractionOf's own docstring (data/word.ts) -- Word-level,
+    // not scoped to one POS subtype the way every field above is (a
+    // contraction's own components span whatever closed-class parts of
+    // speech happen to combine), and many-to-many rather than a single
+    // pointer, so this pushes one row per component instead of the one
+    // addIfSet() call every other field above gets.
+    for (const pointer of word.contractionOf) addIfSet("contractionOf", pointer);
     return derivations;
   }
 
@@ -855,10 +865,6 @@ export class DictionaryView {
           .membersOf(senseId.value)
           .filter((member) => member.uuid.value !== entry.uuid.value)
           .map((member) => ({ id: member.uuid.value, text: member.lexicalForm?.value ?? member.text })),
-        pertains_to: sense.pertainsTo
-          .map((id) => this.dictionary.findByUuid(id.value))
-          .filter((target): target is Word => target !== undefined)
-          .map((target) => ({ id: target.uuid.value, text: target.lexicalForm?.value ?? target.text })),
       });
     });
     return summaries;
@@ -1232,7 +1238,7 @@ export class DictionaryView {
    * Word-shaped view via phraseAsWord(), preserving the Phrase's own
    * uuid) only if the Dictionary lookup fails -- a WordNet-seeded
    * multi-word synset member (word_seeder.ts's own seedWordNet) can be
-   * either end of a LexicalRelationship exactly like a single-word
+   * either end of a SemanticRelationship exactly like a single-word
    * member, so every place that used to assume "every relationship
    * endpoint is a Word in this Dictionary" needs this instead of a bare
    * `dictionary.findByUuid` call.
@@ -1265,31 +1271,42 @@ export class DictionaryView {
     return this.relationships.all().map((rel) => this.relationshipRecordFor(rel));
   }
 
-  /** One LexicalRelationship's full RelationshipRecord -- shared by
+  /** One SemanticRelationship's full RelationshipRecord -- shared by
    * relationshipRecords() (the whole-store path, only ever run under
    * MAX_INTERACTIVE_WORDS) and searchRelationships() (resolved
    * relationship-by-relationship regardless of scale), same reasoning
-   * as wordRecordFor()/wordRecords(). */
-  private relationshipRecordFor(rel: LexicalRelationship): RelationshipRecord {
-    const source = this.resolveEntry(rel.sourceWordId.value);
-    const target = this.resolveEntry(rel.targetWordId.value);
+   * as wordRecordFor()/wordRecords(). `source`/`target` resolve via
+   * resolveEntry()'s own Sense-representative-member fallback -- every
+   * SemanticRelationship connects two Senses now, never a Word/Phrase
+   * directly, so that fallback is always the one that actually fires
+   * here (Dictionary/Phrases never match a Sense uuid). `group`/`category`
+   * are always 1/0 -- SemanticRelationshipKind has no bit-packed group/
+   * category structure of its own (that enum's own docstring: every
+   * member is already the same one group, so there's nothing left to
+   * pack), but the client-side pill styling still keys off `group`, so
+   * this keeps reporting the same "Lexical Semantic" group number every
+   * relationship here always was, back when LexicalRelationshipType's
+   * own group 1 held these same kinds. */
+  private relationshipRecordFor(rel: SemanticRelationship): RelationshipRecord {
+    const source = this.resolveEntry(rel.sourceSenseId.value);
+    const target = this.resolveEntry(rel.targetSenseId.value);
     return {
       id: rel.uuid.value,
-      source_id: rel.sourceWordId.value,
+      source_id: rel.sourceSenseId.value,
       source_text: source?.text ?? "?",
       source_pos: source ? PartOfSpeech[source.partOfSpeech] : null,
       source_domain: this.domainLabel(source),
       source_sense_id: source?.synsetId?.value ?? null,
-      target_id: rel.targetWordId.value,
+      target_id: rel.targetSenseId.value,
       target_text: target?.text ?? "?",
       target_pos: target ? PartOfSpeech[target.partOfSpeech] : null,
       target_domain: this.domainLabel(target),
       target_sense_id: target?.synsetId?.value ?? null,
-      kind: LexicalRelationshipType[rel.relationshipType],
-      group: relationshipGroup(rel.relationshipType),
-      category: relationshipCategory(rel.relationshipType),
+      kind: SemanticRelationshipKind[rel.relationshipType],
+      group: 1,
+      category: 0,
       confidence: Math.round(rel.systemProperties.confidenceWeight * 10000) / 10000,
-      qualifier: rel.qualifiers.find((q) => q.name.value === MERONYM_KIND_QUALIFIER)?.value.value ?? null,
+      qualifier: rel.qualifiers.find((q) => q.name.value === SEMANTIC_MERONYM_KIND_QUALIFIER)?.value.value ?? null,
       via_sense_id: null,
     };
   }
@@ -1298,7 +1315,7 @@ export class DictionaryView {
    * relationship touching this one Word" -- the Words-tab detail
    * panel's own need, over MAX_INTERACTIVE_WORDS) on demand, the
    * relationship-side counterpart to searchWords() (that method's own
-   * docstring). `wordId` takes the fast path: LexicalRelationshipStore's
+   * docstring). `wordId` takes the fast path: SemanticRelationshipStore's
    * own outgoing()/incoming() are O(1) indexed (lexical_relationship_store.ts's
    * own docstring), so looking up one Word's relationships never scans
    * the whole store, however large it's grown -- unlike a `query`-only
@@ -1308,7 +1325,7 @@ export class DictionaryView {
    * MAX_INTERACTIVE_WORDS's own JSON.stringify ceiling since nothing
    * here embeds the result, only returns a capped slice of it). */
   /** `wordId`'s own Sense-level relationships, expanded back out to one
-   * synthetic LexicalRelationship per fellow member of the Sense on the
+   * synthetic SemanticRelationship per fellow member of the Sense on the
    * *other* end -- searchRelationships()'s own fast path needs this
    * because `this.relationships.outgoing(wordId)`/`incoming(wordId)`
    * alone only ever finds a direct Word/Phrase-to-Word/Phrase edge now;
@@ -1333,21 +1350,21 @@ export class DictionaryView {
    * panel can group a polysemous Word's relationships under the Sense
    * each one actually belongs to (sensesSectionHTML()'s own docstring,
    * embedded client script). */
-  private senseExpandedRelationships(word: Word): { relationships: readonly LexicalRelationship[]; viaSenseId: ReadonlyMap<string, string> } {
-    const expanded: LexicalRelationship[] = [];
+  private senseExpandedRelationships(word: Word): { relationships: readonly SemanticRelationship[]; viaSenseId: ReadonlyMap<string, string> } {
+    const expanded: SemanticRelationship[] = [];
     const viaSenseId = new Map<string, string>();
     for (const ownSenseId of word.senseIds) {
       const senseId = ownSenseId.value;
       for (const rel of [...this.relationships.outgoing(senseId), ...this.relationships.incoming(senseId)]) {
-        const outgoingFromSense = rel.sourceWordId.value === senseId;
-        const otherSenseId = outgoingFromSense ? rel.targetWordId.value : rel.sourceWordId.value;
+        const outgoingFromSense = rel.sourceSenseId.value === senseId;
+        const otherSenseId = outgoingFromSense ? rel.targetSenseId.value : rel.sourceSenseId.value;
         for (const member of this.senses.membersOf(otherSenseId)) {
           const uuid = { value: `${rel.uuid.value}:${member.uuid.value}` };
           expanded.push({
             ...rel,
             uuid,
-            sourceWordId: outgoingFromSense ? { value: word.uuid.value } : member.uuid,
-            targetWordId: outgoingFromSense ? member.uuid : { value: word.uuid.value },
+            sourceSenseId: outgoingFromSense ? { value: word.uuid.value } : member.uuid,
+            targetSenseId: outgoingFromSense ? member.uuid : { value: word.uuid.value },
           });
           viaSenseId.set(uuid.value, senseId);
         }
@@ -1359,12 +1376,18 @@ export class DictionaryView {
   searchRelationships(options: { wordId?: string; query?: string; limit?: number }): { relationships: RelationshipRecord[]; totalMatches: number } {
     const limit = options.limit ?? 1000;
     const query = options.query?.trim().toLowerCase();
-    let candidates: readonly LexicalRelationship[];
+    let candidates: readonly SemanticRelationship[];
     let viaSenseId: ReadonlyMap<string, string> = new Map();
     if (options.wordId !== undefined) {
       const word = this.resolveEntry(options.wordId);
+      // No direct `this.relationships.outgoing(options.wordId)`/
+      // `incoming(...)` query any more, unlike the SemanticRelationshipStore
+      // era -- SemanticRelationshipStore is Sense-keyed exclusively now
+      // (DictionaryView's own class docstring), so a raw Word/Phrase id
+      // can never itself be a key in it; senseExpandedRelationships()
+      // below is the only source of a word-scoped relationship list.
       const senseExpanded = word !== undefined ? this.senseExpandedRelationships(word) : { relationships: [], viaSenseId: new Map() };
-      candidates = [...this.relationships.outgoing(options.wordId), ...this.relationships.incoming(options.wordId), ...senseExpanded.relationships];
+      candidates = senseExpanded.relationships;
       viaSenseId = senseExpanded.viaSenseId;
     } else {
       candidates = this.relationships.all();
@@ -1395,14 +1418,15 @@ export class DictionaryView {
    * something to populate from even past MAX_INTERACTIVE_WORDS, where
    * the client-side RELS array they used to read from is always empty. */
   relationshipKindCounts(): RelationshipKindCount[] {
-    const counts = new Map<string, { group: number; count: number }>();
+    const counts = new Map<string, number>();
     for (const rel of this.relationships.all()) {
-      const kind = LexicalRelationshipType[rel.relationshipType];
-      const entry = counts.get(kind);
-      if (entry) entry.count += 1;
-      else counts.set(kind, { group: relationshipGroup(rel.relationshipType), count: 1 });
+      const kind = SemanticRelationshipKind[rel.relationshipType];
+      counts.set(kind, (counts.get(kind) ?? 0) + 1);
     }
-    return [...counts.entries()].map(([kind, v]) => ({ kind, group: v.group, count: v.count }));
+    // group is always 1 ("Lexical Semantic") -- relationshipRecordFor()'s
+    // own docstring on why every SemanticRelationship row reports that
+    // same group number now, unconditionally.
+    return [...counts.entries()].map(([kind, count]) => ({ kind, group: 1, count }));
   }
 
   /** Resolves one Hierarchy-tab tree for `options.kind`, server-side,
@@ -1450,7 +1474,7 @@ export class DictionaryView {
    * children to include. */
   resolveHierarchy(options: { kind: string; wordId?: string; limit?: number }): HierarchyResolution {
     const empty: HierarchyResolution = { nodes: [], edges: [], roots: [], totalEdgeCount: 0, totalNodeCount: 0, fellBack: false, truncated: false };
-    const kindEnum = LexicalRelationshipType[options.kind as keyof typeof LexicalRelationshipType];
+    const kindEnum = SemanticRelationshipKind[options.kind as keyof typeof SemanticRelationshipKind];
     if (kindEnum === undefined) return empty;
 
     const inverted = HIERARCHY_INVERTED_KINDS.has(kindEnum);
@@ -1463,8 +1487,8 @@ export class DictionaryView {
     for (const rel of this.relationships.all()) {
       if (rel.relationshipType !== kindEnum) continue;
       totalEdgeCount += 1;
-      const parentId = inverted ? rel.targetWordId.value : rel.sourceWordId.value;
-      const childId = inverted ? rel.sourceWordId.value : rel.targetWordId.value;
+      const parentId = inverted ? rel.targetSenseId.value : rel.sourceSenseId.value;
+      const childId = inverted ? rel.sourceSenseId.value : rel.targetSenseId.value;
       allNodeIds.add(parentId);
       allNodeIds.add(childId);
       let children = childrenOf.get(parentId);
@@ -1497,14 +1521,13 @@ export class DictionaryView {
     if (options.wordId !== undefined) {
       // `options.wordId` names a Word/Phrase, but this kind's own graph
       // (`allNodeIds`, built from `this.relationships.all()` just above)
-      // can be keyed by Sense uuid instead for a synset-wide Lexical
-      // Semantic kind (WordSeeder.seedPointerRelationship's own
-      // docstring) -- if the Word/Phrase's own uuid isn't a node, fall
-      // back to its Sense's uuid before giving up. The tree then centres
-      // on that Sense (rendered via resolveEntry()'s own representative-
-      // member simplification below), not literally `options.wordId`
-      // itself, whenever the two differ -- a deliberate simplification,
-      // the same one searchRelationships() avoids by fanning out instead
+      // is always keyed by Sense uuid now (SemanticRelationshipStore's
+      // own docstring) -- the raw Word/Phrase uuid is never itself a
+      // node, so this always falls back to its own Sense's uuid instead.
+      // The tree then centres on that Sense (rendered via resolveEntry()'s
+      // own representative-member simplification below), not literally
+      // `options.wordId` itself -- a deliberate simplification, the same
+      // one searchRelationships() avoids by fanning out instead
       // (senseExpandedRelationships()'s own docstring), acceptable here
       // since a Hierarchy tree already collapses a whole synset onto one
       // node by design.
@@ -1620,7 +1643,7 @@ export class DictionaryView {
    * Domain (VocabularyLayer's own Physics-from-Common bootstrap, in
    * particular) doesn't yet carry a matching Sense copy across into that
    * Domain's own Senses -- a known, accepted gap, the same one
-   * LexicalRelationshipStore already has for a cross-domain copy -- so
+   * SemanticRelationshipStore already has for a cross-domain copy -- so
    * `entry`'s own fields (never stripped, unlike WordNet's own
    * domainTag/relatedDomainTags) are what keeps a Physics-side word's
    * own definition/domain/etc. correct regardless. */
@@ -2623,7 +2646,7 @@ const POS_VALUES = @@POS_VALUES_JSON@@;
 const DOMAIN_VALUES = @@DOMAIN_VALUES_JSON@@;
 // The Hierarchy/Cyclic tabs' own "Relationship kind" dropdowns -- same
 // reasoning as POS_VALUES/DOMAIN_VALUES just above, computed server-side
-// off the whole LexicalRelationshipStore (render()'s own
+// off the whole SemanticRelationshipStore (render()'s own
 // relationshipKindCounts()) rather than scanned from RELS, which is []
 // whenever OVER_CAPACITY is true. One \`{kind, group, count}\` entry per
 // kind actually present in this Dictionary.
@@ -2743,8 +2766,9 @@ function relPill(kind, group) {
 // kind, which already reads correctly regardless of viewing direction
 // (relationshipsSectionHTML's own call site), and the pill's own colour
 // (relPill's \`group\` argument) is unaffected either way: every kind
-// listed here shares its own reciprocal's exact group/category
-// (LexicalRelationshipType's own bit-packing, lexical_relationship_type.ts).
+// listed here is a SemanticRelationshipKind now, and relationshipRecordFor()'s
+// own docstring already reports group 1 ("Lexical Semantic") for every
+// one of them unconditionally, reciprocal pairs included.
 const RECIPROCAL_DISPLAY_KIND = {
   HYPERNYM: "HYPONYM",
   MERONYM: "HOLONYM",
@@ -3483,22 +3507,13 @@ function sensesSectionHTML(word, rels) {
     <div class="detail-section-title">Senses (\${word.senses.length})</div>
     <ol class="sense-list">
       \${word.senses.map((s, i) => {
-        // s.pertains_to's own fact (a Sense-level field, not a
-        // LexicalRelationship edge -- Sense.pertainsTo's own docstring,
-        // data/sense.ts, on why) is synthesized into this same
-        // Relationships list rather than only shown in the plain
-        // "pertains to:" line above, so it reads alongside this sense's
-        // other relationships instead of being the one fact missing from
-        // an otherwise-complete list. Already known client-side (no
-        // fetch needed, unlike \`rels\`), so it's shown even while the
-        // general relationship fetch is still in flight.
-        const pertainsRels = s.pertains_to.map(p => ({
-          outgoing: true, kind: 'PERTAINYM', pillKind: 'PERTAINYM', group: 0,
-          otherId: p.id, otherText: p.text, otherSenseId: null, otherDomain: null,
-          source_text: word.lexical_form, target_text: p.text, qualifier: null,
-        }));
-        const generalRels = rels === null ? null : rels.filter(r => r.via_sense_id === s.id);
-        const senseRels = generalRels === null ? (pertainsRels.length ? pertainsRels : null) : [...pertainsRels, ...generalRels];
+        // Every relationship here, PERTAINYM included, is a real
+        // SemanticRelationship now (Sense-to-Sense -- SemanticRelationshipKind's
+        // own docstring, data/enums/semantic_relationship_kind.ts), so
+        // \`rels\` (fetched via searchRelationships({wordId}), which
+        // sense-expands SemanticRelationshipStore itself) already
+        // carries it -- nothing needs synthesizing client-side any more.
+        const senseRels = rels === null ? null : rels.filter(r => r.via_sense_id === s.id);
         const count = senseRels === null ? '…' : senseRels.length;
         return \`
         <li class="sense-row\${s.is_primary ? ' primary' : ''}">
@@ -3660,12 +3675,7 @@ function relationshipsSectionHTML(rels) {
 }
 
 // \`rels\` follows relationshipsSectionHTML's own null/[]/populated
-// convention. The relationship count in the section header reads off
-// \`relCount\` rather than \`rels.length\` specifically so the loading
-// state (rels === null) can still show word.relationship_count (already
-// known, computed server-side off the real LexicalRelationshipStore
-// regardless of scale -- wordRecordFor()'s own relationshipCount) while
-// the list itself is still in flight.
+// convention.
 // A Phrase's own headword ("toy poodle") linked, token by token, to
 // each of its constituent Words -- word.phrase_word_segments's own
 // docstring (DictionaryView.phraseWordSegments, dictionary_view.ts) on
@@ -3681,21 +3691,7 @@ function headwordHTML(word) {
   return \`<span class="def-text">\${word.phrase_word_segments.map(definitionSegmentHTML).join(' ')}</span>\`;
 }
 
-// General (non-sense) relationships only -- every semantic (Lexical
-// Semantic-group) fact now arrives Sense-expanded and lives nested under
-// its own owning sense instead (sensesSectionHTML()'s own docstring); a
-// direct edge with no via_sense_id at all (Morphological/Orthographic-
-// group kinds -- derivation, spelling variants, ... -- always stay
-// direct, WordSeeder.seedPointerRelationship's own docstring) is what's
-// left here. \`relCount\`/word.relationship_count is already scoped to
-// exactly this (DictionaryView.wordRecordFor()'s own relationshipCount,
-// a direct-edges-only count), so no server-side change was needed to
-// keep the header number matching what this section actually shows.
-function generalRelationships(rels) {
-  return rels === null ? null : rels.filter(r => !r.via_sense_id);
-}
-
-function wordDetailHTML(word, rels, relCount) {
+function wordDetailHTML(word, rels) {
   return \`
     <div class="detail-word">\${headwordHTML(word)}\${word.is_common ? ' <span class="badge-common">common</span>' : ''}\${word.is_root_word ? ' <span class="badge-root-word">root word</span>' : ''}\${word.is_derivable_noun ? ' <span class="badge-derivable-noun">derivable noun</span>' : ''}\${word.is_fully_hydrated ? '' : ' <span class="badge-common" style="color:#C2544B;border-color:#C2544B">hydration pending</span>'}</div>
     <div style="margin-top:6px">\${posPill(word.pos)} \${domainPill(word.domain)}</div>
@@ -3706,10 +3702,6 @@ function wordDetailHTML(word, rels, relCount) {
     \${wordFormsSectionHTML(word)}
     <div class="detail-section-title">Provenance</div>
     <div class="detail-definition" style="margin-top:0">\${word.sources && word.sources.length ? word.sources.map(s => \`<span class="tag">\${s}</span>\`).join('') : '<span style="opacity:.6">No source recorded.</span>'}</div>
-    <details class="rel-general" open>
-      <summary class="detail-section-title">Other Relationships (<span class="detail-rel-count">\${relCount}</span>)</summary>
-      <div class="detail-relationships-section">\${relationshipsSectionHTML(generalRelationships(rels))}</div>
-    </details>
   \`;
 }
 
@@ -3738,7 +3730,7 @@ function wordDetailHTML(word, rels, relCount) {
 // (word.phrase_type's own docstring -- present only on a Phrase-
 // resolved record, never a genuine Word's), and no Word Forms section
 // at all, rather than an empty one.
-function phraseDetailHTML(phrase, rels, relCount) {
+function phraseDetailHTML(phrase, rels) {
   return \`
     <div class="detail-word">\${headwordHTML(phrase)}\${phrase.is_common ? ' <span class="badge-common">common</span>' : ''}</div>
     <div style="margin-top:6px">\${posPill(phrase.pos)} \${domainPill(phrase.domain)}\${phrase.phrase_type ? ' ' + phraseTypePill(phrase.phrase_type) : ''}</div>
@@ -3749,10 +3741,6 @@ function phraseDetailHTML(phrase, rels, relCount) {
     \${sensesSectionHTML(phrase, rels)}
     <div class="detail-section-title">Provenance</div>
     <div class="detail-definition" style="margin-top:0">\${phrase.sources && phrase.sources.length ? phrase.sources.map(s => \`<span class="tag">\${s}</span>\`).join('') : '<span style="opacity:.6">No source recorded.</span>'}</div>
-    <details class="rel-general" open>
-      <summary class="detail-section-title">Other Relationships (<span class="detail-rel-count">\${relCount}</span>)</summary>
-      <div class="detail-relationships-section">\${relationshipsSectionHTML(generalRelationships(rels))}</div>
-    </details>
   \`;
 }
 
@@ -3765,8 +3753,8 @@ function phraseDetailHTML(phrase, rels, relCount) {
 // either, but is still a Phrase, not a Word) -- that field's own
 // docstring already documents it as set "only when this record was
 // resolved from a Phrase", exactly the distinction needed here.
-function detailHTML(word, rels, relCount) {
-  return word.phrase_word_segments !== undefined ? phraseDetailHTML(word, rels, relCount) : wordDetailHTML(word, rels, relCount);
+function detailHTML(word, rels) {
+  return word.phrase_word_segments !== undefined ? phraseDetailHTML(word, rels) : wordDetailHTML(word, rels);
 }
 
 function wireDetailPivotButtons(content) {
@@ -3801,7 +3789,7 @@ function renderDetailPanel(panel) {
   empty.style.display = "none";
   content.style.display = "block";
   const rels = overCapacityRels ? (detailRelsCache.get(word.id) ?? null) : relationshipsForWord(word.id);
-  content.innerHTML = detailHTML(word, rels, word.relationship_count);
+  content.innerHTML = detailHTML(word, rels);
   wireDetailPivotButtons(content);
 
   if (overCapacityRels && !detailRelsCache.has(word.id)) {
@@ -5024,19 +5012,12 @@ document.addEventListener("lira-search-relationships-result", (e) => {
     // this same live relationship patch just as much as a Word's own
     // does, detailHTML()'s own dispatch handles either shape correctly
     // either way.
-    // totalMatches counts every candidate searchRelationships() returned
-    // -- general AND sense-expanded together -- so it's not the right
-    // number for the "Other Relationships" header any more (that's
-    // scoped to general only now, generalRelationships()'s own
-    // docstring); recount from the received rels themselves instead,
-    // matching what that section actually goes on to show.
-    const generalCount = generalRelationships(rels).length;
     ["words", "phrases", "hierarchy", "cyclic"].forEach(panel => {
       const content = document.getElementById(\`detail-content-\${panel}\`);
       if (!content || content.style.display === "none") return;
       const panelWord = wordForDetailPanel(panel);
       if (!panelWord) return;
-      content.innerHTML = detailHTML(panelWord, rels, generalCount);
+      content.innerHTML = detailHTML(panelWord, rels);
       wireDetailPivotButtons(content);
     });
   }

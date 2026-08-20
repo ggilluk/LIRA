@@ -23,10 +23,10 @@
  * to treat as an exhaustive, closed set. */
 
 import type { Identifier, Text } from "../../value_objects";
-import { LexicalRelationshipType } from "./enums/lexical_relationship_type";
+import { SemanticRelationshipKind } from "./enums/semantic_relationship_kind";
 import { PartOfSpeech } from "./enums/part_of_speech";
-import type { LexicalRelationshipStore } from "./lexical_relationship_store";
 import type { Senses } from "./senses";
+import type { SemanticRelationshipStore } from "./semantic_relationship_store";
 import {
   createWord,
   isPeriphrasticComparison,
@@ -201,8 +201,8 @@ export function validateAdjective(adjective: Adjective): readonly WordFormIssue[
  * then needs confirming by climbing its target's own Hypernym chain.
  * WordNet's `=` pointer exists specifically to link an adjective to
  * "the noun naming the attribute/dimension it's a value of"
- * (LexicalRelationshipType.ATTRIBUTE's own docstring,
- * enums/lexical_relationship_type.ts) -- a broad sample of real
+ * (SemanticRelationshipKind.ATTRIBUTE's own docstring,
+ * enums/semantic_relationship_kind.ts) -- a broad sample of real
  * Attribute targets taken directly from the bundled dict/data.adj (not
  * guessed) is uniformly genuine scalar/degree nouns regardless of which
  * branch of the noun hierarchy they sit in ("carefulness",
@@ -238,10 +238,10 @@ export function validateAdjective(adjective: Adjective): readonly WordFormIssue[
  * therefore which direction the one stored edge ends up facing --
  * depends on synset file order, not on anything this function should
  * have to know or care about. */
-export function determineGradability(relationships: LexicalRelationshipStore, adjective: Adjective): boolean {
+export function determineGradability(relationships: SemanticRelationshipStore, adjective: Adjective): boolean {
   for (const senseId of adjective.senseIds) {
     const edges = [...relationships.outgoing(senseId.value), ...relationships.incoming(senseId.value)];
-    if (edges.some((edge) => edge.relationshipType === LexicalRelationshipType.ATTRIBUTE)) return true;
+    if (edges.some((edge) => edge.relationshipType === SemanticRelationshipKind.ATTRIBUTE)) return true;
   }
   return false;
 }

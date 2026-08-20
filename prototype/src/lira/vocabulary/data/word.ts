@@ -15,10 +15,11 @@
  * `kw_only` fields and `__post_init__` becomes a plain `Word` data
  * interface plus a `createWord()` factory applying the same defaults
  * and post-init normalisation. Python's bound derived-property methods
- * (`word.hypernyms(relationships, dictionary)`, ...) become free
- * functions of the same name taking `word` as their first argument --
- * idiomatic TS, same behaviour, same call-site shape read right to
- * left instead of left to right. */
+ * (`word.hypernyms(relationships, dictionary)`, ...) have no counterpart
+ * here any more -- retired along with LexicalRelationshipStore's own
+ * retirement from the permanent queryable model (this file's own
+ * "Derived properties" section, further down, on exactly why and what
+ * replaced each one). */
 
 import type { Code, Identifier, Number_, Text } from "../../value_objects";
 import type { LinguisticUnit } from "../../linguistics/data/linguistic_unit";
@@ -28,17 +29,12 @@ import type { EditorialLabel } from "./enums/editorial_label";
 import type { HolonymRootWord } from "./enums/holonym_root_word";
 import type { HypernymRootWord } from "./enums/hypernym_root_word";
 import type { InterrogativeRootWord } from "./enums/interrogative_root_word";
-import { LexicalRelationshipStore } from "./lexical_relationship_store";
-import { LexicalRelationshipType } from "./enums/lexical_relationship_type";
 import { PartOfSpeech } from "./enums/part_of_speech";
 import type { Pronunciation } from "./pronunciation";
 import type { RegisterCode } from "./enums/register_code";
 import type { SourceReference } from "./source_reference";
 import type { VectorPrimitiveRootWord } from "./enums/vector_primitive_root_word";
 import { newUuid } from "./uuid";
-import { phraseAsWord, type Phrase } from "./phrase";
-import type { Phrases } from "./phrases";
-import type { Senses } from "./senses";
 
 // Splits a definition's prose into its own word tokens -- deliberately a
 // local regex, not a Linguistics-Layer LinguisticLexer import: Vocabulary
@@ -224,6 +220,31 @@ export interface Word extends LinguisticUnit {
   // relationships/morphological_relationships.json for that, where one
   // already exists).
   isDerivableNoun: boolean;
+
+  // Every closed-class component Word this contracted form spells --
+  // "don't" <- ["do", "not"], "it's" <- ["it", "is"/"has", ambiguous
+  // without context] -- read back from WordSeeder's own seeding-time-only
+  // LexicalRelationship graph (VocabularyLayer's own docstring, data/layer.ts,
+  // on why nothing outside a seeder reads that graph directly any more)
+  // rather than left as a queryable CONTRACTION edge. Word-level, not a
+  // POS-subtype field, since a contraction's own components span
+  // whatever closed-class parts of speech happen to combine (pronoun +
+  // auxiliary verb, negation particle, modal, ...), never one single POS
+  // the way a derivation pair's own fields are scoped. Many-to-many, not
+  // a single pointer -- CONTRACTION is the only Orthographic-group kind
+  // with any real seeded data at all today (the Common Vocabulary
+  // Relationship Cache's own orthographic_relationships.json, 16
+  // entries; every other Orthographic kind -- SPELLING_VARIANT,
+  // ABBREVIATION, ACRONYM, ... -- carries zero real data anywhere in
+  // this codebase, so no attribute field is built for those yet; add one
+  // if and when real data exists to populate it, rather than
+  // speculatively now). Deliberately one-directional -- a component
+  // word's own reverse index of every contraction it participates in
+  // isn't built here; nothing reads it, and it can be added later
+  // without touching this field. Always [] for a Word this fact doesn't
+  // apply to (every non-contraction, and any contraction predating this
+  // field's own seeding pass).
+  contractionOf: readonly Identifier[];
 }
 
 export type WordInit = Pick<Word, "text" | "partOfSpeech"> & Partial<Omit<Word, "text" | "partOfSpeech">>;
@@ -238,6 +259,7 @@ export function createWord(init: WordInit): Word {
     relatedDomainTags: [],
     sourceReferences: [],
     senseIds: [],
+    contractionOf: [],
     isCommon: false,
     isFullyHydrated: true,
     isRootWord: false,
@@ -262,249 +284,24 @@ export function copyWordWithFreshUuid(word: Word): Word {
 }
 
 // -- Derived properties (4.3) --------------------------------------
-// None of these are stored fields. Each is computed on demand from a
-// LexicalRelationshipStore (this Word's relationships) and a
-// Dictionary (to resolve the other word in each relationship).
-
-interface RelatedWordsOptions {
-  relationshipType?: LexicalRelationshipType;
-  group?: number;
-  category?: number;
-  direction?: "outgoing" | "incoming" | "both";
-}
-
-function relationshipMatches(
-  relationship: { relationshipType: LexicalRelationshipType },
-  relationshipType?: LexicalRelationshipType,
-  group?: number,
-  category?: number,
-): boolean {
-  if (relationshipType !== undefined) return relationship.relationshipType === relationshipType;
-  if (category !== undefined) {
-    return (
-      groupOf(relationship.relationshipType) === group && categoryOf(relationship.relationshipType) === category
-    );
-  }
-  if (group !== undefined) return groupOf(relationship.relationshipType) === group;
-  return true;
-}
-
-function groupOf(kind: LexicalRelationshipType): number {
-  return kind >> 6;
-}
-
-function categoryOf(kind: LexicalRelationshipType): number {
-  return (kind >> 3) & 0b111;
-}
-
-/** Returns the distinct set of related Words, in first-seen order --
- * not one entry per matching relationship. Two different edges can
- * legitimately point at the same other Word (e.g. "her" is both the
- * object form and the possessive-determiner form of "she"), and a
- * reciprocal pair (SYNONYM/ANTONYM, materialised in both directions) is
- * visible as both an outgoing and an incoming match under
- * direction="both". Either way, a caller asking "what Words is this
- * related to" wants each Word once.
- *
- * `word` itself may be a Phrase, not just a Word -- a WordNet-seeded
- * multi-word synset member (WordSeeder.seedWordNet) sits in the exact
- * same LexicalRelationshipStore graph a Word does (its own uuid is
- * just another relationship endpoint), so it can ask for its own
- * hypernyms/synonyms/etc. exactly the way a Word can. The *other* side
- * of a relationship can be a Phrase too; `phraseBook`, if given, is
- * consulted only after `dictionary.findByUuid` has already failed --
- * every caller that never touches Phrase-participating data keeps
- * working unchanged by simply omitting it, since Dictionary alone
- * resolves every pre-Phrase-seeding relationship graph exactly as
- * before. A resolved Phrase is projected onto a Word-shaped view via
- * phraseAsWord() (phrase.ts), preserving its own uuid, so a caller
- * never needs to tell "this came from Dictionary" and "this came from
- * Phrases" apart.
- *
- * `senseStore`, if given, adds the expand-on-read half of the semantic-
- * relationship-migration WordSeeder.seedPointerRelationship's own
- * docstring describes: a synset-wide Lexical Semantic fact (HYPERNYM,
- * MERONYM, ANTONYM, ...) is now stored as one Sense-to-Sense edge, not a
- * member x member cross product, so a plain `word`-keyed lookup of
- * `relationships` alone would miss it entirely for any WordNet-seeded
- * Word/Phrase. This reads that same expansion for *every* Sense in
- * `word.senseIds` (a polysemous Word lexicalizes more than one, Word.senseIds's
- * own docstring), unioning the results across all of them -- a caller
- * asking a multi-sense Word for its hypernyms sees every sense's own
- * hypernyms together, not just one. SYNONYM is the one kind with no edge
- * to expand at all: WordSeeder no longer stores a SYNONYM edge for any
- * WordNet-derived pair (senses.ts's own Senses.registerMember()
- * docstring), so a SYNONYM query with a `senseStore` also always
- * includes every fellow member of each of `word`'s own Senses directly,
- * sharing a Sense *is* being a synonym. Omitting `senseStore` (every
- * caller that predates Sense) keeps today's exact direct-edge-only
- * behaviour. */
-function relatedWords(
-  word: Word | Phrase,
-  relationships: LexicalRelationshipStore,
-  dictionary: Dictionary,
-  options: RelatedWordsOptions = {},
-  phraseBook?: Phrases,
-  senseStore?: Senses,
-): readonly Word[] {
-  const { relationshipType, group, category, direction = "outgoing" } = options;
-  const myId = word.uuid.value;
-  const seenIds = new Set<string>([myId]);
-  const resolved: Word[] = [];
-  const addCandidate = (candidate: Word | Phrase): void => {
-    if (seenIds.has(candidate.uuid.value)) return;
-    seenIds.add(candidate.uuid.value);
-    resolved.push("words" in candidate ? phraseAsWord(candidate) : candidate);
-  };
-  const addById = (id: string): void => {
-    if (seenIds.has(id)) return;
-    const other = dictionary.findByUuid(id) ?? phraseBook?.findByUuid(id);
-    if (other !== undefined) addCandidate(other);
-  };
-
-  if (direction === "outgoing" || direction === "both") {
-    for (const r of relationships.outgoing(myId)) {
-      if (relationshipMatches(r, relationshipType, group, category)) addById(r.targetWordId.value);
-    }
-  }
-  if (direction === "incoming" || direction === "both") {
-    for (const r of relationships.incoming(myId)) {
-      if (relationshipMatches(r, relationshipType, group, category)) addById(r.sourceWordId.value);
-    }
-  }
-
-  if (senseStore !== undefined) {
-    for (const ownSenseId of word.senseIds) {
-      const senseId = ownSenseId.value;
-      if (relationshipType === LexicalRelationshipType.SYNONYM) {
-        for (const member of senseStore.membersOf(senseId)) addCandidate(member);
-      }
-      const otherSenseIds: string[] = [];
-      if (direction === "outgoing" || direction === "both") {
-        for (const r of relationships.outgoing(senseId)) {
-          if (relationshipMatches(r, relationshipType, group, category)) otherSenseIds.push(r.targetWordId.value);
-        }
-      }
-      if (direction === "incoming" || direction === "both") {
-        for (const r of relationships.incoming(senseId)) {
-          if (relationshipMatches(r, relationshipType, group, category)) otherSenseIds.push(r.sourceWordId.value);
-        }
-      }
-      for (const otherSenseId of otherSenseIds) {
-        for (const member of senseStore.membersOf(otherSenseId)) addCandidate(member);
-      }
-    }
-  }
-
-  return resolved;
-}
-
-export function lemmaForms(word: Word | Phrase, relationships: LexicalRelationshipStore, dictionary: Dictionary, phraseBook?: Phrases): readonly Word[] {
-  return relatedWords(word, relationships, dictionary, { relationshipType: LexicalRelationshipType.LEMMA_FORM }, phraseBook);
-}
-
-/** Every Word that names `word` as its LEMMA_FORM -- the inverse
- * direction of lemmaForms(), read via LEMMA_FORM's own incoming edges
- * rather than a separately-seeded INFLECTION edge. */
-export function inflections(word: Word | Phrase, relationships: LexicalRelationshipStore, dictionary: Dictionary, phraseBook?: Phrases): readonly Word[] {
-  return relatedWords(word, relationships, dictionary, {
-    relationshipType: LexicalRelationshipType.LEMMA_FORM,
-    direction: "incoming",
-  }, phraseBook);
-}
-
-export function morphologicalVariants(word: Word | Phrase, relationships: LexicalRelationshipStore, dictionary: Dictionary, phraseBook?: Phrases): readonly Word[] {
-  return relatedWords(word, relationships, dictionary, { group: 0 }, phraseBook);
-}
-
-export function derivedForms(word: Word | Phrase, relationships: LexicalRelationshipStore, dictionary: Dictionary, phraseBook?: Phrases): readonly Word[] {
-  return relatedWords(word, relationships, dictionary, { group: 0, category: 6 }, phraseBook);
-}
-
-export function synonyms(word: Word | Phrase, relationships: LexicalRelationshipStore, dictionary: Dictionary, phraseBook?: Phrases, senseStore?: Senses): readonly Word[] {
-  return relatedWords(word, relationships, dictionary, { relationshipType: LexicalRelationshipType.SYNONYM, direction: "both" }, phraseBook, senseStore);
-}
-
-export function antonyms(word: Word | Phrase, relationships: LexicalRelationshipStore, dictionary: Dictionary, phraseBook?: Phrases, senseStore?: Senses): readonly Word[] {
-  return relatedWords(word, relationships, dictionary, { relationshipType: LexicalRelationshipType.ANTONYM, direction: "both" }, phraseBook, senseStore);
-}
-
-export function hypernyms(word: Word | Phrase, relationships: LexicalRelationshipStore, dictionary: Dictionary, phraseBook?: Phrases, senseStore?: Senses): readonly Word[] {
-  return relatedWords(word, relationships, dictionary, { relationshipType: LexicalRelationshipType.HYPERNYM }, phraseBook, senseStore);
-}
-
-// A HYPONYM edge is never actually stored by WordSeeder.seedWordNet --
-// that class's own relationshipKindForPointer canonicalizes WordNet's
-// `~` (hyponym) pointer onto the same HYPERNYM kind as its `@`
-// counterpart, swapped, rather than creating a second, fully redundant
-// edge for the identical fact (that function's own docstring). A
-// word's hyponyms are exactly the other Words with an *incoming*
-// HYPERNYM edge to it -- symmetric with hypernyms() itself reading the
-// *outgoing* side of that same kind.
-export function hyponyms(word: Word | Phrase, relationships: LexicalRelationshipStore, dictionary: Dictionary, phraseBook?: Phrases, senseStore?: Senses): readonly Word[] {
-  return relatedWords(word, relationships, dictionary, { relationshipType: LexicalRelationshipType.HYPERNYM, direction: "incoming" }, phraseBook, senseStore);
-}
-
-// A MERONYM edge is stored (part, MERONYM, whole) -- relationshipKindForPointer's
-// own docstring (word_seeder.ts), verified directly against the bundled
-// dict/ files -- so `word`'s own meronyms (the parts *it* has) are the
-// *incoming* side (word is the whole, the target); holonyms()'s own
-// docstring below reads the *outgoing* side of the identical kind for
-// the opposite question.
-export function meronyms(word: Word | Phrase, relationships: LexicalRelationshipStore, dictionary: Dictionary, phraseBook?: Phrases, senseStore?: Senses): readonly Word[] {
-  return relatedWords(word, relationships, dictionary, { relationshipType: LexicalRelationshipType.MERONYM, direction: "incoming" }, phraseBook, senseStore);
-}
-
-// A HOLONYM edge is never actually stored by WordSeeder.seedWordNet --
-// every WordNet part/member/substance fact becomes a MERONYM edge,
-// oriented (part, MERONYM, whole) (relationshipKindForPointer's own
-// docstring, word_seeder.ts). The Common Vocabulary Cache's own hand-
-// curated part-whole facts (relationships/semantic_relationships.json)
-// do store real HOLONYM edges too, but always paired with the identical
-// fact's own MERONYM edge in the opposite direction (RelationshipSeeder
-// authors both directly, rather than relying on this store to derive
-// one from the other) -- so reading the MERONYM side alone, direction
-// "outgoing" (word's own part-of-a-larger-whole facts, the reverse of
-// meronyms()'s own "incoming" above), already finds every holonym fact
-// regardless of source, without this needing to also query the
-// separately-stored HOLONYM kind.
-export function holonyms(word: Word | Phrase, relationships: LexicalRelationshipStore, dictionary: Dictionary, phraseBook?: Phrases, senseStore?: Senses): readonly Word[] {
-  return relatedWords(word, relationships, dictionary, { relationshipType: LexicalRelationshipType.MERONYM, direction: "outgoing" }, phraseBook, senseStore);
-}
-
-// Same fate as HYPONYM (hyponyms()'s own docstring): a TROPONYM edge is
-// never actually stored either -- verb-specific hyponymy canonicalizes
-// onto the identical HYPERNYM kind regardless of part of speech. The
-// verb-specific subset troponyms() promises is recovered by filtering
-// hyponyms() itself down to VERB Words, rather than a separately
-// stored fact.
-export function troponyms(word: Word | Phrase, relationships: LexicalRelationshipStore, dictionary: Dictionary, phraseBook?: Phrases, senseStore?: Senses): readonly Word[] {
-  return hyponyms(word, relationships, dictionary, phraseBook, senseStore).filter((other) => other.partOfSpeech === PartOfSpeech.VERB);
-}
-
-export function spellingVariants(word: Word | Phrase, relationships: LexicalRelationshipStore, dictionary: Dictionary, phraseBook?: Phrases): readonly Word[] {
-  return relatedWords(word, relationships, dictionary, { group: 2, category: 0, direction: "both" }, phraseBook);
-}
-
-export function abbreviations(word: Word | Phrase, relationships: LexicalRelationshipStore, dictionary: Dictionary, phraseBook?: Phrases): readonly Word[] {
-  return relatedWords(word, relationships, dictionary, { relationshipType: LexicalRelationshipType.ABBREVIATION }, phraseBook);
-}
-
-export function acronyms(word: Word | Phrase, relationships: LexicalRelationshipStore, dictionary: Dictionary, phraseBook?: Phrases): readonly Word[] {
-  return relatedWords(word, relationships, dictionary, { relationshipType: LexicalRelationshipType.ACRONYM }, phraseBook);
-}
-
-export function contractions(word: Word | Phrase, relationships: LexicalRelationshipStore, dictionary: Dictionary, phraseBook?: Phrases): readonly Word[] {
-  return relatedWords(word, relationships, dictionary, { relationshipType: LexicalRelationshipType.CONTRACTION }, phraseBook);
-}
-
-export function transliterations(word: Word | Phrase, relationships: LexicalRelationshipStore, dictionary: Dictionary, phraseBook?: Phrases): readonly Word[] {
-  return relatedWords(word, relationships, dictionary, { relationshipType: LexicalRelationshipType.TRANSLITERATION }, phraseBook);
-}
-
-export function relatedWordsOf(word: Word | Phrase, relationships: LexicalRelationshipStore, dictionary: Dictionary, phraseBook?: Phrases): readonly Word[] {
-  return relatedWords(word, relationships, dictionary, { relationshipType: LexicalRelationshipType.RELATED, direction: "both" }, phraseBook);
-}
+// The relationship-accessor family that used to live here (lemmaForms,
+// inflections, morphologicalVariants, derivedForms, synonyms, antonyms,
+// hypernyms, hyponyms, meronyms, holonyms, troponyms, spellingVariants,
+// abbreviations, acronyms, contractions, transliterations,
+// relatedWordsOf) queried a LexicalRelationshipStore directly -- removed
+// along with that store's own retirement from the permanent queryable
+// model (VocabularyLayer's own docstring, data/layer.ts, on the split:
+// it's seeding-internal working state now). None of these 16 functions
+// had a real production caller left (grep-verified against the whole
+// src tree, tests aside) by the time of that split -- every fact they
+// used to expose already has its own permanent home now: a genuine
+// SemanticRelationship for a true sense-to-sense semantic fact
+// (data/semantic_relationship.ts), Senses.membersOf() directly for
+// synonymy (sharing a Sense already *is* being a synonym, no separate
+// accessor needed), or a direct POS-class attribute for a morphological/
+// orthographic one (isNominalised and its siblings, Word.contractionOf,
+// each field's own docstring in data/noun.ts, data/verb.ts,
+// data/adjective.ts, data/adverb.ts, data/word.ts).
 
 // -- Definition word breakdown (4.4) ---------------------------------
 // Also not a stored field -- computed on demand, like the derived

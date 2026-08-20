@@ -11,6 +11,7 @@ export { DictionaryProcessor } from "./role/dictionary_processor";
 export { ExternalDictionaryAdapter } from "./role/external_dictionary_adapter";
 export { IdentificationSource, type WordIdentifier } from "./role/word_identifier";
 export { LexicalRelationshipProcessor } from "./role/lexical_relationship_processor";
+export { SemanticRelationshipProcessor } from "./role/semantic_relationship_processor";
 export { PartOfSpeechIdentifier } from "./role/part_of_speech_identifier";
 export { RelationshipSeeder } from "./role/relationship_seeder";
 export { WordSeeder } from "./role/word_seeder";
@@ -30,34 +31,15 @@ export { LexicalRelationshipStore } from "./data/lexical_relationship_store";
 export { LexicalRelationshipSystemPropertyTensor } from "./data/lexical_relationship_tensor";
 export { LexicalRelationshipType, relationshipCategory, relationshipGroup, relationshipItem } from "./data/enums/lexical_relationship_type";
 export { PartOfSpeech } from "./data/enums/part_of_speech";
+export type { SemanticRelationship } from "./data/semantic_relationship";
+export { SemanticRelationshipStore } from "./data/semantic_relationship_store";
+export { SemanticRelationshipSystemPropertyTensor } from "./data/semantic_relationship_tensor";
+export { SemanticRelationshipKind, SEMANTIC_MERONYM_KIND_QUALIFIER, type SemanticMeronymKind } from "./data/enums/semantic_relationship_kind";
 export type { Pronunciation } from "./data/pronunciation";
 export { RegisterCode } from "./data/enums/register_code";
 export type { SourceReference } from "./data/source_reference";
 export { SystemPropertiesRef } from "./data/system_properties_ref";
 export { VectorPrimitiveRootWord } from "./data/enums/vector_primitive_root_word";
-export {
-  type Word,
-  type WordInit,
-  createWord,
-  copyWordWithFreshUuid,
-  lemmaForms,
-  inflections,
-  morphologicalVariants,
-  derivedForms,
-  synonyms,
-  antonyms,
-  hypernyms,
-  hyponyms,
-  meronyms,
-  holonyms,
-  troponyms,
-  spellingVariants,
-  abbreviations,
-  acronyms,
-  contractions,
-  transliterations,
-  relatedWordsOf,
-  definitionWords,
-} from "./data/word";
+export { type Word, type WordInit, createWord, copyWordWithFreshUuid, definitionWords } from "./data/word";
 export { type WordLookupContext, createWordLookupContext } from "./data/word_lookup_context";
 export { DictionaryView } from "./ui/dictionary_view";
