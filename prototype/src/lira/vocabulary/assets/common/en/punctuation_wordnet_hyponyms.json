@@ -1,0 +1,168 @@
+{
+  "schema_version": "1.0.0",
+  "description": "Analysis artifact, not a seed source. Cross-references Princeton WordNet 3.1's punctuation/punctuation_mark synset (06854415-n) against the WordSeeder's hand-curated closed-class PUNCTUATION cache (punctuation.json). NOT listed in WordSeeder.MANDATORY_FILES / SUPPLEMENTARY_FILES and therefore never loaded or seeded.",
+  "source_synset": {
+    "synset_id": "06854415-n",
+    "lemmas": ["punctuation", "punctuation_mark"],
+    "gloss": "the marks used to clarify meaning by indicating separation of words into sentences and clauses and phrases",
+    "data_noun_line": "06854415 10 n 02 punctuation 0 punctuation_mark 0 019 @ 06830640 n 0000 #p 06362609 n 0000 + 00190355 v 0101 ~ 06854923 n 0000 ~ 06855037 n 0000 ~ 06855215 n 0000 ~ 06855340 n 0000 ~ 06855502 n 0000 ~ 06855710 n 0000 ~ 06855902 n 0000 ~ 06856067 n 0000 ~ 06856198 n 0000 ~ 06856443 n 0000 ~ 06856570 n 0000 ~ 06857090 n 0000 ~ 06857249 n 0000 ~ 06857789 n 0000 ~ 06857953 n 0000 ~ 06858126 n 0000"
+  },
+  "holonym": {
+    "note": "06854415-n has exactly one holonym pointer (#p, Part Holonym) -- 'punctuation' is treated as part of 'orthography/writing_system'. Neither lemma of that holonym synset appears anywhere in punctuation.json (which lists individual mark symbols, not this kind of abstract whole), so the holonym itself yields no overlap with the punctuation seeder.",
+    "synset_id": "06362609-n",
+    "lemmas": ["orthography", "writing_system"],
+    "gloss": "a method of representing the sounds of a language by written or printed symbols",
+    "matched_in_punctuation_json": false
+  },
+  "hyponyms": [
+    {
+      "synset_id": "06854923-n",
+      "lemmas": ["ampersand"],
+      "gloss": "a punctuation mark (&) used to represent conjunction (and)",
+      "matched_punctuation_json_entries": []
+    },
+    {
+      "synset_id": "06855037-n",
+      "lemmas": ["apostrophe"],
+      "gloss": "the mark (') used to indicate the omission of one or more letters from a printed word",
+      "matched_punctuation_json_entries": [
+        { "entry_id": "dc3a3952-aafd-447a-8ae4-6b26235ffc57", "lexical_form": "'", "definition": "An Apostrophe is an Other Punctuation." }
+      ]
+    },
+    {
+      "synset_id": "06855215-n",
+      "lemmas": ["brace"],
+      "gloss": "either of two punctuation marks ({ or }) used to enclose textual material",
+      "matched_punctuation_json_entries": [
+        { "entry_id": "9c1de7f6-5e56-48e2-abf4-5234a018bf9e", "lexical_form": "{", "definition": "A Left Curly Bracket is an Open Punctuation." },
+        { "entry_id": "2fc8e76e-ed5b-4357-9bf6-77f864b1e1fb", "lexical_form": "}", "definition": "A Right Curly Bracket is a Close Punctuation." }
+      ]
+    },
+    {
+      "synset_id": "06855340-n",
+      "lemmas": ["bracket", "square_bracket"],
+      "gloss": "either of two punctuation marks ([ or ]) used to enclose textual material",
+      "matched_punctuation_json_entries": [
+        { "entry_id": "68165155-e7c8-436f-b7e7-c3ddf867501d", "lexical_form": "[", "definition": "A Left Square Bracket is an Open Punctuation." },
+        { "entry_id": "9bb13f72-318f-46e9-9c1a-8abeb2f626b9", "lexical_form": "]", "definition": "A Right Square Bracket is a Close Punctuation." }
+      ]
+    },
+    {
+      "synset_id": "06855502-n",
+      "lemmas": ["bracket", "angle_bracket"],
+      "gloss": "either of two punctuation marks (`<' or `>') used in computer programming and sometimes used to enclose textual material",
+      "matched_punctuation_json_entries": [
+        { "entry_id": "72f38cb9-7333-4d5c-8b47-47dcd6bbc97c", "lexical_form": "⟨", "definition": "A Left Angle Bracket is an Open Punctuation." },
+        { "entry_id": "eaea49bf-2ec7-40d3-999f-798eaf9515cc", "lexical_form": "⟩", "definition": "A Right Angle Bracket is a Close Punctuation." }
+      ],
+      "note": "punctuation.json seeds the Unicode angle-bracket glyphs (⟨ ⟩), not the WordNet gloss's literal < / > characters."
+    },
+    {
+      "synset_id": "06855710-n",
+      "lemmas": ["colon"],
+      "gloss": "a punctuation mark (:) used after a word introducing a series or an example or an explanation (or after the salutation of a business letter)",
+      "matched_punctuation_json_entries": [
+        { "entry_id": "73bea3bb-593f-479b-a1e4-3838eaabea76", "lexical_form": ":", "definition": "A Colon is an Other Punctuation." }
+      ]
+    },
+    {
+      "synset_id": "06855902-n",
+      "lemmas": ["comma"],
+      "gloss": "a punctuation mark (,) used to indicate the separation of elements within the grammatical structure of a sentence",
+      "matched_punctuation_json_entries": [
+        { "entry_id": "0b6d3e72-b7fb-449b-ae8b-2f16457cf97b", "lexical_form": ",", "definition": "A Comma is an Other Punctuation." }
+      ]
+    },
+    {
+      "synset_id": "06856067-n",
+      "lemmas": ["exclamation_mark", "exclamation_point"],
+      "gloss": "a punctuation mark (!) used after an exclamation",
+      "matched_punctuation_json_entries": [
+        { "entry_id": "dbd50ef0-1d86-476d-896d-1a5d45ebf116", "lexical_form": "!", "definition": "An Exclamation Mark is an Other Punctuation." }
+      ]
+    },
+    {
+      "synset_id": "06856198-n",
+      "lemmas": ["hyphen", "dash"],
+      "gloss": "a punctuation mark (-) used between parts of a compound word or between the syllables of a word when the word is divided at the end of a line of text",
+      "matched_punctuation_json_entries": []
+    },
+    {
+      "synset_id": "06856443-n",
+      "lemmas": ["parenthesis"],
+      "gloss": "either of two punctuation marks (or) used to enclose textual material",
+      "matched_punctuation_json_entries": [
+        { "entry_id": "bac9f436-065b-4564-b137-f802188a83b0", "lexical_form": "(", "definition": "A Left Parenthesis is an Open Punctuation." },
+        { "entry_id": "e190484b-0018-4ad1-8156-906d3a8903e8", "lexical_form": ")", "definition": "A Right Parenthesis is a Close Punctuation." }
+      ]
+    },
+    {
+      "synset_id": "06856570-n",
+      "lemmas": ["period", "point", "full_stop", "stop", "full_point"],
+      "gloss": "a punctuation mark (.) placed at the end of a declarative sentence to indicate a full stop or after abbreviations",
+      "matched_punctuation_json_entries": [
+        { "entry_id": "ccbf395a-c398-4e28-b1c4-71d2d554c810", "lexical_form": ".", "definition": "A Full Stop is an Other Punctuation." }
+      ]
+    },
+    {
+      "synset_id": "06857090-n",
+      "lemmas": ["question_mark", "interrogation_point"],
+      "gloss": "a punctuation mark (?) placed at the end of a sentence to indicate a question",
+      "matched_punctuation_json_entries": [
+        { "entry_id": "0ed4b5ad-a3d4-4876-b71c-1f41fafe4b9b", "lexical_form": "?", "definition": "A Question Mark is an Other Punctuation." }
+      ]
+    },
+    {
+      "synset_id": "06857249-n",
+      "lemmas": ["quotation_mark", "quote", "inverted_comma"],
+      "gloss": "a punctuation mark used to attribute the enclosed text to someone else",
+      "matched_punctuation_json_entries": [
+        { "entry_id": "ef45a090-519f-42ff-8298-1e37f563a050", "lexical_form": "\"", "definition": "A Quotation Mark is an Other Punctuation." },
+        { "entry_id": "679dc0ce-4308-4309-841c-890d763bfaca", "lexical_form": "‘", "definition": "A Left Single Quote is an Initial Quote Punctuation." },
+        { "entry_id": "33e7494e-61f6-4d30-baf7-4513c4b32a27", "lexical_form": "’", "definition": "A Right Single Quote is a Final Quote Punctuation." },
+        { "entry_id": "88e99bda-b7bb-441c-8e61-bb0bdc4dd7e9", "lexical_form": "“", "definition": "A Left Double Quote is an Initial Quote Punctuation." },
+        { "entry_id": "8a06d21b-239b-4352-9336-a9bbf529015f", "lexical_form": "”", "definition": "A Right Double Quote is a Final Quote Punctuation." },
+        { "entry_id": "1f569dff-668e-4bb1-9e7c-fcfaaa0e83cd", "lexical_form": "«", "definition": "A Left Guillemet is an Initial Quote Punctuation." },
+        { "entry_id": "79125d93-77bd-4f9a-b5db-403631ff367a", "lexical_form": "»", "definition": "A Right Guillemet is a Final Quote Punctuation." },
+        { "entry_id": "a3635bb9-c765-40aa-96b3-60d78e27acb0", "lexical_form": "‹", "definition": "A Single Left Guillemet is an Initial Quote Punctuation." },
+        { "entry_id": "2ed25607-27f3-41fe-bb94-9f32035e77fa", "lexical_form": "›", "definition": "A Single Right Guillemet is a Final Quote Punctuation." }
+      ],
+      "note": "WordNet models 'quotation mark' as one generic sense; punctuation.json seeds every individual quote-glyph variant, so this one hyponym matches nine separate entries."
+    },
+    {
+      "synset_id": "06857789-n",
+      "lemmas": ["semicolon"],
+      "gloss": "a punctuation mark (`;') used to connect independent clauses; indicates a closer relation than does a period",
+      "matched_punctuation_json_entries": [
+        { "entry_id": "33f88dfc-1868-4473-b88b-7a779949a49c", "lexical_form": ";", "definition": "A Semicolon is an Other Punctuation." }
+      ]
+    },
+    {
+      "synset_id": "06857953-n",
+      "lemmas": ["solidus", "slash", "virgule", "diagonal", "stroke", "separatrix"],
+      "gloss": "a punctuation mark (/) used to separate related items of information",
+      "matched_punctuation_json_entries": []
+    },
+    {
+      "synset_id": "06858126-n",
+      "lemmas": ["swung_dash"],
+      "gloss": "a punctuation mark used in text to indicate the omission of a word",
+      "matched_punctuation_json_entries": []
+    }
+  ],
+  "punctuation_json_entries_with_no_wordnet_hyponym_match": [
+    { "lexical_form": "‽", "definition": "An Interrobang is an Other Punctuation." },
+    { "lexical_form": "…", "definition": "A Horizontal Ellipsis is an Other Punctuation." },
+    { "lexical_form": "¡", "definition": "An Inverted Exclamation Mark is an Other Punctuation." },
+    { "lexical_form": "¿", "definition": "An Inverted Question Mark is an Other Punctuation." }
+  ],
+  "summary": {
+    "hyponym_synsets_total": 16,
+    "hyponym_synsets_with_a_punctuation_json_match": 12,
+    "hyponym_synsets_with_no_punctuation_json_match": 4,
+    "unmatched_hyponyms": ["ampersand", "hyphen/dash", "solidus/slash", "swung_dash"],
+    "punctuation_json_entries_total": 28,
+    "punctuation_json_entries_matched": 24,
+    "punctuation_json_entries_unmatched": 4
+  }
+}
