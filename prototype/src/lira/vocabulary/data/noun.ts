@@ -19,34 +19,55 @@ export interface Noun extends Word {
   partOfSpeech: PartOfSpeech.NOUN;
   isCountable?: boolean;
 
-  // This Noun's own uuid, per the Verb that WordNet's `+` Derived-Form
-  // pointer says it's nominalized from -- "decision" <- "decide",
-  // "arrival" <- "arrive". Distinct from Word.isDerivableNoun (that
-  // field's own docstring): isDerivableNoun is a hand-curated boolean
-  // WordSeeder's own entryToWord() sets from a Common Vocabulary Cache
-  // JSON flag, with no pointer of its own to the Verb it derives from;
-  // this field is the reverse -- a real pointer, but only ever populated
-  // by WordSeeder.seedWordNet reading its own already-seeded
-  // relationship graph back (WordSeeder.deriveNounVerbPointers()'s own
-  // docstring, role/word_seeder.ts, on exactly how) -- undefined for
-  // every Common Vocabulary Cache closed-class Noun, which has no
-  // relationship-graph read-back pass of its own. Never itself creates a
-  // LexicalRelationship -- the NOMINALISATION edge this reads already
-  // exists (derivationKind()'s own docstring), this only caches which
-  // Verb it points back from. A Noun with more than one incoming
-  // NOMINALISATION edge (rare -- more than one Verb nominalizing to the
-  // same spelling) keeps only the first one found, the same arbitrary-
-  // but-deterministic "pick one" convention Dictionary.lookup() already
-  // uses for a homograph.
-  isDerivedFromVerb?: Identifier;
+  // Every field in this block is one half of a morphological-derivation
+  // pointer pair -- the other half lives on the class named in the
+  // field's own name (Verb/Adjective) -- all populated the identical way
+  // by WordSeeder.seedWordNet's own deriveMorphologicalPointers()
+  // (role/word_seeder.ts, that method's own docstring for the full
+  // rationale and the shared findDerivationTarget() engine every one of
+  // these fields, across every POS subtype, is built from): read back
+  // from an already-seeded WordNet `+` Derived-Form pointer, never
+  // itself creating a LexicalRelationship. Each pointer field's own
+  // Indicator boolean is simply `field !== undefined`, kept as its own
+  // property rather than left for every caller to check (never undefined
+  // itself -- defaults false via createNoun below, the same convention
+  // Word.isRootWord already uses). Undefined/false for every Common
+  // Vocabulary Cache closed-class Noun, which has no relationship-graph
+  // read-back pass of its own. A Noun with more than one qualifying edge
+  // keeps only the first one found, the same arbitrary-but-deterministic
+  // "pick one" convention Dictionary.lookup() already uses for a
+  // homograph.
 
-  // `isDerivedFromVerb !== undefined`, kept as its own boolean rather
-  // than left for every caller to check the pointer field for undefined
-  // -- true exactly when a deriving Verb was found, false otherwise
-  // (never undefined itself, defaults false via createNoun below, the
-  // same non-optional-boolean convention Word.isRootWord/isDerivableNoun
-  // already use).
-  isDerivableNounIndicator: boolean;
+  // This Noun's own uuid, per the Verb it nominalizes from ("decision"
+  // <- "decide"). Distinct from Word.isDerivableNoun (that field's own
+  // docstring): isDerivableNoun is a hand-curated boolean with no
+  // pointer of its own; this is the real thing, read from a genuine
+  // NOMINALISATION edge whose source resolves to a Verb specifically --
+  // that same edge kind also covers Adjective->Noun ("happy"->"happiness"),
+  // isDerivedFromAdjective's own case just below, so checking the
+  // source's own actual part of speech is required, not defensive
+  // boilerplate (deriveMorphologicalPointers()'s own docstring).
+  isDerivedFromVerb?: Identifier;
+  isDerivedFromVerbIndicator: boolean;
+
+  // This Noun's own uuid, per the Adjective it nominalizes from ("happiness"
+  // <- "happy") -- isDerivedFromVerb's own exact counterpart for the
+  // other real source part of speech NOMINALISATION covers.
+  isDerivedFromAdjective?: Identifier;
+  isDerivedFromAdjectiveIndicator: boolean;
+
+  // The Adjective this Noun adjectivises into ("wood" -> "wooden") -- a
+  // real WordNet ADJECTIVAL_DERIVATION pointer, source=this Noun.
+  isAdjectivised?: Identifier;
+  isAdjectivisedIndicator: boolean;
+
+  // The Verb this Noun verbalises into ("email" the noun -> "email" the
+  // verb) -- read from WordNet's generic DERIVED_FORM kind (the fallback
+  // every target part of speech other than Noun/Adjective/Adverb gets,
+  // derivationKind()'s own docstring), filtered to a target that
+  // actually resolves to a Verb.
+  isVerbalised?: Identifier;
+  isVerbalisedIndicator: boolean;
 
   // The purpose is to identify the word form used when referring to
   // one person, thing, place, or idea. Fully lexical, not spelling-
@@ -74,7 +95,10 @@ export type NounInit = Pick<Noun, "text"> & Partial<Omit<Noun, "text" | "partOfS
 
 export function createNoun(init: NounInit): Noun {
   const noun = createWord({ ...init, partOfSpeech: PartOfSpeech.NOUN }) as Noun;
-  if (noun.isDerivableNounIndicator === undefined) noun.isDerivableNounIndicator = false;
+  if (noun.isDerivedFromVerbIndicator === undefined) noun.isDerivedFromVerbIndicator = false;
+  if (noun.isDerivedFromAdjectiveIndicator === undefined) noun.isDerivedFromAdjectiveIndicator = false;
+  if (noun.isAdjectivisedIndicator === undefined) noun.isAdjectivisedIndicator = false;
+  if (noun.isVerbalisedIndicator === undefined) noun.isVerbalisedIndicator = false;
   return noun;
 }
 

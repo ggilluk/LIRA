@@ -22,7 +22,7 @@
  * lemma token (never in data.noun/data.verb/data.adv), so this is safe
  * to treat as an exhaustive, closed set. */
 
-import type { Text } from "../../value_objects";
+import type { Identifier, Text } from "../../value_objects";
 import { LexicalRelationshipType } from "./enums/lexical_relationship_type";
 import { PartOfSpeech } from "./enums/part_of_speech";
 import type { LexicalRelationshipStore } from "./lexical_relationship_store";
@@ -59,6 +59,57 @@ export enum AdjectivePosition {
 export interface Adjective extends Word {
   partOfSpeech: PartOfSpeech.ADJECTIVE;
 
+  // Every field in this block is one half of a morphological-derivation
+  // pointer pair -- Noun.isDerivedFromVerb's own docstring (data/noun.ts)
+  // has the full shared rationale (deriveMorphologicalPointers()/
+  // findDerivationTarget(), role/word_seeder.ts) every one of these
+  // fields, on every POS subtype, is built from. Undefined/false for
+  // every Common Vocabulary Cache closed-class Adjective; an Adjective
+  // with more than one qualifying edge keeps only the first one found.
+  // An Adjective sits at the centre of more of these pairs than any
+  // other POS subtype -- WordNet's own `+` pointer data has a real
+  // Adjective<->Noun, Adjective<->Verb, and Adjective<->Adverb
+  // population each, not just one (the table these six fields implement
+  // was built directly from that real per-pair pointer count).
+
+  // The Noun this Adjective nominalizes into ("happy" -> "happiness") --
+  // Noun.isDerivedFromAdjective's own exact reverse, same NOMINALISATION
+  // kind Verb.isNominalised also reads (that field's own docstring on
+  // why the source's own actual part of speech has to be checked).
+  isNominalised?: Identifier;
+  isNominalisedIndicator: boolean;
+
+  // The Adverb this Adjective adverbialises into ("quick" -> "quickly")
+  // -- a real WordNet ADVERBIAL_DERIVATION pointer, source=this
+  // Adjective. Distinct from a Pertainym relationship (adverb.ts's own
+  // determineGradability() docstring on that separate `\` pointer type,
+  // "relates to" rather than "is formed from") -- this is WordNet's `+`
+  // Derived-Form pointer specifically.
+  isAdverbialised?: Identifier;
+  isAdverbialisedIndicator: boolean;
+
+  // The Verb this Adjective verbalises into ("clear" the adjective ->
+  // "clear" the verb) -- read from WordNet's generic DERIVED_FORM kind.
+  isVerbalised?: Identifier;
+  isVerbalisedIndicator: boolean;
+
+  // This Adjective's own uuid, per the Verb it adjectivises from
+  // ("interesting" <- "interest") -- Verb.isAdjectivised's own exact
+  // reverse, same ADJECTIVAL_DERIVATION kind isDerivedFromNoun/
+  // isDerivedFromAdverb just below also read (three different real
+  // source parts of speech, one shared target-driven kind).
+  isDerivedFromVerb?: Identifier;
+  isDerivedFromVerbIndicator: boolean;
+
+  // This Adjective's own uuid, per the Noun it adjectivises from
+  // ("wooden" <- "wood").
+  isDerivedFromNoun?: Identifier;
+  isDerivedFromNounIndicator: boolean;
+
+  // This Adjective's own uuid, per the Adverb it adjectivises from.
+  isDerivedFromAdverb?: Identifier;
+  isDerivedFromAdverbIndicator: boolean;
+
   // The rest of this subtype's own row of fields from the Word Form to
   // Part of Speech Matrix (data/word_form_part_of_speech_matrix.md) --
   // undefined until a seeding/curation pass populates them, the same as
@@ -94,7 +145,14 @@ export interface Adjective extends Word {
 export type AdjectiveInit = Pick<Adjective, "text"> & Partial<Omit<Adjective, "text" | "partOfSpeech">>;
 
 export function createAdjective(init: AdjectiveInit): Adjective {
-  return createWord({ ...init, partOfSpeech: PartOfSpeech.ADJECTIVE }) as Adjective;
+  const adjective = createWord({ ...init, partOfSpeech: PartOfSpeech.ADJECTIVE }) as Adjective;
+  if (adjective.isNominalisedIndicator === undefined) adjective.isNominalisedIndicator = false;
+  if (adjective.isAdverbialisedIndicator === undefined) adjective.isAdverbialisedIndicator = false;
+  if (adjective.isVerbalisedIndicator === undefined) adjective.isVerbalisedIndicator = false;
+  if (adjective.isDerivedFromVerbIndicator === undefined) adjective.isDerivedFromVerbIndicator = false;
+  if (adjective.isDerivedFromNounIndicator === undefined) adjective.isDerivedFromNounIndicator = false;
+  if (adjective.isDerivedFromAdverbIndicator === undefined) adjective.isDerivedFromAdverbIndicator = false;
+  return adjective;
 }
 
 export function isAdjective(word: Word): word is Adjective {

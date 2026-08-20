@@ -9,7 +9,7 @@
  * (data/word_form_part_of_speech_matrix.md), the same as its three
  * siblings, ready for a value once one is available. */
 
-import type { Text } from "../../value_objects";
+import type { Identifier, Text } from "../../value_objects";
 import { determineGradability as isAdjectiveGradable, isAdjective } from "./adjective";
 import type { Dictionary } from "./dictionary";
 import { LexicalRelationshipType } from "./enums/lexical_relationship_type";
@@ -28,6 +28,24 @@ import {
 
 export interface Adverb extends Word {
   partOfSpeech: PartOfSpeech.ADVERB;
+
+  // One half of a morphological-derivation pointer pair --
+  // Noun.isDerivedFromVerb's own docstring (data/noun.ts) has the full
+  // shared rationale (deriveMorphologicalPointers()/findDerivationTarget(),
+  // role/word_seeder.ts) every one of these fields, on every POS
+  // subtype, is built from. Undefined/false for every Common Vocabulary
+  // Cache closed-class Adverb.
+
+  // The Adjective this Adverb adjectivises into -- a real WordNet
+  // ADJECTIVAL_DERIVATION pointer, source=this Adverb.
+  isAdjectivised?: Identifier;
+  isAdjectivisedIndicator: boolean;
+
+  // This Adverb's own uuid, per the Adjective it adverbialises from
+  // ("quickly" <- "quick") -- Adjective.isAdverbialised's own exact
+  // reverse.
+  isDerivedFromAdjective?: Identifier;
+  isDerivedFromAdjectiveIndicator: boolean;
 
   // The purpose is to identify the basic adjective or adverb form that
   // describes a quality without comparing it with another. Fully
@@ -58,7 +76,10 @@ export interface Adverb extends Word {
 export type AdverbInit = Pick<Adverb, "text"> & Partial<Omit<Adverb, "text" | "partOfSpeech">>;
 
 export function createAdverb(init: AdverbInit): Adverb {
-  return createWord({ ...init, partOfSpeech: PartOfSpeech.ADVERB }) as Adverb;
+  const adverb = createWord({ ...init, partOfSpeech: PartOfSpeech.ADVERB }) as Adverb;
+  if (adverb.isAdjectivisedIndicator === undefined) adverb.isAdjectivisedIndicator = false;
+  if (adverb.isDerivedFromAdjectiveIndicator === undefined) adverb.isDerivedFromAdjectiveIndicator = false;
+  return adverb;
 }
 
 export function isAdverb(word: Word): word is Adverb {

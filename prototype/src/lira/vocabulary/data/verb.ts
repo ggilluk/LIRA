@@ -41,29 +41,40 @@ import {
 export interface Verb extends Word {
   partOfSpeech: PartOfSpeech.VERB;
 
-  // This Verb's own uuid, per the Noun that WordNet's `+` Derived-Form
-  // pointer says it's nominalized into -- "decide" -> "decision",
-  // "arrive" -> "arrival" -- Noun.isDerivedFromVerb's own exact reverse
-  // (that field's own docstring on the shared NOMINALISATION edge both
-  // read, and on why "normalised"/"nominalized" name the same fact
-  // here). Only ever populated by WordSeeder.seedWordNet reading its own
-  // already-seeded relationship graph back
-  // (WordSeeder.deriveNounVerbPointers()'s own docstring,
-  // role/word_seeder.ts) -- undefined for every Common Vocabulary Cache
-  // closed-class Verb. Never itself creates a LexicalRelationship, only
-  // caches which Noun the existing NOMINALISATION edge already points
-  // to. A Verb nominalizing into more than one Noun (e.g. "read" ->
-  // "reading"/"read") keeps only the first one found, the same
-  // arbitrary-but-deterministic "pick one" Noun.isDerivedFromVerb's own
-  // docstring describes.
-  isNormalisedByNoun?: Identifier;
+  // Every field in this block is one half of a morphological-derivation
+  // pointer pair -- Noun.isDerivedFromVerb's own docstring (data/noun.ts)
+  // has the full shared rationale (deriveMorphologicalPointers()/
+  // findDerivationTarget(), role/word_seeder.ts) every one of these
+  // fields, on every POS subtype, is built from. Undefined/false for
+  // every Common Vocabulary Cache closed-class Verb; a Verb with more
+  // than one qualifying edge keeps only the first one found.
 
-  // `isNormalisedByNoun !== undefined`, kept as its own boolean rather
-  // than left for every caller to check the pointer field for undefined
-  // -- true exactly when a normalising Noun was found, false otherwise
-  // (never undefined itself, defaults false via createVerb below,
-  // Noun.isDerivableNounIndicator's own exact counterpart).
-  isNormalisedByNounIndicator: boolean;
+  // This Verb's own uuid, per the Noun it nominalizes into ("decide" ->
+  // "decision", "arrive" -> "arrival") -- Noun.isDerivedFromVerb's own
+  // exact reverse. Named `isNominalised`, not `isNormalisedByNoun` as an
+  // earlier iteration of this field had it -- "nominalised" is the real
+  // linguistic term for "turned into a noun" ("normalised" means "made
+  // standard/regular," an unrelated concept); dropping "ByNoun" too,
+  // since "nominalised" already fully names what it becomes without
+  // needing to restate it.
+  isNominalised?: Identifier;
+  isNominalisedIndicator: boolean;
+
+  // The Adjective this Verb adjectivises into ("interest" -> "interesting")
+  // -- a real WordNet ADJECTIVAL_DERIVATION pointer, source=this Verb.
+  isAdjectivised?: Identifier;
+  isAdjectivisedIndicator: boolean;
+
+  // This Verb's own uuid, per the Noun that verbalises into it ("email"
+  // the noun -> "email" the verb) -- Noun.isVerbalised's own exact
+  // reverse, read from WordNet's generic DERIVED_FORM kind.
+  isDerivedFromNoun?: Identifier;
+  isDerivedFromNounIndicator: boolean;
+
+  // This Verb's own uuid, per the Adjective that verbalises into it --
+  // Adjective.isVerbalised's own exact reverse, same DERIVED_FORM kind.
+  isDerivedFromAdjective?: Identifier;
+  isDerivedFromAdjectiveIndicator: boolean;
 
   // The rest of this subtype's own row of fields from the Word Form to
   // Part of Speech Matrix (data/word_form_part_of_speech_matrix.md) --
@@ -137,7 +148,10 @@ export type VerbInit = Pick<Verb, "text"> & Partial<Omit<Verb, "text" | "partOfS
 
 export function createVerb(init: VerbInit): Verb {
   const verb = createWord({ ...init, partOfSpeech: PartOfSpeech.VERB }) as Verb;
-  if (verb.isNormalisedByNounIndicator === undefined) verb.isNormalisedByNounIndicator = false;
+  if (verb.isNominalisedIndicator === undefined) verb.isNominalisedIndicator = false;
+  if (verb.isAdjectivisedIndicator === undefined) verb.isAdjectivisedIndicator = false;
+  if (verb.isDerivedFromNounIndicator === undefined) verb.isDerivedFromNounIndicator = false;
+  if (verb.isDerivedFromAdjectiveIndicator === undefined) verb.isDerivedFromAdjectiveIndicator = false;
   return verb;
 }
 

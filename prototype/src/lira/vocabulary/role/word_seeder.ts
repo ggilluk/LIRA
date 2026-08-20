@@ -61,7 +61,7 @@ import type { Phrases } from "../data/phrases";
 import { createSense, type Sense } from "../data/sense";
 import type { Senses } from "../data/senses";
 import type { SourceReference } from "../data/source_reference";
-import { VERB_FRAME_TEXT, createVerb, generateVerbForms, isVerb, type Verb } from "../data/verb";
+import { VERB_FRAME_TEXT, createVerb, generateVerbForms, isVerb } from "../data/verb";
 import { copyWordWithFreshUuid, createWord, type Word } from "../data/word";
 import {
   languageHasCommonCache,
@@ -1471,14 +1471,16 @@ export class WordSeeder {
       }
     }
 
-    // Noun.isDerivedFromVerb/Verb.isNormalisedByNoun (each field's own
-    // docstring, data/noun.ts and data/verb.ts) are read back from the
-    // NOMINALISATION edges pass 2 above just finished seeding -- only
-    // now, with every pointer relationship wired, is there anything to
-    // read at all. deriveNounVerbPointers() itself never creates a
-    // LexicalRelationship, it only caches which existing edge each Noun/
-    // Verb participates in directly on the Word object.
-    for (const word of dictionary.all()) this.deriveNounVerbPointers(store, dictionary, word);
+    // Every morphological-derivation pointer field (Noun/Verb/Adjective/
+    // Adverb, each field's own docstring in data/noun.ts, data/verb.ts,
+    // data/adjective.ts, data/adverb.ts) is read back from the
+    // NOMINALISATION/ADJECTIVAL_DERIVATION/ADVERBIAL_DERIVATION/DERIVED_FORM
+    // edges pass 2 above just finished seeding -- only now, with every
+    // pointer relationship wired, is there anything to read at all.
+    // deriveMorphologicalPointers() itself never creates a
+    // LexicalRelationship, it only caches which existing edge each Word
+    // participates in directly on the Word object.
+    for (const word of dictionary.all()) this.deriveMorphologicalPointers(store, dictionary, word);
 
     // Every Adjective's and Adverb's Comparative/Superlative Degree Form
     // is decided here, not back in pass 1's own synsetMemberToWord() --
@@ -1757,33 +1759,139 @@ export class WordSeeder {
     entry.synsetId = senseStore.findByUuid(sorted[0].value)?.synsetId ?? entry.synsetId;
   }
 
-  /** A no-op for anything that isn't a Noun or a Verb -- Noun.isDerivedFromVerb's
-   * own docstring on why this is scoped to exactly those two subtypes.
-   * For a Noun, finds its own first incoming NOMINALISATION edge whose
-   * source is itself a Verb (derivationKind()'s own docstring: the
-   * *target*'s part of speech alone decides NOMINALISATION, so an
-   * Adjective's own `+` pointer into a Noun -- "happy" -> "happiness" --
-   * produces the identical relationship kind; only checking the source's
-   * own actual partOfSpeech here keeps isDerivedFromVerb true to its own
-   * name) and caches that Verb's own uuid, plus the derived indicator.
-   * For a Verb, the mirror image: its own first outgoing NOMINALISATION
-   * edge (target is always a Noun by construction, so no equivalent
-   * partOfSpeech check is needed there). Reads relationships.incoming()/
-   * outgoing() only -- this never appends a new LexicalRelationship of
-   * its own, the edge it reads already exists from pass 2 above. */
-  private deriveNounVerbPointers(relationships: LexicalRelationshipStore, dictionary: Dictionary, word: Word): void {
+  /** Finds the first `kind`-typed edge incident to `word` -- checked in
+   * `direction` ("outgoing": word is the edge's own source; "incoming":
+   * word is the target; "both": either, outgoing checked first -- needed
+   * because DERIVED_FORM is one of SYMMETRIC_RELATIONSHIP_KINDS, so
+   * createEdges()'s own dedup logic may have stored a DERIVED_FORM fact
+   * in either direction depending on which reciprocal WordNet pointer it
+   * happened to process first; NOMINALISATION/ADJECTIVAL_DERIVATION/
+   * ADVERBIAL_DERIVATION are never symmetric, so their own callers below
+   * always pass a single fixed direction instead) -- whose *other*
+   * endpoint resolves to a Word matching `otherPos`. That last check is
+   * the reason this function exists at all, not a bare
+   * relationships.outgoing()/incoming() call: derivationKind()'s own
+   * docstring (above) picks a relationship kind from the *target*'s part
+   * of speech alone, so the same kind covers several structurally
+   * distinct (source POS, target POS) pairs at once -- NOMINALISATION
+   * alone is both Verb->Noun and Adjective->Noun, ADJECTIVAL_DERIVATION
+   * is Verb/Noun/Adverb->Adjective, and DERIVED_FORM is every remaining
+   * pair including same-POS ones. Without filtering by the other
+   * endpoint's own actual resolved part of speech, a Noun's own
+   * "verbalised" pointer could just as easily resolve to another Noun
+   * (a same-POS DERIVED_FORM edge) as to a genuine Verb. Returns
+   * undefined if no qualifying edge exists; picks the first match found
+   * when more than one does, the same arbitrary-but-deterministic
+   * convention Dictionary.lookup() already uses for a homograph. */
+  private findDerivationTarget(
+    relationships: LexicalRelationshipStore,
+    dictionary: Dictionary,
+    word: Word,
+    kind: LexicalRelationshipType,
+    direction: "outgoing" | "incoming" | "both",
+    otherPos: (candidate: Word) => boolean,
+  ): Word | undefined {
+    const outgoing = direction !== "incoming" ? relationships.outgoing(word.uuid.value).map((edge) => ({ edge, otherId: edge.targetWordId })) : [];
+    const incoming = direction !== "outgoing" ? relationships.incoming(word.uuid.value).map((edge) => ({ edge, otherId: edge.sourceWordId })) : [];
+    for (const { edge, otherId } of [...outgoing, ...incoming]) {
+      if (edge.relationshipType !== kind) continue;
+      const other = dictionary.findByUuid(otherId.value);
+      if (other !== undefined && otherPos(other)) return other;
+    }
+    return undefined;
+  }
+
+  /** Populates every morphological-derivation pointer field `word`'s own
+   * concrete POS subtype carries (Noun.isDerivedFromVerb and its seven
+   * siblings across data/noun.ts, data/verb.ts, data/adjective.ts,
+   * data/adverb.ts -- each field's own docstring names which specific
+   * pair it implements) -- a no-op for any other part of speech. Every
+   * field is `findDerivationTarget()`'s own result (that method's own
+   * docstring for the full "why the other endpoint's actual POS has to
+   * be checked" rationale) paired with its Indicator boolean
+   * (`!== undefined`). Reads relationships.incoming()/outgoing() only --
+   * this never appends a new LexicalRelationship of its own, every edge
+   * it reads already exists from pass 2 above.
+   *
+   * Eight pairs are implemented, matching WordNet's own real `+`
+   * Derived-Form pointer population for each (source POS, target POS)
+   * combination found in the bundled dict/ files. A ninth real
+   * population -- Noun<->Noun same-POS derivation (~2,959 pointers,
+   * DERIVED_FORM again) -- is deliberately not implemented: it has no
+   * standard morphological-process name the way Nominalisation/
+   * Adjectivisation/Adverbialisation/Verbalisation do (target and source
+   * share one Part of Speech, so there's no "-isation" label to give the
+   * source-side field a name distinct from the target-side one), and
+   * would need two different fields on the *same* class to keep the two
+   * directions apart -- a genuinely different shape from every other
+   * pair here, left for a future pass rather than forced into this one. */
+  private deriveMorphologicalPointers(relationships: LexicalRelationshipStore, dictionary: Dictionary, word: Word): void {
+    const { NOMINALISATION, ADJECTIVAL_DERIVATION, ADVERBIAL_DERIVATION, DERIVED_FORM } = LexicalRelationshipType;
+
     if (isNoun(word)) {
-      const verb = relationships
-        .incoming(word.uuid.value)
-        .filter((edge) => edge.relationshipType === LexicalRelationshipType.NOMINALISATION)
-        .map((edge) => dictionary.findByUuid(edge.sourceWordId.value))
-        .find((source): source is Verb => source !== undefined && isVerb(source));
-      word.isDerivedFromVerb = verb?.uuid;
-      word.isDerivableNounIndicator = verb !== undefined;
+      const derivedFromVerb = this.findDerivationTarget(relationships, dictionary, word, NOMINALISATION, "incoming", isVerb);
+      word.isDerivedFromVerb = derivedFromVerb?.uuid;
+      word.isDerivedFromVerbIndicator = derivedFromVerb !== undefined;
+
+      const derivedFromAdjective = this.findDerivationTarget(relationships, dictionary, word, NOMINALISATION, "incoming", isAdjective);
+      word.isDerivedFromAdjective = derivedFromAdjective?.uuid;
+      word.isDerivedFromAdjectiveIndicator = derivedFromAdjective !== undefined;
+
+      const adjectivised = this.findDerivationTarget(relationships, dictionary, word, ADJECTIVAL_DERIVATION, "outgoing", isAdjective);
+      word.isAdjectivised = adjectivised?.uuid;
+      word.isAdjectivisedIndicator = adjectivised !== undefined;
+
+      const verbalised = this.findDerivationTarget(relationships, dictionary, word, DERIVED_FORM, "both", isVerb);
+      word.isVerbalised = verbalised?.uuid;
+      word.isVerbalisedIndicator = verbalised !== undefined;
     } else if (isVerb(word)) {
-      const edge = relationships.outgoing(word.uuid.value).find((candidate) => candidate.relationshipType === LexicalRelationshipType.NOMINALISATION);
-      word.isNormalisedByNoun = edge?.targetWordId;
-      word.isNormalisedByNounIndicator = edge !== undefined;
+      const nominalised = this.findDerivationTarget(relationships, dictionary, word, NOMINALISATION, "outgoing", isNoun);
+      word.isNominalised = nominalised?.uuid;
+      word.isNominalisedIndicator = nominalised !== undefined;
+
+      const adjectivised = this.findDerivationTarget(relationships, dictionary, word, ADJECTIVAL_DERIVATION, "outgoing", isAdjective);
+      word.isAdjectivised = adjectivised?.uuid;
+      word.isAdjectivisedIndicator = adjectivised !== undefined;
+
+      const derivedFromNoun = this.findDerivationTarget(relationships, dictionary, word, DERIVED_FORM, "both", isNoun);
+      word.isDerivedFromNoun = derivedFromNoun?.uuid;
+      word.isDerivedFromNounIndicator = derivedFromNoun !== undefined;
+
+      const derivedFromAdjective = this.findDerivationTarget(relationships, dictionary, word, DERIVED_FORM, "both", isAdjective);
+      word.isDerivedFromAdjective = derivedFromAdjective?.uuid;
+      word.isDerivedFromAdjectiveIndicator = derivedFromAdjective !== undefined;
+    } else if (isAdjective(word)) {
+      const nominalised = this.findDerivationTarget(relationships, dictionary, word, NOMINALISATION, "outgoing", isNoun);
+      word.isNominalised = nominalised?.uuid;
+      word.isNominalisedIndicator = nominalised !== undefined;
+
+      const adverbialised = this.findDerivationTarget(relationships, dictionary, word, ADVERBIAL_DERIVATION, "outgoing", isAdverb);
+      word.isAdverbialised = adverbialised?.uuid;
+      word.isAdverbialisedIndicator = adverbialised !== undefined;
+
+      const verbalised = this.findDerivationTarget(relationships, dictionary, word, DERIVED_FORM, "both", isVerb);
+      word.isVerbalised = verbalised?.uuid;
+      word.isVerbalisedIndicator = verbalised !== undefined;
+
+      const derivedFromVerb = this.findDerivationTarget(relationships, dictionary, word, ADJECTIVAL_DERIVATION, "incoming", isVerb);
+      word.isDerivedFromVerb = derivedFromVerb?.uuid;
+      word.isDerivedFromVerbIndicator = derivedFromVerb !== undefined;
+
+      const derivedFromNoun = this.findDerivationTarget(relationships, dictionary, word, ADJECTIVAL_DERIVATION, "incoming", isNoun);
+      word.isDerivedFromNoun = derivedFromNoun?.uuid;
+      word.isDerivedFromNounIndicator = derivedFromNoun !== undefined;
+
+      const derivedFromAdverb = this.findDerivationTarget(relationships, dictionary, word, ADJECTIVAL_DERIVATION, "incoming", isAdverb);
+      word.isDerivedFromAdverb = derivedFromAdverb?.uuid;
+      word.isDerivedFromAdverbIndicator = derivedFromAdverb !== undefined;
+    } else if (isAdverb(word)) {
+      const adjectivised = this.findDerivationTarget(relationships, dictionary, word, ADJECTIVAL_DERIVATION, "outgoing", isAdjective);
+      word.isAdjectivised = adjectivised?.uuid;
+      word.isAdjectivisedIndicator = adjectivised !== undefined;
+
+      const derivedFromAdjective = this.findDerivationTarget(relationships, dictionary, word, ADVERBIAL_DERIVATION, "incoming", isAdjective);
+      word.isDerivedFromAdjective = derivedFromAdjective?.uuid;
+      word.isDerivedFromAdjectiveIndicator = derivedFromAdjective !== undefined;
     }
   }
 

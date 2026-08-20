@@ -1661,7 +1661,7 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     expect(isNoun(someAdverb!)).toBe(false);
   }, 60000);
 
-  it("Noun.isDerivedFromVerb/Verb.isNormalisedByNoun read back the real NOMINALISATION edges WordSeeder.seedWordNet's own relationship pass already seeded, without creating a second edge", async () => {
+  it("deriveMorphologicalPointers() reads back all eight real Noun/Verb/Adjective/Adverb derivation pairs from WordSeeder.seedWordNet's own already-seeded relationship graph, without creating a second edge", async () => {
     const dictionary = new Dictionary();
     const phraseBook = new Phrases();
     const senseStore = new Senses();
@@ -1674,73 +1674,150 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
       vocabulary: { dictionary, phrases: phraseBook, senses: senseStore, lexicalRelationships, lexicalRelationshipProcessor },
     });
 
-    // "hyperventilate" (VERB) -- NOMINALISATION --> "hyperventilation"
-    // (NOUN), a real WordNet `+` Derived-Form pointer pair
-    // (derivationKind()'s own docstring on why that pointer becomes this
-    // relationship kind) -- deliberately one where each side has exactly
-    // one NOMINALISATION edge of its own, so isDerivedFromVerb/
-    // isNormalisedByNoun's own independent "pick the first match" tie-
-    // breaks (deriveNounVerbPointers()'s own docstring) can't land on
-    // two different edges of a genuinely one-to-many pair.
+    // Four real WordNet pairs, verified against the bundled dict/ files
+    // to each cover two of the eight rows this function implements --
+    // every one of the eight relationship kinds this table names
+    // (NOMINALISATION x2 source POS, ADJECTIVAL_DERIVATION x3, ADVERBIAL_DERIVATION,
+    // DERIVED_FORM x2 -- deriveMorphologicalPointers()'s own docstring)
+    // genuinely fires for at least one of these four pairs. A recurring,
+    // genuine WordNet property these four all happen to demonstrate:
+    // the *same* two words very often carry independently-seeded
+    // pointers in *both* directions, each classified under whichever
+    // kind derivationKind()'s own target-based rule assigns that
+    // direction -- "able"/"ability" really does have both a
+    // NOMINALISATION edge (able -> ability) and a reciprocal
+    // ADJECTIVAL_DERIVATION edge (ability -> able), not a bug, just two
+    // real, distinct facts about the same pair.
+    const able = dictionary.lookupAll("able").find((w): w is Adjective => isAdjective(w));
+    const ability = dictionary.lookupAll("ability").find((w): w is Noun => isNoun(w));
+    const respire = dictionary.lookupAll("respire").find((w): w is Verb => isVerb(w));
+    const respiratory = dictionary.lookupAll("respiratory").find((w): w is Adjective => isAdjective(w));
+    const unbearable = dictionary.lookupAll("unbearable").find((w): w is Adjective => isAdjective(w));
+    const unbearably = dictionary.lookupAll("unbearably").find((w): w is Adverb => isAdverb(w));
     const hyperventilate = dictionary.lookupAll("hyperventilate").find((w): w is Verb => isVerb(w));
     const hyperventilation = dictionary.lookupAll("hyperventilation").find((w): w is Noun => isNoun(w));
-    expect(hyperventilate).toBeDefined();
-    expect(hyperventilation).toBeDefined();
+    for (const word of [able, ability, respire, respiratory, unbearable, unbearably, hyperventilate, hyperventilation]) expect(word).toBeDefined();
+
+    // Row 1 -- Verb.isNominalised / Noun.isDerivedFromVerb (NOMINALISATION).
+    expect(hyperventilate!.isNominalised?.value).toBe(hyperventilation!.uuid.value);
+    expect(hyperventilate!.isNominalisedIndicator).toBe(true);
     expect(hyperventilation!.isDerivedFromVerb?.value).toBe(hyperventilate!.uuid.value);
-    expect(hyperventilation!.isDerivableNounIndicator).toBe(true);
-    expect(hyperventilate!.isNormalisedByNoun?.value).toBe(hyperventilation!.uuid.value);
-    expect(hyperventilate!.isNormalisedByNounIndicator).toBe(true);
+    expect(hyperventilation!.isDerivedFromVerbIndicator).toBe(true);
+    // Reading the pointer back never creates a second, redundant edge --
+    // exactly one NOMINALISATION edge exists between this one pair.
+    expect(
+      lexicalRelationships
+        .outgoing(hyperventilate!.uuid.value)
+        .filter((edge) => edge.relationshipType === LexicalRelationshipType.NOMINALISATION && edge.targetWordId.value === hyperventilation!.uuid.value),
+    ).toHaveLength(1);
 
-    // Reading the pointer back never creates a second, redundant
-    // NOMINALISATION edge of its own -- exactly one exists between this
-    // one (verb, noun) pair, the one pass 2 itself seeded.
-    const edgesBetween = lexicalRelationships
-      .outgoing(hyperventilate!.uuid.value)
-      .filter((edge) => edge.relationshipType === LexicalRelationshipType.NOMINALISATION && edge.targetWordId.value === hyperventilation!.uuid.value);
-    expect(edgesBetween).toHaveLength(1);
+    // Row 7 -- Noun.isVerbalised / Verb.isDerivedFromNoun (DERIVED_FORM,
+    // "both" direction -- DERIVED_FORM is symmetric, so this same
+    // hyperventilate/hyperventilation pair's own reciprocal pointer
+    // could have been stored either way; findDerivationTarget()'s own
+    // docstring on why checking only one fixed direction would be wrong
+    // for this kind specifically).
+    expect(hyperventilation!.isVerbalised?.value).toBe(hyperventilate!.uuid.value);
+    expect(hyperventilation!.isVerbalisedIndicator).toBe(true);
+    expect(hyperventilate!.isDerivedFromNoun?.value).toBe(hyperventilation!.uuid.value);
+    expect(hyperventilate!.isDerivedFromNounIndicator).toBe(true);
 
-    // A Noun/Verb this pass found nothing for keeps both fields at their
-    // own "not derived" defaults -- undefined pointer, false indicator --
-    // real data, not just createNoun()/createVerb()'s own construction-
-    // time default (dictionary.all() is seeded, not hand-built).
-    expect(dictionary.all().some((w) => isNoun(w) && !w.isDerivableNounIndicator && w.isDerivedFromVerb === undefined)).toBe(true);
-    expect(dictionary.all().some((w) => isVerb(w) && !w.isNormalisedByNounIndicator && w.isNormalisedByNoun === undefined)).toBe(true);
+    // Row 2 -- Adjective.isNominalised / Noun.isDerivedFromAdjective
+    // (NOMINALISATION, source=Adjective this time -- the exact
+    // disambiguation findDerivationTarget()'s own otherPos check exists
+    // for, since this is the identical relationship kind row 1 uses).
+    expect(able!.isNominalised?.value).toBe(ability!.uuid.value);
+    expect(able!.isNominalisedIndicator).toBe(true);
+    expect(ability!.isDerivedFromAdjective?.value).toBe(able!.uuid.value);
+    expect(ability!.isDerivedFromAdjectiveIndicator).toBe(true);
 
-    // A Common Vocabulary Cache closed-class Noun/Verb never goes
-    // through deriveNounVerbPointers() at all (it only ever runs inside
-    // seedWordNet, not seedClosedClassWords) -- both fields stay at
-    // createNoun()'s/createVerb()'s own plain construction-time default.
+    // Row 4 -- Noun.isAdjectivised / Adjective.isDerivedFromNoun
+    // (ADJECTIVAL_DERIVATION) -- the same able/ability pair's own
+    // reciprocal-direction pointer, a genuinely separate edge from row
+    // 2's own NOMINALISATION one (this test's own opening comment).
+    expect(ability!.isAdjectivised?.value).toBe(able!.uuid.value);
+    expect(ability!.isAdjectivisedIndicator).toBe(true);
+    expect(able!.isDerivedFromNoun?.value).toBe(ability!.uuid.value);
+    expect(able!.isDerivedFromNounIndicator).toBe(true);
+
+    // Row 3 -- Verb.isAdjectivised / Adjective.isDerivedFromVerb
+    // (ADJECTIVAL_DERIVATION, source=Verb -- disambiguated from row 4's
+    // own Noun-sourced case the same way row 1/2 disambiguate NOMINALISATION).
+    expect(respire!.isAdjectivised?.value).toBe(respiratory!.uuid.value);
+    expect(respire!.isAdjectivisedIndicator).toBe(true);
+    expect(respiratory!.isDerivedFromVerb?.value).toBe(respire!.uuid.value);
+    expect(respiratory!.isDerivedFromVerbIndicator).toBe(true);
+
+    // Row 8 -- Adjective.isVerbalised / Verb.isDerivedFromAdjective
+    // (DERIVED_FORM, "both" direction) -- the same respire/respiratory
+    // pair's own reciprocal pointer.
+    expect(respiratory!.isVerbalised?.value).toBe(respire!.uuid.value);
+    expect(respiratory!.isVerbalisedIndicator).toBe(true);
+    expect(respire!.isDerivedFromAdjective?.value).toBe(respiratory!.uuid.value);
+    expect(respire!.isDerivedFromAdjectiveIndicator).toBe(true);
+
+    // Row 6 -- Adjective.isAdverbialised / Adverb.isDerivedFromAdjective
+    // (ADVERBIAL_DERIVATION).
+    expect(unbearable!.isAdverbialised?.value).toBe(unbearably!.uuid.value);
+    expect(unbearable!.isAdverbialisedIndicator).toBe(true);
+    expect(unbearably!.isDerivedFromAdjective?.value).toBe(unbearable!.uuid.value);
+    expect(unbearably!.isDerivedFromAdjectiveIndicator).toBe(true);
+
+    // Row 5 -- Adverb.isAdjectivised / Adjective.isDerivedFromAdverb
+    // (ADJECTIVAL_DERIVATION, source=Adverb) -- the same unbearable/
+    // unbearably pair's own reciprocal pointer.
+    expect(unbearably!.isAdjectivised?.value).toBe(unbearable!.uuid.value);
+    expect(unbearably!.isAdjectivisedIndicator).toBe(true);
+    expect(unbearable!.isDerivedFromAdverb?.value).toBe(unbearably!.uuid.value);
+    expect(unbearable!.isDerivedFromAdverbIndicator).toBe(true);
+
+    // A Word this pass found nothing for keeps every field at its own
+    // "not derived" default -- undefined pointer, false indicator --
+    // real data, not just createNoun()'s/createVerb()'s own
+    // construction-time default (dictionary.all() is seeded, not
+    // hand-built).
+    expect(dictionary.all().some((w) => isNoun(w) && !w.isDerivedFromVerbIndicator && w.isDerivedFromVerb === undefined)).toBe(true);
+    expect(dictionary.all().some((w) => isVerb(w) && !w.isNominalisedIndicator && w.isNominalised === undefined)).toBe(true);
+
+    // A Common Vocabulary Cache closed-class Word never goes through
+    // deriveMorphologicalPointers() at all (it only ever runs inside
+    // seedWordNet, not seedClosedClassWords) -- every field stays at
+    // createNoun()'s/createVerb()'s/createAdjective()'s/createAdverb()'s
+    // own plain construction-time default.
     const handCraftedNoun = createNoun({ text: "widget" });
     expect(handCraftedNoun.isDerivedFromVerb).toBeUndefined();
-    expect(handCraftedNoun.isDerivableNounIndicator).toBe(false);
+    expect(handCraftedNoun.isDerivedFromVerbIndicator).toBe(false);
+    expect(handCraftedNoun.isVerbalisedIndicator).toBe(false);
     const handCraftedVerb = createVerb({ text: "widgetize" });
-    expect(handCraftedVerb.isNormalisedByNoun).toBeUndefined();
-    expect(handCraftedVerb.isNormalisedByNounIndicator).toBe(false);
+    expect(handCraftedVerb.isNominalised).toBeUndefined();
+    expect(handCraftedVerb.isNominalisedIndicator).toBe(false);
+    const handCraftedAdjective = createAdjective({ text: "widgety" });
+    expect(handCraftedAdjective.isNominalisedIndicator).toBe(false);
+    expect(handCraftedAdjective.isAdverbialisedIndicator).toBe(false);
+    const handCraftedAdverb = createAdverb({ text: "widgetily" });
+    expect(handCraftedAdverb.isAdjectivisedIndicator).toBe(false);
+    expect(handCraftedAdverb.isDerivedFromAdjectiveIndicator).toBe(false);
 
-    // WordRecord's own client-facing counterparts (nounVerbPointerFields(),
-    // ui/dictionary_view.ts) -- both indicators plus their resolved
-    // pointer, read through the same wordId path the detail panel itself
-    // uses, not the raw Noun/Verb checked above.
+    // WordRecord.derivations (morphologicalDerivations(), ui/dictionary_view.ts)
+    // -- read through the same wordId path the detail panel itself
+    // uses, not the raw Word fields checked above. hyperventilation
+    // (Noun) carries two entries (isDerivedFromVerb, isVerbalised, rows
+    // 1 and 7 both firing for the same Word); an ordinary closed-class
+    // Adjective carries none.
     const view = new DictionaryView(dictionary, lexicalRelationships, { domainName: "Common", phrases: phraseBook, senses: senseStore });
     const hyperventilationRecord = view.searchWords({ wordId: hyperventilation!.uuid.value }).words[0];
-    expect(hyperventilationRecord.is_derivable_noun_indicator).toBe(true);
-    expect(hyperventilationRecord.derived_from_verb).toEqual({ id: hyperventilate!.uuid.value, text: "hyperventilate" });
-    expect(hyperventilationRecord.is_normalised_by_noun_indicator).toBeUndefined();
-    expect(hyperventilationRecord.normalised_by_noun).toBeUndefined();
+    expect(hyperventilationRecord.derivations).toEqual(
+      expect.arrayContaining([
+        { attribute: "isDerivedFromVerb", label: "Is Derived From Verb", target: { id: hyperventilate!.uuid.value, text: "hyperventilate" } },
+        { attribute: "isVerbalised", label: "Is Verbalised", target: { id: hyperventilate!.uuid.value, text: "hyperventilate" } },
+      ]),
+    );
+    expect(hyperventilationRecord.derivations).toHaveLength(2);
 
-    const hyperventilateRecord = view.searchWords({ wordId: hyperventilate!.uuid.value }).words[0];
-    expect(hyperventilateRecord.is_normalised_by_noun_indicator).toBe(true);
-    expect(hyperventilateRecord.normalised_by_noun).toEqual({ id: hyperventilation!.uuid.value, text: "hyperventilation" });
-    expect(hyperventilateRecord.is_derivable_noun_indicator).toBeUndefined();
-    expect(hyperventilateRecord.derived_from_verb).toBeUndefined();
-
-    // Neither field is ever set for a part of speech that's neither Noun
-    // nor Verb.
-    const someAdjective = dictionary.all().find((w) => w.partOfSpeech === PartOfSpeech.ADJECTIVE);
-    expect(someAdjective).toBeDefined();
-    const adjectiveRecord = view.searchWords({ wordId: someAdjective!.uuid.value }).words[0];
-    expect(adjectiveRecord.is_derivable_noun_indicator).toBeUndefined();
-    expect(adjectiveRecord.is_normalised_by_noun_indicator).toBeUndefined();
+    const someClosedClassAdjective = createAdjective({ text: "sample-adjective" });
+    dictionary.append(someClosedClassAdjective);
+    const closedClassRecord = view.searchWords({ wordId: someClosedClassAdjective.uuid.value }).words[0];
+    expect(closedClassRecord.derivations).toEqual([]);
   }, 60000);
 
   it("a polysemous lemma seeds as exactly one Word, carrying every one of its real WordNet senses by reference", async () => {
