@@ -38,6 +38,7 @@ import { DictionaryProcessor } from "./role/dictionary_processor";
 import { LexicalRelationshipProcessor } from "./role/lexical_relationship_processor";
 import { RelationshipSeeder } from "./role/relationship_seeder";
 import { classifyPhraseRoles, classifyPhraseType, WordSeeder } from "./role/word_seeder";
+import { NounCharacterFormSeeder } from "./role/noun_character_form_seeder";
 import { loadWordNetSynsets } from "./role/wordnet_loader";
 import { DictionaryView } from "./ui/dictionary_view";
 
@@ -510,6 +511,56 @@ describe("generate<Class>Forms() -- deriving *_Form values from a base lemma", (
     const run = dictionary.lookupAll("run").find(isVerb);
     expect(run?.pastTenseForm).toEqual({ value: "ran" });
     expect(run?.pastParticipleForm).toEqual({ value: "run" });
+  }, 30000);
+
+  it("NounCharacterFormSeeder populates wordCharacterForm for real seeded WordNet punctuation-mark Nouns with an unambiguous glyph, and leaves paired-mark Nouns undefined", async () => {
+    const dictionary = new Dictionary();
+    const lexicalRelationships = new LexicalRelationshipStore();
+    const semanticRelationships = new SemanticRelationshipStore();
+    const lexicalRelationshipProcessor = new LexicalRelationshipProcessor(
+      lexicalRelationships,
+      new LexicalRelationshipSystemPropertyTensor(),
+    );
+    const semanticRelationshipProcessor = new SemanticRelationshipProcessor(
+      semanticRelationships,
+      new SemanticRelationshipSystemPropertyTensor(),
+    );
+    await new WordSeeder("en").seedWordNet({
+      vocabulary: { dictionary, phrases: new Phrases(), senses: new Senses(), lexicalRelationships, lexicalRelationshipProcessor, semanticRelationships, semanticRelationshipProcessor },
+    });
+
+    const updated = new NounCharacterFormSeeder(dictionary).seed();
+    expect(updated).toBeGreaterThan(0);
+
+    const comma = dictionary.lookupAll("comma").find(isNoun);
+    expect(comma?.wordCharacterForm).toEqual({ value: "," });
+
+    const ampersand = dictionary.lookupAll("ampersand").find(isNoun);
+    expect(ampersand?.wordCharacterForm).toEqual({ value: "&" });
+
+    const semicolon = dictionary.lookupAll("semicolon").find(isNoun);
+    expect(semicolon?.wordCharacterForm).toEqual({ value: ";" });
+
+    // "swung dash" is a multi-word WordNet lemma, so WordSeeder seeds it
+    // as a Phrase, not a Word -- Dictionary (Noun-only) never carries it,
+    // so NOUN_CHARACTER_FORMS' own swung_dash entry can never match here.
+    expect(dictionary.lookupAll("swung dash")).toHaveLength(0);
+
+    // Paired-mark lemmas have no single unambiguous glyph -- left undefined.
+    const brace = dictionary.lookupAll("brace").find(isNoun);
+    expect(brace?.wordCharacterForm).toBeUndefined();
+    const parenthesis = dictionary.lookupAll("parenthesis").find(isNoun);
+    expect(parenthesis?.wordCharacterForm).toBeUndefined();
+
+    // A Noun with no relation to punctuation at all stays untouched too.
+    const dog = dictionary.lookupAll("dog").find(isNoun);
+    expect(dog?.wordCharacterForm).toBeUndefined();
+
+    // Idempotent, and never overwrites an already-populated value.
+    if (comma) comma.wordCharacterForm = { value: "CURATED" };
+    const updatedAgain = new NounCharacterFormSeeder(dictionary).seed();
+    expect(updatedAgain).toBe(0);
+    expect(comma?.wordCharacterForm).toEqual({ value: "CURATED" });
   }, 30000);
 });
 

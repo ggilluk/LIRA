@@ -11,6 +11,7 @@ export { DictionaryProcessor } from "./role/dictionary_processor";
 export { ExternalDictionaryAdapter } from "./role/external_dictionary_adapter";
 export { IdentificationSource, type WordIdentifier } from "./role/word_identifier";
 export { LexicalRelationshipProcessor } from "./role/lexical_relationship_processor";
+export { NounCharacterFormSeeder, NOUN_CHARACTER_FORMS } from "./role/noun_character_form_seeder";
 export { SemanticRelationshipProcessor } from "./role/semantic_relationship_processor";
 export { PartOfSpeechIdentifier } from "./role/part_of_speech_identifier";
 export { RelationshipSeeder } from "./role/relationship_seeder";
