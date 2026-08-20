@@ -18,11 +18,12 @@
  *     p_cnt  {ptr_symbol  offset  pos  source/target}...
  *     [frame_cnt  {+  frame_number  word_number}...]  |  gloss
  *
- * `lex_filenum` (WordNet's own internal lexicographer-file category,
- * e.g. "noun.animal") and each word's own `lex_id` are read
- * positionally (needed to walk past them to the next field) but not
- * retained -- LIRA has no equivalent slot for either, and nothing here
- * needs them. The (verb-only) frame block IS retained now (as
+ * `lex_filenum` is read positionally and retained (resolved against the
+ * bundled dict/lexnames file into WordNetSynset.senseCategory below,
+ * e.g. "06" -> "noun.artifact") -- each word's own `lex_id` is still
+ * read positionally (needed to walk past it to the next field) but not
+ * retained; LIRA has no equivalent slot for it and nothing here needs
+ * it. The (verb-only) frame block IS retained now (as
  * WordNetSynset.frames, below) -- critically never confused with the
  * pointer block's own `+` symbol (WordNet reuses `+` for two unrelated
  * things: the "derivationally related form" pointer `ptr_symbol` a
@@ -109,6 +110,18 @@ export interface WordNetSynset {
   // docstring (data/verb.ts) on what this data is and how it was
   // verified against the bundled dict/ files.
   frames: readonly WordNetFrame[];
+  // The WordNet lexicographer-file category this synset's own
+  // `lex_filenum` names, e.g. "noun.artifact" -- resolved against the
+  // bundled dict/lexnames file (loadLexnames() below), never derived
+  // from the gloss/first lemma/hypernym/sense number/synset offset (all
+  // of those can and do disagree with the lexicographer's own explicit
+  // classification). Always the full POS-qualified lexname ("noun.
+  // artifact", never bare "artifact") -- that qualified form is
+  // WordNet's own canonical category identifier. A property of the
+  // synset's own meaning, not of any one lemma spelling it -- shared
+  // identically by every member, the same way senseFrequency/definition/
+  // examples already are.
+  senseCategory: string;
 }
 
 const DICT_FILENAMES = ["data.noun", "data.verb", "data.adj", "data.adv"] as const;
@@ -151,6 +164,46 @@ async function readIndexSenseFile(): Promise<string> {
   const key = Object.keys(indexSenseLoader).find((path) => path.endsWith(suffix));
   if (key === undefined) throw new Error("WordNet dict file missing: index.sense");
   return indexSenseLoader[key]();
+}
+
+// indexSenseLoader's own exact counterpart, scoped to the lexicographer
+// file-category table -- also not a data.* file.
+const lexnamesLoader = import.meta.glob<string>("../assets/wordnet/dict/lexnames*", {
+  query: "?raw",
+  import: "default",
+});
+
+async function readLexnamesFile(): Promise<string> {
+  const suffix = "/assets/wordnet/dict/lexnames";
+  const key = Object.keys(lexnamesLoader).find((path) => path.endsWith(suffix));
+  if (key === undefined) throw new Error("WordNet dict file missing: lexnames");
+  return lexnamesLoader[key]();
+}
+
+let lexnamesCache: ReadonlyMap<string, string> | null = null;
+
+/** Every lex_filenum ("00".."44") -> its own lexname ("adj.all"..
+ * "adj.ppl"), parsed once from the bundled dict/lexnames file (WordNet's
+ * own distributed lexicographer-file table, `lex_filenum lexname
+ * syntactic_category` per line -- `syntactic_category` itself is read
+ * positionally, same as data.*'s own lex_id/lex_filenum before this
+ * change, but not retained: WordNetSynset's own partOfSpeech, from
+ * ss_type, already carries that information more precisely than
+ * lexnames' coarser 4-way category number could). Cached the same way
+ * loadSenseFrequencies()'s own cache is. */
+async function loadLexnames(): Promise<ReadonlyMap<string, string>> {
+  if (lexnamesCache !== null) return lexnamesCache;
+  const text = await readLexnamesFile();
+  const table = new Map<string, string>();
+  for (const line of text.split("\n")) {
+    const trimmed = line.trim();
+    if (trimmed.length === 0) continue;
+    const [fileNumber, lexname] = trimmed.split(/\s+/);
+    if (fileNumber === undefined || lexname === undefined) continue;
+    table.set(fileNumber, lexname);
+  }
+  lexnamesCache = table;
+  return table;
 }
 
 // WordNet's own sense_key encodes ss_type as a single leading digit
@@ -278,12 +331,27 @@ function parseGloss(rawGloss: string): { definition: string; examples: readonly 
 // know how many header lines precede the data in a given file.
 const SYNSET_LINE_PATTERN = /^\d{8}\s/;
 
-function parseSynsetLine(line: string, senseFrequencies: ReadonlyMap<string, number>): WordNetSynset | undefined {
+function parseSynsetLine(
+  line: string,
+  senseFrequencies: ReadonlyMap<string, number>,
+  lexnames: ReadonlyMap<string, string>,
+): WordNetSynset | undefined {
   const barIndex = line.indexOf(" | ");
   if (barIndex === -1) return undefined;
   const fields = line.slice(0, barIndex).trim().split(/\s+/);
-  const [synsetOffset, , ssType, wordCountHex] = fields;
+  const [synsetOffset, lexFilenum, ssType, wordCountHex] = fields;
   const wordCount = parseInt(wordCountHex, 16);
+
+  // Validation rule: every synset's own lex_filenum must resolve against
+  // exactly one dict/lexnames entry -- an unresolved one means the
+  // bundled lexnames table itself is stale/incomplete against these
+  // dict/data.* files, a genuine WordNet import/data-integrity error,
+  // not something to paper over by guessing a category from the gloss,
+  // first lemma, hypernym, sense number, or synset offset instead.
+  const senseCategory = lexnames.get(lexFilenum);
+  if (senseCategory === undefined) {
+    throw new Error(`WordNet synset ${synsetOffset} has lex_filenum '${lexFilenum}', which has no matching dict/lexnames entry`);
+  }
 
   const lemmas: string[] = [];
   const lemmaPositions: (AdjectivePosition | undefined)[] = [];
@@ -346,6 +414,7 @@ function parseSynsetLine(line: string, senseFrequencies: ReadonlyMap<string, num
     pointers,
     frames,
     senseFrequency: senseFrequencies.get(synsetId) ?? 0,
+    senseCategory,
   };
 }
 
@@ -360,15 +429,16 @@ let cache: WordNetSynset[] | null = null;
 export async function loadWordNetSynsets(): Promise<readonly WordNetSynset[]> {
   if (cache !== null) return cache;
 
-  const [texts, senseFrequencies] = await Promise.all([
+  const [texts, senseFrequencies, lexnames] = await Promise.all([
     Promise.all(DICT_FILENAMES.map((filename) => readDictFile(filename))),
     loadSenseFrequencies(),
+    loadLexnames(),
   ]);
   const synsets: WordNetSynset[] = [];
   for (const text of texts) {
     for (const line of text.split("\n")) {
       if (!SYNSET_LINE_PATTERN.test(line)) continue;
-      const synset = parseSynsetLine(line, senseFrequencies);
+      const synset = parseSynsetLine(line, senseFrequencies, lexnames);
       if (synset !== undefined) synsets.push(synset);
     }
   }

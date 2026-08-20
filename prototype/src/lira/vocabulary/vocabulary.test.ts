@@ -513,6 +513,35 @@ describe("generate<Class>Forms() -- deriving *_Form values from a base lemma", (
     expect(run?.pastParticipleForm).toEqual({ value: "run" });
   }, 30000);
 
+  it("populates each seeded Sense's own categoryText from its synset's real WordNet lexicographer-file category", async () => {
+    const dictionary = new Dictionary();
+    const senseStore = new Senses();
+    const lexicalRelationships = new LexicalRelationshipStore();
+    const semanticRelationships = new SemanticRelationshipStore();
+    const lexicalRelationshipProcessor = new LexicalRelationshipProcessor(
+      lexicalRelationships,
+      new LexicalRelationshipSystemPropertyTensor(),
+    );
+    const semanticRelationshipProcessor = new SemanticRelationshipProcessor(
+      semanticRelationships,
+      new SemanticRelationshipSystemPropertyTensor(),
+    );
+    await new WordSeeder("en").seedWordNet({
+      vocabulary: { dictionary, phrases: new Phrases(), senses: senseStore, lexicalRelationships, lexicalRelationshipProcessor, semanticRelationships, semanticRelationshipProcessor },
+    });
+
+    // 03005231-n: "chair" -- this feature's own worked example
+    // (chair%1:06:00:: -> lex_filenum 06 -> noun.artifact).
+    const chairSense = senseStore.findBySynsetId("03005231-n");
+    expect(chairSense?.categoryText).toEqual({ value: "noun.artifact" });
+
+    // A VERB sense gets its own, differently-prefixed category too --
+    // never truncated to the bare "communication"/"artifact" half.
+    const run = dictionary.lookupAll("run").find(isVerb);
+    const runSense = run && senseStore.findByUuid(run.senseIds[0]?.value ?? "");
+    expect(runSense?.categoryText?.value).toMatch(/^verb\./);
+  }, 30000);
+
   it("NounCharacterFormSeeder creates a new character-bearing Noun per glyph, sharing the source Noun's own senseIds, and never mutates the source", async () => {
     const dictionary = new Dictionary();
     const lexicalRelationships = new LexicalRelationshipStore();
@@ -989,6 +1018,30 @@ describe("loadWordNetSynsets against the bundled Princeton WordNet 3.1 dict/ fil
     expect(largeBig?.partOfSpeech).toBe(PartOfSpeech.ADJECTIVE);
     expect(largeBig?.definition).toContain("above average in size");
     expect(largeBig?.examples).toEqual(expect.arrayContaining(["a large city"]));
+  }, 30000);
+
+  it("resolves each synset's own senseCategory from its real lex_filenum against the bundled dict/lexnames table, never leaving it empty", async () => {
+    const synsets = await loadWordNetSynsets();
+
+    // 03005231-n: "chair" -- sense key chair%1:06:00::, independently
+    // confirmed against dict/index.sense -- lex_filenum 06 -> noun.artifact,
+    // this feature's own worked example.
+    const chair = synsets.find((s) => s.synsetId === "03005231-n");
+    expect(chair?.senseCategory).toBe("noun.artifact");
+
+    // 06855902-n: "comma" (dict/data.noun's own lex_filenum 10) --
+    // confirms a second POS/category pairing beyond the worked example.
+    const comma = synsets.find((s) => s.synsetId === "06855902-n");
+    expect(comma?.senseCategory).toBe("noun.communication");
+
+    // Validation rule: every real bundled synset's own lex_filenum
+    // resolved against dict/lexnames without falling back to a derived
+    // or empty value -- loadWordNetSynsets() itself would already have
+    // thrown while parsing (parseSynsetLine's own docstring) had any
+    // synset's lex_filenum failed to resolve, so this just confirms the
+    // field is always populated on every synset that made it into the
+    // returned array.
+    expect(synsets.every((s) => s.senseCategory.length > 0)).toBe(true);
   }, 30000);
 });
 

@@ -110,6 +110,23 @@ export interface Sense {
   domainTag?: Text;
   relatedDomainTags: readonly Text[];
 
+  // WordNet's own lexicographer-file category for this Sense's own
+  // meaning, e.g. "noun.artifact" -- WordNetSynset.senseCategory's own
+  // exact counterpart (role/wordnet_loader.ts's own docstring there on
+  // how it's derived: resolved from the synset's own `lex_filenum`
+  // against the bundled dict/lexnames file, never guessed from the
+  // gloss/first lemma/hypernym/sense number/synset offset). Always the
+  // full POS-qualified lexname, never truncated to its bare category
+  // half ("noun.artifact", never "artifact") -- that qualified form is
+  // WordNet's own canonical identifier for it. A property of the
+  // meaning itself, the same as domainTag just above -- a lemma can
+  // (and often does) have senses spanning several different categories,
+  // so this is never derivable from Word.text alone. Undefined for a
+  // Sense that didn't come from WordSeeder.seedWordNet, the same
+  // "undefined means no WordNet source" convention synsetId/
+  // senseFrequency above already use.
+  categoryText?: Text;
+
   sourceReferences: readonly SourceReference[];
 
   // True only for a Sense loaded by WordSeeder -- never set true by
