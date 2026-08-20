@@ -2580,8 +2580,8 @@ function posPill(pos) {
 
 // word.phrase_type's own pill -- only ever set on a record resolved
 // from a Phrase (WordRecord.phrase_type's own docstring), so this is
-// only ever called from wordDetailHTML() alongside posPill()/domainPill(),
-// never for an ordinary Word. Its own fixed colour, distinct from both
+// only ever called from phraseDetailHTML()/phraseRowHtml(), alongside
+// posPill()/domainPill(), never for an ordinary Word. Its own fixed colour, distinct from both
 // POS_COLORS and DOMAIN_COLORS, since phraseType is neither -- it's a
 // third, independent classification (grammatical internal structure,
 // PhraseType's own docstring, vocabulary/data/enums/phrase_type.ts) that can
@@ -3429,13 +3429,13 @@ const pendingDetailWordLookups = new Map(); // requestId -> wordId
 // panel === "phrases" always falls through to wordLookupCache below,
 // never a locally-embedded array the way "words" can -- a selected
 // Phrase's own detail data (relationship_count/definition_segments/
-// domain/pad/phrase_word_segments, wordDetailHTML()'s own fields) only
-// ever comes from the shared "lira-search-words"/wordId path
-// (DictionaryView.searchWords()'s own Phrases fallback, phraseAsWord()
-// plus phraseWordSegments()) -- the Phrases tab's own search results
-// (renderPhrasesOverCapacity()'s "lira-search-phrases", plain
-// PhraseRecords, phraseRowHtml()'s own leaner shape) are enough for the
-// row list but not this.
+// domain/pad/phrase_word_segments, phraseDetailHTML()'s own fields, via
+// detailHTML()'s dispatch) only ever comes from the shared
+// "lira-search-words"/wordId path (DictionaryView.searchWords()'s own
+// Phrases fallback, phraseAsWord() plus phraseWordSegments()) -- the
+// Phrases tab's own search results (renderPhrasesOverCapacity()'s
+// "lira-search-phrases", plain PhraseRecords, phraseRowHtml()'s own
+// leaner shape) are enough for the row list but not this.
 function wordForDetailPanel(panel) {
   const selectedId = state.selectedWordId;
   if (selectedId === undefined || selectedId === null) return undefined;
@@ -3549,7 +3549,7 @@ function generalRelationships(rels) {
 function wordDetailHTML(word, rels, relCount) {
   return \`
     <div class="detail-word">\${headwordHTML(word)}\${word.is_common ? ' <span class="badge-common">common</span>' : ''}\${word.is_root_word ? ' <span class="badge-root-word">root word</span>' : ''}\${word.is_derivable_noun ? ' <span class="badge-derivable-noun">derivable noun</span>' : ''}\${word.is_fully_hydrated ? '' : ' <span class="badge-common" style="color:#C2544B;border-color:#C2544B">hydration pending</span>'}</div>
-    <div style="margin-top:6px">\${posPill(word.pos)} \${domainPill(word.domain)}\${word.phrase_type ? ' ' + phraseTypePill(word.phrase_type) : ''}</div>
+    <div style="margin-top:6px">\${posPill(word.pos)} \${domainPill(word.domain)}</div>
     \${word.related_domains && word.related_domains.length ? \`<div class="detail-related-domains" style="margin-top:4px"><span style="opacity:.6">Also:</span> \${word.related_domains.map(domainPill).join(' ')}</div>\` : ''}
     <div class="detail-entry-id" title="Persistent Qualified Word Identity (domain + part of speech + word) -- stable across regenerations, unlike this word's transient graph id">Entry ID <code>\${word.entry_id}</code></div>
     <div class="detail-definition">\${renderDefinition(word)}</div>
@@ -3562,6 +3562,61 @@ function wordDetailHTML(word, rels, relCount) {
       <div class="detail-relationships-section">\${relationshipsSectionHTML(generalRelationships(rels))}</div>
     </details>
   \`;
+}
+
+// Phrase's own detail-panel renderer -- previously the Phrases tab's
+// own detail panel rendered a Phrase through wordDetailHTML() above
+// unchanged, since searchWords()'s own \`wordId\` branch already resolves
+// a Phrase into a WordRecord-shaped object via phraseAsWord() (that
+// branch's own docstring) so every WordRecord field wordDetailHTML()
+// reads technically exists. But three of those fields name concepts
+// that only ever apply to a genuine Word -- is_root_word/
+// is_derivable_noun/is_fully_hydrated (phraseAsWord() never sets any of
+// them, so they silently read as false/false/false for every Phrase --
+// not wrong, exactly, just never meaningful) -- and word_forms is
+// always empty for a Phrase too (wordFormsFor() reads Noun/Verb/
+// Adjective/Adverb/Pronoun-subtype fields no Phrase carries). Rather
+// than keep reusing a function whose own badges and Word Forms section
+// name Word-only concepts a Phrase can never actually have, this is its
+// own renderer, built from the same section building blocks
+// (headwordHTML/posPill/domainPill/phraseTypePill/renderDefinition/
+// sensesSectionHTML/relationshipsSectionHTML, all already generic over
+// any WordRecord-shaped record) so the Phrases tab's own detail panel
+// stays visually aligned with the Words tab's -- same section order,
+// same CSS classes, same spacing -- while only ever showing fields a
+// Phrase genuinely has: is_common (a Phrase does carry its own
+// isCommon, phrase.ts's own docstring), the phrase_type pill
+// (word.phrase_type's own docstring -- present only on a Phrase-
+// resolved record, never a genuine Word's), and no Word Forms section
+// at all, rather than an empty one.
+function phraseDetailHTML(phrase, rels, relCount) {
+  return \`
+    <div class="detail-word">\${headwordHTML(phrase)}\${phrase.is_common ? ' <span class="badge-common">common</span>' : ''}</div>
+    <div style="margin-top:6px">\${posPill(phrase.pos)} \${domainPill(phrase.domain)}\${phrase.phrase_type ? ' ' + phraseTypePill(phrase.phrase_type) : ''}</div>
+    \${phrase.related_domains && phrase.related_domains.length ? \`<div class="detail-related-domains" style="margin-top:4px"><span style="opacity:.6">Also:</span> \${phrase.related_domains.map(domainPill).join(' ')}</div>\` : ''}
+    <div class="detail-entry-id" title="Persistent Qualified Word Identity (domain + part of speech + word) -- stable across regenerations, unlike this phrase's transient graph id">Entry ID <code>\${phrase.entry_id}</code></div>
+    <div class="detail-definition">\${renderDefinition(phrase)}</div>
+    \${sensesSectionHTML(phrase, rels)}
+    <div class="detail-section-title">Provenance</div>
+    <div class="detail-definition" style="margin-top:0">\${phrase.sources && phrase.sources.length ? phrase.sources.map(s => \`<span class="tag">\${s}</span>\`).join('') : '<span style="opacity:.6">No source recorded.</span>'}</div>
+    <details class="rel-general" open>
+      <summary class="detail-section-title">Other Relationships (<span class="detail-rel-count">\${relCount}</span>)</summary>
+      <div class="detail-relationships-section">\${relationshipsSectionHTML(generalRelationships(rels))}</div>
+    </details>
+  \`;
+}
+
+// Dispatches to phraseDetailHTML() or wordDetailHTML() -- every call
+// site that used to call wordDetailHTML() directly regardless of
+// whether the resolved record actually came from a Word or a Phrase
+// now goes through this instead. word.phrase_word_segments's own
+// presence is the discriminator, not word.phrase_type (a WordNet-seeded
+// Phrase classifyPhraseType() couldn't classify has no phrase_type
+// either, but is still a Phrase, not a Word) -- that field's own
+// docstring already documents it as set "only when this record was
+// resolved from a Phrase", exactly the distinction needed here.
+function detailHTML(word, rels, relCount) {
+  return word.phrase_word_segments !== undefined ? phraseDetailHTML(word, rels, relCount) : wordDetailHTML(word, rels, relCount);
 }
 
 function wireDetailPivotButtons(content) {
@@ -3596,7 +3651,7 @@ function renderDetailPanel(panel) {
   empty.style.display = "none";
   content.style.display = "block";
   const rels = overCapacityRels ? (detailRelsCache.get(word.id) ?? null) : relationshipsForWord(word.id);
-  content.innerHTML = wordDetailHTML(word, rels, word.relationship_count);
+  content.innerHTML = detailHTML(word, rels, word.relationship_count);
   wireDetailPivotButtons(content);
 
   if (overCapacityRels && !detailRelsCache.has(word.id)) {
@@ -4806,15 +4861,19 @@ document.addEventListener("lira-search-relationships-result", (e) => {
     if (state.selectedWordId !== wordId) return;
     refreshHierarchyKindCounts();
     // Every detail panel currently showing this word gets the same
-    // patch -- a full wordDetailHTML() re-render off the already-
-    // resolved Word (no re-fetch, no re-resolve, same cheap "plain DOM
+    // patch -- a full detailHTML() re-render off the already-resolved
+    // Word/Phrase (no re-fetch, no re-resolve, same cheap "plain DOM
     // update" this used to be for the old flat relationships list), not
     // another renderDetailPanel() call. A narrow .detail-relationships-section
     // replace stopped being enough once relationships were also nested
     // per-sense (sensesSectionHTML()'s own docstring) -- each sense's
     // own count/list needs the same refresh the general section does,
     // so the whole panel body is rebuilt from the one already-known
-    // Word instead.
+    // Word/Phrase instead. Includes "phrases" alongside "words"/
+    // "hierarchy"/"cyclic" -- a selected Phrase's own detail panel needs
+    // this same live relationship patch just as much as a Word's own
+    // does, detailHTML()'s own dispatch handles either shape correctly
+    // either way.
     // totalMatches counts every candidate searchRelationships() returned
     // -- general AND sense-expanded together -- so it's not the right
     // number for the "Other Relationships" header any more (that's
@@ -4822,12 +4881,12 @@ document.addEventListener("lira-search-relationships-result", (e) => {
     // docstring); recount from the received rels themselves instead,
     // matching what that section actually goes on to show.
     const generalCount = generalRelationships(rels).length;
-    ["words", "hierarchy", "cyclic"].forEach(panel => {
+    ["words", "phrases", "hierarchy", "cyclic"].forEach(panel => {
       const content = document.getElementById(\`detail-content-\${panel}\`);
       if (!content || content.style.display === "none") return;
       const panelWord = wordForDetailPanel(panel);
       if (!panelWord) return;
-      content.innerHTML = wordDetailHTML(panelWord, rels, generalCount);
+      content.innerHTML = detailHTML(panelWord, rels, generalCount);
       wireDetailPivotButtons(content);
     });
   }
