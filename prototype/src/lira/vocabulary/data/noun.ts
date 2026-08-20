@@ -11,13 +11,42 @@
  * Matrix (data/word_form_part_of_speech_matrix.md) -- undefined until a
  * seeding/curation pass populates them, same as `isCountable`. */
 
-import type { Text } from "../../value_objects";
+import type { Identifier, Text } from "../../value_objects";
 import { PartOfSpeech } from "./enums/part_of_speech";
 import { createWord, endsInConsonantY, validateFormText, validateWordFormAttributes, type Word, type WordFormIssue } from "./word";
 
 export interface Noun extends Word {
   partOfSpeech: PartOfSpeech.NOUN;
   isCountable?: boolean;
+
+  // This Noun's own uuid, per the Verb that WordNet's `+` Derived-Form
+  // pointer says it's nominalized from -- "decision" <- "decide",
+  // "arrival" <- "arrive". Distinct from Word.isDerivableNoun (that
+  // field's own docstring): isDerivableNoun is a hand-curated boolean
+  // WordSeeder's own entryToWord() sets from a Common Vocabulary Cache
+  // JSON flag, with no pointer of its own to the Verb it derives from;
+  // this field is the reverse -- a real pointer, but only ever populated
+  // by WordSeeder.seedWordNet reading its own already-seeded
+  // relationship graph back (WordSeeder.deriveNounVerbPointers()'s own
+  // docstring, role/word_seeder.ts, on exactly how) -- undefined for
+  // every Common Vocabulary Cache closed-class Noun, which has no
+  // relationship-graph read-back pass of its own. Never itself creates a
+  // LexicalRelationship -- the NOMINALISATION edge this reads already
+  // exists (derivationKind()'s own docstring), this only caches which
+  // Verb it points back from. A Noun with more than one incoming
+  // NOMINALISATION edge (rare -- more than one Verb nominalizing to the
+  // same spelling) keeps only the first one found, the same arbitrary-
+  // but-deterministic "pick one" convention Dictionary.lookup() already
+  // uses for a homograph.
+  isDerivedFromVerb?: Identifier;
+
+  // `isDerivedFromVerb !== undefined`, kept as its own boolean rather
+  // than left for every caller to check the pointer field for undefined
+  // -- true exactly when a deriving Verb was found, false otherwise
+  // (never undefined itself, defaults false via createNoun below, the
+  // same non-optional-boolean convention Word.isRootWord/isDerivableNoun
+  // already use).
+  isDerivableNounIndicator: boolean;
 
   // The purpose is to identify the word form used when referring to
   // one person, thing, place, or idea. Fully lexical, not spelling-
@@ -44,7 +73,9 @@ export interface Noun extends Word {
 export type NounInit = Pick<Noun, "text"> & Partial<Omit<Noun, "text" | "partOfSpeech">>;
 
 export function createNoun(init: NounInit): Noun {
-  return createWord({ ...init, partOfSpeech: PartOfSpeech.NOUN }) as Noun;
+  const noun = createWord({ ...init, partOfSpeech: PartOfSpeech.NOUN }) as Noun;
+  if (noun.isDerivableNounIndicator === undefined) noun.isDerivableNounIndicator = false;
+  return noun;
 }
 
 export function isNoun(word: Word): word is Noun {

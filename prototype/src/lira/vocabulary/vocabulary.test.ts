@@ -11,12 +11,12 @@ import { isConjunction } from "./data/conjunction";
 import { createDeterminer, isDeterminer, validateDeterminer } from "./data/determiner";
 import { HypernymRootWord } from "./data/enums/hypernym_root_word";
 import { isInterjection } from "./data/interjection";
-import { NOUN_FORM_PATTERNS, createNoun, generateNounForms, isNoun, validateNoun } from "./data/noun";
+import { NOUN_FORM_PATTERNS, createNoun, generateNounForms, isNoun, validateNoun, type Noun } from "./data/noun";
 import { isNumeral } from "./data/numeral";
 import { isParticle } from "./data/particle";
 import { isPreposition } from "./data/preposition";
 import { PRONOUN_FORM_PATTERNS, createPronoun, isPronoun, validatePronoun } from "./data/pronoun";
-import { VERB_FORM_PATTERNS, createVerb, framesForSense, generateVerbForms, isVerb, validateVerb } from "./data/verb";
+import { VERB_FORM_PATTERNS, createVerb, framesForSense, generateVerbForms, isVerb, validateVerb, type Verb } from "./data/verb";
 import { createPhrase, type Phrase } from "./data/phrase";
 import { Phrases } from "./data/phrases";
 import { PHRASE_TYPE_DETAILS, PhraseType } from "./data/enums/phrase_type";
@@ -1659,6 +1659,63 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     expect(someAdverb).toBeDefined();
     expect(isAdverb(someAdverb!)).toBe(true);
     expect(isNoun(someAdverb!)).toBe(false);
+  }, 60000);
+
+  it("Noun.isDerivedFromVerb/Verb.isNormalisedByNoun read back the real NOMINALISATION edges WordSeeder.seedWordNet's own relationship pass already seeded, without creating a second edge", async () => {
+    const dictionary = new Dictionary();
+    const phraseBook = new Phrases();
+    const senseStore = new Senses();
+    const lexicalRelationships = new LexicalRelationshipStore();
+    const lexicalRelationshipProcessor = new LexicalRelationshipProcessor(
+      lexicalRelationships,
+      new LexicalRelationshipSystemPropertyTensor(),
+    );
+    await new WordSeeder("en").seedWordNet({
+      vocabulary: { dictionary, phrases: phraseBook, senses: senseStore, lexicalRelationships, lexicalRelationshipProcessor },
+    });
+
+    // "hyperventilate" (VERB) -- NOMINALISATION --> "hyperventilation"
+    // (NOUN), a real WordNet `+` Derived-Form pointer pair
+    // (derivationKind()'s own docstring on why that pointer becomes this
+    // relationship kind) -- deliberately one where each side has exactly
+    // one NOMINALISATION edge of its own, so isDerivedFromVerb/
+    // isNormalisedByNoun's own independent "pick the first match" tie-
+    // breaks (deriveNounVerbPointers()'s own docstring) can't land on
+    // two different edges of a genuinely one-to-many pair.
+    const hyperventilate = dictionary.lookupAll("hyperventilate").find((w): w is Verb => isVerb(w));
+    const hyperventilation = dictionary.lookupAll("hyperventilation").find((w): w is Noun => isNoun(w));
+    expect(hyperventilate).toBeDefined();
+    expect(hyperventilation).toBeDefined();
+    expect(hyperventilation!.isDerivedFromVerb?.value).toBe(hyperventilate!.uuid.value);
+    expect(hyperventilation!.isDerivableNounIndicator).toBe(true);
+    expect(hyperventilate!.isNormalisedByNoun?.value).toBe(hyperventilation!.uuid.value);
+    expect(hyperventilate!.isNormalisedByNounIndicator).toBe(true);
+
+    // Reading the pointer back never creates a second, redundant
+    // NOMINALISATION edge of its own -- exactly one exists between this
+    // one (verb, noun) pair, the one pass 2 itself seeded.
+    const edgesBetween = lexicalRelationships
+      .outgoing(hyperventilate!.uuid.value)
+      .filter((edge) => edge.relationshipType === LexicalRelationshipType.NOMINALISATION && edge.targetWordId.value === hyperventilation!.uuid.value);
+    expect(edgesBetween).toHaveLength(1);
+
+    // A Noun/Verb this pass found nothing for keeps both fields at their
+    // own "not derived" defaults -- undefined pointer, false indicator --
+    // real data, not just createNoun()/createVerb()'s own construction-
+    // time default (dictionary.all() is seeded, not hand-built).
+    expect(dictionary.all().some((w) => isNoun(w) && !w.isDerivableNounIndicator && w.isDerivedFromVerb === undefined)).toBe(true);
+    expect(dictionary.all().some((w) => isVerb(w) && !w.isNormalisedByNounIndicator && w.isNormalisedByNoun === undefined)).toBe(true);
+
+    // A Common Vocabulary Cache closed-class Noun/Verb never goes
+    // through deriveNounVerbPointers() at all (it only ever runs inside
+    // seedWordNet, not seedClosedClassWords) -- both fields stay at
+    // createNoun()'s/createVerb()'s own plain construction-time default.
+    const handCraftedNoun = createNoun({ text: "widget" });
+    expect(handCraftedNoun.isDerivedFromVerb).toBeUndefined();
+    expect(handCraftedNoun.isDerivableNounIndicator).toBe(false);
+    const handCraftedVerb = createVerb({ text: "widgetize" });
+    expect(handCraftedVerb.isNormalisedByNoun).toBeUndefined();
+    expect(handCraftedVerb.isNormalisedByNounIndicator).toBe(false);
   }, 60000);
 
   it("a polysemous lemma seeds as exactly one Word, carrying every one of its real WordNet senses by reference", async () => {

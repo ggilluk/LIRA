@@ -25,7 +25,7 @@
  * whole synset plus frame 2 for "stretch" alone, so "extend" (the
  * synset's other member) never gets frame 2. */
 
-import type { Text } from "../../value_objects";
+import type { Identifier, Text } from "../../value_objects";
 import { PartOfSpeech } from "./enums/part_of_speech";
 import type { Senses } from "./senses";
 import {
@@ -40,6 +40,30 @@ import {
 
 export interface Verb extends Word {
   partOfSpeech: PartOfSpeech.VERB;
+
+  // This Verb's own uuid, per the Noun that WordNet's `+` Derived-Form
+  // pointer says it's nominalized into -- "decide" -> "decision",
+  // "arrive" -> "arrival" -- Noun.isDerivedFromVerb's own exact reverse
+  // (that field's own docstring on the shared NOMINALISATION edge both
+  // read, and on why "normalised"/"nominalized" name the same fact
+  // here). Only ever populated by WordSeeder.seedWordNet reading its own
+  // already-seeded relationship graph back
+  // (WordSeeder.deriveNounVerbPointers()'s own docstring,
+  // role/word_seeder.ts) -- undefined for every Common Vocabulary Cache
+  // closed-class Verb. Never itself creates a LexicalRelationship, only
+  // caches which Noun the existing NOMINALISATION edge already points
+  // to. A Verb nominalizing into more than one Noun (e.g. "read" ->
+  // "reading"/"read") keeps only the first one found, the same
+  // arbitrary-but-deterministic "pick one" Noun.isDerivedFromVerb's own
+  // docstring describes.
+  isNormalisedByNoun?: Identifier;
+
+  // `isNormalisedByNoun !== undefined`, kept as its own boolean rather
+  // than left for every caller to check the pointer field for undefined
+  // -- true exactly when a normalising Noun was found, false otherwise
+  // (never undefined itself, defaults false via createVerb below,
+  // Noun.isDerivableNounIndicator's own exact counterpart).
+  isNormalisedByNounIndicator: boolean;
 
   // The rest of this subtype's own row of fields from the Word Form to
   // Part of Speech Matrix (data/word_form_part_of_speech_matrix.md) --
@@ -112,7 +136,9 @@ export interface Verb extends Word {
 export type VerbInit = Pick<Verb, "text"> & Partial<Omit<Verb, "text" | "partOfSpeech">>;
 
 export function createVerb(init: VerbInit): Verb {
-  return createWord({ ...init, partOfSpeech: PartOfSpeech.VERB }) as Verb;
+  const verb = createWord({ ...init, partOfSpeech: PartOfSpeech.VERB }) as Verb;
+  if (verb.isNormalisedByNounIndicator === undefined) verb.isNormalisedByNounIndicator = false;
+  return verb;
 }
 
 export function isVerb(word: Word): word is Verb {

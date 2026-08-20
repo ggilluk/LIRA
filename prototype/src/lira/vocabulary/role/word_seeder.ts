@@ -37,7 +37,7 @@ import { createPrepositionalPhrase } from "../data/prepositional_phrase";
 import { createVerbPhrase } from "../data/verb_phrase";
 import { createDeterminer } from "../data/determiner";
 import { createInterjection } from "../data/interjection";
-import { createNoun, generateNounForms } from "../data/noun";
+import { createNoun, generateNounForms, isNoun } from "../data/noun";
 import { createNumeral } from "../data/numeral";
 import { PartOfSpeech } from "../data/enums/part_of_speech";
 import { createParticle } from "../data/particle";
@@ -61,7 +61,7 @@ import type { Phrases } from "../data/phrases";
 import { createSense, type Sense } from "../data/sense";
 import type { Senses } from "../data/senses";
 import type { SourceReference } from "../data/source_reference";
-import { VERB_FRAME_TEXT, createVerb, generateVerbForms } from "../data/verb";
+import { VERB_FRAME_TEXT, createVerb, generateVerbForms, isVerb, type Verb } from "../data/verb";
 import { copyWordWithFreshUuid, createWord, type Word } from "../data/word";
 import {
   languageHasCommonCache,
@@ -1471,6 +1471,15 @@ export class WordSeeder {
       }
     }
 
+    // Noun.isDerivedFromVerb/Verb.isNormalisedByNoun (each field's own
+    // docstring, data/noun.ts and data/verb.ts) are read back from the
+    // NOMINALISATION edges pass 2 above just finished seeding -- only
+    // now, with every pointer relationship wired, is there anything to
+    // read at all. deriveNounVerbPointers() itself never creates a
+    // LexicalRelationship, it only caches which existing edge each Noun/
+    // Verb participates in directly on the Word object.
+    for (const word of dictionary.all()) this.deriveNounVerbPointers(store, dictionary, word);
+
     // Every Adjective's and Adverb's Comparative/Superlative Degree Form
     // is decided here, not back in pass 1's own synsetMemberToWord() --
     // only now, with every Sense fully wired to every Word that
@@ -1746,6 +1755,36 @@ export class WordSeeder {
     const sorted = [...entry.senseIds].sort((a, b) => frequencyOf(b) - frequencyOf(a));
     entry.senseIds = sorted;
     entry.synsetId = senseStore.findByUuid(sorted[0].value)?.synsetId ?? entry.synsetId;
+  }
+
+  /** A no-op for anything that isn't a Noun or a Verb -- Noun.isDerivedFromVerb's
+   * own docstring on why this is scoped to exactly those two subtypes.
+   * For a Noun, finds its own first incoming NOMINALISATION edge whose
+   * source is itself a Verb (derivationKind()'s own docstring: the
+   * *target*'s part of speech alone decides NOMINALISATION, so an
+   * Adjective's own `+` pointer into a Noun -- "happy" -> "happiness" --
+   * produces the identical relationship kind; only checking the source's
+   * own actual partOfSpeech here keeps isDerivedFromVerb true to its own
+   * name) and caches that Verb's own uuid, plus the derived indicator.
+   * For a Verb, the mirror image: its own first outgoing NOMINALISATION
+   * edge (target is always a Noun by construction, so no equivalent
+   * partOfSpeech check is needed there). Reads relationships.incoming()/
+   * outgoing() only -- this never appends a new LexicalRelationship of
+   * its own, the edge it reads already exists from pass 2 above. */
+  private deriveNounVerbPointers(relationships: LexicalRelationshipStore, dictionary: Dictionary, word: Word): void {
+    if (isNoun(word)) {
+      const verb = relationships
+        .incoming(word.uuid.value)
+        .filter((edge) => edge.relationshipType === LexicalRelationshipType.NOMINALISATION)
+        .map((edge) => dictionary.findByUuid(edge.sourceWordId.value))
+        .find((source): source is Verb => source !== undefined && isVerb(source));
+      word.isDerivedFromVerb = verb?.uuid;
+      word.isDerivableNounIndicator = verb !== undefined;
+    } else if (isVerb(word)) {
+      const edge = relationships.outgoing(word.uuid.value).find((candidate) => candidate.relationshipType === LexicalRelationshipType.NOMINALISATION);
+      word.isNormalisedByNoun = edge?.targetWordId;
+      word.isNormalisedByNounIndicator = edge !== undefined;
+    }
   }
 
   // domainTag deliberately left unset here -- unlike root_words.json's
