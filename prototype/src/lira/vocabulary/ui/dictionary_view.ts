@@ -112,12 +112,13 @@ export interface WordRecord {
   is_derivable_noun: boolean;
   // Every morphological-derivation pointer field this Word's own
   // concrete POS subtype actually carries a *resolved* value for --
-  // Noun.isDerivedFromVerb and its seven siblings across data/noun.ts,
+  // Noun.isDerivedFromVerb and its three siblings across data/noun.ts,
   // data/verb.ts, data/adjective.ts, data/adverb.ts (each field's own
   // docstring names which specific pair it implements;
   // morphologicalDerivations()'s own docstring on how this list is
-  // built). `attribute` is the field's own camelCase name; `label` is
-  // that name run through the same field-name-to-label convention
+  // built, and on why only four pairs exist rather than eight).
+  // `attribute` is the field's own camelCase name; `label` is that name
+  // run through the same field-name-to-label convention
   // wordFormsFor()'s own WordFormEntry.label already uses
   // (formFieldLabel(), this file), computed server-side so the client
   // never needs its own copy of that logic; `target` is the Word that
@@ -129,7 +130,11 @@ export interface WordRecord {
   // WordSeeder.seedWordNet itself produced) is simply omitted rather
   // than included with a null target. Empty for every part of speech
   // that carries none of these fields at all (Pronoun, Preposition, ...)
-  // and for a Word with no qualifying edge found.
+  // and for a Word with no qualifying edge found. Rendered client-side
+  // as part of the Word Forms section (wordFormsSectionHTML(), this
+  // file) rather than its own section -- a derivation pointer is itself
+  // a word form relationship, and showing it separately at the top of
+  // the panel produced no benefit over folding it in below.
   derivations: { attribute: string; label: string; target: { id: string; text: string } }[];
   domain: string | null;
   // Extra topic domains the same WordNet sense also carries beyond its
@@ -3480,15 +3485,22 @@ function sensesSectionHTML(word, rels) {
 }
 
 function wordFormsSectionHTML(word) {
-  if (!word.word_forms || !word.word_forms.length) {
+  const hasForms = word.word_forms && word.word_forms.length;
+  const hasDerivations = word.derivations && word.derivations.length;
+  if (!hasForms && !hasDerivations) {
     return '<div class="detail-section-title">Word Forms</div><div class="detail-empty" style="padding:4px 0">No word forms seeded yet.</div>';
   }
   return \`
     <div class="detail-section-title">Word Forms</div>
-    \${word.word_forms.map(f => \`
+    \${(word.word_forms || []).map(f => \`
       <div class="word-form-row">
         <span class="word-form-label">\${f.label}</span>
         <span class="word-form-value">\${f.value}</span>
+      </div>\`).join('')}
+    \${(word.derivations || []).map(d => \`
+      <div class="word-form-row">
+        <span class="word-form-label">\${d.label}</span>
+        <span class="word-form-value"><button class="link-btn" data-pivot-id="\${d.target.id}">\${d.target.text}</button></span>
       </div>\`).join('')}
   \`;
 }
@@ -3643,32 +3655,11 @@ function generalRelationships(rels) {
   return rels === null ? null : rels.filter(r => !r.via_sense_id);
 }
 
-// word.derivations's own rendering (that field's own docstring) -- one
-// labelled, clickable line per morphological-derivation pointer this
-// Word's own concrete POS subtype actually has a resolved value for
-// (Noun.isDerivedFromVerb and its seven siblings, deriveMorphologicalPointers()'s
-// own docstring, role/word_seeder.ts, for exactly which eight pairs
-// these are). Renders nothing at all when the list is empty -- every
-// non-Noun/Verb/Adjective/Adverb Word, and any of those four whose own
-// WordNet data carried none of these edges -- the same "don't show a
-// section that adds nothing" convention every other detail-panel
-// section already follows. Each entry's own label is computed
-// server-side (morphologicalDerivations()'s own docstring) from the
-// same field-name-to-label convention wordFormsFor()'s own
-// WordFormEntry.label already uses, so the client never needs its own
-// copy of that logic.
-function derivationsSectionHTML(word) {
-  if (!word.derivations || !word.derivations.length) return '';
-  return word.derivations.map(d => \`
-    <div class="detail-noun-verb-pointer" style="margin-top:4px"><span style="opacity:.6">\${d.label}:</span> <button class="link-btn" data-pivot-id="\${d.target.id}">\${d.target.text}</button></div>\`).join('');
-}
-
 function wordDetailHTML(word, rels, relCount) {
   return \`
     <div class="detail-word">\${headwordHTML(word)}\${word.is_common ? ' <span class="badge-common">common</span>' : ''}\${word.is_root_word ? ' <span class="badge-root-word">root word</span>' : ''}\${word.is_derivable_noun ? ' <span class="badge-derivable-noun">derivable noun</span>' : ''}\${word.is_fully_hydrated ? '' : ' <span class="badge-common" style="color:#C2544B;border-color:#C2544B">hydration pending</span>'}</div>
     <div style="margin-top:6px">\${posPill(word.pos)} \${domainPill(word.domain)}</div>
     \${word.related_domains && word.related_domains.length ? \`<div class="detail-related-domains" style="margin-top:4px"><span style="opacity:.6">Also:</span> \${word.related_domains.map(domainPill).join(' ')}</div>\` : ''}
-    \${derivationsSectionHTML(word)}
     <div class="detail-entry-id" title="Persistent Qualified Word Identity (domain + part of speech + word) -- stable across regenerations, unlike this word's transient graph id">Entry ID <code>\${word.entry_id}</code></div>
     <div class="detail-definition">\${renderDefinition(word)}</div>
     \${sensesSectionHTML(word, rels)}
