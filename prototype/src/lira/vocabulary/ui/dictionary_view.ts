@@ -263,13 +263,18 @@ export interface WordSenseSummary {
   // own docstring above has the shared reasoning for silently omitting
   // an Identifier that fails to resolve here). Lives on the Sense, not
   // on Word/Adverb, for the exact reason Sense.pertainsTo itself does --
-  // shown per-sense here rather than folded into the Word-level
+  // scoped per-sense here rather than folded into the Word-level
   // `derivations` field, so a polysemous word's own several, genuinely
   // different Pertainym targets never collapse into one ambiguous list.
+  // sensesSectionHTML()'s own client-side rendering synthesizes each
+  // entry here into that sense's own Relationships list (alongside its
+  // genuine LexicalRelationship-backed rows) rather than a separate line
+  // of its own -- Pertainym is a real relationship fact even though it
+  // isn't stored as a LexicalRelationship edge (Sense.pertainsTo's own
+  // docstring on why), so it belongs in that list, not missing from it.
   // Empty for a Sense with no Pertainym pointer of its own at all (most
-  // Senses -- Pertainym is comparatively rare), not shown as its own
-  // line at all in that case (sensesSectionHTML()'s own "don't show what
-  // adds nothing" convention).
+  // Senses -- Pertainym is comparatively rare) -- contributes nothing to
+  // that sense's own Relationships list or count in that case.
   pertains_to: { id: string; text: string }[];
 }
 
@@ -3478,13 +3483,28 @@ function sensesSectionHTML(word, rels) {
     <div class="detail-section-title">Senses (\${word.senses.length})</div>
     <ol class="sense-list">
       \${word.senses.map((s, i) => {
-        const senseRels = rels === null ? null : rels.filter(r => r.via_sense_id === s.id);
+        // s.pertains_to's own fact (a Sense-level field, not a
+        // LexicalRelationship edge -- Sense.pertainsTo's own docstring,
+        // data/sense.ts, on why) is synthesized into this same
+        // Relationships list rather than only shown in the plain
+        // "pertains to:" line above, so it reads alongside this sense's
+        // other relationships instead of being the one fact missing from
+        // an otherwise-complete list. Already known client-side (no
+        // fetch needed, unlike \`rels\`), so it's shown even while the
+        // general relationship fetch is still in flight.
+        const pertainsRels = s.pertains_to.map(p => ({
+          outgoing: true, kind: 'PERTAINYM', pillKind: 'PERTAINYM', group: 0,
+          otherId: p.id, otherText: p.text, otherSenseId: null, otherDomain: null,
+          source_text: word.lexical_form, target_text: p.text, qualifier: null,
+        }));
+        const generalRels = rels === null ? null : rels.filter(r => r.via_sense_id === s.id);
+        const senseRels = generalRels === null ? (pertainsRels.length ? pertainsRels : null) : [...pertainsRels, ...generalRels];
         const count = senseRels === null ? '…' : senseRels.length;
         return \`
         <li class="sense-row\${s.is_primary ? ' primary' : ''}">
           <span class="sense-number">\${i + 1}\${s.is_primary ? ' <span class="sense-primary-tag">primary</span>' : ''}</span>
           <span class="sense-definition">\${s.definition || '<span style="opacity:.6">No definition.</span>'}</span>
-          <span class="sense-meta">\${domainPill(s.domain)}\${s.frequency !== null ? \` <span class="sense-frequency" title="WordNet tagged-occurrence count (SemCor semantic concordance)">freq \${s.frequency.toLocaleString()}</span>\` : ''}\${s.synonyms.length ? \` <span class="sense-synonyms">synonyms: \${s.synonyms.map(syn => \`<button class="link-btn" data-pivot-id="\${syn.id}">\${syn.text}</button>\`).join(', ')}</span>\` : ''}\${s.pertains_to.length ? \` <span class="sense-synonyms">pertains to: \${s.pertains_to.map(p => \`<button class="link-btn" data-pivot-id="\${p.id}">\${p.text}</button>\`).join(', ')}</span>\` : ''}</span>
+          <span class="sense-meta">\${domainPill(s.domain)}\${s.frequency !== null ? \` <span class="sense-frequency" title="WordNet tagged-occurrence count (SemCor semantic concordance)">freq \${s.frequency.toLocaleString()}</span>\` : ''}\${s.synonyms.length ? \` <span class="sense-synonyms">synonyms: \${s.synonyms.map(syn => \`<button class="link-btn" data-pivot-id="\${syn.id}">\${syn.text}</button>\`).join(', ')}</span>\` : ''}</span>
           <details class="sense-rels"\${s.is_primary ? ' open' : ''}>
             <summary>Relationships (\${count})</summary>
             <div class="detail-relationships-section">\${relationshipsSectionHTML(senseRels)}</div>
