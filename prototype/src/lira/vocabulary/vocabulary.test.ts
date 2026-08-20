@@ -1716,6 +1716,31 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     const handCraftedVerb = createVerb({ text: "widgetize" });
     expect(handCraftedVerb.isNormalisedByNoun).toBeUndefined();
     expect(handCraftedVerb.isNormalisedByNounIndicator).toBe(false);
+
+    // WordRecord's own client-facing counterparts (nounVerbPointerFields(),
+    // ui/dictionary_view.ts) -- both indicators plus their resolved
+    // pointer, read through the same wordId path the detail panel itself
+    // uses, not the raw Noun/Verb checked above.
+    const view = new DictionaryView(dictionary, lexicalRelationships, { domainName: "Common", phrases: phraseBook, senses: senseStore });
+    const hyperventilationRecord = view.searchWords({ wordId: hyperventilation!.uuid.value }).words[0];
+    expect(hyperventilationRecord.is_derivable_noun_indicator).toBe(true);
+    expect(hyperventilationRecord.derived_from_verb).toEqual({ id: hyperventilate!.uuid.value, text: "hyperventilate" });
+    expect(hyperventilationRecord.is_normalised_by_noun_indicator).toBeUndefined();
+    expect(hyperventilationRecord.normalised_by_noun).toBeUndefined();
+
+    const hyperventilateRecord = view.searchWords({ wordId: hyperventilate!.uuid.value }).words[0];
+    expect(hyperventilateRecord.is_normalised_by_noun_indicator).toBe(true);
+    expect(hyperventilateRecord.normalised_by_noun).toEqual({ id: hyperventilation!.uuid.value, text: "hyperventilation" });
+    expect(hyperventilateRecord.is_derivable_noun_indicator).toBeUndefined();
+    expect(hyperventilateRecord.derived_from_verb).toBeUndefined();
+
+    // Neither field is ever set for a part of speech that's neither Noun
+    // nor Verb.
+    const someAdjective = dictionary.all().find((w) => w.partOfSpeech === PartOfSpeech.ADJECTIVE);
+    expect(someAdjective).toBeDefined();
+    const adjectiveRecord = view.searchWords({ wordId: someAdjective!.uuid.value }).words[0];
+    expect(adjectiveRecord.is_derivable_noun_indicator).toBeUndefined();
+    expect(adjectiveRecord.is_normalised_by_noun_indicator).toBeUndefined();
   }, 60000);
 
   it("a polysemous lemma seeds as exactly one Word, carrying every one of its real WordNet senses by reference", async () => {

@@ -110,6 +110,27 @@ export interface WordRecord {
   is_common: boolean;
   is_root_word: boolean;
   is_derivable_noun: boolean;
+  // Noun.isDerivableNounIndicator's own client-facing counterpart
+  // (data/noun.ts) -- distinct from is_derivable_noun just above (that
+  // field's own docstring on the difference: a hand-curated flag versus
+  // this one, read back from a real WordNet NOMINALISATION pointer).
+  // Present only on a record resolved from a Noun; undefined for every
+  // other part of speech.
+  is_derivable_noun_indicator?: boolean;
+  // The Verb Noun.isDerivedFromVerb points to, resolved for display --
+  // present only alongside is_derivable_noun_indicator === true, and
+  // only when that pointer actually resolves against this Dictionary
+  // (nounVerbPointerFields()'s own docstring on why it always should,
+  // for anything WordSeeder.seedWordNet itself produced).
+  derived_from_verb?: { id: string; text: string };
+  // Verb.isNormalisedByNounIndicator's own client-facing counterpart
+  // (data/verb.ts) -- derived_from_verb's own exact mirror for the
+  // opposite direction. Present only on a record resolved from a Verb.
+  is_normalised_by_noun_indicator?: boolean;
+  // The Noun Verb.isNormalisedByNoun points to, resolved for display --
+  // derived_from_verb's own exact counterpart, present only alongside
+  // is_normalised_by_noun_indicator === true.
+  normalised_by_noun?: { id: string; text: string };
   domain: string | null;
   // Extra topic domains the same WordNet sense also carries beyond its
   // primary `domain` (Word.relatedDomainTags's own docstring) -- e.g.
@@ -724,7 +745,43 @@ export class DictionaryView {
       definition_segments: this.definitionSegments(word),
       word_forms: this.wordFormsFor(word),
       senses: this.sensesFor(word),
+      ...this.nounVerbPointerFields(word),
     };
+  }
+
+  /** WordRecord's own `is_derivable_noun_indicator`/`derived_from_verb`
+   * and `is_normalised_by_noun_indicator`/`normalised_by_noun` fields
+   * (each one's own docstring above) -- `{}` for anything that's
+   * neither a Noun nor a Verb, so those four fields simply stay
+   * undefined on the returned WordRecord for every other part of
+   * speech. Resolves the raw Identifier pointer (Noun.isDerivedFromVerb/
+   * Verb.isNormalisedByNoun, each field's own docstring, data/noun.ts
+   * and data/verb.ts) against this Dictionary the same way every other
+   * pivot-button target already is -- should always succeed for
+   * anything WordSeeder.seedWordNet itself produced (the pointer is
+   * only ever set to a Word already present in the same Dictionary,
+   * deriveNounVerbPointers()'s own docstring, role/word_seeder.ts), so
+   * an unresolved pointer here would mean something else went wrong,
+   * not an expected case -- but the indicator itself still faithfully
+   * reports `true` either way, since it names a fact about the Word's
+   * own data, not about whether this one Dictionary happens to still
+   * have the target. */
+  private nounVerbPointerFields(word: Word): Pick<WordRecord, "is_derivable_noun_indicator" | "derived_from_verb" | "is_normalised_by_noun_indicator" | "normalised_by_noun"> {
+    if (isNoun(word)) {
+      const verb = word.isDerivedFromVerb !== undefined ? this.dictionary.findByUuid(word.isDerivedFromVerb.value) : undefined;
+      return {
+        is_derivable_noun_indicator: word.isDerivableNounIndicator,
+        derived_from_verb: verb !== undefined ? { id: verb.uuid.value, text: verb.lexicalForm?.value ?? verb.text } : undefined,
+      };
+    }
+    if (isVerb(word)) {
+      const noun = word.isNormalisedByNoun !== undefined ? this.dictionary.findByUuid(word.isNormalisedByNoun.value) : undefined;
+      return {
+        is_normalised_by_noun_indicator: word.isNormalisedByNounIndicator,
+        normalised_by_noun: noun !== undefined ? { id: noun.uuid.value, text: noun.lexicalForm?.value ?? noun.text } : undefined,
+      };
+    }
+    return {};
   }
 
   /** Every Sense `entry` lexicalizes, in `entry.senseIds`'s own order
@@ -3574,11 +3631,35 @@ function generalRelationships(rels) {
   return rels === null ? null : rels.filter(r => !r.via_sense_id);
 }
 
+// word.is_derivable_noun_indicator/word.is_normalised_by_noun_indicator's
+// own rendering (each field's own docstring) -- a single labelled line,
+// only ever one or the other since a Word is exactly one part of speech
+// (never both a Noun and a Verb at once): "Derived from Verb" links to
+// word.derived_from_verb when the pointer resolved, "Normalised by
+// Noun" to word.normalised_by_noun. Renders nothing at all for a false/
+// undefined indicator (every non-Noun/Verb Word, and a Noun/Verb
+// WordSeeder.seedWordNet found no NOMINALISATION pointer for) -- the
+// same "don't show a section that adds nothing" convention every other
+// detail-panel section already follows. An indicator true but its own
+// pointer unresolved (nounVerbPointerFields()'s own docstring on why
+// that shouldn't happen in practice) still shows the label, just with
+// no link -- the indicator itself is never silently dropped.
+function nounVerbPointerSectionHTML(word) {
+  if (word.is_derivable_noun_indicator) {
+    return \`<div class="detail-noun-verb-pointer" style="margin-top:4px"><span style="opacity:.6">Derived from Verb:</span> \${word.derived_from_verb ? \`<button class="link-btn" data-pivot-id="\${word.derived_from_verb.id}">\${word.derived_from_verb.text}</button>\` : '<span style="opacity:.6">unresolved</span>'}</div>\`;
+  }
+  if (word.is_normalised_by_noun_indicator) {
+    return \`<div class="detail-noun-verb-pointer" style="margin-top:4px"><span style="opacity:.6">Normalised by Noun:</span> \${word.normalised_by_noun ? \`<button class="link-btn" data-pivot-id="\${word.normalised_by_noun.id}">\${word.normalised_by_noun.text}</button>\` : '<span style="opacity:.6">unresolved</span>'}</div>\`;
+  }
+  return '';
+}
+
 function wordDetailHTML(word, rels, relCount) {
   return \`
     <div class="detail-word">\${headwordHTML(word)}\${word.is_common ? ' <span class="badge-common">common</span>' : ''}\${word.is_root_word ? ' <span class="badge-root-word">root word</span>' : ''}\${word.is_derivable_noun ? ' <span class="badge-derivable-noun">derivable noun</span>' : ''}\${word.is_fully_hydrated ? '' : ' <span class="badge-common" style="color:#C2544B;border-color:#C2544B">hydration pending</span>'}</div>
     <div style="margin-top:6px">\${posPill(word.pos)} \${domainPill(word.domain)}</div>
     \${word.related_domains && word.related_domains.length ? \`<div class="detail-related-domains" style="margin-top:4px"><span style="opacity:.6">Also:</span> \${word.related_domains.map(domainPill).join(' ')}</div>\` : ''}
+    \${nounVerbPointerSectionHTML(word)}
     <div class="detail-entry-id" title="Persistent Qualified Word Identity (domain + part of speech + word) -- stable across regenerations, unlike this word's transient graph id">Entry ID <code>\${word.entry_id}</code></div>
     <div class="detail-definition">\${renderDefinition(word)}</div>
     \${sensesSectionHTML(word, rels)}
