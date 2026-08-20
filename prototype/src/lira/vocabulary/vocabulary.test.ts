@@ -2167,6 +2167,44 @@ describe("DictionaryView.searchWords", () => {
     expect(largeRecord.senses).toEqual([expect.objectContaining({ is_primary: true, definition: "above average in size" })]);
   });
 
+  it("a WordRecord's own senses expose each Sense's own Pertainym target(s) via pertains_to, resolved against the Dictionary -- distinct per sense, not folded into one Word-level list", () => {
+    const dictionary = new Dictionary();
+    const senseStore = new Senses();
+    const aural = createAdjective({ text: "aural" });
+    const aura = createNoun({ text: "aura" });
+    const ear = createNoun({ text: "ear" });
+    dictionary.append(aural);
+    dictionary.append(aura);
+    dictionary.append(ear);
+
+    // "aural" the real WordNet lemma: sense 1 pertains to "aura", the
+    // unrelated sense 2 pertains to "ear" (Sense.pertainsTo's own
+    // docstring, data/sense.ts, on why this is per-sense, verified
+    // against this exact word).
+    const auraSense = createSense({ definition: { value: "relating to or characterized by an aura" }, isCommon: true, pertainsTo: [aura.uuid], pertainsToIndicator: true });
+    const hearingSense = createSense({ definition: { value: "of or pertaining to hearing or the ear" }, isCommon: true, pertainsTo: [ear.uuid], pertainsToIndicator: true });
+    senseStore.append(auraSense);
+    senseStore.append(hearingSense);
+    senseStore.registerMember(auraSense, aural);
+    senseStore.registerMember(hearingSense, aural);
+
+    const view = new DictionaryView(dictionary, new LexicalRelationshipStore(), { domainName: "Common", senses: senseStore });
+    const record = view.searchWords({ wordId: aural.uuid.value }).words[0];
+
+    expect(record.senses).toHaveLength(2);
+    expect(record.senses[0].pertains_to).toEqual([{ id: aura.uuid.value, text: "aura" }]);
+    expect(record.senses[1].pertains_to).toEqual([{ id: ear.uuid.value, text: "ear" }]);
+
+    // A Sense with no Pertainym pointer at all gets an empty array, not undefined.
+    const wooden = createAdjective({ text: "wooden" });
+    dictionary.append(wooden);
+    const woodenSense = createSense({ definition: { value: "made of wood" }, isCommon: true });
+    senseStore.append(woodenSense);
+    senseStore.registerMember(woodenSense, wooden);
+    const woodenRecord = view.searchWords({ wordId: wooden.uuid.value }).words[0];
+    expect(woodenRecord.senses[0].pertains_to).toEqual([]);
+  });
+
   it("a Phrase's own detail record gets senses too, resolved via phraseAsWord() the same way relationships already are", () => {
     const dictionary = new Dictionary();
     const phraseBook = new Phrases();

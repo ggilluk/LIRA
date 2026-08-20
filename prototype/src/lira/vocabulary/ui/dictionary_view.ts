@@ -255,6 +255,22 @@ export interface WordSenseSummary {
   // button every other related-word row already uses
   // (wireDetailPivotButtons(), this file's own embedded client script).
   synonyms: { id: string; text: string }[];
+  // Sense.pertainsTo's own docstring (data/sense.ts) -- this Sense's own
+  // Pertainym target(s) ("aural"'s "relating to an aura" sense pertains
+  // to the noun "aura"; its unrelated "relating to hearing" sense
+  // pertains to "ear"), resolved against this Dictionary the same way
+  // every other pivot-button target already is (morphologicalDerivations()'s
+  // own docstring above has the shared reasoning for silently omitting
+  // an Identifier that fails to resolve here). Lives on the Sense, not
+  // on Word/Adverb, for the exact reason Sense.pertainsTo itself does --
+  // shown per-sense here rather than folded into the Word-level
+  // `derivations` field, so a polysemous word's own several, genuinely
+  // different Pertainym targets never collapse into one ambiguous list.
+  // Empty for a Sense with no Pertainym pointer of its own at all (most
+  // Senses -- Pertainym is comparatively rare), not shown as its own
+  // line at all in that case (sensesSectionHTML()'s own "don't show what
+  // adds nothing" convention).
+  pertains_to: { id: string; text: string }[];
 }
 
 type DefinitionSegment =
@@ -834,6 +850,10 @@ export class DictionaryView {
           .membersOf(senseId.value)
           .filter((member) => member.uuid.value !== entry.uuid.value)
           .map((member) => ({ id: member.uuid.value, text: member.lexicalForm?.value ?? member.text })),
+        pertains_to: sense.pertainsTo
+          .map((id) => this.dictionary.findByUuid(id.value))
+          .filter((target): target is Word => target !== undefined)
+          .map((target) => ({ id: target.uuid.value, text: target.lexicalForm?.value ?? target.text })),
       });
     });
     return summaries;
@@ -3464,7 +3484,7 @@ function sensesSectionHTML(word, rels) {
         <li class="sense-row\${s.is_primary ? ' primary' : ''}">
           <span class="sense-number">\${i + 1}\${s.is_primary ? ' <span class="sense-primary-tag">primary</span>' : ''}</span>
           <span class="sense-definition">\${s.definition || '<span style="opacity:.6">No definition.</span>'}</span>
-          <span class="sense-meta">\${domainPill(s.domain)}\${s.frequency !== null ? \` <span class="sense-frequency" title="WordNet tagged-occurrence count (SemCor semantic concordance)">freq \${s.frequency.toLocaleString()}</span>\` : ''}\${s.synonyms.length ? \` <span class="sense-synonyms">synonyms: \${s.synonyms.map(syn => \`<button class="link-btn" data-pivot-id="\${syn.id}">\${syn.text}</button>\`).join(', ')}</span>\` : ''}</span>
+          <span class="sense-meta">\${domainPill(s.domain)}\${s.frequency !== null ? \` <span class="sense-frequency" title="WordNet tagged-occurrence count (SemCor semantic concordance)">freq \${s.frequency.toLocaleString()}</span>\` : ''}\${s.synonyms.length ? \` <span class="sense-synonyms">synonyms: \${s.synonyms.map(syn => \`<button class="link-btn" data-pivot-id="\${syn.id}">\${syn.text}</button>\`).join(', ')}</span>\` : ''}\${s.pertains_to.length ? \` <span class="sense-synonyms">pertains to: \${s.pertains_to.map(p => \`<button class="link-btn" data-pivot-id="\${p.id}">\${p.text}</button>\`).join(', ')}</span>\` : ''}</span>
           <details class="sense-rels"\${s.is_primary ? ' open' : ''}>
             <summary>Relationships (\${count})</summary>
             <div class="detail-relationships-section">\${relationshipsSectionHTML(senseRels)}</div>
