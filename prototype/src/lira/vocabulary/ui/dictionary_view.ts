@@ -144,6 +144,18 @@ export interface WordRecord {
   // exists in the bundled data today, but the field stays optional
   // either way).
   phrase_type?: string;
+  // Phrase.headWord/Phrase.headWordForm's own combined client-facing
+  // shape (data/phrase.ts's own docstring on each) -- reuses
+  // DefinitionSegment, the same shape phrase_word_segments above already
+  // uses per token, since a Head Word is exactly one of those segments
+  // (`text` carries headWordForm's own phrase-local spelling; `word_id`/
+  // `lexical_form`/... carry headWord's own resolved Word, when it
+  // resolved at all). Present only when this record was resolved from a
+  // Phrase whose own `wordRoles` actually identified a Head position
+  // (phraseHeadWordSegment()'s own docstring); undefined for an ordinary
+  // Word, and for a Phrase with no identified Head (every Common
+  // Vocabulary Cache closed-class Phrase, in particular).
+  head_word?: DefinitionSegment;
   // Every *_Form Text field this Word's own concrete POS subtype
   // carries a populated value for, in the Word Form to Part of Speech
   // Matrix's own field order (data/word_form_part_of_speech_matrix.md)
@@ -902,7 +914,7 @@ export class DictionaryView {
       if (phrase !== undefined) {
         const record = this.wordRecordFor(phraseAsWord(phrase));
         return {
-          words: [{ ...record, phrase_word_segments: this.phraseWordSegments(phrase), phrase_type: this.phraseTypeLabel(phrase) }],
+          words: [{ ...record, phrase_word_segments: this.phraseWordSegments(phrase), phrase_type: this.phraseTypeLabel(phrase), head_word: this.phraseHeadWordSegment(phrase) }],
           totalMatches: 1,
         };
       }
@@ -922,7 +934,7 @@ export class DictionaryView {
         if ("words" in representative) {
           const record = this.wordRecordFor(phraseAsWord(representative));
           return {
-            words: [{ ...record, phrase_word_segments: this.phraseWordSegments(representative), phrase_type: this.phraseTypeLabel(representative) }],
+            words: [{ ...record, phrase_word_segments: this.phraseWordSegments(representative), phrase_type: this.phraseTypeLabel(representative), head_word: this.phraseHeadWordSegment(representative) }],
             totalMatches: 1,
           };
         }
@@ -1084,6 +1096,22 @@ export class DictionaryView {
    * already gets its own for. */
   private phraseTypeLabel(phrase: Phrase): string | undefined {
     return phrase.phraseType !== undefined ? PhraseType[phrase.phraseType] : undefined;
+  }
+
+  /** `phrase.headWordForm`/`phrase.headWord` (data/phrase.ts's own
+   * docstring on each), combined into one DefinitionSegment the same
+   * way an individual entry of phraseWordSegments() above already is --
+   * `undefined` when `phrase.headWordForm` itself is undefined (no Head
+   * position was ever identified for this Phrase, phrase.ts's own
+   * docstring on when that happens). Deliberately reuses
+   * definitionWordSegment() rather than re-deriving the same word_id/
+   * lexical_form/pos/domain/gloss shape by hand -- a Head Word is
+   * exactly one more definition-style word reference, just singled out
+   * instead of iterated in sequence. */
+  private phraseHeadWordSegment(phrase: Phrase): DefinitionSegment | undefined {
+    if (phrase.headWordForm === undefined) return undefined;
+    const resolved = phrase.headWord !== undefined ? this.dictionary.findByUuid(phrase.headWord.value) : undefined;
+    return this.definitionWordSegment(phrase.headWordForm.value, resolved);
   }
 
   private definitionWordSegment(surfaceText: string, resolved: Word | undefined): DefinitionSegment {
@@ -3595,6 +3623,7 @@ function phraseDetailHTML(phrase, rels, relCount) {
     <div style="margin-top:6px">\${posPill(phrase.pos)} \${domainPill(phrase.domain)}\${phrase.phrase_type ? ' ' + phraseTypePill(phrase.phrase_type) : ''}</div>
     \${phrase.related_domains && phrase.related_domains.length ? \`<div class="detail-related-domains" style="margin-top:4px"><span style="opacity:.6">Also:</span> \${phrase.related_domains.map(domainPill).join(' ')}</div>\` : ''}
     <div class="detail-entry-id" title="Persistent Qualified Word Identity (domain + part of speech + word) -- stable across regenerations, unlike this phrase's transient graph id">Entry ID <code>\${phrase.entry_id}</code></div>
+    \${phrase.head_word ? \`<div class="detail-head-word" style="margin-top:4px" title="The one word whose own lexical class determines this Phrase's phraseType (Head Identification Rule, data/phrase_type_patterns_and_word_roles.md) -- text shown here is its Head Word Form, the phrase-local spelling; the link resolves its own Head Word entity"><span style="opacity:.6">Head Word:</span> \${definitionSegmentHTML(phrase.head_word)}</div>\` : ''}
     <div class="detail-definition">\${renderDefinition(phrase)}</div>
     \${sensesSectionHTML(phrase, rels)}
     <div class="detail-section-title">Provenance</div>

@@ -13,10 +13,15 @@ and `classifyPhraseRoles()` (role/word_seeder.ts, called from
 `linkPhraseWords()` right after `phrase.words` itself is resolved)
 assigns every constituent word its own `PhraseRole`
 (`enums/phrase_role.ts`), stored index-aligned with `words` on
-`phrase.wordRoles` (`data/phrase.ts`) -- the Head is simply whichever
-position holds `PhraseRole.HEAD`, so no separate Head pointer field was
-needed. Only for a Phrase seeded by `WordSeeder.seedWordNet`, the same
-scope `phraseType`/`words` themselves are already limited to -- a Common
+`phrase.wordRoles` (`data/phrase.ts`). `Phrase.headWord`/
+`Phrase.headWordForm` (`data/phrase.ts`) then single that Head position
+out explicitly -- `headWord` the resolved Word it points to (when it
+resolved against the Dictionary at all), `headWordForm` its own
+phrase-local spelling regardless -- derived directly from `wordRoles`
+in that same `linkPhraseWords()` pass rather than left for every caller
+to re-scan for the one `PhraseRole.HEAD` position themselves. Only for a
+Phrase seeded by `WordSeeder.seedWordNet`, the same scope
+`phraseType`/`words` themselves are already limited to -- a Common
 Vocabulary Cache closed-class Phrase has no constituency-parsing pass of
 its own and so has empty `wordRoles`, `words`'s own exact counterpart
 there. `classifyPhraseRoles()`'s own docstring documents the one

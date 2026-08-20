@@ -1707,11 +1707,18 @@ export class WordSeeder {
    * of speech instead (possiblePartsOfSpeech(), this module), since
    * relying on one arbitrary pick here would misidentify a phrase's own
    * Head whenever that pick happens to land on the wrong homograph
-   * (that function's own docstring has the "give up" example). */
+   * (that function's own docstring has the "give up" example). Finally
+   * derives `phrase.headWord`/`phrase.headWordForm` (data/phrase.ts's
+   * own docstring on each) directly from the just-computed `wordRoles` --
+   * whichever position (if any) holds PhraseRole.HEAD -- rather than
+   * leaving every later caller to re-scan `wordRoles` for it themselves. */
   private linkPhraseWords(phrase: Phrase, dictionary: Dictionary): void {
     const tokens = phrase.text.trim().split(/\s+/).filter((token) => token.length > 0);
     phrase.words = tokens.map((token) => dictionary.lookup(token)?.uuid);
     phrase.wordRoles = classifyPhraseRoles(phrase.phraseType, tokens, dictionary);
+    const headIndex = phrase.wordRoles.indexOf(PhraseRole.HEAD);
+    phrase.headWord = headIndex === -1 ? undefined : phrase.words[headIndex];
+    phrase.headWordForm = headIndex === -1 ? undefined : { value: tokens[headIndex] };
   }
 
   /** Reorders `entry.senseIds` (Word.senseIds's own docstring) by

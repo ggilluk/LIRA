@@ -146,6 +146,37 @@ export interface Phrase extends LinguisticUnit {
   // `words` itself is resolved -- always empty for a Common Vocabulary
   // Cache closed-class Phrase, `words`'s own exact counterpart there.
   wordRoles: readonly (PhraseRole | undefined)[];
+
+  // The one entry of `words` whose matching `wordRoles` position holds
+  // PhraseRole.HEAD -- "poodle" for "toy poodle", "at" for "at fault"
+  // (that PhraseRole's own docstring, and classifyPhraseRoles()'s, on
+  // exactly which position that is per PhraseType). Simply
+  // `words[wordRoles.indexOf(PhraseRole.HEAD)]`, kept as its own field
+  // rather than left for every caller to re-derive by scanning
+  // `wordRoles` -- linkPhraseWords() (role/word_seeder.ts) already knows
+  // the Head's own index the moment it computes `wordRoles`, so it sets
+  // this alongside it in the same pass. Undefined whenever `wordRoles`
+  // holds no HEAD position at all
+  // -- `phraseType` itself undefined (every Common Vocabulary Cache
+  // closed-class Phrase), or a `phraseType` whose own Head Identification
+  // Rule found no matching token (classifyPhraseRoles()'s own docstring,
+  // e.g. a Preposition Head that isn't in PHRASE_TYPE_PREPOSITIONS and
+  // has no matching Dictionary sense either) -- or when that one Head
+  // position's own `words` entry itself never resolved (undefined, same
+  // as any other unresolved token, `words`'s own docstring).
+  headWord?: Identifier;
+
+  // headWord's own literal spelling as it actually appears in this
+  // Phrase's own `text` -- the token classifyPhraseRoles() identified as
+  // the Head, before Dictionary resolution ("at" in "at fault", never
+  // resolved to any Word at all -- headWord itself is undefined there,
+  // but headWordForm still names which token filled that role). Distinct
+  // from headWord's own resolved Word.lexicalForm on purpose: this is
+  // the phrase-local surface form (matters for a token whose casing or
+  // inflection in this exact phrase might differ from that Word's own
+  // canonical spelling elsewhere), not a second copy of the same fact.
+  // Undefined under the exact same conditions headWord is.
+  headWordForm?: Text;
 }
 
 export type PhraseInit = Pick<Phrase, "text" | "partOfSpeech"> & Partial<Omit<Phrase, "text" | "partOfSpeech">>;
