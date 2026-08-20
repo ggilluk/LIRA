@@ -5,6 +5,9 @@
  * future curation pass has somewhere to write "chair" (countable) vs.
  * "water" (uncountable) to, the same "declared before it's populated"
  * shape this codebase's other not-yet-seeded fields already have.
+ * `wordCharacterForm` is the same shape again, for the literal Unicode
+ * character a mark-naming Noun ("comma", "ampersand") itself denotes --
+ * see that field's own docstring.
  *
  * `singularNumberForm`/`pluralNumberForm`/`possessiveCaseForm` are this
  * subtype's own row of fields from the Word Form to Part of Speech
@@ -18,6 +21,19 @@ import { createWord, endsInConsonantY, validateFormText, validateWordFormAttribu
 export interface Noun extends Word {
   partOfSpeech: PartOfSpeech.NOUN;
   isCountable?: boolean;
+
+  // The literal Unicode character this Noun names, for the handful of
+  // Nouns that are themselves the *name* of a mark rather than a word
+  // that uses one -- "comma" -> ",", "ampersand" -> "&", "swung_dash" ->
+  // "⁓". Not a Word Form Matrix field (data/word_form_part_of_speech_matrix.md
+  // has no row for it) and not spelling-derivable from the lemma the way
+  // pluralNumberForm etc. are, so it carries no NOUN_FORM_PATTERNS entry
+  // and generateNounForms() never touches it. Like isCountable above, has
+  // no seeding source today -- undefined on every Noun WordSeeder/
+  // RelationshipSeeder produce -- but assets/common/en/punctuation_wordnet_hyponyms.json
+  // already has the mark-name -> character mapping a future curation
+  // pass would read from.
+  wordCharacterForm?: Text;
 
   // Every field in this block is one half of a morphological-derivation
   // pointer pair -- the other half lives on the class named in the
