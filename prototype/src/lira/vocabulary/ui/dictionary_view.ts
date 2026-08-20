@@ -344,11 +344,29 @@ export interface RelationshipRecord {
   source_pos: string | null;
   source_domain: string | null;
   source_sense_id: string | null;
+  // Sense.categoryText's own exact counterpart, read directly off the
+  // source/target Sense (rel.sourceSenseId/targetSenseId -- every
+  // SemanticRelationship connects two Senses now, so no resolveEntry()
+  // representative-member indirection is needed to reach them the way
+  // source_text/target_text's own Word-shaped fields do). null for a
+  // Sense with no WordNet-sourced category (a hand-curated one,
+  // Sense.categoryText's own docstring), never a placeholder string.
+  source_category: string | null;
+  // The Sense's own short descriptive text -- Sense.gloss when a
+  // hand-curated entry actually has one, else Sense.definition (every
+  // WordNet-seeded Sense's own real prose: WordSeeder.seedWordNet's own
+  // createSense call never populates Sense.gloss at all, only
+  // definition, so gloss alone would read blank for exactly the
+  // WordNet-sourced Senses categoryText exists for). null only when
+  // neither field is set.
+  source_gloss: string | null;
   target_id: string;
   target_text: string;
   target_pos: string | null;
   target_domain: string | null;
   target_sense_id: string | null;
+  target_category: string | null;
+  target_gloss: string | null;
   kind: string;
   group: number;
   category: number;
@@ -1287,9 +1305,31 @@ export class DictionaryView {
    * this keeps reporting the same "Lexical Semantic" group number every
    * relationship here always was, back when LexicalRelationshipType's
    * own group 1 held these same kinds. */
+  /** Resolves `id` to a Sense for category/gloss display -- a direct hit
+   * covers every genuine Sense-to-Sense edge (the normal case: every
+   * SemanticRelationship really does connect two Senses). Falls back to
+   * that Word/Phrase's own primary Sense (senseIds[0]) when `id` isn't a
+   * Sense at all, which happens for one side of a
+   * senseExpandedRelationships() synthetic fan-out row -- that method
+   * deliberately pins the queried word's own uuid there instead of a
+   * Sense uuid (that method's own docstring on why: keeping `wordId`
+   * itself, not swapped to a representative member). A reasonable,
+   * not-perfectly-precise stand-in for that one synthetic case, the same
+   * kind of representative simplification resolveEntry() already makes
+   * for source_text/target_text on the exact same rows. */
+  private resolveSenseFor(id: string): Sense | undefined {
+    const direct = this.senses.findByUuid(id);
+    if (direct !== undefined) return direct;
+    const entity = this.resolveEntry(id);
+    const primarySenseId = entity?.senseIds[0]?.value;
+    return primarySenseId !== undefined ? this.senses.findByUuid(primarySenseId) : undefined;
+  }
+
   private relationshipRecordFor(rel: SemanticRelationship): RelationshipRecord {
     const source = this.resolveEntry(rel.sourceSenseId.value);
     const target = this.resolveEntry(rel.targetSenseId.value);
+    const sourceSense = this.resolveSenseFor(rel.sourceSenseId.value);
+    const targetSense = this.resolveSenseFor(rel.targetSenseId.value);
     return {
       id: rel.uuid.value,
       source_id: rel.sourceSenseId.value,
@@ -1297,11 +1337,15 @@ export class DictionaryView {
       source_pos: source ? PartOfSpeech[source.partOfSpeech] : null,
       source_domain: this.domainLabel(source),
       source_sense_id: source?.synsetId?.value ?? null,
+      source_category: sourceSense?.categoryText?.value ?? null,
+      source_gloss: sourceSense?.gloss?.value ?? sourceSense?.definition?.value ?? null,
       target_id: rel.targetSenseId.value,
       target_text: target?.text ?? "?",
       target_pos: target ? PartOfSpeech[target.partOfSpeech] : null,
       target_domain: this.domainLabel(target),
       target_sense_id: target?.synsetId?.value ?? null,
+      target_category: targetSense?.categoryText?.value ?? null,
+      target_gloss: targetSense?.gloss?.value ?? targetSense?.definition?.value ?? null,
       kind: SemanticRelationshipKind[rel.relationshipType],
       group: 1,
       category: 0,
@@ -2102,6 +2146,22 @@ summary.detail-section-title::marker { color: var(--ink-muted); }
   font-size: 0.8rem;
   line-height: 1.4;
 }
+.rel-gloss {
+  margin: 3px 0 0 20px;
+  color: var(--ink-muted);
+  font-size: 0.78rem;
+  line-height: 1.4;
+}
+.category-tag {
+  display: inline-block;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 0.72rem;
+  color: var(--ink-muted);
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  padding: 0 4px;
+  margin-right: 5px;
+}
 .pad-row {
   display: flex;
   align-items: center;
@@ -2749,6 +2809,15 @@ function senseIdBadge(senseId) {
   return senseId ? \`<span class="sense-id" title="Princeton WordNet 3.1 synset">\${senseId}</span>\` : "";
 }
 
+// RelationshipRecord.target_category/source_category's own render --
+// WordNet's lexicographer-file category for the *other* end's own
+// Sense ("noun.artifact"), Sense.categoryText's own docstring on why
+// it's always shown POS-qualified, never truncated. "" (nothing shown)
+// for a hand-curated Sense with no WordNet source, same as senseIdBadge.
+function categoryBadge(category) {
+  return category ? \`<span class="category-tag" title="WordNet lexicographer-file category">\${category}</span>\` : "";
+}
+
 function relPill(kind, group) {
   const color = GROUP_COLORS[group] !== undefined ? GROUP_COLORS[group] : "#7A7A7A";
   return \`<span class="pill" style="background:\${color}" title="\${GROUP_NAMES[group] || ''}">\${titleCase(kind)}</span>\`;
@@ -3015,6 +3084,8 @@ function relationshipsForWord(wordId) {
         otherText: outgoing ? r.target_text : r.source_text,
         otherDomain: outgoing ? r.target_domain : r.source_domain,
         otherSenseId: outgoing ? r.target_sense_id : r.source_sense_id,
+        otherCategory: outgoing ? r.target_category : r.source_category,
+        otherGloss: outgoing ? r.target_gloss : r.source_gloss,
         pillKind: displayKind(r.kind, outgoing),
       };
     })
@@ -3671,6 +3742,7 @@ function relationshipsSectionHTML(rels) {
         \${domainPill(r.otherDomain)}
       </div>
       <div class="rel-sentence">\${relationshipSentence(r.kind, r.source_text, r.target_text, r.qualifier)}</div>
+      \${(r.otherCategory || r.otherGloss) ? \`<div class="rel-gloss">\${categoryBadge(r.otherCategory)}\${r.otherGloss ? \` \${r.otherGloss}\` : ''}</div>\` : ''}
     </div>\`).join('');
 }
 
@@ -4991,6 +5063,8 @@ document.addEventListener("lira-search-relationships-result", (e) => {
           otherText: outgoing ? r.target_text : r.source_text,
           otherDomain: outgoing ? r.target_domain : r.source_domain,
           otherSenseId: outgoing ? r.target_sense_id : r.source_sense_id,
+          otherCategory: outgoing ? r.target_category : r.source_category,
+          otherGloss: outgoing ? r.target_gloss : r.source_gloss,
           pillKind: displayKind(r.kind, outgoing),
         };
       })
