@@ -1,6 +1,6 @@
 {
-  "schema_version": "1.0.0",
-  "description": "Analysis artifact, not a seed source. Cross-references Princeton WordNet 3.1's punctuation/punctuation_mark synset (06854415-n) against the WordSeeder's hand-curated closed-class PUNCTUATION cache (punctuation.json). NOT listed in WordSeeder.MANDATORY_FILES / SUPPLEMENTARY_FILES and therefore never loaded or seeded.",
+  "schema_version": "1.1.0",
+  "description": "Analysis artifact, not a seed source. Cross-references Princeton WordNet 3.1's punctuation/punctuation_mark synset (06854415-n) against the WordSeeder's hand-curated closed-class PUNCTUATION cache (punctuation.json) and, for hyponyms punctuation.json doesn't cover, the closed-class SYMBOL cache (symbols.json) -- several WordNet 'punctuation' hyponyms (ampersand, hyphen/dash, solidus/slash) are actually seeded under part_of_speech SYMBOL rather than PUNCTUATION. NOT listed in WordSeeder.MANDATORY_FILES / SUPPLEMENTARY_FILES and therefore never loaded or seeded.",
   "source_synset": {
     "synset_id": "06854415-n",
     "lemmas": ["punctuation", "punctuation_mark"],
@@ -19,7 +19,11 @@
       "synset_id": "06854923-n",
       "lemmas": ["ampersand"],
       "gloss": "a punctuation mark (&) used to represent conjunction (and)",
-      "matched_punctuation_json_entries": []
+      "matched_punctuation_json_entries": [],
+      "matched_symbols_json_entries": [
+        { "entry_id": "ce07950d-2be4-4005-84f1-d0e135904364", "lexical_form": "&", "definition": "An Ampersand is an Other Punctuation." }
+      ],
+      "note": "Seeded under part_of_speech SYMBOL, not PUNCTUATION."
     },
     {
       "synset_id": "06855037-n",
@@ -85,7 +89,17 @@
       "synset_id": "06856198-n",
       "lemmas": ["hyphen", "dash"],
       "gloss": "a punctuation mark (-) used between parts of a compound word or between the syllables of a word when the word is divided at the end of a line of text",
-      "matched_punctuation_json_entries": []
+      "matched_punctuation_json_entries": [],
+      "matched_symbols_json_entries": [
+        { "entry_id": "f2b201fc-4f40-42b0-8760-e0cff257db2b", "lexical_form": "-", "definition": "A Hyphen-Minus is a Dash Punctuation." },
+        { "entry_id": "24450de7-41a1-43cf-ae2d-bd3b84e803d9", "lexical_form": "‐", "definition": "A Hyphen is a Dash Punctuation." },
+        { "entry_id": "20dac186-29b6-4a20-aad7-2dc779efc367", "lexical_form": "‑", "definition": "A Non-breaking Hyphen is a Dash Punctuation." },
+        { "entry_id": "c52068c1-e955-4b5b-a7e6-d4102675b86f", "lexical_form": "‒", "definition": "A Figure Dash is a Dash Punctuation." },
+        { "entry_id": "bb258e4e-a84a-400a-bb6e-ab4e9c80e659", "lexical_form": "–", "definition": "An En Dash is a Dash Punctuation." },
+        { "entry_id": "e459bb04-8e21-481c-89f2-fe927601c4e9", "lexical_form": "—", "definition": "An Em Dash is a Dash Punctuation." },
+        { "entry_id": "98883cd3-27be-4d10-a1a0-e1d4c782b977", "lexical_form": "―", "definition": "A Horizontal Bar is a Dash Punctuation." }
+      ],
+      "note": "Seeded under part_of_speech SYMBOL, not PUNCTUATION. WordNet's single hyphen/dash lemma pair maps onto seven distinct Unicode hyphen/dash glyphs in symbols.json."
     },
     {
       "synset_id": "06856443-n",
@@ -141,13 +155,21 @@
       "synset_id": "06857953-n",
       "lemmas": ["solidus", "slash", "virgule", "diagonal", "stroke", "separatrix"],
       "gloss": "a punctuation mark (/) used to separate related items of information",
-      "matched_punctuation_json_entries": []
+      "matched_punctuation_json_entries": [],
+      "matched_symbols_json_entries": [
+        { "entry_id": "319abccd-d1d9-4ff3-9a22-8d566b2573aa", "lexical_form": "/", "definition": "A Solidus is an Other Punctuation." },
+        { "entry_id": "9192909a-b905-4812-b5d7-b4ecc72946b2", "lexical_form": "\\", "definition": "A Reverse Solidus is an Other Punctuation." },
+        { "entry_id": "02db0ebe-fc1a-4c19-9ae0-1ea3e1a78f11", "lexical_form": "⁄", "definition": "A Fraction Slash is a Mathematical Symbol." }
+      ],
+      "note": "Seeded under part_of_speech SYMBOL, not PUNCTUATION. The Reverse Solidus (\\) and Fraction Slash (⁄) are related glyphs, not literal WordNet lemmas of this synset, but share its 'separator mark' sense."
     },
     {
       "synset_id": "06858126-n",
       "lemmas": ["swung_dash"],
       "gloss": "a punctuation mark used in text to indicate the omission of a word",
-      "matched_punctuation_json_entries": []
+      "matched_punctuation_json_entries": [],
+      "matched_symbols_json_entries": [],
+      "note": "No swung-dash glyph (⁓) is seeded in either punctuation.json or symbols.json -- genuinely unmatched."
     }
   ],
   "punctuation_json_entries_with_no_wordnet_hyponym_match": [
@@ -156,13 +178,22 @@
     { "lexical_form": "¡", "definition": "An Inverted Exclamation Mark is an Other Punctuation." },
     { "lexical_form": "¿", "definition": "An Inverted Question Mark is an Other Punctuation." }
   ],
+  "punctuation_json_entries_with_no_wordnet_hyponym_match_also_checked_against_symbols_json": {
+    "note": "None of the four punctuation.json entries above have a symbols.json counterpart either -- interrobang, ellipsis, and the inverted Spanish marks are absent from both closed-class caches.",
+    "matched_in_symbols_json": []
+  },
   "summary": {
     "hyponym_synsets_total": 16,
     "hyponym_synsets_with_a_punctuation_json_match": 12,
     "hyponym_synsets_with_no_punctuation_json_match": 4,
-    "unmatched_hyponyms": ["ampersand", "hyphen/dash", "solidus/slash", "swung_dash"],
+    "hyponym_synsets_matched_via_symbols_json_instead": 3,
+    "hyponym_synsets_with_no_match_in_either_cache": 1,
+    "unmatched_hyponyms": ["swung_dash"],
+    "hyponyms_matched_via_symbols_json": ["ampersand", "hyphen/dash", "solidus/slash"],
     "punctuation_json_entries_total": 28,
     "punctuation_json_entries_matched": 24,
-    "punctuation_json_entries_unmatched": 4
+    "punctuation_json_entries_unmatched": 4,
+    "symbols_json_entries_total": 46,
+    "symbols_json_entries_matched_to_a_punctuation_hyponym": 11
   }
 }
