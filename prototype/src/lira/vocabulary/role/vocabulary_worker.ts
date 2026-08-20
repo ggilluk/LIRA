@@ -23,6 +23,7 @@
 
 import { DictionaryView } from "../ui/dictionary_view";
 import { VocabularyLayer } from "../data/layer";
+import { NounCharacterFormSeeder } from "./noun_character_form_seeder";
 import { RelationshipSeeder } from "./relationship_seeder";
 import { WordSeeder } from "./word_seeder";
 import type {
@@ -246,6 +247,14 @@ async function handleSeedWordNet(request: SeedWordNetRequest): Promise<void> {
         progress: processed / total,
       });
     });
+    // Last step of the WordNet load, after every Word/Phrase/relationship
+    // from the seeded synsets themselves already exists -- creates the
+    // punctuation-mark character-glyph Nouns (NounCharacterFormSeeder's
+    // own docstring) as new siblings of the WordNet Nouns they're
+    // shallow-copied from, so they're included in wordsSeeded below like
+    // any other new Word this run added to the Dictionary.
+    new NounCharacterFormSeeder(domain.vocabulary.dictionary).seed();
+
     const wordsSeeded = domain.vocabulary.dictionary.totalEntries() - wordCountBefore;
     const phrasesSeeded = domain.vocabulary.phrases.totalEntries() - phraseCountBefore;
 
