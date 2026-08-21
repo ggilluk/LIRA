@@ -1808,6 +1808,31 @@ function padMeterRow(posLabel, negLabel, value) {
     </div>\`;
 }
 
+// WordSenseSummary.frames's own raw text carries WordNet's own literal
+// "----" placeholder standing in for the verb itself (VERB_FRAME_TEXT's
+// own docstring, data/verb.ts) -- e.g. "Somebody ----s something" for
+// "eat". Substituted here, client-side, with word's own real inflected
+// spelling rather than shown as the raw WordNet placeholder: "----ing"
+// (only ever "It is ----ing"/"Something is ----ing PP") against
+// presentParticipleForm, "----s" (every other frame) against
+// thirdPersonSingularPresentForm, falling back to naive lemma+suffix
+// concatenation only for the pathological case neither *_Form entry is
+// present in word.word_forms (shouldn't happen for a real seeded Verb --
+// generateVerbForms() always populates both). Reads word.word_forms
+// (already sent to the client for the Word Forms section) rather than
+// requiring WordSenseSummary to carry its own copy of the same two
+// values.
+function verbFrameText(word, frame) {
+  const formValue = (field) => {
+    const entry = (word.word_forms || []).find(f => f.field === field);
+    return entry ? entry.value : undefined;
+  };
+  const base = word.lexical_form;
+  const ing = formValue('presentParticipleForm') || (base + 'ing');
+  const thirdPerson = formValue('thirdPersonSingularPresentForm') || (base + 's');
+  return frame.replace(/----ing/g, ing).replace(/----s/g, thirdPerson).replace(/----/g, base);
+}
+
 // \`rels\` follows relationshipsSectionHTML's own null/[]/populated
 // convention -- null while still loading over capacity, so a sense's own
 // nested relationship count shows "…" rather than a wrong "0" until the
@@ -1864,7 +1889,7 @@ function sensesSectionHTML(word, rels) {
           \${s.frames && s.frames.length ? \`
           <details class="sense-frames"\${s.is_primary ? ' open' : ''}>
             <summary>Verb Frames (\${s.frames.length})</summary>
-            <ul class="sense-frame-list">\${s.frames.map(f => \`<li>\${f}</li>\`).join('')}</ul>
+            <ul class="sense-frame-list">\${s.frames.map(f => \`<li>\${verbFrameText(word, f)}</li>\`).join('')}</ul>
           </details>\` : ''}
         </li>\`;
       }).join('')}
