@@ -1533,32 +1533,6 @@ export class WordSeeder {
       }
     }
 
-    // Sense.domainTag fallback, from categoryText -- run only now, after
-    // pass 2 above has already given tagTopicDomain (inside
-    // seedPointerRelationship) its own chance to set domainTag from a
-    // real WordNet topic-domain pointer (";c"/"-c") first. That pointer
-    // is sparse (~6,690 of ~117,800 senses) but genuinely curated
-    // ("medicine", "sport", ...), so it stays the primary domainTag
-    // wherever WordNet actually supplies one; this fallback only fills a
-    // Sense whose domainTag pass 2 left undefined. Unlike a raw
-    // per-synset domainTag (deliberately rejected just above, this
-    // method's own docstring on why that would fragment the Domain
-    // filter into ~117,800 one-off values), categoryText's own lexname
-    // half is coarse enough to reuse here -- only ~41 distinct values
-    // total (dict/lexnames' own row count minus the POS prefix), the
-    // same order of magnitude as a real topic-domain tag, not a
-    // per-synset identifier. Suffixed "X.common" -- the same "still
-    // fundamentally Common, just polysemy-disambiguated" convention
-    // ROOT_WORD_DOMAIN_TAG already establishes for root_words.json's own
-    // entries.
-    for (const synset of synsets) {
-      const sense = senseStore.findBySynsetId(synset.synsetId);
-      if (sense === undefined || sense.domainTag !== undefined) continue;
-      const category = synset.senseCategory.split(".")[1]?.toLowerCase();
-      if (category === undefined) continue;
-      sense.domainTag = { value: `${category}.common` };
-    }
-
     // Every morphological-derivation pointer field (Noun/Verb/Adjective/
     // Adverb, each field's own docstring in data/noun.ts, data/verb.ts,
     // data/adjective.ts, data/adverb.ts) is read back from the
