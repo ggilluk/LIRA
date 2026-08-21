@@ -1,7 +1,7 @@
-import type { Text } from "../../value_objects";
-import { PartOfSpeech } from "../data/enums/part_of_speech";
-import { createWord, validateFormText, validateWordFormAttributes, type Word, type WordFormIssue } from "../data/word";
-import type { Determiner } from "../data/entities/determiner";
+import type { Text } from "../../../value_objects";
+import { PartOfSpeech } from "../../data/enums/part_of_speech";
+import { createWord, validateFormText, validateWordFormAttributes, type Word, type WordFormIssue } from "../../data/word";
+import type { Determiner } from "../../data/entities/determiner";
 
 export type DeterminerInit = Pick<Determiner, "text"> & Partial<Omit<Determiner, "text" | "partOfSpeech">>;
 

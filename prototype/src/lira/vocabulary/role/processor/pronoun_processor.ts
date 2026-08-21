@@ -1,7 +1,7 @@
-import type { Text } from "../../value_objects";
-import { PartOfSpeech } from "../data/enums/part_of_speech";
-import { createWord, validateFormText, validateWordFormAttributes, type Word, type WordFormIssue } from "../data/word";
-import type { Pronoun } from "../data/entities/pronoun";
+import type { Text } from "../../../value_objects";
+import { PartOfSpeech } from "../../data/enums/part_of_speech";
+import { createWord, validateFormText, validateWordFormAttributes, type Word, type WordFormIssue } from "../../data/word";
+import type { Pronoun } from "../../data/entities/pronoun";
 
 export type PronounInit = Pick<Pronoun, "text"> & Partial<Omit<Pronoun, "text" | "partOfSpeech">>;
 

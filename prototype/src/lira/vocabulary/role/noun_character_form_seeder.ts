@@ -1,5 +1,5 @@
 import type { Dictionary } from "../data/dictionary";
-import { createNoun, isNoun } from "./noun_processor";
+import { createNoun, isNoun } from "./processor/noun_processor";
 
 // A Map, not a plain object literal -- WordNet seeds real Noun lemmas
 // that collide with Object.prototype's own property names ("constructor"

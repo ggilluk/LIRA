@@ -1,6 +1,6 @@
-import { PartOfSpeech } from "../data/enums/part_of_speech";
-import { createWord, type Word } from "../data/word";
-import type { Numeral } from "../data/entities/numeral";
+import { PartOfSpeech } from "../../data/enums/part_of_speech";
+import { createWord, type Word } from "../../data/word";
+import type { Numeral } from "../../data/entities/numeral";
 
 export type NumeralInit = Pick<Numeral, "text"> & Partial<Omit<Numeral, "text" | "partOfSpeech">>;
 

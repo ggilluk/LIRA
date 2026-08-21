@@ -1,5 +1,5 @@
 /** Verb: Word's own VERB-specific subtype. Also see `framesForSense()`
- * (role/verb_processor.ts) -- a real WordNet-sourced property this
+ * (role/processor/verb_processor.ts) -- a real WordNet-sourced property this
  * codebase used to discard outright. Princeton WordNet 3.1's
  * dict/data.verb records, per synset, which of its own 35 standard
  * "generic verb frame" sentence patterns ("Somebody ----s something")

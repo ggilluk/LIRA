@@ -26,23 +26,23 @@
  * formsOf/lemmaOf) once both ends of a link have actually been
  * inserted. */
 
-import { createAdjective, determineGradability, generateAdjectiveForms, isAdjective } from "./adjective_processor";
+import { createAdjective, determineGradability, generateAdjectiveForms, isAdjective } from "./processor/adjective_processor";
 import { createAdjectivePhrase } from "../data/adjective_phrase";
-import { createAdverb, determineGradability as determineAdverbGradability, generateAdverbForms, isAdverb } from "./adverb_processor";
+import { createAdverb, determineGradability as determineAdverbGradability, generateAdverbForms, isAdverb } from "./processor/adverb_processor";
 import { createAdverbPhrase } from "../data/adverb_phrase";
-import { createConjunction } from "./conjunction_processor";
+import { createConjunction } from "./processor/conjunction_processor";
 import { createInfinitivePhrase } from "../data/infinitive_phrase";
 import { createNounPhrase } from "../data/noun_phrase";
 import { createPrepositionalPhrase } from "../data/prepositional_phrase";
 import { createVerbPhrase } from "../data/verb_phrase";
-import { createDeterminer } from "./determiner_processor";
-import { createInterjection } from "./interjection_processor";
-import { createNoun, generateNounForms, isNoun } from "./noun_processor";
-import { createNumeral } from "./numeral_processor";
+import { createDeterminer } from "./processor/determiner_processor";
+import { createInterjection } from "./processor/interjection_processor";
+import { createNoun, generateNounForms, isNoun } from "./processor/noun_processor";
+import { createNumeral } from "./processor/numeral_processor";
 import { PartOfSpeech } from "../data/enums/part_of_speech";
-import { createParticle } from "./particle_processor";
-import { createPreposition } from "./preposition_processor";
-import { createPronoun } from "./pronoun_processor";
+import { createParticle } from "./processor/particle_processor";
+import { createPreposition } from "./processor/preposition_processor";
+import { createPronoun } from "./processor/pronoun_processor";
 import { RegisterCode } from "../data/enums/register_code";
 import { EditorialLabel } from "../data/enums/editorial_label";
 import { HolonymRootWord } from "../data/enums/holonym_root_word";
@@ -63,7 +63,7 @@ import type { Phrases } from "../data/phrases";
 import { createSense, type Sense } from "../data/sense";
 import type { Senses } from "../data/senses";
 import type { SourceReference } from "../data/source_reference";
-import { createVerb, generateVerbForms, isVerb } from "./verb_processor";
+import { createVerb, generateVerbForms, isVerb } from "./processor/verb_processor";
 import { copyWordWithFreshUuid, createWord, type Word } from "../data/word";
 import type { SemanticRelationshipStore } from "../data/semantic_relationship_store";
 import {
@@ -1555,11 +1555,11 @@ export class WordSeeder {
     // only now, with every Sense fully wired to every Word that
     // lexicalizes it (senseIds) and every Attribute/Hypernym/Pertainym
     // pointer above actually seeded, are determineGradability()
-    // (role/adjective_processor.ts) and its Adverb counterpart
-    // (role/adverb_processor.ts -- that file's own docstring on why
+    // (role/processor/adjective_processor.ts) and its Adverb counterpart
+    // (role/processor/adverb_processor.ts -- that file's own docstring on why
     // gradability is derived differently there, via Pertainym rather
     // than Attribute) able to answer the question at all (Required
-    // Processing Order, role/adjective_processor.ts's own docstring). Skips a Word already carrying
+    // Processing Order, role/processor/adjective_processor.ts's own docstring). Skips a Word already carrying
     // either field -- a curated value (a future Common Vocabulary Cache
     // override, say) is never overwritten, matching
     // generateAdjectiveForms()'s/generateAdverbForms()'s own "only fills
@@ -2048,11 +2048,11 @@ export class WordSeeder {
    *
    * An ADJECTIVE gets only its Positive Degree Form here
    * (generateAdjectiveForms(..., false)) -- determineGradability()
-   * (role/adjective_processor.ts) needs this Word's own full senseIds list and the
+   * (role/processor/adjective_processor.ts) needs this Word's own full senseIds list and the
    * WordNet Attribute/Hypernym relationship graph, neither of which
    * exists yet this early (this method runs during pass 1, seneIds and
    * relationships are still being built; Required Processing Order,
-   * role/adjective_processor.ts's own docstring). applyAdjectiveGradability()
+   * role/processor/adjective_processor.ts's own docstring). applyAdjectiveGradability()
    * below revisits every seeded Adjective once pass 2 has finished
    * wiring relationships and fills Comparative/Superlative Degree Form
    * in then, once gradability is actually knowable. */
@@ -2073,7 +2073,7 @@ export class WordSeeder {
         return generateAdjectiveForms(createAdjective(shared), false);
       case PartOfSpeech.ADVERB:
         // Same deferral as ADJECTIVE just above, for the same reason --
-        // Adverb's own determineGradability() (role/adverb_processor.ts) needs
+        // Adverb's own determineGradability() (role/processor/adverb_processor.ts) needs
         // this Word's own Pertainym edges, which don't exist yet this
         // early (pass 2 hasn't run). The post-relationships pass below
         // (this method's own final loop) revisits every seeded Adverb
@@ -2242,8 +2242,8 @@ export class WordSeeder {
    * path's exact counterpart -- and to plain createWord() for every
    * other (closed) PartOfSpeech, which has no subtype of its own.
    * `frames`/`syntacticPosition` are never set here (both fields'
-   * own docstrings, role/verb_processor.ts's own framesForSense() and
-   * role/adjective_processor.ts's own syntacticPositionForSense()) -- neither is
+   * own docstrings, role/processor/verb_processor.ts's own framesForSense() and
+   * role/processor/adjective_processor.ts's own syntacticPositionForSense()) -- neither is
    * part of WordFileEntry's own schema, since only WordNet's dict/
    * files carry that data; a Common Vocabulary Cache Verb/Adjective
    * still gets its subtype's own type (for isVerb()/isAdjective()
@@ -2312,7 +2312,7 @@ export class WordSeeder {
         // No WordNet Attribute/Hypernym relationship graph exists for a
         // Common Vocabulary Cache entry (this whole path is a hand-
         // curated words.json, not a WordNet synset) -- determineGradability()
-        // (role/adjective_processor.ts) has nothing to check, so this defaults to
+        // (role/processor/adjective_processor.ts) has nothing to check, so this defaults to
         // non-gradable rather than guessing "yes" the way this codebase
         // used to (Gradability Evaluation step 6: no established scalar
         // dimension means Gradable = false). A future curation pass that
@@ -2323,7 +2323,7 @@ export class WordSeeder {
       case PartOfSpeech.ADVERB:
         // Same reasoning as ADJECTIVE just above: no WordNet Pertainym
         // graph exists for a hand-curated Common Vocabulary Cache entry,
-        // so Adverb.determineGradability() (role/adverb_processor.ts) has nothing
+        // so Adverb.determineGradability() (role/processor/adverb_processor.ts) has nothing
         // to check either -- defaults to non-gradable.
         return generateAdverbForms(createAdverb(fields), false);
       case PartOfSpeech.PRONOUN:

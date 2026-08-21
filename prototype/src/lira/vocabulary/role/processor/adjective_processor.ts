@@ -1,8 +1,8 @@
-import type { Text } from "../../value_objects";
-import { SemanticRelationshipKind } from "../data/enums/semantic_relationship_kind";
-import { PartOfSpeech } from "../data/enums/part_of_speech";
-import type { Senses } from "../data/senses";
-import type { SemanticRelationshipStore } from "../data/semantic_relationship_store";
+import type { Text } from "../../../value_objects";
+import { SemanticRelationshipKind } from "../../data/enums/semantic_relationship_kind";
+import { PartOfSpeech } from "../../data/enums/part_of_speech";
+import type { Senses } from "../../data/senses";
+import type { SemanticRelationshipStore } from "../../data/semantic_relationship_store";
 import {
   createWord,
   isPeriphrasticComparison,
@@ -12,9 +12,9 @@ import {
   validateWordFormAttributes,
   type Word,
   type WordFormIssue,
-} from "../data/word";
-import type { Adjective } from "../data/entities/adjective";
-import { AdjectivePosition } from "../data/enums/adjective_position";
+} from "../../data/word";
+import type { Adjective } from "../../data/entities/adjective";
+import { AdjectivePosition } from "../../data/enums/adjective_position";
 
 export type AdjectiveInit = Pick<Adjective, "text"> & Partial<Omit<Adjective, "text" | "partOfSpeech">>;
 

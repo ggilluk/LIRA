@@ -1,5 +1,5 @@
 /** Adjective: Word's own ADJECTIVE-specific subtype. Also see
- * `syntacticPositionForSense()` (role/adjective_processor.ts) -- a real
+ * `syntacticPositionForSense()` (role/processor/adjective_processor.ts) -- a real
  * WordNet-sourced property this codebase used to discard outright.
  * Princeton WordNet 3.1's dict/data.adj marks some lemmas with a
  * trailing, space-free parenthetical -- "afraid(p)", "galore(ip)" --
@@ -57,7 +57,7 @@ export interface Adjective extends Word {
   // The Adverb this Adjective adverbialises into ("quick" -> "quickly")
   // -- a real WordNet ADVERBIAL_DERIVATION pointer, source=this
   // Adjective -- Adverb.isDerivedFromAdjective's own exact reverse.
-  // Distinct from a Pertainym relationship (role/adverb_processor.ts's
+  // Distinct from a Pertainym relationship (role/processor/adverb_processor.ts's
   // own determineGradability() docstring on that separate `\` pointer
   // type, "relates to" rather than "is formed from") -- this is
   // WordNet's `+` Derived-Form pointer specifically.

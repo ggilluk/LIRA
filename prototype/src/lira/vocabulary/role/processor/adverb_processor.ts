@@ -1,10 +1,10 @@
-import type { Text } from "../../value_objects";
+import type { Text } from "../../../value_objects";
 import { determineGradability as isAdjectiveGradable, isAdjective } from "./adjective_processor";
-import type { Dictionary } from "../data/dictionary";
-import { SemanticRelationshipKind } from "../data/enums/semantic_relationship_kind";
-import { PartOfSpeech } from "../data/enums/part_of_speech";
-import type { Senses } from "../data/senses";
-import type { SemanticRelationshipStore } from "../data/semantic_relationship_store";
+import type { Dictionary } from "../../data/dictionary";
+import { SemanticRelationshipKind } from "../../data/enums/semantic_relationship_kind";
+import { PartOfSpeech } from "../../data/enums/part_of_speech";
+import type { Senses } from "../../data/senses";
+import type { SemanticRelationshipStore } from "../../data/semantic_relationship_store";
 import {
   createWord,
   isPeriphrasticComparison,
@@ -14,8 +14,8 @@ import {
   validateWordFormAttributes,
   type Word,
   type WordFormIssue,
-} from "../data/word";
-import type { Adverb } from "../data/entities/adverb";
+} from "../../data/word";
+import type { Adverb } from "../../data/entities/adverb";
 
 export type AdverbInit = Pick<Adverb, "text"> & Partial<Omit<Adverb, "text" | "partOfSpeech">>;
 

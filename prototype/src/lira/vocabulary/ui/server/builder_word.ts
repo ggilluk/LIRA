@@ -4,18 +4,18 @@
  * and the public method searchWords). */
 
 import type { Identifier } from "../../../value_objects";
-import { isAdjective } from "../../role/adjective_processor";
-import { isAdverb } from "../../role/adverb_processor";
+import { isAdjective } from "../../role/processor/adjective_processor";
+import { isAdverb } from "../../role/processor/adverb_processor";
 import type { Dictionary } from "../../data/dictionary";
 import { EditorialLabel } from "../../data/enums/editorial_label";
 import { PartOfSpeech } from "../../data/enums/part_of_speech";
 import { RegisterCode } from "../../data/enums/register_code";
-import { isNoun } from "../../role/noun_processor";
+import { isNoun } from "../../role/processor/noun_processor";
 import { phraseAsWord, type Phrase } from "../../data/phrase";
 import type { Phrases } from "../../data/phrases";
 import type { Senses } from "../../data/senses";
 import type { SemanticRelationshipStore } from "../../data/semantic_relationship_store";
-import { framesForSense, isVerb } from "../../role/verb_processor";
+import { framesForSense, isVerb } from "../../role/processor/verb_processor";
 import type { Word } from "../../data/word";
 import { formTextsOf } from "../../data/word_forms";
 import { phraseHeadWordSegment, phraseTypeLabel, phraseWordSegments } from "./builder_phrase";
@@ -188,7 +188,7 @@ export interface WordSenseSummary {
   synonyms: { id: string; text: string }[];
   // The real WordNet verb-frame sentences ("Somebody ----s something")
   // this specific (Verb, Sense) pairing was tagged with -- Verb.framesForSense()'s
-  // own docstring (role/verb_processor.ts) on why this lives as loose per-membership
+  // own docstring (role/processor/verb_processor.ts) on why this lives as loose per-membership
   // Senses metadata rather than a typed field on Verb itself: a frame can
   // genuinely differ between two members of the same synset (WordNetFrame's
   // own docstring, role/wordnet_loader.ts), so it's a fact about this one

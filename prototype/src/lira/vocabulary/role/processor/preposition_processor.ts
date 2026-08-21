@@ -1,6 +1,6 @@
-import { PartOfSpeech } from "../data/enums/part_of_speech";
-import { createWord, type Word } from "../data/word";
-import type { Preposition } from "../data/entities/preposition";
+import { PartOfSpeech } from "../../data/enums/part_of_speech";
+import { createWord, type Word } from "../../data/word";
+import type { Preposition } from "../../data/entities/preposition";
 
 export type PrepositionInit = Pick<Preposition, "text"> & Partial<Omit<Preposition, "text" | "partOfSpeech">>;
 

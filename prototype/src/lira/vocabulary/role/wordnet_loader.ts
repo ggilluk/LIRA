@@ -109,7 +109,7 @@ export interface WordNetSynset {
   // The verb-only frame block, parsed but not yet resolved to text or
   // narrowed to one Word -- always [] for a non-VERB synset. Verb's own
   // docstring (data/entities/verb.ts) and framesForSense()'s own
-  // (role/verb_processor.ts) on what this data is and how it was
+  // (role/processor/verb_processor.ts) on what this data is and how it was
   // verified against the bundled dict/ files.
   frames: readonly WordNetFrame[];
   // The WordNet lexicographer-file category this synset's own

@@ -1,6 +1,6 @@
-import { PartOfSpeech } from "../data/enums/part_of_speech";
-import { createWord, type Word } from "../data/word";
-import type { Conjunction } from "../data/entities/conjunction";
+import { PartOfSpeech } from "../../data/enums/part_of_speech";
+import { createWord, type Word } from "../../data/word";
+import type { Conjunction } from "../../data/entities/conjunction";
 
 export type ConjunctionInit = Pick<Conjunction, "text"> & Partial<Omit<Conjunction, "text" | "partOfSpeech">>;
 

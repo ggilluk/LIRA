@@ -1,6 +1,6 @@
-import type { Text } from "../../value_objects";
-import { PartOfSpeech } from "../data/enums/part_of_speech";
-import type { Senses } from "../data/senses";
+import type { Text } from "../../../value_objects";
+import { PartOfSpeech } from "../../data/enums/part_of_speech";
+import type { Senses } from "../../data/senses";
 import {
   createWord,
   endsInConsonantY,
@@ -9,8 +9,8 @@ import {
   validateWordFormAttributes,
   type Word,
   type WordFormIssue,
-} from "../data/word";
-import type { Verb } from "../data/entities/verb";
+} from "../../data/word";
+import type { Verb } from "../../data/entities/verb";
 
 export type VerbInit = Pick<Verb, "text"> & Partial<Omit<Verb, "text" | "partOfSpeech">>;
 
