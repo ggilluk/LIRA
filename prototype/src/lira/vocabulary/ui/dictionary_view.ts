@@ -913,6 +913,16 @@ export class DictionaryView {
       if (text === undefined) continue;
       forms.push({ field, label: formFieldLabel(field), value: text.value });
     }
+    // Noun.wordCharacterForm isn't a Word Form Matrix field (that field's
+    // own docstring, data/noun.ts) -- not spelling-derivable, so it has
+    // no NOUN_FORM_PATTERNS entry and never enters `fields` above --
+    // appended here instead, the same "rendered in this section without
+    // being a Matrix field" treatment `derivations` already gets
+    // (WordRecord.derivations's own docstring on why that lives here
+    // too rather than its own section).
+    if (isNoun(word) && word.wordCharacterForm !== undefined) {
+      forms.push({ field: "wordCharacterForm", label: formFieldLabel("wordCharacterForm"), value: word.wordCharacterForm.value });
+    }
     return forms;
   }
 
