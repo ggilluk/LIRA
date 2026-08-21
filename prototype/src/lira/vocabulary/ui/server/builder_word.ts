@@ -15,7 +15,7 @@ import { phraseAsWord, type Phrase } from "../../data/phrase";
 import type { Phrases } from "../../data/phrases";
 import type { Senses } from "../../data/senses";
 import type { SemanticRelationshipStore } from "../../data/semantic_relationship_store";
-import { isVerb } from "../../data/verb";
+import { framesForSense, isVerb } from "../../data/verb";
 import type { Word } from "../../data/word";
 import { formTextsOf } from "../../data/word_forms";
 import { phraseHeadWordSegment, phraseTypeLabel, phraseWordSegments } from "./builder_phrase";
@@ -186,6 +186,19 @@ export interface WordSenseSummary {
   // button every other related-word row already uses
   // (wireDetailPivotButtons(), ui/client/'s own embedded client script).
   synonyms: { id: string; text: string }[];
+  // The real WordNet verb-frame sentences ("Somebody ----s something")
+  // this specific (Verb, Sense) pairing was tagged with -- Verb.framesForSense()'s
+  // own docstring (data/verb.ts) on why this lives as loose per-membership
+  // Senses metadata rather than a typed field on Verb itself: a frame can
+  // genuinely differ between two members of the same synset (WordNetFrame's
+  // own docstring, role/wordnet_loader.ts), so it's a fact about this one
+  // (word, sense) pairing, not about the Verb alone. Undefined for every
+  // non-VERB Word/Phrase and for a Verb sense with no frames recorded
+  // (every Common Vocabulary Cache closed-class Verb, and any WordNet
+  // synset whose own frame records happened to name none) -- never an
+  // empty array, same "presence alone means non-empty" convention
+  // `derivations`/`phrase_type` already use above.
+  frames?: string[];
 }
 
 /** "pluralNumberForm" -> "Plural Number Form" -- every *_Form field name
@@ -275,6 +288,10 @@ function sensesFor(entry: Word | Phrase, senses: Senses, domainName: string): Wo
     if (sense === undefined) return;
     const domain = !sense.isCommon ? domainName : (sense.domainTag?.value ?? "Common");
     const { seededPleasureDispleasureWeight: p, seededArousalNonArousalWeight: a, seededDominanceSubmissiveWeight: d } = sense;
+    // "words" in entry distinguishes a Phrase (framesForSense() only
+    // ever applies to a genuine VERB Word -- no such concept exists for
+    // a multi-word Phrase entry).
+    const frames = !("words" in entry) && isVerb(entry) ? framesForSense(senses, entry, senseId.value) : undefined;
     summaries.push({
       id: senseId.value,
       is_primary: index === 0,
@@ -287,6 +304,7 @@ function sensesFor(entry: Word | Phrase, senses: Senses, domainName: string): Wo
         .membersOf(senseId.value)
         .filter((member) => member.uuid.value !== entry.uuid.value)
         .map((member) => ({ id: member.uuid.value, text: member.lexicalForm?.value ?? member.text })),
+      ...(frames !== undefined && frames.length > 0 ? { frames: [...frames] } : {}),
     });
   });
   return summaries;

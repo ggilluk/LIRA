@@ -1,6 +1,9 @@
-/** Verbatim slice of the embedded client script (original dictionary_view.ts
- * lines 3548-3625) -- padMeterRow()/sensesSectionHTML(), shared by both
- * Word and Phrase detail panels. */
+/** Originally a verbatim slice of the embedded client script (original
+ * dictionary_view.ts lines 3548-3625) -- padMeterRow()/sensesSectionHTML(),
+ * shared by both Word and Phrase detail panels. Now also renders
+ * WordSenseSummary.frames (ui/server/builder_word.ts), the real WordNet
+ * verb-frame sentences for a VERB sense, in its own collapsible
+ * <details> alongside the existing PAD one. */
 export const CLIENT_SENSES_SECTION_HTML = `// One PAD (Pleasure-Arousal-Dominance) meter row: a track centred on
 // zero, filled from the centre toward the value's sign -- accent
 // colour for the named positive pole, the palette's warning red for
@@ -72,6 +75,11 @@ function sensesSectionHTML(word, rels) {
               \${padMeterRow('Arousal', 'Non-Arousal', s.pad.arousal)}
               \${padMeterRow('Dominance', 'Submissive', s.pad.dominance)}
             </div>
+          </details>\` : ''}
+          \${s.frames && s.frames.length ? \`
+          <details class="sense-frames"\${s.is_primary ? ' open' : ''}>
+            <summary>Verb Frames (\${s.frames.length})</summary>
+            <ul class="sense-frame-list">\${s.frames.map(f => \`<li>\${f}</li>\`).join('')}</ul>
           </details>\` : ''}
         </li>\`;
       }).join('')}

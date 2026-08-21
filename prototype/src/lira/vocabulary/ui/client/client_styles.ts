@@ -540,6 +540,25 @@ summary.detail-section-title::marker { color: var(--ink-muted); }
 }
 .sense-pad summary::marker { color: var(--ink-muted); }
 .sense-pad .pad-meters { margin-top: 4px; }
+.sense-frames {
+  margin-top: 4px;
+}
+.sense-frames summary {
+  cursor: pointer;
+  user-select: none;
+  font-size: 0.74rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--ink-muted);
+}
+.sense-frames summary::marker { color: var(--ink-muted); }
+.sense-frames .sense-frame-list {
+  margin: 4px 0 0;
+  padding-left: 18px;
+  font-size: 0.8rem;
+  color: var(--ink);
+}
+.sense-frames .sense-frame-list li { margin: 2px 0; }
 .def-text { line-height: 1.7; }
 .def-word {
   position: relative;
