@@ -513,7 +513,7 @@ describe("generate<Class>Forms() -- deriving *_Form values from a base lemma", (
     expect(run?.pastParticipleForm).toEqual({ value: "run" });
   }, 30000);
 
-  it("populates each seeded Sense's own categoryText from its synset's real WordNet lexicographer-file category", async () => {
+  it("populates each seeded Sense's own categoryText from its synset's real WordNet lexicographer-file category, and falls back domainTag to it when no real topic-domain pointer exists", async () => {
     const dictionary = new Dictionary();
     const senseStore = new Senses();
     const lexicalRelationships = new LexicalRelationshipStore();
@@ -535,11 +535,19 @@ describe("generate<Class>Forms() -- deriving *_Form values from a base lemma", (
     const chairSense = senseStore.findBySynsetId("03005231-n");
     expect(chairSense?.categoryText).toEqual({ value: "noun.artifact" });
 
+    // "chair" carries no real WordNet topic-domain pointer (";c"/"-c"),
+    // so its domainTag falls back to categoryText's own lexname half,
+    // suffixed ".common" -- the entry right of the POS prefix
+    // ("artifact"), same "still fundamentally Common, just polysemy-
+    // disambiguated" convention root_words.json's own entries use.
+    expect(chairSense?.domainTag).toEqual({ value: "artifact.common" });
+
     // A VERB sense gets its own, differently-prefixed category too --
     // never truncated to the bare "communication"/"artifact" half.
     const run = dictionary.lookupAll("run").find(isVerb);
     const runSense = run && senseStore.findByUuid(run.senseIds[0]?.value ?? "");
     expect(runSense?.categoryText?.value).toMatch(/^verb\./);
+    expect(runSense?.domainTag?.value).toMatch(/\.common$/);
   }, 30000);
 
   it("NounCharacterFormSeeder creates a new character-bearing Noun per glyph, sharing the source Noun's own senseIds, and never mutates the source", async () => {
