@@ -1231,6 +1231,11 @@ export class WordSeeder {
       if (senseStore !== undefined) registerUniqueSense(senseStore, phraseCopy, this.cachePad.get(phrase.entryId.value));
       seeded += 1;
     }
+    // seedWordNet()'s own final indexWordForms() pass, same reasoning --
+    // a re-seed call harmlessly reindexes every Word again (idempotent,
+    // Dictionary.indexWordForms()'s own docstring), not just ones this
+    // call itself just appended.
+    for (const word of dictionary.all()) dictionary.indexWordForms(word);
     return seeded;
   }
 
@@ -1573,6 +1578,17 @@ export class WordSeeder {
         word.superlativeDegreeForm = generated.superlativeDegreeForm;
       }
     }
+
+    // Dictionary.indexWordForms() reads Noun/Verb/Adjective/Adverb
+    // *_Form fields, so this has to run after every one of them is
+    // finalised -- in particular after the gradability pass just above,
+    // since an Adjective/Adverb's own comparativeDegreeForm/
+    // superlativeDegreeForm aren't known until then. Every Word gets
+    // reindexed, not just ones this run actually created -- cheap
+    // (indexWordForms() is itself idempotent, Dictionary's own
+    // docstring) and correct on a re-seed too, where most Words already
+    // existed before this call started.
+    for (const word of dictionary.all()) dictionary.indexWordForms(word);
 
     return { wordsSeeded, sensesSeeded, relationshipsSeeded };
   }

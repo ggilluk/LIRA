@@ -39,6 +39,7 @@ import { LexicalRelationshipProcessor } from "./role/lexical_relationship_proces
 import { RelationshipSeeder } from "./role/relationship_seeder";
 import { classifyPhraseRoles, classifyPhraseType, WordSeeder } from "./role/word_seeder";
 import { NounCharacterFormSeeder } from "./role/noun_character_form_seeder";
+import { IdentificationSource } from "./role/word_identifier";
 import { loadWordNetSynsets } from "./role/wordnet_loader";
 import { DictionaryView } from "./ui/dictionary_view";
 
@@ -751,6 +752,113 @@ describe("DictionaryProcessor.identifyPhrase", () => {
     expect(result.tokenSpan).toBe(3);
     expect(result.candidates.some((c) => c.partOfSpeech === PartOfSpeech.PREPOSITION)).toBe(true);
   });
+});
+
+describe("Dictionary.indexWordForms / lookupFormMatches", () => {
+  it("finds a Word by one of its own generated *_Form values, not its base spelling -- and never duplicates on a repeat call", () => {
+    const dictionary = new Dictionary();
+    const comma = generateNounForms(createNoun({ text: "comma" }));
+    dictionary.append(comma);
+    dictionary.indexWordForms(comma);
+
+    // "commas" was never itself appended as a Word -- only reachable via
+    // the form index, not the ordinary exact-text one.
+    expect(dictionary.lookupAll("commas")).toEqual([]);
+    const matches = dictionary.lookupFormMatches("commas");
+    expect(matches).toHaveLength(1);
+    expect(matches[0].word.uuid.value).toBe(comma.uuid.value);
+    expect(matches[0].field).toBe("pluralNumberForm");
+
+    // Idempotent: indexing the same Word again doesn't add a duplicate
+    // entry (WordSeeder's own final-pass reindex, run unconditionally
+    // over every Word on every seedWordNet/seedClosedClassWords call,
+    // relies on this).
+    dictionary.indexWordForms(comma);
+    expect(dictionary.lookupFormMatches("commas")).toHaveLength(1);
+  });
+
+  it("never indexes a form value identical to the Word's own base spelling -- lookupAll already finds that case directly", () => {
+    const dictionary = new Dictionary();
+    const comma = generateNounForms(createNoun({ text: "comma" }));
+    dictionary.append(comma);
+    dictionary.indexWordForms(comma);
+
+    // singularNumberForm is always identical to the base lemma itself.
+    expect(dictionary.lookupFormMatches("comma")).toEqual([]);
+  });
+
+  it("finds a Verb by its own irregular past-tense form", () => {
+    const dictionary = new Dictionary();
+    const run = generateVerbForms(createVerb({ text: "run" }));
+    dictionary.append(run);
+    dictionary.indexWordForms(run);
+
+    expect(dictionary.lookupAll("ran")).toEqual([]);
+    const matches = dictionary.lookupFormMatches("ran");
+    expect(matches).toHaveLength(1);
+    expect(matches[0].word.uuid.value).toBe(run.uuid.value);
+    expect(matches[0].field).toBe("pastTenseForm");
+  });
+});
+
+describe("PartOfSpeechIdentifier / DictionaryProcessor: inflected-form fallback", () => {
+  it("resolves an inflected surface form to its base Word, tagged INFLECTED_FORM with a lower confidence than any exact match and a reason naming the field", () => {
+    const dictionary = new Dictionary();
+    const run = generateVerbForms(createVerb({ text: "run" }));
+    dictionary.append(run);
+    dictionary.indexWordForms(run);
+    const processor = new DictionaryProcessor(dictionary, new Phrases(), new AsyncDictionaryHydrator(dictionary), "Common");
+
+    const candidates = processor.identifyWord("ran");
+    expect(candidates).toHaveLength(1);
+    expect(candidates[0].word?.uuid.value).toBe(run.uuid.value);
+    expect(candidates[0].source).toBe(IdentificationSource.INFLECTED_FORM);
+    expect(candidates[0].confidence).toBeLessThan(1.0);
+    expect(candidates[0].reason).toContain("pastTenseForm");
+  });
+
+  it("an exact match always wins outright over an inflected match, even when both exist for the same surface text", () => {
+    const dictionary = new Dictionary();
+    const run = generateVerbForms(createVerb({ text: "run" }));
+    dictionary.append(run);
+    dictionary.indexWordForms(run);
+    // A second, unrelated Word whose own BASE spelling happens to equal
+    // "run"'s own pastTenseForm -- contrived, but exactly the precedence
+    // case identifySeeded()'s own docstring calls out.
+    const ranNoun = createNoun({ text: "ran" });
+    dictionary.append(ranNoun);
+    dictionary.indexWordForms(ranNoun);
+    const processor = new DictionaryProcessor(dictionary, new Phrases(), new AsyncDictionaryHydrator(dictionary), "Common");
+
+    const candidates = processor.identifyWord("ran");
+    expect(candidates.every((c) => c.source === IdentificationSource.SEEDED_VOCABULARY)).toBe(true);
+    expect(candidates.some((c) => c.word?.uuid.value === ranNoun.uuid.value)).toBe(true);
+    // "run" (only reachable via the inflected fallback here) never
+    // appears once an exact match exists for the same surface text.
+    expect(candidates.some((c) => c.word?.uuid.value === run.uuid.value)).toBe(false);
+  });
+
+  it("resolves a real WordNet-seeded plural back to its base Noun via the inflected-form fallback", async () => {
+    const dictionary = new Dictionary();
+    await new WordSeeder("en").seedWordNet({
+      vocabulary: {
+        dictionary,
+        phrases: new Phrases(),
+        senses: new Senses(),
+        lexicalRelationships: new LexicalRelationshipStore(),
+        lexicalRelationshipProcessor: new LexicalRelationshipProcessor(new LexicalRelationshipStore(), new LexicalRelationshipSystemPropertyTensor()),
+        semanticRelationships: new SemanticRelationshipStore(),
+        semanticRelationshipProcessor: new SemanticRelationshipProcessor(new SemanticRelationshipStore(), new SemanticRelationshipSystemPropertyTensor()),
+      },
+    });
+    const processor = new DictionaryProcessor(dictionary, new Phrases(), new AsyncDictionaryHydrator(dictionary), "Common");
+
+    expect(dictionary.lookupAll("commas")).toEqual([]);
+    const candidates = processor.identifyWord("commas");
+    expect(candidates.length).toBeGreaterThan(0);
+    expect(candidates[0].word?.text).toBe("comma");
+    expect(candidates[0].source).toBe(IdentificationSource.INFLECTED_FORM);
+  }, 30000);
 });
 
 describe("Word derived properties", () => {

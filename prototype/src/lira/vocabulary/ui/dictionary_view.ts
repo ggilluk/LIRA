@@ -29,25 +29,24 @@
  * data/adjective.ts, data/adverb.ts, data/word.ts). */
 
 import type { Identifier, Text } from "../../value_objects";
-import { ADJECTIVE_FORM_PATTERNS, isAdjective } from "../data/adjective";
-import { ADVERB_FORM_PATTERNS, isAdverb } from "../data/adverb";
+import { isAdjective } from "../data/adjective";
+import { isAdverb } from "../data/adverb";
 import type { Dictionary } from "../data/dictionary";
-import { DETERMINER_FORM_PATTERNS, isDeterminer } from "../data/determiner";
 import { EditorialLabel } from "../data/enums/editorial_label";
 import type { SemanticRelationship } from "../data/semantic_relationship";
 import type { SemanticRelationshipStore } from "../data/semantic_relationship_store";
 import { SemanticRelationshipKind, SEMANTIC_MERONYM_KIND_QUALIFIER } from "../data/enums/semantic_relationship_kind";
-import { NOUN_FORM_PATTERNS, isNoun } from "../data/noun";
+import { isNoun } from "../data/noun";
 import { PartOfSpeech } from "../data/enums/part_of_speech";
 import { phraseAsWord, type Phrase } from "../data/phrase";
 import { PhraseType } from "../data/enums/phrase_type";
 import { Phrases } from "../data/phrases";
-import { PRONOUN_FORM_PATTERNS, isPronoun } from "../data/pronoun";
 import { RegisterCode } from "../data/enums/register_code";
 import type { Sense } from "../data/sense";
 import { Senses } from "../data/senses";
-import { VERB_FORM_PATTERNS, isVerb } from "../data/verb";
+import { isVerb } from "../data/verb";
 import { definitionWords, type Word } from "../data/word";
+import { formTextsOf } from "../data/word_forms";
 
 const DEFINITION_TOKEN_PATTERN = /[^\W_]+/g;
 
@@ -892,31 +891,21 @@ export class DictionaryView {
    * subtype, in the Word Form to Part of Speech Matrix's own field
    * order (data/word_form_part_of_speech_matrix.md) -- baseLemmaCanonicalForm
    * first (every POS subtype carries that one, on Word itself), then
-   * whichever of that subtype's own fields are set, read off each POS
-   * class's own exported *_FORM_PATTERNS (noun.ts, verb.ts, ...) rather
-   * than a duplicated field list of this method's own -- that Record's
-   * keys are exactly the *_Form fields that class declares. A field with
-   * no populated value is simply absent, not shown as empty. */
+   * whichever of that subtype's own fields are set, read off
+   * WORD_FORM_FIELDS (data/word_forms.ts, itself built from each POS
+   * class's own exported *_FORM_PATTERNS) rather than a duplicated field
+   * list of this method's own -- the single source of truth shared with
+   * Dictionary.indexWordForms()'s own inflected-form lookup index. A
+   * field with no populated value is simply absent, not shown as empty. */
   private wordFormsFor(word: Word): WordFormEntry[] {
-    const fields: string[] = ["baseLemmaCanonicalForm"];
-    if (isNoun(word)) fields.push(...Object.keys(NOUN_FORM_PATTERNS));
-    else if (isVerb(word)) fields.push(...Object.keys(VERB_FORM_PATTERNS));
-    else if (isAdjective(word)) fields.push(...Object.keys(ADJECTIVE_FORM_PATTERNS));
-    else if (isAdverb(word)) fields.push(...Object.keys(ADVERB_FORM_PATTERNS));
-    else if (isPronoun(word)) fields.push(...Object.keys(PRONOUN_FORM_PATTERNS));
-    else if (isDeterminer(word)) fields.push(...Object.keys(DETERMINER_FORM_PATTERNS));
-
-    const record = word as unknown as Record<string, Text | undefined>;
     const forms: WordFormEntry[] = [];
-    for (const field of fields) {
-      const text = record[field];
-      if (text === undefined) continue;
+    for (const { field, text } of formTextsOf(word)) {
       forms.push({ field, label: formFieldLabel(field), value: text.value });
     }
     // Noun.wordCharacterForms isn't a Word Form Matrix field (that
     // field's own docstring, data/noun.ts) -- not spelling-derivable, so
-    // it has no NOUN_FORM_PATTERNS entry and never enters `fields`
-    // above -- appended here instead, the same "rendered in this
+    // it has no NOUN_FORM_PATTERNS entry and formTextsOf() never returns
+    // it above -- appended here instead, the same "rendered in this
     // section without being a Matrix field" treatment `derivations`
     // already gets (WordRecord.derivations's own docstring on why that
     // lives here too rather than its own section). Every character

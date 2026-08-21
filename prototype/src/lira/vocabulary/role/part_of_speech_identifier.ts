@@ -1,5 +1,6 @@
 import type { Dictionary } from "../data/dictionary";
 import { PartOfSpeech } from "../data/enums/part_of_speech";
+import type { Word } from "../data/word";
 import { isTitleCase, isUpperCase, type WordLookupContext } from "../data/word_lookup_context";
 import { IdentificationSource, type WordIdentifier } from "./word_identifier";
 
@@ -19,22 +20,50 @@ import { IdentificationSource, type WordIdentifier } from "./word_identifier";
 export class PartOfSpeechIdentifier {
   constructor(private readonly dictionary: Dictionary) {}
 
+  /** An exact lookupAll() match always wins outright when one exists --
+   * only once that comes back empty does this fall back to
+   * Dictionary.lookupFormMatches(), which finds a Word by one of its own
+   * generated *_Form values instead of its base spelling ("commas" ->
+   * "comma" via pluralNumberForm, "ran" -> "run" via pastTenseForm).
+   * This is the one choke point both DictionaryProcessor.identifyWord
+   * and identifyPhrase call for every span they try (identifyPhrase's
+   * own docstring), so the fallback covers ordinary single-word
+   * identification and every phrase-search span alike without either
+   * caller needing its own copy of this logic. An inflected match is
+   * real evidence, just weaker than the Word's own canonical spelling,
+   * so it's scored below every exact match (inflectedConfidence()) and
+   * tagged IdentificationSource.INFLECTED_FORM rather than
+   * SEEDED_VOCABULARY, with a reason naming the specific field that
+   * matched. */
   identifySeeded(context: WordLookupContext): readonly WordIdentifier[] {
     const seededWords = this.dictionary.lookupAll(context.normalisedText);
+    if (seededWords.length > 0) {
+      const candidates: WordIdentifier[] = seededWords.map((word) => ({
+        word,
+        partOfSpeech: word.partOfSpeech,
+        source: IdentificationSource.SEEDED_VOCABULARY,
+        confidence: this.seededConfidence(word.partOfSpeech, context),
+        reason: this.seededReason(word.partOfSpeech, context),
+      }));
+      candidates.sort((a, b) => b.confidence - a.confidence);
+      return candidates;
+    }
 
-    const candidates: WordIdentifier[] = seededWords.map((word) => ({
+    const formMatches = this.dictionary.lookupFormMatches(context.normalisedText);
+    const candidates: WordIdentifier[] = formMatches.map(({ word, field }) => ({
       word,
       partOfSpeech: word.partOfSpeech,
-      source: IdentificationSource.SEEDED_VOCABULARY,
-      confidence: this.seededConfidence(word.partOfSpeech, context),
-      reason: this.seededReason(word.partOfSpeech, context),
+      source: IdentificationSource.INFLECTED_FORM,
+      confidence: this.inflectedConfidence(),
+      reason: this.inflectedReason(word, field, context),
     }));
 
     // Stable sort: candidates tied on confidence (the common case --
-    // casing evidence only ever applies to PROPER_NOUN/SYMBOL) keep
-    // Dictionary.lookupAll's own order, i.e. seeding/insertion order --
-    // Array.prototype.sort is a stable sort in every engine this
-    // targets (ECMA-262 since ES2019).
+    // casing evidence only ever applies to PROPER_NOUN/SYMBOL, and
+    // inflectedConfidence() never varies by candidate) keep the
+    // underlying index's own insertion order -- Array.prototype.sort is
+    // a stable sort in every engine this targets (ECMA-262 since
+    // ES2019).
     candidates.sort((a, b) => b.confidence - a.confidence);
 
     return candidates;
@@ -64,5 +93,20 @@ export class PartOfSpeechIdentifier {
       reasons.push("Upper casing supports the symbol candidate.");
     }
     return reasons.join(" ");
+  }
+
+  // Below every possible seededConfidence() value (1.0 at minimum, only
+  // ever higher with casing evidence) -- an exact match must always
+  // outrank an inflected one when both exist for the same occurrence.
+  // No casing-evidence bonus of its own: this candidate's own Word.text
+  // is a different spelling than what was actually typed, so the same
+  // title-/upper-case comparisons seededConfidence() makes wouldn't be
+  // comparing the occurrence against its own real candidate spelling.
+  private inflectedConfidence(): number {
+    return 0.85;
+  }
+
+  private inflectedReason(word: Word, field: string, context: WordLookupContext): string {
+    return `Matched "${context.rawText}" via this Word's own "${field}" form, not its base lexical form ("${word.text}").`;
   }
 }

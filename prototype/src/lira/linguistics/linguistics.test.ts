@@ -83,6 +83,14 @@ describe("LinguisticController against the bundled Common Vocabulary Cache", () 
     expect(sentence.validation).not.toBe(ValidationOutcome.VALID);
     expect(sentence.errors.some((error) => error.tokenText === "zorbnax")).toBe(true);
   });
+
+  it("resolves an inflected surface form ('entities', not the seeded 'entity') via its base Word's own generated pluralNumberForm, not UNRESOLVED", () => {
+    const controller = seededController();
+    const sentence = controller.readSentence("These entities are known.");
+    expect(sentence.errors.some((error) => error.tokenText === "entities")).toBe(false);
+    const entities = sentence.clauses[0].tokens.find((token) => token.text === "entities");
+    expect(entities?.partOfSpeech).toBe(PartOfSpeech.NOUN);
+  });
 });
 
 describe("Sentence types: INTERROGATIVE/EXCLAMATORY recognised by terminal punctuation", () => {

@@ -22,6 +22,14 @@ import type { Word } from "../data/word";
  * Ported from vocabulary/data/word_identification.py. */
 export enum IdentificationSource {
   SEEDED_VOCABULARY = "seeded_vocabulary",
+  // Matched via one of this Word's own *_Form fields (pluralNumberForm,
+  // pastTenseForm, comparativeDegreeForm, ...) rather than its base
+  // lexical form -- PartOfSpeechIdentifier.identifySeeded's own
+  // Dictionary.lookupFormMatches() fallback, tried only once an exact
+  // lookupAll() match fails. Distinct from SEEDED_VOCABULARY so a
+  // consumer can tell an exact match from a derived one without
+  // string-matching WordIdentifier.reason.
+  INFLECTED_FORM = "inflected_form",
   ORTHOGRAPHIC_EVIDENCE = "orthographic_evidence",
   EXTERNAL_REFERENCE = "external_reference",
 }
