@@ -49,7 +49,7 @@ import { HolonymRootWord } from "../data/enums/holonym_root_word";
 import { HypernymRootWord } from "../data/enums/hypernym_root_word";
 import { InterrogativeRootWord } from "../data/enums/interrogative_root_word";
 import { VectorPrimitiveRootWord } from "../data/enums/vector_primitive_root_word";
-import { VERB_FRAME_TEXT } from "../data/enums/verb_frame_examples";
+import { VERB_FRAME_TEXT } from "../data/enums/verb_framed_example_template";
 import type { Identifier, Text } from "../../value_objects";
 import type { AttributeValue } from "../data/attribute_value";
 import type { Dictionary } from "../data/dictionary";

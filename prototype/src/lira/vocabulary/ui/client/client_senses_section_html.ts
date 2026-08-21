@@ -25,7 +25,7 @@ function padMeterRow(posLabel, negLabel, value) {
 
 // WordSenseSummary.frames's own raw text carries WordNet's own literal
 // "----" placeholder standing in for the verb itself (VERB_FRAME_TEXT's
-// own docstring, data/enums/verb_frame_examples.ts) -- e.g. "Somebody ----s something" for
+// own docstring, data/enums/verb_framed_example_template.ts) -- e.g. "Somebody ----s something" for
 // "eat". Substituted here, client-side, with word's own real inflected
 // spelling rather than shown as the raw WordNet placeholder: "----ing"
 // (only ever "It is ----ing"/"Something is ----ing PP") against

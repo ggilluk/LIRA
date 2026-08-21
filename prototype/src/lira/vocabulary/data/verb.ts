@@ -8,7 +8,7 @@
  * "never retained"; it's parsed into WordNetSynset.frames now instead,
  * and WordSeeder.seedWordNet's own synsetMemberToWord() resolves each
  * (Verb, sense) pair's own subset of applicable frame numbers against
- * VERB_FRAME_TEXT (data/enums/verb_frame_examples.ts), storing the result on the Senses store as
+ * VERB_FRAME_TEXT (data/enums/verb_framed_example_template.ts), storing the result on the Senses store as
  * per-membership metadata (Senses.setMemberMetadata()'s own docstring,
  * data/senses.ts) rather than on the Verb itself -- a Verb is now
  * unique by (partOfSpeech, lemma) and can lexicalize several senses
