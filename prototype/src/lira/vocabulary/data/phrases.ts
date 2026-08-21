@@ -4,7 +4,7 @@ import { copyPhraseWithFreshUuid, type Phrase } from "./phrase";
  * for Phrase (phrase.ts's own docstring on why the two are kept apart
  * rather than folding Phrase into Dictionary as just another kind of
  * Word). One Phrases store per Domain, alongside that Domain's own
- * Dictionary (VocabularyLayer.phrases, data/layer.ts).
+ * Dictionary (VocabularyContext.phrases, data/vocabulary_context.ts).
  *
  * Deliberately a smaller surface than Dictionary: no formsByBase/
  * baseByForm lemma index (a closed-class multi-word phrase has no
@@ -70,7 +70,7 @@ export class Phrases {
 
   /** Bootstraps this Phrases store with a copy of every Phrase in `other`
    * -- the Phrase counterpart of Dictionary.seedFrom, used the same
-   * way (VocabularyLayer's own Physics-from-Common snapshot). */
+   * way (VocabularyContext's own Physics-from-Common snapshot). */
   seedFrom(other: Phrases): void {
     for (const phrase of other.phrases) this.append(copyPhraseWithFreshUuid(phrase));
   }

@@ -19,7 +19,7 @@ import type { Word } from "../../data/word";
  * and hand-curated alike -- sense.ts's own docstring) and falling back to
  * `entry`'s own fields only when its senseId doesn't resolve in this
  * Domain's own Senses. That fallback isn't just defensive: a Word/Phrase
- * copied into a different Domain (VocabularyLayer's own Physics-from-Common
+ * copied into a different Domain (VocabularyContext's own Physics-from-Common
  * bootstrap, in particular) doesn't yet carry a matching Sense copy across
  * into that Domain's own Senses -- a known, accepted gap, the same one
  * SemanticRelationshipStore already has for a cross-domain copy -- so

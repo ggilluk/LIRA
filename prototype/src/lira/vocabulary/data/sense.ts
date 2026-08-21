@@ -15,7 +15,7 @@
  * WordNet's do). DictionaryView.senseFieldsFor()/isRootWordFor() are
  * the read side: prefer a Word/Phrase's own Sense, fall back to its own
  * fields only when senseId doesn't resolve in that Domain's own
- * Senses (a cross-Domain copy -- VocabularyLayer's own Physics-
+ * Senses (a cross-Domain copy -- VocabularyContext's own Physics-
  * from-Common bootstrap -- doesn't carry a matching Sense copy across
  * yet, a known, accepted gap, the same one LexicalRelationshipStore
  * already has). Only domainTag/relatedDomainTags actually stopped being

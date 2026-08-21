@@ -32,7 +32,7 @@ import { Senses } from "./senses";
  * data/verb.ts and others) -- nothing outside role/word_seeder.ts and
  * role/relationship_seeder.ts is meant to read `lexicalRelationships`
  * again once a seeding pass returns. */
-export class VocabularyLayer {
+export class VocabularyContext {
   agents: VocabularyAgent[] = [];
   dictionary = new Dictionary(); // the lexicon -- lexical inventory only (Rule 17)
   phrases = new Phrases();

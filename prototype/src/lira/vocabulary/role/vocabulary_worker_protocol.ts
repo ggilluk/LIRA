@@ -40,7 +40,7 @@ export interface RenderRequest {
 }
 
 /** Triggers WordSeeder.seedWordNet (role/word_seeder.ts) on demand
- * against the named Domain's own VocabularyLayer -- an on-demand
+ * against the named Domain's own VocabularyContext -- an on-demand
  * seeding pass, never implied by "init" (vocabulary_worker.ts's own
  * handleInit registers every Domain empty and seeds nothing at all;
  * SeedCommonVocabularyRequest below is the other on-demand seeding
@@ -50,7 +50,7 @@ export interface RenderRequest {
  * only ever asks for "Common" -- WordNet is a general-English lexical
  * resource, not a Domain-specific fact, and Physics's own Dictionary is
  * a one-time snapshot copy taken the first time Common is seeded
- * (VocabularyLayer.seedFrom, vocabulary_worker.ts's own
+ * (VocabularyContext.seedFrom, vocabulary_worker.ts's own
  * handleSeedCommonVocabulary), so seeding a child Domain directly here
  * wouldn't do anything a Common seed doesn't already cover for it going
  * forward, while seeding Common retroactively into an already-copied
@@ -71,7 +71,7 @@ export interface SeedWordNetRequest {
  * user reaches for from the Vocabulary tab's own toolbar
  * (portal_shell.ts's own renderVocabToolbar()), side by side. The
  * first successful run against "Common" also refreshes Physics's own
- * one-time Dictionary snapshot (VocabularyLayer.seedFrom) -- see
+ * one-time Dictionary snapshot (VocabularyContext.seedFrom) -- see
  * handleSeedCommonVocabulary's own docstring. */
 export interface SeedCommonVocabularyRequest {
   type: "seed-common-vocabulary";

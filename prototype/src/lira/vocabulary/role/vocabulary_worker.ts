@@ -11,7 +11,7 @@
  * This worker is deliberately the entire content of a Vite worker entry
  * (`new Worker(new URL("./vocabulary_worker.ts", import.meta.url), { type:
  * "module" })` in vocabulary_worker_client.ts) -- everything it imports
- * (WordSeeder, RelationshipSeeder, VocabularyLayer, DictionaryView, and
+ * (WordSeeder, RelationshipSeeder, VocabularyContext, DictionaryView, and
  * the ~5MB bundled Common Vocabulary Cache JSON they read) bundles into
  * this worker's own chunk, not the main thread's, so the page that
  * mounts the Portal shell stays light while this chunk loads and runs
@@ -22,7 +22,7 @@
  * that never triggers it never pays for it. */
 
 import { DictionaryView } from "../ui/server/dictionary_controller";
-import { VocabularyLayer } from "../data/layer";
+import { VocabularyContext } from "../data/vocabulary_context";
 import { NounCharacterFormSeeder } from "./noun_character_form_seeder";
 import { RelationshipSeeder } from "./relationship_seeder";
 import { WordSeeder } from "./word_seeder";
@@ -50,7 +50,7 @@ const ctx = self as unknown as WorkerScope;
 interface SeededDomain {
   name: string;
   parentName?: string;
-  vocabulary: VocabularyLayer;
+  vocabulary: VocabularyContext;
 }
 
 const domains = new Map<string, SeededDomain>();
@@ -65,7 +65,7 @@ const wordNetSeedingDomains = new Set<string>();
 // Same backstop as wordNetSeedingDomains, for handleSeedCommonVocabulary
 // runs instead.
 const commonVocabularySeedingDomains = new Set<string>();
-// Whether Physics's own one-time Dictionary snapshot (VocabularyLayer.seedFrom)
+// Whether Physics's own one-time Dictionary snapshot (VocabularyContext.seedFrom)
 // has already been taken -- guards against handleSeedCommonVocabulary
 // retaking it on a second "Seed Vocabulary" click, which would append a
 // second, fully duplicate copy of every Common Word into Physics
@@ -84,8 +84,8 @@ function summaryOf(domain: SeededDomain): VocabularyDomainSummary {
     parentName: domain.parentName,
     wordCount: domain.vocabulary.dictionary.totalEntries(),
     // semanticRelationships, not lexicalRelationships -- the latter is
-    // seeding-internal scratch state now (VocabularyLayer's own
-    // docstring, data/layer.ts), so counting it here would surface a
+    // seeding-internal scratch state now (VocabularyContext's own
+    // docstring, data/vocabulary_context.ts), so counting it here would surface a
     // number nothing else in the UI shows any more.
     relationshipCount: domain.vocabulary.semanticRelationships.totalRelationships(),
   };
@@ -94,7 +94,7 @@ function summaryOf(domain: SeededDomain): VocabularyDomainSummary {
 /** Registers every Domain empty, seeding nothing -- unlike this
  * function's earlier version, which always ran seedClosedClassWords/
  * RelationshipSeeder against Common (and, via Physics's own
- * VocabularyLayer.seedFrom snapshot, Physics too) before "ready" ever
+ * VocabularyContext.seedFrom snapshot, Physics too) before "ready" ever
  * fired, whether or not the Vocabulary UI was ever opened that session.
  * Both are now on-demand actions the Vocabulary tab's own toolbar
  * triggers (portal_shell.ts's own renderVocabToolbar(), "Seed
@@ -105,9 +105,9 @@ function summaryOf(domain: SeededDomain): VocabularyDomainSummary {
 async function handleInit(): Promise<void> {
   try {
     post({ type: "status", state: "running", detail: "Registering Domains…" });
-    const commonDomain: SeededDomain = { name: "Common", vocabulary: new VocabularyLayer("Common") };
+    const commonDomain: SeededDomain = { name: "Common", vocabulary: new VocabularyContext("Common") };
     domains.set(commonDomain.name, commonDomain);
-    const physicsDomain: SeededDomain = { name: "Physics", parentName: "Common", vocabulary: new VocabularyLayer("Physics") };
+    const physicsDomain: SeededDomain = { name: "Physics", parentName: "Common", vocabulary: new VocabularyContext("Physics") };
     domains.set(physicsDomain.name, physicsDomain);
 
     const summaries: VocabularyDomainSummary[] = [...domains.values()].map(summaryOf);
@@ -125,7 +125,7 @@ async function handleInit(): Promise<void> {
  * Vocabulary Cache's own seed files (SeedCommonVocabularyRequest's own
  * docstring), as opposed to handleSeedWordNet's Princeton WordNet dict/
  * text. The first successful run against "Common" also refreshes
- * Physics's own one-time Dictionary snapshot (VocabularyLayer.seedFrom)
+ * Physics's own one-time Dictionary snapshot (VocabularyContext.seedFrom)
  * -- deferred here to whenever Common's seed data actually lands rather
  * than unconditionally at boot (this module's own handleInit no longer
  * seeds anything at all), guarded by `physicsBootstrapped` so a second

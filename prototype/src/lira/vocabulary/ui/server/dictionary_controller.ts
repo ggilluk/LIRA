@@ -26,7 +26,7 @@
  *
  * LexicalRelationshipStore (Word-to-Word morphological/orthographic
  * facts) is deliberately absent from this class entirely --
- * VocabularyLayer's own docstring (data/layer.ts) on why: it's
+ * VocabularyContext's own docstring (data/vocabulary_context.ts) on why: it's
  * seeding-internal working state now, never read again once
  * WordSeeder/RelationshipSeeder return. Every fact this view used to
  * read from it is now either a genuine SemanticRelationship (every true

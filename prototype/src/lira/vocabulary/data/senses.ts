@@ -5,8 +5,8 @@ import type { Word } from "./word";
 /** Sense storage: Phrases's own counterpart for Sense (sense.ts's
  * own docstring on why a Sense is kept apart from Dictionary/Phrases
  * rather than folded into either). One Senses store per Domain, alongside
- * that Domain's own Dictionary/Phrases (VocabularyLayer.senses,
- * data/layer.ts).
+ * that Domain's own Dictionary/Phrases (VocabularyContext.senses,
+ * data/vocabulary_context.ts).
  *
  * Indexed by synsetId as well as uuid -- WordSeeder.seedWordNet's own
  * per-synset dedup (find-or-create the one Sense for this synset,
@@ -103,7 +103,7 @@ export class Senses {
 
   /** Bootstraps this Senses store with a copy of every Sense in `other`
    * -- Dictionary.seedFrom/Phrases.seedFrom's own exact counterpart,
-   * used the same way (VocabularyLayer's own Physics-from-Common
+   * used the same way (VocabularyContext's own Physics-from-Common
    * snapshot). */
   seedFrom(other: Senses): void {
     for (const sense of other.senses) this.append(copySenseWithFreshUuid(sense));

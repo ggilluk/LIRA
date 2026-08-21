@@ -1623,8 +1623,8 @@ export class WordSeeder {
    * relationships at all (the user's own scoping instruction). Every
    * edge created here -- Morphological, Orthographic, and Lexical
    * Semantic alike -- is seeding-internal working state now, not this
-   * Domain's own permanent queryable model any more (VocabularyLayer's
-   * own docstring, data/layer.ts, on the split this reflects): a copy
+   * Domain's own permanent queryable model any more (VocabularyContext's
+   * own docstring, data/vocabulary_context.ts, on the split this reflects): a copy
    * pass at the end of seedWordNet() (deriveMorphologicalPointers()/
    * copySemanticRelationships(), this file's own docstrings) reads every
    * edge created here back out exactly once, onto either the seeded

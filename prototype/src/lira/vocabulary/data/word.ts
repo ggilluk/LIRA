@@ -224,7 +224,7 @@ export interface Word extends LinguisticUnit {
   // Every closed-class component Word this contracted form spells --
   // "don't" <- ["do", "not"], "it's" <- ["it", "is"/"has", ambiguous
   // without context] -- read back from WordSeeder's own seeding-time-only
-  // LexicalRelationship graph (VocabularyLayer's own docstring, data/layer.ts,
+  // LexicalRelationship graph (VocabularyContext's own docstring, data/vocabulary_context.ts,
   // on why nothing outside a seeder reads that graph directly any more)
   // rather than left as a queryable CONTRACTION edge. Word-level, not a
   // POS-subtype field, since a contraction's own components span
@@ -290,7 +290,7 @@ export function copyWordWithFreshUuid(word: Word): Word {
 // abbreviations, acronyms, contractions, transliterations,
 // relatedWordsOf) queried a LexicalRelationshipStore directly -- removed
 // along with that store's own retirement from the permanent queryable
-// model (VocabularyLayer's own docstring, data/layer.ts, on the split:
+// model (VocabularyContext's own docstring, data/vocabulary_context.ts, on the split:
 // it's seeding-internal working state now). None of these 16 functions
 // had a real production caller left (grep-verified against the whole
 // src tree, tests aside) by the time of that split -- every fact they
