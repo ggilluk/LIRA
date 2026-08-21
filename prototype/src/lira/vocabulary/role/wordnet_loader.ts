@@ -57,9 +57,9 @@ export interface WordNetPointer {
 
 // One raw entry from the verb-only frame block -- WordNet's own
 // `frame_cnt {+ frame_number word_number}...` records, kept exactly as
-// written rather than resolved to text here (that's Verb's own
-// VERB_FRAME_TEXT, data/verb.ts -- a Vocabulary-layer concern, not this
-// module's). `wordIndex` is WordNet's own `word_number`, hex-encoded
+// written rather than resolved to text here (that's
+// VERB_FRAME_TEXT, data/enums/verb_frame_examples.ts -- a Vocabulary-layer
+// concern, not this module's). `wordIndex` is WordNet's own `word_number`, hex-encoded
 // exactly like WordNetPointer's own sourceWordIndex/targetWordIndex
 // above (confirmed against real data -- word_number values like "0f"
 // only make sense as hex): 0 means "every member of this synset", a

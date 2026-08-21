@@ -8,7 +8,7 @@
  * "never retained"; it's parsed into WordNetSynset.frames now instead,
  * and WordSeeder.seedWordNet's own synsetMemberToWord() resolves each
  * (Verb, sense) pair's own subset of applicable frame numbers against
- * VERB_FRAME_TEXT below, storing the result on the Senses store as
+ * VERB_FRAME_TEXT (data/enums/verb_frame_examples.ts), storing the result on the Senses store as
  * per-membership metadata (Senses.setMemberMetadata()'s own docstring,
  * data/senses.ts) rather than on the Verb itself -- a Verb is now
  * unique by (partOfSpeech, lemma) and can lexicalize several senses
@@ -480,45 +480,3 @@ export function generateVerbForms(verb: Verb): Verb {
   return { ...verb, ...generated };
 }
 
-// WordNet 3.1's own fixed, documented table of 35 generic verb sentence
-// frames (wninput(5WN)) -- a stable constant of the WordNet project
-// itself, not bundled data of our own; dict/data.verb's own frame
-// records (WordNetSynset.frames, wordnet_loader.ts) name one of these
-// by number only, "----" standing in for the verb itself.
-export const VERB_FRAME_TEXT: Readonly<Record<number, string>> = {
-  1: "Something ----s",
-  2: "Somebody ----s",
-  3: "It is ----ing",
-  4: "Something is ----ing PP",
-  5: "Something ----s something Adjective/Noun",
-  6: "Something ----s Adjective/Noun",
-  7: "Somebody ----s Adjective",
-  8: "Somebody ----s something",
-  9: "Somebody ----s somebody",
-  10: "Something ----s somebody",
-  11: "Something ----s something",
-  12: "Something ----s to somebody",
-  13: "Somebody ----s on something",
-  14: "Somebody ----s somebody something",
-  15: "Somebody ----s something to somebody",
-  16: "Somebody ----s something from somebody",
-  17: "Somebody ----s somebody with something",
-  18: "Somebody ----s somebody of something",
-  19: "Somebody ----s something on somebody",
-  20: "Somebody ----s somebody PP",
-  21: "Somebody ----s something PP",
-  22: "Somebody ----s PP",
-  23: "Somebody's (body part) ----s",
-  24: "Somebody ----s somebody to INFINITIVE",
-  25: "Somebody ----s somebody INFINITIVE",
-  26: "Somebody ----s that CLAUSE",
-  27: "Somebody ----s to somebody",
-  28: "Somebody ----s to INFINITIVE",
-  29: "Somebody ----s whether INFINITIVE",
-  30: "Somebody ----s somebody into V-ing something",
-  31: "Somebody ----s something with something",
-  32: "Somebody ----s INFINITIVE",
-  33: "Somebody ----s VERB-ing",
-  34: "It ----s that CLAUSE",
-  35: "Something ----s INFINITIVE",
-};

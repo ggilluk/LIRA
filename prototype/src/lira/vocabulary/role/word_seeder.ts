@@ -49,6 +49,7 @@ import { HolonymRootWord } from "../data/enums/holonym_root_word";
 import { HypernymRootWord } from "../data/enums/hypernym_root_word";
 import { InterrogativeRootWord } from "../data/enums/interrogative_root_word";
 import { VectorPrimitiveRootWord } from "../data/enums/vector_primitive_root_word";
+import { VERB_FRAME_TEXT } from "../data/enums/verb_frame_examples";
 import type { Identifier, Text } from "../../value_objects";
 import type { AttributeValue } from "../data/attribute_value";
 import type { Dictionary } from "../data/dictionary";
@@ -62,7 +63,7 @@ import type { Phrases } from "../data/phrases";
 import { createSense, type Sense } from "../data/sense";
 import type { Senses } from "../data/senses";
 import type { SourceReference } from "../data/source_reference";
-import { VERB_FRAME_TEXT, createVerb, generateVerbForms, isVerb } from "../data/verb";
+import { createVerb, generateVerbForms, isVerb } from "../data/verb";
 import { copyWordWithFreshUuid, createWord, type Word } from "../data/word";
 import type { SemanticRelationshipStore } from "../data/semantic_relationship_store";
 import {
