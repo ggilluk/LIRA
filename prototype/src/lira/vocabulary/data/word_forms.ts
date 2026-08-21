@@ -3,36 +3,43 @@
  * this Word's own spelling variants," shared by
  * wordFormsFor() (ui/server/builder_word.ts, display) and
  * Dictionary.indexWordForms() (data/dictionary.ts, lookup) rather than
- * each maintaining its own copy of this list. Built from each POS
- * class's own exported *_FORM_PATTERNS record (role/processor/noun_processor.ts/
- * verb_processor.ts/adjective_processor.ts/adverb_processor.ts/
- * pronoun_processor.ts/determiner_processor.ts) -- that record's
- * keys are exactly the *_Form fields that class declares (each POS
- * processor file's own docstring on why its row of the Word Form to Part of
- * Speech Matrix, data/word_form_part_of_speech_matrix.md, is expressed
- * this way). Every other PartOfSpeech (Preposition, Conjunction,
- * Interjection, Numeral, Particle, Auxiliary, ProperNoun, Symbol,
- * Punctuation, Other) carries no *_Form field of its own -- absent from
- * this record entirely, not listed with an empty array, since
- * `formTextsOf`'s own `?? []` already treats a missing key that way. */
+ * each maintaining its own copy of this list. Built from
+ * WORD_FORM_MATRIX (data/matrices/word_form_part_of_speech_matrix.ts),
+ * the single real data source for the Word Form to Part of Speech
+ * Matrix -- not, as this file used to, from six separate
+ * role/processor/*_processor.ts constants (a data/ file importing from
+ * role/ inverted this codebase's own one-way dependency rule; see that
+ * matrix file's own module docstring for the full story). Every other
+ * PartOfSpeech (Preposition, Conjunction, Interjection, Numeral,
+ * Particle, Auxiliary, ProperNoun, Symbol, Punctuation, Other) carries
+ * no *_Form field of its own -- absent from this record entirely, not
+ * listed with an empty array, since `formTextsOf`'s own `?? []`
+ * already treats a missing key that way. */
 
-import { ADJECTIVE_FORM_PATTERNS } from "../role/processor/adjective_processor";
-import { ADVERB_FORM_PATTERNS } from "../role/processor/adverb_processor";
-import { DETERMINER_FORM_PATTERNS } from "../role/processor/determiner_processor";
+import { fieldsFor } from "./matrices/word_form_part_of_speech_matrix";
 import { PartOfSpeech } from "./enums/part_of_speech";
-import { NOUN_FORM_PATTERNS } from "../role/processor/noun_processor";
-import { PRONOUN_FORM_PATTERNS } from "../role/processor/pronoun_processor";
-import { VERB_FORM_PATTERNS } from "../role/processor/verb_processor";
 import type { Text } from "../../value_objects";
 import type { Word } from "./word";
 
+// fieldsFor()'s own row-order sweep includes "baseLemmaCanonicalForm"
+// for every POS (the matrix's own first row applies to all of them) --
+// excluded here since formTextsOf() below already prepends that field
+// unconditionally for every Word regardless of partOfSpeech; including
+// it in WORD_FORM_FIELDS too would duplicate it in formTextsOf()'s own
+// output, matching the same "belongs to Word itself, not any one POS
+// subtype's own row" fact the old per-POS `*_FORM_PATTERNS` constants
+// already encoded by never declaring it as one of their own keys.
+function posFormFields(pos: PartOfSpeech): readonly string[] {
+  return fieldsFor(pos).filter((field) => field !== "baseLemmaCanonicalForm");
+}
+
 export const WORD_FORM_FIELDS: Readonly<Partial<Record<PartOfSpeech, readonly string[]>>> = {
-  [PartOfSpeech.NOUN]: Object.keys(NOUN_FORM_PATTERNS),
-  [PartOfSpeech.VERB]: Object.keys(VERB_FORM_PATTERNS),
-  [PartOfSpeech.ADJECTIVE]: Object.keys(ADJECTIVE_FORM_PATTERNS),
-  [PartOfSpeech.ADVERB]: Object.keys(ADVERB_FORM_PATTERNS),
-  [PartOfSpeech.PRONOUN]: Object.keys(PRONOUN_FORM_PATTERNS),
-  [PartOfSpeech.DETERMINER]: Object.keys(DETERMINER_FORM_PATTERNS),
+  [PartOfSpeech.NOUN]: posFormFields(PartOfSpeech.NOUN),
+  [PartOfSpeech.VERB]: posFormFields(PartOfSpeech.VERB),
+  [PartOfSpeech.ADJECTIVE]: posFormFields(PartOfSpeech.ADJECTIVE),
+  [PartOfSpeech.ADVERB]: posFormFields(PartOfSpeech.ADVERB),
+  [PartOfSpeech.PRONOUN]: posFormFields(PartOfSpeech.PRONOUN),
+  [PartOfSpeech.DETERMINER]: posFormFields(PartOfSpeech.DETERMINER),
 };
 
 /** One populated *_Form field, paired with its own field name -- e.g.

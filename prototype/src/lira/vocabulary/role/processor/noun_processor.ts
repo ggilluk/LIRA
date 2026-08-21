@@ -2,6 +2,7 @@ import type { Text } from "../../../value_objects";
 import { PartOfSpeech } from "../../data/enums/part_of_speech";
 import { createWord, endsInConsonantY, validateFormText, validateWordFormAttributes, type Word, type WordFormIssue } from "../../data/word";
 import type { Noun } from "../../data/entities/noun";
+import { stringPatternsFor } from "../../data/matrices/word_form_part_of_speech_matrix";
 
 export type NounInit = Pick<Noun, "text"> & Partial<Omit<Noun, "text" | "partOfSpeech">>;
 
@@ -17,28 +18,19 @@ export function isNoun(word: Word): word is Noun {
   return word.partOfSpeech === PartOfSpeech.NOUN;
 }
 
-// Noun's own row of the matrix's String Pattern column (../data/word_form_part_of_speech_matrix.md),
-// scoped to exactly the rules that apply to Noun specifically -- see each
-// field's own docstring above for which numbered rule(s) these are and
-// why the rest of that row's rules (irregular, curated-only, or another
-// class's own) are simply absent here.
-export const NOUN_FORM_PATTERNS: Readonly<Record<string, readonly string[]>> = {
-  singularNumberForm: [],
-  pluralNumberForm: ["/s$/i", "/es$/i", "/ies$/i", "/ves$/i"],
-  possessiveCaseForm: ["/'s$/i", "/s'$/i"],
-};
-
 /** Validates every *_Form field this Noun carries -- its own row above,
  * plus baseLemmaCanonicalForm via Word's own validateWordFormAttributes
- * -- against NOUN_FORM_PATTERNS. Returns every issue found, not just the
- * first; empty means every populated field is internally consistent
- * with the matrix, not that every field is populated (undefined is
- * never an issue, validateFormText's own docstring). */
+ * -- against WORD_FORM_MATRIX's own NOUN rules
+ * (data/matrices/word_form_part_of_speech_matrix.ts). Returns every
+ * issue found, not just the first; empty means every populated field
+ * is internally consistent with the matrix, not that every field is
+ * populated (undefined is never an issue, validateFormText's own
+ * docstring). */
 export function validateNoun(noun: Noun): readonly WordFormIssue[] {
   const issues: WordFormIssue[] = [...validateWordFormAttributes(noun)];
-  const check = (field: keyof typeof NOUN_FORM_PATTERNS, text: Text | undefined): void => {
+  const check = (field: string, text: Text | undefined): void => {
     if (text === undefined) return;
-    const issue = validateFormText(field, text, NOUN_FORM_PATTERNS[field]);
+    const issue = validateFormText(field, text, stringPatternsFor(field, PartOfSpeech.NOUN));
     if (issue !== undefined) issues.push(issue);
   };
   check("singularNumberForm", noun.singularNumberForm);
@@ -47,7 +39,8 @@ export function validateNoun(noun: Noun): readonly WordFormIssue[] {
   return issues;
 }
 
-/** pluralNumberForm's own Generation Transform (../data/word_form_part_of_speech_matrix.md),
+/** pluralNumberForm's own Generation Transform
+ * (../../data/matrices/word_form_part_of_speech_matrix.ts),
  * regular-case rules #1-3 only -- rule #4 (`f`/`fe` -> `ves`) needs
  * "lexical qualification" the matrix's own row admits isn't spelling
  * alone ("roof" takes plain -s, "knife" takes -ves, and both end the
@@ -71,7 +64,7 @@ function generatedPluralNumberForm(lemma: string): Text | undefined {
  * Only ever fills a field that's still undefined -- an explicitly-set
  * value (from `init`, or an earlier call) is never overwritten. Every
  * value this produces is provably one of that field's own recognised
- * String Patterns (NOUN_FORM_PATTERNS above), by construction --
+ * String Patterns (WORD_FORM_MATRIX's own NOUN rules), by construction --
  * generateNounForms() and validateNoun() are built from the exact same
  * matrix rules, so a freshly-generated Noun always passes its own
  * validateNoun() unchanged. */

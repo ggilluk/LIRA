@@ -15,6 +15,7 @@ import {
 } from "../../data/word";
 import type { Adjective } from "../../data/entities/adjective";
 import { AdjectivePosition } from "../../data/enums/adjective_position";
+import { stringPatternsFor } from "../../data/matrices/word_form_part_of_speech_matrix";
 
 export type AdjectiveInit = Pick<Adjective, "text"> & Partial<Omit<Adjective, "text" | "partOfSpeech">>;
 
@@ -42,29 +43,19 @@ export function syntacticPositionForSense(senses: Senses, adjective: Adjective, 
   return senses.metadataFor(senseId, adjective.uuid.value)?.syntacticPosition as AdjectivePosition | undefined;
 }
 
-// Adjective's own row of the matrix's String Pattern column (../data/word_form_part_of_speech_matrix.md),
-// scoped to exactly the rules that apply to Adjective specifically --
-// see each field's own docstring above for which numbered rule(s) these
-// are and why the rest of that row's rules (irregular, curated-only, or
-// another class's own) are simply absent here.
-export const ADJECTIVE_FORM_PATTERNS: Readonly<Record<string, readonly string[]>> = {
-  positiveDegreeForm: [],
-  comparativeDegreeForm: ["/er$/i", "/ier$/i", "/([bcdfghjklmnpqrstvwxyz])\\1er$/i", "/^more\\s+.+$/i"],
-  superlativeDegreeForm: ["/est$/i", "/iest$/i", "/([bcdfghjklmnpqrstvwxyz])\\1est$/i", "/^most\\s+.+$/i"],
-};
-
 /** Validates every *_Form field this Adjective carries -- its own row
  * above, plus baseLemmaCanonicalForm via Word's own
- * validateWordFormAttributes -- against ADJECTIVE_FORM_PATTERNS.
+ * validateWordFormAttributes -- against WORD_FORM_MATRIX's own
+ * ADJECTIVE rules (data/matrices/word_form_part_of_speech_matrix.ts).
  * Returns every issue found, not just the first; empty means every
  * populated field is internally consistent with the matrix, not that
  * every field is populated (undefined is never an issue,
  * validateFormText's own docstring). */
 export function validateAdjective(adjective: Adjective): readonly WordFormIssue[] {
   const issues: WordFormIssue[] = [...validateWordFormAttributes(adjective)];
-  const check = (field: keyof typeof ADJECTIVE_FORM_PATTERNS, text: Text | undefined): void => {
+  const check = (field: string, text: Text | undefined): void => {
     if (text === undefined) return;
-    const issue = validateFormText(field, text, ADJECTIVE_FORM_PATTERNS[field]);
+    const issue = validateFormText(field, text, stringPatternsFor(field, PartOfSpeech.ADJECTIVE));
     if (issue !== undefined) issues.push(issue);
   };
   check("positiveDegreeForm", adjective.positiveDegreeForm);
@@ -157,7 +148,7 @@ export function determineGradability(relationships: SemanticRelationshipStore, a
  * legitimately end up with Positive Degree Form only too, same as a
  * non-gradable one, just for a different reason. Every value this
  * produces is provably one of that field's own recognised String
- * Patterns (ADJECTIVE_FORM_PATTERNS above), by construction --
+ * Patterns (WORD_FORM_MATRIX's own ADJECTIVE rules), by construction --
  * generateAdjectiveForms() and validateAdjective() both draw on the
  * exact same matrix rows, so a freshly-generated Adjective always
  * passes its own validateAdjective() unchanged. */

@@ -1,6 +1,6 @@
 /** Pronoun: Word's own PRONOUN-specific subtype -- the closed class
  * with the richest row of its own in the Word Form to Part of Speech
- * Matrix (../word_form_part_of_speech_matrix.md), matching how much a
+ * Matrix (../matrices/word_form_part_of_speech_matrix.md), matching how much a
  * pronoun paradigm actually varies (I/me/my/mine/myself, he/him/his/
  * himself, ...) compared to every other closed class. Every field below
  * is undefined until a seeding/curation pass populates it -- the

@@ -9,6 +9,7 @@ import { SemanticRelationshipKind } from "./data/enums/semantic_relationship_kin
 import { SemanticRelationshipProcessor } from "./role/semantic_relationship_processor";
 import { PartOfSpeech } from "./data/enums/part_of_speech";
 import { createWord, validateFormText, validateWordFormAttributes, type Word } from "./data/word";
+import { stringPatternsFor } from "./data/matrices/word_form_part_of_speech_matrix";
 import { AdjectivePosition } from "./data/enums/adjective_position";
 import { createAdjective, determineGradability, generateAdjectiveForms, isAdjective, syntacticPositionForSense, validateAdjective } from "./role/processor/adjective_processor";
 import type { Adjective } from "./data/entities/adjective";
@@ -18,13 +19,13 @@ import { isConjunction } from "./role/processor/conjunction_processor";
 import { createDeterminer, isDeterminer, validateDeterminer } from "./role/processor/determiner_processor";
 import { HypernymRootWord } from "./data/enums/hypernym_root_word";
 import { isInterjection } from "./role/processor/interjection_processor";
-import { NOUN_FORM_PATTERNS, createNoun, generateNounForms, isNoun, validateNoun } from "./role/processor/noun_processor";
+import { createNoun, generateNounForms, isNoun, validateNoun } from "./role/processor/noun_processor";
 import type { Noun } from "./data/entities/noun";
 import { isNumeral } from "./role/processor/numeral_processor";
 import { isParticle } from "./role/processor/particle_processor";
 import { isPreposition } from "./role/processor/preposition_processor";
-import { PRONOUN_FORM_PATTERNS, createPronoun, isPronoun, validatePronoun } from "./role/processor/pronoun_processor";
-import { VERB_FORM_PATTERNS, createVerb, framesForSense, generateVerbForms, isVerb, validateVerb } from "./role/processor/verb_processor";
+import { createPronoun, isPronoun, validatePronoun } from "./role/processor/pronoun_processor";
+import { createVerb, framesForSense, generateVerbForms, isVerb, validateVerb } from "./role/processor/verb_processor";
 import type { Verb } from "./data/entities/verb";
 import { createPhrase, type Phrase } from "./data/phrase";
 import { Phrases } from "./data/phrases";
@@ -126,23 +127,23 @@ describe("classifyPhraseType", () => {
 
 describe("validateFormText (word.ts) -- the mechanism every POS class's own validate<Class>() reuses", () => {
   it("treats an unset formats as always valid -- no claim made, nothing to check", () => {
-    expect(validateFormText("pluralNumberForm", { value: "dogs" }, NOUN_FORM_PATTERNS.pluralNumberForm)).toBeUndefined();
+    expect(validateFormText("pluralNumberForm", { value: "dogs" }, stringPatternsFor("pluralNumberForm", PartOfSpeech.NOUN))).toBeUndefined();
   });
 
   it("accepts a recognised pattern that actually matches the value", () => {
     expect(
-      validateFormText("pluralNumberForm", { value: "dogs", formats: ["/s$/i"] }, NOUN_FORM_PATTERNS.pluralNumberForm),
+      validateFormText("pluralNumberForm", { value: "dogs", formats: ["/s$/i"] }, stringPatternsFor("pluralNumberForm", PartOfSpeech.NOUN)),
     ).toBeUndefined();
   });
 
   it("flags a recognised pattern that does not match the value", () => {
-    const issue = validateFormText("pluralNumberForm", { value: "dog", formats: ["/s$/i"] }, NOUN_FORM_PATTERNS.pluralNumberForm);
+    const issue = validateFormText("pluralNumberForm", { value: "dog", formats: ["/s$/i"] }, stringPatternsFor("pluralNumberForm", PartOfSpeech.NOUN));
     expect(issue?.reason).toContain("does not match its own claimed format");
   });
 
   it("flags a format string that isn't a recognised String Pattern for that field", () => {
     // /ed$/i is a real pattern -- just not one of Noun.pluralNumberForm's own.
-    const issue = validateFormText("pluralNumberForm", { value: "walked", formats: ["/ed$/i"] }, NOUN_FORM_PATTERNS.pluralNumberForm);
+    const issue = validateFormText("pluralNumberForm", { value: "walked", formats: ["/ed$/i"] }, stringPatternsFor("pluralNumberForm", PartOfSpeech.NOUN));
     expect(issue?.reason).toContain("is not a recognised String Pattern");
   });
 
@@ -154,18 +155,26 @@ describe("validateFormText (word.ts) -- the mechanism every POS class's own vali
   it("scopes patterns per (class, field), not just per field name -- Noun's own apostrophe rule is not valid on Pronoun's identically-named field", () => {
     // Noun.possessiveCaseForm genuinely accepts this (the apostrophe rule).
     expect(
-      validateFormText("possessiveCaseForm", { value: "dog's", formats: ["/'s$/i"] }, NOUN_FORM_PATTERNS.possessiveCaseForm),
+      validateFormText("possessiveCaseForm", { value: "dog's", formats: ["/'s$/i"] }, stringPatternsFor("possessiveCaseForm", PartOfSpeech.NOUN)),
     ).toBeUndefined();
     // Pronoun.possessiveCaseForm only recognises the closed fixed-word
     // lookup (rule #3) -- the apostrophe rule is Noun's own case, not
     // Pronoun's (pronoun.ts's own docstring).
-    const issue = validateFormText("possessiveCaseForm", { value: "dog's", formats: ["/'s$/i"] }, PRONOUN_FORM_PATTERNS.possessiveCaseForm);
+    const issue = validateFormText(
+      "possessiveCaseForm",
+      { value: "dog's", formats: ["/'s$/i"] },
+      stringPatternsFor("possessiveCaseForm", PartOfSpeech.PRONOUN),
+    );
     expect(issue?.reason).toContain("is not a recognised String Pattern");
   });
 
   it("recognises the doubled-final-consonant pattern (Past Tense Form rule #4)", () => {
     expect(
-      validateFormText("pastTenseForm", { value: "stopped", formats: ["/([bcdfghjklmnpqrstvwxyz])\\1ed$/i"] }, VERB_FORM_PATTERNS.pastTenseForm),
+      validateFormText(
+        "pastTenseForm",
+        { value: "stopped", formats: ["/([bcdfghjklmnpqrstvwxyz])\\1ed$/i"] },
+        stringPatternsFor("pastTenseForm", PartOfSpeech.VERB),
+      ),
     ).toBeUndefined();
   });
 });

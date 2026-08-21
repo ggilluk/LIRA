@@ -71,7 +71,7 @@ export interface Adjective extends Word {
   isDerivedFromVerbIndicator: boolean;
 
   // The rest of this subtype's own row of fields from the Word Form to
-  // Part of Speech Matrix (../word_form_part_of_speech_matrix.md) --
+  // Part of Speech Matrix (../matrices/word_form_part_of_speech_matrix.md) --
   // undefined until a seeding/curation pass populates them, the same as
   // `syntacticPosition` for a non-WordNet-sourced Adjective.
 

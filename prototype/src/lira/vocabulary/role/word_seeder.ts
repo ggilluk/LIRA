@@ -2343,7 +2343,7 @@ export class WordSeeder {
       default:
         // AUXILIARY, PROPER_NOUN, SYMBOL, PUNCTUATION, OTHER -- none of
         // these appear in the Word Form to Part of Speech Matrix
-        // (data/word_form_part_of_speech_matrix.md) at all, so they have
+        // (data/matrices/word_form_part_of_speech_matrix.md) at all, so they have
         // no subtype of their own; every entry of one of these classes
         // (auxiliaries.json, symbols.json, ...) stays a plain Word.
         return createWord(fields);

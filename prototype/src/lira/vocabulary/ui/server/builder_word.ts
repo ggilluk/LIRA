@@ -115,7 +115,7 @@ export interface WordRecord {
   head_word?: DefinitionSegment;
   // Every *_Form Text field this Word's own concrete POS subtype
   // carries a populated value for, in the Word Form to Part of Speech
-  // Matrix's own field order (data/word_form_part_of_speech_matrix.md)
+  // Matrix's own field order (data/matrices/word_form_part_of_speech_matrix.md)
   // -- wordFormsFor()'s own docstring on how this is
   // built. Always includes baseLemmaCanonicalForm when set (every POS
   // carries that one), plus whichever of that subtype's own fields
@@ -206,7 +206,7 @@ export interface WordSenseSummary {
  * one already capitalized after the first, camelCase's own convention),
  * so splitting on an uppercase letter and capitalizing the first
  * character recovers exactly the Word Form to Part of Speech Matrix's
- * own row names (data/word_form_part_of_speech_matrix.md) without
+ * own row names (data/matrices/word_form_part_of_speech_matrix.md) without
  * needing a second, hand-maintained label table. */
 function formFieldLabel(field: string): string {
   const spaced = field.replace(/([A-Z])/g, " $1");
@@ -312,12 +312,12 @@ function sensesFor(entry: Word | Phrase, senses: Senses, domainName: string): Wo
 
 /** Every populated *_Form Text field for `word`'s own concrete POS
  * subtype, in the Word Form to Part of Speech Matrix's own field
- * order (data/word_form_part_of_speech_matrix.md) -- baseLemmaCanonicalForm
+ * order (data/matrices/word_form_part_of_speech_matrix.ts) -- baseLemmaCanonicalForm
  * first (every POS subtype carries that one, on Word itself), then
  * whichever of that subtype's own fields are set, read off
- * WORD_FORM_FIELDS (data/word_forms.ts, itself built from each POS
- * class's own exported *_FORM_PATTERNS) rather than a duplicated field
- * list of this function's own -- the single source of truth shared with
+ * WORD_FORM_FIELDS (data/word_forms.ts, itself built from
+ * WORD_FORM_MATRIX) rather than a duplicated field list of this
+ * function's own -- the single source of truth shared with
  * Dictionary.indexWordForms()'s own inflected-form lookup index. A
  * field with no populated value is simply absent, not shown as empty. */
 function wordFormsFor(word: Word): WordFormEntry[] {
@@ -327,7 +327,7 @@ function wordFormsFor(word: Word): WordFormEntry[] {
   }
   // Noun.wordCharacterForms isn't a Word Form Matrix field (that
   // field's own docstring, data/entities/noun.ts) -- not spelling-derivable, so
-  // it has no NOUN_FORM_PATTERNS entry and formTextsOf() never returns
+  // it has no WORD_FORM_MATRIX row and formTextsOf() never returns
   // it above -- appended here instead, the same "rendered in this
   // section without being a Matrix field" treatment `derivations`
   // already gets (WordRecord.derivations's own docstring on why that

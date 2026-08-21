@@ -120,7 +120,7 @@ export interface Word extends LinguisticUnit {
   normalisedForm?: Text;
   // The purpose is to identify the standard dictionary form used to
   // represent the word -- the one row of the Word Form to Part of
-  // Speech Matrix (data/word_form_part_of_speech_matrix.md) ticked for
+  // Speech Matrix (data/matrices/word_form_part_of_speech_matrix.md) ticked for
   // every part of speech without exception, so it lives here on Word
   // itself rather than being repeated on every one of its POS-specific
   // subtypes (Noun, Verb, Adjective, Adverb, Pronoun, ...). Distinct
@@ -332,7 +332,7 @@ export function definitionWords(word: Word, dictionary: Dictionary): readonly De
   return references;
 }
 
-// -- Word Form to Part of Speech Matrix attribute validation (data/word_form_part_of_speech_matrix.md) --
+// -- Word Form to Part of Speech Matrix attribute validation (data/matrices/word_form_part_of_speech_matrix.md) --
 // Each POS subtype (noun.ts, verb.ts, ...) owns its own row of the
 // matrix's String Pattern column and its own validate<Class>() -- there
 // is deliberately no single file holding every class's patterns. What's
@@ -368,9 +368,10 @@ export function parseFormatPattern(pattern: string): RegExp {
 /** Checks one Text value's own `formats` (if set at all -- unset is
  * always valid, the same "no claim made" reading Text.formats's own
  * docstring gives it) against `known`, the calling POS class's own
- * recognised String Patterns for this one field (transcribed onto that
- * class's own file, e.g. NOUN_FORM_PATTERNS in noun.ts, straight from
- * the matrix's String Pattern column). Two distinct ways to fail: a
+ * recognised String Patterns for this one field (WORD_FORM_MATRIX's
+ * own rules for that (field, PartOfSpeech) pair,
+ * data/matrices/word_form_part_of_speech_matrix.ts, via that file's
+ * own stringPatternsFor()). Two distinct ways to fail: a
  * claimed format isn't one of the patterns this (class, field) pair
  * actually recognises at all (a typo, a pattern copied from the wrong
  * field, or a field the matrix marks fully N/A/lexical, whose own array

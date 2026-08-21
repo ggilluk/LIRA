@@ -11,7 +11,7 @@
  *
  * `singularNumberForm`/`pluralNumberForm`/`possessiveCaseForm` are this
  * subtype's own row of fields from the Word Form to Part of Speech
- * Matrix (../word_form_part_of_speech_matrix.md) -- undefined until a
+ * Matrix (../matrices/word_form_part_of_speech_matrix.md) -- undefined until a
  * seeding/curation pass populates them, same as `isCountable`. */
 
 import type { Identifier, Text } from "../../../value_objects";
@@ -30,10 +30,9 @@ export interface Noun extends Word {
   // nothing in the lemma itself to pick a side, so both belong on the
   // same Noun rather than being split across siblings or arbitrarily
   // reduced to one). Not a Word Form Matrix field
-  // (../word_form_part_of_speech_matrix.md has no row for it) and not
-  // spelling-derivable from the lemma the way pluralNumberForm etc. are,
-  // so it carries no NOUN_FORM_PATTERNS entry and generateNounForms()
-  // never touches it. Empty, not undefined, for every Noun with nothing
+  // (../matrices/word_form_part_of_speech_matrix.ts has no row for it)
+  // and not spelling-derivable from the lemma the way pluralNumberForm
+  // etc. are, so generateNounForms() never touches it. Empty, not undefined, for every Noun with nothing
   // seeded -- NounCharacterFormSeeder (role/noun_character_form_seeder.ts)
   // is this field's only seeding source today, and
   // assets/common/en/punctuation_wordnet_hyponyms.json has the full

@@ -6,7 +6,7 @@
  * undefined until a future seeding/curation pass populates it -- the
  * class still exists, and still carries its own row of fields from the
  * Word Form to Part of Speech Matrix
- * (../word_form_part_of_speech_matrix.md), the same as its three
+ * (../matrices/word_form_part_of_speech_matrix.md), the same as its three
  * siblings, ready for a value once one is available. */
 
 import type { Identifier, Text } from "../../../value_objects";

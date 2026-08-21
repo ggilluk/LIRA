@@ -16,6 +16,7 @@ import {
   type WordFormIssue,
 } from "../../data/word";
 import type { Adverb } from "../../data/entities/adverb";
+import { stringPatternsFor } from "../../data/matrices/word_form_part_of_speech_matrix";
 
 export type AdverbInit = Pick<Adverb, "text"> & Partial<Omit<Adverb, "text" | "partOfSpeech">>;
 
@@ -29,29 +30,19 @@ export function isAdverb(word: Word): word is Adverb {
   return word.partOfSpeech === PartOfSpeech.ADVERB;
 }
 
-// Adverb's own row of the matrix's String Pattern column (../data/word_form_part_of_speech_matrix.md),
-// scoped to exactly the rules that apply to Adverb specifically -- see
-// each field's own docstring above for which numbered rule(s) these are
-// and why the rest of that row's rules (irregular, curated-only, or
-// another class's own) are simply absent here.
-export const ADVERB_FORM_PATTERNS: Readonly<Record<string, readonly string[]>> = {
-  positiveDegreeForm: [],
-  comparativeDegreeForm: ["/er$/i", "/ier$/i", "/([bcdfghjklmnpqrstvwxyz])\\1er$/i", "/^more\\s+.+$/i"],
-  superlativeDegreeForm: ["/est$/i", "/iest$/i", "/([bcdfghjklmnpqrstvwxyz])\\1est$/i", "/^most\\s+.+$/i"],
-};
-
 /** Validates every *_Form field this Adverb carries -- its own row
  * above, plus baseLemmaCanonicalForm via Word's own
- * validateWordFormAttributes -- against ADVERB_FORM_PATTERNS. Returns
+ * validateWordFormAttributes -- against WORD_FORM_MATRIX's own ADVERB
+ * rules (data/matrices/word_form_part_of_speech_matrix.ts). Returns
  * every issue found, not just the first; empty means every populated
  * field is internally consistent with the matrix, not that every field
  * is populated (undefined is never an issue, validateFormText's own
  * docstring). */
 export function validateAdverb(adverb: Adverb): readonly WordFormIssue[] {
   const issues: WordFormIssue[] = [...validateWordFormAttributes(adverb)];
-  const check = (field: keyof typeof ADVERB_FORM_PATTERNS, text: Text | undefined): void => {
+  const check = (field: string, text: Text | undefined): void => {
     if (text === undefined) return;
-    const issue = validateFormText(field, text, ADVERB_FORM_PATTERNS[field]);
+    const issue = validateFormText(field, text, stringPatternsFor(field, PartOfSpeech.ADVERB));
     if (issue !== undefined) issues.push(issue);
   };
   check("positiveDegreeForm", adverb.positiveDegreeForm);

@@ -11,6 +11,7 @@ import {
   type WordFormIssue,
 } from "../../data/word";
 import type { Verb } from "../../data/entities/verb";
+import { stringPatternsFor } from "../../data/matrices/word_form_part_of_speech_matrix";
 
 export type VerbInit = Pick<Verb, "text"> & Partial<Omit<Verb, "text" | "partOfSpeech">>;
 
@@ -39,34 +40,19 @@ export function framesForSense(senses: Senses, verb: Verb, senseId: string): rea
   return senses.metadataFor(senseId, verb.uuid.value)?.frames as readonly string[] | undefined;
 }
 
-// Verb's own row of the matrix's String Pattern column (../data/word_form_part_of_speech_matrix.md),
-// scoped to exactly the rules that apply to Verb specifically -- see
-// each field's own docstring above for which numbered rule(s) these are
-// and why the rest of that row's rules (irregular, curated-only, or
-// another class's own) are simply absent here.
-export const VERB_FORM_PATTERNS: Readonly<Record<string, readonly string[]>> = {
-  presentTenseForm: [],
-  pastTenseForm: ["/ed$/i", "/ied$/i", "/([bcdfghjklmnpqrstvwxyz])\\1ed$/i"],
-  thirdPersonSingularPresentForm: ["/s$/i", "/es$/i", "/ies$/i"],
-  presentParticipleForm: ["/ing$/i", "/([bcdfghjklmnpqrstvwxyz])\\1ing$/i", "/ying$/i"],
-  pastParticipleForm: ["/ed$/i", "/ied$/i", "/([bcdfghjklmnpqrstvwxyz])\\1ed$/i", "/(en|n)$/i"],
-  bareInfinitiveForm: [],
-  firstPersonForm: [],
-  secondPersonForm: [],
-  thirdPersonForm: [],
-};
-
 /** Validates every *_Form field this Verb carries -- its own row above,
  * plus baseLemmaCanonicalForm via Word's own validateWordFormAttributes
- * -- against VERB_FORM_PATTERNS. Returns every issue found, not just
- * the first; empty means every populated field is internally consistent
- * with the matrix, not that every field is populated (undefined is
- * never an issue, validateFormText's own docstring). */
+ * -- against WORD_FORM_MATRIX's own VERB rules
+ * (data/matrices/word_form_part_of_speech_matrix.ts). Returns every
+ * issue found, not just the first; empty means every populated field
+ * is internally consistent with the matrix, not that every field is
+ * populated (undefined is never an issue, validateFormText's own
+ * docstring). */
 export function validateVerb(verb: Verb): readonly WordFormIssue[] {
   const issues: WordFormIssue[] = [...validateWordFormAttributes(verb)];
-  const check = (field: keyof typeof VERB_FORM_PATTERNS, text: Text | undefined): void => {
+  const check = (field: string, text: Text | undefined): void => {
     if (text === undefined) return;
-    const issue = validateFormText(field, text, VERB_FORM_PATTERNS[field]);
+    const issue = validateFormText(field, text, stringPatternsFor(field, PartOfSpeech.VERB));
     if (issue !== undefined) issues.push(issue);
   };
   check("presentTenseForm", verb.presentTenseForm);
@@ -82,7 +68,7 @@ export function validateVerb(verb: Verb): readonly WordFormIssue[] {
 }
 
 /** pastTenseForm's and pastParticipleForm's own Generation Transform
- * (../data/word_form_part_of_speech_matrix.md) -- regular English verbs
+ * (../../data/matrices/word_form_part_of_speech_matrix.md) -- regular English verbs
  * spell both identically ("walk" -> "walked" is both at once, "stop" ->
  * "stopped" is both at once), so both fields below reuse this one
  * function. Covers every regular-case rule (`/e$/i`, `/[^aeiou]y$/i`,
@@ -120,7 +106,7 @@ function regularThirdPersonSingularForm(lemma: string): Text {
  * "argue", "dye") is genuinely ambiguous by spelling alone -- English
  * keeps the `e` for some ("agreeing") and drops it for others
  * ("arguing"), and telling them apart needs the matrix's own Silent-E
- * Classification / Pronunciation data (../data/word_form_part_of_speech_matrix.md),
+ * Classification / Pronunciation data (../../data/matrices/word_form_part_of_speech_matrix.md),
  * which doesn't exist in this codebase -- so that case is left
  * undefined rather than guessed either way. */
 function regularIngForm(lemma: string): Text | undefined {
@@ -134,7 +120,7 @@ function regularIngForm(lemma: string): Text | undefined {
 }
 
 /** pastTenseForm's and pastParticipleForm's own Exception Lookup
- * (../data/word_form_part_of_speech_matrix.md names it "Irregular Verb
+ * (../../data/matrices/word_form_part_of_speech_matrix.md names it "Irregular Verb
  * Lookup" but never populates it) -- a closed, well-known set any
  * English grammar reference agrees on, so unlike the matrix's other
  * named Exception Lookup tables (gradability, person/case, ...) this
@@ -307,7 +293,8 @@ const IRREGULAR_VERB_FORMS: Readonly<Record<string, { past: string; pastParticip
  * needing a person/number-aware Irregular Verb Lookup IRREGULAR_VERB_FORMS's
  * own single-value shape can't express either. Every value this
  * produces is provably one of that field's own recognised String
- * Patterns (VERB_FORM_PATTERNS above) or, for an irregular form, no
+ * Patterns (WORD_FORM_MATRIX's own VERB rules,
+ * data/matrices/word_form_part_of_speech_matrix.ts) or, for an irregular form, no
  * claimed format at all (matching the matrix's own N/A String Pattern
  * for every irregular rule) -- generateVerbForms() and validateVerb()
  * are built from the exact same matrix rows, so a freshly-generated
