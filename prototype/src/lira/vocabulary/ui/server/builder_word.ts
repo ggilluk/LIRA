@@ -1,0 +1,507 @@
+/** Word's own client-facing record and query surface -- split out of
+ * ui/dictionary_view.ts's own DictionaryView class (formerly the private
+ * methods wordRecordFor/morphologicalDerivations/sensesFor/wordFormsFor
+ * and the public method searchWords). */
+
+import type { Identifier } from "../../../value_objects";
+import { isAdjective } from "../../data/adjective";
+import { isAdverb } from "../../data/adverb";
+import type { Dictionary } from "../../data/dictionary";
+import { EditorialLabel } from "../../data/enums/editorial_label";
+import { PartOfSpeech } from "../../data/enums/part_of_speech";
+import { RegisterCode } from "../../data/enums/register_code";
+import { isNoun } from "../../data/noun";
+import { phraseAsWord, type Phrase } from "../../data/phrase";
+import type { Phrases } from "../../data/phrases";
+import type { Senses } from "../../data/senses";
+import type { SemanticRelationshipStore } from "../../data/semantic_relationship_store";
+import { isVerb } from "../../data/verb";
+import type { Word } from "../../data/word";
+import { formTextsOf } from "../../data/word_forms";
+import { phraseHeadWordSegment, phraseTypeLabel, phraseWordSegments } from "./builder_phrase";
+import { definitionSegments, type DefinitionSegment } from "./builder_segment";
+import { domainLabel, isRootWordFor, senseFieldsFor } from "./resolver_domain";
+
+export interface WordRecord {
+  id: string;
+  entry_id: string;
+  lexical_form: string;
+  text: string;
+  pos: string;
+  // The Princeton WordNet 3.1 synset this Word corresponds to
+  // (word.synsetId's own docstring), or null for a Word that didn't
+  // come from WordSeeder.seedWordNet -- every Common Vocabulary Cache
+  // entry, in particular.
+  sense_id: string | null;
+  definition: string;
+  gloss: string;
+  register_codes: string[];
+  dialect_codes: string[];
+  editorial_labels: string[];
+  is_common: boolean;
+  is_root_word: boolean;
+  is_derivable_noun: boolean;
+  // Every morphological-derivation pointer field this Word's own
+  // concrete POS subtype actually carries a *resolved* value for --
+  // Noun.isDerivedFromVerb and its three siblings across data/noun.ts,
+  // data/verb.ts, data/adjective.ts, data/adverb.ts (each field's own
+  // docstring names which specific pair it implements;
+  // morphologicalDerivations()'s own docstring on how this list is
+  // built, and on why only four pairs exist rather than eight).
+  // `attribute` is the field's own camelCase name; `label` is that name
+  // run through the same field-name-to-label convention
+  // wordFormsFor()'s own WordFormEntry.label already uses
+  // (formFieldLabel(), this file), computed server-side so the client
+  // never needs its own copy of that logic; `target` is the Word that
+  // field's own Identifier pointer resolved to. No separate Indicator
+  // boolean of its own here -- an entry's mere presence in this list
+  // already means true (the field's own Indicator sibling on the
+  // underlying Word is `!== undefined`, data/noun.ts's own docstring),
+  // and an unresolved pointer (shouldn't happen for anything
+  // WordSeeder.seedWordNet itself produced) is simply omitted rather
+  // than included with a null target. Empty for every part of speech
+  // that carries none of these fields at all (Pronoun, Preposition, ...)
+  // and for a Word with no qualifying edge found. Rendered client-side
+  // as part of the Word Forms section (wordFormsSectionHTML(), ui/client/)
+  // rather than its own section -- a derivation pointer is itself
+  // a word form relationship, and showing it separately at the top of
+  // the panel produced no benefit over folding it in below.
+  derivations: { attribute: string; label: string; target: { id: string; text: string } }[];
+  domain: string | null;
+  // Extra topic domains the same WordNet sense also carries beyond its
+  // primary `domain` (Word.relatedDomainTags's own docstring) -- e.g.
+  // "winger" is a wing position in soccer, hockey, rugby, AND
+  // field_hockey, so `domain` is one of those and this holds the rest.
+  // Always empty for a non-WordNet word, or a WordNet sense with at
+  // most one topic-domain pointer -- the common case.
+  related_domains: string[];
+  is_fully_hydrated: boolean;
+  sources: string[];
+  relationship_count: number;
+  definition_segments: DefinitionSegment[];
+  // Present only when this record was resolved from a Phrase, not a
+  // genuine Word (searchWords()'s own `wordId` branch) --
+  // `text`/`lexical_form`'s own token-by-token breakdown into each
+  // constituent Word ("toy poodle" -> "toy", "poodle"), the headword
+  // counterpart of definition_segments above, built from that Phrase's
+  // own already-stored `words` references (phraseWordSegments()'s own
+  // docstring) rather than re-resolved from scratch. undefined for an
+  // ordinary Word, which has no sub-word composition of its own to show.
+  phrase_word_segments?: DefinitionSegment[];
+  // phrase_word_segments's own exact counterpart for Phrase.phraseType
+  // (word_seeder.ts's own classifyPhraseType, WordSeeder.seedWordNet) --
+  // the enum's own key string (e.g. "PREPOSITIONAL_PHRASE"), same
+  // PhraseType[...] convention `pos` above already uses for
+  // PartOfSpeech -- the client applies titleCase() at render time, not
+  // this. Present only when this record was resolved from a Phrase that
+  // HAS a phraseType; undefined for an ordinary Word (no such concept
+  // applies) and for a Phrase whose own phraseType is itself undefined
+  // (every Common Vocabulary Cache closed-class Phrase, and any
+  // WordNet-seeded one classifyPhraseType() couldn't classify -- neither
+  // exists in the bundled data today, but the field stays optional
+  // either way).
+  phrase_type?: string;
+  // Phrase.headWord/Phrase.headWordForm's own combined client-facing
+  // shape (data/phrase.ts's own docstring on each) -- reuses
+  // DefinitionSegment, the same shape phrase_word_segments above already
+  // uses per token, since a Head Word is exactly one of those segments
+  // (`text` carries headWordForm's own phrase-local spelling; `word_id`/
+  // `lexical_form`/... carry headWord's own resolved Word, when it
+  // resolved at all). Present only when this record was resolved from a
+  // Phrase whose own `wordRoles` actually identified a Head position
+  // (phraseHeadWordSegment()'s own docstring); undefined for an ordinary
+  // Word, and for a Phrase with no identified Head (every Common
+  // Vocabulary Cache closed-class Phrase, in particular).
+  head_word?: DefinitionSegment;
+  // Every *_Form Text field this Word's own concrete POS subtype
+  // carries a populated value for, in the Word Form to Part of Speech
+  // Matrix's own field order (data/word_form_part_of_speech_matrix.md)
+  // -- wordFormsFor()'s own docstring on how this is
+  // built. Always includes baseLemmaCanonicalForm when set (every POS
+  // carries that one), plus whichever of that subtype's own fields
+  // (Noun/Verb/Adjective/Adverb/Pronoun/Determiner -- the other five POS
+  // classes declare no *_Form field of their own beyond
+  // baseLemmaCanonicalForm) are populated. Empty for a Word with
+  // nothing seeded yet -- no seeding path (word_seeder.ts) populates any
+  // of these fields today, so this is empty for every Word until a
+  // future seeding/curation pass writes to them.
+  word_forms: WordFormEntry[];
+  // Every Sense (data/sense.ts) this Word lexicalizes, in Word.senseIds's
+  // own order (sensesFor()'s own docstring on how this is
+  // built) -- one entry per real WordNet sense for a polysemous Word
+  // ("big" ADJECTIVE: "above average in size", "pregnant", "generous",
+  // ...), not just the one `definition`/`domain` above already shows
+  // (that's always senses[0], Word.senseIds's own "primary sense" doc).
+  // A Phrase's own detail panel gets this too -- it's resolved into a
+  // WordRecord via phraseAsWord() (phrase.ts) before reaching here, not
+  // a separate PhraseRecord field. Empty only for a Word/Phrase that
+  // never lexicalized any Sense at all (predates WordSeeder.seedWordNet/
+  // registerUniqueSense, or a hand-authored test fixture).
+  senses: WordSenseSummary[];
+}
+
+export interface WordFormEntry {
+  field: string;
+  label: string;
+  value: string;
+}
+
+export interface WordSenseSummary {
+  id: string;
+  is_primary: boolean;
+  definition: string;
+  gloss: string;
+  domain: string;
+  // Sense.senseFrequency's own docstring (data/sense.ts) -- how often
+  // this exact meaning was tagged in WordNet's own semantic concordance
+  // corpus, summed across every lemma that lexicalizes it. `null`, not
+  // `0`, for a Sense that didn't come from WordSeeder.seedWordNet at all
+  // (mirrors that field's own undefined-vs-0 distinction, since a plain
+  // client-facing record has no `undefined` of its own -- JSON drops
+  // it); a real `0` still means "WordNet tagged it, just never in the
+  // concordance," a materially different fact from "no WordNet
+  // frequency data exists for this Sense at all." `senseIds`'s own
+  // order already reflects this (WordSeeder.seedWordNet's own
+  // orderSensesByFrequency, role/word_seeder.ts) -- highest first, so
+  // `is_primary` below and this field agree by construction rather than
+  // by coincidence.
+  frequency: number | null;
+  // This Sense's own Seeded Attributes for the PAD (Pleasure-Arousal-
+  // Dominance) affective framework (Sense.seededPleasureDispleasureWeight's
+  // own docstring, data/sense.ts) -- null when no PAD value has ever
+  // been assigned to this specific meaning (every WordNet-seeded Sense,
+  // and most hand-curated ones too), not "neutral" (0/0/0 is a genuine
+  // seeded-neutral reading, distinct from null). PAD moved here from a
+  // single word-level reading (padRecord()'s own former "just the
+  // primary sense" simplification) precisely so a polysemous Word's own
+  // several, genuinely different-affect meanings ("cool" the
+  // temperature vs. "cool" the approval) each show their own value
+  // instead of only ever showing entry #1's.
+  pad: { pleasure: number; arousal: number; dominance: number } | null;
+  // Fellow members of this one Sense, this Word/Phrase itself excluded --
+  // the sense-scoped synonym fact (Senses.membersOf()'s own docstring,
+  // data/senses.ts) other Senses this same Word also carries have no part
+  // in. Carries `id` (that member's own uuid) alongside its display text
+  // so the client can render it as the same clickable data-pivot-id
+  // button every other related-word row already uses
+  // (wireDetailPivotButtons(), ui/client/'s own embedded client script).
+  synonyms: { id: string; text: string }[];
+}
+
+/** "pluralNumberForm" -> "Plural Number Form" -- every *_Form field name
+ * this codebase defines is camelCase built from Title Case words (each
+ * one already capitalized after the first, camelCase's own convention),
+ * so splitting on an uppercase letter and capitalizing the first
+ * character recovers exactly the Word Form to Part of Speech Matrix's
+ * own row names (data/word_form_part_of_speech_matrix.md) without
+ * needing a second, hand-maintained label table. */
+function formFieldLabel(field: string): string {
+  const spaced = field.replace(/([A-Z])/g, " $1");
+  return spaced.charAt(0).toUpperCase() + spaced.slice(1);
+}
+
+/** WordRecord.derivations (that field's own docstring above) -- every
+ * morphological-derivation pointer field `word`'s own concrete POS
+ * subtype carries (Noun.isDerivedFromVerb and its three siblings
+ * across data/noun.ts, data/verb.ts, data/adjective.ts, data/adverb.ts
+ * -- WordSeeder.deriveMorphologicalPointers()'s own docstring,
+ * role/word_seeder.ts, names exactly which four pairs these are and
+ * why only four survive, not eight: WordNet records its `+`
+ * Derived-Form pointer reciprocally, once from each word's own side,
+ * and derivationKind() there classifies a pointer by the *target's*
+ * own part of speech alone -- so reading both sides of the same real
+ * fact independently used to produce two differently-named rows for
+ * one relationship (e.g. "abandon" Verb->Noun read as NOMINALISATION,
+ * "abandonment" Noun->Verb read as the generic DERIVED_FORM catch-all).
+ * Every DERIVED_FORM-sourced field was removed; what's left is exactly
+ * one canonical field pair per genuine linguistic relationship),
+ * resolved against this Dictionary the same way every other
+ * pivot-button target already is. `addIfSet` skips a field that's
+ * undefined (no qualifying WordNet edge found for this Word) and, in
+ * the one case it shouldn't happen for anything WordSeeder.seedWordNet
+ * itself produced, an Identifier that fails to resolve here too --
+ * silently omitted rather than included with a null target, since an
+ * unresolved pointer would mean something else went wrong, not an
+ * expected case worth surfacing as its own UI state. */
+function morphologicalDerivations(word: Word, dictionary: Dictionary): WordRecord["derivations"] {
+  const derivations: WordRecord["derivations"] = [];
+  const addIfSet = (attribute: string, pointer: Identifier | undefined): void => {
+    if (pointer === undefined) return;
+    const target = dictionary.findByUuid(pointer.value);
+    if (target === undefined) return;
+    derivations.push({ attribute, label: formFieldLabel(attribute), target: { id: target.uuid.value, text: target.lexicalForm?.value ?? target.text } });
+  };
+  if (isNoun(word)) {
+    addIfSet("isDerivedFromVerb", word.isDerivedFromVerb);
+    addIfSet("isDerivedFromAdjective", word.isDerivedFromAdjective);
+  } else if (isVerb(word)) {
+    addIfSet("isNominalised", word.isNominalised);
+    addIfSet("isAdjectivised", word.isAdjectivised);
+  } else if (isAdjective(word)) {
+    addIfSet("isNominalised", word.isNominalised);
+    addIfSet("isAdverbialised", word.isAdverbialised);
+    addIfSet("isDerivedFromVerb", word.isDerivedFromVerb);
+  } else if (isAdverb(word)) {
+    addIfSet("isDerivedFromAdjective", word.isDerivedFromAdjective);
+  }
+  // Word.contractionOf's own docstring (data/word.ts) -- Word-level,
+  // not scoped to one POS subtype the way every field above is (a
+  // contraction's own components span whatever closed-class parts of
+  // speech happen to combine), and many-to-many rather than a single
+  // pointer, so this pushes one row per component instead of the one
+  // addIfSet() call every other field above gets.
+  for (const pointer of word.contractionOf) addIfSet("contractionOf", pointer);
+  return derivations;
+}
+
+/** Every Sense `entry` lexicalizes, in `entry.senseIds`'s own order
+ * (Word.senseIds's own docstring: ordered by descending
+ * Sense.senseFrequency once WordSeeder.seedWordNet's own
+ * orderSensesByFrequency has run, so index 0 is always the same Sense
+ * senseFieldsFor() already reads for `definition`/`domain` above --
+ * `is_primary` marks that one explicitly, rather than leaving the
+ * reader to guess whether entry #1 here is special).
+ * A senseId that doesn't resolve in this Domain's own Senses (the
+ * Physics-from-Common cross-Domain gap senseFieldsFor()'s own
+ * docstring already accepts) is skipped, not shown half-empty --
+ * every entry returned here has real definition/gloss/domain data to
+ * show. `synonyms` is that Sense's own membership (Senses.membersOf()),
+ * `entry` itself excluded -- deliberately scoped to just this one
+ * Sense, not `entry`'s other, unrelated senses. */
+function sensesFor(entry: Word | Phrase, senses: Senses, domainName: string): WordSenseSummary[] {
+  const summaries: WordSenseSummary[] = [];
+  entry.senseIds.forEach((senseId, index) => {
+    const sense = senses.findByUuid(senseId.value);
+    if (sense === undefined) return;
+    const domain = !sense.isCommon ? domainName : (sense.domainTag?.value ?? "Common");
+    const { seededPleasureDispleasureWeight: p, seededArousalNonArousalWeight: a, seededDominanceSubmissiveWeight: d } = sense;
+    summaries.push({
+      id: senseId.value,
+      is_primary: index === 0,
+      definition: sense.definition?.value ?? "",
+      gloss: sense.gloss?.value ?? "",
+      domain,
+      frequency: sense.senseFrequency ?? null,
+      pad: p !== undefined && a !== undefined && d !== undefined ? { pleasure: p.value, arousal: a.value, dominance: d.value } : null,
+      synonyms: senses
+        .membersOf(senseId.value)
+        .filter((member) => member.uuid.value !== entry.uuid.value)
+        .map((member) => ({ id: member.uuid.value, text: member.lexicalForm?.value ?? member.text })),
+    });
+  });
+  return summaries;
+}
+
+/** Every populated *_Form Text field for `word`'s own concrete POS
+ * subtype, in the Word Form to Part of Speech Matrix's own field
+ * order (data/word_form_part_of_speech_matrix.md) -- baseLemmaCanonicalForm
+ * first (every POS subtype carries that one, on Word itself), then
+ * whichever of that subtype's own fields are set, read off
+ * WORD_FORM_FIELDS (data/word_forms.ts, itself built from each POS
+ * class's own exported *_FORM_PATTERNS) rather than a duplicated field
+ * list of this function's own -- the single source of truth shared with
+ * Dictionary.indexWordForms()'s own inflected-form lookup index. A
+ * field with no populated value is simply absent, not shown as empty. */
+function wordFormsFor(word: Word): WordFormEntry[] {
+  const forms: WordFormEntry[] = [];
+  for (const { field, text } of formTextsOf(word)) {
+    forms.push({ field, label: formFieldLabel(field), value: text.value });
+  }
+  // Noun.wordCharacterForms isn't a Word Form Matrix field (that
+  // field's own docstring, data/noun.ts) -- not spelling-derivable, so
+  // it has no NOUN_FORM_PATTERNS entry and formTextsOf() never returns
+  // it above -- appended here instead, the same "rendered in this
+  // section without being a Matrix field" treatment `derivations`
+  // already gets (WordRecord.derivations's own docstring on why that
+  // lives here too rather than its own section). Every character
+  // joined into one row's own value ("( / )" for "parenthesis"), not
+  // one row per character -- a paired mark's own glyphs read as one
+  // fact about the Noun, not several independent Word Form rows
+  // sharing an identical label. `?? []` guards a real gap: isNoun()
+  // narrows on partOfSpeech alone, so a NOUN-tagged Word built via
+  // phraseAsWord() (a Phrase's own createWord()-based projection,
+  // data/phrase.ts) type-narrows to Noun here too despite never having
+  // gone through createNoun() -- wordCharacterForms is undefined on
+  // that object at runtime even though Noun declares it non-optional.
+  const characterForms = isNoun(word) ? (word.wordCharacterForms ?? []) : [];
+  if (characterForms.length > 0) {
+    forms.push({
+      field: "wordCharacterForms",
+      label: formFieldLabel("wordCharacterForms"),
+      value: characterForms.map((text) => text.value).join(" / "),
+    });
+  }
+  return forms;
+}
+
+/** One Word's full WordRecord -- everything wordRecords() (the whole-
+ * Dictionary path, only ever run under MAX_INTERACTIVE_WORDS) and
+ * searchWords() (the single-Word-at-a-time path, run regardless of
+ * scale) both build from, so a WordRecord looks identical -- same
+ * fields, same relationship_count/definition_segments logic --
+ * whichever path produced it. */
+export function wordRecordFor(word: Word, dictionary: Dictionary, relationships: SemanticRelationshipStore, senses: Senses, domainName: string): WordRecord {
+  const wordId = word.uuid.value;
+  // SemanticRelationshipStore is Sense-keyed, not Word-keyed (every
+  // fact this view reads through it now, DictionaryView's own class
+  // docstring on why) -- so this word's own relationship count is the
+  // sum across every one of its own senses, not a single direct
+  // lookup by `wordId` the way it used to be.
+  const relationshipCount = word.senseIds.reduce(
+    (total, senseId) => total + relationships.outgoing(senseId.value).length + relationships.incoming(senseId.value).length,
+    0,
+  );
+  const senseFields = senseFieldsFor(senses, word);
+  return {
+    id: wordId,
+    entry_id: word.entryId.value,
+    lexical_form: word.lexicalForm?.value ?? word.text,
+    text: word.text,
+    pos: PartOfSpeech[word.partOfSpeech],
+    sense_id: word.synsetId?.value ?? null,
+    definition: senseFields.definition?.value ?? "",
+    gloss: senseFields.gloss?.value ?? "",
+    register_codes: word.registerCodes.map((code) => RegisterCode[code]),
+    dialect_codes: word.dialectCodes.map((code) => code.value),
+    editorial_labels: word.editorialLabels.map((label) => EditorialLabel[label]),
+    is_common: word.isCommon,
+    is_root_word: isRootWordFor(senses, word),
+    is_derivable_noun: word.isDerivableNoun,
+    domain: domainLabel(senses, domainName, word),
+    related_domains: senseFields.relatedDomainTags.map((tag) => tag.value),
+    is_fully_hydrated: word.isFullyHydrated,
+    sources: word.sourceReferences.map((ref) => ref.sourceName.value),
+    relationship_count: relationshipCount,
+    definition_segments: definitionSegments(word, dictionary, senses, domainName),
+    word_forms: wordFormsFor(word),
+    senses: sensesFor(word, senses, domainName),
+    derivations: morphologicalDerivations(word, dictionary),
+  };
+}
+
+export function wordRecords(dictionary: Dictionary, relationships: SemanticRelationshipStore, senses: Senses, domainName: string): WordRecord[] {
+  const records = dictionary.all().map((word) => wordRecordFor(word, dictionary, relationships, senses, domainName));
+  records.sort((a, b) => a.lexical_form.toLowerCase().localeCompare(b.lexical_form.toLowerCase()));
+  return records;
+}
+
+/** Resolves a Words-tab search against every Word in the Dictionary
+ * directly, rather than against a pre-embedded client-side array --
+ * the on-demand counterpart to wordRecords() for a Domain over
+ * MAX_INTERACTIVE_WORDS, where embedding every Word up front isn't an
+ * option (that constant's own docstring). Matching semantics
+ * (case-insensitive substring on lexical_form/gloss/definition, exact
+ * pos/domain, is_root_word) mirror the fragment's own client-side
+ * matchesQuery()/filteredWords() exactly, so a search behaves the same
+ * whether it ran client-side (a small Domain) or here (a large one).
+ *
+ * A linear scan over the whole Dictionary -- for the ~211,000-Word
+ * scale this exists for, that's tens of milliseconds of plain string
+ * comparisons, nowhere near the cost embedding every Word's full
+ * WordRecord (and then JSON.stringify-ing the result) would be.
+ * `words` is capped at `options.limit`; `totalMatches` is the true
+ * count of everything that matched, uncapped, so a caller can show
+ * "showing N of totalMatches" the same way MAX_WORD_ROWS_SHOWN's
+ * client-side note already does.
+ *
+ * `wordId`, if given, bypasses every other filter for an O(1) exact
+ * lookup (Dictionary.findByUuid) instead of the linear scan below --
+ * the detail panel's own need to resolve a related word clicked from
+ * inside itself (a pivot button carries only that word's id, never
+ * enough to search by) that isn't already one of the currently-shown
+ * Words (WORDS, empty over capacity, or the last search's own
+ * results) -- ui/client/'s own client-side lookupWordForDetailPanel(). */
+export function searchWords(
+  dictionary: Dictionary,
+  phrases: Phrases,
+  senses: Senses,
+  relationships: SemanticRelationshipStore,
+  domainName: string,
+  options: {
+    wordId?: string;
+    word?: string;
+    gloss?: string;
+    definition?: string;
+    pos?: string;
+    domain?: string;
+    rootWordsOnly?: boolean;
+    limit?: number;
+  },
+): { words: WordRecord[]; totalMatches: number } {
+  if (options.wordId !== undefined) {
+    // Checked directly against the Phrase itself, not via
+    // resolveEntry()'s own Word-shaped projection -- phraseAsWord()
+    // deliberately doesn't carry a Phrase's own `words` references
+    // (a plain Word has no sub-word composition to project), so
+    // building the phrase_word_segments a Phrase's own detail-panel
+    // headword needs (phraseWordSegments()'s own docstring) requires
+    // the original Phrase, not just its Word-shaped view.
+    const phrase = phrases.findByUuid(options.wordId);
+    if (phrase !== undefined) {
+      const record = wordRecordFor(phraseAsWord(phrase), dictionary, relationships, senses, domainName);
+      return {
+        words: [
+          {
+            ...record,
+            phrase_word_segments: phraseWordSegments(phrase, dictionary, senses, domainName),
+            phrase_type: phraseTypeLabel(phrase),
+            head_word: phraseHeadWordSegment(phrase, dictionary, senses, domainName),
+          },
+        ],
+        totalMatches: 1,
+      };
+    }
+    const word = dictionary.findByUuid(options.wordId);
+    if (word !== undefined) return { words: [wordRecordFor(word, dictionary, relationships, senses, domainName)], totalMatches: 1 };
+    // `wordId` may also name a Sense directly -- the Senses tab's own
+    // row-click (senseRecordFor()'s own `id`), resolved to its first-
+    // registered member the same way resolveEntry() falls back
+    // to a representative member for a Sense-typed relationship
+    // endpoint (that function's own docstring). Reuses this same
+    // branch's own Phrase-vs-Word handling for whichever kind the
+    // representative turns out to be, so a Sense whose one member is a
+    // Phrase still gets its own phrase_word_segments.
+    const sense = senses.findByUuid(options.wordId);
+    const representative = sense !== undefined ? senses.membersOf(sense.uuid.value)[0] : undefined;
+    if (representative !== undefined) {
+      if ("words" in representative) {
+        const record = wordRecordFor(phraseAsWord(representative), dictionary, relationships, senses, domainName);
+        return {
+          words: [
+            {
+              ...record,
+              phrase_word_segments: phraseWordSegments(representative, dictionary, senses, domainName),
+              phrase_type: phraseTypeLabel(representative),
+              head_word: phraseHeadWordSegment(representative, dictionary, senses, domainName),
+            },
+          ],
+          totalMatches: 1,
+        };
+      }
+      return { words: [wordRecordFor(representative, dictionary, relationships, senses, domainName)], totalMatches: 1 };
+    }
+    return { words: [], totalMatches: 0 };
+  }
+
+  const limit = options.limit ?? 1000;
+  const wordQuery = options.word?.trim().toLowerCase();
+  const glossQuery = options.gloss?.trim().toLowerCase();
+  const definitionQuery = options.definition?.trim().toLowerCase();
+
+  const matches: WordRecord[] = [];
+  let totalMatches = 0;
+  for (const word of dictionary.all()) {
+    if (options.pos && PartOfSpeech[word.partOfSpeech] !== options.pos) continue;
+    if (options.rootWordsOnly && !isRootWordFor(senses, word)) continue;
+    if (options.domain && domainLabel(senses, domainName, word) !== options.domain) continue;
+    const lexicalForm = (word.lexicalForm?.value ?? word.text).toLowerCase();
+    if (wordQuery && !lexicalForm.includes(wordQuery)) continue;
+    if (glossQuery && !(word.gloss?.value ?? "").toLowerCase().includes(glossQuery)) continue;
+    if (definitionQuery && !(word.definition?.value ?? "").toLowerCase().includes(definitionQuery)) continue;
+
+    totalMatches += 1;
+    if (matches.length < limit) matches.push(wordRecordFor(word, dictionary, relationships, senses, domainName));
+  }
+  matches.sort((a, b) => a.lexical_form.toLowerCase().localeCompare(b.lexical_form.toLowerCase()));
+  return { words: matches, totalMatches };
+}

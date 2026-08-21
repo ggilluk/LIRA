@@ -5,7 +5,11 @@ import type {
   VocabularyWorkerMessage,
   VocabularyWorkerRequest,
 } from "./vocabulary_worker_protocol";
-import type { HierarchyEdge, HierarchyNode, PhraseRecord, RelationshipRecord, SenseRecord, WordRecord } from "../ui/dictionary_view";
+import type { HierarchyEdge, HierarchyNode } from "../ui/server/builder_hierarchy";
+import type { PhraseRecord } from "../ui/server/builder_phrase";
+import type { RelationshipRecord } from "../ui/server/builder_relationship";
+import type { SenseRecord } from "../ui/server/builder_sense";
+import type { WordRecord } from "../ui/server/builder_word";
 
 export interface WordSearchQuery {
   wordId?: string;

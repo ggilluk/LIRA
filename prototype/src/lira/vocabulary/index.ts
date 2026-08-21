@@ -43,4 +43,4 @@ export { SystemPropertiesRef } from "./data/system_properties_ref";
 export { VectorPrimitiveRootWord } from "./data/enums/vector_primitive_root_word";
 export { type Word, type WordInit, createWord, copyWordWithFreshUuid, definitionWords } from "./data/word";
 export { type WordLookupContext, createWordLookupContext } from "./data/word_lookup_context";
-export { DictionaryView } from "./ui/dictionary_view";
+export { DictionaryView } from "./ui/server/dictionary_controller";

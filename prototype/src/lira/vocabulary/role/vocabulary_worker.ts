@@ -21,7 +21,7 @@
  * actually arrives (wordnet_loader.ts's own docstring), so a session
  * that never triggers it never pays for it. */
 
-import { DictionaryView } from "../ui/dictionary_view";
+import { DictionaryView } from "../ui/server/dictionary_controller";
 import { VocabularyLayer } from "../data/layer";
 import { NounCharacterFormSeeder } from "./noun_character_form_seeder";
 import { RelationshipSeeder } from "./relationship_seeder";

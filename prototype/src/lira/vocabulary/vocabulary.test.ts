@@ -41,7 +41,7 @@ import { classifyPhraseRoles, classifyPhraseType, WordSeeder } from "./role/word
 import { NounCharacterFormSeeder } from "./role/noun_character_form_seeder";
 import { IdentificationSource } from "./role/word_identifier";
 import { loadWordNetSynsets } from "./role/wordnet_loader";
-import { DictionaryView } from "./ui/dictionary_view";
+import { DictionaryView } from "./ui/server/dictionary_controller";
 
 describe("PhraseType", () => {
   it("carries the same six numeric codes, in the same order, as Linguistics' own PhraseType", () => {
