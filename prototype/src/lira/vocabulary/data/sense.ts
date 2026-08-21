@@ -119,13 +119,26 @@ export interface Sense {
   // full POS-qualified lexname, never truncated to its bare category
   // half ("noun.artifact", never "artifact") -- that qualified form is
   // WordNet's own canonical identifier for it. A property of the
-  // meaning itself, the same as domainTag just above -- a lemma can
-  // (and often does) have senses spanning several different categories,
-  // so this is never derivable from Word.text alone. Undefined for a
-  // Sense that didn't come from WordSeeder.seedWordNet, the same
-  // "undefined means no WordNet source" convention synsetId/
-  // senseFrequency above already use.
-  categoryText?: Text;
+  // meaning itself -- a lemma can (and often does) have senses spanning
+  // several different categories, so this is never derivable from
+  // Word.text alone. Undefined for a Sense that didn't come from
+  // WordSeeder.seedWordNet, the same "undefined means no WordNet
+  // source" convention synsetId/senseFrequency above already use.
+  //
+  // Deliberately its own field, never folded into domainTag above
+  // despite the similar name and shape: domainTag is sparse and
+  // WordNet-curated (a real `;c`/`-c` topic-domain pointer, ~6,690 of
+  // ~117,800 senses) and bubbles all the way up to a Word/Phrase's own
+  // headline Domain display (DictionaryView.domainLabel()'s own
+  // Sense-first fallback) -- senseDomainTag is universal (every WordNet
+  // synset has a lex_filenum) and coarse (~41 distinct values total),
+  // and is meant to stay a Sense-level-only fact. An earlier version of
+  // this feature fed senseDomainTag into domainTag as a fallback when no
+  // real topic-domain pointer existed; that was reverted once it became
+  // clear it fragmented the Domain filter/column/headline pill
+  // dataset-wide (plain "Common" nearly disappeared) instead of staying
+  // contained to wherever a Sense's own fields are shown directly.
+  senseDomainTag?: Text;
 
   sourceReferences: readonly SourceReference[];
 

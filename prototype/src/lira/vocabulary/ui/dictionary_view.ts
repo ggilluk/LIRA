@@ -344,20 +344,20 @@ export interface RelationshipRecord {
   source_pos: string | null;
   source_domain: string | null;
   source_sense_id: string | null;
-  // Sense.categoryText's own exact counterpart, read directly off the
+  // Sense.senseDomainTag's own exact counterpart, read directly off the
   // source/target Sense (rel.sourceSenseId/targetSenseId -- every
   // SemanticRelationship connects two Senses now, so no resolveEntry()
   // representative-member indirection is needed to reach them the way
   // source_text/target_text's own Word-shaped fields do). null for a
   // Sense with no WordNet-sourced category (a hand-curated one,
-  // Sense.categoryText's own docstring), never a placeholder string.
+  // Sense.senseDomainTag's own docstring), never a placeholder string.
   source_category: string | null;
   // The Sense's own short descriptive text -- Sense.gloss when a
   // hand-curated entry actually has one, else Sense.definition (every
   // WordNet-seeded Sense's own real prose: WordSeeder.seedWordNet's own
   // createSense call never populates Sense.gloss at all, only
   // definition, so gloss alone would read blank for exactly the
-  // WordNet-sourced Senses categoryText exists for). null only when
+  // WordNet-sourced Senses senseDomainTag exists for). null only when
   // neither field is set.
   source_gloss: string | null;
   target_id: string;
@@ -1347,14 +1347,14 @@ export class DictionaryView {
       source_pos: source ? PartOfSpeech[source.partOfSpeech] : null,
       source_domain: this.domainLabel(source),
       source_sense_id: source?.synsetId?.value ?? null,
-      source_category: sourceSense?.categoryText?.value ?? null,
+      source_category: sourceSense?.senseDomainTag?.value ?? null,
       source_gloss: sourceSense?.gloss?.value ?? sourceSense?.definition?.value ?? null,
       target_id: rel.targetSenseId.value,
       target_text: target?.text ?? "?",
       target_pos: target ? PartOfSpeech[target.partOfSpeech] : null,
       target_domain: this.domainLabel(target),
       target_sense_id: target?.synsetId?.value ?? null,
-      target_category: targetSense?.categoryText?.value ?? null,
+      target_category: targetSense?.senseDomainTag?.value ?? null,
       target_gloss: targetSense?.gloss?.value ?? targetSense?.definition?.value ?? null,
       kind: SemanticRelationshipKind[rel.relationshipType],
       group: 1,
@@ -2821,7 +2821,7 @@ function senseIdBadge(senseId) {
 
 // RelationshipRecord.target_category/source_category's own render --
 // WordNet's lexicographer-file category for the *other* end's own
-// Sense ("noun.artifact"), Sense.categoryText's own docstring on why
+// Sense ("noun.artifact"), Sense.senseDomainTag's own docstring on why
 // it's always shown POS-qualified, never truncated. "" (nothing shown)
 // for a hand-curated Sense with no WordNet source, same as senseIdBadge.
 function categoryBadge(category) {

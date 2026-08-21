@@ -1392,7 +1392,7 @@ export class WordSeeder {
           isCommon: true,
           sourceReferences: [WORDNET_SOURCE_REFERENCE],
           senseFrequency: synset.senseFrequency,
-          categoryText: { value: synset.senseCategory },
+          senseDomainTag: { value: synset.senseCategory },
         });
         senseStore.append(sense);
         sensesSeeded += 1;
