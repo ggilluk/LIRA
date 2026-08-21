@@ -1,7 +1,8 @@
 /** Message protocol between the main thread (LinguisticsWorkerClient)
  * and the Linguistic Service worker (linguistics_worker.ts) -- the
- * same split-file shape as vocabulary/role/vocabulary_worker_protocol.ts,
- * so both Services are typed the same way even though nothing here
+ * same split-file shape as
+ * vocabulary/role/web_worker/vocabulary_worker_protocol.ts, so both
+ * Services are typed the same way even though nothing here
  * imports from that module (Linguistics must not depend on Vocabulary's
  * worker plumbing any more than its data/role layers depend on
  * Vocabulary's UI). */

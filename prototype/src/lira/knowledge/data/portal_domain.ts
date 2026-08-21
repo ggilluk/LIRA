@@ -15,7 +15,7 @@
  *
  * Unlike the shell's first version, this no longer carries a live
  * `VocabularyContext` -- seeding and rendering now run inside the
- * Vocabulary Service worker (vocabulary/role/vocabulary_worker.ts), off
+ * Vocabulary Service worker (vocabulary/role/web_worker/vocabulary_worker.ts), off
  * the main thread; the main thread only holds this summary (posted back
  * by the worker once seeding finishes) and asks the worker to render a
  * Domain's view on demand (VocabularyWorkerClient.renderDomain). */

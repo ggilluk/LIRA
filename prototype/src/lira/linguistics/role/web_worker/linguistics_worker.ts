@@ -2,8 +2,8 @@
  * (GrammarConfigurator, SequenceEngine, PhraseReader/ClauseReader/
  * SentenceReader) off the main thread, inside its own real browser Web
  * Worker -- the browser-tab stand-in for a server-side Linguistics
- * process, the same role vocabulary/role/vocabulary_worker.ts plays for
- * the Vocabulary Service.
+ * process, the same role vocabulary/role/web_worker/vocabulary_worker.ts
+ * plays for the Vocabulary Service.
  *
  * This worker seeds its own Dictionary from the same Common Vocabulary
  * Cache the Vocabulary Service seeds -- it cannot reach across the
@@ -26,27 +26,27 @@
  * bundled cache JSON) its own Vite chunk, loaded and run in parallel
  * with the main thread and the Vocabulary worker. */
 
-import { Dictionary } from "../../vocabulary/data/dictionary";
-import { PartOfSpeech } from "../../vocabulary/data/enums/part_of_speech";
-import { Phrases } from "../../vocabulary/data/phrases";
-import { AsyncDictionaryHydrator } from "../../vocabulary/role/dictionary_hydrator";
-import { DictionaryProcessor } from "../../vocabulary/role/dictionary_processor";
-import { WordSeeder } from "../../vocabulary/role/word_seeder";
-import type { Clause } from "../data/clause";
-import { ClauseType } from "../data/clause_type";
-import type { Document } from "../data/document";
-import type { Heading } from "../data/heading";
-import { LinguisticUnitKind } from "../data/linguistic_unit_kind";
-import type { Paragraph } from "../data/paragraph";
-import type { Phrase } from "../data/phrase";
-import { PhraseType } from "../data/phrase_type";
-import type { ReadingError } from "../data/reading_error";
-import { ReadingErrorKind } from "../data/reading_error";
-import type { Sentence } from "../data/sentence";
-import { SentenceType } from "../data/sentence_type";
-import { isKnown, type TokenReading } from "../data/token_reading";
-import { ValidationOutcome } from "../data/validation_outcome";
-import { LinguisticController } from "./linguistic_controller";
+import { Dictionary } from "../../../vocabulary/data/dictionary";
+import { PartOfSpeech } from "../../../vocabulary/data/enums/part_of_speech";
+import { Phrases } from "../../../vocabulary/data/phrases";
+import { AsyncDictionaryHydrator } from "../../../vocabulary/role/dictionary_hydrator";
+import { DictionaryProcessor } from "../../../vocabulary/role/dictionary_processor";
+import { WordSeeder } from "../../../vocabulary/role/word_seeder";
+import type { Clause } from "../../data/clause";
+import { ClauseType } from "../../data/clause_type";
+import type { Document } from "../../data/document";
+import type { Heading } from "../../data/heading";
+import { LinguisticUnitKind } from "../../data/linguistic_unit_kind";
+import type { Paragraph } from "../../data/paragraph";
+import type { Phrase } from "../../data/phrase";
+import { PhraseType } from "../../data/phrase_type";
+import type { ReadingError } from "../../data/reading_error";
+import { ReadingErrorKind } from "../../data/reading_error";
+import type { Sentence } from "../../data/sentence";
+import { SentenceType } from "../../data/sentence_type";
+import { isKnown, type TokenReading } from "../../data/token_reading";
+import { ValidationOutcome } from "../../data/validation_outcome";
+import { LinguisticController } from "../linguistic_controller";
 import type {
   JsonAlternative,
   JsonBlock,

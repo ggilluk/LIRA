@@ -1,9 +1,9 @@
 import type { ServiceStatus, ServiceStatusBoard } from "../data/service_status";
 import type { PortalDomain, PortalDomainRegistry } from "../data/portal_domain";
 import { ServiceStatusView } from "./service_status_view";
-import type { VocabularyWorkerClient } from "../../vocabulary/role/vocabulary_worker_client";
-import type { RenderedFragment } from "../../vocabulary/role/vocabulary_worker_protocol";
-import type { LinguisticsWorkerClient } from "../../linguistics/role/linguistics_worker_client";
+import type { VocabularyWorkerClient } from "../../vocabulary/role/web_worker/vocabulary_worker_client";
+import type { RenderedFragment } from "../../vocabulary/role/web_worker/vocabulary_worker_protocol";
+import type { LinguisticsWorkerClient } from "../../linguistics/role/web_worker/linguistics_worker_client";
 import { SentenceReaderView } from "../../linguistics/ui/sentence_reader_view";
 
 // Both Vocabulary toolbar seeding actions -- "Seed Vocabulary"
@@ -97,7 +97,7 @@ interface LiraResolveHierarchyEventDetail {
  *
  * The Vocabulary view comes from a real `VocabularyWorkerClient` -- a
  * Web Worker running WordSeeder/RelationshipSeeder/DictionaryView off
- * the main thread (see vocabulary/role/vocabulary_worker.ts) -- but
+ * the main thread (see vocabulary/role/web_worker/vocabulary_worker.ts) -- but
  * unlike this shell's first version, it's mounted by
  * *direct-DOM-composition*, not an `<iframe srcdoc>`: the worker
  * returns `DictionaryView.renderFragment()`'s three pieces (style/

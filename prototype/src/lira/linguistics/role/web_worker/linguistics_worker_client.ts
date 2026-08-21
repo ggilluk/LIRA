@@ -12,9 +12,9 @@ export type LinguisticsStatusListener = (state: LinguisticServiceState, detail?:
  * (linguistics_worker.ts) -- starts the worker, turns its postMessage
  * protocol into promise-based calls (`init()`, `read()`), and fans its
  * status messages out to any number of listeners, the same shape
- * vocabulary/role/vocabulary_worker_client.ts's own VocabularyWorkerClient
- * already gives the Vocabulary Service. One client owns exactly one
- * worker. */
+ * vocabulary/role/web_worker/vocabulary_worker_client.ts's own
+ * VocabularyWorkerClient already gives the Vocabulary Service. One
+ * client owns exactly one worker. */
 export class LinguisticsWorkerClient {
   private readonly worker: Worker;
   private readonly statusListeners = new Set<LinguisticsStatusListener>();

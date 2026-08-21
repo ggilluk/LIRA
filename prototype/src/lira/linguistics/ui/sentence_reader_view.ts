@@ -1,12 +1,12 @@
 /** SentenceReaderView: a Portal-native UI component for the Linguistics
  * Layer -- type or paste any text, read it through the real ported
  * state machine (SequenceEngine/PhraseReader/ClauseReader/SentenceReader,
- * via role/linguistics_worker_client.ts's LinguisticsWorkerClient) and
+ * via role/web_worker/linguistics_worker_client.ts's LinguisticsWorkerClient) and
  * see the predicted structure it settled on plus the full search trace
  * ("word prediction": every phrase type the engine tried at every token
  * position, whether its required start state matched, every completion
  * it considered, and which one won -- see
- * role/linguistics_worker_protocol.ts's own TracePosition docstring).
+ * role/web_worker/linguistics_worker_protocol.ts's own TracePosition docstring).
  *
  * This is NOT a port of ui/sentence_reader_view.py or
  * ui/sentence_reader_server.py -- those render a full standalone HTML
@@ -16,8 +16,8 @@
  * render_fragment()'s marker-comment extraction. This component is
  * built directly against the Portal shell's own composition: it never
  * renders a title of its own (the Portal topbar's breadcrumb is the
- * only title, same rule vocabulary/ui/dictionary_view.ts's fragment
- * mode follows), it assumes the shell's own --ground/--surface/--ink/
+ * only title, same rule vocabulary/ui/server/dictionary_controller.ts's
+ * fragment mode follows), it assumes the shell's own --ground/--surface/--ink/
  * --accent/etc. tokens are already on an ancestor element instead of
  * defining them itself, it reflows to whatever width the Portal gives
  * its pane (a CSS grid with auto-fit columns, not a min-width media
@@ -34,7 +34,7 @@
  * alongside it. */
 
 import { PartOfSpeech } from "../../vocabulary/data/enums/part_of_speech";
-import type { LinguisticsWorkerClient } from "../role/linguistics_worker_client";
+import type { LinguisticsWorkerClient } from "../role/web_worker/linguistics_worker_client";
 import type {
   JsonBlock,
   JsonDocument,
@@ -48,7 +48,7 @@ import type {
   TraceAttempt,
   TracePosition,
   TraceToken,
-} from "../role/linguistics_worker_protocol";
+} from "../role/web_worker/linguistics_worker_protocol";
 
 // Same hex values as vocabulary/ui/dictionary_view.ts's own POS_COLORS
 // (which itself matches vocabulary/ui/dictionary_view.py and
@@ -524,7 +524,7 @@ export class SentenceReaderView {
    * content for what it shows. An unresolved word (PredictedWord.resolved
    * === false: no seeded/hydrated Vocabulary sense, or a known word the
    * grammar didn't incorporate into any successfully-read phrase --
-   * worker/linguistics_worker.ts's own buildPredictedWords()) is
+   * web_worker/linguistics_worker.ts's own buildPredictedWords()) is
    * highlighted with a yellow background directly in the sentence, not
    * hidden or reported only as a separate error line. */
   private renderPredicted(sentence: JsonSentence, words: readonly PredictedWord[]): string {
