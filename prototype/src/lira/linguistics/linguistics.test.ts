@@ -84,12 +84,27 @@ describe("LinguisticController against the bundled Common Vocabulary Cache", () 
     expect(sentence.errors.some((error) => error.tokenText === "zorbnax")).toBe(true);
   });
 
-  it("resolves an inflected surface form ('entities', not the seeded 'entity') via its base Word's own generated pluralNumberForm, not UNRESOLVED", () => {
-    const controller = seededController();
-    const sentence = controller.readSentence("These entities are known.");
-    expect(sentence.errors.some((error) => error.tokenText === "entities")).toBe(false);
-    const entities = sentence.clauses[0].tokens.find((token) => token.text === "entities");
-    expect(entities?.partOfSpeech).toBe(PartOfSpeech.NOUN);
+  it("resolves an inflected surface form ('agencies', not itself independently seeded) via its base Word's own generated pluralNumberForm, not UNRESOLVED", () => {
+    // Built inline, not via seededController(), so the test can assert
+    // "agencies" genuinely has no exact Dictionary entry of its own
+    // before reading -- proving this exercises the new inflected-form
+    // fallback rather than an accidental exact hit (root_words.json's
+    // "entity" looked like a good example at first, but "entities" turns
+    // out to already be independently seeded in promoted_words.json, so
+    // it resolved via an ordinary exact match and never touched the
+    // fallback at all -- caught only by checking this).
+    const dictionary = new Dictionary();
+    const phraseBook = new Phrases();
+    new WordSeeder("en").seedClosedClassWords(dictionary, phraseBook);
+    expect(dictionary.lookupAll("agencies")).toHaveLength(0);
+    const hydrator = new AsyncDictionaryHydrator(dictionary);
+    const processor = new DictionaryProcessor(dictionary, phraseBook, hydrator, "Common");
+    const controller = new LinguisticController(processor);
+
+    const sentence = controller.readSentence("The agencies are known.");
+    expect(sentence.errors.some((error) => error.tokenText === "agencies")).toBe(false);
+    const agencies = sentence.clauses[0].tokens.find((token) => token.text === "agencies");
+    expect(agencies?.partOfSpeech).toBe(PartOfSpeech.NOUN);
   });
 });
 
