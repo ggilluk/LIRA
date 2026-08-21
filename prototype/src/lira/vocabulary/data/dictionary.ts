@@ -1,4 +1,9 @@
-import { copyWordWithFreshUuid, type Word } from "./word";
+import type { Word } from "./entities/word";
+// Known, approved exception to data/ never importing role/ -- see
+// role/word_processor.ts's own docstring: copyWordWithFreshUuid() is
+// Word's own base-entity copier, needed here the same way every POS
+// processor already needs it.
+import { copyWordWithFreshUuid } from "../role/word_processor";
 import { formTextsOf } from "./word_forms";
 
 /** One Word matched by lookupFormMatches, tagged with which of its own

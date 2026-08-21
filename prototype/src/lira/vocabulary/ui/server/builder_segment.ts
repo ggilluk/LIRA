@@ -10,7 +10,8 @@
 import type { Dictionary } from "../../data/dictionary";
 import { PartOfSpeech } from "../../data/enums/part_of_speech";
 import type { Senses } from "../../data/senses";
-import { definitionWords, type Word } from "../../data/word";
+import type { Word } from "../../data/entities/word";
+import { definitionWords } from "../../role/word_processor";
 import { domainLabel } from "./resolver_domain";
 
 export const DEFINITION_TOKEN_PATTERN = /[^\W_]+/g;

@@ -13,8 +13,8 @@ import type { WordIdentifier } from "../../vocabulary/role/word_identifier";
  *
  * Ported from linguistics/data/token_reading.py. Python's @property/
  * method pairs become free functions of the same name taking `reading`
- * as their first argument, the same pattern word.ts's derived
- * properties already use. */
+ * as their first argument, the same pattern role/word_processor.ts's
+ * derived properties already use. */
 export interface TokenReading {
   text: string;
   tokenIndex: number;

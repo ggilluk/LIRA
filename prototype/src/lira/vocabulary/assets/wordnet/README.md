@@ -3,7 +3,7 @@
 The raw Princeton WordNet 3.1 database files: `dict/data.{noun,verb,adj,adv}`
 are parsed by `role/wordnet_loader.ts` and seeded by
 `WordSeeder.seedWordNet` (`role/word_seeder.ts`) -- see those two
-files' own docstrings, `Word.synsetId`'s (`data/word.ts`), and
+files' own docstrings, `Word.synsetId`'s (`data/entities/word.ts`), and
 `LexicalRelationshipType`'s (`data/enums/lexical_relationship_type.ts`), for
 how a WordNet synset maps onto a LIRA Domain+Word, its SYNONYM
 `LexicalRelationship`s, and (via each synset's own pointer records --

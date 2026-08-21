@@ -9,7 +9,7 @@
 import type { Text } from "../../../value_objects";
 import type { Phrase } from "../../data/phrase";
 import type { Senses } from "../../data/senses";
-import type { Word } from "../../data/word";
+import type { Word } from "../../data/entities/word";
 
 /** The Sense-owned fields that actually apply to `entry` (a Word or a
  * Phrase) -- domainTag/relatedDomainTags, definition/gloss/usageNotes --

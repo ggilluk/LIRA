@@ -1,6 +1,6 @@
 import type { Dictionary } from "../data/dictionary";
 import { PartOfSpeech } from "../data/enums/part_of_speech";
-import type { Word } from "../data/word";
+import type { Word } from "../data/entities/word";
 import { isTitleCase, isUpperCase, type WordLookupContext } from "../data/word_lookup_context";
 import { IdentificationSource, type WordIdentifier } from "./word_identifier";
 

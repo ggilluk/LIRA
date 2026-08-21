@@ -17,7 +17,7 @@ import { PartOfSpeech } from "../data/enums/part_of_speech";
 import type { Phrases } from "../data/phrases";
 import type { SemanticRelationshipStore } from "../data/semantic_relationship_store";
 import type { SourceReference } from "../data/source_reference";
-import type { Word } from "../data/word";
+import type { Word } from "../data/entities/word";
 import {
   readRelationshipFile,
   readRelationshipFileRaw,
@@ -250,7 +250,7 @@ export class RelationshipSeeder {
 
   /** Every curated fact this cache seeds also lands on its own permanent
    * home -- a POS-class attribute for CONTRACTION (Word.contractionOf's
-   * own docstring, data/word.ts, on why it's Word-level and many-to-many)
+   * own docstring, data/entities/word.ts, on why it's Word-level and many-to-many)
    * or a genuine SemanticRelationship for a true sense-to-sense semantic
    * kind (LEXICAL_TO_SEMANTIC_KIND's own docstring, word_seeder.ts, on
    * exactly which those are and why this cache uses four kinds --

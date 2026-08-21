@@ -3,6 +3,7 @@ import { SemanticRelationshipKind } from "../../data/enums/semantic_relationship
 import { PartOfSpeech } from "../../data/enums/part_of_speech";
 import type { Senses } from "../../data/senses";
 import type { SemanticRelationshipStore } from "../../data/semantic_relationship_store";
+import type { Word } from "../../data/entities/word";
 import {
   createWord,
   isPeriphrasticComparison,
@@ -10,9 +11,8 @@ import {
   regularDegreeForm,
   validateFormText,
   validateWordFormAttributes,
-  type Word,
   type WordFormIssue,
-} from "../../data/word";
+} from "../word_processor";
 import type { Adjective } from "../../data/entities/adjective";
 import { AdjectivePosition } from "../../data/enums/adjective_position";
 import { stringPatternsFor } from "../../data/matrices/pos_vs_wordform_matrice";
@@ -139,10 +139,10 @@ export function determineGradability(relationships: SemanticRelationshipStore, a
  * Comparative/Superlative Degree Form stay absent rather than getting a
  * mechanically well-formed but semantically invalid value ("wooden" ->
  * "woodener"), the exact bug this parameter exists to close. When
- * `true`, isPeriphrasticComparison() (../data/word.ts) picks the
+ * `true`, isPeriphrasticComparison() (../word_processor.ts) picks the
  * comparison strategy (synthetic "-er"/"-est" vs. periphrastic
  * "more"/"most") and regularDegreeForm()/periphrasticDegreeForm()
- * (../data/word.ts) produce the actual spelling for whichever one
+ * (../word_processor.ts) produce the actual spelling for whichever one
  * applies -- regularDegreeForm() can still abstain on its own separate
  * spelling grounds (its own docstring), so a gradable Adjective can
  * legitimately end up with Positive Degree Form only too, same as a

@@ -25,7 +25,7 @@
  *
  * Only two columns of the matrix are mechanically consumed by code
  * today -- String Pattern (via stringPatternsFor(), validateX()'s own
- * check() closure, data/word.ts's validateFormText()) and POS
+ * check() closure, role/word_processor.ts's validateFormText()) and POS
  * applicability (via fieldsFor(), data/word_forms.ts's own
  * WORD_FORM_FIELDS). Every other column (Base Lemma Preconditions,
  * Base Lemma Pattern, Generation Transform, Reduction Transform,

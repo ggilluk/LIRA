@@ -11,7 +11,7 @@
 
 import type { Text } from "../../../value_objects";
 import { PartOfSpeech } from "../enums/part_of_speech";
-import type { Word } from "../word";
+import type { Word } from "./word";
 
 export interface Pronoun extends Word {
   partOfSpeech: PartOfSpeech.PRONOUN;

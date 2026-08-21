@@ -1,6 +1,6 @@
 import type { Phrase } from "./phrase";
 import { copySenseWithFreshUuid, type Sense } from "./sense";
-import type { Word } from "./word";
+import type { Word } from "./entities/word";
 
 /** Sense storage: Phrases's own counterpart for Sense (sense.ts's
  * own docstring on why a Sense is kept apart from Dictionary/Phrases
@@ -13,7 +13,7 @@ import type { Word } from "./word";
  * mirroring how it already finds-or-creates a Word/Phrase per lemma)
  * needs an O(1) synsetId lookup, not a linear scan of every seeded
  * Sense so far. Also indexes each Sense's own membership (registerMember/
- * membersOf) -- the O(1) lookup relatedWords() (word.ts) needs to expand
+ * membersOf) -- the O(1) lookup relatedWords() (role/word_processor.ts) needs to expand
  * a Sense-to-Sense relationship edge back into the specific Words/Phrases
  * that lexicalize each side, and the one synonyms() itself needs to
  * answer "every other Word/Phrase that shares this one's own Sense"
@@ -49,7 +49,7 @@ export class Senses {
   }
 
   /** Records that `member` lexicalizes `sense` -- appends `sense.uuid`
-   * onto `member.senseIds` (the field itself, word.ts's/phrase.ts's own
+   * onto `member.senseIds` (the field itself, data/entities/word.ts's/phrase.ts's own
    * docstring) and adds `member` to that Sense's own membership index.
    * A Word/Phrase is now unique by (partOfSpeech, lemma), not by Sense
    * (WordSeeder.seedWordNet's own find-or-create, role/word_seeder.ts),

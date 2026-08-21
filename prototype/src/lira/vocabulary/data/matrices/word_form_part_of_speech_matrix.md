@@ -88,7 +88,7 @@ class, rather than one shared mechanism:
   adverb, "wide roads") gets no Pertainym pointer either, so this falls
   back to the identically-spelled Adjective directly.
 - Both classes' own `isPeriphrasticComparison()`-derived Degree Strategy
-  Classification (word.ts) uses the same syllable-count heuristic (1
+  Classification (role/word_processor.ts) uses the same syllable-count heuristic (1
   syllable, or 2 syllables ending "-er"/"-le"/"-ow", stays synthetic;
   everything longer goes periphrastic) -- except Adverb overrides it for
   any "-ly"-ending lemma, which always goes periphrastic regardless of

@@ -1,5 +1,5 @@
 import type { PartOfSpeech } from "../data/enums/part_of_speech";
-import type { Word } from "../data/word";
+import type { Word } from "../data/entities/word";
 
 /** Represents one candidate resolution of a raw token occurrence to a
  * grammatical category -- never a guess. DictionaryProcessor.identifyWord

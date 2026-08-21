@@ -1,8 +1,8 @@
-import type { Word } from "./word";
+import type { Word } from "./entities/word";
 
 /** One token from a Word's own `definition` text, resolved against a
  * Dictionary -- the result of breaking a definition down into its own
- * sequenced array of words (`definitionWords()` in word.ts).
+ * sequenced array of words (`definitionWords()` in role/word_processor.ts).
  * Deliberately not a `Word` field (Design Principle 4: "A Word must
  * not contain collections of related words") -- computed on demand.
  *

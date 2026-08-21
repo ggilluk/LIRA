@@ -1,7 +1,8 @@
 import type { Dictionary } from "../data/dictionary";
 import { toSyntheticWord } from "../data/phrase";
 import type { Phrases } from "../data/phrases";
-import { definitionWords, type Word } from "../data/word";
+import type { Word } from "../data/entities/word";
+import { definitionWords } from "./word_processor";
 import { createWordLookupContext } from "../data/word_lookup_context";
 import type { AsyncDictionaryHydrator } from "./dictionary_hydrator";
 import { PartOfSpeechIdentifier } from "./part_of_speech_identifier";

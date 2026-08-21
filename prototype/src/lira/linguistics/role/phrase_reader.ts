@@ -1,5 +1,5 @@
 import { PartOfSpeech } from "../../vocabulary/data/enums/part_of_speech";
-import type { Word } from "../../vocabulary/data/word";
+import type { Word } from "../../vocabulary/data/entities/word";
 import type { Clause } from "../data/clause";
 import type { Interpretation } from "../data/interpretation";
 import { LinguisticUnitKind } from "../data/linguistic_unit_kind";

@@ -7,7 +7,7 @@
  * the type level, the same as its siblings. */
 
 import { PartOfSpeech } from "../enums/part_of_speech";
-import type { Word } from "../word";
+import type { Word } from "./word";
 
 export interface Numeral extends Word {
   partOfSpeech: PartOfSpeech.NUMERAL;

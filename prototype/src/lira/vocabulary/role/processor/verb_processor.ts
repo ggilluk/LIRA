@@ -1,15 +1,15 @@
 import type { Text } from "../../../value_objects";
 import { PartOfSpeech } from "../../data/enums/part_of_speech";
 import type { Senses } from "../../data/senses";
+import type { Word } from "../../data/entities/word";
 import {
   createWord,
   endsInConsonantY,
   shouldDoubleFinalConsonant,
   validateFormText,
   validateWordFormAttributes,
-  type Word,
   type WordFormIssue,
-} from "../../data/word";
+} from "../word_processor";
 import type { Verb } from "../../data/entities/verb";
 import { stringPatternsFor } from "../../data/matrices/pos_vs_wordform_matrice";
 
@@ -77,7 +77,7 @@ export function validateVerb(verb: Verb): readonly WordFormIssue[] {
  * is an irregular or unchanged form with no spelling signal to detect,
  * and the doubling case itself is left undefined for a lemma
  * shouldDoubleFinalConsonant() can't confidently call either way (that
- * function's own docstring, ../data/word.ts). */
+ * function's own docstring, ../word_processor.ts). */
 function regularEdForm(lemma: string): Text | undefined {
   if (endsInConsonantY(lemma)) return { value: `${lemma.slice(0, -1)}ied`, formats: ["/ied$/i"] };
   if (/e$/i.test(lemma)) return { value: `${lemma}d`, formats: ["/ed$/i"] };

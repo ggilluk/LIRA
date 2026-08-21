@@ -1,7 +1,8 @@
 import { PartOfSpeech } from "../../vocabulary/data/enums/part_of_speech";
 import type { DictionaryProcessor } from "../../vocabulary/role/dictionary_processor";
 import type { WordIdentifier } from "../../vocabulary/role/word_identifier";
-import { createWord, type Word } from "../../vocabulary/data/word";
+import type { Word } from "../../vocabulary/data/entities/word";
+import { createWord } from "../../vocabulary/role/word_processor";
 import { createClause, type Clause } from "../data/clause";
 import { createDocument, type Document } from "../data/document";
 import { createHeading, matchHeadingLine, type Heading } from "../data/heading";
@@ -23,7 +24,7 @@ import { LinguisticLexer } from "./lexer";
  * Ported from linguistics/role/graph_processor.py. Python defers
  * importing Word/PartOfSpeech inside method bodies purely to avoid a
  * module-scope import cycle within its own package; TypeScript's
- * module graph has no equivalent cycle here (see vocabulary/data/word.ts's
+ * module graph has no equivalent cycle here (see vocabulary/data/entities/word.ts's
  * own linguistic_unit.ts dependency, a leaf module), so they're
  * imported normally at the top. */
 function shortId(): string {

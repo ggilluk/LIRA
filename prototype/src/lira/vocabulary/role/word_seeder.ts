@@ -64,7 +64,8 @@ import { createSense, type Sense } from "../data/sense";
 import type { Senses } from "../data/senses";
 import type { SourceReference } from "../data/source_reference";
 import { createVerb, generateVerbForms, isVerb } from "./processor/verb_processor";
-import { copyWordWithFreshUuid, createWord, type Word } from "../data/word";
+import type { Word } from "../data/entities/word";
+import { copyWordWithFreshUuid, createWord } from "./word_processor";
 import type { SemanticRelationshipStore } from "../data/semantic_relationship_store";
 import {
   languageHasCommonCache,

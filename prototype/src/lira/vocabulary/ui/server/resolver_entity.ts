@@ -9,7 +9,7 @@ import type { Dictionary } from "../../data/dictionary";
 import { phraseAsWord } from "../../data/phrase";
 import type { Phrases } from "../../data/phrases";
 import type { Senses } from "../../data/senses";
-import type { Word } from "../../data/word";
+import type { Word } from "../../data/entities/word";
 
 /** Resolves a relationship endpoint's uuid against this Domain's
  * Dictionary first, falling back to its Phrases (projected onto a

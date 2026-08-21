@@ -1,6 +1,7 @@
 import type { Text } from "../../../value_objects";
 import { PartOfSpeech } from "../../data/enums/part_of_speech";
-import { createWord, endsInConsonantY, validateFormText, validateWordFormAttributes, type Word, type WordFormIssue } from "../../data/word";
+import type { Word } from "../../data/entities/word";
+import { createWord, endsInConsonantY, validateFormText, validateWordFormAttributes, type WordFormIssue } from "../word_processor";
 import type { Noun } from "../../data/entities/noun";
 import { stringPatternsFor } from "../../data/matrices/pos_vs_wordform_matrice";
 

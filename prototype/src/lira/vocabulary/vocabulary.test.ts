@@ -8,7 +8,8 @@ import { SemanticRelationshipSystemPropertyTensor } from "./data/semantic_relati
 import { SemanticRelationshipKind } from "./data/enums/semantic_relationship_kind";
 import { SemanticRelationshipProcessor } from "./role/semantic_relationship_processor";
 import { PartOfSpeech } from "./data/enums/part_of_speech";
-import { createWord, validateFormText, validateWordFormAttributes, type Word } from "./data/word";
+import type { Word } from "./data/entities/word";
+import { createWord, validateFormText, validateWordFormAttributes } from "./role/word_processor";
 import { stringPatternsFor } from "./data/matrices/pos_vs_wordform_matrice";
 import { AdjectivePosition } from "./data/enums/adjective_position";
 import { createAdjective, determineGradability, generateAdjectiveForms, isAdjective, syntacticPositionForSense, validateAdjective } from "./role/processor/adjective_processor";
@@ -125,7 +126,7 @@ describe("classifyPhraseType", () => {
   });
 });
 
-describe("validateFormText (word.ts) -- the mechanism every POS class's own validate<Class>() reuses", () => {
+describe("validateFormText (role/word_processor.ts) -- the mechanism every POS class's own validate<Class>() reuses", () => {
   it("treats an unset formats as always valid -- no claim made, nothing to check", () => {
     expect(validateFormText("pluralNumberForm", { value: "dogs" }, stringPatternsFor("pluralNumberForm", PartOfSpeech.NOUN))).toBeUndefined();
   });
@@ -1248,8 +1249,8 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
       return member;
     };
     // synonyms()/hypernyms()/hyponyms()/antonyms()/meronyms()/holonyms()
-    // (word.ts) no longer exist -- retired along with LexicalRelationshipStore's
-    // own retirement from the permanent queryable model (data/word.ts's
+    // (role/word_processor.ts) no longer exist -- retired along with LexicalRelationshipStore's
+    // own retirement from the permanent queryable model (role/word_processor.ts's
     // own "Derived properties" docstring). These two local helpers read
     // the same facts back from the real thing that replaced them:
     // Senses.membersOf() for synonymy, semanticRelationships (Sense-to-
@@ -1298,7 +1299,7 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     expect(big.isCommon).toBe(true);
     expect(big.synsetId?.schemeId).toBe("wn31");
     // synonyms() now unions every sense "big" carries (Word.senseIds's
-    // own docstring, relatedWords()'s own generalization, word.ts) --
+    // own docstring, relatedWords()'s own generalization, role/word_processor.ts) --
     // "big" ADJECTIVE is genuinely polysemous ("above average in size",
     // "pregnant", "generous", "grown up", "boastful", ...), so its own
     // Word-level synonym list is every one of those senses' synonyms
@@ -1337,7 +1338,7 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // from "physical entity" by a second, separately-stored HYPONYM edge.
     // Resolving the Phrase-typed hyponym back into a displayable Word
     // needs the phraseBook fallback (relatedWords()'s own docstring,
-    // word.ts) -- the whole point of this test.
+    // role/word_processor.ts) -- the whole point of this test.
     const entity = wordForSynset("00001740-n", "entity");
     expect(semanticRelated(entity, SemanticRelationshipKind.HYPERNYM, "incoming").map((w) => w.text)).toContain("physical entity");
 
@@ -1526,7 +1527,7 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     expect(handFingerEdge).toBeDefined();
     expect(handFingerEdge?.sourceWordId.value).toBe(fingerSense.uuid.value);
     expect(handFingerEdge?.targetWordId.value).toBe(handSense.uuid.value);
-    // meronyms()/holonyms() (word.ts) already expand a Sense-to-Sense
+    // meronyms()/holonyms() (role/word_processor.ts) already expand a Sense-to-Sense
     // edge back out to its member Words on read (relatedWords()'s own
     // senseStore-aware branch) -- reading that same stored direction
     // from opposite ends: "hand"'s meronyms are its own parts (finger
@@ -3139,7 +3140,7 @@ describe("DictionaryView.resolveHierarchy", () => {
     // pass 1 relies on shared senseId alone, not a per-pair edge), so
     // this kind's own graph is simply empty now rather than falling
     // back to a cluster view -- synonymy is still fully queryable, just
-    // through synonyms() (word.ts) and Senses.membersOf() directly,
+    // through synonyms() (role/word_processor.ts) and Senses.membersOf() directly,
     // not through this edge-graph-only method.
     const synonymHierarchy = view.resolveHierarchy({ kind: "SYNONYM" });
     expect(synonymHierarchy.fellBack).toBe(false);

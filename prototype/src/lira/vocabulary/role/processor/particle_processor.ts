@@ -1,5 +1,6 @@
 import { PartOfSpeech } from "../../data/enums/part_of_speech";
-import { createWord, type Word } from "../../data/word";
+import type { Word } from "../../data/entities/word";
+import { createWord } from "../word_processor";
 import type { Particle } from "../../data/entities/particle";
 
 export type ParticleInit = Pick<Particle, "text"> & Partial<Omit<Particle, "text" | "partOfSpeech">>;

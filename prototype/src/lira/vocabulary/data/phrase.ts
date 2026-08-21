@@ -19,10 +19,10 @@
  * the SYNONYM/pointer-relationship graph exactly like a single-word
  * synset member -- `domainTag`/`relatedDomainTags`/`synsetId` below
  * exist for that path specifically, mirroring the identically-named
- * Word fields (see each one's own docstring on word.ts).
+ * Word fields (see each one's own docstring on data/entities/word.ts).
  *
  * Still shaped like Linguistics's LinguisticUnit, the same deliberate
- * dual-use Word already has (word.ts's own docstring): a Phrase is
+ * dual-use Word already has (data/entities/word.ts's own docstring): a Phrase is
  * both a Vocabulary *type* (a lexical entry, owned by this layer) and,
  * via `toSyntheticWord` below, materialisable as a Linguistics *token*
  * (one occurrence of that type in a sentence) without Linguistics ever
@@ -39,7 +39,12 @@ import type { PhraseRole } from "./enums/phrase_role";
 import type { PhraseType } from "./enums/phrase_type";
 import type { RegisterCode } from "./enums/register_code";
 import type { SourceReference } from "./source_reference";
-import { createWord, type Word } from "./word";
+import type { Word } from "./entities/word";
+// Known, approved exception to data/ never importing role/ -- see
+// role/word_processor.ts's own docstring: createWord() is Word's own
+// base-entity constructor, needed here (toSyntheticWord/phraseAsWord
+// below) the same way every POS processor already needs it.
+import { createWord } from "../role/word_processor";
 import { newUuid } from "./uuid";
 
 export interface Phrase extends LinguisticUnit {
@@ -65,7 +70,7 @@ export interface Phrase extends LinguisticUnit {
   uuid: Identifier;
 
   // Same persistent-vs-per-Domain-copy distinction as Word.entryId/
-  // Word.uuid (word.ts's own docstring) -- entryId is assigned once,
+  // Word.uuid (data/entities/word.ts's own docstring) -- entryId is assigned once,
   // when a Phrase is first authored in the Common Vocabulary Cache,
   // and stays untouched by every later per-Domain copy; uuid is fresh
   // every time.
@@ -206,7 +211,7 @@ export function createPhrase(init: PhraseInit): Phrase {
 
 /** A shallow copy of `phrase`, sharing every field's own object
  * identity except `uuid`, which becomes a fresh Identifier -- the
- * Phrase counterpart of copyWordWithFreshUuid (word.ts), used by
+ * Phrase counterpart of copyWordWithFreshUuid (role/word_processor.ts), used by
  * Phrases.seedFrom/WordSeeder.seedClosedClassWords for exactly the
  * same reason: two Domains' independent copies of "in spite of" must
  * never be confused as the same graph node. */
@@ -257,7 +262,7 @@ export function toSyntheticWord(phrase: Phrase): Word {
  * seeded multi-word Phrase participates in the same SYNONYM/pointer
  * relationship graph a single-word synset member does
  * (WordSeeder.seedWordNet), so every place that resolves a
- * relationship endpoint -- word.ts's own relatedWords() family,
+ * relationship endpoint -- role/word_processor.ts's own relatedWords() family,
  * DictionaryView's relationship/Hierarchy rendering -- needs to be
  * able to turn that endpoint back into something displayable
  * regardless of which store actually holds it; this is that

@@ -340,7 +340,7 @@ What deliberately differs from the Python original, and why:
 - Python's module-scope deferred imports (`from lira.vocabulary import
   PartOfSpeech` inside a function body) exist purely to dodge a
   Python-level circular import within its own package. TypeScript's
-  module graph has no equivalent cycle (`vocabulary/data/word.ts` only
+  module graph has no equivalent cycle (`vocabulary/data/entities/word.ts` only
   depends on the leaf `linguistics/data/linguistic_unit.ts`, never on
   anything in `linguistics/role/`), so `PartOfSpeech`/`Word`/
   `WordIdentification` are imported normally at the top of every file
@@ -354,7 +354,7 @@ What deliberately differs from the Python original, and why:
   merely hinted.
 - `Phrase`/`Clause`/`Sentence`/etc. are plain data interfaces plus a
   `createX()` factory and a `readX()` free function (mirroring
-  `vocabulary/data/word.ts`'s own derived-property pattern), not
+  `vocabulary/role/word_processor.ts`'s own derived-property pattern), not
   dataclasses with a `@classmethod read()` -- `readPhrase(tokens,
   context, options)` reads right-to-left instead of
   `Phrase.read(tokens, context=...)`, same delegation-only content.

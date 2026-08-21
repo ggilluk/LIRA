@@ -19,7 +19,7 @@
 import { fieldsFor } from "./matrices/pos_vs_wordform_matrice";
 import { PartOfSpeech } from "./enums/part_of_speech";
 import type { Text } from "../../value_objects";
-import type { Word } from "./word";
+import type { Word } from "./entities/word";
 
 // fieldsFor()'s own row-order sweep includes "baseLemmaCanonicalForm"
 // for every POS (the matrix's own first row applies to all of them) --

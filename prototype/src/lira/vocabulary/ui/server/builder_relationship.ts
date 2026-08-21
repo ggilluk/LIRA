@@ -12,7 +12,7 @@ import type { Senses } from "../../data/senses";
 import type { Sense } from "../../data/sense";
 import type { SemanticRelationship } from "../../data/semantic_relationship";
 import type { SemanticRelationshipStore } from "../../data/semantic_relationship_store";
-import type { Word } from "../../data/word";
+import type { Word } from "../../data/entities/word";
 import { resolveEntry } from "./resolver_entity";
 import { domainLabel } from "./resolver_domain";
 

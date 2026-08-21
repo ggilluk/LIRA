@@ -16,7 +16,7 @@ import type { Phrases } from "../../data/phrases";
 import type { Senses } from "../../data/senses";
 import type { SemanticRelationshipStore } from "../../data/semantic_relationship_store";
 import { framesForSense, isVerb } from "../../role/processor/verb_processor";
-import type { Word } from "../../data/word";
+import type { Word } from "../../data/entities/word";
 import { formTextsOf } from "../../data/word_forms";
 import { phraseHeadWordSegment, phraseTypeLabel, phraseWordSegments } from "./builder_phrase";
 import { definitionSegments, type DefinitionSegment } from "./builder_segment";
@@ -257,7 +257,7 @@ function morphologicalDerivations(word: Word, dictionary: Dictionary): WordRecor
   } else if (isAdverb(word)) {
     addIfSet("isDerivedFromAdjective", word.isDerivedFromAdjective);
   }
-  // Word.contractionOf's own docstring (data/word.ts) -- Word-level,
+  // Word.contractionOf's own docstring (data/entities/word.ts) -- Word-level,
   // not scoped to one POS subtype the way every field above is (a
   // contraction's own components span whatever closed-class parts of
   // speech happen to combine), and many-to-many rather than a single

@@ -16,6 +16,7 @@ export { SemanticRelationshipProcessor } from "./role/semantic_relationship_proc
 export { PartOfSpeechIdentifier } from "./role/part_of_speech_identifier";
 export { RelationshipSeeder } from "./role/relationship_seeder";
 export { WordSeeder } from "./role/word_seeder";
+export { type WordInit, createWord, copyWordWithFreshUuid, definitionWords } from "./role/word_processor";
 export { loadWordNetSynsets, type WordNetSynset } from "./role/wordnet_loader";
 
 export type { AttributeValue } from "./data/attribute_value";
@@ -41,6 +42,6 @@ export { RegisterCode } from "./data/enums/register_code";
 export type { SourceReference } from "./data/source_reference";
 export { SystemPropertiesRef } from "./data/system_properties_ref";
 export { VectorPrimitiveRootWord } from "./data/enums/vector_primitive_root_word";
-export { type Word, type WordInit, createWord, copyWordWithFreshUuid, definitionWords } from "./data/word";
+export type { Word } from "./data/entities/word";
 export { type WordLookupContext, createWordLookupContext } from "./data/word_lookup_context";
 export { DictionaryView } from "./ui/server/dictionary_controller";

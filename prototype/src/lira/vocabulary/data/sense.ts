@@ -1,11 +1,11 @@
 /** Sense: one shared meaning that one or more Words/Phrases lexicalize
  * -- the first-class counterpart to what a WordNet synset already names
  * ("a set of one or more synonyms" -- Word.synsetId's own docstring,
- * word.ts). Every member of a synset used to carry its own independent
+ * data/entities/word.ts). Every member of a synset used to carry its own independent
  * copy of that synset's definition/examples/topic-domain tags
  * (WordSeeder.seedWordNet's own synsetMemberToWord/synsetMemberToPhrase);
  * a Sense holds that data once, and a Word/Phrase that lexicalizes it
- * carries a `senseId` reference (word.ts's own field of that name)
+ * carries a `senseId` reference (data/entities/word.ts's own field of that name)
  * instead of a duplicate copy.
  *
  * Every Word/Phrase gets a Sense now, WordNet-sourced (one per synset,
@@ -204,7 +204,7 @@ export function createSense(init: SenseInit = {}): Sense {
 
 /** A shallow copy of `sense`, sharing every field's own object identity
  * except `uuid`, which becomes a fresh Identifier -- copyWordWithFreshUuid's
- * own exact counterpart (word.ts), used by Senses.seedFrom for the
+ * own exact counterpart (role/word_processor.ts), used by Senses.seedFrom for the
  * same reason: two Domains' independent copies of the same sense must
  * never be confused as the same graph node. */
 export function copySenseWithFreshUuid(sense: Sense): Sense {

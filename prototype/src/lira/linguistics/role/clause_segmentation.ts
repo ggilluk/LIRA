@@ -1,4 +1,4 @@
-import type { Word } from "../../vocabulary/data/word";
+import type { Word } from "../../vocabulary/data/entities/word";
 import type { TokenReading } from "../data/token_reading";
 import type { GrammarConfigurator } from "./grammar_configurator";
 
