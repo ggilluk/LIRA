@@ -4,18 +4,18 @@
  * and the public method searchWords). */
 
 import type { Identifier } from "../../../value_objects";
-import { isAdjective } from "../../data/adjective";
-import { isAdverb } from "../../data/adverb";
+import { isAdjective } from "../../role/adjective_processor";
+import { isAdverb } from "../../role/adverb_processor";
 import type { Dictionary } from "../../data/dictionary";
 import { EditorialLabel } from "../../data/enums/editorial_label";
 import { PartOfSpeech } from "../../data/enums/part_of_speech";
 import { RegisterCode } from "../../data/enums/register_code";
-import { isNoun } from "../../data/noun";
+import { isNoun } from "../../role/noun_processor";
 import { phraseAsWord, type Phrase } from "../../data/phrase";
 import type { Phrases } from "../../data/phrases";
 import type { Senses } from "../../data/senses";
 import type { SemanticRelationshipStore } from "../../data/semantic_relationship_store";
-import { framesForSense, isVerb } from "../../data/verb";
+import { framesForSense, isVerb } from "../../role/verb_processor";
 import type { Word } from "../../data/word";
 import { formTextsOf } from "../../data/word_forms";
 import { phraseHeadWordSegment, phraseTypeLabel, phraseWordSegments } from "./builder_phrase";
@@ -43,8 +43,8 @@ export interface WordRecord {
   is_derivable_noun: boolean;
   // Every morphological-derivation pointer field this Word's own
   // concrete POS subtype actually carries a *resolved* value for --
-  // Noun.isDerivedFromVerb and its three siblings across data/noun.ts,
-  // data/verb.ts, data/adjective.ts, data/adverb.ts (each field's own
+  // Noun.isDerivedFromVerb and its three siblings across data/entities/noun.ts,
+  // data/entities/verb.ts, data/entities/adjective.ts, data/entities/adverb.ts (each field's own
   // docstring names which specific pair it implements;
   // morphologicalDerivations()'s own docstring on how this list is
   // built, and on why only four pairs exist rather than eight).
@@ -56,7 +56,7 @@ export interface WordRecord {
   // field's own Identifier pointer resolved to. No separate Indicator
   // boolean of its own here -- an entry's mere presence in this list
   // already means true (the field's own Indicator sibling on the
-  // underlying Word is `!== undefined`, data/noun.ts's own docstring),
+  // underlying Word is `!== undefined`, data/entities/noun.ts's own docstring),
   // and an unresolved pointer (shouldn't happen for anything
   // WordSeeder.seedWordNet itself produced) is simply omitted rather
   // than included with a null target. Empty for every part of speech
@@ -188,7 +188,7 @@ export interface WordSenseSummary {
   synonyms: { id: string; text: string }[];
   // The real WordNet verb-frame sentences ("Somebody ----s something")
   // this specific (Verb, Sense) pairing was tagged with -- Verb.framesForSense()'s
-  // own docstring (data/verb.ts) on why this lives as loose per-membership
+  // own docstring (role/verb_processor.ts) on why this lives as loose per-membership
   // Senses metadata rather than a typed field on Verb itself: a frame can
   // genuinely differ between two members of the same synset (WordNetFrame's
   // own docstring, role/wordnet_loader.ts), so it's a fact about this one
@@ -216,7 +216,7 @@ function formFieldLabel(field: string): string {
 /** WordRecord.derivations (that field's own docstring above) -- every
  * morphological-derivation pointer field `word`'s own concrete POS
  * subtype carries (Noun.isDerivedFromVerb and its three siblings
- * across data/noun.ts, data/verb.ts, data/adjective.ts, data/adverb.ts
+ * across data/entities/noun.ts, data/entities/verb.ts, data/entities/adjective.ts, data/entities/adverb.ts
  * -- WordSeeder.deriveMorphologicalPointers()'s own docstring,
  * role/word_seeder.ts, names exactly which four pairs these are and
  * why only four survive, not eight: WordNet records its `+`
@@ -326,7 +326,7 @@ function wordFormsFor(word: Word): WordFormEntry[] {
     forms.push({ field, label: formFieldLabel(field), value: text.value });
   }
   // Noun.wordCharacterForms isn't a Word Form Matrix field (that
-  // field's own docstring, data/noun.ts) -- not spelling-derivable, so
+  // field's own docstring, data/entities/noun.ts) -- not spelling-derivable, so
   // it has no NOUN_FORM_PATTERNS entry and formTextsOf() never returns
   // it above -- appended here instead, the same "rendered in this
   // section without being a Matrix field" treatment `derivations`

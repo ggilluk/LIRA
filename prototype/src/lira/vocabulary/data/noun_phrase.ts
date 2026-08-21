@@ -1,7 +1,7 @@
 /** NounPhrase: Phrase's own NOUN_PHRASE-specific subtype -- one of
  * PhraseType's own six grammatical shapes (enums/phrase_type.ts's own
  * docstring), narrowing a Phrase by `phraseType` the same way Noun
- * narrows a Word by `partOfSpeech` (data/noun.ts). Structure:
+ * narrows a Word by `partOfSpeech` (data/entities/noun.ts). Structure:
  * "(Determiner) + (Modifiers) + Noun/Pronoun + (Complements)"
  * (PHRASE_TYPE_DETAILS[PhraseType.NOUN_PHRASE], enums/phrase_type.ts) --
  * example: "the intelligent system". Distinct from Phrase.partOfSpeech,

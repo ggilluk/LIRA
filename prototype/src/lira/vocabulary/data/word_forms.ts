@@ -15,13 +15,13 @@
  * this record entirely, not listed with an empty array, since
  * `formTextsOf`'s own `?? []` already treats a missing key that way. */
 
-import { ADJECTIVE_FORM_PATTERNS } from "./adjective";
-import { ADVERB_FORM_PATTERNS } from "./adverb";
-import { DETERMINER_FORM_PATTERNS } from "./determiner";
+import { ADJECTIVE_FORM_PATTERNS } from "../role/adjective_processor";
+import { ADVERB_FORM_PATTERNS } from "../role/adverb_processor";
+import { DETERMINER_FORM_PATTERNS } from "../role/determiner_processor";
 import { PartOfSpeech } from "./enums/part_of_speech";
-import { NOUN_FORM_PATTERNS } from "./noun";
-import { PRONOUN_FORM_PATTERNS } from "./pronoun";
-import { VERB_FORM_PATTERNS } from "./verb";
+import { NOUN_FORM_PATTERNS } from "../role/noun_processor";
+import { PRONOUN_FORM_PATTERNS } from "../role/pronoun_processor";
+import { VERB_FORM_PATTERNS } from "../role/verb_processor";
 import type { Text } from "../../value_objects";
 import type { Word } from "./word";
 

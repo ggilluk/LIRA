@@ -300,8 +300,8 @@ export function copyWordWithFreshUuid(word: Word): Word {
 // synonymy (sharing a Sense already *is* being a synonym, no separate
 // accessor needed), or a direct POS-class attribute for a morphological/
 // orthographic one (isNominalised and its siblings, Word.contractionOf,
-// each field's own docstring in data/noun.ts, data/verb.ts,
-// data/adjective.ts, data/adverb.ts, data/word.ts).
+// each field's own docstring in data/entities/noun.ts, data/entities/verb.ts,
+// data/entities/adjective.ts, data/entities/adverb.ts, data/word.ts).
 
 // -- Definition word breakdown (4.4) ---------------------------------
 // Also not a stored field -- computed on demand, like the derived

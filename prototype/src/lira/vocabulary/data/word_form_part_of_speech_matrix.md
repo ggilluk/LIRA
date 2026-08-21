@@ -52,7 +52,7 @@ matrix's original version -- English's *other* comparison strategy
 "-er"/"-est" for shorter ones) was previously missing entirely, not
 just under-specified. Neither Adjective nor Adverb realises that
 strategy as a separate field the way these two rows describe, though --
-data/adjective.ts's and data/adverb.ts's own Comparative/Superlative
+data/entities/adjective.ts's and data/entities/adverb.ts's own Comparative/Superlative
 Degree Form (rows below) each carry the periphrastic value directly
 ("more accepting", "more scarcely") when that's the strategy chosen,
 rather than a second, parallel field. These two rows stay documented as
@@ -68,7 +68,7 @@ exist in this codebase yet) -- but each POS class determines them its
 own way, using whichever real WordNet signal actually exists for that
 class, rather than one shared mechanism:
 
-- **Adjective** (data/adjective.ts): `determineGradability()` looks for
+- **Adjective** (role/adjective_processor.ts): `determineGradability()` looks for
   a WordNet Attribute pointer at all, checked across every one of an
   Adjective's own Senses (not the primary sense alone) -- "tall"
   -Attribute-> "stature, height". Having the pointer is the signal on
@@ -78,7 +78,7 @@ class, rather than one shared mechanism:
   a result ("stature, height" climbs to "bodily_property" -> "property"
   instead of any narrower anchor a real scalar noun like "size" reaches).
   `determineGradability()`'s own docstring has the full history.
-- **Adverb** (data/adverb.ts): WordNet gives an adverb no Attribute
+- **Adverb** (role/adverb_processor.ts): WordNet gives an adverb no Attribute
   pointer of its own at all (verified directly against the bundled
   dict/data.adv -- zero `=` pointers exist there), so `determineGradability()`
   instead follows a manner adverb's own Pertainym pointer ("quickly"
@@ -92,7 +92,7 @@ class, rather than one shared mechanism:
   syllable, or 2 syllables ending "-er"/"-le"/"-ow", stays synthetic;
   everything longer goes periphrastic) -- except Adverb overrides it for
   any "-ly"-ending lemma, which always goes periphrastic regardless of
-  syllable count (data/adverb.ts's own `isAdverbPeriphrasticComparison()`):
+  syllable count (role/adverb_processor.ts's own `isAdverbPeriphrasticComparison()`):
   the syllable rule was built for a short Adjective's own "y" ending
   ("happy" -> "happier"), and "-ly" happens to match that same
   consonant+y spelling without being the same phenomenon -- no real

@@ -29,7 +29,7 @@ import { Senses } from "./senses";
  * sense-to-sense semantic facts) and onto the seeded Words'/Phrases'
  * own POS-class attribute fields (the true word-level morphological/
  * orthographic facts, isNominalised and its siblings' own docstrings,
- * data/verb.ts and others) -- nothing outside role/word_seeder.ts and
+ * data/entities/verb.ts and others) -- nothing outside role/word_seeder.ts and
  * role/relationship_seeder.ts is meant to read `lexicalRelationships`
  * again once a seeding pass returns. */
 export class VocabularyContext {

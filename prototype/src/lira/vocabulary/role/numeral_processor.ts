@@ -1,0 +1,13 @@
+import { PartOfSpeech } from "../data/enums/part_of_speech";
+import { createWord, type Word } from "../data/word";
+import type { Numeral } from "../data/entities/numeral";
+
+export type NumeralInit = Pick<Numeral, "text"> & Partial<Omit<Numeral, "text" | "partOfSpeech">>;
+
+export function createNumeral(init: NumeralInit): Numeral {
+  return createWord({ ...init, partOfSpeech: PartOfSpeech.NUMERAL }) as Numeral;
+}
+
+export function isNumeral(word: Word): word is Numeral {
+  return word.partOfSpeech === PartOfSpeech.NUMERAL;
+}

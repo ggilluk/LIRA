@@ -1,7 +1,7 @@
 /** AdjectivePhrase: Phrase's own ADJECTIVE_PHRASE-specific subtype --
  * one of PhraseType's own six grammatical shapes (enums/phrase_type.ts's
  * own docstring), narrowing a Phrase by `phraseType` the same way
- * Adjective narrows a Word by `partOfSpeech` (data/adjective.ts).
+ * Adjective narrows a Word by `partOfSpeech` (data/entities/adjective.ts).
  * Structure: "(Degree modifiers) + Adjective + (Complements)"
  * (PHRASE_TYPE_DETAILS[PhraseType.ADJECTIVE_PHRASE],
  * enums/phrase_type.ts) -- example: "highly reliable". Distinct from

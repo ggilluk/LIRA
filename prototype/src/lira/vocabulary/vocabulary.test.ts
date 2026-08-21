@@ -9,18 +9,23 @@ import { SemanticRelationshipKind } from "./data/enums/semantic_relationship_kin
 import { SemanticRelationshipProcessor } from "./role/semantic_relationship_processor";
 import { PartOfSpeech } from "./data/enums/part_of_speech";
 import { createWord, validateFormText, validateWordFormAttributes, type Word } from "./data/word";
-import { AdjectivePosition, createAdjective, determineGradability, generateAdjectiveForms, isAdjective, syntacticPositionForSense, validateAdjective, type Adjective } from "./data/adjective";
-import { createAdverb, determineGradability as determineAdverbGradability, generateAdverbForms, isAdverb, validateAdverb, type Adverb } from "./data/adverb";
-import { isConjunction } from "./data/conjunction";
-import { createDeterminer, isDeterminer, validateDeterminer } from "./data/determiner";
+import { AdjectivePosition } from "./data/enums/adjective_position";
+import { createAdjective, determineGradability, generateAdjectiveForms, isAdjective, syntacticPositionForSense, validateAdjective } from "./role/adjective_processor";
+import type { Adjective } from "./data/entities/adjective";
+import { createAdverb, determineGradability as determineAdverbGradability, generateAdverbForms, isAdverb, validateAdverb } from "./role/adverb_processor";
+import type { Adverb } from "./data/entities/adverb";
+import { isConjunction } from "./role/conjunction_processor";
+import { createDeterminer, isDeterminer, validateDeterminer } from "./role/determiner_processor";
 import { HypernymRootWord } from "./data/enums/hypernym_root_word";
-import { isInterjection } from "./data/interjection";
-import { NOUN_FORM_PATTERNS, createNoun, generateNounForms, isNoun, validateNoun, type Noun } from "./data/noun";
-import { isNumeral } from "./data/numeral";
-import { isParticle } from "./data/particle";
-import { isPreposition } from "./data/preposition";
-import { PRONOUN_FORM_PATTERNS, createPronoun, isPronoun, validatePronoun } from "./data/pronoun";
-import { VERB_FORM_PATTERNS, createVerb, framesForSense, generateVerbForms, isVerb, validateVerb, type Verb } from "./data/verb";
+import { isInterjection } from "./role/interjection_processor";
+import { NOUN_FORM_PATTERNS, createNoun, generateNounForms, isNoun, validateNoun } from "./role/noun_processor";
+import type { Noun } from "./data/entities/noun";
+import { isNumeral } from "./role/numeral_processor";
+import { isParticle } from "./role/particle_processor";
+import { isPreposition } from "./role/preposition_processor";
+import { PRONOUN_FORM_PATTERNS, createPronoun, isPronoun, validatePronoun } from "./role/pronoun_processor";
+import { VERB_FORM_PATTERNS, createVerb, framesForSense, generateVerbForms, isVerb, validateVerb } from "./role/verb_processor";
+import type { Verb } from "./data/entities/verb";
 import { createPhrase, type Phrase } from "./data/phrase";
 import { Phrases } from "./data/phrases";
 import { PHRASE_TYPE_DETAILS, PhraseType } from "./data/enums/phrase_type";
@@ -1345,7 +1350,7 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
 
     // Adjective Gradability Update: "big"/"large" (01385012-a) carries a
     // real WordNet Attribute pointer to "size" (05106204-n) --
-    // determineGradability() (data/adjective.ts) requires nothing more
+    // determineGradability() (role/adjective_processor.ts) requires nothing more
     // than the pointer itself -- so seedWordNet's own post-relationships
     // pass should have populated both Degree Form fields, synthetically
     // (monosyllabic -> "-er"/"-est", isPeriphrasticComparison's own
@@ -1383,7 +1388,7 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     expect(wooden.comparativeDegreeForm).toBeUndefined();
     expect(wooden.superlativeDegreeForm).toBeUndefined();
 
-    // Adverb Gradability Update (data/adverb.ts): "scarcely" (00003317-r)
+    // Adverb Gradability Update (role/adverb_processor.ts): "scarcely" (00003317-r)
     // carries a real WordNet Pertainym fact to "scarce" (adjective) --
     // a genuine SemanticRelationship now (PERTAINYM, Sense-to-Sense --
     // SemanticRelationshipKind's own docstring on why), not a Word-to-Word

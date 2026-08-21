@@ -1,7 +1,7 @@
 /** VerbPhrase: Phrase's own VERB_PHRASE-specific subtype -- one of
  * PhraseType's own six grammatical shapes (enums/phrase_type.ts's own
  * docstring), narrowing a Phrase by `phraseType` the same way Verb
- * narrows a Word by `partOfSpeech` (data/verb.ts). Structure:
+ * narrows a Word by `partOfSpeech` (data/entities/verb.ts). Structure:
  * "(Auxiliary verbs) + Main verb + (Particles) + (Complements) +
  * (Modifiers)" (PHRASE_TYPE_DETAILS[PhraseType.VERB_PHRASE],
  * enums/phrase_type.ts) -- example: "has learned the pattern". Distinct

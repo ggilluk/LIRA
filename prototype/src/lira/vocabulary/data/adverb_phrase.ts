@@ -1,7 +1,7 @@
 /** AdverbPhrase: Phrase's own ADVERB_PHRASE-specific subtype -- one of
  * PhraseType's own six grammatical shapes (enums/phrase_type.ts's own
  * docstring), narrowing a Phrase by `phraseType` the same way Adverb
- * narrows a Word by `partOfSpeech` (data/adverb.ts). Structure:
+ * narrows a Word by `partOfSpeech` (data/entities/adverb.ts). Structure:
  * "(Degree modifiers) + Adverb + (Complements)"
  * (PHRASE_TYPE_DETAILS[PhraseType.ADVERB_PHRASE], enums/phrase_type.ts)
  * -- example: "very quickly". Distinct from Phrase.partOfSpeech

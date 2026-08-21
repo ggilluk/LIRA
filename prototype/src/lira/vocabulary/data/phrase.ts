@@ -58,7 +58,7 @@ export interface Phrase extends LinguisticUnit {
   // (dead code against real WordNet data today -- every real multi-word
   // lemma is NOUN/VERB/ADJECTIVE/ADVERB). data/noun_phrase.ts and its
   // five siblings (one per PhraseType member) narrow a Phrase down by
-  // this field the same way data/noun.ts and its own siblings narrow a
+  // this field the same way data/entities/noun.ts and its own siblings narrow a
   // Word down by partOfSpeech.
   phraseType?: PhraseType;
 

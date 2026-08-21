@@ -33,7 +33,7 @@
  * block's own length known in advance, and are read positionally for
  * exactly that reason). */
 
-import { AdjectivePosition } from "../data/adjective";
+import { AdjectivePosition } from "../data/enums/adjective_position";
 import { PartOfSpeech } from "../data/enums/part_of_speech";
 
 /** One relation a synset carries to another synset (or, for a lexical
@@ -98,16 +98,18 @@ export interface WordNetSynset {
   // AdjectivePosition a lemma's own trailing "(a)"/"(p)"/"(ip)" marker
   // named, or undefined for a lemma with no marker (every non-adjective
   // lemma, and most adjective ones too -- only ~4% of dict/data.adj's
-  // own lemmas carry one at all). Adjective's own docstring
-  // (data/adjective.ts) on what each position means and how this was
-  // verified against the bundled dict/ files.
+  // own lemmas carry one at all). AdjectivePosition's own docstring
+  // (data/enums/adjective_position.ts) on what each position means, and
+  // Adjective's own docstring (data/entities/adjective.ts) on how this
+  // was verified against the bundled dict/ files.
   lemmaPositions: readonly (AdjectivePosition | undefined)[];
   definition: string;
   examples: readonly string[];
   pointers: readonly WordNetPointer[];
   // The verb-only frame block, parsed but not yet resolved to text or
   // narrowed to one Word -- always [] for a non-VERB synset. Verb's own
-  // docstring (data/verb.ts) on what this data is and how it was
+  // docstring (data/entities/verb.ts) and framesForSense()'s own
+  // (role/verb_processor.ts) on what this data is and how it was
   // verified against the bundled dict/ files.
   frames: readonly WordNetFrame[];
   // The WordNet lexicographer-file category this synset's own

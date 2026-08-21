@@ -33,8 +33,8 @@
  * sense-to-sense semantic kind, SemanticRelationshipKind's own
  * docstring) or a direct POS-class attribute this view already reads
  * off the Word/Phrase itself (isNominalised and its siblings, Word.contractionOf,
- * ..., each field's own docstring in data/noun.ts, data/verb.ts,
- * data/adjective.ts, data/adverb.ts, data/word.ts). */
+ * ..., each field's own docstring in data/entities/noun.ts, data/entities/verb.ts,
+ * data/entities/adjective.ts, data/entities/adverb.ts, data/word.ts). */
 
 import { PartOfSpeech } from "../../data/enums/part_of_speech";
 import type { Dictionary } from "../../data/dictionary";
