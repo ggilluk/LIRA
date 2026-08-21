@@ -1,127 +1,98 @@
 import type { Dictionary } from "../data/dictionary";
-import { isNoun, type Noun } from "../data/noun";
-import { newUuid } from "../data/uuid";
+import { createNoun, isNoun } from "../data/noun";
 
-/** domainTag every Noun this role creates carries, distinguishing it
- * from the WordNet-seeded Noun it was shallow-copied from -- same
- * "own domainTag so a homograph reads as legitimate polysemy, not a
- * (lexicalForm, partOfSpeech, domainTag) collision" convention
- * root_words.json's own entries already use (word_seeder.ts's own
- * SUPPLEMENTARY_FILES comment). */
-export const NOUN_CHARACTER_FORM_DOMAIN_TAG = "punctuation.orthography.linguistics.common";
-
-/** Single-word WordNet lemma -> every literal Unicode character that
- * lemma names, restricted to lemmas WordSeeder actually seeds as a Noun
- * (Word), never a Phrase -- WordNet's own multi-word lemmas for these
- * exact same concepts ("full_stop"/"full_point", "square_bracket"/
- * "angle_bracket", "quotation_mark"/"inverted_comma", "swung_dash") seed
- * as Phrases instead (any lemma spanning more than one token,
- * WordSeeder.seedWordNet's own "a multi-word synset lemma seeds as a
- * Phrase, not a Word" rule), so NounCharacterFormSeeder -- which only
- * ever scans Dictionary's own Nouns -- has no Noun to shallow-copy from
- * for those and they're deliberately absent here, not merely
- * de-prioritised.
- *
- * Two concepts have NO single-word lemma at all, in either of their two
- * WordNet lemmas -- "exclamation_mark"/"exclamation_point" (!) and
- * "question_mark"/"interrogation_point" (?) -- so "!" and "?" cannot be
- * produced by this role however it's driven; a genuine, permanent gap
- * given the source data, not an oversight.
- *
- * A lemma naming more than one glyph (brace, bracket, parenthesis,
- * quote) gets every one of its glyphs -- unlike the single-field
- * mutate-in-place design this replaced, creating a new Noun per
- * character removes the earlier need to pick (or refuse to pick) just
- * one. "bracket" alone covers both the square_bracket and angle_bracket
- * synsets (both share it as their own secondary lemma; their other,
- * more specific lemma is one of the multi-word casualties above), hence
- * four glyphs under one key. */
 // A Map, not a plain object literal -- WordNet seeds real Noun lemmas
 // that collide with Object.prototype's own property names ("constructor"
 // is a real WordNet Noun, "someone who contracts for and supervises
 // construction"), so a `{ ... }[key]` lookup would silently resolve
 // those through the prototype chain instead of returning undefined.
-export const NOUN_CHARACTER_FORMS: ReadonlyMap<string, readonly string[]> = new Map([
-  ["ampersand", ["&"]],
-  ["apostrophe", ["'"]],
-  ["brace", ["{", "}"]],
-  ["bracket", ["[", "]", "⟨", "⟩"]],
-  ["colon", [":"]],
-  ["comma", [","]],
-  ["dash", ["-"]],
-  ["diagonal", ["/"]],
-  ["hyphen", ["-"]],
-  ["parenthesis", ["(", ")"]],
-  ["period", ["."]],
-  ["point", ["."]],
-  ["quote", ["\"", "‘", "’", "“", "”", "«", "»", "‹", "›"]],
-  ["semicolon", [";"]],
-  ["separatrix", ["/"]],
-  ["slash", ["/"]],
-  ["solidus", ["/"]],
-  ["stop", ["."]],
-  ["stroke", ["/"]],
-  ["virgule", ["/"]],
+//
+// Single-word WordNet lemma -> the one literal Unicode character that
+// lemma unambiguously names, restricted to lemmas WordSeeder actually
+// seeds as a Noun (Word), never a Phrase -- WordNet's own multi-word
+// lemmas for these exact same concepts ("full_stop"/"full_point",
+// "square_bracket"/"angle_bracket", "quotation_mark"/"inverted_comma",
+// "swung_dash") seed as Phrases instead (any lemma spanning more than
+// one token, WordSeeder.seedWordNet's own "a multi-word synset lemma
+// seeds as a Phrase, not a Word" rule), so this role -- which finds a
+// Noun by lemma text -- has no Word to update for those and they're
+// deliberately absent here, not merely de-prioritised.
+//
+// A lemma that names more than one glyph (brace: { or }; bracket:
+// [ ] or ⟨ ⟩; parenthesis: ( or ); quotation_mark/quote/inverted_comma:
+// nine distinct quote glyphs across punctuation.json) is deliberately
+// excluded too -- Noun.wordCharacterForm is a single Text field, so a
+// single Noun can't represent more than one glyph at once, and picking
+// just one would be a guess with nothing in the lemma itself to justify
+// it (the same "leave undefined over guessing" convention noun.ts's own
+// generatedPluralNumberForm already uses for its -f/-fe case).
+//
+// Two concepts have NO single-word lemma at all, in either of their two
+// WordNet lemmas -- "exclamation_mark"/"exclamation_point" (!) and
+// "question_mark"/"interrogation_point" (?) -- so "!" and "?" cannot be
+// produced by this role however it's driven; a genuine, permanent gap
+// given the source data, not an oversight.
+export const NOUN_CHARACTER_FORMS: ReadonlyMap<string, string> = new Map([
+  ["ampersand", "&"],
+  ["apostrophe", "'"],
+  ["colon", ":"],
+  ["comma", ","],
+  ["dash", "-"],
+  ["diagonal", "/"],
+  ["hyphen", "-"],
+  ["period", "."],
+  ["point", "."],
+  ["semicolon", ";"],
+  ["separatrix", "/"],
+  ["slash", "/"],
+  ["solidus", "/"],
+  ["stop", "."],
+  ["stroke", "/"],
+  ["virgule", "/"],
 ]);
 
-/** Creates one new Noun per literal Unicode character a mark-naming
- * WordNet Noun denotes, rather than annotating that Noun itself -- a
+/** Populates Noun.wordCharacterForm by updating the Noun that already
+ * names each mark, never by creating a sibling copy of it -- a
  * standalone post-seeding role, deliberately not folded into WordSeeder
  * (the same "separate role for a separate concern" shape
- * PartOfSpeechIdentifier/RelationshipSeeder already use). Every created
- * Noun is a shallow copy of the source Noun it was found from (sharing
- * that source's own senseIds unchanged, so the new Noun genuinely
- * belongs to the same synset/sense the source does -- this role never
- * fabricates a Sense of its own), given a fresh uuid and entryId (it is
- * a new, distinct lexical entry, not a Domain-copy of the source's own
- * persistent identity the way Dictionary.seedFrom/copyWordWithFreshUuid
- * intend), NOUN_CHARACTER_FORM_DOMAIN_TAG as its own domainTag, and
- * wordCharacterForm set to that one character. The source Noun itself
- * is never mutated. */
+ * PartOfSpeechIdentifier/RelationshipSeeder already use). For each
+ * NOUN_CHARACTER_FORMS lemma: if a Noun with that exact text already
+ * exists in this Dictionary (the common case -- every lemma here is a
+ * real WordNet Noun), its own wordCharacterForm is set in place; only
+ * when no such Noun exists at all is a brand-new one created (an
+ * essentially unreachable path against a WordNet-seeded Dictionary,
+ * since every lemma above was confirmed to already resolve to a real
+ * Noun -- this exists for a Dictionary that hasn't been WordNet-seeded,
+ * e.g. a hand-curated-only cache or a test fixture). An earlier version
+ * of this role took the opposite approach -- shallow-copying the source
+ * Noun into a brand-new sibling per glyph, to sidestep the ambiguous-
+ * lemma problem above -- but that produced two visually-identical
+ * "comma" rows with nothing in the UI distinguishing them, so it was
+ * reverted in favour of this simpler, if less complete, update-in-place
+ * shape. */
 export class NounCharacterFormSeeder {
   constructor(private readonly dictionary: Dictionary) {}
 
-  /** Scans every Noun already in this Dictionary at call time (a
-   * snapshot -- Nouns this call itself creates are never re-scanned)
-   * and, wherever its own lemma is a key of NOUN_CHARACTER_FORMS,
-   * creates one new Noun per character listed for it, unless a Noun
-   * with that same (text, NOUN_CHARACTER_FORM_DOMAIN_TAG, character)
-   * combination already exists -- idempotent, so running this again
-   * after an earlier pass (or against a Dictionary a previous pass
-   * already populated) creates nothing further. Returns how many new
-   * Nouns this call appended. */
-  seed(): number {
+  /** Upserts wordCharacterForm for every NOUN_CHARACTER_FORMS lemma:
+   * updates the existing Noun's own field when found (unconditionally,
+   * not just when still undefined -- the mapping is deterministic, so
+   * re-running this converges to the same value every time rather than
+   * merely filling a gap once), or creates a brand-new Noun carrying it
+   * when no Noun with that lemma exists yet. Returns how many Nouns were
+   * updated and how many were newly created. */
+  seed(): { updated: number; created: number } {
+    let updated = 0;
     let created = 0;
-    const existingNouns = this.dictionary.all().filter(isNoun);
-
-    for (const source of existingNouns) {
-      const key = source.text.trim().toLowerCase().replace(/\s+/g, "_");
-      const characters = NOUN_CHARACTER_FORMS.get(key);
-      if (characters === undefined) continue;
-
-      for (const character of characters) {
-        if (this.alreadyCreated(source.text, character)) continue;
-        this.dictionary.append(this.characterNounFrom(source, character));
-        created++;
+    for (const [lemma, character] of NOUN_CHARACTER_FORMS) {
+      const existing = this.dictionary.lookupAll(lemma).find(isNoun);
+      if (existing !== undefined) {
+        existing.wordCharacterForm = { value: character };
+        updated++;
+        continue;
       }
+      this.dictionary.append(createNoun({ text: lemma, wordCharacterForm: { value: character } }));
+      created++;
     }
-    return created;
-  }
-
-  private alreadyCreated(text: string, character: string): boolean {
-    return this.dictionary
-      .lookupAll(text)
-      .filter(isNoun)
-      .some((word) => word.domainTag?.value === NOUN_CHARACTER_FORM_DOMAIN_TAG && word.wordCharacterForm?.value === character);
-  }
-
-  private characterNounFrom(source: Noun, character: string): Noun {
-    return {
-      ...source,
-      uuid: { value: newUuid() },
-      entryId: { value: newUuid() },
-      domainTag: { value: NOUN_CHARACTER_FORM_DOMAIN_TAG },
-      wordCharacterForm: { value: character },
-    };
+    return { updated, created };
   }
 }

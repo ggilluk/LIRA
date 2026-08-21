@@ -248,11 +248,14 @@ async function handleSeedWordNet(request: SeedWordNetRequest): Promise<void> {
       });
     });
     // Last step of the WordNet load, after every Word/Phrase/relationship
-    // from the seeded synsets themselves already exists -- creates the
-    // punctuation-mark character-glyph Nouns (NounCharacterFormSeeder's
-    // own docstring) as new siblings of the WordNet Nouns they're
-    // shallow-copied from, so they're included in wordsSeeded below like
-    // any other new Word this run added to the Dictionary.
+    // from the seeded synsets themselves already exists -- sets
+    // wordCharacterForm on the punctuation-mark Nouns already seeded
+    // above (NounCharacterFormSeeder's own docstring on why it updates
+    // in place rather than creating a sibling copy). Any Noun it does
+    // have to create outright (essentially unreachable against a real
+    // WordNet seed -- every one of its lemmas already resolves to a real
+    // Noun) is still included in wordsSeeded below like any other new
+    // Word this run added to the Dictionary.
     new NounCharacterFormSeeder(domain.vocabulary.dictionary).seed();
 
     const wordsSeeded = domain.vocabulary.dictionary.totalEntries() - wordCountBefore;
