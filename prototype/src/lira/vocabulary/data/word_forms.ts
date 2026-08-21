@@ -4,7 +4,7 @@
  * wordFormsFor() (ui/server/builder_word.ts, display) and
  * Dictionary.indexWordForms() (data/dictionary.ts, lookup) rather than
  * each maintaining its own copy of this list. Built from
- * WORD_FORM_MATRIX (data/matrices/word_form_part_of_speech_matrix.ts),
+ * WORD_FORM_MATRIX (data/matrices/pos_vs_wordform_matrice.ts),
  * the single real data source for the Word Form to Part of Speech
  * Matrix -- not, as this file used to, from six separate
  * role/processor/*_processor.ts constants (a data/ file importing from
@@ -16,7 +16,7 @@
  * listed with an empty array, since `formTextsOf`'s own `?? []`
  * already treats a missing key that way. */
 
-import { fieldsFor } from "./matrices/word_form_part_of_speech_matrix";
+import { fieldsFor } from "./matrices/pos_vs_wordform_matrice";
 import { PartOfSpeech } from "./enums/part_of_speech";
 import type { Text } from "../../value_objects";
 import type { Word } from "./word";

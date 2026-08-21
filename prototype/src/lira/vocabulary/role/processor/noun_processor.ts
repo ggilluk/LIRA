@@ -2,7 +2,7 @@ import type { Text } from "../../../value_objects";
 import { PartOfSpeech } from "../../data/enums/part_of_speech";
 import { createWord, endsInConsonantY, validateFormText, validateWordFormAttributes, type Word, type WordFormIssue } from "../../data/word";
 import type { Noun } from "../../data/entities/noun";
-import { stringPatternsFor } from "../../data/matrices/word_form_part_of_speech_matrix";
+import { stringPatternsFor } from "../../data/matrices/pos_vs_wordform_matrice";
 
 export type NounInit = Pick<Noun, "text"> & Partial<Omit<Noun, "text" | "partOfSpeech">>;
 
@@ -21,7 +21,7 @@ export function isNoun(word: Word): word is Noun {
 /** Validates every *_Form field this Noun carries -- its own row above,
  * plus baseLemmaCanonicalForm via Word's own validateWordFormAttributes
  * -- against WORD_FORM_MATRIX's own NOUN rules
- * (data/matrices/word_form_part_of_speech_matrix.ts). Returns every
+ * (data/matrices/pos_vs_wordform_matrice.ts). Returns every
  * issue found, not just the first; empty means every populated field
  * is internally consistent with the matrix, not that every field is
  * populated (undefined is never an issue, validateFormText's own
@@ -40,7 +40,7 @@ export function validateNoun(noun: Noun): readonly WordFormIssue[] {
 }
 
 /** pluralNumberForm's own Generation Transform
- * (../../data/matrices/word_form_part_of_speech_matrix.ts),
+ * (../../data/matrices/pos_vs_wordform_matrice.ts),
  * regular-case rules #1-3 only -- rule #4 (`f`/`fe` -> `ves`) needs
  * "lexical qualification" the matrix's own row admits isn't spelling
  * alone ("roof" takes plain -s, "knife" takes -ves, and both end the

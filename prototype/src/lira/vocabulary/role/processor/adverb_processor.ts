@@ -16,7 +16,7 @@ import {
   type WordFormIssue,
 } from "../../data/word";
 import type { Adverb } from "../../data/entities/adverb";
-import { stringPatternsFor } from "../../data/matrices/word_form_part_of_speech_matrix";
+import { stringPatternsFor } from "../../data/matrices/pos_vs_wordform_matrice";
 
 export type AdverbInit = Pick<Adverb, "text"> & Partial<Omit<Adverb, "text" | "partOfSpeech">>;
 
@@ -33,7 +33,7 @@ export function isAdverb(word: Word): word is Adverb {
 /** Validates every *_Form field this Adverb carries -- its own row
  * above, plus baseLemmaCanonicalForm via Word's own
  * validateWordFormAttributes -- against WORD_FORM_MATRIX's own ADVERB
- * rules (data/matrices/word_form_part_of_speech_matrix.ts). Returns
+ * rules (data/matrices/pos_vs_wordform_matrice.ts). Returns
  * every issue found, not just the first; empty means every populated
  * field is internally consistent with the matrix, not that every field
  * is populated (undefined is never an issue, validateFormText's own

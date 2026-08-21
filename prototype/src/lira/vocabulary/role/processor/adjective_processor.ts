@@ -15,7 +15,7 @@ import {
 } from "../../data/word";
 import type { Adjective } from "../../data/entities/adjective";
 import { AdjectivePosition } from "../../data/enums/adjective_position";
-import { stringPatternsFor } from "../../data/matrices/word_form_part_of_speech_matrix";
+import { stringPatternsFor } from "../../data/matrices/pos_vs_wordform_matrice";
 
 export type AdjectiveInit = Pick<Adjective, "text"> & Partial<Omit<Adjective, "text" | "partOfSpeech">>;
 
@@ -46,7 +46,7 @@ export function syntacticPositionForSense(senses: Senses, adjective: Adjective, 
 /** Validates every *_Form field this Adjective carries -- its own row
  * above, plus baseLemmaCanonicalForm via Word's own
  * validateWordFormAttributes -- against WORD_FORM_MATRIX's own
- * ADJECTIVE rules (data/matrices/word_form_part_of_speech_matrix.ts).
+ * ADJECTIVE rules (data/matrices/pos_vs_wordform_matrice.ts).
  * Returns every issue found, not just the first; empty means every
  * populated field is internally consistent with the matrix, not that
  * every field is populated (undefined is never an issue,

@@ -312,7 +312,7 @@ function sensesFor(entry: Word | Phrase, senses: Senses, domainName: string): Wo
 
 /** Every populated *_Form Text field for `word`'s own concrete POS
  * subtype, in the Word Form to Part of Speech Matrix's own field
- * order (data/matrices/word_form_part_of_speech_matrix.ts) -- baseLemmaCanonicalForm
+ * order (data/matrices/pos_vs_wordform_matrice.ts) -- baseLemmaCanonicalForm
  * first (every POS subtype carries that one, on Word itself), then
  * whichever of that subtype's own fields are set, read off
  * WORD_FORM_FIELDS (data/word_forms.ts, itself built from

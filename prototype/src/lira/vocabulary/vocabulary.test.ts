@@ -9,7 +9,7 @@ import { SemanticRelationshipKind } from "./data/enums/semantic_relationship_kin
 import { SemanticRelationshipProcessor } from "./role/semantic_relationship_processor";
 import { PartOfSpeech } from "./data/enums/part_of_speech";
 import { createWord, validateFormText, validateWordFormAttributes, type Word } from "./data/word";
-import { stringPatternsFor } from "./data/matrices/word_form_part_of_speech_matrix";
+import { stringPatternsFor } from "./data/matrices/pos_vs_wordform_matrice";
 import { AdjectivePosition } from "./data/enums/adjective_position";
 import { createAdjective, determineGradability, generateAdjectiveForms, isAdjective, syntacticPositionForSense, validateAdjective } from "./role/processor/adjective_processor";
 import type { Adjective } from "./data/entities/adjective";

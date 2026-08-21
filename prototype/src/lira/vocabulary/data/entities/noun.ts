@@ -30,7 +30,7 @@ export interface Noun extends Word {
   // nothing in the lemma itself to pick a side, so both belong on the
   // same Noun rather than being split across siblings or arbitrarily
   // reduced to one). Not a Word Form Matrix field
-  // (../matrices/word_form_part_of_speech_matrix.ts has no row for it)
+  // (../matrices/pos_vs_wordform_matrice.ts has no row for it)
   // and not spelling-derivable from the lemma the way pluralNumberForm
   // etc. are, so generateNounForms() never touches it. Empty, not undefined, for every Noun with nothing
   // seeded -- NounCharacterFormSeeder (role/noun_character_form_seeder.ts)

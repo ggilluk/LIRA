@@ -11,7 +11,7 @@ import {
   type WordFormIssue,
 } from "../../data/word";
 import type { Verb } from "../../data/entities/verb";
-import { stringPatternsFor } from "../../data/matrices/word_form_part_of_speech_matrix";
+import { stringPatternsFor } from "../../data/matrices/pos_vs_wordform_matrice";
 
 export type VerbInit = Pick<Verb, "text"> & Partial<Omit<Verb, "text" | "partOfSpeech">>;
 
@@ -43,7 +43,7 @@ export function framesForSense(senses: Senses, verb: Verb, senseId: string): rea
 /** Validates every *_Form field this Verb carries -- its own row above,
  * plus baseLemmaCanonicalForm via Word's own validateWordFormAttributes
  * -- against WORD_FORM_MATRIX's own VERB rules
- * (data/matrices/word_form_part_of_speech_matrix.ts). Returns every
+ * (data/matrices/pos_vs_wordform_matrice.ts). Returns every
  * issue found, not just the first; empty means every populated field
  * is internally consistent with the matrix, not that every field is
  * populated (undefined is never an issue, validateFormText's own
@@ -294,7 +294,7 @@ const IRREGULAR_VERB_FORMS: Readonly<Record<string, { past: string; pastParticip
  * own single-value shape can't express either. Every value this
  * produces is provably one of that field's own recognised String
  * Patterns (WORD_FORM_MATRIX's own VERB rules,
- * data/matrices/word_form_part_of_speech_matrix.ts) or, for an irregular form, no
+ * data/matrices/pos_vs_wordform_matrice.ts) or, for an irregular form, no
  * claimed format at all (matching the matrix's own N/A String Pattern
  * for every irregular rule) -- generateVerbForms() and validateVerb()
  * are built from the exact same matrix rows, so a freshly-generated

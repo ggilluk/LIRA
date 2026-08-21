@@ -370,7 +370,7 @@ export function parseFormatPattern(pattern: string): RegExp {
  * docstring gives it) against `known`, the calling POS class's own
  * recognised String Patterns for this one field (WORD_FORM_MATRIX's
  * own rules for that (field, PartOfSpeech) pair,
- * data/matrices/word_form_part_of_speech_matrix.ts, via that file's
+ * data/matrices/pos_vs_wordform_matrice.ts, via that file's
  * own stringPatternsFor()). Two distinct ways to fail: a
  * claimed format isn't one of the patterns this (class, field) pair
  * actually recognises at all (a typo, a pattern copied from the wrong
