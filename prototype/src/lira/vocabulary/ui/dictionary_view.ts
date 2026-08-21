@@ -913,15 +913,29 @@ export class DictionaryView {
       if (text === undefined) continue;
       forms.push({ field, label: formFieldLabel(field), value: text.value });
     }
-    // Noun.wordCharacterForm isn't a Word Form Matrix field (that field's
-    // own docstring, data/noun.ts) -- not spelling-derivable, so it has
-    // no NOUN_FORM_PATTERNS entry and never enters `fields` above --
-    // appended here instead, the same "rendered in this section without
-    // being a Matrix field" treatment `derivations` already gets
-    // (WordRecord.derivations's own docstring on why that lives here
-    // too rather than its own section).
-    if (isNoun(word) && word.wordCharacterForm !== undefined) {
-      forms.push({ field: "wordCharacterForm", label: formFieldLabel("wordCharacterForm"), value: word.wordCharacterForm.value });
+    // Noun.wordCharacterForms isn't a Word Form Matrix field (that
+    // field's own docstring, data/noun.ts) -- not spelling-derivable, so
+    // it has no NOUN_FORM_PATTERNS entry and never enters `fields`
+    // above -- appended here instead, the same "rendered in this
+    // section without being a Matrix field" treatment `derivations`
+    // already gets (WordRecord.derivations's own docstring on why that
+    // lives here too rather than its own section). Every character
+    // joined into one row's own value ("( / )" for "parenthesis"), not
+    // one row per character -- a paired mark's own glyphs read as one
+    // fact about the Noun, not several independent Word Form rows
+    // sharing an identical label. `?? []` guards a real gap: isNoun()
+    // narrows on partOfSpeech alone, so a NOUN-tagged Word built via
+    // phraseAsWord() (a Phrase's own createWord()-based projection,
+    // data/phrase.ts) type-narrows to Noun here too despite never having
+    // gone through createNoun() -- wordCharacterForms is undefined on
+    // that object at runtime even though Noun declares it non-optional.
+    const characterForms = isNoun(word) ? (word.wordCharacterForms ?? []) : [];
+    if (characterForms.length > 0) {
+      forms.push({
+        field: "wordCharacterForms",
+        label: formFieldLabel("wordCharacterForms"),
+        value: characterForms.map((text) => text.value).join(" / "),
+      });
     }
     return forms;
   }

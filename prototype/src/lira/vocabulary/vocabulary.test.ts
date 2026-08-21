@@ -542,7 +542,7 @@ describe("generate<Class>Forms() -- deriving *_Form values from a base lemma", (
     expect(runSense?.senseDomainTag?.value).toMatch(/^verb\./);
   }, 30000);
 
-  it("NounCharacterFormSeeder updates the existing Noun for a lemma in place, and only creates a new one when no Noun with that lemma exists at all", async () => {
+  it("NounCharacterFormSeeder updates the existing Noun for a lemma in place -- merging every glyph a paired-mark lemma names into one Noun's own array -- and only creates a new one when no Noun with that lemma exists at all", async () => {
     const dictionary = new Dictionary();
     const lexicalRelationships = new LexicalRelationshipStore();
     const semanticRelationships = new SemanticRelationshipStore();
@@ -562,11 +562,8 @@ describe("generate<Class>Forms() -- deriving *_Form values from a base lemma", (
     const commaUuid = comma?.uuid.value;
     const commaEntryId = comma?.entryId.value;
     const commaSenseIds = comma?.senseIds;
-    const originalDogCount = dictionary.lookupAll("dog").filter(isNoun).length;
-    // Ambiguous lemmas (more than one glyph) never appear in
-    // NOUN_CHARACTER_FORMS at all -- "brace" is untouched by this role
-    // entirely, not just left with wordCharacterForm undefined.
     const brace = dictionary.lookupAll("brace").find(isNoun);
+    const originalDogCount = dictionary.lookupAll("dog").filter(isNoun).length;
 
     const { updated, created } = new NounCharacterFormSeeder(dictionary).seed();
     expect(updated).toBeGreaterThan(0);
@@ -575,36 +572,45 @@ describe("generate<Class>Forms() -- deriving *_Form values from a base lemma", (
     // Updated in place -- same identity, same senseIds, no sibling
     // created (still exactly one "comma" Noun).
     expect(dictionary.lookupAll("comma").filter(isNoun)).toHaveLength(1);
-    expect(comma?.wordCharacterForm).toEqual({ value: "," });
+    expect(comma?.wordCharacterForms).toEqual([{ value: "," }]);
     expect(comma?.uuid.value).toBe(commaUuid);
     expect(comma?.entryId.value).toBe(commaEntryId);
     expect(comma?.senseIds).toEqual(commaSenseIds);
 
-    // "brace" is genuinely untouched (not merely undefined -- excluded
-    // from the mapping table entirely).
-    expect(brace?.wordCharacterForm).toBeUndefined();
+    // A paired-mark lemma gets BOTH of its glyphs merged onto the one
+    // existing Noun -- no longer excluded, no longer split across
+    // siblings.
+    expect(brace?.wordCharacterForms.map((t) => t.value).sort()).toEqual(["{", "}"]);
 
-    // A Noun with no relation to punctuation at all is untouched too.
+    // A Noun with no relation to punctuation at all is untouched.
     expect(dictionary.lookupAll("dog").filter(isNoun)).toHaveLength(originalDogCount);
+    const dog = dictionary.lookupAll("dog").find(isNoun);
+    expect(dog?.wordCharacterForms).toEqual([]);
 
-    // Idempotent: a second pass updates every lemma again (deterministic,
-    // same value) but creates nothing further and adds no siblings.
+    // Idempotent: a second pass merges nothing further (every character
+    // already present), creates nothing, adds no siblings.
     const second = new NounCharacterFormSeeder(dictionary).seed();
+    expect(second.updated).toBe(0);
     expect(second.created).toBe(0);
     expect(dictionary.lookupAll("comma").filter(isNoun)).toHaveLength(1);
-    expect(comma?.wordCharacterForm).toEqual({ value: "," });
+    expect(comma?.wordCharacterForms).toEqual([{ value: "," }]);
+    expect(brace?.wordCharacterForms.map((t) => t.value).sort()).toEqual(["{", "}"]);
   }, 30000);
 
-  it("NounCharacterFormSeeder creates a brand-new Noun when no Noun with that lemma exists at all", () => {
+  it("NounCharacterFormSeeder creates a brand-new Noun, carrying every glyph its lemma names, when no Noun with that lemma exists at all", () => {
     const dictionary = new Dictionary();
     expect(dictionary.lookupAll("comma")).toHaveLength(0);
+    expect(dictionary.lookupAll("brace")).toHaveLength(0);
 
     const { updated, created } = new NounCharacterFormSeeder(dictionary).seed();
     expect(updated).toBe(0);
     expect(created).toBeGreaterThan(0);
 
     const comma = dictionary.lookupAll("comma").find(isNoun);
-    expect(comma?.wordCharacterForm).toEqual({ value: "," });
+    expect(comma?.wordCharacterForms).toEqual([{ value: "," }]);
+
+    const brace = dictionary.lookupAll("brace").find(isNoun);
+    expect(brace?.wordCharacterForms.map((t) => t.value).sort()).toEqual(["{", "}"]);
   });
 });
 

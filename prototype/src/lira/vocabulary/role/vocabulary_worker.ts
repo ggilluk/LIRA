@@ -249,7 +249,7 @@ async function handleSeedWordNet(request: SeedWordNetRequest): Promise<void> {
     });
     // Last step of the WordNet load, after every Word/Phrase/relationship
     // from the seeded synsets themselves already exists -- sets
-    // wordCharacterForm on the punctuation-mark Nouns already seeded
+    // wordCharacterForms on the punctuation-mark Nouns already seeded
     // above (NounCharacterFormSeeder's own docstring on why it updates
     // in place rather than creating a sibling copy). Any Noun it does
     // have to create outright (essentially unreachable against a real
