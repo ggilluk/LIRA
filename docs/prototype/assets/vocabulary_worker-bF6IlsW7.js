@@ -1874,7 +1874,7 @@ function sensesSectionHTML(word, rels) {
           <span class="sense-definition">\${s.definition || '<span style="opacity:.6">No definition.</span>'}</span>
           <span class="sense-meta">\${domainPill(s.domain)}\${s.frequency !== null ? \` <span class="sense-frequency" title="WordNet tagged-occurrence count (SemCor semantic concordance)">freq \${s.frequency.toLocaleString()}</span>\` : ''}\${s.synonyms.length ? \` <span class="sense-synonyms">synonyms: \${s.synonyms.map(syn => \`<button class="link-btn" data-pivot-id="\${syn.id}">\${syn.text}</button>\`).join(', ')}</span>\` : ''}</span>
           <details class="sense-rels"\${s.is_primary ? ' open' : ''}>
-            <summary>Relationships (\${count})</summary>
+            <summary>Sense.Semantic.Relationships (\${count})</summary>
             <div class="detail-relationships-section">\${relationshipsSectionHTML(senseRels)}</div>
           </details>
           \${s.pad ? \`
@@ -1888,7 +1888,7 @@ function sensesSectionHTML(word, rels) {
           </details>\` : ''}
           \${s.frames && s.frames.length ? \`
           <details class="sense-frames"\${s.is_primary ? ' open' : ''}>
-            <summary>Verb Frames (\${s.frames.length})</summary>
+            <summary>Sense.Verb.Framed.Examples (\${s.frames.length})</summary>
             <ul class="sense-frame-list">\${s.frames.map(f => \`<li>\${verbFrameText(word, f)}</li>\`).join('')}</ul>
           </details>\` : ''}
         </li>\`;
