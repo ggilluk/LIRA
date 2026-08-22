@@ -276,6 +276,43 @@ const DERIVATION_FAMILY = new Set<LexicalRelationshipType>([
   LexicalRelationshipType.ADVERBIAL_DERIVATION,
 ]);
 
+// copyLexicalRelationship()'s own tie-break for which side of a
+// Derivation-family pair counts as the Base form (word_wordform_sense_relationships.md's
+// own Directional Rule, Section 7: Source = Base, Destination = Derived)
+// when POS alone doesn't already decide it -- lower number wins. VERB=0
+// is real: derivationKind() never returns a specific kind for a VERB
+// target (its own three branches are NOUN/ADJECTIVE/ADVERB only), so a
+// VERB-anchored pair only ever has one specific-kind direction to begin
+// with, already handled correctly without this table. NOUN=1 < ADJECTIVE=2
+// < ADVERB=3 is this table's own real content -- English has no single
+// universal rule for which of a Noun/Adjective pair is "more basic"
+// (`beauty`(noun) -> `beautiful`(adjective) has the noun as root;
+// `happy`(adjective) -> `happiness`(noun) has the adjective as root, the
+// opposite), so WordNet's own two reciprocal `+` pointer occurrences for
+// such a pair are two equally legitimate readings of one real fact, not
+// a right answer and a wrong one -- this order exists to make the choice
+// consistent and reproducible across every pair and every re-seed, not
+// because it's linguistically correct in every individual case. Adjective
+// before Adverb is closer to a real rule (English adverbs are
+// overwhelmingly `-ly`-suffixed derivations of an adjective, `quick` ->
+// `quickly`, not the reverse) and real seeded data already agreed with
+// it before this table existed to enforce it.
+const DERIVATION_BASE_PRECEDENCE: Partial<Record<PartOfSpeech, number>> = {
+  [PartOfSpeech.VERB]: 0,
+  [PartOfSpeech.NOUN]: 1,
+  [PartOfSpeech.ADJECTIVE]: 2,
+  [PartOfSpeech.ADVERB]: 3,
+};
+
+/** Precedence-ordered fallback for a part of speech `DERIVATION_BASE_PRECEDENCE`
+ * doesn't name (Verbalisation/Compound's own closed set never reaches
+ * this table at all -- copyLexicalRelationship()'s own DERIVATION_FAMILY
+ * guard on its own call site) -- ranks lower than every real entry so an
+ * unmapped POS is never mistaken for the more "basic" side of a pair. */
+function derivationBasePrecedence(pos: PartOfSpeech): number {
+  return DERIVATION_BASE_PRECEDENCE[pos] ?? Number.MAX_SAFE_INTEGER;
+}
+
 /** True when `lexicalExistingEdges` already holds a Derivation-family
  * row for the *reverse* (targetForm/targetSense -> sourceForm/sourceSense)
  * direction, under any of `DERIVATION_FAMILY`'s own four kinds --
@@ -1845,48 +1882,48 @@ export class WordSeeder {
    * -- `abandon`'s own Sense.Lexical.Relationships would then show the
    * identical fact twice, once each direction.
    *
-   * Two checks, not one, because "one specific, one generic" and "both
-   * specific" need different resolutions, and getting this wrong
-   * doesn't just double-count -- it can store the *wrong* one:
+   * Two checks, not one, because getting this wrong doesn't just
+   * double-count -- it can store the *wrong* direction, and a first
+   * version of this guard that only checked for the generic-catch-all
+   * shape (`resolved.kind === DERIVED_FORM`) missed the far more common
+   * one: real seeded data has 6,771 ADJECTIVE->NOUN rows (NOMINALISATION)
+   * and 5,938 NOUN->ADJECTIVE rows (ADJECTIVAL_DERIVATION) -- both
+   * *specific* kinds, neither the generic catch-all -- for what's the
+   * same underlying WordNet fact recorded reciprocally from each side's
+   * own entry, same as "abandon"/"abandonment", just never touching
+   * DERIVED_FORM at all.
    *
-   * 1. `sourcePos`/`targetPos` catch "one specific, one generic"
-   *    (`derivationKind(targetPos, sourcePos) !== DERIVED_FORM` --
-   *    "what would the *other* direction resolve to") deterministically,
-   *    by POS alone, regardless of which of the two occurrences this
-   *    seeding pass happens to reach first: the generic occurrence is
-   *    always skipped, the specific one is always kept. This matters
-   *    for direction, not just count -- word_wordform_sense_relationships.md's
-   *    own Directional Rule (Section 7) and Test Matrix (Section 4) both
-   *    say Source = Base form, Destination = Nominalised/Adjectivised/
-   *    Adverbialised form (`act -> action`, not `action -> act`); the
-   *    *specific* kind is always resolved from the Base-form side
-   *    (derivationKind()'s own docstring -- target's POS decides the
-   *    kind, and the specific branches all name the *derived* form's
-   *    POS), so keeping the generic occurrence instead -- whichever
-   *    processing order alone would do -- doesn't just under-count, it
-   *    stores the fact backwards: an earlier, order-dependent-only
-   *    version of this guard did exactly that for "abandon"/"abandonment"
-   *    (source=abandonment, target=abandon, kind=DERIVED_FORM, when it
-   *    should be source=abandon, target=abandonment, kind=NOMINALISATION),
-   *    caught against real seeded data and the document's own worked
-   *    examples.
+   * 1. `sourcePos`/`targetPos` against `derivationBasePrecedence()`
+   *    decides, deterministically and by POS alone, which of the two
+   *    reciprocal occurrences is the one to keep -- regardless of which
+   *    this seeding pass happens to reach first. VERB=0 is the one real,
+   *    unambiguous rule this table encodes: derivationKind() never
+   *    resolves a specific kind for a VERB target, so a VERB-anchored
+   *    pair only ever has one specific-kind direction at all
+   *    (word_wordform_sense_relationships.md's own Directional Rule,
+   *    Section 7, and Test Matrix, Section 4: Source = Base, Destination
+   *    = Derived, `act -> action`, never `action -> act`) -- an earlier,
+   *    narrower version of this check handled only that VERB-anchored
+   *    case, correctly, and this replaces it without changing that
+   *    outcome (`derivationBasePrecedence(VERB)` is still lower than
+   *    every other mapped POS, so the same occurrence wins either way).
+   *    NOUN=1 < ADJECTIVE=2 < ADVERB=3 (`derivationBasePrecedence()`'s
+   *    own docstring on why this part is a consistency convention, not
+   *    a claim that it's linguistically correct for every individual
+   *    word pair) is what additionally makes the ADJECTIVE<->NOUN case
+   *    above deterministic too, instead of leaving it to check 2 alone
+   *    (order-dependent, picks a real but not doc-preferred direction).
    * 2. `hasReciprocalDerivationEdge()` (still needed alongside check 1,
-   *    not instead of it) catches the rarer remaining shape: a
-   *    Noun<->Adjective pair (e.g. "beauty"/"beautiful") resolves to
-   *    ADJECTIVAL_DERIVATION read from the noun's own entry and
-   *    NOMINALISATION read from the adjective's own reciprocal entry --
-   *    two *different specific* kinds, neither the generic catch-all, so
-   *    check 1 alone never fires for either occurrence. Whichever of the
-   *    two is processed first stores the one canonical row; the other,
-   *    naming the same unordered WordForm pair under any kind in the
-   *    family, is recognised as that same fact's own reciprocal and
-   *    skipped -- order-dependent (which specific kind survives isn't
-   *    picked against the document's own Base/Derived convention the way
-   *    check 1's is), but at least deduplicated, and correctly directed
-   *    from whichever side did store it. Both Words' own detail panels
-   *    see the one stored row either way -- `senseExpandedLexicalRelationships()`'s
-   *    own outgoing/incoming handling (ui/server/builder_lexical_relationship.ts)
-   *    surfaces it correctly regardless of which side ended up storing it. */
+   *    not instead of it) is the fallback for the one shape check 1
+   *    can't resolve by POS alone: a same-part-of-speech pair (this
+   *    function's own docstring above, derivationKind()'s "two senses of
+   *    the same word" case) -- `sourcePos === targetPos` skips check 1
+   *    entirely, so whichever of the two occurrences is processed first
+   *    still stores the one canonical row here, exactly as before.
+   *    Both Words' own detail panels see the one stored row either way
+   *    -- `senseExpandedLexicalRelationships()`'s own outgoing/incoming
+   *    handling (ui/server/builder_lexical_relationship.ts) surfaces it
+   *    correctly regardless of which side ended up storing it. */
   private copyLexicalRelationship(
     lexicalProcessor: LexicalRelationshipProcessor,
     lexicalExistingEdges: Set<string>,
@@ -1900,7 +1937,7 @@ export class WordSeeder {
     pairs: readonly (readonly [Word | Phrase, Word | Phrase])[],
     qualifiers: readonly AttributeValue[] | undefined,
   ): void {
-    if (resolved.kind === LexicalRelationshipType.DERIVED_FORM && sourcePos !== targetPos && derivationKind(targetPos, sourcePos) !== LexicalRelationshipType.DERIVED_FORM) {
+    if (DERIVATION_FAMILY.has(resolved.kind) && sourcePos !== targetPos && derivationBasePrecedence(targetPos) < derivationBasePrecedence(sourcePos)) {
       return;
     }
 
