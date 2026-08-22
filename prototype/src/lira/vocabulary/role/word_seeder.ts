@@ -260,6 +260,45 @@ function derivationKind(sourcePos: PartOfSpeech, targetPos: PartOfSpeech): Lexic
   }
 }
 
+// derivationKind()'s own four possible return values -- every kind
+// WordNet's shared `+`/`<` pointer symbol can ever resolve to, group 0's
+// own Derivation category (data/enums/lexical_relationship_type.ts).
+// copyLexicalRelationship()'s own docstring on why this whole family,
+// not just DERIVED_FORM specifically, needs its own reciprocal-pointer
+// dedup: a Noun<->Adjective pair resolves to two *different specific*
+// kinds (ADJECTIVAL_DERIVATION one way, NOMINALISATION the other), never
+// touching the generic DERIVED_FORM catch-all at all, yet still names
+// one underlying WordNet fact recorded twice.
+const DERIVATION_FAMILY = new Set<LexicalRelationshipType>([
+  LexicalRelationshipType.DERIVED_FORM,
+  LexicalRelationshipType.NOMINALISATION,
+  LexicalRelationshipType.ADJECTIVAL_DERIVATION,
+  LexicalRelationshipType.ADVERBIAL_DERIVATION,
+]);
+
+/** True when `lexicalExistingEdges` already holds a Derivation-family
+ * row for the *reverse* (targetForm/targetSense -> sourceForm/sourceSense)
+ * direction, under any of `DERIVATION_FAMILY`'s own four kinds --
+ * copyLexicalRelationship()'s own reciprocal-pointer guard, checked
+ * before storing a new row so WordNet's own "recorded once from each
+ * word's own side" convention for `+`/`<` never produces two rows for
+ * the identical underlying fact. Takes the *forward* pair's own
+ * (sourceFormId, sourceSenseId, targetFormId, targetSenseId) -- named
+ * from the reverse row's own perspective inside, so every call site
+ * reads as "does the fact already exist, told from the other side." */
+function hasReciprocalDerivationEdge(
+  lexicalExistingEdges: ReadonlySet<string>,
+  targetFormId: string,
+  targetSenseId: string,
+  sourceFormId: string,
+  sourceSenseId: string,
+): boolean {
+  for (const kind of DERIVATION_FAMILY) {
+    if (lexicalExistingEdges.has(`${targetFormId}|${targetSenseId}|${sourceFormId}|${sourceSenseId}|${kind}`)) return true;
+  }
+  return false;
+}
+
 // classifyPhraseType()'s own closed class of single-word prepositions --
 // deliberately its own small, self-contained list rather than a read of
 // the Common Vocabulary Cache's prepositions.json (assets/common/en/):
@@ -1778,7 +1817,35 @@ export class WordSeeder {
    * reuses the Word's own base-lemma WordForm if seedWordNet's own
    * pass 1 already created one for it, which it always has by this
    * point). A `Phrase` on either side of `pairs` is skipped -- WordForm
-   * is a Word-only concept (data/word_form.ts's own docstring). */
+   * is a Word-only concept (data/word_form.ts's own docstring).
+   *
+   * `DERIVATION_FAMILY` guards against WordNet's own reciprocal `+`/`<`
+   * recording (derivationKind()'s own docstring: "WordNet records its
+   * own Derived-Form pointer reciprocally, once from each word's own
+   * side") -- read from the *verb's* own entry, "abandon"'s `+` pointer
+   * to "abandonment" resolves to the specific NOMINALISATION kind
+   * (target is a Noun); read from the *noun's* own reciprocal entry,
+   * "abandonment"'s own `+` pointer back to "abandon" resolves to the
+   * generic DERIVED_FORM catch-all instead (target is a Verb, none of
+   * derivationKind()'s three specific branches apply) -- both name the
+   * exact same underlying fact, just announced from opposite sides.
+   * Without this guard both occurrences would each store their own row
+   * -- `abandon`'s own Sense.Lexical.Relationships would then show the
+   * identical fact twice, once each direction. Nor is "one specific, one
+   * generic" the only shape this takes: a Noun<->Adjective pair (e.g.
+   * "beauty"/"beautiful") resolves to ADJECTIVAL_DERIVATION read from the
+   * noun's own entry and NOMINALISATION read from the adjective's own
+   * reciprocal entry -- two *different specific* kinds, neither one the
+   * generic catch-all, still the same one underlying fact. `hasReciprocalDerivationEdge()`
+   * catches every one of these shapes uniformly: whichever occurrence
+   * this seeding pass processes first stores the one canonical row (any
+   * kind in the family); every later occurrence naming the same
+   * unordered WordForm pair, regardless of which specific kind *it*
+   * would have resolved to, is recognised as that same fact's own
+   * reciprocal and skipped. Both Words' own detail panels still see the
+   * one stored row either way -- `senseExpandedLexicalRelationships()`'s
+   * own outgoing/incoming handling (ui/server/builder_lexical_relationship.ts)
+   * surfaces it correctly regardless of which side ended up storing it. */
   private copyLexicalRelationship(
     lexicalProcessor: LexicalRelationshipProcessor,
     lexicalExistingEdges: Set<string>,
@@ -1801,6 +1868,12 @@ export class WordSeeder {
       const targetForm = wordForms.registerBaseLemmaForm(tw);
       const key = `${sourceForm.uuid.value}|${sourceSideSense.uuid.value}|${targetForm.uuid.value}|${targetSideSense.uuid.value}|${resolved.kind}`;
       if (lexicalExistingEdges.has(key)) continue;
+      if (
+        DERIVATION_FAMILY.has(resolved.kind) &&
+        hasReciprocalDerivationEdge(lexicalExistingEdges, targetForm.uuid.value, targetSideSense.uuid.value, sourceForm.uuid.value, sourceSideSense.uuid.value)
+      ) {
+        continue;
+      }
       lexicalExistingEdges.add(key);
       lexicalProcessor.create({
         sourceWordFormId: sourceForm.uuid.value,
