@@ -2,13 +2,8 @@
   "schema_version": "1.0.0",
   "language_code": "en",
   "relationship_category": "morphological",
-  "count": 3506,
+  "count": 3500,
   "relationships": [
-    {
-      "source_lexical_form": "be",
-      "target_lexical_form": "am",
-      "relationship_kind": "FIRST_PERSON_FORM"
-    },
     {
       "source_lexical_form": "be",
       "target_lexical_form": "is",
@@ -16,17 +11,7 @@
     },
     {
       "source_lexical_form": "be",
-      "target_lexical_form": "are",
-      "relationship_kind": "SECOND_PERSON_FORM"
-    },
-    {
-      "source_lexical_form": "be",
       "target_lexical_form": "was",
-      "relationship_kind": "PAST_TENSE_FORM"
-    },
-    {
-      "source_lexical_form": "be",
-      "target_lexical_form": "were",
       "relationship_kind": "PAST_TENSE_FORM"
     },
     {
@@ -250,27 +235,12 @@
       "relationship_kind": "SUPERLATIVE_FORM"
     },
     {
-      "source_lexical_form": "am",
-      "target_lexical_form": "be",
-      "relationship_kind": "LEMMA_FORM"
-    },
-    {
       "source_lexical_form": "is",
       "target_lexical_form": "be",
       "relationship_kind": "LEMMA_FORM"
     },
     {
-      "source_lexical_form": "are",
-      "target_lexical_form": "be",
-      "relationship_kind": "LEMMA_FORM"
-    },
-    {
       "source_lexical_form": "was",
-      "target_lexical_form": "be",
-      "relationship_kind": "LEMMA_FORM"
-    },
-    {
-      "source_lexical_form": "were",
       "target_lexical_form": "be",
       "relationship_kind": "LEMMA_FORM"
     },

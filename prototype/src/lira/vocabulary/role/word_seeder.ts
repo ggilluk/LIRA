@@ -99,10 +99,22 @@ interface FormLink {
   derivationKinds: readonly string[];
 }
 
+// auxiliaries.json was retired once role/auxiliary_seeder.ts started
+// seeding AUXILIARY's 9 base lemmas directly (be, have, do, can, may,
+// shall, will, must, ought) -- a one-Word-per-lemma model with the
+// old file's own flat one-Word-per-surface-form entries folded into
+// *_Form fields instead (data/entities/auxiliary.ts's own docstring).
+// AuxiliarySeeder runs before this list is loaded (vocabulary_worker.ts's
+// own handleSeedCommonVocabulary), preserving this list's own "loads
+// before every SUPPLEMENTARY_FILES entry" ordering guarantee for
+// be/have/do's AUXILIARY-vs-VERB homograph default. Not every one of
+// the old file's 36 entries has a lemma-model equivalent yet (need,
+// dare, done, doing, and the 7 full contractions) -- tracked as a
+// follow-up, not silently dropped (see the GitHub issue this retirement
+// filed, and assets/common/en/README.md's own note on it).
 export const MANDATORY_FILES = [
   "determiners.json",
   "pronouns.json",
-  "auxiliaries.json",
   "prepositions.json",
   "coordinating_conjunctions.json",
   "subordinating_conjunctions.json",
@@ -2342,11 +2354,16 @@ export class WordSeeder {
       case PartOfSpeech.PARTICLE:
         return createParticle(fields);
       default:
-        // AUXILIARY, PROPER_NOUN, SYMBOL, PUNCTUATION, OTHER -- none of
-        // these appear in the Word Form to Part of Speech Matrix
-        // (data/matrices/word_form_part_of_speech_matrix.md) at all, so they have
-        // no subtype of their own; every entry of one of these classes
-        // (auxiliaries.json, symbols.json, ...) stays a plain Word.
+        // PROPER_NOUN, SYMBOL, PUNCTUATION, OTHER -- none of these
+        // appear in the Word Form to Part of Speech Matrix
+        // (data/matrices/pos_vs_wordform_matrice.ts) at all, so they
+        // have no subtype of their own; every entry of one of these
+        // classes (symbols.json, ...) stays a plain Word. AUXILIARY now
+        // has its own subtype (data/entities/auxiliary.ts) and its own
+        // matrix rows, but never reaches this switch at all -- it's no
+        // longer seeded from an asset file (auxiliaries.json's own
+        // retirement, MANDATORY_FILES' comment above), only from
+        // role/auxiliary_seeder.ts directly.
         return createWord(fields);
     }
   }

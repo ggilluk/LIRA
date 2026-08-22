@@ -4,8 +4,11 @@
 
 This cache provides the mandatory English closed-class lexical forms
 every LIRA Domain's Vocabulary must contain: determiners, pronouns,
-auxiliaries, prepositions, coordinating and subordinating
-conjunctions, particles, punctuation, symbols, and numerals. It also
+prepositions, coordinating and subordinating conjunctions, particles,
+punctuation, symbols, and numerals. Auxiliaries (be, have, do, can,
+may, shall, will, must, ought) are mandatory too, but are no longer
+one of this cache's own asset files -- see `auxiliaries.json` below.
+It also
 holds six `metalinguistic_*.json` files, one per part of speech, of
 open-class terms for grammar itself (`noun`, `verb`, `subject`,
 `tense`, `synonym`, `determine`, `grammatical`, `grammatically`,
@@ -28,7 +31,7 @@ working vocabulary immediately, not to be a system of record.
 | `manifest.json` | Schema/asset version, language, per-file and total lexical form counts | -- |
 | `determiners.json` | Determiners (the, a, this, my, some, ...) | 37 |
 | `pronouns.json` | Personal, possessive, reflexive, interrogative, relative, reciprocal, and indefinite pronouns, plus `which`/`what`'s secondary `DETERMINER` entries (see the file-placement note above) | 99 |
-| `auxiliaries.json` | Primary auxiliaries (be, have, do), modals (will, can, must), semi-modals (need, dare), and full contractions (don't, can't, I'm, it's, isn't, wasn't, hadn't -- see Contractions below) | 36 |
+| `auxiliaries.json` | **Retired in `asset_version 1.24.0`.** Its 9 primary-auxiliary/modal lemmas (be, have, do, can, may, shall, will, must, ought) are now seeded directly by `role/auxiliary_seeder.ts` -- one Word per lemma, every inflected spelling ("am", "was", "could", ...) living on a `*_Form` field instead of its own flat entry (`data/entities/auxiliary.ts`'s own docstring). Its remaining 27 entries (semi-modals `need`/`dare`, participles `done`/`doing`, and the 7 full contractions -- see Contractions below) have no lemma-model equivalent yet; tracked as a GitHub issue, not silently dropped. | 0 (retired) |
 | `prepositions.json` | Simple and compound/complex prepositions, including multi-word units (because of, in spite of, according to, as well as, ...) | 94 |
 | `coordinating_conjunctions.json` | FANBOYS -- for, and, nor, but, or, yet, so | 7 |
 | `subordinating_conjunctions.json` | because, although, unless, while, ... | 36 |
@@ -102,6 +105,11 @@ default -- see the ordering comment above `MANDATORY_FILES` in
 `vocabulary/role/word_seeder.py`.
 
 ## Contractions
+
+**Removed in `asset_version 1.24.0`**, along with the rest of
+`auxiliaries.json` (Files above) -- kept here as historical record of
+why they existed, not as a description of current data. Restoring them
+as `role/auxiliary_seeder.ts` entries is tracked as a follow-up.
 
 `asset_version 1.9.0` added seven full contractions to the mandatory
 `auxiliaries.json`: `don't`, `can't`, `I'm`, `it's`, `isn't`, `wasn't`,
@@ -259,7 +267,7 @@ mandatory files:
 
 | Word | Existing sense | New sense |
 |------|------------------|-------------|
-| `be`, `have`, `do` | `AUXILIARY` (`auxiliaries.json`) | `VERB` (`metalinguistic_verbs.json`) |
+| `be`, `have`, `do` | `AUXILIARY` (`role/auxiliary_seeder.ts`, retired `auxiliaries.json` before `asset_version 1.24.0`) | `VERB` (`metalinguistic_verbs.json`) |
 | `cause`, `result` | `NOUN` (`metalinguistic_nouns.json`) | `VERB` (`metalinguistic_verbs.json`) |
 | `form` | `NOUN` (`metalinguistic_nouns.json`) | `VERB` (`metalinguistic_verbs.json`) |
 | `name`, `point`, `state` | `NOUN` (`promoted_words.json`) | `VERB` (`promoted_words.json`) |

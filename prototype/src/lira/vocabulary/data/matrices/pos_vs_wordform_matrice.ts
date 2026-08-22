@@ -214,12 +214,29 @@ export const WORD_FORM_MATRIX: readonly WordFormRow[] = [
         exceptionLookup: "Irregular Verb Lookup.",
       },
       {
-        appliesTo: [P.VERB],
+        appliesTo: [P.VERB, P.AUXILIARY],
         format: "Uses an irregular present form. Example: be → am, be → are.",
         baseLemmaPreconditions: "The verb must have an explicitly assigned irregular present form.",
         generationTransform: "Return the mapped present form.",
         reductionTransform: "Resolve the irregular form to its lemma.",
         requiredLinguisticData: "Irregular Verb Data.",
+        exceptionLookup: "Irregular Verb Lookup.",
+      },
+    ],
+  },
+  {
+    field: "presentTenseInstanceForm",
+    label: "Present Tense Instance Form",
+    purpose:
+      "Identifies the present-tense verb form tied to one specific Determiner/pronoun, distinct from the general Present Tense Form shared by every other Determiner this lemma doesn't single out. AUXILIARY-only -- 'be' is the only lemma in this codebase that needs a distinct form for one specific Determiner beyond the ordinary Third Person Singular Present Form split every Verb already has ('am', Determiner: I, vs. 'are', every other Determiner Present Tense Form already covers).",
+    rules: [
+      {
+        appliesTo: [P.AUXILIARY],
+        format: "Uses an irregular, lexically fixed spelling tied to one specific Determiner. Example: be → am (Determiner: I).",
+        baseLemmaPreconditions: "The lemma must have an explicitly assigned Determiner-specific present form.",
+        generationTransform: "Return the mapped Determiner-specific present form.",
+        reductionTransform: "Resolve the form to its lemma.",
+        requiredLinguisticData: "Lexical Exception Data; Determiner Agreement.",
         exceptionLookup: "Irregular Verb Lookup.",
       },
     ],
@@ -290,6 +307,32 @@ export const WORD_FORM_MATRIX: readonly WordFormRow[] = [
         requiredLinguisticData: "Lexical Tense Classification.",
         exceptionLookup: "Irregular Verb Lookup.",
       },
+      {
+        appliesTo: [P.AUXILIARY],
+        format: "Uses an irregular spelling covering every Determiner this lemma doesn't single out via Past Tense Instance Form. Example: be → were (we/you/they); have → had; do → did.",
+        baseLemmaPreconditions: "The lemma has an explicitly assigned irregular past-tense mapping.",
+        generationTransform: "Return the mapped irregular past form.",
+        reductionTransform: "Resolve the irregular past form to its lemma.",
+        requiredLinguisticData: "Lexical Exception Data.",
+        exceptionLookup: "Irregular Verb Lookup.",
+      },
+    ],
+  },
+  {
+    field: "pastTenseInstanceForm",
+    label: "Past Tense Instance Form",
+    purpose:
+      "Identifies the past-tense verb form tied to one specific Determiner/pronoun -- Present Tense Instance Form's own exact past-tense counterpart. AUXILIARY-only, and only 'be' needs it: 'was' (Determiner: I/he/she/it) vs. 'were', the general Past Tense Form covering we/you/they.",
+    rules: [
+      {
+        appliesTo: [P.AUXILIARY],
+        format: "Uses an irregular, lexically fixed spelling tied to one specific Determiner. Example: be → was (Determiner: I/he/she/it).",
+        baseLemmaPreconditions: "The lemma must have an explicitly assigned Determiner-specific past form.",
+        generationTransform: "Return the mapped Determiner-specific past form.",
+        reductionTransform: "Resolve the form to its lemma.",
+        requiredLinguisticData: "Lexical Exception Data; Determiner Agreement.",
+        exceptionLookup: "Irregular Verb Lookup.",
+      },
     ],
   },
   {
@@ -330,7 +373,7 @@ export const WORD_FORM_MATRIX: readonly WordFormRow[] = [
         exceptionLookup: "Irregular Verb Lookup.",
       },
       {
-        appliesTo: [P.VERB],
+        appliesTo: [P.VERB, P.AUXILIARY],
         format: "Uses an irregular spelling. Example: have → has, be → is.",
         baseLemmaPreconditions: "The lemma has an irregular third-person singular form.",
         generationTransform: "Return the mapped irregular form.",
@@ -346,8 +389,8 @@ export const WORD_FORM_MATRIX: readonly WordFormRow[] = [
     purpose: "Identifies the verb form used to describe an action or state as ongoing.",
     rules: [
       {
-        appliesTo: [P.VERB],
-        format: "Adds -ing. Example: walk → walking.",
+        appliesTo: [P.VERB, P.AUXILIARY],
+        format: "Adds -ing. Example: walk → walking; have → having; be → being.",
         baseLemmaPreconditions: "The lemma takes regular -ing and does not satisfy a more specific rule.",
         generationTransform: "Append ing.",
         reductionTransform: "Remove final ing.",
@@ -439,8 +482,8 @@ export const WORD_FORM_MATRIX: readonly WordFormRow[] = [
         exceptionLookup: "Irregular Verb Lookup.",
       },
       {
-        appliesTo: [P.VERB],
-        format: "Uses an irregular -en/-n form. Example: write → written.",
+        appliesTo: [P.VERB, P.AUXILIARY],
+        format: "Uses an irregular -en/-n form. Example: write → written; be → been.",
         baseLemmaPreconditions: "The lemma has an explicitly mapped irregular participle ending in -en/-n.",
         generationTransform: "Return mapped -en/-n participle.",
         reductionTransform: "Resolve mapped participle to lemma.",
@@ -449,8 +492,8 @@ export const WORD_FORM_MATRIX: readonly WordFormRow[] = [
         exceptionLookup: "Irregular Verb Lookup.",
       },
       {
-        appliesTo: [P.VERB],
-        format: "Uses another irregular spelling. Example: go → gone.",
+        appliesTo: [P.VERB, P.AUXILIARY],
+        format: "Uses another irregular spelling. Example: go → gone; have → had.",
         baseLemmaPreconditions: "The lemma has another irregular participle mapping.",
         generationTransform: "Return mapped irregular participle.",
         reductionTransform: "Resolve mapped participle to lemma.",
@@ -474,12 +517,45 @@ export const WORD_FORM_MATRIX: readonly WordFormRow[] = [
     purpose: "Identifies the basic verb form used without the word to.",
     rules: [
       {
-        appliesTo: [P.VERB],
-        format: "Uses the canonical uninflected verb spelling. Example: run, walk, be.",
+        appliesTo: [P.VERB, P.AUXILIARY],
+        format: "Uses the canonical uninflected verb spelling. Example: run, walk, be, have, do.",
         baseLemmaPreconditions: "The word must be classified as a verb lemma capable of bare-infinitive use.",
         generationTransform: "Return the base lemma unchanged.",
         reductionTransform: "Return the form as its canonical verb lemma.",
         requiredLinguisticData: "Verb Classification; Syntactic Context.",
+      },
+    ],
+  },
+  {
+    field: "modalForm",
+    label: "Modal Form",
+    purpose:
+      "Identifies the primary spelling of a modal auxiliary -- can, may, shall, will, must, ought. AUXILIARY-only: a modal has no infinitive, no participle, and no person/number agreement of its own, so none of the Verb-style *_Form fields above ever apply to it -- this and Secondary Modal Form below are the only two fields a modal lemma's Auxiliary Word ever populates.",
+    rules: [
+      {
+        appliesTo: [P.AUXILIARY],
+        format: "Uses the canonical, fully lexical modal spelling. Example: can, may, shall, will, must, ought.",
+        baseLemmaPreconditions: "The word must be classified as a modal auxiliary lemma.",
+        generationTransform: "Return the base lemma unchanged.",
+        reductionTransform: "Return the form as its canonical modal lemma.",
+        requiredLinguisticData: "Modal Classification.",
+      },
+    ],
+  },
+  {
+    field: "secondaryModalForm",
+    label: "Secondary Modal Form",
+    purpose:
+      "Identifies the secondary/preterite-present spelling paired with a modal's own Modal Form -- could, might, should, would. Undefined for must/ought, which are defective and have no secondary form at all (a genuine lexical gap, not an unpopulated placeholder).",
+    rules: [
+      {
+        appliesTo: [P.AUXILIARY],
+        format: "Uses an irregular, lexically fixed secondary spelling. Example: can → could, may → might, shall → should, will → would.",
+        baseLemmaPreconditions: "The lemma must have an explicitly assigned secondary modal form.",
+        generationTransform: "Return the mapped secondary modal form.",
+        reductionTransform: "Resolve the secondary form to its primary modal lemma.",
+        requiredLinguisticData: "Lexical Exception Data.",
+        exceptionLookup: "Irregular Verb Lookup.",
       },
     ],
   },

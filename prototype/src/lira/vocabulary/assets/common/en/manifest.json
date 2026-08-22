@@ -1,8 +1,8 @@
 {
   "schema_version": "2.0.0",
-  "asset_version": "1.23.0",
+  "asset_version": "1.24.0",
   "language_code": "en",
-  "total_lexical_forms": 435,
+  "total_lexical_forms": 399,
   "files": [
     {
       "file": "determiners.json",
@@ -11,10 +11,6 @@
     {
       "file": "pronouns.json",
       "count": 100
-    },
-    {
-      "file": "auxiliaries.json",
-      "count": 36
     },
     {
       "file": "prepositions.json",

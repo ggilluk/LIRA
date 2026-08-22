@@ -9,12 +9,18 @@
  * Matrix -- not, as this file used to, from six separate
  * role/processor/*_processor.ts constants (a data/ file importing from
  * role/ inverted this codebase's own one-way dependency rule; see that
- * matrix file's own module docstring for the full story). Every other
- * PartOfSpeech (Preposition, Conjunction, Interjection, Numeral,
- * Particle, Auxiliary, ProperNoun, Symbol, Punctuation, Other) carries
- * no *_Form field of its own -- absent from this record entirely, not
- * listed with an empty array, since `formTextsOf`'s own `?? []`
- * already treats a missing key that way. */
+ * matrix file's own module docstring for the full story). Auxiliary
+ * joined this list once role/auxiliary_seeder.ts started populating its
+ * own *_Form fields (data/entities/auxiliary.ts) -- without an entry
+ * here, Dictionary.indexWordForms() would never index "was"/"were"/
+ * "could"/etc. against the "be"/"can"/... Word that owns them, and
+ * lookupFormMatches() would silently fail to resolve them during
+ * sentence reading. Every remaining PartOfSpeech (Preposition,
+ * Conjunction, Interjection, Numeral, Particle, ProperNoun, Symbol,
+ * Punctuation, Other) still carries no *_Form field of its own --
+ * absent from this record entirely, not listed with an empty array,
+ * since `formTextsOf`'s own `?? []` already treats a missing key that
+ * way. */
 
 import { fieldsFor } from "./matrices/pos_vs_wordform_matrice";
 import { PartOfSpeech } from "./enums/part_of_speech";
@@ -40,6 +46,7 @@ export const WORD_FORM_FIELDS: Readonly<Partial<Record<PartOfSpeech, readonly st
   [PartOfSpeech.ADVERB]: posFormFields(PartOfSpeech.ADVERB),
   [PartOfSpeech.PRONOUN]: posFormFields(PartOfSpeech.PRONOUN),
   [PartOfSpeech.DETERMINER]: posFormFields(PartOfSpeech.DETERMINER),
+  [PartOfSpeech.AUXILIARY]: posFormFields(PartOfSpeech.AUXILIARY),
 };
 
 /** One populated *_Form field, paired with its own field name -- e.g.
