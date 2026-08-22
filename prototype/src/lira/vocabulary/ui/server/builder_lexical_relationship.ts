@@ -149,22 +149,40 @@ export function lexicalRelationshipRecords(
  * otherwise have to re-multiply across the target Sense's own members.
  * Fanning out here on top of that would triple-count: "forsake" derives
  * from "forsaking" would incorrectly also show as if "abandon" itself
- * derived from "forsaking" too. Only the subject's own `word.uuid`
- * substitution survives from that pattern -- needed so `source_id`/
- * `target_id` (client's `relationshipsForWord()`-style `r.source_id ===
- * wordId` check) resolve correctly regardless of which of `word`'s own
- * several WordForms the stored row's own sourceWordFormId/targetWordFormId
- * actually names. */
+ * derived from "forsaking" too.
+ *
+ * `LexicalRelationshipStore.outgoing()`/`incoming()` are Sense-keyed
+ * (that store's own docstring), so a raw query by `senseId` returns
+ * *every* row touching that Sense -- including a fellow synonym's own
+ * fact, sharing the identical Sense pair (e.g. "desert is derived from
+ * desertion" touches the exact same (abandon-sense, abandonment-sense)
+ * pair "abandon is derived from abandonment" does, since "abandon" and
+ * "desert" are both members of one synset). `ownFormIds` is what
+ * narrows this back down to `word`'s own facts specifically: an
+ * outgoing row only counts if `word` itself owns `sourceWordFormId`;
+ * an incoming row only counts if `word` itself owns `targetWordFormId`
+ * -- a fellow member's own row, sharing the Sense but naming a
+ * different WordForm on the relevant side, is filtered out here rather
+ * than misattributed to `word`. Only the subject's own `word.uuid`
+ * substitution survives from the member-fanout pattern above -- needed
+ * so `source_id`/`target_id` (client's `relationshipsForWord()`-style
+ * `r.source_id === wordId` check) resolve correctly regardless of which
+ * of `word`'s own several WordForms the stored row's own
+ * sourceWordFormId/targetWordFormId actually names. */
 function senseExpandedLexicalRelationships(
   word: Word,
   relationships: LexicalRelationshipStore,
+  wordForms: WordForms,
 ): { relationships: readonly LexicalRelationship[]; viaSenseId: ReadonlyMap<string, string> } {
+  const ownFormIds = new Set(wordForms.formsOf(word).map((form) => form.uuid.value));
   const expanded: LexicalRelationship[] = [];
   const viaSenseId = new Map<string, string>();
   for (const ownSenseId of word.senseIds) {
     const senseId = ownSenseId.value;
     for (const rel of [...relationships.outgoing(senseId), ...relationships.incoming(senseId)]) {
       const outgoingFromSense = rel.sourceSenseId.value === senseId;
+      const ownFormId = outgoingFromSense ? rel.sourceWordFormId.value : rel.targetWordFormId.value;
+      if (!ownFormIds.has(ownFormId)) continue;
       const uuid = { value: `${rel.uuid.value}:${senseId}` };
       expanded.push({
         ...rel,
@@ -194,7 +212,7 @@ export function searchLexicalRelationships(
   let viaSenseId: ReadonlyMap<string, string> = new Map();
   if (options.wordId !== undefined) {
     const word = resolveEntry(dictionary, phrases, senses, options.wordId);
-    const senseExpanded = word !== undefined ? senseExpandedLexicalRelationships(word, relationships) : { relationships: [], viaSenseId: new Map() };
+    const senseExpanded = word !== undefined ? senseExpandedLexicalRelationships(word, relationships, wordForms) : { relationships: [], viaSenseId: new Map() };
     candidates = senseExpanded.relationships;
     viaSenseId = senseExpanded.viaSenseId;
   } else {
