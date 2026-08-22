@@ -4,6 +4,7 @@
  * at the other's message format. */
 
 import type { HierarchyEdge, HierarchyNode } from "../../ui/server/builder_hierarchy";
+import type { LexicalRelationshipRecord } from "../../ui/server/builder_lexical_relationship";
 import type { PhraseRecord } from "../../ui/server/builder_phrase";
 import type { RelationshipRecord } from "../../ui/server/builder_relationship";
 import type { SenseRecord } from "../../ui/server/builder_sense";
@@ -156,6 +157,20 @@ export interface SearchRelationshipsRequest {
   limit?: number;
 }
 
+/** SearchRelationshipsRequest's own exact counterpart against `domain`'s
+ * full LexicalRelationshipStore (data/lexical_relationship.ts) instead
+ * of its SemanticRelationshipStore -- the Word Detail UI's own
+ * "Sense.Lexical.Relationships" section (client_senses_section_html.ts),
+ * fetched server-side over MAX_INTERACTIVE_WORDS the identical way. */
+export interface SearchLexicalRelationshipsRequest {
+  type: "search-lexical-relationships";
+  requestId: string;
+  domain: string;
+  wordId?: string;
+  query?: string;
+  limit?: number;
+}
+
 /** Resolves one Hierarchy-tab tree against `domain`'s full
  * LexicalRelationshipStore, server-side (DictionaryView.resolveHierarchy(),
  * that method's own docstring on the two modes `wordId` selects
@@ -181,6 +196,7 @@ export type VocabularyWorkerRequest =
   | SearchPhrasesRequest
   | SearchSensesRequest
   | SearchRelationshipsRequest
+  | SearchLexicalRelationshipsRequest
   | ResolveHierarchyRequest;
 
 export interface StatusMessage {
@@ -296,6 +312,16 @@ export interface SearchRelationshipsResultMessage {
   totalMatches: number;
 }
 
+/** The response to a SearchLexicalRelationshipsRequest -- same
+ * capped-`relationships`/true-`totalMatches` shape as
+ * SearchRelationshipsResultMessage, for the same reason. */
+export interface SearchLexicalRelationshipsResultMessage {
+  type: "search-lexical-relationships-result";
+  requestId: string;
+  relationships: readonly LexicalRelationshipRecord[];
+  totalMatches: number;
+}
+
 /** The response to a ResolveHierarchyRequest -- DictionaryView.resolveHierarchy()'s
  * own return shape, carried across the Worker boundary unchanged. */
 export interface ResolveHierarchyResultMessage {
@@ -321,4 +347,5 @@ export type VocabularyWorkerMessage =
   | SearchPhrasesResultMessage
   | SearchSensesResultMessage
   | SearchRelationshipsResultMessage
+  | SearchLexicalRelationshipsResultMessage
   | ResolveHierarchyResultMessage;

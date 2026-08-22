@@ -55,6 +55,27 @@ function relationshipsForWord(wordId) {
     .sort((a, b) => (a.group - b.group) || a.kind.localeCompare(b.kind));
 }
 
+// relationshipsForWord()'s own exact mirror, LEXICAL_RELS in place of
+// RELS -- the under-capacity source for a Sense's own
+// "Sense.Lexical.Relationships" details (client_senses_section_html.ts).
+function lexicalRelationshipsForWord(wordId) {
+  return LEXICAL_RELS.filter(r => r.source_id === wordId || r.target_id === wordId)
+    .map(r => {
+      const outgoing = r.source_id === wordId;
+      return {
+        ...r, outgoing,
+        otherId: outgoing ? r.target_id : r.source_id,
+        otherText: outgoing ? r.target_text : r.source_text,
+        otherDomain: outgoing ? r.target_domain : r.source_domain,
+        otherSenseId: outgoing ? r.target_sense_id : r.source_sense_id,
+        otherCategory: outgoing ? r.target_category : r.source_category,
+        otherGloss: outgoing ? r.target_gloss : r.source_gloss,
+        pillKind: displayKind(r.kind, outgoing),
+      };
+    })
+    .sort((a, b) => (a.group - b.group) || a.kind.localeCompare(b.kind));
+}
+
 function sortRows(rows, key, dir) {
   return rows.slice().sort((a, b) => {
     const av = a[key], bv = b[key];

@@ -123,28 +123,62 @@ document.addEventListener("lira-search-relationships-result", (e) => {
     detailRelsCache.set(wordId, rels);
     if (state.selectedWordId !== wordId) return;
     refreshHierarchyKindCounts();
-    // Every detail panel currently showing this word gets the same
-    // patch -- a full detailHTML() re-render off the already-resolved
-    // Word/Phrase (no re-fetch, no re-resolve, same cheap "plain DOM
-    // update" this used to be for the old flat relationships list), not
-    // another renderDetailPanel() call. A narrow .detail-relationships-section
-    // replace stopped being enough once relationships were also nested
-    // per-sense (sensesSectionHTML()'s own docstring) -- each sense's
-    // own count/list needs the same refresh the general section does,
-    // so the whole panel body is rebuilt from the one already-known
-    // Word/Phrase instead. Includes "phrases" alongside "words"/
-    // "hierarchy"/"cyclic" -- a selected Phrase's own detail panel needs
-    // this same live relationship patch just as much as a Word's own
-    // does, detailHTML()'s own dispatch handles either shape correctly
-    // either way.
-    ["words", "phrases", "hierarchy", "cyclic"].forEach(panel => {
-      const content = document.getElementById(\`detail-content-\${panel}\`);
-      if (!content || content.style.display === "none") return;
-      const panelWord = wordForDetailPanel(panel);
-      if (!panelWord) return;
-      content.innerHTML = detailHTML(panelWord, rels);
-      wireDetailPivotButtons(content);
-    });
+    refreshDetailPanelsForWord(wordId, rels, detailLexicalRelsCache.get(wordId) ?? null);
   }
 });
+
+// "lira-search-relationships-result"'s own exact mirror for the new
+// LexicalRelationship store -- fetchDetailLexicalRelsIfNeeded()'s own
+// pendingDetailLexicalRelLookups/detailLexicalRelsInFlight, resolved the
+// identical way.
+document.addEventListener("lira-search-lexical-relationships-result", (e) => {
+  const { requestId, relationships } = e.detail;
+  if (!pendingDetailLexicalRelLookups.has(requestId)) return;
+  const wordId = pendingDetailLexicalRelLookups.get(requestId);
+  pendingDetailLexicalRelLookups.delete(requestId);
+  detailLexicalRelsInFlight.delete(wordId);
+  const lexicalRels = relationships
+    .map(r => {
+      const outgoing = r.source_id === wordId;
+      return {
+        ...r, outgoing,
+        otherId: outgoing ? r.target_id : r.source_id,
+        otherText: outgoing ? r.target_text : r.source_text,
+        otherDomain: outgoing ? r.target_domain : r.source_domain,
+        otherSenseId: outgoing ? r.target_sense_id : r.source_sense_id,
+        otherCategory: outgoing ? r.target_category : r.source_category,
+        otherGloss: outgoing ? r.target_gloss : r.source_gloss,
+        pillKind: displayKind(r.kind, outgoing),
+      };
+    })
+    .sort((a, b) => (a.group - b.group) || a.kind.localeCompare(b.kind));
+  detailLexicalRelsCache.set(wordId, lexicalRels);
+  if (state.selectedWordId !== wordId) return;
+  refreshDetailPanelsForWord(wordId, detailRelsCache.get(wordId) ?? null, lexicalRels);
+});
+
+// Shared by both "...-relationships-result" listeners above -- every
+// detail panel currently showing \`wordId\` gets the same patch, a full
+// detailHTML() re-render off the already-resolved Word/Phrase (no
+// re-fetch, no re-resolve, same cheap "plain DOM update" this used to
+// be for the old flat relationships list), not another
+// renderDetailPanel() call. A narrow .detail-relationships-section
+// replace stopped being enough once relationships were also nested
+// per-sense (sensesSectionHTML()'s own docstring) -- each sense's own
+// count/list needs the same refresh the general section does, so the
+// whole panel body is rebuilt from the one already-known Word/Phrase
+// instead. Includes "phrases" alongside "words"/"hierarchy"/"cyclic" --
+// a selected Phrase's own detail panel needs this same live
+// relationship patch just as much as a Word's own does, detailHTML()'s
+// own dispatch handles either shape correctly either way.
+function refreshDetailPanelsForWord(wordId, rels, lexicalRels) {
+  ["words", "phrases", "hierarchy", "cyclic"].forEach(panel => {
+    const content = document.getElementById(\`detail-content-\${panel}\`);
+    if (!content || content.style.display === "none") return;
+    const panelWord = wordForDetailPanel(panel);
+    if (!panelWord) return;
+    content.innerHTML = detailHTML(panelWord, rels, lexicalRels);
+    wireDetailPivotButtons(content);
+  });
+}
 `;

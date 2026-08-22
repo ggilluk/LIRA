@@ -2410,9 +2410,9 @@ describe("DictionaryView.searchWords", () => {
 
     const dogRecord = view.searchWords({ wordId: dog.uuid.value }).words[0];
     expect(dogRecord.word_forms).toEqual([
-      { field: "baseLemmaCanonicalForm", label: "Base Lemma Canonical Form", value: "dog" },
-      { field: "pluralNumberForm", label: "Plural Number Form", value: "dogs" },
-      { field: "possessiveCaseForm", label: "Possessive Case Form", value: "dog's" },
+      { field: "baseLemmaCanonicalForm", label: "Base Lemma Canonical Form", value: "dog", senses: [] },
+      { field: "pluralNumberForm", label: "Plural Number Form", value: "dogs", senses: [] },
+      { field: "possessiveCaseForm", label: "Possessive Case Form", value: "dog's", senses: [] },
     ]);
 
     const catRecord = view.searchWords({ wordId: cat.uuid.value }).words[0];

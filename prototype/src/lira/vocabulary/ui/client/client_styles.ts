@@ -473,6 +473,20 @@ summary.detail-section-title::marker { color: var(--ink-muted); }
 .word-form-row .word-form-value {
   font-family: var(--font-mono);
 }
+.word-form-group {
+  margin: 10px 0;
+}
+.word-form-group-title {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--ink-muted);
+  margin-bottom: 2px;
+}
+.word-form-group-title .word-form-value {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: var(--ink);
+}
 .sense-list {
   list-style: none;
   margin: 0;

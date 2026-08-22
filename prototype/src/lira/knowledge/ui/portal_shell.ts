@@ -71,6 +71,21 @@ interface LiraSearchRelationshipsEventDetail {
   limit?: number;
 }
 
+// LiraSearchRelationshipsEventDetail's own exact mirror for the
+// fragment's own "lira-search-lexical-relationships" event --
+// dictionary_view.ts has no Lexical-Relationships-tab search of its own
+// yet (only the Word Detail panel's "Sense.Lexical.Relationships"
+// section, fetchDetailLexicalRelsIfNeeded()), so `query` is unused
+// today but kept for the same reason LiraSearchRelationshipsEventDetail
+// keeps it -- one shape, one bridge, ready for a future tab search
+// without a second event type.
+interface LiraSearchLexicalRelationshipsEventDetail {
+  requestId: string;
+  wordId?: string;
+  query?: string;
+  limit?: number;
+}
+
 // Mirrors the "lira-resolve-hierarchy" CustomEvent's own `detail` shape
 // -- dictionary_view.ts's renderHierarchy() dispatches it whenever the
 // target Domain is over MAX_INTERACTIVE_WORDS; see
@@ -229,6 +244,7 @@ export class PortalShell {
     this.searchPhrasesBridge();
     this.searchSensesBridge();
     this.searchRelationshipsBridge();
+    this.searchLexicalRelationshipsBridge();
     this.resolveHierarchyBridge();
   }
 
@@ -349,6 +365,32 @@ export class PortalShell {
         .then((result) => {
           document.dispatchEvent(
             new CustomEvent("lira-search-relationships-result", {
+              detail: { requestId: detail.requestId, relationships: result.relationships, totalMatches: result.totalMatches },
+            }),
+          );
+        });
+    });
+  }
+
+  /** searchRelationshipsBridge()'s own exact counterpart for the
+   * fragment's own "lira-search-lexical-relationships" event -- answers
+   * it with VocabularyWorkerClient.searchLexicalRelationships() against
+   * whichever Domain is currently mounted, then dispatches
+   * "lira-search-lexical-relationships-result" back with the same
+   * requestId. */
+  private searchLexicalRelationshipsBridge(): void {
+    document.addEventListener("lira-search-lexical-relationships", (event) => {
+      const detail = (event as CustomEvent<LiraSearchLexicalRelationshipsEventDetail>).detail;
+      if (!this.currentVocabularyDomainName) return;
+      void this.vocabularyClient
+        .searchLexicalRelationships(this.currentVocabularyDomainName, {
+          wordId: detail.wordId,
+          query: detail.query,
+          limit: detail.limit,
+        })
+        .then((result) => {
+          document.dispatchEvent(
+            new CustomEvent("lira-search-lexical-relationships-result", {
               detail: { requestId: detail.requestId, relationships: result.relationships, totalMatches: result.totalMatches },
             }),
           );

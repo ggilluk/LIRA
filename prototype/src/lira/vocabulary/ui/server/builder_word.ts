@@ -18,6 +18,7 @@ import type { SemanticRelationshipStore } from "../../data/semantic_relationship
 import { framesForSense, isVerb } from "../../role/processor/verb_processor";
 import type { Word } from "../../data/entities/word";
 import { formTextsOf } from "../../data/pos_form_fields";
+import type { WordForms } from "../../data/word_forms";
 import { phraseHeadWordSegment, phraseTypeLabel, phraseWordSegments } from "./builder_phrase";
 import { definitionSegments, type DefinitionSegment } from "./builder_segment";
 import { domainLabel, isRootWordFor, senseFieldsFor } from "./resolver_domain";
@@ -117,14 +118,20 @@ export interface WordRecord {
   // carries a populated value for, in the Word Form to Part of Speech
   // Matrix's own field order (data/matrices/word_form_part_of_speech_matrix.md)
   // -- wordFormsFor()'s own docstring on how this is
-  // built. Always includes baseLemmaCanonicalForm when set (every POS
-  // carries that one), plus whichever of that subtype's own fields
-  // (Noun/Verb/Adjective/Adverb/Pronoun/Determiner -- the other five POS
-  // classes declare no *_Form field of their own beyond
-  // baseLemmaCanonicalForm) are populated. Empty for a Word with
-  // nothing seeded yet -- no seeding path (word_seeder.ts) populates any
-  // of these fields today, so this is empty for every Word until a
-  // future seeding/curation pass writes to them.
+  // built. Always includes baseLemmaCanonicalForm (every Word has one,
+  // WordForms.registerBaseLemmaForm()'s own docstring), plus whichever
+  // of that subtype's own fields (Noun/Verb/Adjective/Adverb/Pronoun/
+  // Determiner -- the other five POS classes declare no *_Form field of
+  // their own beyond baseLemmaCanonicalForm) are populated, plus every
+  // real WordForm record `WordForms` holds for this Word (Auxiliary's
+  // own several inflected forms, word_form.ts's own docstring). Each
+  // entry's own `senses` -- the Word -> WordForm -> Senses nesting the
+  // Word Detail UI now renders (word_wordform_sense_relationships.md) --
+  // is non-empty only for a WordForm that genuinely has one or more
+  // Senses registered onto it (WordForms.registerSense()'s own
+  // docstring); every scalar-field-derived entry (no real WordForm
+  // record backs it) always carries `senses: []`, since nothing links a
+  // spelling-only field to a Sense today.
   word_forms: WordFormEntry[];
   // Every Sense (data/sense.ts) this Word lexicalizes, in Word.senseIds's
   // own order (sensesFor()'s own docstring on how this is
@@ -136,7 +143,12 @@ export interface WordRecord {
   // WordRecord via phraseAsWord() (phrase.ts) before reaching here, not
   // a separate PhraseRecord field. Empty only for a Word/Phrase that
   // never lexicalized any Sense at all (predates WordSeeder.seedWordNet/
-  // registerUniqueSense, or a hand-authored test fixture).
+  // registerUniqueSense, or a hand-authored test fixture). Kept as this
+  // flat, Word-level list for backward compatibility (every existing
+  // reader, including the several vocabulary.test.ts assertions against
+  // `record.senses`) -- the Word Detail UI itself renders the same data
+  // nested under `word_forms[].senses` instead (client_senses_section_html.ts's
+  // own docstring on why), not this field.
   senses: WordSenseSummary[];
 }
 
@@ -144,6 +156,13 @@ export interface WordFormEntry {
   field: string;
   label: string;
   value: string;
+  // WordRecord.word_forms's own docstring on when this is non-empty --
+  // this WordForm's own subset of WordRecord.senses (same
+  // WordSenseSummary shape, same object identity even, not a copy of
+  // its own), in Word.senseIds's own frequency order (`is_primary`
+  // still marks the Word's own single overall-primary sense, not
+  // "first within this one WordForm").
+  senses: WordSenseSummary[];
 }
 
 export interface WordSenseSummary {
@@ -310,20 +329,37 @@ function sensesFor(entry: Word | Phrase, senses: Senses, domainName: string): Wo
   return summaries;
 }
 
-/** Every populated *_Form Text field for `word`'s own concrete POS
- * subtype, in the Word Form to Part of Speech Matrix's own field
- * order (data/matrices/pos_vs_wordform_matrice.ts) -- baseLemmaCanonicalForm
- * first (every POS subtype carries that one, on Word itself), then
- * whichever of that subtype's own fields are set, read off
- * WORD_FORM_FIELDS (data/word_forms.ts, itself built from
- * WORD_FORM_MATRIX) rather than a duplicated field list of this
- * function's own -- the single source of truth shared with
- * Dictionary.indexWordForms()'s own inflected-form lookup index. A
- * field with no populated value is simply absent, not shown as empty. */
-function wordFormsFor(word: Word): WordFormEntry[] {
+/** Every WordForm Word/WordForm/Senses UI row for `word` -- real
+ * `WordForm` records (`wordForms.formsOf(word)`, when a `WordForms`
+ * store is supplied -- optional so every pre-existing caller that
+ * builds a `DictionaryView` without one, mostly `vocabulary.test.ts`'s
+ * own fixtures, keeps working exactly as before, just with `senses: []`
+ * on every entry) first, each carrying its own nested `senses` (this
+ * WordForm's own subset of `wordSenses`, `WordFormEntry.senses`'s own
+ * docstring), followed by whichever of `formTextsOf(word)`'s own
+ * scalar *_Form fields aren't already covered by a real WordForm
+ * record (`realFields` -- today that's only ever `baseLemmaCanonicalForm`,
+ * since every Word gets a real base-lemma WordForm now,
+ * WordForms.registerBaseLemmaForm()'s own docstring, but Noun/Verb/
+ * Adjective/Adverb/Pronoun/Determiner's own inflected `*_Form` fields
+ * -- pluralNumberForm, presentTenseForm, ... -- still live as plain
+ * scalars, data/pos_form_fields.ts's own module docstring, so this
+ * still reads them the original way, just deduplicated against the
+ * real-WordForm entries above rather than replaced by them). Each
+ * scalar-derived entry always carries `senses: []` -- nothing links a
+ * spelling-only field to a Sense today. */
+function wordFormsFor(word: Word, wordForms: WordForms | undefined, wordSenses: readonly WordSenseSummary[]): WordFormEntry[] {
+  const senseById = new Map(wordSenses.map((sense) => [sense.id, sense]));
   const forms: WordFormEntry[] = [];
+  const realForms = wordForms?.formsOf(word) ?? [];
+  const realFields = new Set(realForms.map((form) => form.field));
+  for (const form of realForms) {
+    const formSenses = form.senseIds.map((id) => senseById.get(id.value)).filter((sense): sense is WordSenseSummary => sense !== undefined);
+    forms.push({ field: form.field, label: formFieldLabel(form.field), value: form.text.value, senses: formSenses });
+  }
   for (const { field, text } of formTextsOf(word)) {
-    forms.push({ field, label: formFieldLabel(field), value: text.value });
+    if (realFields.has(field)) continue;
+    forms.push({ field, label: formFieldLabel(field), value: text.value, senses: [] });
   }
   // Noun.wordCharacterForms isn't a Word Form Matrix field (that
   // field's own docstring, data/entities/noun.ts) -- not spelling-derivable, so
@@ -347,6 +383,7 @@ function wordFormsFor(word: Word): WordFormEntry[] {
       field: "wordCharacterForms",
       label: formFieldLabel("wordCharacterForms"),
       value: characterForms.map((text) => text.value).join(" / "),
+      senses: [],
     });
   }
   return forms;
@@ -358,7 +395,14 @@ function wordFormsFor(word: Word): WordFormEntry[] {
  * scale) both build from, so a WordRecord looks identical -- same
  * fields, same relationship_count/definition_segments logic --
  * whichever path produced it. */
-export function wordRecordFor(word: Word, dictionary: Dictionary, relationships: SemanticRelationshipStore, senses: Senses, domainName: string): WordRecord {
+export function wordRecordFor(
+  word: Word,
+  dictionary: Dictionary,
+  relationships: SemanticRelationshipStore,
+  senses: Senses,
+  domainName: string,
+  wordForms?: WordForms,
+): WordRecord {
   const wordId = word.uuid.value;
   // SemanticRelationshipStore is Sense-keyed, not Word-keyed (every
   // fact this view reads through it now, DictionaryView's own class
@@ -370,6 +414,7 @@ export function wordRecordFor(word: Word, dictionary: Dictionary, relationships:
     0,
   );
   const senseFields = senseFieldsFor(senses, word);
+  const wordSenses = sensesFor(word, senses, domainName);
   return {
     id: wordId,
     entry_id: word.entryId.value,
@@ -391,14 +436,20 @@ export function wordRecordFor(word: Word, dictionary: Dictionary, relationships:
     sources: word.sourceReferences.map((ref) => ref.sourceName.value),
     relationship_count: relationshipCount,
     definition_segments: definitionSegments(word, dictionary, senses, domainName),
-    word_forms: wordFormsFor(word),
-    senses: sensesFor(word, senses, domainName),
+    word_forms: wordFormsFor(word, wordForms, wordSenses),
+    senses: wordSenses,
     derivations: morphologicalDerivations(word, dictionary),
   };
 }
 
-export function wordRecords(dictionary: Dictionary, relationships: SemanticRelationshipStore, senses: Senses, domainName: string): WordRecord[] {
-  const records = dictionary.all().map((word) => wordRecordFor(word, dictionary, relationships, senses, domainName));
+export function wordRecords(
+  dictionary: Dictionary,
+  relationships: SemanticRelationshipStore,
+  senses: Senses,
+  domainName: string,
+  wordForms?: WordForms,
+): WordRecord[] {
+  const records = dictionary.all().map((word) => wordRecordFor(word, dictionary, relationships, senses, domainName, wordForms));
   records.sort((a, b) => a.lexical_form.toLowerCase().localeCompare(b.lexical_form.toLowerCase()));
   return records;
 }
@@ -445,6 +496,7 @@ export function searchWords(
     rootWordsOnly?: boolean;
     limit?: number;
   },
+  wordForms?: WordForms,
 ): { words: WordRecord[]; totalMatches: number } {
   if (options.wordId !== undefined) {
     // Checked directly against the Phrase itself, not via
@@ -456,7 +508,7 @@ export function searchWords(
     // the original Phrase, not just its Word-shaped view.
     const phrase = phrases.findByUuid(options.wordId);
     if (phrase !== undefined) {
-      const record = wordRecordFor(phraseAsWord(phrase), dictionary, relationships, senses, domainName);
+      const record = wordRecordFor(phraseAsWord(phrase), dictionary, relationships, senses, domainName, wordForms);
       return {
         words: [
           {
@@ -470,7 +522,7 @@ export function searchWords(
       };
     }
     const word = dictionary.findByUuid(options.wordId);
-    if (word !== undefined) return { words: [wordRecordFor(word, dictionary, relationships, senses, domainName)], totalMatches: 1 };
+    if (word !== undefined) return { words: [wordRecordFor(word, dictionary, relationships, senses, domainName, wordForms)], totalMatches: 1 };
     // `wordId` may also name a Sense directly -- the Senses tab's own
     // row-click (senseRecordFor()'s own `id`), resolved to its first-
     // registered member the same way resolveEntry() falls back
@@ -483,7 +535,7 @@ export function searchWords(
     const representative = sense !== undefined ? senses.membersOf(sense.uuid.value)[0] : undefined;
     if (representative !== undefined) {
       if ("words" in representative) {
-        const record = wordRecordFor(phraseAsWord(representative), dictionary, relationships, senses, domainName);
+        const record = wordRecordFor(phraseAsWord(representative), dictionary, relationships, senses, domainName, wordForms);
         return {
           words: [
             {
@@ -496,7 +548,7 @@ export function searchWords(
           totalMatches: 1,
         };
       }
-      return { words: [wordRecordFor(representative, dictionary, relationships, senses, domainName)], totalMatches: 1 };
+      return { words: [wordRecordFor(representative, dictionary, relationships, senses, domainName, wordForms)], totalMatches: 1 };
     }
     return { words: [], totalMatches: 0 };
   }
@@ -518,7 +570,7 @@ export function searchWords(
     if (definitionQuery && !(word.definition?.value ?? "").toLowerCase().includes(definitionQuery)) continue;
 
     totalMatches += 1;
-    if (matches.length < limit) matches.push(wordRecordFor(word, dictionary, relationships, senses, domainName));
+    if (matches.length < limit) matches.push(wordRecordFor(word, dictionary, relationships, senses, domainName, wordForms));
   }
   matches.sort((a, b) => a.lexical_form.toLowerCase().localeCompare(b.lexical_form.toLowerCase()));
   return { words: matches, totalMatches };

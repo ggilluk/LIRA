@@ -38,13 +38,22 @@
 
 import { PartOfSpeech } from "../../data/enums/part_of_speech";
 import type { Dictionary } from "../../data/dictionary";
+import type { LexicalRelationshipStore } from "../../data/lexical_relationship_store";
 import type { SemanticRelationshipStore } from "../../data/semantic_relationship_store";
 import { Phrases } from "../../data/phrases";
 import { Senses } from "../../data/senses";
+import { WordForms } from "../../data/word_forms";
 import { PAGE_TEMPLATE } from "../client/page_template";
 import { phraseRecords, searchPhrases, type PhraseRecord } from "./builder_phrase";
 import { senseRecords, searchSenses, type SenseRecord } from "./builder_sense";
 import { relationshipKindCounts, relationshipRecords, searchRelationships, type RelationshipKindCount, type RelationshipRecord } from "./builder_relationship";
+import {
+  lexicalRelationshipKindCounts,
+  lexicalRelationshipRecords,
+  searchLexicalRelationships,
+  type LexicalRelationshipKindCount,
+  type LexicalRelationshipRecord,
+} from "./builder_lexical_relationship";
 import { resolveHierarchy, type HierarchyResolution } from "./builder_hierarchy";
 import { searchWords, wordRecords, type WordRecord } from "./builder_word";
 import { domainLabel } from "./resolver_domain";
@@ -64,6 +73,19 @@ export interface DictionaryViewOptions {
   // means "no Sense-typed relationship endpoint will ever be seen",
   // true for every pre-Sense Domain).
   senses?: Senses;
+  // WordForm's own store -- undefined/omitted (every existing caller
+  // that predates WordForm, mostly vocabulary.test.ts's own fixtures)
+  // means wordFormsFor() (builder_word.ts) falls back to its own
+  // pre-WordForm scalar-field-only rendering, `senses: []` on every
+  // entry (that function's own docstring). Supplying it is what makes
+  // the Word Detail UI's own Word -> WordForm -> Senses nesting
+  // (word_wordform_sense_relationships.md) real rather than degenerate.
+  wordForms?: WordForms;
+  // LexicalRelationship's own store (data/lexical_relationship.ts) --
+  // Senses's own exact counterpart just above: undefined/omitted means
+  // every existing caller keeps working with an empty "Sense.Lexical.Relationships"
+  // section, the same graceful-degradation `senses` already gets.
+  lexicalRelationships?: LexicalRelationshipStore;
 }
 
 // A hard ceiling on how many Words this view will build full,
@@ -147,6 +169,8 @@ export class DictionaryView {
 
   private readonly phrases: Phrases;
   private readonly senses: Senses;
+  private readonly wordForms: WordForms;
+  private readonly lexicalRelationships: LexicalRelationshipStore | undefined;
 
   constructor(
     private readonly dictionary: Dictionary,
@@ -158,6 +182,8 @@ export class DictionaryView {
     this.unresolved = options.unresolved ?? [];
     this.phrases = options.phrases ?? new Phrases();
     this.senses = options.senses ?? new Senses();
+    this.wordForms = options.wordForms ?? new WordForms();
+    this.lexicalRelationships = options.lexicalRelationships;
   }
 
   /** The moment render() is actually called, not construction time --
@@ -198,8 +224,19 @@ export class DictionaryView {
     const totalSenseCount = this.senses.totalEntries();
     const overCapacitySenses = totalSenseCount > MAX_INTERACTIVE_WORDS;
 
-    const words = overCapacity ? [] : wordRecords(this.dictionary, this.relationships, this.senses, this.domainName);
+    const words = overCapacity ? [] : wordRecords(this.dictionary, this.relationships, this.senses, this.domainName, this.wordForms);
     const rels = overCapacity ? [] : relationshipRecords(this.relationships, this.dictionary, this.phrases, this.senses, this.domainName);
+    // Same overCapacity gate as `rels` just above -- LexicalRelationshipStore's
+    // own scale tracks the same Dictionary this.relationships already
+    // does (both are populated off the identical seeded Words), so
+    // there's nothing LexicalRelationship-specific for a second capacity
+    // check to catch here. `?? []` (not `this.lexicalRelationships!`) --
+    // DictionaryViewOptions.lexicalRelationships's own docstring on why
+    // every pre-LexicalRelationship caller omits this.
+    const lexicalRels =
+      overCapacity || this.lexicalRelationships === undefined
+        ? []
+        : lexicalRelationshipRecords(this.lexicalRelationships, this.wordForms, this.dictionary, this.phrases, this.senses, this.domainName);
     const phrases = overCapacityPhrases ? [] : phraseRecords(this.phrases, this.senses);
     const senses = overCapacitySenses ? [] : senseRecords(this.senses, this.domainName);
     const commonCount = allWords.filter((w) => w.isCommon).length;
@@ -236,6 +273,7 @@ export class DictionaryView {
       PHRASES_JSON: JSON.stringify(phrases),
       SENSES_JSON: JSON.stringify(senses),
       RELS_JSON: JSON.stringify(rels),
+      LEXICAL_RELS_JSON: JSON.stringify(lexicalRels),
       POS_VALUES_JSON: JSON.stringify(posValues),
       DOMAIN_VALUES_JSON: JSON.stringify(domainValues),
       OVER_CAPACITY_JSON: JSON.stringify(overCapacity),
@@ -279,6 +317,13 @@ export class DictionaryView {
       // MAX_INTERACTIVE_WORDS there's no client-embedded RELS array
       // left to scan for kinds at all).
       RELATIONSHIP_KIND_COUNTS_JSON: JSON.stringify(relationshipKindCounts(this.relationships)),
+      // relationshipKindCounts()'s own docstring above, applied to
+      // LexicalRelationshipStore -- [] when this.lexicalRelationships
+      // is undefined (DictionaryViewOptions.lexicalRelationships's own
+      // docstring), not gated behind overCapacity: this one is always
+      // small enough to embed regardless (Morphological/Orthographic
+      // kinds alone, never one row per relationship).
+      LEXICAL_RELATIONSHIP_KIND_COUNTS_JSON: JSON.stringify(this.lexicalRelationships === undefined ? [] : lexicalRelationshipKindCounts(this.lexicalRelationships)),
       POS_COLORS_JSON: JSON.stringify(POS_COLORS),
       GROUP_COLORS_JSON: JSON.stringify(GROUP_COLORS),
       GROUP_NAMES_JSON: JSON.stringify(GROUP_NAMES),
@@ -342,7 +387,7 @@ export class DictionaryView {
     rootWordsOnly?: boolean;
     limit?: number;
   }): { words: WordRecord[]; totalMatches: number } {
-    return searchWords(this.dictionary, this.phrases, this.senses, this.relationships, this.domainName, options);
+    return searchWords(this.dictionary, this.phrases, this.senses, this.relationships, this.domainName, options, this.wordForms);
   }
 
   searchPhrases(options: { word?: string; gloss?: string; definition?: string; pos?: string; limit?: number }): {
@@ -365,6 +410,23 @@ export class DictionaryView {
 
   relationshipKindCounts(): RelationshipKindCount[] {
     return relationshipKindCounts(this.relationships);
+  }
+
+  /** `searchRelationships()`'s own exact mirror for the Sense.Lexical.Relationships
+   * detail-panel section (client_senses_section_html.ts) -- [] (never
+   * throws) when this view was constructed without a
+   * `LexicalRelationshipStore` (DictionaryViewOptions.lexicalRelationships's
+   * own docstring). */
+  searchLexicalRelationships(options: { wordId?: string; query?: string; limit?: number }): {
+    relationships: LexicalRelationshipRecord[];
+    totalMatches: number;
+  } {
+    if (this.lexicalRelationships === undefined) return { relationships: [], totalMatches: 0 };
+    return searchLexicalRelationships(this.lexicalRelationships, this.wordForms, this.dictionary, this.phrases, this.senses, this.domainName, options);
+  }
+
+  lexicalRelationshipKindCounts(): LexicalRelationshipKindCount[] {
+    return this.lexicalRelationships === undefined ? [] : lexicalRelationshipKindCounts(this.lexicalRelationships);
   }
 
   resolveHierarchy(options: { kind: string; wordId?: string; limit?: number }): HierarchyResolution {

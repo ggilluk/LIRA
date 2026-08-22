@@ -124,6 +124,25 @@ function fetchDetailRelsIfNeeded(wordId) {
   }));
 }
 
+// fetchDetailRelsIfNeeded()'s own exact mirror for the new
+// LexicalRelationship store -- Sense.Lexical.Relationships
+// (sensesSectionHTML(), client_senses_section_html.ts) fetched the same
+// way, over its own independent cache/in-flight/pending-requestId set so
+// the two relationship kinds never block or clobber each other.
+const detailLexicalRelsCache = new Map();
+const detailLexicalRelsInFlight = new Set();
+const pendingDetailLexicalRelLookups = new Map(); // requestId -> wordId
+
+function fetchDetailLexicalRelsIfNeeded(wordId) {
+  if (detailLexicalRelsCache.has(wordId) || detailLexicalRelsInFlight.has(wordId)) return;
+  detailLexicalRelsInFlight.add(wordId);
+  const requestId = 'detail-lexical-rels-' + Math.random().toString(36).slice(2);
+  pendingDetailLexicalRelLookups.set(requestId, wordId);
+  document.dispatchEvent(new CustomEvent("lira-search-lexical-relationships", {
+    detail: { requestId, wordId, limit: 500 },
+  }));
+}
+
 // \`rels\` is \`null\` while a selected word's own relationship list is
 // still loading over capacity (relationshipsSectionHTML's own "Loading…"
 // branch) -- distinct from \`[]\`, which means the fetch already resolved
@@ -162,14 +181,14 @@ function headwordHTML(word) {
   return \`<span class="def-text">\${word.phrase_word_segments.map(definitionSegmentHTML).join(' ')}</span>\`;
 }
 
-function wordDetailHTML(word, rels) {
+function wordDetailHTML(word, rels, lexicalRels) {
   return \`
     <div class="detail-word">\${headwordHTML(word)}\${word.is_common ? ' <span class="badge-common">common</span>' : ''}\${word.is_root_word ? ' <span class="badge-root-word">root word</span>' : ''}\${word.is_derivable_noun ? ' <span class="badge-derivable-noun">derivable noun</span>' : ''}\${word.is_fully_hydrated ? '' : ' <span class="badge-common" style="color:#C2544B;border-color:#C2544B">hydration pending</span>'}</div>
     <div style="margin-top:6px">\${posPill(word.pos)} \${domainPill(word.domain)}</div>
     \${word.related_domains && word.related_domains.length ? \`<div class="detail-related-domains" style="margin-top:4px"><span style="opacity:.6">Also:</span> \${word.related_domains.map(domainPill).join(' ')}</div>\` : ''}
     <div class="detail-entry-id" title="Persistent Qualified Word Identity (domain + part of speech + word) -- stable across regenerations, unlike this word's transient graph id">Entry ID <code>\${word.entry_id}</code></div>
     <div class="detail-definition">\${renderDefinition(word)}</div>
-    \${sensesSectionHTML(word, rels)}
+    \${sensesSectionHTML(word, rels, lexicalRels)}
     \${wordFormsSectionHTML(word)}
     <div class="detail-section-title">Provenance</div>
     <div class="detail-definition" style="margin-top:0">\${word.sources && word.sources.length ? word.sources.map(s => \`<span class="tag">\${s}</span>\`).join('') : '<span style="opacity:.6">No source recorded.</span>'}</div>
@@ -201,7 +220,7 @@ function wordDetailHTML(word, rels) {
 // (word.phrase_type's own docstring -- present only on a Phrase-
 // resolved record, never a genuine Word's), and no Word Forms section
 // at all, rather than an empty one.
-function phraseDetailHTML(phrase, rels) {
+function phraseDetailHTML(phrase, rels, lexicalRels) {
   return \`
     <div class="detail-word">\${headwordHTML(phrase)}\${phrase.is_common ? ' <span class="badge-common">common</span>' : ''}</div>
     <div style="margin-top:6px">\${posPill(phrase.pos)} \${domainPill(phrase.domain)}\${phrase.phrase_type ? ' ' + phraseTypePill(phrase.phrase_type) : ''}</div>
@@ -209,7 +228,7 @@ function phraseDetailHTML(phrase, rels) {
     <div class="detail-entry-id" title="Persistent Qualified Word Identity (domain + part of speech + word) -- stable across regenerations, unlike this phrase's transient graph id">Entry ID <code>\${phrase.entry_id}</code></div>
     \${phrase.head_word ? \`<div class="detail-head-word" style="margin-top:4px" title="The one word whose own lexical class determines this Phrase's phraseType (Head Identification Rule, data/phrase_type_patterns_and_word_roles.md) -- text shown here is its Head Word Form, the phrase-local spelling; the link resolves its own Head Word entity"><span style="opacity:.6">Head Word:</span> \${definitionSegmentHTML(phrase.head_word)}</div>\` : ''}
     <div class="detail-definition">\${renderDefinition(phrase)}</div>
-    \${sensesSectionHTML(phrase, rels)}
+    \${sensesSectionHTML(phrase, rels, lexicalRels)}
     <div class="detail-section-title">Provenance</div>
     <div class="detail-definition" style="margin-top:0">\${phrase.sources && phrase.sources.length ? phrase.sources.map(s => \`<span class="tag">\${s}</span>\`).join('') : '<span style="opacity:.6">No source recorded.</span>'}</div>
   \`;
@@ -224,8 +243,8 @@ function phraseDetailHTML(phrase, rels) {
 // either, but is still a Phrase, not a Word) -- that field's own
 // docstring already documents it as set "only when this record was
 // resolved from a Phrase", exactly the distinction needed here.
-function detailHTML(word, rels) {
-  return word.phrase_word_segments !== undefined ? phraseDetailHTML(word, rels) : wordDetailHTML(word, rels);
+function detailHTML(word, rels, lexicalRels) {
+  return word.phrase_word_segments !== undefined ? phraseDetailHTML(word, rels, lexicalRels) : wordDetailHTML(word, rels, lexicalRels);
 }
 
 function wireDetailPivotButtons(content) {
@@ -260,11 +279,15 @@ function renderDetailPanel(panel) {
   empty.style.display = "none";
   content.style.display = "block";
   const rels = overCapacityRels ? (detailRelsCache.get(word.id) ?? null) : relationshipsForWord(word.id);
-  content.innerHTML = detailHTML(word, rels);
+  const lexicalRels = overCapacityRels ? (detailLexicalRelsCache.get(word.id) ?? null) : lexicalRelationshipsForWord(word.id);
+  content.innerHTML = detailHTML(word, rels, lexicalRels);
   wireDetailPivotButtons(content);
 
   if (overCapacityRels && !detailRelsCache.has(word.id)) {
     fetchDetailRelsIfNeeded(word.id);
+  }
+  if (overCapacityRels && !detailLexicalRelsCache.has(word.id)) {
+    fetchDetailLexicalRelsIfNeeded(word.id);
   }
 }
 `;

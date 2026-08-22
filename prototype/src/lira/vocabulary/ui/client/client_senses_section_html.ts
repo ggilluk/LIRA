@@ -3,7 +3,27 @@
  * shared by both Word and Phrase detail panels. Now also renders
  * WordSenseSummary.frames (ui/server/builder_word.ts), the real WordNet
  * verb-frame sentences for a VERB sense, in its own collapsible
- * <details> alongside the existing PAD one. */
+ * <details> alongside the existing PAD one.
+ *
+ * Restructured to group by WordForm (word_wordform_sense_relationships.md's
+ * own target model: Word -> WordForm -> Senses) -- sensesSectionHTML()
+ * now iterates `word.word_forms` (WordRecord.word_forms, ui/server/builder_word.ts),
+ * rendering one sense sub-list per WordForm that actually carries one or
+ * more Senses (WordFormEntry.senses's own docstring -- empty for every
+ * scalar-field-derived entry, e.g. pluralNumberForm, that isn't backed
+ * by a real WordForm record). Each sense row keeps its existing
+ * "Sense.Semantic.Relationships" `<details>` (`rels`, fetched via the
+ * `search-relationships` worker message, `via_sense_id`-filtered,
+ * unchanged) and gains a sibling "Sense.Lexical.Relationships" one
+ * (`lexicalRels`, the identical fetch/filter shape against the new
+ * `search-lexical-relationships` message) -- both reuse
+ * relationshipsSectionHTML() as-is (client_detail_panel_controller.ts),
+ * since a LexicalRelationshipRecord (ui/server/builder_lexical_relationship.ts)
+ * carries the exact same source_text/target_text/kind/group/qualifier/
+ * via_sense_id shape a RelationshipRecord does once
+ * lexicalRelationshipsForWord() (client_words_tab_view.ts) enriches it
+ * with the same otherId/otherText/... fields relationshipsForWord()
+ * already computes. */
 export const CLIENT_SENSES_SECTION_HTML = `// One PAD (Pleasure-Arousal-Dominance) meter row: a track centred on
 // zero, filled from the centre toward the value's sign -- accent
 // colour for the named positive pole, the palette's warning red for
@@ -48,67 +68,78 @@ function verbFrameText(word, frame) {
   return frame.replace(/----ing/g, ing).replace(/----s/g, thirdPerson).replace(/----/g, base);
 }
 
-// \`rels\` follows relationshipsSectionHTML's own null/[]/populated
-// convention -- null while still loading over capacity, so a sense's own
-// nested relationship count shows "…" rather than a wrong "0" until the
-// real fetch resolves. Always renders at least one sense row (even a
-// monosemous Word's own single, always-primary sense) -- Word.senses is
-// never empty for a Word that came through WordSeeder, and the one
-// existing definition line above already duplicates entry #1's own text,
-// so showing it again here is deliberate, not redundant: it's what turns
-// "the definition" into "sense 1 of N", and it's the only place a
-// monosemous Word's own relationships (now always grouped under a
-// Sense, RelationshipRecord.via_sense_id's own docstring) are shown at
-// all. Each sense's own relationships -- and, when seeded, its own PAD
-// (Pleasure-Arousal-Dominance) affect reading, WordSenseSummary.pad's
-// own docstring on why this moved from a single word-level section to
-// here -- are nested in a native \`<details>\` each, collapsible with
-// zero extra JS, open by default only for the primary sense (the one
-// most callers care about first), closed for the rest so a highly
-// polysemous Word ("big", ~15 senses) doesn't dump fifteen expanded
-// blocks at once. No PAD \`<details>\` at all for a sense with none
-// seeded (every WordNet-seeded sense, most hand-curated ones too) --
-// nothing to show, so nothing to collapse.
-function sensesSectionHTML(word, rels) {
-  if (!word.senses || !word.senses.length) return '';
+// \`rels\`/\`lexicalRels\` both follow relationshipsSectionHTML's own
+// null/[]/populated convention -- null while still loading over
+// capacity, so a sense's own nested relationship count shows "…" rather
+// than a wrong "0" until the real fetch resolves. One sense row per
+// (WordForm, Sense) pair, nested under its own WordForm heading -- Sense.pad/
+// Sense.frames/Sense.Semantic.Relationships/Sense.Lexical.Relationships
+// are each a native \`<details>\`, collapsible with zero extra JS, open
+// by default only for the primary sense (the one most callers care
+// about first), closed for the rest so a highly polysemous Word ("big",
+// ~15 senses) doesn't dump fifteen expanded blocks at once. No PAD
+// \`<details>\` at all for a sense with none seeded (every WordNet-seeded
+// sense, most hand-curated ones too) -- nothing to show, so nothing to
+// collapse.
+function senseRowHTML(word, s, index, rels, lexicalRels) {
+  // Every relationship here, PERTAINYM included, is a real
+  // SemanticRelationship now (Sense-to-Sense -- SemanticRelationshipKind's
+  // own docstring, data/enums/semantic_relationship_kind.ts), so
+  // \`rels\` (fetched via searchRelationships({wordId}), which
+  // sense-expands SemanticRelationshipStore itself) already
+  // carries it -- nothing needs synthesizing client-side any more.
+  const senseRels = rels === null ? null : rels.filter(r => r.via_sense_id === s.id);
+  const count = senseRels === null ? '…' : senseRels.length;
+  // lexicalRelationshipsForWord()'s own exact counterpart fact, against
+  // the new LexicalRelationship store (data/lexical_relationship.ts) --
+  // the Morphological/Orthographic-group facts this Sense's own WordForm
+  // reaches (derivation, inflection, contraction, spelling variants, ...)
+  // rather than the Lexical Semantic ones \`rels\` above already covers.
+  const senseLexicalRels = lexicalRels === null ? null : lexicalRels.filter(r => r.via_sense_id === s.id);
+  const lexicalCount = senseLexicalRels === null ? '…' : senseLexicalRels.length;
   return \`
-    <div class="detail-section-title">Senses (\${word.senses.length})</div>
-    <ol class="sense-list">
-      \${word.senses.map((s, i) => {
-        // Every relationship here, PERTAINYM included, is a real
-        // SemanticRelationship now (Sense-to-Sense -- SemanticRelationshipKind's
-        // own docstring, data/enums/semantic_relationship_kind.ts), so
-        // \`rels\` (fetched via searchRelationships({wordId}), which
-        // sense-expands SemanticRelationshipStore itself) already
-        // carries it -- nothing needs synthesizing client-side any more.
-        const senseRels = rels === null ? null : rels.filter(r => r.via_sense_id === s.id);
-        const count = senseRels === null ? '…' : senseRels.length;
-        return \`
-        <li class="sense-row\${s.is_primary ? ' primary' : ''}">
-          <span class="sense-number">\${i + 1}\${s.is_primary ? ' <span class="sense-primary-tag">primary</span>' : ''}</span>
-          <span class="sense-definition">\${s.definition || '<span style="opacity:.6">No definition.</span>'}</span>
-          <span class="sense-meta">\${domainPill(s.domain)}\${s.frequency !== null ? \` <span class="sense-frequency" title="WordNet tagged-occurrence count (SemCor semantic concordance)">freq \${s.frequency.toLocaleString()}</span>\` : ''}\${s.synonyms.length ? \` <span class="sense-synonyms">synonyms: \${s.synonyms.map(syn => \`<button class="link-btn" data-pivot-id="\${syn.id}">\${syn.text}</button>\`).join(', ')}</span>\` : ''}</span>
-          <details class="sense-rels"\${s.is_primary ? ' open' : ''}>
-            <summary>Sense.Semantic.Relationships (\${count})</summary>
-            <div class="detail-relationships-section">\${relationshipsSectionHTML(senseRels)}</div>
-          </details>
-          \${s.pad ? \`
-          <details class="sense-pad"\${s.is_primary ? ' open' : ''}>
-            <summary>Affect (PAD, seeded)</summary>
-            <div class="pad-meters">
-              \${padMeterRow('Pleasure', 'Displeasure', s.pad.pleasure)}
-              \${padMeterRow('Arousal', 'Non-Arousal', s.pad.arousal)}
-              \${padMeterRow('Dominance', 'Submissive', s.pad.dominance)}
-            </div>
-          </details>\` : ''}
-          \${s.frames && s.frames.length ? \`
-          <details class="sense-frames"\${s.is_primary ? ' open' : ''}>
-            <summary>Sense.Verb.Framed.Examples (\${s.frames.length})</summary>
-            <ul class="sense-frame-list">\${s.frames.map(f => \`<li>\${verbFrameText(word, f)}</li>\`).join('')}</ul>
-          </details>\` : ''}
-        </li>\`;
-      }).join('')}
-    </ol>
+    <li class="sense-row\${s.is_primary ? ' primary' : ''}">
+      <span class="sense-number">\${index + 1}\${s.is_primary ? ' <span class="sense-primary-tag">primary</span>' : ''}</span>
+      <span class="sense-definition">\${s.definition || '<span style="opacity:.6">No definition.</span>'}</span>
+      <span class="sense-meta">\${domainPill(s.domain)}\${s.frequency !== null ? \` <span class="sense-frequency" title="WordNet tagged-occurrence count (SemCor semantic concordance)">freq \${s.frequency.toLocaleString()}</span>\` : ''}\${s.synonyms.length ? \` <span class="sense-synonyms">synonyms: \${s.synonyms.map(syn => \`<button class="link-btn" data-pivot-id="\${syn.id}">\${syn.text}</button>\`).join(', ')}</span>\` : ''}</span>
+      <details class="sense-rels"\${s.is_primary ? ' open' : ''}>
+        <summary>Sense.Semantic.Relationships (\${count})</summary>
+        <div class="detail-relationships-section">\${relationshipsSectionHTML(senseRels)}</div>
+      </details>
+      <details class="sense-lexical-rels"\${s.is_primary ? ' open' : ''}>
+        <summary>Sense.Lexical.Relationships (\${lexicalCount})</summary>
+        <div class="detail-relationships-section">\${relationshipsSectionHTML(senseLexicalRels)}</div>
+      </details>
+      \${s.pad ? \`
+      <details class="sense-pad"\${s.is_primary ? ' open' : ''}>
+        <summary>Affect (PAD, seeded)</summary>
+        <div class="pad-meters">
+          \${padMeterRow('Pleasure', 'Displeasure', s.pad.pleasure)}
+          \${padMeterRow('Arousal', 'Non-Arousal', s.pad.arousal)}
+          \${padMeterRow('Dominance', 'Submissive', s.pad.dominance)}
+        </div>
+      </details>\` : ''}
+      \${s.frames && s.frames.length ? \`
+      <details class="sense-frames"\${s.is_primary ? ' open' : ''}>
+        <summary>Sense.Verb.Framed.Examples (\${s.frames.length})</summary>
+        <ul class="sense-frame-list">\${s.frames.map(f => \`<li>\${verbFrameText(word, f)}</li>\`).join('')}</ul>
+      </details>\` : ''}
+    </li>\`;
+}
+
+function sensesSectionHTML(word, rels, lexicalRels) {
+  const formsWithSenses = (word.word_forms || []).filter(f => f.senses && f.senses.length);
+  if (!formsWithSenses.length) return '';
+  const totalSenses = formsWithSenses.reduce((n, f) => n + f.senses.length, 0);
+  return \`
+    <div class="detail-section-title">Senses (\${totalSenses})</div>
+    \${formsWithSenses.map(form => \`
+      <div class="word-form-group">
+        <div class="word-form-group-title">\${form.label}: <span class="word-form-value">\${form.value}</span></div>
+        <ol class="sense-list">
+          \${form.senses.map((s, i) => senseRowHTML(word, s, i, rels, lexicalRels)).join('')}
+        </ol>
+      </div>\`).join('')}
   \`;
 }
 `;

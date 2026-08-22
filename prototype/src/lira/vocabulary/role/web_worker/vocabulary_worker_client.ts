@@ -6,6 +6,7 @@ import type {
   VocabularyWorkerRequest,
 } from "./vocabulary_worker_protocol";
 import type { HierarchyEdge, HierarchyNode } from "../../ui/server/builder_hierarchy";
+import type { LexicalRelationshipRecord } from "../../ui/server/builder_lexical_relationship";
 import type { PhraseRecord } from "../../ui/server/builder_phrase";
 import type { RelationshipRecord } from "../../ui/server/builder_relationship";
 import type { SenseRecord } from "../../ui/server/builder_sense";
@@ -64,6 +65,17 @@ export interface RelationshipSearchResult {
   totalMatches: number;
 }
 
+export interface LexicalRelationshipSearchQuery {
+  wordId?: string;
+  query?: string;
+  limit?: number;
+}
+
+export interface LexicalRelationshipSearchResult {
+  relationships: readonly LexicalRelationshipRecord[];
+  totalMatches: number;
+}
+
 export interface HierarchyQuery {
   kind: string;
   wordId?: string;
@@ -103,6 +115,7 @@ export class VocabularyWorkerClient {
   private readonly pendingPhraseSearches = new Map<string, (result: PhraseSearchResult) => void>();
   private readonly pendingSenseSearches = new Map<string, (result: SenseSearchResult) => void>();
   private readonly pendingRelationshipSearches = new Map<string, (result: RelationshipSearchResult) => void>();
+  private readonly pendingLexicalRelationshipSearches = new Map<string, (result: LexicalRelationshipSearchResult) => void>();
   private readonly pendingHierarchyResolutions = new Map<string, (result: HierarchyResult) => void>();
 
   constructor() {
@@ -278,6 +291,29 @@ export class VocabularyWorkerClient {
     });
   }
 
+  /** searchRelationships()'s own exact counterpart against
+   * `domainName`'s LexicalRelationshipStore inside the worker
+   * (DictionaryView.searchLexicalRelationships()'s own docstring) --
+   * the Word Detail UI's own "Sense.Lexical.Relationships" section
+   * (client_senses_section_html.ts), fetched over MAX_INTERACTIVE_WORDS
+   * the same way. PortalShell answers a "lira-search-lexical-relationships"
+   * event the fragment's script dispatches
+   * (fetchDetailLexicalRelsIfNeeded(), client_detail_panel_controller.ts). */
+  searchLexicalRelationships(domainName: string, query: LexicalRelationshipSearchQuery): Promise<LexicalRelationshipSearchResult> {
+    const requestId = `lexical-rel-search-${domainName}-${Math.random().toString(36).slice(2)}`;
+    return new Promise((resolve) => {
+      this.pendingLexicalRelationshipSearches.set(requestId, resolve);
+      this.post({
+        type: "search-lexical-relationships",
+        requestId,
+        domain: domainName,
+        wordId: query.wordId,
+        query: query.query,
+        limit: query.limit,
+      });
+    });
+  }
+
   /** Resolves one Hierarchy-tab tree against `domainName`'s full
    * LexicalRelationshipStore inside the worker
    * (DictionaryView.resolveHierarchy()'s own docstring on the two modes
@@ -346,6 +382,12 @@ export class VocabularyWorkerClient {
       const resolve = this.pendingRelationshipSearches.get(message.requestId);
       if (resolve) {
         this.pendingRelationshipSearches.delete(message.requestId);
+        resolve({ relationships: message.relationships, totalMatches: message.totalMatches });
+      }
+    } else if (message.type === "search-lexical-relationships-result") {
+      const resolve = this.pendingLexicalRelationshipSearches.get(message.requestId);
+      if (resolve) {
+        this.pendingLexicalRelationshipSearches.delete(message.requestId);
         resolve({ relationships: message.relationships, totalMatches: message.totalMatches });
       }
     } else if (message.type === "resolve-hierarchy-result") {
