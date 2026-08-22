@@ -49,13 +49,16 @@ interface AuxiliaryLemmaSeed {
   forms: readonly AuxiliaryFormSeed[];
 }
 
-// The 9 base lemmas this seeder covers -- exactly the ones the sense
-// table (this seeder's own direct source) gives full per-form,
-// per-meaning coverage for. auxiliaries.json's own remaining 27
-// surface-form/semi-modal/contraction entries (need, dare, done, doing,
-// don't, can't, I'm, it's, isn't, wasn't, hadn't) have no lemma-model
-// equivalent here yet -- tracked as a follow-up, not silently dropped
-// (see this file's own README.md note on auxiliaries.json's retirement).
+// The 11 base lemmas this seeder covers: the original 9 the sense table
+// (this seeder's own direct source) gave full per-form, per-meaning
+// coverage for, plus "need"/"dare" and do's own "doing"/"done" (GitHub
+// issue #2's own points 1-2, a deliberate expansion beyond that table's
+// original scope -- each new entry's own comment below says so).
+// auxiliaries.json's own remaining 7 entries -- the full contractions
+// (don't, can't, I'm, it's, isn't, wasn't, hadn't) -- still have no
+// lemma-model equivalent here; tracked as issue #2's own point 3, not
+// silently dropped (see this file's own README.md note on
+// auxiliaries.json's retirement).
 const AUXILIARY_LEMMAS: readonly AuxiliaryLemmaSeed[] = [
   {
     entryId: "a5d86125-ccba-4988-a956-0f39fd04cf19",
@@ -187,6 +190,28 @@ const AUXILIARY_LEMMAS: readonly AuxiliaryLemmaSeed[] = [
         senses: [
           "Past tense form of the do-support auxiliary. Example: 'Did you agree?' / 'I did not agree.'",
           "Past tense form used for emphasis. Example: 'I did agree.'",
+        ],
+      },
+      // "doing"/"done" are a deliberate expansion beyond this lemma's
+      // original 3-form scope (do/does/did, the do-support/emphatic
+      // auxiliary's own only real forms -- do-support never inflects to
+      // -ing/-en) -- GitHub issue #2's own point 2. Kept honest about
+      // that: these two definitions describe "do" acting as the main
+      // verb of performing an action or reaching completion, the same
+      // non-auxiliary lexical use "having"/"been" already sit alongside
+      // for "have"/"be" above, not a genuine do-support/emphatic sense.
+      {
+        field: "presentParticipleForm",
+        text: "doing",
+        senses: [
+          "The -ing form of 'do', used to form the continuous aspect when 'do' is the main verb of performing an action. Example: 'She was doing her best.'",
+        ],
+      },
+      {
+        field: "pastParticipleForm",
+        text: "done",
+        senses: [
+          "The past participle of 'do', used after 'have' to form the perfect aspect of 'do' as the main verb of performing an action, or as an adjective meaning finished/complete. Example: 'I have done what I could.' / 'The work is done.'",
         ],
       },
     ],
@@ -330,11 +355,57 @@ const AUXILIARY_LEMMAS: readonly AuxiliaryLemmaSeed[] = [
       // No secondaryModalForm -- same defective shape as "must".
     ],
   },
+  {
+    entryId: "dd0df66c-98c4-4d85-b8ec-6e3ed7f17ee1",
+    lemma: "need",
+    definition: "Semi-modal auxiliary expressing necessity (used without 'to' in negatives/questions)",
+    forms: [
+      // A semi-modal, not a true modal like can/may/shall/will/must/ought
+      // -- as an ordinary lexical verb "need" inflects regularly
+      // (needs/needed/needing), but that use is POS=VERB, out of scope
+      // here (the same split be/have/do already have between this
+      // AUXILIARY lemma and their own separate VERB homograph,
+      // assets/common/en/README.md's own homograph table). This
+      // AUXILIARY Word covers only the invariant NICE-property auxiliary
+      // use (Negation/Inversion/Code/Emphasis, no third-person -s, no
+      // separate past form) -- modalForm is the right field for that,
+      // same shape as must/ought's own single invariant spelling.
+      {
+        field: "modalForm",
+        text: "need",
+        senses: [
+          "Used as an auxiliary, chiefly in negative and interrogative sentences, to express that something is or is not necessary. Example: 'You need not attend.' / 'Need I remind you?'",
+        ],
+      },
+      // No secondaryModalForm -- same defective shape as "must"/"ought".
+    ],
+  },
+  {
+    entryId: "69ae7042-9010-46df-a8b9-629de0a8ee3a",
+    lemma: "dare",
+    definition: "Semi-modal auxiliary expressing having the courage to do something",
+    forms: [
+      // Same semi-modal shape as "need" above: the ordinary lexical verb
+      // ("dares"/"dared"/"daring", "she dared him to jump") is POS=VERB,
+      // out of scope here; this AUXILIARY Word covers only the invariant
+      // NICE-property auxiliary use.
+      {
+        field: "modalForm",
+        text: "dare",
+        senses: [
+          "Used as an auxiliary, chiefly in negative and interrogative sentences, to express that someone has or does not have the courage or audacity to do something. Example: 'I dare not ask.' / 'Dare he object?'",
+          "Used in the fixed exclamatory construction 'how dare' to express indignation at someone's audacity. Example: 'How dare you!'",
+        ],
+      },
+      // No secondaryModalForm -- same defective shape as "need" above.
+    ],
+  },
 ];
 
-/** Seeds the 9 AUXILIARY lemma Words (be, have, do, can, may, shall,
- * will, must, ought) this codebase's Common Vocabulary Cache used to
- * get from the now-retired auxiliaries.json, as a standalone post-seed
+/** Seeds the 11 AUXILIARY lemma Words (be, have, do, can, may, shall,
+ * will, must, ought, need, dare) this codebase's Common Vocabulary
+ * Cache used to get from the now-retired auxiliaries.json, as a
+ * standalone post-seed
  * role -- NounCharacterFormSeeder's own shape (role/noun_character_form_seeder.ts),
  * not folded into WordSeeder itself, since this is data this seeder
  * authors directly rather than reads from an asset file.

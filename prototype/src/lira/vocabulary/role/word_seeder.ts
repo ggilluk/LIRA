@@ -100,16 +100,16 @@ interface FormLink {
 }
 
 // auxiliaries.json was retired once role/auxiliary_seeder.ts started
-// seeding AUXILIARY's 9 base lemmas directly (be, have, do, can, may,
-// shall, will, must, ought) -- a one-Word-per-lemma model with the
-// old file's own flat one-Word-per-surface-form entries folded into
-// *_Form fields instead (data/entities/auxiliary.ts's own docstring).
-// AuxiliarySeeder runs before this list is loaded (vocabulary_worker.ts's
-// own handleSeedCommonVocabulary), preserving this list's own "loads
-// before every SUPPLEMENTARY_FILES entry" ordering guarantee for
-// be/have/do's AUXILIARY-vs-VERB homograph default. Not every one of
-// the old file's 36 entries has a lemma-model equivalent yet (need,
-// dare, done, doing, and the 7 full contractions) -- tracked as a
+// seeding AUXILIARY's 11 base lemmas directly (be, have, do, can, may,
+// shall, will, must, ought, need, dare) -- a one-Word-per-lemma model
+// with the old file's own flat one-Word-per-surface-form entries folded
+// into *_Form fields instead (data/entities/auxiliary.ts's own
+// docstring). AuxiliarySeeder runs before this list is loaded
+// (vocabulary_worker.ts's own handleSeedCommonVocabulary), preserving
+// this list's own "loads before every SUPPLEMENTARY_FILES entry"
+// ordering guarantee for be/have/do's AUXILIARY-vs-VERB homograph
+// default. Not every one of the old file's 36 entries has a
+// lemma-model equivalent yet (the 7 full contractions) -- tracked as a
 // follow-up, not silently dropped (see the GitHub issue this retirement
 // filed, and assets/common/en/README.md's own note on it).
 export const MANDATORY_FILES = [

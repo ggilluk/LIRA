@@ -530,7 +530,7 @@ export const WORD_FORM_MATRIX: readonly WordFormRow[] = [
     field: "modalForm",
     label: "Modal Form",
     purpose:
-      "Identifies the primary spelling of a modal auxiliary -- can, may, shall, will, must, ought. AUXILIARY-only: a modal has no infinitive, no participle, and no person/number agreement of its own, so none of the Verb-style *_Form fields above ever apply to it -- this and Secondary Modal Form below are the only two fields a modal lemma's Auxiliary Word ever populates.",
+      "Identifies the primary spelling of a modal or semi-modal auxiliary -- can, may, shall, will, must, ought, need, dare. AUXILIARY-only: in this invariant auxiliary use a modal has no infinitive, no participle, and no person/number agreement of its own, so none of the Verb-style *_Form fields above ever apply to it -- this and Secondary Modal Form below are the only two fields a modal lemma's Auxiliary Word ever populates (need/dare's own ordinary lexical-verb use, which does inflect regularly, is a separate VERB Word, out of this row's scope).",
     rules: [
       {
         appliesTo: [P.AUXILIARY],

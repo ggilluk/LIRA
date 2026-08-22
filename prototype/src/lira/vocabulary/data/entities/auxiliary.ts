@@ -1,5 +1,6 @@
 /** Auxiliary: Word's own AUXILIARY-specific subtype. One Word per base
- * lemma (be, have, do, can, may, shall, will, must, ought), not one per
+ * lemma (be, have, do, can, may, shall, will, must, ought, need, dare),
+ * not one per
  * surface spelling -- "was" and "were" are both values living on the
  * single "be" Word, not two separate Words, the same shape Verb already
  * uses for its own *_Form fields. Settled after direct back-and-forth on
@@ -87,14 +88,17 @@ export interface Auxiliary extends Word {
   pastParticipleForm?: Text;
 
   // The primary modal spelling -- "can", "may", "shall", "will",
-  // "must", "ought". The one field every modal lemma populates; none
+  // "must", "ought", and the two semi-modals "need"/"dare" in their
+  // own invariant auxiliary use (their ordinary, regularly-inflecting
+  // lexical-verb use is a separate VERB Word, out of this subtype's
+  // scope). The one field every modal/semi-modal lemma populates; none
   // of the Verb-style fields above apply to a modal at all.
   modalForm?: Text;
 
   // The secondary/preterite-present modal spelling paired with
   // modalForm -- "could", "might", "should", "would". Undefined for
-  // "must"/"ought": both are defective, with no secondary form of their
-  // own (this subtype's own sense data reflects that gap directly,
-  // rather than inventing a placeholder).
+  // "must"/"ought"/"need"/"dare": all four are defective, with no
+  // secondary form of their own (this subtype's own sense data reflects
+  // that gap directly, rather than inventing a placeholder).
   secondaryModalForm?: Text;
 }
