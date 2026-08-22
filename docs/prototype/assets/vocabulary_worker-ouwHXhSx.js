@@ -469,24 +469,20 @@ summary.detail-section-title::marker { color: var(--ink-muted); }
 .word-form-row .word-form-value {
   font-family: var(--font-mono);
 }
-.word-form-group {
-  margin: 10px 0;
-}
-.word-form-group-title {
-  font-size: 0.78rem;
-  font-weight: 600;
-  color: var(--ink-muted);
-  margin-bottom: 2px;
-}
-.word-form-group-title .word-form-value {
-  font-family: var(--font-mono);
-  font-weight: 700;
-  color: var(--ink);
-}
 .sense-list {
   list-style: none;
   margin: 0;
   padding: 0;
+}
+/* A Sense list directly follows its own owning WordForm's label/value
+   row (wordFormsSectionHTML(), client_detail_panel_controller.ts) --
+   indented and left-bordered so it visibly reads as nested under that
+   row, not a second, unrelated section. phraseSensesSectionHTML()'s own
+   ungrouped list (no owning .word-form-row sibling) is unaffected. */
+.word-form-row + .sense-list {
+  margin: 2px 0 10px 14px;
+  padding-left: 10px;
+  border-left: 2px solid var(--line);
 }
 .sense-row {
   padding: 7px 0;
@@ -1928,34 +1924,57 @@ function senseRowHTML(word, s, index, rels, lexicalRels) {
     </li>\`;
 }
 
-function sensesSectionHTML(word, rels, lexicalRels) {
-  const formsWithSenses = (word.word_forms || []).filter(f => f.senses && f.senses.length);
-  if (!formsWithSenses.length) return '';
-  const totalSenses = formsWithSenses.reduce((n, f) => n + f.senses.length, 0);
+// senseRowHTML()'s own flat, ungrouped list -- phraseDetailHTML()'s own
+// use (client_detail_panel_controller.ts). A Phrase has no WordForm of
+// its own to nest under at all (WordForm is a Word-only concept,
+// data/word_form.ts's own docstring -- wordFormsFor() never returns
+// anything for a Phrase-resolved record), so \`phrase.word_forms\` is
+// always empty and WordRecord.senses's own flat, Word-level list
+// (kept for exactly this kind of reader, that field's own docstring) is
+// the only Sense data a Phrase's own detail panel ever has to show.
+function phraseSensesSectionHTML(phrase, rels, lexicalRels) {
+  if (!phrase.senses || !phrase.senses.length) return '';
   return \`
-    <div class="detail-section-title">Senses (\${totalSenses})</div>
-    \${formsWithSenses.map(form => \`
-      <div class="word-form-group">
-        <div class="word-form-group-title">\${form.label}: <span class="word-form-value">\${form.value}</span></div>
-        <ol class="sense-list">
-          \${form.senses.map((s, i) => senseRowHTML(word, s, i, rels, lexicalRels)).join('')}
-        </ol>
-      </div>\`).join('')}
+    <div class="detail-section-title">Senses (\${phrase.senses.length})</div>
+    <ol class="sense-list">
+      \${phrase.senses.map((s, i) => senseRowHTML(phrase, s, i, rels, lexicalRels)).join('')}
+    </ol>
   \`;
 }
-`,eo=`function wordFormsSectionHTML(word) {
+`,eo=`// Word -> WordForm -> Senses, one section, not two -- an earlier
+// version rendered a separate "Senses" section (grouped by WordForm)
+// above this one's own flat, sense-less field/value rows, so a Sense
+// never visibly sat "under" any Word Form a reader could actually see
+// (a real bug: the two sections just happened to both mention the same
+// WordForm label). Every entry in \`word.word_forms\` (WordRecord.word_forms,
+// ui/server/builder_word.ts) gets its label/value row here, and -- only
+// when that entry's own \`senses\` (WordFormEntry.senses's own docstring)
+// is non-empty, i.e. it's backed by a real WordForm record, not a bare
+// scalar *_Form field -- its own nested \`<ol class="sense-list">\`
+// (senseRowHTML(), client_senses_section_html.ts, this file's own
+// sibling in the assembled script) immediately follows that same row,
+// each carrying its own Sense.Semantic.Relationships/Sense.Lexical.Relationships/
+// PAD/Verb-Frame \`<details>\` unchanged. \`derivations\` (Word-level
+// attribute pointers, not Sense-scoped) keep rendering as their own
+// trailing rows, same as before.
+function wordFormsSectionHTML(word, rels, lexicalRels) {
   const hasForms = word.word_forms && word.word_forms.length;
   const hasDerivations = word.derivations && word.derivations.length;
   if (!hasForms && !hasDerivations) {
     return '<div class="detail-section-title">Word Forms</div><div class="detail-empty" style="padding:4px 0">No word forms seeded yet.</div>';
   }
+  const totalSenses = (word.word_forms || []).reduce((n, f) => n + (f.senses ? f.senses.length : 0), 0);
   return \`
-    <div class="detail-section-title">Word Forms</div>
+    <div class="detail-section-title">Word Forms\${totalSenses ? \` &middot; Senses (\${totalSenses})\` : ''}</div>
     \${(word.word_forms || []).map(f => \`
       <div class="word-form-row">
         <span class="word-form-label">\${f.label}</span>
         <span class="word-form-value">\${f.value}</span>
-      </div>\`).join('')}
+      </div>
+      \${f.senses && f.senses.length ? \`
+      <ol class="sense-list">
+        \${f.senses.map((s, i) => senseRowHTML(word, s, i, rels, lexicalRels)).join('')}
+      </ol>\` : ''}\`).join('')}
     \${(word.derivations || []).map(d => \`
       <div class="word-form-row">
         <span class="word-form-label">\${d.label}</span>
@@ -2060,7 +2079,7 @@ function fetchDetailRelsIfNeeded(wordId) {
 
 // fetchDetailRelsIfNeeded()'s own exact mirror for the new
 // LexicalRelationship store -- Sense.Lexical.Relationships
-// (sensesSectionHTML(), client_senses_section_html.ts) fetched the same
+// (senseRowHTML(), client_senses_section_html.ts) fetched the same
 // way, over its own independent cache/in-flight/pending-requestId set so
 // the two relationship kinds never block or clobber each other.
 const detailLexicalRelsCache = new Map();
@@ -2122,8 +2141,7 @@ function wordDetailHTML(word, rels, lexicalRels) {
     \${word.related_domains && word.related_domains.length ? \`<div class="detail-related-domains" style="margin-top:4px"><span style="opacity:.6">Also:</span> \${word.related_domains.map(domainPill).join(' ')}</div>\` : ''}
     <div class="detail-entry-id" title="Persistent Qualified Word Identity (domain + part of speech + word) -- stable across regenerations, unlike this word's transient graph id">Entry ID <code>\${word.entry_id}</code></div>
     <div class="detail-definition">\${renderDefinition(word)}</div>
-    \${sensesSectionHTML(word, rels, lexicalRels)}
-    \${wordFormsSectionHTML(word)}
+    \${wordFormsSectionHTML(word, rels, lexicalRels)}
     <div class="detail-section-title">Provenance</div>
     <div class="detail-definition" style="margin-top:0">\${word.sources && word.sources.length ? word.sources.map(s => \`<span class="tag">\${s}</span>\`).join('') : '<span style="opacity:.6">No source recorded.</span>'}</div>
   \`;
@@ -2145,8 +2163,8 @@ function wordDetailHTML(word, rels, lexicalRels) {
 // name Word-only concepts a Phrase can never actually have, this is its
 // own renderer, built from the same section building blocks
 // (headwordHTML/posPill/domainPill/phraseTypePill/renderDefinition/
-// sensesSectionHTML/relationshipsSectionHTML, all already generic over
-// any WordRecord-shaped record) so the Phrases tab's own detail panel
+// phraseSensesSectionHTML/relationshipsSectionHTML, all already generic
+// over any WordRecord-shaped record) so the Phrases tab's own detail panel
 // stays visually aligned with the Words tab's -- same section order,
 // same CSS classes, same spacing -- while only ever showing fields a
 // Phrase genuinely has: is_common (a Phrase does carry its own
@@ -2162,7 +2180,7 @@ function phraseDetailHTML(phrase, rels, lexicalRels) {
     <div class="detail-entry-id" title="Persistent Qualified Word Identity (domain + part of speech + word) -- stable across regenerations, unlike this phrase's transient graph id">Entry ID <code>\${phrase.entry_id}</code></div>
     \${phrase.head_word ? \`<div class="detail-head-word" style="margin-top:4px" title="The one word whose own lexical class determines this Phrase's phraseType (Head Identification Rule, data/phrase_type_patterns_and_word_roles.md) -- text shown here is its Head Word Form, the phrase-local spelling; the link resolves its own Head Word entity"><span style="opacity:.6">Head Word:</span> \${definitionSegmentHTML(phrase.head_word)}</div>\` : ''}
     <div class="detail-definition">\${renderDefinition(phrase)}</div>
-    \${sensesSectionHTML(phrase, rels, lexicalRels)}
+    \${phraseSensesSectionHTML(phrase, rels, lexicalRels)}
     <div class="detail-section-title">Provenance</div>
     <div class="detail-definition" style="margin-top:0">\${phrase.sources && phrase.sources.length ? phrase.sources.map(s => \`<span class="tag">\${s}</span>\`).join('') : '<span style="opacity:.6">No source recorded.</span>'}</div>
   \`;
@@ -3462,7 +3480,7 @@ document.addEventListener("lira-search-lexical-relationships-result", (e) => {
 // be for the old flat relationships list), not another
 // renderDetailPanel() call. A narrow .detail-relationships-section
 // replace stopped being enough once relationships were also nested
-// per-sense (sensesSectionHTML()'s own docstring) -- each sense's own
+// per-sense (senseRowHTML()'s own docstring, client_senses_section_html.ts) -- each sense's own
 // count/list needs the same refresh the general section does, so the
 // whole panel body is rebuilt from the one already-known Word/Phrase
 // instead. Includes "phrases" alongside "words"/"hierarchy"/"cyclic" --
