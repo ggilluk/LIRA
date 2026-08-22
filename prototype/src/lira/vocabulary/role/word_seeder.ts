@@ -1795,7 +1795,19 @@ export class WordSeeder {
     }
 
     if (lexicalProcessor !== undefined && wordForms !== undefined && LEXICAL_TO_SEMANTIC_KIND[resolved.kind] === undefined) {
-      this.copyLexicalRelationship(lexicalProcessor, lexicalExistingEdges, synset, pointer, resolved, senseStore, wordForms, pairs, qualifiers);
+      this.copyLexicalRelationship(
+        lexicalProcessor,
+        lexicalExistingEdges,
+        synset,
+        pointer,
+        resolved,
+        synset.partOfSpeech,
+        targetMembers[0].partOfSpeech,
+        senseStore,
+        wordForms,
+        pairs,
+        qualifiers,
+      );
     }
 
     return this.createEdges(processor, existingEdges, resolved.kind, pairs, qualifiers);
@@ -1831,32 +1843,67 @@ export class WordSeeder {
    * exact same underlying fact, just announced from opposite sides.
    * Without this guard both occurrences would each store their own row
    * -- `abandon`'s own Sense.Lexical.Relationships would then show the
-   * identical fact twice, once each direction. Nor is "one specific, one
-   * generic" the only shape this takes: a Noun<->Adjective pair (e.g.
-   * "beauty"/"beautiful") resolves to ADJECTIVAL_DERIVATION read from the
-   * noun's own entry and NOMINALISATION read from the adjective's own
-   * reciprocal entry -- two *different specific* kinds, neither one the
-   * generic catch-all, still the same one underlying fact. `hasReciprocalDerivationEdge()`
-   * catches every one of these shapes uniformly: whichever occurrence
-   * this seeding pass processes first stores the one canonical row (any
-   * kind in the family); every later occurrence naming the same
-   * unordered WordForm pair, regardless of which specific kind *it*
-   * would have resolved to, is recognised as that same fact's own
-   * reciprocal and skipped. Both Words' own detail panels still see the
-   * one stored row either way -- `senseExpandedLexicalRelationships()`'s
-   * own outgoing/incoming handling (ui/server/builder_lexical_relationship.ts)
-   * surfaces it correctly regardless of which side ended up storing it. */
+   * identical fact twice, once each direction.
+   *
+   * Two checks, not one, because "one specific, one generic" and "both
+   * specific" need different resolutions, and getting this wrong
+   * doesn't just double-count -- it can store the *wrong* one:
+   *
+   * 1. `sourcePos`/`targetPos` catch "one specific, one generic"
+   *    (`derivationKind(targetPos, sourcePos) !== DERIVED_FORM` --
+   *    "what would the *other* direction resolve to") deterministically,
+   *    by POS alone, regardless of which of the two occurrences this
+   *    seeding pass happens to reach first: the generic occurrence is
+   *    always skipped, the specific one is always kept. This matters
+   *    for direction, not just count -- word_wordform_sense_relationships.md's
+   *    own Directional Rule (Section 7) and Test Matrix (Section 4) both
+   *    say Source = Base form, Destination = Nominalised/Adjectivised/
+   *    Adverbialised form (`act -> action`, not `action -> act`); the
+   *    *specific* kind is always resolved from the Base-form side
+   *    (derivationKind()'s own docstring -- target's POS decides the
+   *    kind, and the specific branches all name the *derived* form's
+   *    POS), so keeping the generic occurrence instead -- whichever
+   *    processing order alone would do -- doesn't just under-count, it
+   *    stores the fact backwards: an earlier, order-dependent-only
+   *    version of this guard did exactly that for "abandon"/"abandonment"
+   *    (source=abandonment, target=abandon, kind=DERIVED_FORM, when it
+   *    should be source=abandon, target=abandonment, kind=NOMINALISATION),
+   *    caught against real seeded data and the document's own worked
+   *    examples.
+   * 2. `hasReciprocalDerivationEdge()` (still needed alongside check 1,
+   *    not instead of it) catches the rarer remaining shape: a
+   *    Noun<->Adjective pair (e.g. "beauty"/"beautiful") resolves to
+   *    ADJECTIVAL_DERIVATION read from the noun's own entry and
+   *    NOMINALISATION read from the adjective's own reciprocal entry --
+   *    two *different specific* kinds, neither the generic catch-all, so
+   *    check 1 alone never fires for either occurrence. Whichever of the
+   *    two is processed first stores the one canonical row; the other,
+   *    naming the same unordered WordForm pair under any kind in the
+   *    family, is recognised as that same fact's own reciprocal and
+   *    skipped -- order-dependent (which specific kind survives isn't
+   *    picked against the document's own Base/Derived convention the way
+   *    check 1's is), but at least deduplicated, and correctly directed
+   *    from whichever side did store it. Both Words' own detail panels
+   *    see the one stored row either way -- `senseExpandedLexicalRelationships()`'s
+   *    own outgoing/incoming handling (ui/server/builder_lexical_relationship.ts)
+   *    surfaces it correctly regardless of which side ended up storing it. */
   private copyLexicalRelationship(
     lexicalProcessor: LexicalRelationshipProcessor,
     lexicalExistingEdges: Set<string>,
     synset: WordNetSynset,
     pointer: WordNetPointer,
     resolved: { kind: LexicalRelationshipType; swap: boolean; meronymKind?: MeronymKind },
+    sourcePos: PartOfSpeech,
+    targetPos: PartOfSpeech,
     senseStore: Senses,
     wordForms: WordForms,
     pairs: readonly (readonly [Word | Phrase, Word | Phrase])[],
     qualifiers: readonly AttributeValue[] | undefined,
   ): void {
+    if (resolved.kind === LexicalRelationshipType.DERIVED_FORM && sourcePos !== targetPos && derivationKind(targetPos, sourcePos) !== LexicalRelationshipType.DERIVED_FORM) {
+      return;
+    }
+
     const sourceSense = senseStore.findBySynsetId(synset.synsetId);
     const targetSense = senseStore.findBySynsetId(pointer.targetSynsetId);
     if (sourceSense === undefined || targetSense === undefined || sourceSense.uuid.value === targetSense.uuid.value) return;
