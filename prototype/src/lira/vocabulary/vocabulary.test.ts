@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { Dictionary } from "./data/dictionary";
-import { LexicalRelationshipStore } from "./data/lexical_relationship_store";
-import { LexicalRelationshipSystemPropertyTensor } from "./data/lexical_relationship_tensor";
+import { MorphologicalPointerRelationshipStore } from "./data/morphological_pointer_relationship_store";
+import { MorphologicalPointerRelationshipSystemPropertyTensor } from "./data/morphological_pointer_relationship_tensor";
 import { LexicalRelationshipType } from "./data/enums/lexical_relationship_type";
 import { SemanticRelationshipStore } from "./data/semantic_relationship_store";
 import { SemanticRelationshipSystemPropertyTensor } from "./data/semantic_relationship_tensor";
@@ -42,7 +42,7 @@ import { createSense } from "./data/sense";
 import { Senses } from "./data/senses";
 import { AsyncDictionaryHydrator } from "./role/dictionary_hydrator";
 import { DictionaryProcessor } from "./role/dictionary_processor";
-import { LexicalRelationshipProcessor } from "./role/lexical_relationship_processor";
+import { MorphologicalPointerRelationshipProcessor } from "./role/morphological_pointer_relationship_processor";
 import { RelationshipSeeder } from "./role/relationship_seeder";
 import { classifyPhraseRoles, classifyPhraseType, WordSeeder } from "./role/word_seeder";
 import { NounCharacterFormSeeder } from "./role/noun_character_form_seeder";
@@ -507,18 +507,18 @@ describe("generate<Class>Forms() -- deriving *_Form values from a base lemma", (
 
   it("WordSeeder.seedWordNet wires generation in automatically -- a real seeded Noun/Verb gets its regular-case forms populated, and a real irregular verb gets its true irregular form, not a spelling-rule guess", async () => {
     const dictionary = new Dictionary();
-    const lexicalRelationships = new LexicalRelationshipStore();
+    const morphologicalPointerRelationships = new MorphologicalPointerRelationshipStore();
     const semanticRelationships = new SemanticRelationshipStore();
-    const lexicalRelationshipProcessor = new LexicalRelationshipProcessor(
-      lexicalRelationships,
-      new LexicalRelationshipSystemPropertyTensor(),
+    const morphologicalPointerRelationshipProcessor = new MorphologicalPointerRelationshipProcessor(
+      morphologicalPointerRelationships,
+      new MorphologicalPointerRelationshipSystemPropertyTensor(),
     );
     const semanticRelationshipProcessor = new SemanticRelationshipProcessor(
       semanticRelationships,
       new SemanticRelationshipSystemPropertyTensor(),
     );
     await new WordSeeder("en").seedWordNet({
-      vocabulary: { dictionary, phrases: new Phrases(), senses: new Senses(), lexicalRelationships, lexicalRelationshipProcessor, semanticRelationships, semanticRelationshipProcessor },
+      vocabulary: { dictionary, phrases: new Phrases(), senses: new Senses(), morphologicalPointerRelationships, morphologicalPointerRelationshipProcessor, semanticRelationships, semanticRelationshipProcessor },
     });
 
     const dog = dictionary.lookupAll("dog").find(isNoun);
@@ -532,18 +532,18 @@ describe("generate<Class>Forms() -- deriving *_Form values from a base lemma", (
   it("populates each seeded Sense's own senseDomainTag from its synset's real WordNet lexicographer-file category", async () => {
     const dictionary = new Dictionary();
     const senseStore = new Senses();
-    const lexicalRelationships = new LexicalRelationshipStore();
+    const morphologicalPointerRelationships = new MorphologicalPointerRelationshipStore();
     const semanticRelationships = new SemanticRelationshipStore();
-    const lexicalRelationshipProcessor = new LexicalRelationshipProcessor(
-      lexicalRelationships,
-      new LexicalRelationshipSystemPropertyTensor(),
+    const morphologicalPointerRelationshipProcessor = new MorphologicalPointerRelationshipProcessor(
+      morphologicalPointerRelationships,
+      new MorphologicalPointerRelationshipSystemPropertyTensor(),
     );
     const semanticRelationshipProcessor = new SemanticRelationshipProcessor(
       semanticRelationships,
       new SemanticRelationshipSystemPropertyTensor(),
     );
     await new WordSeeder("en").seedWordNet({
-      vocabulary: { dictionary, phrases: new Phrases(), senses: senseStore, lexicalRelationships, lexicalRelationshipProcessor, semanticRelationships, semanticRelationshipProcessor },
+      vocabulary: { dictionary, phrases: new Phrases(), senses: senseStore, morphologicalPointerRelationships, morphologicalPointerRelationshipProcessor, semanticRelationships, semanticRelationshipProcessor },
     });
 
     // 03005231-n: "chair" -- this feature's own worked example
@@ -560,18 +560,18 @@ describe("generate<Class>Forms() -- deriving *_Form values from a base lemma", (
 
   it("NounCharacterFormSeeder updates the existing Noun for a lemma in place -- merging every glyph a paired-mark lemma names into one Noun's own array -- and only creates a new one when no Noun with that lemma exists at all", async () => {
     const dictionary = new Dictionary();
-    const lexicalRelationships = new LexicalRelationshipStore();
+    const morphologicalPointerRelationships = new MorphologicalPointerRelationshipStore();
     const semanticRelationships = new SemanticRelationshipStore();
-    const lexicalRelationshipProcessor = new LexicalRelationshipProcessor(
-      lexicalRelationships,
-      new LexicalRelationshipSystemPropertyTensor(),
+    const morphologicalPointerRelationshipProcessor = new MorphologicalPointerRelationshipProcessor(
+      morphologicalPointerRelationships,
+      new MorphologicalPointerRelationshipSystemPropertyTensor(),
     );
     const semanticRelationshipProcessor = new SemanticRelationshipProcessor(
       semanticRelationships,
       new SemanticRelationshipSystemPropertyTensor(),
     );
     await new WordSeeder("en").seedWordNet({
-      vocabulary: { dictionary, phrases: new Phrases(), senses: new Senses(), lexicalRelationships, lexicalRelationshipProcessor, semanticRelationships, semanticRelationshipProcessor },
+      vocabulary: { dictionary, phrases: new Phrases(), senses: new Senses(), morphologicalPointerRelationships, morphologicalPointerRelationshipProcessor, semanticRelationships, semanticRelationshipProcessor },
     });
 
     const comma = dictionary.lookupAll("comma").find(isNoun);
@@ -860,8 +860,8 @@ describe("PartOfSpeechIdentifier / DictionaryProcessor: inflected-form fallback"
         dictionary,
         phrases: new Phrases(),
         senses: new Senses(),
-        lexicalRelationships: new LexicalRelationshipStore(),
-        lexicalRelationshipProcessor: new LexicalRelationshipProcessor(new LexicalRelationshipStore(), new LexicalRelationshipSystemPropertyTensor()),
+        morphologicalPointerRelationships: new MorphologicalPointerRelationshipStore(),
+        morphologicalPointerRelationshipProcessor: new MorphologicalPointerRelationshipProcessor(new MorphologicalPointerRelationshipStore(), new MorphologicalPointerRelationshipSystemPropertyTensor()),
         semanticRelationships: new SemanticRelationshipStore(),
         semanticRelationshipProcessor: new SemanticRelationshipProcessor(new SemanticRelationshipStore(), new SemanticRelationshipSystemPropertyTensor()),
       },
@@ -1185,22 +1185,22 @@ describe("loadWordNetSynsets against the bundled Princeton WordNet 3.1 dict/ fil
 });
 
 describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/ files", () => {
-  it("seeds every synset member as a Word carrying its synsetId, wires every WordNet pointer to a LexicalRelationship, and stays idempotent across both", async () => {
+  it("seeds every synset member as a Word carrying its synsetId, wires every WordNet pointer to a MorphologicalPointerRelationship, and stays idempotent across both", async () => {
     const dictionary = new Dictionary();
     const phraseBook = new Phrases();
     const senseStore = new Senses();
-    const lexicalRelationships = new LexicalRelationshipStore();
+    const morphologicalPointerRelationships = new MorphologicalPointerRelationshipStore();
     const semanticRelationships = new SemanticRelationshipStore();
-    const lexicalRelationshipProcessor = new LexicalRelationshipProcessor(
-      lexicalRelationships,
-      new LexicalRelationshipSystemPropertyTensor(),
+    const morphologicalPointerRelationshipProcessor = new MorphologicalPointerRelationshipProcessor(
+      morphologicalPointerRelationships,
+      new MorphologicalPointerRelationshipSystemPropertyTensor(),
     );
     const semanticRelationshipProcessor = new SemanticRelationshipProcessor(
       semanticRelationships,
       new SemanticRelationshipSystemPropertyTensor(),
     );
     const seeder = new WordSeeder("en");
-    const domain = { vocabulary: { dictionary, phrases: phraseBook, senses: senseStore, lexicalRelationships, lexicalRelationshipProcessor, semanticRelationships, semanticRelationshipProcessor } };
+    const domain = { vocabulary: { dictionary, phrases: phraseBook, senses: senseStore, morphologicalPointerRelationships, morphologicalPointerRelationshipProcessor, semanticRelationships, semanticRelationshipProcessor } };
 
     const first = await seeder.seedWordNet(domain);
     expect(first.wordsSeeded).toBeGreaterThan(100000);
@@ -1222,7 +1222,7 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // same combined-count convention seedClosedClassWords already uses.
     expect(dictionary.totalEntries() + phraseBook.totalEntries()).toBe(first.wordsSeeded);
     expect(phraseBook.totalEntries()).toBeGreaterThan(0);
-    expect(lexicalRelationships.totalRelationships()).toBe(first.relationshipsSeeded);
+    expect(morphologicalPointerRelationships.totalRelationships()).toBe(first.relationshipsSeeded);
     // One Sense per synset (Sense's own docstring) -- close to, but not
     // necessarily exactly, WordNet 3.1's own ~117,800 synset count (a
     // synset with every lemma empty, if one ever existed, would seed no
@@ -1249,7 +1249,7 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
       return member;
     };
     // synonyms()/hypernyms()/hyponyms()/antonyms()/meronyms()/holonyms()
-    // (role/word_processor.ts) no longer exist -- retired along with LexicalRelationshipStore's
+    // (role/word_processor.ts) no longer exist -- retired along with MorphologicalPointerRelationshipStore's
     // own retirement from the permanent queryable model (role/word_processor.ts's
     // own "Derived properties" docstring). These two local helpers read
     // the same facts back from the real thing that replaced them:
@@ -1353,8 +1353,8 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // reading direction="both" would still pass even if both directions
     // were separately stored, so this checks the underlying store directly).
     const antonymEdgesBetween = [
-      ...lexicalRelationships.outgoing(able!.uuid.value),
-      ...lexicalRelationships.incoming(able!.uuid.value),
+      ...morphologicalPointerRelationships.outgoing(able!.uuid.value),
+      ...morphologicalPointerRelationships.incoming(able!.uuid.value),
     ].filter((r) => r.relationshipType === LexicalRelationshipType.ANTONYM && (r.sourceWordId.value === unable!.uuid.value || r.targetWordId.value === unable!.uuid.value));
     expect(antonymEdgesBetween).toHaveLength(1);
 
@@ -1440,7 +1440,7 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // Every new WordNet-sourced kind actually appears at least once --
     // a regression check against relationshipKindForPointer silently
     // mapping a symbol to the wrong (or an existing, wrong) kind.
-    const seenKinds = new Set(lexicalRelationships.all().map((r) => r.relationshipType));
+    const seenKinds = new Set(morphologicalPointerRelationships.all().map((r) => r.relationshipType));
     for (const kind of [
       LexicalRelationshipType.SIMILAR_TO,
       LexicalRelationshipType.MERONYM,
@@ -1449,7 +1449,7 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
       LexicalRelationshipType.ATTRIBUTE,
       LexicalRelationshipType.REGION_DOMAIN,
       LexicalRelationshipType.USAGE_DOMAIN,
-      // PERTAINYM seeds as an ordinary, word-specific LexicalRelationship
+      // PERTAINYM seeds as an ordinary, word-specific MorphologicalPointerRelationship
       // here too (this method's own copySemanticRelationship() docstring,
       // word_seeder.ts, on why it's then also copied out to a genuine
       // SemanticRelationship -- the scarcely/anisotropically/wide
@@ -1490,7 +1490,7 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // recorded as a `meronymKind` qualifier on the shared MERONYM kind,
     // not three separate relationship kinds (MERONYM's own docstring) --
     // every seeded MERONYM edge should carry exactly one.
-    const meronymEdges = lexicalRelationships.all().filter((r) => r.relationshipType === LexicalRelationshipType.MERONYM);
+    const meronymEdges = morphologicalPointerRelationships.all().filter((r) => r.relationshipType === LexicalRelationshipType.MERONYM);
     expect(meronymEdges.length).toBeGreaterThan(0);
     const seenMeronymKinds = new Set(
       meronymEdges.map((r) => r.qualifiers.find((q) => q.name.value === "meronymKind")?.value.value),
@@ -1516,7 +1516,7 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // tests above) -- checked at the Sense level here for that reason.
     const handSense = senseStore.findBySynsetId("05572223-n")!;
     const fingerSense = senseStore.findBySynsetId("05574137-n")!;
-    const handFingerEdge = lexicalRelationships
+    const handFingerEdge = morphologicalPointerRelationships
       .all()
       .find(
         (r) =>
@@ -1549,8 +1549,8 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     const hegira = wordForSynset("00061368-n", "Hegira");
     const flight = wordForSynset("00059563-n", "flight");
     const hegiraFlightEdges = [
-      ...lexicalRelationships.outgoing(hegira.uuid.value),
-      ...lexicalRelationships.incoming(hegira.uuid.value),
+      ...morphologicalPointerRelationships.outgoing(hegira.uuid.value),
+      ...morphologicalPointerRelationships.incoming(hegira.uuid.value),
     ].filter((r) => r.sourceWordId.value === flight.uuid.value || r.targetWordId.value === flight.uuid.value);
     expect(hegiraFlightEdges).toEqual([]);
 
@@ -1596,7 +1596,7 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     expect(new Set([wingerSense!.domainTag!.value, ...wingerSense!.relatedDomainTags.map((tag) => tag.value)])).toEqual(
       new Set(["soccer", "field hockey", "rugby", "football"]),
     );
-    expect(lexicalRelationships.totalRelationships()).toBe(first.relationshipsSeeded);
+    expect(morphologicalPointerRelationships.totalRelationships()).toBe(first.relationshipsSeeded);
     // Re-seeding never disturbs an already-assigned senseIds either --
     // "big"/"large" still share the identical Sense they did before.
     expect(wordForSynset("01385012-a", "big").senseIds.map((id) => id.value)).toContain(bigSense!.uuid.value);
@@ -1605,17 +1605,17 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
   it("a word's own relationships never show both a hypernym/hyponym (or antonym/meronym/...) fact and its reciprocal listing as two separate entries", async () => {
     const dictionary = new Dictionary();
     const senseStore = new Senses();
-    const lexicalRelationships = new LexicalRelationshipStore();
+    const morphologicalPointerRelationships = new MorphologicalPointerRelationshipStore();
     const semanticRelationships = new SemanticRelationshipStore();
-    const lexicalRelationshipProcessor = new LexicalRelationshipProcessor(
-      lexicalRelationships,
-      new LexicalRelationshipSystemPropertyTensor(),
+    const morphologicalPointerRelationshipProcessor = new MorphologicalPointerRelationshipProcessor(
+      morphologicalPointerRelationships,
+      new MorphologicalPointerRelationshipSystemPropertyTensor(),
     );
     const semanticRelationshipProcessor = new SemanticRelationshipProcessor(
       semanticRelationships,
       new SemanticRelationshipSystemPropertyTensor(),
     );
-    await new WordSeeder("en").seedWordNet({ vocabulary: { dictionary, phrases: new Phrases(), senses: senseStore, lexicalRelationships, lexicalRelationshipProcessor, semanticRelationships, semanticRelationshipProcessor } });
+    await new WordSeeder("en").seedWordNet({ vocabulary: { dictionary, phrases: new Phrases(), senses: senseStore, morphologicalPointerRelationships, morphologicalPointerRelationshipProcessor, semanticRelationships, semanticRelationshipProcessor } });
 
     const dog = dictionary.lookupAll("dog").find((w) => w.partOfSpeech === PartOfSpeech.NOUN && w.synsetId?.value === "02086723-n");
     expect(dog).toBeDefined();
@@ -1654,18 +1654,18 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     const dictionary = new Dictionary();
     const phraseBook = new Phrases();
     const senseStore = new Senses();
-    const lexicalRelationships = new LexicalRelationshipStore();
+    const morphologicalPointerRelationships = new MorphologicalPointerRelationshipStore();
     const semanticRelationships = new SemanticRelationshipStore();
-    const lexicalRelationshipProcessor = new LexicalRelationshipProcessor(
-      lexicalRelationships,
-      new LexicalRelationshipSystemPropertyTensor(),
+    const morphologicalPointerRelationshipProcessor = new MorphologicalPointerRelationshipProcessor(
+      morphologicalPointerRelationships,
+      new MorphologicalPointerRelationshipSystemPropertyTensor(),
     );
     const semanticRelationshipProcessor = new SemanticRelationshipProcessor(
       semanticRelationships,
       new SemanticRelationshipSystemPropertyTensor(),
     );
     await new WordSeeder("en").seedWordNet({
-      vocabulary: { dictionary, phrases: phraseBook, senses: senseStore, lexicalRelationships, lexicalRelationshipProcessor, semanticRelationships, semanticRelationshipProcessor },
+      vocabulary: { dictionary, phrases: phraseBook, senses: senseStore, morphologicalPointerRelationships, morphologicalPointerRelationshipProcessor, semanticRelationships, semanticRelationshipProcessor },
     });
 
     // 02116276-n "toy poodle" -- HYPERNYM -> 02115987-n "poodle" (dict/data.noun).
@@ -1851,18 +1851,18 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     const dictionary = new Dictionary();
     const phraseBook = new Phrases();
     const senseStore = new Senses();
-    const lexicalRelationships = new LexicalRelationshipStore();
+    const morphologicalPointerRelationships = new MorphologicalPointerRelationshipStore();
     const semanticRelationships = new SemanticRelationshipStore();
-    const lexicalRelationshipProcessor = new LexicalRelationshipProcessor(
-      lexicalRelationships,
-      new LexicalRelationshipSystemPropertyTensor(),
+    const morphologicalPointerRelationshipProcessor = new MorphologicalPointerRelationshipProcessor(
+      morphologicalPointerRelationships,
+      new MorphologicalPointerRelationshipSystemPropertyTensor(),
     );
     const semanticRelationshipProcessor = new SemanticRelationshipProcessor(
       semanticRelationships,
       new SemanticRelationshipSystemPropertyTensor(),
     );
     await new WordSeeder("en").seedWordNet({
-      vocabulary: { dictionary, phrases: phraseBook, senses: senseStore, lexicalRelationships, lexicalRelationshipProcessor, semanticRelationships, semanticRelationshipProcessor },
+      vocabulary: { dictionary, phrases: phraseBook, senses: senseStore, morphologicalPointerRelationships, morphologicalPointerRelationshipProcessor, semanticRelationships, semanticRelationshipProcessor },
     });
 
     // "give up" (02686624-v, dict/data.verb) -- VerbPhrase's own "Adverb
@@ -1942,18 +1942,18 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     const dictionary = new Dictionary();
     const phraseBook = new Phrases();
     const senseStore = new Senses();
-    const lexicalRelationships = new LexicalRelationshipStore();
+    const morphologicalPointerRelationships = new MorphologicalPointerRelationshipStore();
     const semanticRelationships = new SemanticRelationshipStore();
-    const lexicalRelationshipProcessor = new LexicalRelationshipProcessor(
-      lexicalRelationships,
-      new LexicalRelationshipSystemPropertyTensor(),
+    const morphologicalPointerRelationshipProcessor = new MorphologicalPointerRelationshipProcessor(
+      morphologicalPointerRelationships,
+      new MorphologicalPointerRelationshipSystemPropertyTensor(),
     );
     const semanticRelationshipProcessor = new SemanticRelationshipProcessor(
       semanticRelationships,
       new SemanticRelationshipSystemPropertyTensor(),
     );
     await new WordSeeder("en").seedWordNet({
-      vocabulary: { dictionary, phrases: phraseBook, senses: senseStore, lexicalRelationships, lexicalRelationshipProcessor, semanticRelationships, semanticRelationshipProcessor },
+      vocabulary: { dictionary, phrases: phraseBook, senses: senseStore, morphologicalPointerRelationships, morphologicalPointerRelationshipProcessor, semanticRelationships, semanticRelationshipProcessor },
     });
     const wordForSynset = (synsetId: string, lemma: string): Word => {
       const sense = senseStore.findBySynsetId(synsetId);
@@ -2032,18 +2032,18 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     const dictionary = new Dictionary();
     const phraseBook = new Phrases();
     const senseStore = new Senses();
-    const lexicalRelationships = new LexicalRelationshipStore();
+    const morphologicalPointerRelationships = new MorphologicalPointerRelationshipStore();
     const semanticRelationships = new SemanticRelationshipStore();
-    const lexicalRelationshipProcessor = new LexicalRelationshipProcessor(
-      lexicalRelationships,
-      new LexicalRelationshipSystemPropertyTensor(),
+    const morphologicalPointerRelationshipProcessor = new MorphologicalPointerRelationshipProcessor(
+      morphologicalPointerRelationships,
+      new MorphologicalPointerRelationshipSystemPropertyTensor(),
     );
     const semanticRelationshipProcessor = new SemanticRelationshipProcessor(
       semanticRelationships,
       new SemanticRelationshipSystemPropertyTensor(),
     );
     await new WordSeeder("en").seedWordNet({
-      vocabulary: { dictionary, phrases: phraseBook, senses: senseStore, lexicalRelationships, lexicalRelationshipProcessor, semanticRelationships, semanticRelationshipProcessor },
+      vocabulary: { dictionary, phrases: phraseBook, senses: senseStore, morphologicalPointerRelationships, morphologicalPointerRelationshipProcessor, semanticRelationships, semanticRelationshipProcessor },
     });
 
     // Four real WordNet pairs, one per surviving relationship
@@ -2074,7 +2074,7 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // Reading the pointer back never creates a second, redundant edge --
     // exactly one NOMINALISATION edge exists between this one pair.
     expect(
-      lexicalRelationships
+      morphologicalPointerRelationships
         .outgoing(hyperventilate!.uuid.value)
         .filter((edge) => edge.relationshipType === LexicalRelationshipType.NOMINALISATION && edge.targetWordId.value === hyperventilation!.uuid.value),
     ).toHaveLength(1);
@@ -2173,18 +2173,18 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
   it("a polysemous lemma seeds as exactly one Word, carrying every one of its real WordNet senses by reference", async () => {
     const dictionary = new Dictionary();
     const senseStore = new Senses();
-    const lexicalRelationships = new LexicalRelationshipStore();
+    const morphologicalPointerRelationships = new MorphologicalPointerRelationshipStore();
     const semanticRelationships = new SemanticRelationshipStore();
-    const lexicalRelationshipProcessor = new LexicalRelationshipProcessor(
-      lexicalRelationships,
-      new LexicalRelationshipSystemPropertyTensor(),
+    const morphologicalPointerRelationshipProcessor = new MorphologicalPointerRelationshipProcessor(
+      morphologicalPointerRelationships,
+      new MorphologicalPointerRelationshipSystemPropertyTensor(),
     );
     const semanticRelationshipProcessor = new SemanticRelationshipProcessor(
       semanticRelationships,
       new SemanticRelationshipSystemPropertyTensor(),
     );
     await new WordSeeder("en").seedWordNet({
-      vocabulary: { dictionary, phrases: new Phrases(), senses: senseStore, lexicalRelationships, lexicalRelationshipProcessor, semanticRelationships, semanticRelationshipProcessor },
+      vocabulary: { dictionary, phrases: new Phrases(), senses: senseStore, morphologicalPointerRelationships, morphologicalPointerRelationshipProcessor, semanticRelationships, semanticRelationshipProcessor },
     });
 
     // "big" (ADJECTIVE) has many real WordNet senses ("above average in
@@ -2216,18 +2216,18 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
   it("orders a polysemous Word's own senseIds by real usage centrality (Sense.senseFrequency), not by seeding order", async () => {
     const dictionary = new Dictionary();
     const senseStore = new Senses();
-    const lexicalRelationships = new LexicalRelationshipStore();
+    const morphologicalPointerRelationships = new MorphologicalPointerRelationshipStore();
     const semanticRelationships = new SemanticRelationshipStore();
-    const lexicalRelationshipProcessor = new LexicalRelationshipProcessor(
-      lexicalRelationships,
-      new LexicalRelationshipSystemPropertyTensor(),
+    const morphologicalPointerRelationshipProcessor = new MorphologicalPointerRelationshipProcessor(
+      morphologicalPointerRelationships,
+      new MorphologicalPointerRelationshipSystemPropertyTensor(),
     );
     const semanticRelationshipProcessor = new SemanticRelationshipProcessor(
       semanticRelationships,
       new SemanticRelationshipSystemPropertyTensor(),
     );
     await new WordSeeder("en").seedWordNet({
-      vocabulary: { dictionary, phrases: new Phrases(), senses: senseStore, lexicalRelationships, lexicalRelationshipProcessor, semanticRelationships, semanticRelationshipProcessor },
+      vocabulary: { dictionary, phrases: new Phrases(), senses: senseStore, morphologicalPointerRelationships, morphologicalPointerRelationshipProcessor, semanticRelationships, semanticRelationshipProcessor },
     });
 
     // "bank" (NOUN) -- verified directly against the bundled
@@ -2279,15 +2279,15 @@ describe("RelationshipSeeder against the bundled Common Relationship Cache", () 
     const phrases = new Phrases();
     wordSeeder.seedDomain({ vocabulary: { dictionary, phrases } });
 
-    const lexicalRelationships = new LexicalRelationshipStore();
+    const morphologicalPointerRelationships = new MorphologicalPointerRelationshipStore();
     const semanticRelationships = new SemanticRelationshipStore();
     const vocabulary = {
       dictionary,
       phrases,
-      lexicalRelationships,
-      lexicalRelationshipProcessor: new LexicalRelationshipProcessor(
-        lexicalRelationships,
-        new LexicalRelationshipSystemPropertyTensor(),
+      morphologicalPointerRelationships,
+      morphologicalPointerRelationshipProcessor: new MorphologicalPointerRelationshipProcessor(
+        morphologicalPointerRelationships,
+        new MorphologicalPointerRelationshipSystemPropertyTensor(),
       ),
       semanticRelationships,
       semanticRelationshipProcessor: new SemanticRelationshipProcessor(
@@ -2300,7 +2300,7 @@ describe("RelationshipSeeder against the bundled Common Relationship Cache", () 
     const seeded = await relationshipSeeder.seedDomain({ name: "Common", vocabulary });
 
     expect(seeded).toBeGreaterThan(1000);
-    expect(vocabulary.lexicalRelationships.totalRelationships()).toBe(seeded);
+    expect(vocabulary.morphologicalPointerRelationships.totalRelationships()).toBe(seeded);
   });
 
   it("{ skipUnresolvable: true } skips (rather than throws on) a spec whose Word was deliberately left unseeded by WordSeeder's own excludeOpenClasses, mirroring the Vocabulary view's 'Seed Vocabulary' toolbar action", async () => {
@@ -2309,15 +2309,15 @@ describe("RelationshipSeeder against the bundled Common Relationship Cache", () 
     const phrases = new Phrases();
     wordSeeder.seedDomain({ vocabulary: { dictionary, phrases } }, { excludeOpenClasses: true });
 
-    const lexicalRelationships = new LexicalRelationshipStore();
+    const morphologicalPointerRelationships = new MorphologicalPointerRelationshipStore();
     const semanticRelationships = new SemanticRelationshipStore();
     const vocabulary = {
       dictionary,
       phrases,
-      lexicalRelationships,
-      lexicalRelationshipProcessor: new LexicalRelationshipProcessor(
-        lexicalRelationships,
-        new LexicalRelationshipSystemPropertyTensor(),
+      morphologicalPointerRelationships,
+      morphologicalPointerRelationshipProcessor: new MorphologicalPointerRelationshipProcessor(
+        morphologicalPointerRelationships,
+        new MorphologicalPointerRelationshipSystemPropertyTensor(),
       ),
       semanticRelationships,
       semanticRelationshipProcessor: new SemanticRelationshipProcessor(
@@ -2334,7 +2334,7 @@ describe("RelationshipSeeder against the bundled Common Relationship Cache", () 
 
     const seeded = await relationshipSeeder.seedDomain({ name: "Common", vocabulary }, { skipUnresolvable: true });
     expect(seeded).toBeGreaterThan(0);
-    expect(vocabulary.lexicalRelationships.totalRelationships()).toBe(seeded);
+    expect(vocabulary.morphologicalPointerRelationships.totalRelationships()).toBe(seeded);
   });
 });
 
@@ -2421,17 +2421,17 @@ describe("DictionaryView.searchWords", () => {
 
   it("resolves against the real bundled WordNet-scale dataset without embedding it (regression check for the RangeError MAX_INTERACTIVE_WORDS exists to avoid)", async () => {
     const dictionary = new Dictionary();
-    const lexicalRelationships = new LexicalRelationshipStore();
+    const morphologicalPointerRelationships = new MorphologicalPointerRelationshipStore();
     const semanticRelationships = new SemanticRelationshipStore();
-    const lexicalRelationshipProcessor = new LexicalRelationshipProcessor(
-      lexicalRelationships,
-      new LexicalRelationshipSystemPropertyTensor(),
+    const morphologicalPointerRelationshipProcessor = new MorphologicalPointerRelationshipProcessor(
+      morphologicalPointerRelationships,
+      new MorphologicalPointerRelationshipSystemPropertyTensor(),
     );
     const semanticRelationshipProcessor = new SemanticRelationshipProcessor(
       semanticRelationships,
       new SemanticRelationshipSystemPropertyTensor(),
     );
-    await new WordSeeder("en").seedWordNet({ vocabulary: { dictionary, phrases: new Phrases(), senses: new Senses(), lexicalRelationships, lexicalRelationshipProcessor, semanticRelationships, semanticRelationshipProcessor } });
+    await new WordSeeder("en").seedWordNet({ vocabulary: { dictionary, phrases: new Phrases(), senses: new Senses(), morphologicalPointerRelationships, morphologicalPointerRelationshipProcessor, semanticRelationships, semanticRelationshipProcessor } });
 
     const view = new DictionaryView(dictionary, semanticRelationships, { domainName: "Common" });
     const result = view.searchWords({ word: "large", limit: 50 });
@@ -2447,17 +2447,17 @@ describe("DictionaryView.searchWords", () => {
   it("a WordRecord's own domain/related_domains read through the shared Sense, not the Word itself, for a WordNet-seeded polyseme", async () => {
     const dictionary = new Dictionary();
     const senseStore = new Senses();
-    const lexicalRelationships = new LexicalRelationshipStore();
+    const morphologicalPointerRelationships = new MorphologicalPointerRelationshipStore();
     const semanticRelationships = new SemanticRelationshipStore();
-    const lexicalRelationshipProcessor = new LexicalRelationshipProcessor(
-      lexicalRelationships,
-      new LexicalRelationshipSystemPropertyTensor(),
+    const morphologicalPointerRelationshipProcessor = new MorphologicalPointerRelationshipProcessor(
+      morphologicalPointerRelationships,
+      new MorphologicalPointerRelationshipSystemPropertyTensor(),
     );
     const semanticRelationshipProcessor = new SemanticRelationshipProcessor(
       semanticRelationships,
       new SemanticRelationshipSystemPropertyTensor(),
     );
-    await new WordSeeder("en").seedWordNet({ vocabulary: { dictionary, phrases: new Phrases(), senses: senseStore, lexicalRelationships, lexicalRelationshipProcessor, semanticRelationships, semanticRelationshipProcessor } });
+    await new WordSeeder("en").seedWordNet({ vocabulary: { dictionary, phrases: new Phrases(), senses: senseStore, morphologicalPointerRelationships, morphologicalPointerRelationshipProcessor, semanticRelationships, semanticRelationshipProcessor } });
 
     // "winger" (offset 10802147) carries FOUR topic-domain pointers,
     // now stored on its own Sense, not on the Word (word_seeder.ts's own
@@ -2619,18 +2619,18 @@ describe("DictionaryView.searchPhrases", () => {
   it("resolves against the real bundled WordNet-scale Phrases without embedding it (regression check mirroring searchWords' own)", async () => {
     const dictionary = new Dictionary();
     const phraseBook = new Phrases();
-    const lexicalRelationships = new LexicalRelationshipStore();
+    const morphologicalPointerRelationships = new MorphologicalPointerRelationshipStore();
     const semanticRelationships = new SemanticRelationshipStore();
-    const lexicalRelationshipProcessor = new LexicalRelationshipProcessor(
-      lexicalRelationships,
-      new LexicalRelationshipSystemPropertyTensor(),
+    const morphologicalPointerRelationshipProcessor = new MorphologicalPointerRelationshipProcessor(
+      morphologicalPointerRelationships,
+      new MorphologicalPointerRelationshipSystemPropertyTensor(),
     );
     const semanticRelationshipProcessor = new SemanticRelationshipProcessor(
       semanticRelationships,
       new SemanticRelationshipSystemPropertyTensor(),
     );
     await new WordSeeder("en").seedWordNet({
-      vocabulary: { dictionary, phrases: phraseBook, senses: new Senses(), lexicalRelationships, lexicalRelationshipProcessor, semanticRelationships, semanticRelationshipProcessor },
+      vocabulary: { dictionary, phrases: phraseBook, senses: new Senses(), morphologicalPointerRelationships, morphologicalPointerRelationshipProcessor, semanticRelationships, semanticRelationshipProcessor },
     });
     expect(phraseBook.totalEntries()).toBeGreaterThan(20000);
 
@@ -2665,18 +2665,18 @@ describe("DictionaryView.searchSenses", () => {
     const dictionary = new Dictionary();
     const phraseBook = new Phrases();
     const senseStore = new Senses();
-    const lexicalRelationships = new LexicalRelationshipStore();
+    const morphologicalPointerRelationships = new MorphologicalPointerRelationshipStore();
     const semanticRelationships = new SemanticRelationshipStore();
-    const lexicalRelationshipProcessor = new LexicalRelationshipProcessor(
-      lexicalRelationships,
-      new LexicalRelationshipSystemPropertyTensor(),
+    const morphologicalPointerRelationshipProcessor = new MorphologicalPointerRelationshipProcessor(
+      morphologicalPointerRelationships,
+      new MorphologicalPointerRelationshipSystemPropertyTensor(),
     );
     const semanticRelationshipProcessor = new SemanticRelationshipProcessor(
       semanticRelationships,
       new SemanticRelationshipSystemPropertyTensor(),
     );
     await new WordSeeder("en").seedWordNet({
-      vocabulary: { dictionary, phrases: phraseBook, senses: senseStore, lexicalRelationships, lexicalRelationshipProcessor, semanticRelationships, semanticRelationshipProcessor },
+      vocabulary: { dictionary, phrases: phraseBook, senses: senseStore, morphologicalPointerRelationships, morphologicalPointerRelationshipProcessor, semanticRelationships, semanticRelationshipProcessor },
     });
     expect(senseStore.totalEntries()).toBeGreaterThan(100000);
 
@@ -2736,7 +2736,7 @@ describe("DictionaryView.searchSenses", () => {
 describe("DictionaryView.searchRelationships", () => {
   // Every relationship SemanticRelationshipStore holds connects two
   // Senses, never two Words directly (SemanticRelationship's own
-  // docstring) -- so this fixture, unlike its LexicalRelationshipStore-era
+  // docstring) -- so this fixture, unlike its MorphologicalPointerRelationshipStore-era
   // version, needs a real Sense registered per Word before it can wire
   // any relationship at all. SYNONYM between "big" and "large" is a
   // real, explicit SemanticRelationship edge here (the shape hand-curated
@@ -2865,17 +2865,17 @@ describe("DictionaryView.searchRelationships", () => {
   it("resolves against the real bundled WordNet-scale relationship graph without embedding it (regression check mirroring searchWords' own)", async () => {
     const dictionary = new Dictionary();
     const senseStore = new Senses();
-    const lexicalRelationships = new LexicalRelationshipStore();
+    const morphologicalPointerRelationships = new MorphologicalPointerRelationshipStore();
     const semanticRelationships = new SemanticRelationshipStore();
-    const lexicalRelationshipProcessor = new LexicalRelationshipProcessor(
-      lexicalRelationships,
-      new LexicalRelationshipSystemPropertyTensor(),
+    const morphologicalPointerRelationshipProcessor = new MorphologicalPointerRelationshipProcessor(
+      morphologicalPointerRelationships,
+      new MorphologicalPointerRelationshipSystemPropertyTensor(),
     );
     const semanticRelationshipProcessor = new SemanticRelationshipProcessor(
       semanticRelationships,
       new SemanticRelationshipSystemPropertyTensor(),
     );
-    await new WordSeeder("en").seedWordNet({ vocabulary: { dictionary, phrases: new Phrases(), senses: senseStore, lexicalRelationships, lexicalRelationshipProcessor, semanticRelationships, semanticRelationshipProcessor } });
+    await new WordSeeder("en").seedWordNet({ vocabulary: { dictionary, phrases: new Phrases(), senses: senseStore, morphologicalPointerRelationships, morphologicalPointerRelationshipProcessor, semanticRelationships, semanticRelationshipProcessor } });
 
     const view = new DictionaryView(dictionary, semanticRelationships, { domainName: "Common", senses: senseStore });
     const large = dictionary.lookup("large");
@@ -3089,17 +3089,17 @@ describe("DictionaryView.resolveHierarchy", () => {
   it("resolves against the real bundled WordNet-scale dataset, correctly oriented (broad root, narrow leaves) for a kind only stored in the child->parent direction", async () => {
     const dictionary = new Dictionary();
     const senseStore = new Senses();
-    const lexicalRelationships = new LexicalRelationshipStore();
+    const morphologicalPointerRelationships = new MorphologicalPointerRelationshipStore();
     const semanticRelationships = new SemanticRelationshipStore();
-    const lexicalRelationshipProcessor = new LexicalRelationshipProcessor(
-      lexicalRelationships,
-      new LexicalRelationshipSystemPropertyTensor(),
+    const morphologicalPointerRelationshipProcessor = new MorphologicalPointerRelationshipProcessor(
+      morphologicalPointerRelationships,
+      new MorphologicalPointerRelationshipSystemPropertyTensor(),
     );
     const semanticRelationshipProcessor = new SemanticRelationshipProcessor(
       semanticRelationships,
       new SemanticRelationshipSystemPropertyTensor(),
     );
-    await new WordSeeder("en").seedWordNet({ vocabulary: { dictionary, phrases: new Phrases(), senses: senseStore, lexicalRelationships, lexicalRelationshipProcessor, semanticRelationships, semanticRelationshipProcessor } });
+    await new WordSeeder("en").seedWordNet({ vocabulary: { dictionary, phrases: new Phrases(), senses: senseStore, morphologicalPointerRelationships, morphologicalPointerRelationshipProcessor, semanticRelationships, semanticRelationshipProcessor } });
 
     const view = new DictionaryView(dictionary, semanticRelationships, { domainName: "Common", senses: senseStore });
     const poodle = dictionary.lookupAll("poodle").find((w) => w.partOfSpeech === PartOfSpeech.NOUN);

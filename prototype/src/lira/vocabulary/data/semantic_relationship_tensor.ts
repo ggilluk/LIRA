@@ -1,8 +1,8 @@
-import { ACTIVATION_COL, CONFIDENCE_COL, N_COLS, PROVENANCE_COL, TEMPORAL_COL } from "./lexical_relationship_tensor";
+import { ACTIVATION_COL, CONFIDENCE_COL, N_COLS, PROVENANCE_COL, TEMPORAL_COL } from "./morphological_pointer_relationship_tensor";
 
 /** SemanticRelationship system-properties tensor store --
- * LexicalRelationshipSystemPropertyTensor's own exact counterpart
- * (data/lexical_relationship_tensor.ts), one growable row per
+ * MorphologicalPointerRelationshipSystemPropertyTensor's own exact counterpart
+ * (data/morphological_pointer_relationship_tensor.ts), one growable row per
  * SemanticRelationship instead. Shares that class's own column layout
  * (CONFIDENCE_COL/PROVENANCE_COL/TEMPORAL_COL/ACTIVATION_COL/N_COLS) --
  * both tensor classes satisfy the same RelationshipSystemPropertyTensor

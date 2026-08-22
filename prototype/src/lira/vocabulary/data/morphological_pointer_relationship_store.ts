@@ -1,7 +1,7 @@
-import type { LexicalRelationship } from "./lexical_relationship";
+import type { MorphologicalPointerRelationship } from "./morphological_pointer_relationship";
 
-/** LexicalRelationship storage layer, mirroring Dictionary's storage
- * discipline. Ported from vocabulary/data/lexical_relationship_store.py.
+/** MorphologicalPointerRelationship storage layer, mirroring Dictionary's storage
+ * discipline. Ported from vocabulary/data/morphological_pointer_relationship_store.py.
  * The Python version is thread-safe (a lock around every access) --
  * JavaScript's single-threaded execution model gives that guarantee
  * for free, so no lock is ported.
@@ -19,26 +19,26 @@ import type { LexicalRelationship } from "./lexical_relationship";
  * multiplies out to billions of comparisons and never realistically
  * finishes. Indexed by wordId instead, both methods are O(1) amortized,
  * same as Dictionary's own lookup()/lookupAll(). */
-export class LexicalRelationshipStore {
-  private relationships: LexicalRelationship[] = [];
-  private readonly bySource = new Map<string, LexicalRelationship[]>();
-  private readonly byTarget = new Map<string, LexicalRelationship[]>();
+export class MorphologicalPointerRelationshipStore {
+  private relationships: MorphologicalPointerRelationship[] = [];
+  private readonly bySource = new Map<string, MorphologicalPointerRelationship[]>();
+  private readonly byTarget = new Map<string, MorphologicalPointerRelationship[]>();
 
-  add(relationship: LexicalRelationship): void {
+  add(relationship: MorphologicalPointerRelationship): void {
     this.relationships.push(relationship);
     this.indexBucket(this.bySource, relationship.sourceWordId.value).push(relationship);
     this.indexBucket(this.byTarget, relationship.targetWordId.value).push(relationship);
   }
 
-  all(): readonly LexicalRelationship[] {
+  all(): readonly MorphologicalPointerRelationship[] {
     return this.relationships.slice();
   }
 
-  outgoing(sourceWordId: string): readonly LexicalRelationship[] {
+  outgoing(sourceWordId: string): readonly MorphologicalPointerRelationship[] {
     return this.bySource.get(sourceWordId)?.slice() ?? [];
   }
 
-  incoming(targetWordId: string): readonly LexicalRelationship[] {
+  incoming(targetWordId: string): readonly MorphologicalPointerRelationship[] {
     return this.byTarget.get(targetWordId)?.slice() ?? [];
   }
 
@@ -46,10 +46,10 @@ export class LexicalRelationshipStore {
     return this.relationships.length;
   }
 
-  private indexBucket(index: Map<string, LexicalRelationship[]>, wordId: string): LexicalRelationship[] {
+  private indexBucket(index: Map<string, MorphologicalPointerRelationship[]>, wordId: string): MorphologicalPointerRelationship[] {
     const bucket = index.get(wordId);
     if (bucket) return bucket;
-    const fresh: LexicalRelationship[] = [];
+    const fresh: MorphologicalPointerRelationship[] = [];
     index.set(wordId, fresh);
     return fresh;
   }

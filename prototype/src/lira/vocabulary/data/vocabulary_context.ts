@@ -1,11 +1,11 @@
 import type { VocabularyAgent } from "../agents";
 import { AsyncDictionaryHydrator } from "../role/dictionary_hydrator";
 import { DictionaryProcessor } from "../role/dictionary_processor";
-import { LexicalRelationshipProcessor } from "../role/lexical_relationship_processor";
+import { MorphologicalPointerRelationshipProcessor } from "../role/morphological_pointer_relationship_processor";
 import { SemanticRelationshipProcessor } from "../role/semantic_relationship_processor";
 import { Dictionary } from "./dictionary";
-import { LexicalRelationshipStore } from "./lexical_relationship_store";
-import { LexicalRelationshipSystemPropertyTensor } from "./lexical_relationship_tensor";
+import { MorphologicalPointerRelationshipStore } from "./morphological_pointer_relationship_store";
+import { MorphologicalPointerRelationshipSystemPropertyTensor } from "./morphological_pointer_relationship_tensor";
 import { Phrases } from "./phrases";
 import { SemanticRelationshipStore } from "./semantic_relationship_store";
 import { SemanticRelationshipSystemPropertyTensor } from "./semantic_relationship_tensor";
@@ -22,19 +22,19 @@ import { WordForms } from "./word_forms";
  * identity and Senses, AUXILIARY-only today (word_form.ts's own
  * docstring on why only that one POS subtype has adopted it so far).
  *
- * `lexicalRelationships`/`lexicalRelationshipProcessor`/
- * `lexicalRelationshipTensor` are seeding-internal working state now,
+ * `morphologicalPointerRelationships`/`morphologicalPointerRelationshipProcessor`/
+ * `morphologicalPointerRelationshipTensor` are seeding-internal working state now,
  * not a permanent part of this Domain's queryable model
  * (SemanticRelationship's own docstring, data/semantic_relationship.ts,
  * on the split this reflects): WordSeeder/RelationshipSeeder still
- * build a full LexicalRelationship graph exactly as before (untouched,
+ * build a full MorphologicalPointerRelationship graph exactly as before (untouched,
  * lowest-risk choice), but only to read it back once, at the end of
  * their own seeding pass, into `semanticRelationships` (the true
  * sense-to-sense semantic facts) and onto the seeded Words'/Phrases'
  * own POS-class attribute fields (the true word-level morphological/
  * orthographic facts, isNominalised and its siblings' own docstrings,
  * data/entities/verb.ts and others) -- nothing outside role/word_seeder.ts and
- * role/relationship_seeder.ts is meant to read `lexicalRelationships`
+ * role/relationship_seeder.ts is meant to read `morphologicalPointerRelationships`
  * again once a seeding pass returns. */
 export class VocabularyContext {
   agents: VocabularyAgent[] = [];
@@ -45,9 +45,9 @@ export class VocabularyContext {
   hydrator: AsyncDictionaryHydrator;
   dictionaryProcessor: DictionaryProcessor;
 
-  lexicalRelationships = new LexicalRelationshipStore();
-  lexicalRelationshipTensor = new LexicalRelationshipSystemPropertyTensor(); // Design Principle 8
-  lexicalRelationshipProcessor: LexicalRelationshipProcessor;
+  morphologicalPointerRelationships = new MorphologicalPointerRelationshipStore();
+  morphologicalPointerRelationshipTensor = new MorphologicalPointerRelationshipSystemPropertyTensor(); // Design Principle 8
+  morphologicalPointerRelationshipProcessor: MorphologicalPointerRelationshipProcessor;
 
   semanticRelationships = new SemanticRelationshipStore();
   semanticRelationshipTensor = new SemanticRelationshipSystemPropertyTensor(); // Design Principle 8
@@ -59,9 +59,9 @@ export class VocabularyContext {
     // proves, which externally-supported sense applies), not a new
     // piece of Domain state duplicated here.
     this.dictionaryProcessor = new DictionaryProcessor(this.dictionary, this.phrases, this.hydrator, domainName, this.wordForms);
-    this.lexicalRelationshipProcessor = new LexicalRelationshipProcessor(
-      this.lexicalRelationships,
-      this.lexicalRelationshipTensor,
+    this.morphologicalPointerRelationshipProcessor = new MorphologicalPointerRelationshipProcessor(
+      this.morphologicalPointerRelationships,
+      this.morphologicalPointerRelationshipTensor,
     );
     this.semanticRelationshipProcessor = new SemanticRelationshipProcessor(
       this.semanticRelationships,

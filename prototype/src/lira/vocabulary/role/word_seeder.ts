@@ -53,7 +53,7 @@ import { VERB_FRAME_TEXT } from "../data/enums/verb_framed_example_template";
 import type { Identifier, Text } from "../../value_objects";
 import type { AttributeValue } from "../data/attribute_value";
 import type { Dictionary } from "../data/dictionary";
-import { LexicalRelationshipStore } from "../data/lexical_relationship_store";
+import { MorphologicalPointerRelationshipStore } from "../data/morphological_pointer_relationship_store";
 import { LexicalRelationshipType, MERONYM_KIND_QUALIFIER, relationshipGroup, type MeronymKind } from "../data/enums/lexical_relationship_type";
 import { SemanticRelationshipKind } from "../data/enums/semantic_relationship_kind";
 import { copyPhraseWithFreshUuid, createPhrase, type Phrase } from "../data/phrase";
@@ -76,11 +76,11 @@ import {
   type WordFileEntry,
   type WordManifestDocument,
 } from "./asset_loader";
-import type { LexicalRelationshipProcessor } from "./lexical_relationship_processor";
+import type { MorphologicalPointerRelationshipProcessor } from "./morphological_pointer_relationship_processor";
 import type { SemanticRelationshipProcessor } from "./semantic_relationship_processor";
 import { loadWordNetSynsets, type WordNetPointer, type WordNetSynset } from "./wordnet_loader";
 
-/** createEdges' own pair-member type -- a LexicalRelationship's
+/** createEdges' own pair-member type -- a MorphologicalPointerRelationship's
  * sourceWordId/targetWordId are opaque uuid strings regardless of what
  * they name, so createEdges itself only ever reads `.uuid.value` off
  * each side; ordinarily that's a Word or Phrase, but seedPointerRelationship's
@@ -695,7 +695,7 @@ function nonHeadPhraseRole(
 // (SemanticRelationshipKind's own docstring on why PERTAINYM moved into
 // that enum even though relationshipKindForPointer resolves it as a
 // LexicalRelationshipType, same as every other kind, at the
-// seeding-internal LexicalRelationship layer). A kind absent here (every
+// seeding-internal MorphologicalPointerRelationship layer). A kind absent here (every
 // Morphological/Orthographic kind) simply has no semantic copy to make.
 // relationshipKindForPointer's own WordNet-pointer resolution never
 // actually produces SYNONYM/HYPONYM/HOLONYM/TROPONYM (canonicalised onto
@@ -764,7 +764,7 @@ function relationshipKindForPointer(
     // WordNet's own Pertainym pointer -- always word-specific in the
     // bundled data (source/target index never 0000, verified directly),
     // so this seeds exactly like ANTONYM does: a direct, per-lemma
-    // LexicalRelationship edge here, full precision preserved (this
+    // MorphologicalPointerRelationship edge here, full precision preserved (this
     // method's own docstring, seedPointerRelationship, on why every edge
     // seeded here is seeding-internal working state now, later copied
     // out to its own permanent home -- a SemanticRelationship for
@@ -1298,7 +1298,7 @@ export class WordSeeder {
    * than one synset lands as distinct Words, but reads as plain
    * "Common" in the UI rather than each getting its own synthetic
    * one-off domain), and every pairwise combination of a synset's
-   * members is wired together with a SYNONYM LexicalRelationship -- the
+   * members is wired together with a SYNONYM MorphologicalPointerRelationship -- the
    * direct encoding of "wordnet uses synsets, LIRA uses synonym
    * relationships": querying synonyms() on any one member (word.ts,
    * direction="both") already recovers the synset's full membership
@@ -1350,8 +1350,8 @@ export class WordSeeder {
         phrases: Phrases;
         senses: Senses;
         wordForms?: WordForms;
-        lexicalRelationships: LexicalRelationshipStore;
-        lexicalRelationshipProcessor: LexicalRelationshipProcessor;
+        morphologicalPointerRelationships: MorphologicalPointerRelationshipStore;
+        morphologicalPointerRelationshipProcessor: MorphologicalPointerRelationshipProcessor;
         semanticRelationships: SemanticRelationshipStore;
         semanticRelationshipProcessor: SemanticRelationshipProcessor;
       };
@@ -1362,14 +1362,14 @@ export class WordSeeder {
     const phraseBook = domain.vocabulary.phrases;
     const senseStore = domain.vocabulary.senses;
     const wordForms = domain.vocabulary.wordForms;
-    const store = domain.vocabulary.lexicalRelationships;
-    const processor = domain.vocabulary.lexicalRelationshipProcessor;
+    const store = domain.vocabulary.morphologicalPointerRelationships;
+    const processor = domain.vocabulary.morphologicalPointerRelationshipProcessor;
     const semanticStore = domain.vocabulary.semanticRelationships;
     const semanticProcessor = domain.vocabulary.semanticRelationshipProcessor;
     const semanticExistingEdges = new Set<string>();
 
-    // LexicalRelationshipStore.outgoing() is indexed (O(1) amortized,
-    // lexical_relationship_store.ts's own docstring) rather than a raw
+    // MorphologicalPointerRelationshipStore.outgoing() is indexed (O(1) amortized,
+    // morphological_pointer_relationship_store.ts's own docstring) rather than a raw
     // linear scan, but it still allocates a fresh array copy on every
     // call -- real overhead multiplied across the hundreds of thousands
     // of candidate pairs a full WordNet seed (both passes) checks.
@@ -1596,7 +1596,7 @@ export class WordSeeder {
     // edges pass 2 above just finished seeding -- only now, with every
     // pointer relationship wired, is there anything to read at all.
     // deriveMorphologicalPointers() itself never creates a
-    // LexicalRelationship, it only caches which existing edge each Word
+    // MorphologicalPointerRelationship, it only caches which existing edge each Word
     // participates in directly on the Word object.
     for (const word of dictionary.all()) this.deriveMorphologicalPointers(store, dictionary, word);
 
@@ -1645,7 +1645,7 @@ export class WordSeeder {
   }
 
   /** One WordNetPointer, resolved and (if not already present) created
-   * as a LexicalRelationship. Returns how many edges it actually added
+   * as a MorphologicalPointerRelationship. Returns how many edges it actually added
    * (0 if the symbol is unrecognised, the target synset was never
    * seeded, an index pointed past the end of a synset's own member
    * list, every resulting pair was a self-edge, or every edge already
@@ -1684,9 +1684,9 @@ export class WordSeeder {
    * data/semantic_relationship.ts, including PERTAINYM -- moved there
    * from this group, SemanticRelationshipKind's own docstring on why),
    * after which nothing outside this seeding pass reads this method's
-   * own LexicalRelationship edges again. */
+   * own MorphologicalPointerRelationship edges again. */
   private seedPointerRelationship(
-    processor: LexicalRelationshipProcessor,
+    processor: MorphologicalPointerRelationshipProcessor,
     existingEdges: Set<string>,
     synset: WordNetSynset,
     sourceMembers: readonly (Word | Phrase)[],
@@ -1735,7 +1735,7 @@ export class WordSeeder {
 
   /** Copies one resolved pointer's own fact into a genuine
    * SemanticRelationship (Sense-to-Sense), alongside whichever
-   * LexicalRelationship (Word-to-Word) edge(s) seedPointerRelationship's
+   * MorphologicalPointerRelationship (Word-to-Word) edge(s) seedPointerRelationship's
    * own general path creates for it -- a no-op for every kind that isn't
    * one of the true sense-to-sense semantic facts (LEXICAL_TO_SEMANTIC_KIND's
    * own docstring on exactly which those are). Deliberately independent
@@ -1751,7 +1751,7 @@ export class WordSeeder {
    * `semanticExistingEdges` is this method's own (sourceSense, targetSense,
    * kind) dedup set, parallel to seedPointerRelationship's own
    * `existingEdges` but keyed by Sense uuids instead of Word/Phrase ones --
-   * several word-specific LexicalRelationship pairs from the same synset
+   * several word-specific MorphologicalPointerRelationship pairs from the same synset
    * pair (e.g. "above"/"below" ANTONYM plus a fellow synonym's own
    * identical-meaning ANTONYM pointer) fold onto the identical one
    * SemanticRelationship rather than creating a duplicate for each. */
@@ -1789,7 +1789,7 @@ export class WordSeeder {
   /** `;c`/`-c` (topic-domain pointer) handling, split out of
    * seedPointerRelationship's general edge-creation path -- unlike every
    * other recognised pointer symbol, a topic pointer no longer becomes a
-   * LexicalRelationship edge (TOPIC_DOMAIN is consequently orphaned from
+   * MorphologicalPointerRelationship edge (TOPIC_DOMAIN is consequently orphaned from
    * WordNet seeding, the same fate HYPONYM/TROPONYM/etc. already have --
    * relationshipKindForPointer's own docstring). It instead tags the
    * topic category's own representative lemma ("medicine", "chemistry",
@@ -1850,7 +1850,7 @@ export class WordSeeder {
     for (const word of taggedWords) applyDomainTag(word, categoryLemma);
   }
 
-  /** Creates a LexicalRelationship for every (source, target) pair not
+  /** Creates a MorphologicalPointerRelationship for every (source, target) pair not
    * already in `existingEdges`, adding each newly-created one to that
    * same Set so a later call in the same seedWordNet run (or a later
    * seedWordNet run entirely) sees it as already present -- the shared
@@ -1865,7 +1865,7 @@ export class WordSeeder {
    * (HYPERNYM/HYPONYM, xMERONYM/xHOLONYM) via the exact-triple key
    * alone. Returns the number of edges actually created. */
   private createEdges(
-    processor: LexicalRelationshipProcessor,
+    processor: MorphologicalPointerRelationshipProcessor,
     existingEdges: Set<string>,
     kind: LexicalRelationshipType,
     pairs: Iterable<readonly [RelationshipEndpoint, RelationshipEndpoint]>,
@@ -1978,7 +1978,7 @@ export class WordSeeder {
    * when more than one does, the same arbitrary-but-deterministic
    * convention Dictionary.lookup() already uses for a homograph. */
   private findDerivationTarget(
-    relationships: LexicalRelationshipStore,
+    relationships: MorphologicalPointerRelationshipStore,
     dictionary: Dictionary,
     word: Word,
     kind: LexicalRelationshipType,
@@ -2004,7 +2004,7 @@ export class WordSeeder {
    * docstring for the full "why the other endpoint's actual POS has to
    * be checked" rationale) paired with its Indicator boolean
    * (`!== undefined`). Reads relationships.incoming()/outgoing() only --
-   * this never appends a new LexicalRelationship of its own, every edge
+   * this never appends a new MorphologicalPointerRelationship of its own, every edge
    * it reads already exists from pass 2 above.
    *
    * Exactly four real relationships are implemented, one per surviving
@@ -2035,7 +2035,7 @@ export class WordSeeder {
    * and would need two different fields on the *same* class to keep the
    * two directions apart -- a genuinely different shape from every pair
    * here, left for a future pass rather than forced into this one. */
-  private deriveMorphologicalPointers(relationships: LexicalRelationshipStore, dictionary: Dictionary, word: Word): void {
+  private deriveMorphologicalPointers(relationships: MorphologicalPointerRelationshipStore, dictionary: Dictionary, word: Word): void {
     const { NOMINALISATION, ADJECTIVAL_DERIVATION, ADVERBIAL_DERIVATION } = LexicalRelationshipType;
 
     if (isNoun(word)) {

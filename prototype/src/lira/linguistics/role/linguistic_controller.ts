@@ -1,5 +1,5 @@
 import type { DictionaryProcessor } from "../../vocabulary/role/dictionary_processor";
-import type { LexicalRelationshipStore } from "../../vocabulary/data/lexical_relationship_store";
+import type { MorphologicalPointerRelationshipStore } from "../../vocabulary/data/morphological_pointer_relationship_store";
 import type { PartOfSpeech } from "../../vocabulary/data/enums/part_of_speech";
 import type { Document } from "../data/document";
 import type { Paragraph } from "../data/paragraph";
@@ -35,7 +35,7 @@ export class LinguisticController {
   readonly tensor: LinguisticSystemPropertyTensor;
   readonly graphProcessor: GraphProcessor;
   readonly tokenizer: PromptTokenizer;
-  readonly lexicalRelationships?: LexicalRelationshipStore;
+  readonly morphologicalPointerRelationships?: MorphologicalPointerRelationshipStore;
   readonly readingContext: ReadingContext;
   /** spec 15-24's Proposed learned lexical transition evidence store --
    * always constructed (never undefined), so `recordObservedReading`/
@@ -50,12 +50,12 @@ export class LinguisticController {
   /** dictionaryProcessor: Vocabulary owns the lexicon (Rule 17);
    * Linguistics resolves tokens through it rather than keeping its own
    * copy (typically domain.vocabulary.dictionaryProcessor).
-   * lexicalRelationships: plumbed through for Phase 2 (real
+   * morphologicalPointerRelationships: plumbed through for Phase 2 (real
    * morphological agreement scoring); no Phase 1 reader consults it. */
   constructor(
     dictionaryProcessor: DictionaryProcessor,
     useClauseSegmentation = true,
-    lexicalRelationships?: LexicalRelationshipStore,
+    morphologicalPointerRelationships?: MorphologicalPointerRelationshipStore,
   ) {
     this.grammarConfigurator = new GrammarConfigurator();
     // A typo in a rule table fails here, at construction time, not
@@ -65,7 +65,7 @@ export class LinguisticController {
     this.tensor = new LinguisticSystemPropertyTensor(); // persistent, canonical store for every unit's numeric fields (Rule 14)
     this.graphProcessor = new GraphProcessor(dictionaryProcessor, this.grammarConfigurator, this.tensor, useClauseSegmentation);
     this.tokenizer = new PromptTokenizer(this.graphProcessor);
-    this.lexicalRelationships = lexicalRelationships;
+    this.morphologicalPointerRelationships = morphologicalPointerRelationships;
 
     this.evidenceStore = new LexicalEvidenceStore();
     const sequenceEngine = new SequenceEngine(this.grammarConfigurator, undefined, this.evidenceStore);

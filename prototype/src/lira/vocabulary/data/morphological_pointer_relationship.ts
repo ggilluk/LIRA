@@ -7,7 +7,7 @@ import type { SystemPropertiesRef } from "./system_properties_ref";
 /** A directed relationship between two Word entries. Matches the
  * Vocabulary Layer developer specification, 5. Ported from
  * vocabulary/data/lexical_relationship.py. */
-export interface LexicalRelationship {
+export interface MorphologicalPointerRelationship {
   uuid: Identifier;
   version: Text;
   sourceWordId: Identifier;

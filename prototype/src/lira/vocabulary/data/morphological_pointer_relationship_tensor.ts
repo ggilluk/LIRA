@@ -1,8 +1,8 @@
-/** LexicalRelationship system-properties tensor store: one growable row
- * per LexicalRelationship, holding its confidence/provenance/temporal/
+/** MorphologicalPointerRelationship system-properties tensor store: one growable row
+ * per MorphologicalPointerRelationship, holding its confidence/provenance/temporal/
  * activation weights in one dense array, grown by doubling (Rule 14) --
  * the same discipline as LinguisticSystemPropertyTensor in the
- * Linguistics Layer. Only LexicalRelationship gets a row here; Dictionary
+ * Linguistics Layer. Only MorphologicalPointerRelationship gets a row here; Dictionary
  * and Word do not (Design Principle 8: tensor-backed system properties
  * apply only to word relationships, not to words standing alone).
  *
@@ -10,7 +10,7 @@
  * arrays alongside the tensor, mirroring LinguisticSystemPropertyTensor's
  * _uuids/_origins convention -- never packed into the tensor itself.
  *
- * Ported from vocabulary/data/lexical_relationship_tensor.py. Python's
+ * Ported from vocabulary/data/morphological_pointer_relationship_tensor.py. Python's
  * numpy float64 array becomes a Float64Array here -- same fixed-width,
  * grow-by-doubling discipline, browser-native. */
 export const CONFIDENCE_COL = 0;
@@ -19,7 +19,7 @@ export const TEMPORAL_COL = 2;
 export const ACTIVATION_COL = 3;
 export const N_COLS = 4;
 
-export class LexicalRelationshipSystemPropertyTensor {
+export class MorphologicalPointerRelationshipSystemPropertyTensor {
   private capacity: number;
   private nRows = 0;
   values: Float64Array;

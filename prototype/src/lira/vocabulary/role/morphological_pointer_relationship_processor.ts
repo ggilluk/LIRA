@@ -1,21 +1,21 @@
 import type { AttributeValue } from "../data/attribute_value";
-import type { LexicalRelationship } from "../data/lexical_relationship";
-import type { LexicalRelationshipStore } from "../data/lexical_relationship_store";
-import type { LexicalRelationshipSystemPropertyTensor } from "../data/lexical_relationship_tensor";
+import type { MorphologicalPointerRelationship } from "../data/morphological_pointer_relationship";
+import type { MorphologicalPointerRelationshipStore } from "../data/morphological_pointer_relationship_store";
+import type { MorphologicalPointerRelationshipSystemPropertyTensor } from "../data/morphological_pointer_relationship_tensor";
 import type { LexicalRelationshipType } from "../data/enums/lexical_relationship_type";
 import type { SourceReference } from "../data/source_reference";
 import { SystemPropertiesRef } from "../data/system_properties_ref";
 import { newUuid } from "../data/uuid";
 
-/** Creates LexicalRelationship records, allocating each one's
+/** Creates MorphologicalPointerRelationship records, allocating each one's
  * tensor-backed SystemPropertiesRef row (Design Principle 8) and
- * storing the result in a LexicalRelationshipStore.
+ * storing the result in a MorphologicalPointerRelationshipStore.
  *
- * Ported from vocabulary/role/lexical_relationship_processor.py. */
-export class LexicalRelationshipProcessor {
+ * Ported from vocabulary/role/morphological_pointer_relationship_processor.py. */
+export class MorphologicalPointerRelationshipProcessor {
   constructor(
-    private readonly store: LexicalRelationshipStore,
-    private readonly tensor: LexicalRelationshipSystemPropertyTensor,
+    private readonly store: MorphologicalPointerRelationshipStore,
+    private readonly tensor: MorphologicalPointerRelationshipSystemPropertyTensor,
   ) {}
 
   create(options: {
@@ -29,7 +29,7 @@ export class LexicalRelationshipProcessor {
     provenance?: number;
     temporal?: number;
     activation?: number;
-  }): LexicalRelationship {
+  }): MorphologicalPointerRelationship {
     const relationshipUuid = newUuid();
     const version = "1.0";
     const row = this.tensor.allocateRow(
@@ -40,7 +40,7 @@ export class LexicalRelationshipProcessor {
       options.temporal ?? 0.0,
       options.activation ?? 0.0,
     );
-    const relationship: LexicalRelationship = {
+    const relationship: MorphologicalPointerRelationship = {
       uuid: { value: relationshipUuid },
       version: { value: version },
       sourceWordId: { value: options.sourceWordId },

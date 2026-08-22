@@ -1,6 +1,6 @@
 /** Loads the Common Vocabulary Relationship Cache
  * (vocabulary/assets/common/<language>/relationships/) and seeds a
- * Domain's LexicalRelationship graph with it, resolving every source
+ * Domain's MorphologicalPointerRelationship graph with it, resolving every source
  * and target Word against that Domain's own Dictionary. Relationship
  * assets are generated bootstrap assets; they are not the authoritative
  * source of lexical knowledge.
@@ -11,7 +11,7 @@
  * API's `crypto.subtle.digest`, which is promise-based. */
 
 import type { Dictionary } from "../data/dictionary";
-import { LexicalRelationshipStore } from "../data/lexical_relationship_store";
+import { MorphologicalPointerRelationshipStore } from "../data/morphological_pointer_relationship_store";
 import { LexicalRelationshipType } from "../data/enums/lexical_relationship_type";
 import { PartOfSpeech } from "../data/enums/part_of_speech";
 import type { Phrases } from "../data/phrases";
@@ -26,7 +26,7 @@ import {
   type RelationshipFileEntry,
   type RelationshipManifestDocument,
 } from "./asset_loader";
-import type { LexicalRelationshipProcessor } from "./lexical_relationship_processor";
+import type { MorphologicalPointerRelationshipProcessor } from "./morphological_pointer_relationship_processor";
 import type { SemanticRelationshipProcessor } from "./semantic_relationship_processor";
 import { LEXICAL_TO_SEMANTIC_KIND } from "./word_seeder";
 
@@ -173,7 +173,7 @@ export class RelationshipSeeder {
    *
    * A spec naming a multi-word closed-class form ("in spite of", now a
    * Phrase -- phrase.ts's own docstring) is a second, unconditional
-   * exception, regardless of `skipUnresolvable`: LexicalRelationshipStore
+   * exception, regardless of `skipUnresolvable`: MorphologicalPointerRelationshipStore
    * only ever connects two Word uuids, so a curated fact like "despite
    * SYNONYM in spite of" (semantic_relationships.json) has no graph
    * node to attach its Phrase-side edge to in this first pass -- silently
@@ -186,8 +186,8 @@ export class RelationshipSeeder {
       vocabulary: {
         dictionary: Dictionary;
         phrases: Phrases;
-        lexicalRelationships: LexicalRelationshipStore;
-        lexicalRelationshipProcessor: LexicalRelationshipProcessor;
+        morphologicalPointerRelationships: MorphologicalPointerRelationshipStore;
+        morphologicalPointerRelationshipProcessor: MorphologicalPointerRelationshipProcessor;
         semanticRelationships: SemanticRelationshipStore;
         semanticRelationshipProcessor: SemanticRelationshipProcessor;
       };
@@ -197,8 +197,8 @@ export class RelationshipSeeder {
     const skipUnresolvable = options?.skipUnresolvable ?? false;
     const dictionary = domain.vocabulary.dictionary;
     const phraseBook = domain.vocabulary.phrases;
-    const store = domain.vocabulary.lexicalRelationships;
-    const processor = domain.vocabulary.lexicalRelationshipProcessor;
+    const store = domain.vocabulary.morphologicalPointerRelationships;
+    const processor = domain.vocabulary.morphologicalPointerRelationshipProcessor;
     const semanticProcessor = domain.vocabulary.semanticRelationshipProcessor;
 
     const resolved: Array<[Word, Word, LexicalRelationshipType]> = [];
@@ -315,7 +315,7 @@ export class RelationshipSeeder {
   /** Whether `lexicalForm` (optionally narrowed by `partOfSpeech`)
    * names a real, seeded Phrase -- seedDomain()'s own signal to skip a
    * spec silently rather than treat a Dictionary miss as a cache bug.
-   * A Phrase endpoint genuinely can carry a LexicalRelationship now
+   * A Phrase endpoint genuinely can carry a MorphologicalPointerRelationship now
    * (word_seeder.ts's own seedWordNet does exactly that), but this
    * class's own `resolve()` only ever looks a spec's source/target Word
    * up in `dictionary` -- the bundled Common Relationship Cache this
@@ -328,7 +328,7 @@ export class RelationshipSeeder {
   }
 
   private relationshipExists(
-    store: LexicalRelationshipStore,
+    store: MorphologicalPointerRelationshipStore,
     sourceWordId: string,
     targetWordId: string,
     relationshipType: LexicalRelationshipType,

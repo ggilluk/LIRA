@@ -1,7 +1,8 @@
-import { ACTIVATION_COL, CONFIDENCE_COL, PROVENANCE_COL, TEMPORAL_COL } from "./lexical_relationship_tensor";
+import { ACTIVATION_COL, CONFIDENCE_COL, PROVENANCE_COL, TEMPORAL_COL } from "./morphological_pointer_relationship_tensor";
 import type { RelationshipSystemPropertyTensor } from "./relationship_system_property_tensor";
 
-/** SystemPropertiesRef: a LexicalRelationship or SemanticRelationship's
+/** SystemPropertiesRef: a MorphologicalPointerRelationship, LexicalRelationship,
+ * or SemanticRelationship's
  * by-reference view into its own system-properties tensor
  * (RelationshipSystemPropertyTensor's own docstring on why one class
  * serves both) (Rule 14) -- reading confidenceWeight reads the live
