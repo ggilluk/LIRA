@@ -307,33 +307,41 @@ as of the `WordForm`/`WordForms` introduction
   It has no `Source.WordForm`/`Destination.WordForm` fields at all,
   since nothing built so far has needed one.
 
-  **The real blocker to adding that dimension: there is no base-lemma
-  `WordForm` for `Source.WordForm`/`Destination.WordForm` to point at,
-  for any Word outside the 11 AUXILIARY lemmas.** `WordForm` today only
-  ever represents an *inflected* spelling ("am", "was") -- there is no
-  WordForm standing for a Word's own base/canonical spelling ("wheel"
-  itself, "car" itself), so a base-form Sense (which is most Senses --
-  every WordNet-seeded Noun/Verb/Adjective/Adverb sense) still attaches
-  only to `Word.senseIds` directly, with no `WordForm` hop to reach at
-  all. Wiring `Source.WordForm` onto `SemanticRelationship` (or
-  `LexicalRelationship`) needs that hop to exist for every Word first,
-  not just the inflected ones.
+  **Its real blocker -- a base-lemma `WordForm` for `Source.WordForm`/
+  `Destination.WordForm` to point at, for every Word, not just the 11
+  AUXILIARY lemmas -- is now closed.** Every ordinary base-form Word
+  (every WordNet-seeded Noun/Verb/Adjective/Adverb, and every
+  hand-curated closed-class entry) gets its own `WordForm` with
+  `field === "baseLemmaCanonicalForm"`, created and populated by
+  `WordForms.registerBaseLemmaForm()`/`registerSense()`
+  (`data/word_forms.ts`), called from the same two places a base-form
+  Word's Sense was already being registered: `role/word_seeder.ts`'s
+  `registerUniqueSense()` (hand-curated closed-class entries) and
+  `seedWordNet()`'s pass 1 (every WordNet synset member, the dominant,
+  ~100k+-Word source). Every Sense already reaching a Word via
+  `senses.registerMember(sense, word)` now also reaches that same
+  Word's own base-lemma `WordForm` via `wordForms.registerSense()` --
+  the identical dual-registration pattern `role/auxiliary_seeder.ts`
+  already used, generalised to every Word instead of just AUXILIARY's
+  inflected forms. AUXILIARY itself is untouched by this (it never runs
+  through either of those two functions), so "be"'s own
+  `bareInfinitiveForm` WordForm isn't duplicated by a redundant
+  `baseLemmaCanonicalForm` one.
 
-  This concept -- "the canonical/base spelling of this Word" -- already
-  exists in the codebase, but scattered across several different,
-  not-fully-reconciled names/shapes, none of them a `WordForm`:
-  `Word.text` (the stored spelling itself), `Word.lexicalForm` (a
-  separate field, defaults to `text`), `Word.normalisedForm` (lower-
-  cased), and `Word.baseLemmaCanonicalForm` (a scalar `Text` pointer
-  *by spelling* back to a different Word's lemma, used when a Word is
-  itself modelled as one specific inflected form, e.g. a hypothetical
-  "ran" Word carrying `baseLemmaCanonicalForm: "run"`) --
-  `data/entities/word.ts`'s own docstring on that last one. That field
-  is itself a second, competing shape for "inflected form <-> lemma"
-  alongside the one `WordForm`/`Auxiliary` just established (one Word
-  with `WordForm` children, vs. one Word per surface form with a
-  scalar back-pointer) -- reconciling the two, not just adding a fifth
-  name for the same idea, is part of closing this gap.
+  This also finally gives `Word.baseLemmaCanonicalForm` a real
+  consumer. Grepped the whole codebase (TS and JSON, camelCase and
+  snake_case): no production seeder has ever written it -- but it's
+  real, tested machinery (`vocabulary.test.ts`'s own coverage of
+  `validateWordFormAttributes()` and the UI's `word_forms` output), so
+  it was kept rather than retired. Its own intended case -- a Word that
+  itself models one specific inflected surface form, pointing back to a
+  different lemma's spelling (its own docstring's "ran" example, and
+  concretely the real promoted VERB Words "was"/"is"/"has"/... this
+  session's own Auxiliary work turned up) -- is now the preferred
+  `text` source for that Word's own base-lemma `WordForm` whenever it's
+  set, falling back to `Word.lexicalForm`/`Word.text` (the two already
+  agree for the ordinary case, where a Word's own stored spelling
+  already is its canonical form).
 
 - **`LexicalRelationship` (`data/lexical_relationship.ts`) is the
   biggest gap against this document.** Today it connects two *Words*
@@ -376,24 +384,18 @@ as of the `WordForm`/`WordForms` introduction
     Word-level field, no seeded data (`act -> speech act` in Section 4
     is aspirational, not resolvable against today's Dictionary).
 
-- The **dual-registration pattern already in `role/auxiliary_seeder.ts`**
-  (a Sense registered onto both its owning `WordForm.senseIds` and the
-  Word's own `senseIds`) is a practical, narrower version of this
-  document's "by-reference, independently addressable" principle --
-  proof the master-store/by-reference shape works in real seeded data,
-  not just as a target diagram.
+- The **dual-registration pattern from `role/auxiliary_seeder.ts`, now
+  generalised to every Word** (a Sense registered onto both its owning
+  `WordForm.senseIds` and the Word's own `senseIds`) is proof the
+  master-store/by-reference shape works in real seeded data at
+  WordNet scale, not just as a target diagram.
 
-### Suggested First Step
+### Next Step
 
-Give every Word a base-lemma `WordForm` before touching either
-relationship type's own shape. Every other gap listed above --
-`SemanticRelationship`'s missing `WordForm` dimension, `LexicalRelationship`'s
-Word-to-Word shape, Compound/Verbalisation having no relationship
-representation at all -- needs `Source.WordForm`/`Destination.WordForm`
-to be populable for an *ordinary* base-form Word (a Noun, a Verb, not
-just one of the 11 Auxiliary lemmas), not only an inflected one. Doing
-this first, once, is a smaller and more foundational step than fixing
-either relationship type's shape directly, and both of those already
-depend on it. It also forces the `baseLemmaCanonicalForm` reconciliation
-above to actually get settled, rather than accumulating a fifth name
-for the same idea alongside it.
+With every Word's own base-lemma `WordForm` now populable, the
+remaining gaps from this section are ready to be tackled directly:
+wiring `Source.WordForm`/`Destination.WordForm` onto `SemanticRelationship`
+itself, resolving `LexicalRelationship`'s Word-to-Word shape against
+Section 2's target, and giving Compound/Verbalisation a real
+relationship representation. None of those needed to happen first --
+this was the one shared prerequisite all three actually depended on.

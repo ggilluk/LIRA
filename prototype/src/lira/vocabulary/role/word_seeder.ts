@@ -62,6 +62,7 @@ import { PhraseType } from "../data/enums/phrase_type";
 import type { Phrases } from "../data/phrases";
 import { createSense, type Sense } from "../data/sense";
 import type { Senses } from "../data/senses";
+import type { WordForms } from "../data/word_forms";
 import type { SourceReference } from "../data/source_reference";
 import { createVerb, generateVerbForms, isVerb } from "./processor/verb_processor";
 import type { Word } from "../data/entities/word";
@@ -845,11 +846,20 @@ function applyDomainTag(target: { domainTag?: Text; relatedDomainTags: readonly 
  * docstring) by entryId. This is the one place a hand-curated entry's
  * raw PAD value actually reaches a Sense; undefined (the every-call-site
  * default) leaves every one of the Sense's own three PAD fields
- * undefined too, same as a WordNet-seeded Sense always has. */
+ * undefined too, same as a WordNet-seeded Sense always has.
+ *
+ * `wordForms`, when supplied, also registers this same Sense onto
+ * `entry`'s own base-lemma WordForm (WordForms.registerBaseLemmaForm()/
+ * registerSense(), data/word_forms.ts's own docstrings) -- Phrase-only
+ * (no `wordForms` call at all when `entry` is a Phrase: WordForm is a
+ * Word-only concept, data/word_form.ts's own docstring). This is the
+ * same dual registration role/auxiliary_seeder.ts already does by hand
+ * for AUXILIARY, generalised to every hand-curated Word. */
 function registerUniqueSense(
   senseStore: Senses,
   entry: Word | Phrase,
   pad?: { pleasure?: number; arousal?: number; dominance?: number },
+  wordForms?: WordForms,
 ): void {
   // Phrase has no root-word concept at all (root_words.json's own 25
   // entries are all single-word NOUNs) -- the `"words" in entry` check
@@ -876,6 +886,9 @@ function registerUniqueSense(
   });
   senseStore.append(sense);
   senseStore.registerMember(sense, entry);
+  if (wordForms !== undefined && !("words" in entry)) {
+    wordForms.registerSense(wordForms.registerBaseLemmaForm(entry), sense);
+  }
 }
 
 // Shared by seedWordNet's own pass 1 and loadCache()'s own isMultiWord()
@@ -1206,6 +1219,7 @@ export class WordSeeder {
     phraseBook: Phrases,
     options?: { excludeOpenClasses?: boolean },
     senseStore?: Senses,
+    wordForms?: WordForms,
   ): number {
     const excludeOpenClasses = options?.excludeOpenClasses ?? false;
     let seeded = 0;
@@ -1220,7 +1234,7 @@ export class WordSeeder {
       const copy = copyWordWithFreshUuid(word);
       dictionary.append(copy);
       insertedByEntryId.set(word.entryId.value, copy);
-      if (senseStore !== undefined) registerUniqueSense(senseStore, copy, this.cachePad.get(word.entryId.value));
+      if (senseStore !== undefined) registerUniqueSense(senseStore, copy, this.cachePad.get(word.entryId.value), wordForms);
       seeded += 1;
     }
     for (const link of this.cacheFormLinks) {
@@ -1242,6 +1256,9 @@ export class WordSeeder {
       if (alreadyPresent) continue;
       const phraseCopy = copyPhraseWithFreshUuid(phrase);
       phraseBook.append(phraseCopy);
+      // wordForms omitted here -- registerUniqueSense()'s own "Word,
+      // not Phrase" guard would skip it anyway, but a Phrase has no
+      // base-lemma WordForm concept to register in the first place.
       if (senseStore !== undefined) registerUniqueSense(senseStore, phraseCopy, this.cachePad.get(phrase.entryId.value));
       seeded += 1;
     }
@@ -1254,10 +1271,16 @@ export class WordSeeder {
   }
 
   seedDomain(
-    domain: { vocabulary: { dictionary: Dictionary; phrases: Phrases; senses?: Senses } },
+    domain: { vocabulary: { dictionary: Dictionary; phrases: Phrases; senses?: Senses; wordForms?: WordForms } },
     options?: { excludeOpenClasses?: boolean },
   ): number {
-    return this.seedClosedClassWords(domain.vocabulary.dictionary, domain.vocabulary.phrases, options, domain.vocabulary.senses);
+    return this.seedClosedClassWords(
+      domain.vocabulary.dictionary,
+      domain.vocabulary.phrases,
+      options,
+      domain.vocabulary.senses,
+      domain.vocabulary.wordForms,
+    );
   }
 
   /** Seeds `domain` from the bundled Princeton WordNet 3.1 dict/ files
@@ -1326,6 +1349,7 @@ export class WordSeeder {
         dictionary: Dictionary;
         phrases: Phrases;
         senses: Senses;
+        wordForms?: WordForms;
         lexicalRelationships: LexicalRelationshipStore;
         lexicalRelationshipProcessor: LexicalRelationshipProcessor;
         semanticRelationships: SemanticRelationshipStore;
@@ -1337,6 +1361,7 @@ export class WordSeeder {
     const dictionary = domain.vocabulary.dictionary;
     const phraseBook = domain.vocabulary.phrases;
     const senseStore = domain.vocabulary.senses;
+    const wordForms = domain.vocabulary.wordForms;
     const store = domain.vocabulary.lexicalRelationships;
     const processor = domain.vocabulary.lexicalRelationshipProcessor;
     const semanticStore = domain.vocabulary.semanticRelationships;
@@ -1493,7 +1518,19 @@ export class WordSeeder {
       // a LexicalRelationshipType.SYNONYM edge for any WordNet-derived
       // pair -- allPairs()'s own former call site here is gone, not
       // replaced.
-      for (const member of members) senseStore.registerMember(sense, member);
+      //
+      // The same Sense also reaches each single-word member's own
+      // base-lemma WordForm here (wordForms.registerBaseLemmaForm()/
+      // registerSense(), data/word_forms.ts's own docstrings) --
+      // Phrase members skip this, WordForm's own "Word-only" scope
+      // (data/word_form.ts's own docstring); a multi-word member is
+      // never anything but a Phrase (`"words" in member` narrows it).
+      for (const member of members) {
+        senseStore.registerMember(sense, member);
+        if (wordForms !== undefined && !("words" in member)) {
+          wordForms.registerSense(wordForms.registerBaseLemmaForm(member), sense);
+        }
+      }
       synsetMembersById.set(synset.synsetId, members);
 
       processed += 1;
