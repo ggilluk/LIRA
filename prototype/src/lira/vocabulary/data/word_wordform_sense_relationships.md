@@ -307,6 +307,34 @@ as of the `WordForm`/`WordForms` introduction
   It has no `Source.WordForm`/`Destination.WordForm` fields at all,
   since nothing built so far has needed one.
 
+  **The real blocker to adding that dimension: there is no base-lemma
+  `WordForm` for `Source.WordForm`/`Destination.WordForm` to point at,
+  for any Word outside the 11 AUXILIARY lemmas.** `WordForm` today only
+  ever represents an *inflected* spelling ("am", "was") -- there is no
+  WordForm standing for a Word's own base/canonical spelling ("wheel"
+  itself, "car" itself), so a base-form Sense (which is most Senses --
+  every WordNet-seeded Noun/Verb/Adjective/Adverb sense) still attaches
+  only to `Word.senseIds` directly, with no `WordForm` hop to reach at
+  all. Wiring `Source.WordForm` onto `SemanticRelationship` (or
+  `LexicalRelationship`) needs that hop to exist for every Word first,
+  not just the inflected ones.
+
+  This concept -- "the canonical/base spelling of this Word" -- already
+  exists in the codebase, but scattered across several different,
+  not-fully-reconciled names/shapes, none of them a `WordForm`:
+  `Word.text` (the stored spelling itself), `Word.lexicalForm` (a
+  separate field, defaults to `text`), `Word.normalisedForm` (lower-
+  cased), and `Word.baseLemmaCanonicalForm` (a scalar `Text` pointer
+  *by spelling* back to a different Word's lemma, used when a Word is
+  itself modelled as one specific inflected form, e.g. a hypothetical
+  "ran" Word carrying `baseLemmaCanonicalForm: "run"`) --
+  `data/entities/word.ts`'s own docstring on that last one. That field
+  is itself a second, competing shape for "inflected form <-> lemma"
+  alongside the one `WordForm`/`Auxiliary` just established (one Word
+  with `WordForm` children, vs. one Word per surface form with a
+  scalar back-pointer) -- reconciling the two, not just adding a fifth
+  name for the same idea, is part of closing this gap.
+
 - **`LexicalRelationship` (`data/lexical_relationship.ts`) is the
   biggest gap against this document.** Today it connects two *Words*
   directly (`sourceWordId`/`targetWordId`), not `(WordForm, Sense)`
@@ -354,3 +382,18 @@ as of the `WordForm`/`WordForms` introduction
   document's "by-reference, independently addressable" principle --
   proof the master-store/by-reference shape works in real seeded data,
   not just as a target diagram.
+
+### Suggested First Step
+
+Give every Word a base-lemma `WordForm` before touching either
+relationship type's own shape. Every other gap listed above --
+`SemanticRelationship`'s missing `WordForm` dimension, `LexicalRelationship`'s
+Word-to-Word shape, Compound/Verbalisation having no relationship
+representation at all -- needs `Source.WordForm`/`Destination.WordForm`
+to be populable for an *ordinary* base-form Word (a Noun, a Verb, not
+just one of the 11 Auxiliary lemmas), not only an inflected one. Doing
+this first, once, is a smaller and more foundational step than fixing
+either relationship type's shape directly, and both of those already
+depend on it. It also forces the `baseLemmaCanonicalForm` reconciliation
+above to actually get settled, rather than accumulating a fifth name
+for the same idea alongside it.
