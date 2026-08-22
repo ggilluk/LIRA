@@ -285,19 +285,25 @@ as of the `WordForm`/`WordForms` introduction
 (`data/word_form.ts`/`data/word_forms.ts`):
 
 - **Section 1 (Word -> WordForms -> WordForm -> Senses -> Sense) is
-  real, but AUXILIARY-only.** `Word.formIds` (`data/entities/word.ts`)
-  + the `WordForms` store give exactly this shape -- `WordForm` already
-  carries its own `senseIds: readonly Identifier[]`, matching "each
-  `WordForm` has its own `Senses`" precisely, and both `WordForm` and
-  `Sense` are stored once in a per-Domain master store (`WordForms`/
-  `Senses` on `VocabularyContext`) and referenced by `Identifier`, never
-  copied -- the "dictionary master level" invariant above already holds
-  for these two stores specifically. Every other POS subtype (Noun,
-  Verb, Adjective, Adverb, Pronoun, Determiner) still spells its own
-  forms as scalar `*_Form` fields directly on the Word
-  (`data/pos_form_fields.ts`), not through a `WordForm` -- this
-  document's Section 1 is these subtypes' own target shape, not their
-  current one.
+  real for every Word, not just AUXILIARY.** `Word.formIds`
+  (`data/entities/word.ts`) + the `WordForms` store give exactly this
+  shape -- `WordForm` already carries its own `senseIds: readonly
+  Identifier[]`, matching "each `WordForm` has its own `Senses`"
+  precisely, and both `WordForm` and `Sense` are stored once in a
+  per-Domain master store (`WordForms`/`Senses` on `VocabularyContext`)
+  and referenced by `Identifier`, never copied -- the "dictionary master
+  level" invariant above already holds for these two stores
+  specifically. Every Word gets at least a base-lemma `WordForm`
+  (`WordForms.registerBaseLemmaForm()`); AUXILIARY still gets several
+  more, one per inflected form. The Word Detail UI reflects this nesting
+  directly (`ui/server/builder_word.ts`'s `wordFormsFor()`/`sensesFor()`,
+  `WordFormEntry.senses`) -- every other POS subtype (Noun, Verb,
+  Adjective, Adverb, Pronoun, Determiner) still ALSO spells its own
+  *inflected* forms as scalar `*_Form` fields directly on the Word
+  (`data/pos_form_fields.ts`), not through their own `WordForm` records
+  -- only the base/canonical spelling has a real `WordForm` for those
+  six subtypes; this document's Section 1 is their inflected forms' own
+  target shape, not their current one.
 
 - **`SemanticRelationship` (`data/semantic_relationship.ts`) is close
   to Section 2's shape, but Sense-only, no `WordForm` dimension.** It
@@ -343,22 +349,31 @@ as of the `WordForm`/`WordForms` introduction
   agree for the ordinary case, where a Word's own stored spelling
   already is its canonical form).
 
-- **`LexicalRelationship` (`data/lexical_relationship.ts`) is the
-  biggest gap against this document.** Today it connects two *Words*
-  directly (`sourceWordId`/`targetWordId`), not `(WordForm, Sense)`
-  pairs on each side -- there is no Base Sense / Modified Sense
-  distinction in the data at all, and no `WordForm` reference on either
-  side. It's also explicitly seeding-internal working state rather than
-  a permanent, queryable part of the model
-  (`VocabularyContext`'s own docstring: "nothing outside
-  role/word_seeder.ts and role/relationship_seeder.ts is meant to read
-  `lexicalRelationships` again once a seeding pass returns") -- the
-  facts it captures get read back once, at the end of seeding, onto
-  either a Word-level attribute pair (see below) or into
-  `SemanticRelationship`. Section 2's `LexicalRelationship` shape
-  (Source/Destination each carrying both a `WordForm` and a `Sense`,
-  permanent and directly queryable) does not exist as its own object
-  yet.
+- **`LexicalRelationship` now matches Section 2's shape directly.**
+  What used to be the Word-to-Word working structure (`sourceWordId`/
+  `targetWordId`, seeding-internal, discarded after use) is renamed to
+  `MorphologicalPointerRelationship` (`data/morphological_pointer_relationship.ts`)
+  -- untouched in behaviour, still exactly what its own docstring there
+  describes. The freed-up `LexicalRelationship` name now names the real
+  thing: `sourceWordFormId`/`sourceSenseId`/`targetWordFormId`/
+  `targetSenseId` (`data/lexical_relationship.ts`), `SemanticRelationship`'s
+  own exact shape one dimension wider, permanent and directly queryable
+  via `VocabularyContext.lexicalRelationships` (`LexicalRelationshipStore`,
+  `SemanticRelationshipStore`'s own exact counterpart) -- nothing reads
+  it once and discards it any more. Populated at the same two call sites
+  that already resolve the exact Sense/Word pair a fact is about --
+  `role/word_seeder.ts`'s `copyLexicalRelationship()` (every WordNet
+  Morphological/Orthographic-group pointer, `copySemanticRelationship()`'s
+  own sibling) and `role/relationship_seeder.ts`'s own parallel addition
+  (the hand-curated Common Relationship Cache, `CONTRACTION` included) --
+  both resolve `WordForm` via `WordForms.registerBaseLemmaForm()`. The
+  Word Detail UI reads it directly now too: each Sense's own row carries
+  a "Sense.Lexical.Relationships" section
+  (`ui/server/builder_lexical_relationship.ts`, `client_senses_section_html.ts`),
+  `SemanticRelationship`'s own "Sense.Semantic.Relationships" sibling,
+  nested under the WordForm it belongs to rather than flat under the
+  Word (Section 1's own nesting, now real for every Word, not just
+  AUXILIARY -- `wordFormsFor()`/`sensesFor()`, `ui/server/builder_word.ts`).
 
 - **Section 3's ten `LexicalRelationshipType` categories mostly already
   have real enum members** (`data/enums/lexical_relationship_type.ts`),
@@ -392,10 +407,23 @@ as of the `WordForm`/`WordForms` introduction
 
 ### Next Step
 
-With every Word's own base-lemma `WordForm` now populable, the
-remaining gaps from this section are ready to be tackled directly:
-wiring `Source.WordForm`/`Destination.WordForm` onto `SemanticRelationship`
-itself, resolving `LexicalRelationship`'s Word-to-Word shape against
-Section 2's target, and giving Compound/Verbalisation a real
-relationship representation. None of those needed to happen first --
-this was the one shared prerequisite all three actually depended on.
+Two of the three gaps the previous "Next Step" named are now closed:
+`LexicalRelationship` matches Section 2's `(WordForm, Sense)`-on-each-side
+shape and is a real, permanent, queryable part of the model, and the
+Word Detail UI reflects Section 1's Word -> WordForm -> Senses nesting
+for every Word. What's left:
+
+- **`SemanticRelationship` still has no `Source.WordForm`/`Destination.WordForm`
+  dimension** -- it connects two Senses directly, which is correct for
+  a genuine Sense-to-Sense semantic fact (this document's `wheel`/`car`
+  example never needed a spelling), but doesn't yet let a caller ask
+  "which specific WordForm was this fact recorded against." Nothing
+  built so far has needed that; revisit if a real case turns up.
+- **Compound and Verbalisation still have no relationship representation**
+  -- Compound has no enum member, no Word-level field, no seeded data
+  at all (`act -> speech act` in Section 4 stays aspirational); Verbalisation
+  stays a Word-level boolean+pointer field pair
+  (`Noun.isVerbalised`/`Verb.isNominalisedIndicator` and siblings)
+  rather than its own relationship kind, per this document's own
+  Validity Rule (Section 10) -- don't manufacture either without real
+  data behind it.
