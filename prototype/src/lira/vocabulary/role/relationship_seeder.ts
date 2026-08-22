@@ -16,8 +16,10 @@ import { LexicalRelationshipType } from "../data/enums/lexical_relationship_type
 import { PartOfSpeech } from "../data/enums/part_of_speech";
 import type { Phrases } from "../data/phrases";
 import type { SemanticRelationshipStore } from "../data/semantic_relationship_store";
+import type { LexicalRelationshipStore } from "../data/lexical_relationship_store";
 import type { SourceReference } from "../data/source_reference";
 import type { Word } from "../data/entities/word";
+import type { WordForms } from "../data/word_forms";
 import {
   readRelationshipFile,
   readRelationshipFileRaw,
@@ -28,6 +30,7 @@ import {
 } from "./asset_loader";
 import type { MorphologicalPointerRelationshipProcessor } from "./morphological_pointer_relationship_processor";
 import type { SemanticRelationshipProcessor } from "./semantic_relationship_processor";
+import type { LexicalRelationshipProcessor } from "./lexical_relationship_processor";
 import { LEXICAL_TO_SEMANTIC_KIND } from "./word_seeder";
 
 export const CATEGORY_FILES = [
@@ -190,6 +193,9 @@ export class RelationshipSeeder {
         morphologicalPointerRelationshipProcessor: MorphologicalPointerRelationshipProcessor;
         semanticRelationships: SemanticRelationshipStore;
         semanticRelationshipProcessor: SemanticRelationshipProcessor;
+        wordForms?: WordForms;
+        lexicalRelationships?: LexicalRelationshipStore;
+        lexicalRelationshipProcessor?: LexicalRelationshipProcessor;
       };
     },
     options?: { skipUnresolvable?: boolean },
@@ -200,6 +206,16 @@ export class RelationshipSeeder {
     const store = domain.vocabulary.morphologicalPointerRelationships;
     const processor = domain.vocabulary.morphologicalPointerRelationshipProcessor;
     const semanticProcessor = domain.vocabulary.semanticRelationshipProcessor;
+    const wordForms = domain.vocabulary.wordForms;
+    const lexicalProcessor = domain.vocabulary.lexicalRelationshipProcessor;
+    const lexicalExistingEdges = new Set<string>();
+    if (domain.vocabulary.lexicalRelationships !== undefined) {
+      for (const relationship of domain.vocabulary.lexicalRelationships.all()) {
+        lexicalExistingEdges.add(
+          `${relationship.sourceWordFormId.value}|${relationship.sourceSenseId.value}|${relationship.targetWordFormId.value}|${relationship.targetSenseId.value}|${relationship.relationshipType}`,
+        );
+      }
+    }
 
     const resolved: Array<[Word, Word, LexicalRelationshipType]> = [];
     for (const spec of await this.loadRelationshipSpecs()) {
@@ -243,7 +259,16 @@ export class RelationshipSeeder {
         seeded += 1;
       }
 
-      this.copyOntoPermanentModel(semanticProcessor, semanticExistingEdges, sourceWord, targetWord, relationshipType);
+      this.copyOntoPermanentModel(
+        semanticProcessor,
+        semanticExistingEdges,
+        lexicalProcessor,
+        lexicalExistingEdges,
+        wordForms,
+        sourceWord,
+        targetWord,
+        relationshipType,
+      );
     }
     return seeded;
   }
@@ -270,28 +295,67 @@ export class RelationshipSeeder {
   private copyOntoPermanentModel(
     semanticProcessor: SemanticRelationshipProcessor,
     semanticExistingEdges: Set<string>,
+    lexicalProcessor: LexicalRelationshipProcessor | undefined,
+    lexicalExistingEdges: Set<string>,
+    wordForms: WordForms | undefined,
     sourceWord: Word,
     targetWord: Word,
     relationshipType: LexicalRelationshipType,
   ): void {
     if (relationshipType === LexicalRelationshipType.CONTRACTION) {
-      if (targetWord.contractionOf.some((id) => id.value === sourceWord.uuid.value)) return;
-      targetWord.contractionOf = [...targetWord.contractionOf, sourceWord.uuid];
-      return;
+      if (!targetWord.contractionOf.some((id) => id.value === sourceWord.uuid.value)) {
+        targetWord.contractionOf = [...targetWord.contractionOf, sourceWord.uuid];
+      }
     }
 
     const semanticKind = LEXICAL_TO_SEMANTIC_KIND[relationshipType];
-    if (semanticKind === undefined) return;
+    if (semanticKind !== undefined) {
+      const sourceSenseId = sourceWord.senseIds[0];
+      const targetSenseId = targetWord.senseIds[0];
+      if (sourceSenseId !== undefined && targetSenseId !== undefined && sourceSenseId.value !== targetSenseId.value) {
+        const key = `${sourceSenseId.value}|${targetSenseId.value}|${semanticKind}`;
+        if (!semanticExistingEdges.has(key)) {
+          semanticExistingEdges.add(key);
+          semanticProcessor.create({
+            sourceSenseId: sourceSenseId.value,
+            targetSenseId: targetSenseId.value,
+            relationshipType: semanticKind,
+            sourceReferences: [CACHE_SOURCE_REFERENCE],
+            confidence: SEEDER_DEFAULT_WEIGHT,
+            provenance: SEEDER_DEFAULT_WEIGHT,
+            temporal: SEEDER_DEFAULT_WEIGHT,
+            activation: SEEDER_DEFAULT_WEIGHT,
+          });
+        }
+      }
+      return;
+    }
+
+    // Every Morphological/Orthographic-group kind (including
+    // CONTRACTION -- falls through from the branch above rather than
+    // returning early there, since a curated contraction is *both* a
+    // Word.contractionOf fact and its own permanent LexicalRelationship
+    // now) becomes a real, permanent LexicalRelationship --
+    // word_seeder.ts's own copyLexicalRelationship() applied here to
+    // hand-curated facts instead of WordNet-sourced ones. Each curated
+    // Word has exactly one private Sense (registerUniqueSense's own
+    // "one per entry" contract), so senseIds[0] is unambiguous, not an
+    // arbitrary-primary-of-several simplification.
+    if (lexicalProcessor === undefined || wordForms === undefined) return;
     const sourceSenseId = sourceWord.senseIds[0];
     const targetSenseId = targetWord.senseIds[0];
     if (sourceSenseId === undefined || targetSenseId === undefined || sourceSenseId.value === targetSenseId.value) return;
-    const key = `${sourceSenseId.value}|${targetSenseId.value}|${semanticKind}`;
-    if (semanticExistingEdges.has(key)) return;
-    semanticExistingEdges.add(key);
-    semanticProcessor.create({
+    const sourceForm = wordForms.registerBaseLemmaForm(sourceWord);
+    const targetForm = wordForms.registerBaseLemmaForm(targetWord);
+    const key = `${sourceForm.uuid.value}|${sourceSenseId.value}|${targetForm.uuid.value}|${targetSenseId.value}|${relationshipType}`;
+    if (lexicalExistingEdges.has(key)) return;
+    lexicalExistingEdges.add(key);
+    lexicalProcessor.create({
+      sourceWordFormId: sourceForm.uuid.value,
       sourceSenseId: sourceSenseId.value,
+      targetWordFormId: targetForm.uuid.value,
       targetSenseId: targetSenseId.value,
-      relationshipType: semanticKind,
+      relationshipType,
       sourceReferences: [CACHE_SOURCE_REFERENCE],
       confidence: SEEDER_DEFAULT_WEIGHT,
       provenance: SEEDER_DEFAULT_WEIGHT,

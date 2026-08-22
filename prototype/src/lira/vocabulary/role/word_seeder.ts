@@ -54,6 +54,7 @@ import type { Identifier, Text } from "../../value_objects";
 import type { AttributeValue } from "../data/attribute_value";
 import type { Dictionary } from "../data/dictionary";
 import { MorphologicalPointerRelationshipStore } from "../data/morphological_pointer_relationship_store";
+import type { LexicalRelationshipStore } from "../data/lexical_relationship_store";
 import { LexicalRelationshipType, MERONYM_KIND_QUALIFIER, relationshipGroup, type MeronymKind } from "../data/enums/lexical_relationship_type";
 import { SemanticRelationshipKind } from "../data/enums/semantic_relationship_kind";
 import { copyPhraseWithFreshUuid, createPhrase, type Phrase } from "../data/phrase";
@@ -77,6 +78,7 @@ import {
   type WordManifestDocument,
 } from "./asset_loader";
 import type { MorphologicalPointerRelationshipProcessor } from "./morphological_pointer_relationship_processor";
+import type { LexicalRelationshipProcessor } from "./lexical_relationship_processor";
 import type { SemanticRelationshipProcessor } from "./semantic_relationship_processor";
 import { loadWordNetSynsets, type WordNetPointer, type WordNetSynset } from "./wordnet_loader";
 
@@ -1354,6 +1356,8 @@ export class WordSeeder {
         morphologicalPointerRelationshipProcessor: MorphologicalPointerRelationshipProcessor;
         semanticRelationships: SemanticRelationshipStore;
         semanticRelationshipProcessor: SemanticRelationshipProcessor;
+        lexicalRelationships?: LexicalRelationshipStore;
+        lexicalRelationshipProcessor?: LexicalRelationshipProcessor;
       };
     },
     onProgress?: (phase: "words" | "relationships", processed: number, total: number) => void,
@@ -1367,6 +1371,20 @@ export class WordSeeder {
     const semanticStore = domain.vocabulary.semanticRelationships;
     const semanticProcessor = domain.vocabulary.semanticRelationshipProcessor;
     const semanticExistingEdges = new Set<string>();
+    const lexicalProcessor = domain.vocabulary.lexicalRelationshipProcessor;
+    // (sourceWordFormId, sourceSenseId, targetWordFormId, targetSenseId,
+    // kind) dedup, semanticExistingEdges's own shape one dimension
+    // wider -- prevents a re-seed from duplicating a permanent
+    // LexicalRelationship the same way that Set already does for
+    // SemanticRelationship.
+    const lexicalExistingEdges = new Set<string>();
+    if (domain.vocabulary.lexicalRelationships !== undefined) {
+      for (const relationship of domain.vocabulary.lexicalRelationships.all()) {
+        lexicalExistingEdges.add(
+          `${relationship.sourceWordFormId.value}|${relationship.sourceSenseId.value}|${relationship.targetWordFormId.value}|${relationship.targetSenseId.value}|${relationship.relationshipType}`,
+        );
+      }
+    }
 
     // MorphologicalPointerRelationshipStore.outgoing() is indexed (O(1) amortized,
     // morphological_pointer_relationship_store.ts's own docstring) rather than a raw
@@ -1578,6 +1596,9 @@ export class WordSeeder {
             senseStore,
             semanticProcessor,
             semanticExistingEdges,
+            lexicalProcessor,
+            lexicalExistingEdges,
+            wordForms,
           );
         }
       }
@@ -1695,6 +1716,9 @@ export class WordSeeder {
     senseStore: Senses,
     semanticProcessor: SemanticRelationshipProcessor,
     semanticExistingEdges: Set<string>,
+    lexicalProcessor: LexicalRelationshipProcessor | undefined,
+    lexicalExistingEdges: Set<string>,
+    wordForms: WordForms | undefined,
   ): number {
     const targetMembers = synsetMembersById.get(pointer.targetSynsetId);
     if (targetMembers === undefined || targetMembers.length === 0) return 0;
@@ -1730,7 +1754,68 @@ export class WordSeeder {
         pairs.push(resolved.swap ? [tw, sw] : [sw, tw]);
       }
     }
+
+    if (lexicalProcessor !== undefined && wordForms !== undefined && LEXICAL_TO_SEMANTIC_KIND[resolved.kind] === undefined) {
+      this.copyLexicalRelationship(lexicalProcessor, lexicalExistingEdges, synset, pointer, resolved, senseStore, wordForms, pairs, qualifiers);
+    }
+
     return this.createEdges(processor, existingEdges, resolved.kind, pairs, qualifiers);
+  }
+
+  /** Copies one resolved pointer's own fact into a permanent
+   * LexicalRelationship (WordForm+Sense -> WordForm+Sense) -- `copySemanticRelationship()`'s
+   * own sibling, called only for a Morphological/Orthographic-group
+   * kind (`LEXICAL_TO_SEMANTIC_KIND[resolved.kind] === undefined`,
+   * `seedPointerRelationship()`'s own call-site guard) alongside
+   * whichever MorphologicalPointerRelationship (Word-to-Word) edge(s)
+   * that method's own general path creates for the identical fact.
+   * `sourceSense`/`targetSense` resolve the same way
+   * `copySemanticRelationship()`'s own do (`senseStore.findBySynsetId()`
+   * on each side -- always the pointer's own owning synset, regardless
+   * of which specific lemma a word-specific occurrence names, that
+   * method's own docstring); `sourceWordForm`/`targetWordForm` resolve
+   * per-pair via `WordForms.registerBaseLemmaForm()` (idempotent --
+   * reuses the Word's own base-lemma WordForm if seedWordNet's own
+   * pass 1 already created one for it, which it always has by this
+   * point). A `Phrase` on either side of `pairs` is skipped -- WordForm
+   * is a Word-only concept (data/word_form.ts's own docstring). */
+  private copyLexicalRelationship(
+    lexicalProcessor: LexicalRelationshipProcessor,
+    lexicalExistingEdges: Set<string>,
+    synset: WordNetSynset,
+    pointer: WordNetPointer,
+    resolved: { kind: LexicalRelationshipType; swap: boolean; meronymKind?: MeronymKind },
+    senseStore: Senses,
+    wordForms: WordForms,
+    pairs: readonly (readonly [Word | Phrase, Word | Phrase])[],
+    qualifiers: readonly AttributeValue[] | undefined,
+  ): void {
+    const sourceSense = senseStore.findBySynsetId(synset.synsetId);
+    const targetSense = senseStore.findBySynsetId(pointer.targetSynsetId);
+    if (sourceSense === undefined || targetSense === undefined || sourceSense.uuid.value === targetSense.uuid.value) return;
+    const [sourceSideSense, targetSideSense] = resolved.swap ? [targetSense, sourceSense] : [sourceSense, targetSense];
+
+    for (const [sw, tw] of pairs) {
+      if ("words" in sw || "words" in tw) continue;
+      const sourceForm = wordForms.registerBaseLemmaForm(sw);
+      const targetForm = wordForms.registerBaseLemmaForm(tw);
+      const key = `${sourceForm.uuid.value}|${sourceSideSense.uuid.value}|${targetForm.uuid.value}|${targetSideSense.uuid.value}|${resolved.kind}`;
+      if (lexicalExistingEdges.has(key)) continue;
+      lexicalExistingEdges.add(key);
+      lexicalProcessor.create({
+        sourceWordFormId: sourceForm.uuid.value,
+        sourceSenseId: sourceSideSense.uuid.value,
+        targetWordFormId: targetForm.uuid.value,
+        targetSenseId: targetSideSense.uuid.value,
+        relationshipType: resolved.kind,
+        sourceReferences: [WORDNET_SOURCE_REFERENCE],
+        qualifiers,
+        confidence: WORDNET_SEEDER_DEFAULT_WEIGHT,
+        provenance: WORDNET_SEEDER_DEFAULT_WEIGHT,
+        temporal: WORDNET_SEEDER_DEFAULT_WEIGHT,
+        activation: WORDNET_SEEDER_DEFAULT_WEIGHT,
+      });
+    }
   }
 
   /** Copies one resolved pointer's own fact into a genuine
