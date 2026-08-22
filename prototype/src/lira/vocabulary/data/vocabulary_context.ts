@@ -10,13 +10,17 @@ import { Phrases } from "./phrases";
 import { SemanticRelationshipStore } from "./semantic_relationship_store";
 import { SemanticRelationshipSystemPropertyTensor } from "./semantic_relationship_tensor";
 import { Senses } from "./senses";
+import { WordForms } from "./word_forms";
 
-/** Ported from vocabulary/data/layer.py. `phrases`/`senses` have no
- * Python original -- this prototype's own additions. `phrases` is
- * Dictionary's multi-word counterpart (phrase.ts's own docstring on why
- * a Phrase is a separate lexical category, not just a Word whose text
- * happens to contain a space); `senses` holds the shared meaning behind
- * a WordNet synset's own members (sense.ts's own docstring).
+/** Ported from vocabulary/data/layer.py. `phrases`/`senses`/`wordForms`
+ * have no Python original -- this prototype's own additions. `phrases`
+ * is Dictionary's multi-word counterpart (phrase.ts's own docstring on
+ * why a Phrase is a separate lexical category, not just a Word whose
+ * text happens to contain a space); `senses` holds the shared meaning
+ * behind a WordNet synset's own members (sense.ts's own docstring);
+ * `wordForms` holds one specific inflected spelling's own addressable
+ * identity and Senses, AUXILIARY-only today (word_form.ts's own
+ * docstring on why only that one POS subtype has adopted it so far).
  *
  * `lexicalRelationships`/`lexicalRelationshipProcessor`/
  * `lexicalRelationshipTensor` are seeding-internal working state now,
@@ -37,6 +41,7 @@ export class VocabularyContext {
   dictionary = new Dictionary(); // the lexicon -- lexical inventory only (Rule 17)
   phrases = new Phrases();
   senses = new Senses();
+  wordForms = new WordForms();
   hydrator: AsyncDictionaryHydrator;
   dictionaryProcessor: DictionaryProcessor;
 
@@ -53,7 +58,7 @@ export class VocabularyContext {
     // domainName is a lookup hint for external hydration (ranks, never
     // proves, which externally-supported sense applies), not a new
     // piece of Domain state duplicated here.
-    this.dictionaryProcessor = new DictionaryProcessor(this.dictionary, this.phrases, this.hydrator, domainName);
+    this.dictionaryProcessor = new DictionaryProcessor(this.dictionary, this.phrases, this.hydrator, domainName, this.wordForms);
     this.lexicalRelationshipProcessor = new LexicalRelationshipProcessor(
       this.lexicalRelationships,
       this.lexicalRelationshipTensor,

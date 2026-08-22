@@ -162,7 +162,7 @@ async function handleSeedCommonVocabulary(request: SeedCommonVocabularyRequest):
     // Dictionary.lookup()'s "first entry wins" default is what makes
     // AUXILIARY their default sense (AuxiliarySeeder's own docstring on
     // why this ordering matters, role/auxiliary_seeder.ts).
-    new AuxiliarySeeder(domain.vocabulary.dictionary, domain.vocabulary.senses).seed();
+    new AuxiliarySeeder(domain.vocabulary.dictionary, domain.vocabulary.senses, domain.vocabulary.wordForms).seed();
     // excludeOpenClasses: "Load WordNet" is this prototype's actual
     // source of truth for NOUN/VERB/ADJECTIVE/ADVERB coverage now
     // (word_seeder.ts's own seedClosedClassWords docstring) -- paired

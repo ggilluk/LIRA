@@ -50,6 +50,7 @@ export function createWord(init: WordInit): Word {
     sourceReferences: [],
     senseIds: [],
     contractionOf: [],
+    formIds: [],
     isCommon: false,
     isFullyHydrated: true,
     isRootWord: false,

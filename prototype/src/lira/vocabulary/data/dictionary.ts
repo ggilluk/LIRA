@@ -4,7 +4,7 @@ import type { Word } from "./entities/word";
 // Word's own base-entity copier, needed here the same way every POS
 // processor already needs it.
 import { copyWordWithFreshUuid } from "../role/word_processor";
-import { formTextsOf } from "./word_forms";
+import { formTextsOf } from "./pos_form_fields";
 
 /** One Word matched by lookupFormMatches, tagged with which of its own
  * *_Form fields actually equalled the searched text -- e.g. `field:

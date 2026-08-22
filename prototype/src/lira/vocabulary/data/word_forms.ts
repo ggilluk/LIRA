@@ -1,76 +1,99 @@
-/** Every *_Form field a Word's own concrete POS subtype declares, keyed
- * by PartOfSpeech -- the single source of truth for "which fields hold
- * this Word's own spelling variants," shared by
- * wordFormsFor() (ui/server/builder_word.ts, display) and
- * Dictionary.indexWordForms() (data/dictionary.ts, lookup) rather than
- * each maintaining its own copy of this list. Built from
- * WORD_FORM_MATRIX (data/matrices/pos_vs_wordform_matrice.ts),
- * the single real data source for the Word Form to Part of Speech
- * Matrix -- not, as this file used to, from six separate
- * role/processor/*_processor.ts constants (a data/ file importing from
- * role/ inverted this codebase's own one-way dependency rule; see that
- * matrix file's own module docstring for the full story). Auxiliary
- * joined this list once role/auxiliary_seeder.ts started populating its
- * own *_Form fields (data/entities/auxiliary.ts) -- without an entry
- * here, Dictionary.indexWordForms() would never index "was"/"were"/
- * "could"/etc. against the "be"/"can"/... Word that owns them, and
- * lookupFormMatches() would silently fail to resolve them during
- * sentence reading. Every remaining PartOfSpeech (Preposition,
- * Conjunction, Interjection, Numeral, Particle, ProperNoun, Symbol,
- * Punctuation, Other) still carries no *_Form field of its own --
- * absent from this record entirely, not listed with an empty array,
- * since `formTextsOf`'s own `?? []` already treats a missing key that
- * way. */
-
-import { fieldsFor } from "./matrices/pos_vs_wordform_matrice";
-import { PartOfSpeech } from "./enums/part_of_speech";
-import type { Text } from "../../value_objects";
 import type { Word } from "./entities/word";
+import { copyWordFormWithFreshUuid, type WordForm } from "./word_form";
 
-// fieldsFor()'s own row-order sweep includes "baseLemmaCanonicalForm"
-// for every POS (the matrix's own first row applies to all of them) --
-// excluded here since formTextsOf() below already prepends that field
-// unconditionally for every Word regardless of partOfSpeech; including
-// it in WORD_FORM_FIELDS too would duplicate it in formTextsOf()'s own
-// output, matching the same "belongs to Word itself, not any one POS
-// subtype's own row" fact the old per-POS `*_FORM_PATTERNS` constants
-// already encoded by never declaring it as one of their own keys.
-function posFormFields(pos: PartOfSpeech): readonly string[] {
-  return fieldsFor(pos).filter((field) => field !== "baseLemmaCanonicalForm");
-}
+/** WordForm storage: Senses's own exact counterpart one level down
+ * (data/word_form.ts's own docstring on why WordForm exists at all).
+ * One WordForms store per Domain, alongside that Domain's own
+ * Dictionary/Phrases/Senses (VocabularyContext.wordForms,
+ * data/vocabulary_context.ts).
+ *
+ * AUXILIARY-only today (role/auxiliary_seeder.ts is this store's only
+ * writer) -- every other POS subtype's own spellings still live in
+ * scalar `*_Form` fields (data/pos_form_fields.ts), untouched. */
+export class WordForms {
+  private forms: WordForm[] = [];
+  private readonly byUuid = new Map<string, WordForm>();
+  private readonly formsByWordId = new Map<string, WordForm[]>();
+  // Case-insensitive text -> every (form, owning word) pair whose own
+  // `text.value` equals that text -- Dictionary.lookupFormMatches()'s
+  // own exact index shape (data/dictionary.ts), built eagerly as forms
+  // are registered rather than as a deferred batch pass: unlike
+  // Adjective/Adverb (whose gradability-derived comparativeDegreeForm/
+  // superlativeDegreeForm aren't known until after the relationship
+  // graph seeds, Dictionary.indexWordForms()'s own docstring), every
+  // Auxiliary WordForm is fully known at creation time in
+  // AuxiliarySeeder, so there's no later pass this index would need to
+  // wait for.
+  private readonly textIndex = new Map<string, Array<{ form: WordForm; word: Word }>>();
 
-export const WORD_FORM_FIELDS: Readonly<Partial<Record<PartOfSpeech, readonly string[]>>> = {
-  [PartOfSpeech.NOUN]: posFormFields(PartOfSpeech.NOUN),
-  [PartOfSpeech.VERB]: posFormFields(PartOfSpeech.VERB),
-  [PartOfSpeech.ADJECTIVE]: posFormFields(PartOfSpeech.ADJECTIVE),
-  [PartOfSpeech.ADVERB]: posFormFields(PartOfSpeech.ADVERB),
-  [PartOfSpeech.PRONOUN]: posFormFields(PartOfSpeech.PRONOUN),
-  [PartOfSpeech.DETERMINER]: posFormFields(PartOfSpeech.DETERMINER),
-  [PartOfSpeech.AUXILIARY]: posFormFields(PartOfSpeech.AUXILIARY),
-};
-
-/** One populated *_Form field, paired with its own field name -- e.g.
- * `{ field: "pluralNumberForm", text: { value: "commas" } }`. */
-export interface WordFormEntry {
-  field: string;
-  text: Text;
-}
-
-/** Every populated *_Form field `word` carries, each paired with its
- * own field name -- `baseLemmaCanonicalForm` first (declared on Word
- * itself, so every POS is eligible for it regardless of
- * WORD_FORM_FIELDS), then whichever of that POS's own fields
- * (WORD_FORM_FIELDS[word.partOfSpeech]) are actually set. A field with
- * no populated value is simply absent, not included as undefined --
- * mirrors wordFormsFor()'s own "field with no populated value is
- * simply absent" convention (ui/server/builder_word.ts). */
-export function formTextsOf(word: Word): readonly WordFormEntry[] {
-  const fields = ["baseLemmaCanonicalForm", ...(WORD_FORM_FIELDS[word.partOfSpeech] ?? [])];
-  const record = word as unknown as Record<string, Text | undefined>;
-  const entries: WordFormEntry[] = [];
-  for (const field of fields) {
-    const text = record[field];
-    if (text !== undefined) entries.push({ field, text });
+  all(): readonly WordForm[] {
+    return this.forms.slice();
   }
-  return entries;
+
+  findByUuid(formId: string): WordForm | undefined {
+    return this.byUuid.get(formId);
+  }
+
+  append(form: WordForm): void {
+    this.forms.push(form);
+    this.byUuid.set(form.uuid.value, form);
+  }
+
+  /** Records that `word` carries `form` -- appends `form.uuid` onto
+   * `word.formIds` (the field itself, data/entities/word.ts's own
+   * docstring) and indexes `form.text.value` for lookupByText().
+   * Senses.registerMember()'s own exact shape, form-onto-word replacing
+   * sense-onto-member. Idempotent: registering the same (form, word)
+   * pair twice never duplicates either the `formIds` entry or the text
+   * index entry. */
+  registerMember(form: WordForm, word: Word): void {
+    if (!word.formIds.some((id) => id.value === form.uuid.value)) {
+      word.formIds = [...word.formIds, form.uuid];
+    }
+    const wordBucket = this.formsByWordId.get(word.uuid.value);
+    if (wordBucket === undefined) {
+      this.formsByWordId.set(word.uuid.value, [form]);
+    } else if (!wordBucket.some((existing) => existing.uuid.value === form.uuid.value)) {
+      wordBucket.push(form);
+    }
+
+    const key = form.text.value.toLowerCase();
+    const textBucket = this.textIndex.get(key);
+    const entry = { form, word };
+    if (textBucket === undefined) {
+      this.textIndex.set(key, [entry]);
+    } else if (!textBucket.some((existing) => existing.form.uuid.value === form.uuid.value)) {
+      textBucket.push(entry);
+    }
+  }
+
+  /** Every WordForm registered against `word`, in registration order --
+   * Senses.membersOf()'s own shape, reversed direction (a Word's own
+   * forms, not a Sense's own members). */
+  formsOf(word: Word): readonly WordForm[] {
+    return this.formsByWordId.get(word.uuid.value)?.slice() ?? [];
+  }
+
+  /** Every (form, owning word) pair whose own `text` equals `text`
+   * verbatim (case-insensitive) -- Dictionary.lookupFormMatches()'s own
+   * exact contract, so PartOfSpeechIdentifier.identifySeeded() can
+   * merge this store's own results with Dictionary's without either
+   * caller needing a different shape for the two. Empty when nothing
+   * matches. */
+  lookupByText(text: string): readonly { form: WordForm; word: Word }[] {
+    return this.textIndex.get(text.toLowerCase())?.slice() ?? [];
+  }
+
+  /** Bootstraps this WordForms store with a copy of every WordForm in
+   * `other` -- Senses.seedFrom()'s own exact shape and own exact
+   * limitation: membership isn't re-linked to the target Domain's own
+   * copied Words (Word.formIds keeps pointing at the source Domain's
+   * WordForm uuids, not these fresh copies) -- Sense.ts's own docstring
+   * on why: "a cross-Domain copy... doesn't carry a matching Sense
+   * copy across yet, a known, accepted gap." WordForm inherits that
+   * same accepted gap rather than solving it unilaterally one layer
+   * down while Senses still has it. */
+  seedFrom(other: WordForms): void {
+    for (const form of other.forms) this.append(copyWordFormWithFreshUuid(form));
+  }
 }

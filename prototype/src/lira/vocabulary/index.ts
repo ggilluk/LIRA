@@ -29,6 +29,8 @@ export { HolonymRootWord } from "./data/enums/holonym_root_word";
 export { HypernymRootWord } from "./data/enums/hypernym_root_word";
 export { InterrogativeRootWord } from "./data/enums/interrogative_root_word";
 export { VocabularyContext } from "./data/vocabulary_context";
+export { type WordForm, createWordForm } from "./data/word_form";
+export { WordForms } from "./data/word_forms";
 export type { LexicalRelationship } from "./data/lexical_relationship";
 export { LexicalRelationshipStore } from "./data/lexical_relationship_store";
 export { LexicalRelationshipSystemPropertyTensor } from "./data/lexical_relationship_tensor";

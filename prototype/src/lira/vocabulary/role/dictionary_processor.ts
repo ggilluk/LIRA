@@ -6,6 +6,7 @@ import { definitionWords } from "./word_processor";
 import { createWordLookupContext } from "../data/word_lookup_context";
 import type { AsyncDictionaryHydrator } from "./dictionary_hydrator";
 import { PartOfSpeechIdentifier } from "./part_of_speech_identifier";
+import type { WordForms } from "../data/word_forms";
 import { IdentificationSource, type WordIdentifier } from "./word_identifier";
 
 /** Resolves a raw token occurrence to zero or more candidate Words,
@@ -28,8 +29,9 @@ export class DictionaryProcessor {
     private readonly phraseBook: Phrases,
     private readonly hydrator: AsyncDictionaryHydrator,
     private readonly domainName: string,
+    wordForms?: WordForms,
   ) {
-    this.partOfSpeechIdentifier = new PartOfSpeechIdentifier(dictionary);
+    this.partOfSpeechIdentifier = new PartOfSpeechIdentifier(dictionary, wordForms);
   }
 
   /** Returns every legitimate candidate sense for this occurrence,

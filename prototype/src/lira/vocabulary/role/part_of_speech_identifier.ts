@@ -2,6 +2,7 @@ import type { Dictionary } from "../data/dictionary";
 import { PartOfSpeech } from "../data/enums/part_of_speech";
 import type { Word } from "../data/entities/word";
 import { isTitleCase, isUpperCase, type WordLookupContext } from "../data/word_lookup_context";
+import type { WordForms } from "../data/word_forms";
 import { IdentificationSource, type WordIdentifier } from "./word_identifier";
 
 /** Identifies candidate parts of speech for one token occurrence from
@@ -18,16 +19,23 @@ import { IdentificationSource, type WordIdentifier } from "./word_identifier";
  *
  * Ported from vocabulary/role/part_of_speech_identifier.py. */
 export class PartOfSpeechIdentifier {
-  constructor(private readonly dictionary: Dictionary) {}
+  constructor(
+    private readonly dictionary: Dictionary,
+    private readonly wordForms?: WordForms,
+  ) {}
 
   /** An exact lookupAll() match always wins outright when one exists --
    * only once that comes back empty does this fall back to
-   * Dictionary.lookupFormMatches(), which finds a Word by one of its own
-   * generated *_Form values instead of its base spelling ("commas" ->
-   * "comma" via pluralNumberForm, "ran" -> "run" via pastTenseForm).
+   * Dictionary.lookupFormMatches() (every scalar-field POS subtype's
+   * own generated *_Form values, e.g. "commas" -> "comma" via
+   * pluralNumberForm, "ran" -> "run" via pastTenseForm) merged with
+   * WordForms.lookupByText() (AUXILIARY's own WordForm records, e.g.
+   * "was" -> "be" via a pastTenseInstanceForm WordForm --
+   * data/word_forms.ts's own docstring on why Auxiliary needs a
+   * second index here instead of just extending Dictionary's own).
    * This is the one choke point both DictionaryProcessor.identifyWord
    * and identifyPhrase call for every span they try (identifyPhrase's
-   * own docstring), so the fallback covers ordinary single-word
+   * own docstring), so the merged fallback covers ordinary single-word
    * identification and every phrase-search span alike without either
    * caller needing its own copy of this logic. An inflected match is
    * real evidence, just weaker than the Word's own canonical spelling,
@@ -49,7 +57,10 @@ export class PartOfSpeechIdentifier {
       return candidates;
     }
 
-    const formMatches = this.dictionary.lookupFormMatches(context.normalisedText);
+    const formMatches: readonly { word: Word; field: string }[] = [
+      ...this.dictionary.lookupFormMatches(context.normalisedText),
+      ...(this.wordForms?.lookupByText(context.normalisedText).map(({ word, form }) => ({ word, field: form.field })) ?? []),
+    ];
     const candidates: WordIdentifier[] = formMatches.map(({ word, field }) => ({
       word,
       partOfSpeech: word.partOfSpeech,

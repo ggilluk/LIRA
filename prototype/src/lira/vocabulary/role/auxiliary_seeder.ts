@@ -2,12 +2,17 @@ import type { Dictionary } from "../data/dictionary";
 import type { Senses } from "../data/senses";
 import { createSense } from "../data/sense";
 import { RegisterCode } from "../data/enums/register_code";
-import type { Auxiliary } from "../data/entities/auxiliary";
 import { createAuxiliary, isAuxiliary } from "./processor/auxiliary_processor";
+import { createWordForm } from "../data/word_form";
+import type { WordForms } from "../data/word_forms";
 
-// A *_Form field this subtype actually declares (data/entities/auxiliary.ts)
-// -- kept as its own alias so AUXILIARY_LEMMAS below reads as plain data,
-// not a wall of `keyof Auxiliary` unions repeated at every entry.
+// The closed set of WordForm.field names this seeder ever authors --
+// kept as its own alias so AUXILIARY_LEMMAS below reads as plain data,
+// not a wall of string-literal unions repeated at every entry. Not
+// `keyof Auxiliary` any more (data/entities/auxiliary.ts's own
+// docstring on why Auxiliary itself declares no scalar fields at all
+// now) -- these are WordForm.field values, a loose string at the type
+// level, this union exists purely for authoring-time safety here.
 type AuxiliaryFormField =
   | "bareInfinitiveForm"
   | "presentTenseInstanceForm"
@@ -410,16 +415,21 @@ const AUXILIARY_LEMMAS: readonly AuxiliaryLemmaSeed[] = [
  * not folded into WordSeeder itself, since this is data this seeder
  * authors directly rather than reads from an asset file.
  *
- * One Word per lemma, every inflected spelling living on a *_Form field
- * (data/entities/auxiliary.ts's own docstring on why, not the flat
- * one-Word-per-surface-form shape auxiliaries.json used). Every
- * distinct meaning of every populated *_Form value gets its own Sense,
- * all registered against that single Word via Senses.registerMember()
- * -- "am"'s continuous-aspect and passive-voice meanings become two
- * Senses sharing the one "be" Word, exactly as word_seeder.ts's own
- * registerUniqueSense() already lets a Word carry more than one Sense
- * (Verb's own "unique by (partOfSpeech, lemma), can lexicalize several
- * senses" note, data/entities/verb.ts).
+ * One Word per lemma, every inflected spelling living on its own
+ * WordForm record (data/word_form.ts, data/entities/auxiliary.ts's own
+ * docstring on why, not a scalar *_Form field the way every other POS
+ * subtype still has, and not the flat one-Word-per-surface-form shape
+ * auxiliaries.json used either). Every distinct meaning of every
+ * WordForm gets its own Sense, registered onto **both** that specific
+ * WordForm (`form.senseIds` -- the new, precise linkage: "what does
+ * 'am' specifically mean?") **and** the owning Word (`Senses.registerMember()`,
+ * exactly as before -- keeps `client_senses_section_html.ts`'s existing
+ * Senses-panel rendering, driven off `word.senseIds`, working
+ * unchanged). Deliberate dual registration, not duplication that can
+ * drift: both references name the exact same Sense object/uuid, the
+ * same "one Sense, referenced by more than one thing" shape a real
+ * WordNet synonym Sense already has across every Word that lexicalizes
+ * it.
  *
  * Call this *before* WordSeeder.seedDomain(), not after -- vocabulary_worker.ts's
  * own handleSeedCommonVocabulary ordering. "be"/"have"/"do" are
@@ -435,23 +445,21 @@ export class AuxiliarySeeder {
   constructor(
     private readonly dictionary: Dictionary,
     private readonly senses?: Senses,
+    private readonly wordForms?: WordForms,
   ) {}
 
   /** Idempotent, NounCharacterFormSeeder's own "upsert, never duplicate"
    * shape: a lemma already present as an AUXILIARY Word is left alone
-   * entirely (including its own Senses -- a re-seed never re-registers
-   * or duplicates them), so this is safe to call on every seed run, not
-   * just the first. Returns how many lemma Words were newly created. */
+   * entirely (including its own WordForms/Senses -- a re-seed never
+   * re-registers or duplicates them), so this is safe to call on every
+   * seed run, not just the first. Returns how many lemma Words were
+   * newly created. */
   seed(): { created: number } {
     let created = 0;
     for (const lemmaSeed of AUXILIARY_LEMMAS) {
       const alreadyPresent = this.dictionary.lookupAll(lemmaSeed.lemma).some(isAuxiliary);
       if (alreadyPresent) continue;
 
-      const fields: Partial<Auxiliary> = {};
-      for (const form of lemmaSeed.forms) {
-        fields[form.field] = { value: form.text };
-      }
       const word = createAuxiliary({
         text: lemmaSeed.lemma,
         entryId: { value: lemmaSeed.entryId },
@@ -459,18 +467,21 @@ export class AuxiliarySeeder {
         gloss: { value: lemmaSeed.definition },
         isCommon: true,
         registerCodes: [RegisterCode.NEUTRAL],
-        ...fields,
       });
       this.dictionary.append(word);
       created++;
 
-      if (this.senses !== undefined) {
-        for (const form of lemmaSeed.forms) {
-          for (const definition of form.senses) {
-            const sense = createSense({ definition: { value: definition }, gloss: { value: definition }, isCommon: true });
-            this.senses.append(sense);
-            this.senses.registerMember(sense, word);
-          }
+      for (const formSeed of lemmaSeed.forms) {
+        const form = createWordForm({ field: formSeed.field, text: { value: formSeed.text } });
+        this.wordForms?.append(form);
+        this.wordForms?.registerMember(form, word);
+
+        if (this.senses === undefined) continue;
+        for (const definition of formSeed.senses) {
+          const sense = createSense({ definition: { value: definition }, gloss: { value: definition }, isCommon: true });
+          this.senses.append(sense);
+          this.senses.registerMember(sense, word);
+          form.senseIds = [...form.senseIds, sense.uuid];
         }
       }
     }
