@@ -164,7 +164,7 @@ document.addEventListener("lira-search-lexical-relationships-result", (e) => {
 // be for the old flat relationships list), not another
 // renderDetailPanel() call. A narrow .detail-relationships-section
 // replace stopped being enough once relationships were also nested
-// per-sense (sensesSectionHTML()'s own docstring) -- each sense's own
+// per-sense (senseRowHTML()'s own docstring, client_senses_section_html.ts) -- each sense's own
 // count/list needs the same refresh the general section does, so the
 // whole panel body is rebuilt from the one already-known Word/Phrase
 // instead. Includes "phrases" alongside "words"/"hierarchy"/"cyclic" --

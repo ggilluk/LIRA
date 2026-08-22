@@ -5,25 +5,22 @@
  * verb-frame sentences for a VERB sense, in its own collapsible
  * <details> alongside the existing PAD one.
  *
- * Restructured to group by WordForm (word_wordform_sense_relationships.md's
- * own target model: Word -> WordForm -> Senses) -- sensesSectionHTML()
- * now iterates `word.word_forms` (WordRecord.word_forms, ui/server/builder_word.ts),
- * rendering one sense sub-list per WordForm that actually carries one or
- * more Senses (WordFormEntry.senses's own docstring -- empty for every
- * scalar-field-derived entry, e.g. pluralNumberForm, that isn't backed
- * by a real WordForm record). Each sense row keeps its existing
- * "Sense.Semantic.Relationships" `<details>` (`rels`, fetched via the
- * `search-relationships` worker message, `via_sense_id`-filtered,
- * unchanged) and gains a sibling "Sense.Lexical.Relationships" one
- * (`lexicalRels`, the identical fetch/filter shape against the new
- * `search-lexical-relationships` message) -- both reuse
- * relationshipsSectionHTML() as-is (client_detail_panel_controller.ts),
- * since a LexicalRelationshipRecord (ui/server/builder_lexical_relationship.ts)
- * carries the exact same source_text/target_text/kind/group/qualifier/
- * via_sense_id shape a RelationshipRecord does once
- * lexicalRelationshipsForWord() (client_words_tab_view.ts) enriches it
- * with the same otherId/otherText/... fields relationshipsForWord()
- * already computes. */
+ * `sensesSectionHTML()` itself is gone -- Word -> WordForm -> Senses
+ * (word_wordform_sense_relationships.md's own target model) needs each
+ * Sense actually nested inside the single Word Forms section, not
+ * grouped into its own separate section elsewhere on the page (a real,
+ * user-caught bug: an earlier version of this rendered a "Senses"
+ * section, grouped by WordForm, ABOVE a completely separate flat "Word
+ * Forms" list further down -- two disconnected sections that only
+ * looked related by coincidence of both mentioning "Base Lemma
+ * Canonical Form"). `senseRowHTML(word, s, index, rels, lexicalRels)`
+ * -- one `<li>` per Sense, carrying its own Sense.Semantic.Relationships/
+ * Sense.Lexical.Relationships/PAD/Verb-Frame `<details>` exactly as
+ * before -- is the one piece this file still owns; `wordFormsSectionHTML()`
+ * (client_detail_panel_controller.ts) is what actually calls it now,
+ * once per WordForm that carries one or more Senses, immediately after
+ * that WordForm's own label/value row, so a Sense visibly sits directly
+ * under the WordForm that carries it in the one Word Forms section. */
 export const CLIENT_SENSES_SECTION_HTML = `// One PAD (Pleasure-Arousal-Dominance) meter row: a track centred on
 // zero, filled from the centre toward the value's sign -- accent
 // colour for the named positive pole, the palette's warning red for
@@ -127,19 +124,21 @@ function senseRowHTML(word, s, index, rels, lexicalRels) {
     </li>\`;
 }
 
-function sensesSectionHTML(word, rels, lexicalRels) {
-  const formsWithSenses = (word.word_forms || []).filter(f => f.senses && f.senses.length);
-  if (!formsWithSenses.length) return '';
-  const totalSenses = formsWithSenses.reduce((n, f) => n + f.senses.length, 0);
+// senseRowHTML()'s own flat, ungrouped list -- phraseDetailHTML()'s own
+// use (client_detail_panel_controller.ts). A Phrase has no WordForm of
+// its own to nest under at all (WordForm is a Word-only concept,
+// data/word_form.ts's own docstring -- wordFormsFor() never returns
+// anything for a Phrase-resolved record), so \`phrase.word_forms\` is
+// always empty and WordRecord.senses's own flat, Word-level list
+// (kept for exactly this kind of reader, that field's own docstring) is
+// the only Sense data a Phrase's own detail panel ever has to show.
+function phraseSensesSectionHTML(phrase, rels, lexicalRels) {
+  if (!phrase.senses || !phrase.senses.length) return '';
   return \`
-    <div class="detail-section-title">Senses (\${totalSenses})</div>
-    \${formsWithSenses.map(form => \`
-      <div class="word-form-group">
-        <div class="word-form-group-title">\${form.label}: <span class="word-form-value">\${form.value}</span></div>
-        <ol class="sense-list">
-          \${form.senses.map((s, i) => senseRowHTML(word, s, i, rels, lexicalRels)).join('')}
-        </ol>
-      </div>\`).join('')}
+    <div class="detail-section-title">Senses (\${phrase.senses.length})</div>
+    <ol class="sense-list">
+      \${phrase.senses.map((s, i) => senseRowHTML(phrase, s, i, rels, lexicalRels)).join('')}
+    </ol>
   \`;
 }
 `;

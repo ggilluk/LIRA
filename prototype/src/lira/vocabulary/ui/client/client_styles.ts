@@ -473,24 +473,20 @@ summary.detail-section-title::marker { color: var(--ink-muted); }
 .word-form-row .word-form-value {
   font-family: var(--font-mono);
 }
-.word-form-group {
-  margin: 10px 0;
-}
-.word-form-group-title {
-  font-size: 0.78rem;
-  font-weight: 600;
-  color: var(--ink-muted);
-  margin-bottom: 2px;
-}
-.word-form-group-title .word-form-value {
-  font-family: var(--font-mono);
-  font-weight: 700;
-  color: var(--ink);
-}
 .sense-list {
   list-style: none;
   margin: 0;
   padding: 0;
+}
+/* A Sense list directly follows its own owning WordForm's label/value
+   row (wordFormsSectionHTML(), client_detail_panel_controller.ts) --
+   indented and left-bordered so it visibly reads as nested under that
+   row, not a second, unrelated section. phraseSensesSectionHTML()'s own
+   ungrouped list (no owning .word-form-row sibling) is unaffected. */
+.word-form-row + .sense-list {
+  margin: 2px 0 10px 14px;
+  padding-left: 10px;
+  border-left: 2px solid var(--line);
 }
 .sense-row {
   padding: 7px 0;
