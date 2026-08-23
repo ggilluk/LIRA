@@ -1963,9 +1963,9 @@ function wordFormsSectionHTML(word, rels, lexicalRels) {
   if (!hasForms && !hasDerivations) {
     return '<div class="detail-section-title">Word Forms</div><div class="detail-empty" style="padding:4px 0">No word forms seeded yet.</div>';
   }
-  const totalSenses = (word.word_forms || []).reduce((n, f) => n + (f.senses ? f.senses.length : 0), 0);
+  const formCount = (word.word_forms || []).length;
   return \`
-    <div class="detail-section-title">Word Forms\${totalSenses ? \` &middot; Senses (\${totalSenses})\` : ''}</div>
+    <div class="detail-section-title">Word Forms (\${formCount})</div>
     \${(word.word_forms || []).map(f => \`
       <div class="word-form-row">
         <span class="word-form-label">\${f.label}</span>
