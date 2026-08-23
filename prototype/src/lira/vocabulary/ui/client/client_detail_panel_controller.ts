@@ -33,7 +33,14 @@ export const CLIENT_DETAIL_PANEL_CONTROLLER = `// Word -> WordForm -> [plain Sen
 // (client_senses_section_html.ts, this file's own sibling in the
 // assembled script). \`derivations\` (Word-level attribute pointers, not
 // Sense-scoped) keep rendering as their own trailing rows, same as
-// before.
+// before. The whole section is wrapped in one \`<details>\`, its
+// \`<summary>\` reusing \`.detail-section-title\` (already styled for this,
+// client_styles.ts) rather than the plain \`<div>\` every other
+// non-collapsible section title still uses -- closed by default (no
+// \`open\` attribute), the same "collapsed until asked for" default every
+// other \`<details>\` here already uses for non-primary content, since a
+// highly-inflected/polysemous Word's own Word Forms can otherwise
+// dominate the whole panel on first render.
 function wordFormsSectionHTML(word, rels, lexicalRels) {
   const hasForms = word.word_forms && word.word_forms.length;
   const hasDerivations = word.derivations && word.derivations.length;
@@ -42,22 +49,24 @@ function wordFormsSectionHTML(word, rels, lexicalRels) {
   }
   const formCount = (word.word_forms || []).length;
   return \`
-    <div class="detail-section-title">Word Forms (\${formCount})</div>
-    \${(word.word_forms || []).map(f => \`
-      <div class="word-form-row">
-        <span class="word-form-label">\${f.label}</span>
-        <span class="word-form-value">\${f.value}</span>
-      </div>
-      \${f.senses && f.senses.length ? \`
-      <ol class="sense-list">
-        \${f.senses.map((s, i) => senseSummaryRowHTML(word, s, i, rels)).join('')}
-      </ol>
-      \${wordFormRelationshipsSectionHTML('sense-lexical-rels', 'Lexical Relationships', f.senses, lexicalRels)}\` : ''}\`).join('')}
-    \${(word.derivations || []).map(d => \`
-      <div class="word-form-row">
-        <span class="word-form-label">\${d.label}</span>
-        <span class="word-form-value"><button class="link-btn" data-pivot-id="\${d.target.id}">\${d.target.text}</button></span>
-      </div>\`).join('')}
+    <details class="word-forms-section">
+      <summary class="detail-section-title">Word Forms (\${formCount})</summary>
+      \${(word.word_forms || []).map(f => \`
+        <div class="word-form-row">
+          <span class="word-form-label">\${f.label}</span>
+          <span class="word-form-value">\${f.value}</span>
+        </div>
+        \${f.senses && f.senses.length ? \`
+        <ol class="sense-list">
+          \${f.senses.map((s, i) => senseSummaryRowHTML(word, s, i, rels)).join('')}
+        </ol>
+        \${wordFormRelationshipsSectionHTML('sense-lexical-rels', 'Lexical Relationships', f.senses, lexicalRels)}\` : ''}\`).join('')}
+      \${(word.derivations || []).map(d => \`
+        <div class="word-form-row">
+          <span class="word-form-label">\${d.label}</span>
+          <span class="word-form-value"><button class="link-btn" data-pivot-id="\${d.target.id}">\${d.target.text}</button></span>
+        </div>\`).join('')}
+    </details>
   \`;
 }
 
