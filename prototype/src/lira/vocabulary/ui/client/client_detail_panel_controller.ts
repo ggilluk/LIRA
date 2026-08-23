@@ -9,27 +9,31 @@
  * client_word_detail_html.ts/client_phrase_detail_html.ts would require either
  * reordering physical content (breaking byte-identical render() output) or
  * fragmenting into non-contiguous pieces with no real benefit. */
-export const CLIENT_DETAIL_PANEL_CONTROLLER = `// Word -> WordForm -> [plain Senses list, Semantic Relationships,
-// Lexical Relationships], one section, not a separate top-level
-// "Senses" section -- an earlier version rendered a separate "Senses"
-// section (grouped by WordForm) above this one's own flat, sense-less
-// field/value rows, so a Sense never visibly sat "under" any Word Form
-// a reader could actually see (a real bug: the two sections just
-// happened to both mention the same WordForm label). Every entry in
-// \`word.word_forms\` (WordRecord.word_forms, ui/server/builder_word.ts)
-// gets its label/value row here, and -- only when that entry's own
-// \`senses\` (WordFormEntry.senses's own docstring) is non-empty, i.e.
-// it's backed by a real WordForm record, not a bare scalar *_Form
-// field -- three pieces immediately follow that same row:
-// \`senseSummaryRowHTML()\`'s own plain \`<ol class="sense-list">\`
-// (definition/frequency/synonyms/PAD/Verb-Frames, no relationship
-// data), then \`wordFormRelationshipsSectionHTML()\` called once for
-// Semantic and once for Lexical -- each aggregating every one of this
-// WordForm's Senses' own relationships of that one kind, sub-grouped
-// by which Sense they came from (client_senses_section_html.ts, this
-// file's own sibling in the assembled script). \`derivations\`
-// (Word-level attribute pointers, not Sense-scoped) keep rendering as
-// their own trailing rows, same as before.
+export const CLIENT_DETAIL_PANEL_CONTROLLER = `// Word -> WordForm -> [plain Senses list (each carrying its own inline
+// Semantic Relationships), Lexical Relationships], one section, not a
+// separate top-level "Senses" section -- an earlier version rendered a
+// separate "Senses" section (grouped by WordForm) above this one's own
+// flat, sense-less field/value rows, so a Sense never visibly sat
+// "under" any Word Form a reader could actually see (a real bug: the
+// two sections just happened to both mention the same WordForm label).
+// Every entry in \`word.word_forms\` (WordRecord.word_forms,
+// ui/server/builder_word.ts) gets its label/value row here, and -- only
+// when that entry's own \`senses\` (WordFormEntry.senses's own
+// docstring) is non-empty, i.e. it's backed by a real WordForm record,
+// not a bare scalar *_Form field -- two pieces immediately follow that
+// same row: \`senseSummaryRowHTML()\`'s own \`<ol class="sense-list">\`
+// (definition/frequency/synonyms/PAD/Verb-Frames, each Sense also
+// carrying its own inline Sense.Semantic.Relationships \`<details>\` --
+// a Sense's semantic facts read together with its own definition, not
+// aggregated across the WordForm), then \`wordFormRelationshipsSectionHTML()\`
+// for Lexical Relationships only -- aggregating every one of this
+// WordForm's Senses' own Lexical facts (naturally WordForm-scoped,
+// since they connect *forms* -- derivation/inflection/contraction/...
+// -- not concepts), sub-grouped by which Sense they came from
+// (client_senses_section_html.ts, this file's own sibling in the
+// assembled script). \`derivations\` (Word-level attribute pointers, not
+// Sense-scoped) keep rendering as their own trailing rows, same as
+// before.
 function wordFormsSectionHTML(word, rels, lexicalRels) {
   const hasForms = word.word_forms && word.word_forms.length;
   const hasDerivations = word.derivations && word.derivations.length;
@@ -46,9 +50,8 @@ function wordFormsSectionHTML(word, rels, lexicalRels) {
       </div>
       \${f.senses && f.senses.length ? \`
       <ol class="sense-list">
-        \${f.senses.map((s, i) => senseSummaryRowHTML(word, s, i)).join('')}
+        \${f.senses.map((s, i) => senseSummaryRowHTML(word, s, i, rels)).join('')}
       </ol>
-      \${wordFormRelationshipsSectionHTML('sense-rels', 'Semantic Relationships', f.senses, rels)}
       \${wordFormRelationshipsSectionHTML('sense-lexical-rels', 'Lexical Relationships', f.senses, lexicalRels)}\` : ''}\`).join('')}
     \${(word.derivations || []).map(d => \`
       <div class="word-form-row">
