@@ -531,6 +531,19 @@ summary.detail-section-title::marker { color: var(--ink-muted); }
 .sense-lexical-rels {
   margin-top: 4px;
 }
+/* .sense-rels sits inline inside a .sense-row, already inside the
+   indented .sense-list (the rule above), so it needs no left-indent of
+   its own. .sense-lexical-rels is a sibling of .sense-list instead
+   (wordFormsSectionHTML()/phraseSensesSectionHTML(), one WordForm-level
+   section rather than nested per Sense), so it gets the exact same
+   margin-left/padding-left/border-left .sense-list itself gets, to
+   read as sitting at the same indent as the Semantic data above it,
+   not flush against the left edge. */
+.sense-list + .sense-lexical-rels {
+  margin: 4px 0 10px 14px;
+  padding-left: 10px;
+  border-left: 2px solid var(--line);
+}
 .sense-rels summary,
 .sense-lexical-rels summary {
   cursor: pointer;
@@ -1958,7 +1971,9 @@ function senseSummaryRowHTML(word, s, index, rels) {
 // sense -- unlike the per-Sense \`<details>\`, this one can aggregate a
 // highly polysemous Word's *entire* Lexical Relationship set behind one
 // summary line, so leaving it open by default would dump everything at
-// once.
+// once. Calls relationshipsSectionHTML() with \`simple: true\` -- a
+// Lexical Relationship row shows just the related word for now, no
+// target-Sense category badge or gloss underneath it.
 function wordFormRelationshipsSectionHTML(sectionClass, heading, senses, rels) {
   const groups = senses
     .map(s => ({ sense: s, rels: rels === null ? null : rels.filter(r => r.via_sense_id === s.id) }))
@@ -1972,7 +1987,7 @@ function wordFormRelationshipsSectionHTML(sectionClass, heading, senses, rels) {
       \${groups.map(g => \`
         <div class="wordform-rel-sense-group\${g.sense.is_primary ? ' primary' : ''}">
           <div class="wordform-rel-sense-heading">Sense\${g.sense.is_primary ? ' <span class="sense-primary-tag">primary</span>' : ''}: \${g.sense.definition || '<span style="opacity:.6">No definition.</span>'}</div>
-          <div class="detail-relationships-section">\${relationshipsSectionHTML(g.rels)}</div>
+          <div class="detail-relationships-section">\${relationshipsSectionHTML(g.rels, true)}</div>
         </div>\`).join('')}
     </details>\`;
 }
@@ -2165,8 +2180,15 @@ function fetchDetailLexicalRelsIfNeeded(wordId) {
 // \`rels\` is \`null\` while a selected word's own relationship list is
 // still loading over capacity (relationshipsSectionHTML's own "Loading…"
 // branch) -- distinct from \`[]\`, which means the fetch already resolved
-// and there really are none.
-function relationshipsSectionHTML(rels) {
+// and there really are none. \`simple\`, set only by
+// wordFormRelationshipsSectionHTML()'s own Lexical Relationships call
+// (client_senses_section_html.ts), drops the rel-gloss line -- the
+// target Sense's own lexicographer-category badge ("verb.cognition")
+// and gloss text -- so a Lexical Relationship row reads as just the
+// related word itself for now, not a second sense definition sitting
+// underneath it; Semantic Relationships (senseSummaryRowHTML()'s own
+// inline call, unaffected) keeps the gloss.
+function relationshipsSectionHTML(rels, simple) {
   if (rels === null) return '<div class="detail-empty" style="padding:8px 0">Loading relationships…</div>';
   if (rels.length === 0) return '<div class="detail-empty" style="padding:8px 0">No relationships recorded.</div>';
   return rels.map(r => \`
@@ -2179,7 +2201,7 @@ function relationshipsSectionHTML(rels) {
         \${domainPill(r.otherDomain)}
       </div>
       <div class="rel-sentence">\${relationshipSentence(r.kind, r.source_text, r.target_text, r.qualifier)}</div>
-      \${(r.otherCategory || r.otherGloss) ? \`<div class="rel-gloss">\${categoryBadge(r.otherCategory)}\${r.otherGloss ? \` \${r.otherGloss}\` : ''}</div>\` : ''}
+      \${(!simple && (r.otherCategory || r.otherGloss)) ? \`<div class="rel-gloss">\${categoryBadge(r.otherCategory)}\${r.otherGloss ? \` \${r.otherGloss}\` : ''}</div>\` : ''}
     </div>\`).join('');
 }
 
