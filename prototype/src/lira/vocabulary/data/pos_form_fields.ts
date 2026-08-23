@@ -35,27 +35,16 @@
  * not listed with an empty array, since `formTextsOf`'s own `?? []`
  * already treats a missing key that way. */
 
-import { fieldsFor } from "./matrices/pos_vs_wordform_matrice";
 import { PartOfSpeech } from "./enums/part_of_speech";
 import type { Text } from "../../value_objects";
 import type { Word } from "./entities/word";
 
-// fieldsFor()'s own row-order sweep includes "baseLemmaCanonicalForm"
-// for every POS (the matrix's own first row applies to all of them) --
-// excluded here since formTextsOf() below already prepends that field
-// unconditionally for every Word regardless of partOfSpeech; including
-// it in WORD_FORM_FIELDS too would duplicate it in formTextsOf()'s own
-// output, matching the same "belongs to Word itself, not any one POS
-// subtype's own row" fact the old per-POS `*_FORM_PATTERNS` constants
-// already encoded by never declaring it as one of their own keys.
-function posFormFields(pos: PartOfSpeech): readonly string[] {
-  return fieldsFor(pos).filter((field) => field !== "baseLemmaCanonicalForm");
-}
-
-export const WORD_FORM_FIELDS: Readonly<Partial<Record<PartOfSpeech, readonly string[]>>> = {
-  [PartOfSpeech.PRONOUN]: posFormFields(PartOfSpeech.PRONOUN),
-  [PartOfSpeech.DETERMINER]: posFormFields(PartOfSpeech.DETERMINER),
-};
+// Empty now that every POS subtype has migrated off scalar `*_Form`
+// fields (this file's own module docstring) -- kept, not yet deleted,
+// pending the final cleanup pass across every consumer (Dictionary.
+// indexWordForms()/lookupFormMatches(), PartOfSpeechIdentifier.identifySeeded(),
+// wordFormsFor()'s own scalar-fallback branch) that still references it.
+export const WORD_FORM_FIELDS: Readonly<Partial<Record<PartOfSpeech, readonly string[]>>> = {};
 
 /** One populated *_Form field, paired with its own field name -- e.g.
  * `{ field: "pluralNumberForm", text: { value: "commas" } }`. */

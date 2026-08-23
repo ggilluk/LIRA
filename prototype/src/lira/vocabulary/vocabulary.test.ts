@@ -231,16 +231,22 @@ describe("validate<Class>() -- each POS class's own attribute validation", () =>
   });
 
   it("checks a Pronoun's own closed fixed-word-lookup fields", () => {
-    const she = createPronoun({ text: "she", subjectiveCaseForm: { value: "she", formats: ["/^(I|we|you|he|she|it|they)$/i"] } });
-    expect(validatePronoun(she)).toEqual([]);
+    const she = createPronoun({ text: "she" });
+    const sheWordForms = new WordForms();
+    sheWordForms.registerNamedForm(she, "subjectiveCaseForm", { value: "she", formats: ["/^(I|we|you|he|she|it|they)$/i"] });
+    expect(validatePronoun(she, sheWordForms)).toEqual([]);
 
-    const badShe = createPronoun({ text: "she", subjectiveCaseForm: { value: "her", formats: ["/^(I|we|you|he|she|it|they)$/i"] } });
-    expect(validatePronoun(badShe)).toHaveLength(1);
+    const badShe = createPronoun({ text: "she" });
+    const badSheWordForms = new WordForms();
+    badSheWordForms.registerNamedForm(badShe, "subjectiveCaseForm", { value: "her", formats: ["/^(I|we|you|he|she|it|they)$/i"] });
+    expect(validatePronoun(badShe, badSheWordForms)).toHaveLength(1);
   });
 
   it("checks a Determiner's own possessive field, scoped to only the fixed-word rule", () => {
-    const their = createDeterminer({ text: "their", possessiveCaseForm: { value: "their", formats: ["/^(my|mine|your|yours|his|her|hers|its|our|ours|their|theirs)$/i"] } });
-    expect(validateDeterminer(their)).toEqual([]);
+    const their = createDeterminer({ text: "their" });
+    const theirWordForms = new WordForms();
+    theirWordForms.registerNamedForm(their, "possessiveCaseForm", { value: "their", formats: ["/^(my|mine|your|yours|his|her|hers|its|our|ours|their|theirs)$/i"] });
+    expect(validateDeterminer(their, theirWordForms)).toEqual([]);
   });
 
   it("checks Word.baseLemmaCanonicalForm regardless of POS subtype, via validateWordFormAttributes shared through every validate<Class>()", () => {
@@ -881,47 +887,23 @@ describe("DictionaryProcessor.identifyPhrase", () => {
   });
 });
 
-describe("Dictionary.indexWordForms / lookupFormMatches", () => {
-  // Exercised here via Pronoun (still scalar-field-based, hand-curated
-  // rather than generated) rather than Noun/Verb/Adjective/Adverb --
-  // all four migrated their own generated forms onto the WordForms
-  // store instead (generateNounForms()'s/generateVerbForms()'s/
-  // generateAdjectiveForms()'s/generateAdverbForms()'s own docstrings),
-  // so none of them write anything formTextsOf()/indexWordForms() can
-  // see any more; their own WordForms-based equivalents live in the
-  // "PartOfSpeechIdentifier / DictionaryProcessor" describe block below.
-  it("finds a Word by one of its own generated *_Form values, not its base spelling -- and never duplicates on a repeat call", () => {
-    const dictionary = new Dictionary();
-    const he = createPronoun({ text: "he", objectiveCaseForm: { value: "him", formats: ["/^(me|us|you|him|her|it|them)$/i"] } });
-    dictionary.append(he);
-    dictionary.indexWordForms(he);
-
-    // "him" was never itself appended as a Word -- only reachable via
-    // the form index, not the ordinary exact-text one.
-    expect(dictionary.lookupAll("him")).toEqual([]);
-    const matches = dictionary.lookupFormMatches("him");
-    expect(matches).toHaveLength(1);
-    expect(matches[0].word.uuid.value).toBe(he.uuid.value);
-    expect(matches[0].field).toBe("objectiveCaseForm");
-
-    // Idempotent: indexing the same Word again doesn't add a duplicate
-    // entry (WordSeeder's own final-pass reindex, run unconditionally
-    // over every Word on every seedWordNet/seedClosedClassWords call,
-    // relies on this).
-    dictionary.indexWordForms(he);
-    expect(dictionary.lookupFormMatches("him")).toHaveLength(1);
-  });
-
-  it("never indexes a form value identical to the Word's own base spelling -- lookupAll already finds that case directly", () => {
-    const dictionary = new Dictionary();
-    const she = createPronoun({ text: "she", subjectiveCaseForm: { value: "she", formats: ["/^(I|we|you|he|she|it|they)$/i"] } });
-    dictionary.append(she);
-    dictionary.indexWordForms(she);
-
-    // subjectiveCaseForm is identical to the base lemma itself for "she".
-    expect(dictionary.lookupFormMatches("she")).toEqual([]);
-  });
-});
+// Dictionary.indexWordForms()/lookupFormMatches() themselves used to be
+// exercised in a "Dictionary.indexWordForms / lookupFormMatches"
+// describe block here -- rotated through Verb, then Adjective, then
+// Pronoun as each POS subtype it had been fixtured against migrated
+// its own generated forms onto the WordForms store instead
+// (generateNounForms()'s/generateVerbForms()'s/generateAdjectiveForms()'s/
+// generateAdverbForms()'s own docstrings). Pronoun/Determiner's own
+// migration (data/entities/pronoun.ts's own docstring) was the last
+// POS pair with any scalar `*_Form` field left to fixture against --
+// every POS subtype now registers real WordForm records instead, so
+// `formTextsOf()` (data/pos_form_fields.ts) has nothing left to
+// reflect over and this mechanism is fully dead code, not just
+// under-exercised. Removed rather than kept synthetic (hand-faking a
+// scalar field onto a Word no real seeding path would ever produce).
+// The underlying `Dictionary.indexWordForms()`/`lookupFormMatches()`/
+// `formTextIndex`/`WordFormMatch` themselves are slated for deletion
+// in the same migration's own final cleanup pass.
 
 describe("PartOfSpeechIdentifier / DictionaryProcessor: inflected-form fallback", () => {
   it("resolves an inflected surface form to its base Word, tagged INFLECTED_FORM with a lower confidence than any exact match and a reason naming the field", () => {
@@ -1181,13 +1163,13 @@ describe("WordSeeder against the bundled Common Vocabulary Cache", () => {
     expect(isNumeral(dictionary.lookupAll("one").find((w) => w.partOfSpeech === PartOfSpeech.NUMERAL)!)).toBe(true);
     expect(isParticle(dictionary.lookup("not")!)).toBe(true);
 
-    // A subtype's own fields are real, assignable Text fields -- not
-    // populated by this seeding path (none of the Common Vocabulary
-    // Cache's own JSON schemas carry them), but present and undefined,
-    // exactly like Noun.isCountable/Verb.frames for a non-WordNet Word.
+    // Pronoun's own Word Form Matrix fields (subjectiveCaseForm and the
+    // rest) live as WordForm records now, not scalar fields -- not
+    // populated by this seeding path (no `wordForms` store was passed
+    // to seedClosedClassWords() above), so `she` carries none at all.
     const she = dictionary.lookup("she");
     if (!isPronoun(she!)) throw new Error("unreachable");
-    expect(she.subjectiveCaseForm).toBeUndefined();
+    expect(she.formIds).toEqual([]);
     expect(she.baseLemmaCanonicalForm).toBeUndefined();
   });
 
