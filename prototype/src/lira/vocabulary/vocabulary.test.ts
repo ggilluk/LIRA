@@ -224,8 +224,10 @@ describe("validate<Class>() -- each POS class's own attribute validation", () =>
   });
 
   it("checks an Adjective's degree forms", () => {
-    const big = createAdjective({ text: "big", comparativeDegreeForm: { value: "bigger", formats: ["/([bcdfghjklmnpqrstvwxyz])\\1er$/i"] } });
-    expect(validateAdjective(big)).toEqual([]);
+    const big = createAdjective({ text: "big" });
+    const bigWordForms = new WordForms();
+    bigWordForms.registerNamedForm(big, "comparativeDegreeForm", { value: "bigger", formats: ["/([bcdfghjklmnpqrstvwxyz])\\1er$/i"] });
+    expect(validateAdjective(big, bigWordForms)).toEqual([]);
   });
 
   it("checks a Pronoun's own closed fixed-word-lookup fields", () => {
@@ -248,8 +250,10 @@ describe("validate<Class>() -- each POS class's own attribute validation", () =>
   });
 
   it("checks an Adverb's degree forms the same way as Adjective's", () => {
-    const fast = createAdverb({ text: "fast", superlativeDegreeForm: { value: "fastest", formats: ["/est$/i"] } });
-    expect(validateAdverb(fast)).toEqual([]);
+    const fast = createAdverb({ text: "fast" });
+    const fastWordForms = new WordForms();
+    fastWordForms.registerNamedForm(fast, "superlativeDegreeForm", { value: "fastest", formats: ["/est$/i"] });
+    expect(validateAdverb(fast, fastWordForms)).toEqual([]);
   });
 });
 
@@ -401,67 +405,96 @@ describe("generate<Class>Forms() -- deriving *_Form values from a base lemma", (
     // orthographic rule regularDegreeForm() picks once synthetic
     // comparison has already been decided, not about
     // determineGradability() itself (its own dedicated tests below).
-    const big = generateAdjectiveForms(createAdjective({ text: "big" }), true);
-    expect(big.comparativeDegreeForm).toEqual({ value: "bigger", formats: ["/([bcdfghjklmnpqrstvwxyz])\\1er$/i"] });
-    expect(big.superlativeDegreeForm).toEqual({ value: "biggest", formats: ["/([bcdfghjklmnpqrstvwxyz])\\1est$/i"] });
+    const big = createAdjective({ text: "big" });
+    const bigForms = new WordForms();
+    generateAdjectiveForms(big, true, bigForms);
+    expect(formTextOf(bigForms, big, "comparativeDegreeForm")).toEqual({ value: "bigger", formats: ["/([bcdfghjklmnpqrstvwxyz])\\1er$/i"] });
+    expect(formTextOf(bigForms, big, "superlativeDegreeForm")).toEqual({ value: "biggest", formats: ["/([bcdfghjklmnpqrstvwxyz])\\1est$/i"] });
 
-    const happy = generateAdjectiveForms(createAdjective({ text: "happy" }), true);
-    expect(happy.comparativeDegreeForm).toEqual({ value: "happier", formats: ["/ier$/i"] });
-    expect(happy.superlativeDegreeForm).toEqual({ value: "happiest", formats: ["/iest$/i"] });
+    const happy = createAdjective({ text: "happy" });
+    const happyForms = new WordForms();
+    generateAdjectiveForms(happy, true, happyForms);
+    expect(formTextOf(happyForms, happy, "comparativeDegreeForm")).toEqual({ value: "happier", formats: ["/ier$/i"] });
+    expect(formTextOf(happyForms, happy, "superlativeDegreeForm")).toEqual({ value: "happiest", formats: ["/iest$/i"] });
 
-    const large = generateAdjectiveForms(createAdjective({ text: "large" }), true);
-    expect(large.comparativeDegreeForm).toEqual({ value: "larger", formats: ["/er$/i"] });
+    const large = createAdjective({ text: "large" });
+    const largeForms = new WordForms();
+    generateAdjectiveForms(large, true, largeForms);
+    expect(formTextOf(largeForms, large, "comparativeDegreeForm")).toEqual({ value: "larger", formats: ["/er$/i"] });
 
-    const fast = generateAdverbForms(createAdverb({ text: "fast" }), true);
-    expect(fast.comparativeDegreeForm).toEqual({ value: "faster", formats: ["/er$/i"] });
-    expect(fast.superlativeDegreeForm).toEqual({ value: "fastest", formats: ["/est$/i"] });
+    const fast = createAdverb({ text: "fast" });
+    const fastForms = new WordForms();
+    generateAdverbForms(fast, true, fastForms);
+    expect(formTextOf(fastForms, fast, "comparativeDegreeForm")).toEqual({ value: "faster", formats: ["/er$/i"] });
+    expect(formTextOf(fastForms, fast, "superlativeDegreeForm")).toEqual({ value: "fastest", formats: ["/est$/i"] });
   });
 
   it("Adjective: a non-gradable adjective only ever gets a Positive Degree Form -- no mechanically well-formed but invalid Comparative/Superlative", () => {
-    const ablative = generateAdjectiveForms(createAdjective({ text: "ablative" }), false);
-    expect(ablative.positiveDegreeForm).toEqual({ value: "ablative" });
-    expect(ablative.comparativeDegreeForm).toBeUndefined();
-    expect(ablative.superlativeDegreeForm).toBeUndefined();
-    expect(validateAdjective(ablative)).toEqual([]);
+    const ablative = createAdjective({ text: "ablative" });
+    const ablativeForms = new WordForms();
+    generateAdjectiveForms(ablative, false, ablativeForms);
+    expect(formTextOf(ablativeForms, ablative, "positiveDegreeForm")).toEqual({ value: "ablative" });
+    expect(formTextOf(ablativeForms, ablative, "comparativeDegreeForm")).toBeUndefined();
+    expect(formTextOf(ablativeForms, ablative, "superlativeDegreeForm")).toBeUndefined();
+    expect(validateAdjective(ablative, ablativeForms)).toEqual([]);
   });
 
   it("Adjective: isPeriphrasticComparison picks more/most for longer adjectives, -er/-est for shorter ones, matching the matrix's own examples", () => {
     // 1 syllable -- synthetic.
-    const tall = generateAdjectiveForms(createAdjective({ text: "tall" }), true);
-    expect(tall.comparativeDegreeForm).toEqual({ value: "taller", formats: ["/er$/i"] });
-    expect(tall.superlativeDegreeForm).toEqual({ value: "tallest", formats: ["/est$/i"] });
+    const tall = createAdjective({ text: "tall" });
+    const tallForms = new WordForms();
+    generateAdjectiveForms(tall, true, tallForms);
+    expect(formTextOf(tallForms, tall, "comparativeDegreeForm")).toEqual({ value: "taller", formats: ["/er$/i"] });
+    expect(formTextOf(tallForms, tall, "superlativeDegreeForm")).toEqual({ value: "tallest", formats: ["/est$/i"] });
 
     // 2 syllables ending in "ow" -- still synthetic, one of English's
     // own real exceptions to "long words use more/most".
-    const narrow = generateAdjectiveForms(createAdjective({ text: "narrow" }), true);
-    expect(narrow.comparativeDegreeForm).toEqual({ value: "narrower", formats: ["/er$/i"] });
-    expect(narrow.superlativeDegreeForm).toEqual({ value: "narrowest", formats: ["/est$/i"] });
+    const narrow = createAdjective({ text: "narrow" });
+    const narrowForms = new WordForms();
+    generateAdjectiveForms(narrow, true, narrowForms);
+    expect(formTextOf(narrowForms, narrow, "comparativeDegreeForm")).toEqual({ value: "narrower", formats: ["/er$/i"] });
+    expect(formTextOf(narrowForms, narrow, "superlativeDegreeForm")).toEqual({ value: "narrowest", formats: ["/est$/i"] });
 
     // 3 syllables, no synthetic-eligible ending -- periphrastic.
-    const accepting = generateAdjectiveForms(createAdjective({ text: "accepting" }), true);
-    expect(accepting.comparativeDegreeForm).toEqual({ value: "more accepting", formats: ["/^more\\s+.+$/i"] });
-    expect(accepting.superlativeDegreeForm).toEqual({ value: "most accepting", formats: ["/^most\\s+.+$/i"] });
-    expect(validateAdjective(accepting)).toEqual([]);
+    const accepting = createAdjective({ text: "accepting" });
+    const acceptingForms = new WordForms();
+    generateAdjectiveForms(accepting, true, acceptingForms);
+    expect(formTextOf(acceptingForms, accepting, "comparativeDegreeForm")).toEqual({ value: "more accepting", formats: ["/^more\\s+.+$/i"] });
+    expect(formTextOf(acceptingForms, accepting, "superlativeDegreeForm")).toEqual({ value: "most accepting", formats: ["/^most\\s+.+$/i"] });
+    expect(validateAdjective(accepting, acceptingForms)).toEqual([]);
   });
 
   it("Adverb: a non-gradable adverb only ever gets a Positive Degree Form, same gating as Adjective", () => {
-    const anisotropically = generateAdverbForms(createAdverb({ text: "anisotropically" }), false);
-    expect(anisotropically.positiveDegreeForm).toEqual({ value: "anisotropically" });
-    expect(anisotropically.comparativeDegreeForm).toBeUndefined();
-    expect(anisotropically.superlativeDegreeForm).toBeUndefined();
-    expect(validateAdverb(anisotropically)).toEqual([]);
+    const anisotropically = createAdverb({ text: "anisotropically" });
+    const anisotropicallyForms = new WordForms();
+    generateAdverbForms(anisotropically, false, anisotropicallyForms);
+    expect(formTextOf(anisotropicallyForms, anisotropically, "positiveDegreeForm")).toEqual({ value: "anisotropically" });
+    expect(formTextOf(anisotropicallyForms, anisotropically, "comparativeDegreeForm")).toBeUndefined();
+    expect(formTextOf(anisotropicallyForms, anisotropically, "superlativeDegreeForm")).toBeUndefined();
+    expect(validateAdverb(anisotropically, anisotropicallyForms)).toEqual([]);
   });
 
   it("Adverb: a lemma ending \"-ly\" is always periphrastic, never routed through Adjective's own \"y\" rule (there is no \"quicklier\")", () => {
-    const scarcely = generateAdverbForms(createAdverb({ text: "scarcely" }), true);
-    expect(scarcely.comparativeDegreeForm).toEqual({ value: "more scarcely", formats: ["/^more\\s+.+$/i"] });
-    expect(scarcely.superlativeDegreeForm).toEqual({ value: "most scarcely", formats: ["/^most\\s+.+$/i"] });
-    expect(validateAdverb(scarcely)).toEqual([]);
+    const scarcely = createAdverb({ text: "scarcely" });
+    const scarcelyForms = new WordForms();
+    generateAdverbForms(scarcely, true, scarcelyForms);
+    expect(formTextOf(scarcelyForms, scarcely, "comparativeDegreeForm")).toEqual({ value: "more scarcely", formats: ["/^more\\s+.+$/i"] });
+    expect(formTextOf(scarcelyForms, scarcely, "superlativeDegreeForm")).toEqual({ value: "most scarcely", formats: ["/^most\\s+.+$/i"] });
+    expect(validateAdverb(scarcely, scarcelyForms)).toEqual([]);
 
     // A non-"-ly" adverb still goes through the ordinary synthetic path.
-    const fast = generateAdverbForms(createAdverb({ text: "fast" }), true);
-    expect(fast.comparativeDegreeForm).toEqual({ value: "faster", formats: ["/er$/i"] });
-    expect(fast.superlativeDegreeForm).toEqual({ value: "fastest", formats: ["/est$/i"] });
+    const fast = createAdverb({ text: "fast" });
+    const fastForms = new WordForms();
+    generateAdverbForms(fast, true, fastForms);
+    expect(formTextOf(fastForms, fast, "comparativeDegreeForm")).toEqual({ value: "faster", formats: ["/er$/i"] });
+    expect(formTextOf(fastForms, fast, "superlativeDegreeForm")).toEqual({ value: "fastest", formats: ["/est$/i"] });
+  });
+
+  it("Adjective/Adverb: no-ops with no WordForms store -- produce a Word with no inflected forms registered anywhere", () => {
+    const happy = createAdjective({ text: "happy" });
+    expect(generateAdjectiveForms(happy, true, undefined)).toBe(happy);
+    const fast = createAdverb({ text: "fast" });
+    expect(generateAdverbForms(fast, true, undefined)).toBe(fast);
   });
 
   it("every generated Word passes its own validate<Class>() unchanged -- generation and validation are built from the same matrix rows", () => {
@@ -474,8 +507,12 @@ describe("generate<Class>Forms() -- deriving *_Form values from a base lemma", (
     const eat = createVerb({ text: "eat" });
     const eatWordForms = new WordForms();
     expect(validateVerb(generateVerbForms(eat, eatWordForms), eatWordForms)).toEqual([]);
-    expect(validateAdjective(generateAdjectiveForms(createAdjective({ text: "happy" }), true))).toEqual([]);
-    expect(validateAdverb(generateAdverbForms(createAdverb({ text: "fast" }), true))).toEqual([]);
+    const happy = createAdjective({ text: "happy" });
+    const happyWordForms = new WordForms();
+    expect(validateAdjective(generateAdjectiveForms(happy, true, happyWordForms), happyWordForms)).toEqual([]);
+    const fast = createAdverb({ text: "fast" });
+    const fastWordForms = new WordForms();
+    expect(validateAdverb(generateAdverbForms(fast, true, fastWordForms), fastWordForms)).toEqual([]);
   });
 
   it("Adjective: determineGradability checks every sense, not just the primary one, is direction-agnostic, and requires nothing more than the Attribute pointer itself", () => {
@@ -845,43 +882,44 @@ describe("DictionaryProcessor.identifyPhrase", () => {
 });
 
 describe("Dictionary.indexWordForms / lookupFormMatches", () => {
-  // Exercised here via Adjective (still scalar-field-based) rather than
-  // Noun/Verb -- both migrated their own generated forms onto the
-  // WordForms store instead (generateNounForms()'s/generateVerbForms()'s
-  // own docstrings), so neither writes anything formTextsOf()/
-  // indexWordForms() can see any more; their own WordForms-based
-  // equivalents live in the "PartOfSpeechIdentifier / DictionaryProcessor"
-  // describe block below.
+  // Exercised here via Pronoun (still scalar-field-based, hand-curated
+  // rather than generated) rather than Noun/Verb/Adjective/Adverb --
+  // all four migrated their own generated forms onto the WordForms
+  // store instead (generateNounForms()'s/generateVerbForms()'s/
+  // generateAdjectiveForms()'s/generateAdverbForms()'s own docstrings),
+  // so none of them write anything formTextsOf()/indexWordForms() can
+  // see any more; their own WordForms-based equivalents live in the
+  // "PartOfSpeechIdentifier / DictionaryProcessor" describe block below.
   it("finds a Word by one of its own generated *_Form values, not its base spelling -- and never duplicates on a repeat call", () => {
     const dictionary = new Dictionary();
-    const big = generateAdjectiveForms(createAdjective({ text: "big" }), true);
-    dictionary.append(big);
-    dictionary.indexWordForms(big);
+    const he = createPronoun({ text: "he", objectiveCaseForm: { value: "him", formats: ["/^(me|us|you|him|her|it|them)$/i"] } });
+    dictionary.append(he);
+    dictionary.indexWordForms(he);
 
-    // "bigger" was never itself appended as a Word -- only reachable via
+    // "him" was never itself appended as a Word -- only reachable via
     // the form index, not the ordinary exact-text one.
-    expect(dictionary.lookupAll("bigger")).toEqual([]);
-    const matches = dictionary.lookupFormMatches("bigger");
+    expect(dictionary.lookupAll("him")).toEqual([]);
+    const matches = dictionary.lookupFormMatches("him");
     expect(matches).toHaveLength(1);
-    expect(matches[0].word.uuid.value).toBe(big.uuid.value);
-    expect(matches[0].field).toBe("comparativeDegreeForm");
+    expect(matches[0].word.uuid.value).toBe(he.uuid.value);
+    expect(matches[0].field).toBe("objectiveCaseForm");
 
     // Idempotent: indexing the same Word again doesn't add a duplicate
     // entry (WordSeeder's own final-pass reindex, run unconditionally
     // over every Word on every seedWordNet/seedClosedClassWords call,
     // relies on this).
-    dictionary.indexWordForms(big);
-    expect(dictionary.lookupFormMatches("bigger")).toHaveLength(1);
+    dictionary.indexWordForms(he);
+    expect(dictionary.lookupFormMatches("him")).toHaveLength(1);
   });
 
   it("never indexes a form value identical to the Word's own base spelling -- lookupAll already finds that case directly", () => {
     const dictionary = new Dictionary();
-    const big = generateAdjectiveForms(createAdjective({ text: "big" }), true);
-    dictionary.append(big);
-    dictionary.indexWordForms(big);
+    const she = createPronoun({ text: "she", subjectiveCaseForm: { value: "she", formats: ["/^(I|we|you|he|she|it|they)$/i"] } });
+    dictionary.append(she);
+    dictionary.indexWordForms(she);
 
-    // positiveDegreeForm is always identical to the base lemma itself.
-    expect(dictionary.lookupFormMatches("big")).toEqual([]);
+    // subjectiveCaseForm is identical to the base lemma itself for "she".
+    expect(dictionary.lookupFormMatches("she")).toEqual([]);
   });
 });
 
@@ -1302,7 +1340,8 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
       new SemanticRelationshipSystemPropertyTensor(),
     );
     const seeder = new WordSeeder("en");
-    const domain = { vocabulary: { dictionary, phrases: phraseBook, senses: senseStore, morphologicalPointerRelationships, morphologicalPointerRelationshipProcessor, semanticRelationships, semanticRelationshipProcessor } };
+    const wordForms = new WordForms();
+    const domain = { vocabulary: { dictionary, phrases: phraseBook, senses: senseStore, wordForms, morphologicalPointerRelationships, morphologicalPointerRelationshipProcessor, semanticRelationships, semanticRelationshipProcessor } };
 
     const first = await seeder.seedWordNet(domain);
     expect(first.wordsSeeded).toBeGreaterThan(100000);
@@ -1468,9 +1507,9 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // (monosyllabic -> "-er"/"-est", isPeriphrasticComparison's own
     // docstring).
     expect(isAdjective(big)).toBe(true);
-    expect((big as Adjective).positiveDegreeForm).toEqual({ value: "big" });
-    expect((big as Adjective).comparativeDegreeForm).toEqual({ value: "bigger", formats: ["/([bcdfghjklmnpqrstvwxyz])\\1er$/i"] });
-    expect((big as Adjective).superlativeDegreeForm).toEqual({ value: "biggest", formats: ["/([bcdfghjklmnpqrstvwxyz])\\1est$/i"] });
+    expect(formTextOf(wordForms, big, "positiveDegreeForm")).toEqual({ value: "big" });
+    expect(formTextOf(wordForms, big, "comparativeDegreeForm")).toEqual({ value: "bigger", formats: ["/([bcdfghjklmnpqrstvwxyz])\\1er$/i"] });
+    expect(formTextOf(wordForms, big, "superlativeDegreeForm")).toEqual({ value: "biggest", formats: ["/([bcdfghjklmnpqrstvwxyz])\\1est$/i"] });
 
     // "tall" (02393670-a) carries its own real Attribute pointer to
     // "stature, height" (05009517-n) -- this is this feature's own
@@ -1484,9 +1523,9 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // non-gradable.
     const tall = dictionary.lookupAll("tall").find((w) => isAdjective(w)) as Adjective;
     expect(tall).toBeDefined();
-    expect(tall.positiveDegreeForm).toEqual({ value: "tall" });
-    expect(tall.comparativeDegreeForm).toEqual({ value: "taller", formats: ["/er$/i"] });
-    expect(tall.superlativeDegreeForm).toEqual({ value: "tallest", formats: ["/est$/i"] });
+    expect(formTextOf(wordForms, tall, "positiveDegreeForm")).toEqual({ value: "tall" });
+    expect(formTextOf(wordForms, tall, "comparativeDegreeForm")).toEqual({ value: "taller", formats: ["/er$/i"] });
+    expect(formTextOf(wordForms, tall, "superlativeDegreeForm")).toEqual({ value: "tallest", formats: ["/est$/i"] });
 
     // "wooden" (both real WordNet senses, 01145111-a "lacking ease or
     // grace" and 02586927-a "made ... of wood") carries no Attribute
@@ -1496,9 +1535,9 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // invalid "woodener"/"woodenest" (the exact bug this Gradability
     // Update closes).
     const wooden = dictionary.lookup("wooden")! as Adjective;
-    expect(wooden.positiveDegreeForm).toEqual({ value: "wooden" });
-    expect(wooden.comparativeDegreeForm).toBeUndefined();
-    expect(wooden.superlativeDegreeForm).toBeUndefined();
+    expect(formTextOf(wordForms, wooden, "positiveDegreeForm")).toEqual({ value: "wooden" });
+    expect(formTextOf(wordForms, wooden, "comparativeDegreeForm")).toBeUndefined();
+    expect(formTextOf(wordForms, wooden, "superlativeDegreeForm")).toBeUndefined();
 
     // Adverb Gradability Update (role/processor/adverb_processor.ts): "scarcely" (00003317-r)
     // carries a real WordNet Pertainym fact to "scarce" (adjective) --
@@ -1513,17 +1552,17 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // "y" rule (there is no real "scarcelier").
     const scarcely = dictionary.lookup("scarcely")! as Adverb;
     expect(isAdverb(scarcely)).toBe(true);
-    expect(scarcely.comparativeDegreeForm).toEqual({ value: "more scarcely", formats: ["/^more\\s+.+$/i"] });
-    expect(scarcely.superlativeDegreeForm).toEqual({ value: "most scarcely", formats: ["/^most\\s+.+$/i"] });
+    expect(formTextOf(wordForms, scarcely, "comparativeDegreeForm")).toEqual({ value: "more scarcely", formats: ["/^more\\s+.+$/i"] });
+    expect(formTextOf(wordForms, scarcely, "superlativeDegreeForm")).toEqual({ value: "most scarcely", formats: ["/^most\\s+.+$/i"] });
     expect(semanticRelated(scarcely, SemanticRelationshipKind.PERTAINYM, "outgoing").map((w) => w.text)).toContain("scarce");
 
     // "anisotropically" (00003675-r) carries a Pertainym fact to
     // "anisotropic", which carries no Attribute fact of its own --
     // non-gradable, correctly inherited through the Pertainym hop.
     const anisotropically = dictionary.lookup("anisotropically")! as Adverb;
-    expect(anisotropically.positiveDegreeForm).toEqual({ value: "anisotropically" });
-    expect(anisotropically.comparativeDegreeForm).toBeUndefined();
-    expect(anisotropically.superlativeDegreeForm).toBeUndefined();
+    expect(formTextOf(wordForms, anisotropically, "positiveDegreeForm")).toEqual({ value: "anisotropically" });
+    expect(formTextOf(wordForms, anisotropically, "comparativeDegreeForm")).toBeUndefined();
+    expect(formTextOf(wordForms, anisotropically, "superlativeDegreeForm")).toBeUndefined();
     expect(semanticRelated(anisotropically, SemanticRelationshipKind.PERTAINYM, "outgoing").map((w) => w.text)).toContain("anisotropic");
 
     // "wide" (00497722-r) is a flat adverb -- identical spelling to its
@@ -1535,8 +1574,8 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // Attribute pointer to "width") for exactly this case.
     const wideAdverb = dictionary.lookupAll("wide").find((w) => isAdverb(w)) as Adverb;
     expect(wideAdverb).toBeDefined();
-    expect(wideAdverb.comparativeDegreeForm).toEqual({ value: "wider", formats: ["/er$/i"] });
-    expect(wideAdverb.superlativeDegreeForm).toEqual({ value: "widest", formats: ["/est$/i"] });
+    expect(formTextOf(wordForms, wideAdverb, "comparativeDegreeForm")).toEqual({ value: "wider", formats: ["/er$/i"] });
+    expect(formTextOf(wordForms, wideAdverb, "superlativeDegreeForm")).toEqual({ value: "widest", formats: ["/est$/i"] });
     expect(semanticRelated(wideAdverb, SemanticRelationshipKind.PERTAINYM, "outgoing")).toEqual([]);
 
     // Every new WordNet-sourced kind actually appears at least once --

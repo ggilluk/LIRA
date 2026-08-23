@@ -9,7 +9,7 @@
  * (../matrices/word_form_part_of_speech_matrix.md), the same as its three
  * siblings, ready for a value once one is available. */
 
-import type { Identifier, Text } from "../../../value_objects";
+import type { Identifier } from "../../../value_objects";
 import { PartOfSpeech } from "../enums/part_of_speech";
 import type { Word } from "./word";
 
@@ -33,28 +33,14 @@ export interface Adverb extends Word {
   isDerivedFromAdjective?: Identifier;
   isDerivedFromAdjectiveIndicator: boolean;
 
-  // The purpose is to identify the basic adjective or adverb form that
-  // describes a quality without comparing it with another. Fully
-  // lexical, not spelling-derivable (the matrix's own Format/String
-  // Pattern rows are both `N/A`) -- a populated value's own
-  // `Text.formats` should stay unset.
-  positiveDegreeForm?: Text;
-  // The purpose is to identify the adjective or adverb form used to
-  // compare the degree of a quality between two people, things,
-  // actions, or states. Applies only to gradable adverbs ("faster"),
-  // not to every adverb. Rules #1-4 are regex-derivable (`/er$/i` twice
-  // over, `/ier$/i`, a doubled-final-consonant pattern) -- a populated
-  // regular-case value's own `Text.formats` should carry whichever
-  // matched; rule #5 (irregular, "well"->"better") has no format and
-  // needs curated data instead.
-  comparativeDegreeForm?: Text;
-  // The purpose is to identify the adjective or adverb form used to
-  // identify the highest or lowest degree of a quality within a group.
-  // Same gradable-only caveat as comparativeDegreeForm above. Rules
-  // #1-4 are regex-derivable (`/est$/i` twice over, `/iest$/i`, a
-  // doubled-final-consonant pattern) -- a populated regular-case
-  // value's own `Text.formats` should carry whichever matched; rule #5
-  // (irregular, "well"->"best") has no format and needs curated data
-  // instead.
-  superlativeDegreeForm?: Text;
+  // Positive/Comparative/Superlative Degree Form -- this subtype's own
+  // row of fields from the Word Form to Part of Speech Matrix
+  // (../matrices/word_form_part_of_speech_matrix.md) -- are no longer
+  // scalar fields here (Auxiliary's own precedent,
+  // data/entities/auxiliary.ts): each one now lives as its own
+  // `WordForm` record, reached via `Word.formIds` (data/word_form.ts,
+  // data/word_forms.ts's own `WordForms` store), generated the same as
+  // ever by generateAdverbForms() (role/processor/adverb_processor.ts)
+  // but registered there via `WordForms.registerNamedForm()` instead of
+  // assigned to a named field on this interface.
 }

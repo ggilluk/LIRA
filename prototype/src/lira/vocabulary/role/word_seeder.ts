@@ -1332,8 +1332,8 @@ export class WordSeeder {
       wordForms?.registerBaseLemmaForm(copy);
       if (isNoun(copy)) copy = generateNounForms(copy, wordForms);
       else if (isVerb(copy)) copy = generateVerbForms(copy, wordForms);
-      else if (isAdjective(copy)) copy = generateAdjectiveForms(copy, false);
-      else if (isAdverb(copy)) copy = generateAdverbForms(copy, false);
+      else if (isAdjective(copy)) copy = generateAdjectiveForms(copy, false, wordForms);
+      else if (isAdverb(copy)) copy = generateAdverbForms(copy, false, wordForms);
       dictionary.append(copy);
       insertedByEntryId.set(word.entryId.value, copy);
       if (senseStore !== undefined) registerUniqueSense(senseStore, copy, this.cachePad.get(word.entryId.value), wordForms);
@@ -1731,23 +1731,25 @@ export class WordSeeder {
     // gradability is derived differently there, via Pertainym rather
     // than Attribute) able to answer the question at all (Required
     // Processing Order, role/processor/adjective_processor.ts's own docstring). Skips a Word already carrying
-    // either field -- a curated value (a future Common Vocabulary Cache
+    // both WordForms -- a curated value (a future Common Vocabulary Cache
     // override, say) is never overwritten, matching
     // generateAdjectiveForms()'s/generateAdverbForms()'s own "only fills
-    // what's still undefined" contract.
+    // what's still undefined" contract; also just a re-seed performance
+    // guard -- generateXForms() itself is idempotent either way, this
+    // only saves recomputing gradability for a Word that doesn't need it.
+    const hasBothDegreeForms = (word: Word): boolean => {
+      const forms = wordForms?.formsOf(word) ?? [];
+      return forms.some((f) => f.field === "comparativeDegreeForm") && forms.some((f) => f.field === "superlativeDegreeForm");
+    };
     for (const word of dictionary.all()) {
       if (isAdjective(word)) {
-        if (word.comparativeDegreeForm !== undefined && word.superlativeDegreeForm !== undefined) continue;
+        if (hasBothDegreeForms(word)) continue;
         const gradable = determineGradability(semanticStore, word);
-        const generated = generateAdjectiveForms(word, gradable);
-        word.comparativeDegreeForm = generated.comparativeDegreeForm;
-        word.superlativeDegreeForm = generated.superlativeDegreeForm;
+        generateAdjectiveForms(word, gradable, wordForms);
       } else if (isAdverb(word)) {
-        if (word.comparativeDegreeForm !== undefined && word.superlativeDegreeForm !== undefined) continue;
+        if (hasBothDegreeForms(word)) continue;
         const gradable = determineAdverbGradability(semanticStore, dictionary, senseStore, word);
-        const generated = generateAdverbForms(word, gradable);
-        word.comparativeDegreeForm = generated.comparativeDegreeForm;
-        word.superlativeDegreeForm = generated.superlativeDegreeForm;
+        generateAdverbForms(word, gradable, wordForms);
       }
     }
 
@@ -2391,16 +2393,22 @@ export class WordSeeder {
         wordForms?.registerBaseLemmaForm(verb);
         return generateVerbForms(verb, wordForms);
       }
-      case PartOfSpeech.ADJECTIVE:
-        return generateAdjectiveForms(createAdjective(shared), false);
-      case PartOfSpeech.ADVERB:
+      case PartOfSpeech.ADJECTIVE: {
+        const adjective = createAdjective(shared);
+        wordForms?.registerBaseLemmaForm(adjective);
+        return generateAdjectiveForms(adjective, false, wordForms);
+      }
+      case PartOfSpeech.ADVERB: {
         // Same deferral as ADJECTIVE just above, for the same reason --
         // Adverb's own determineGradability() (role/processor/adverb_processor.ts) needs
         // this Word's own Pertainym edges, which don't exist yet this
         // early (pass 2 hasn't run). The post-relationships pass below
         // (this method's own final loop) revisits every seeded Adverb
         // too, once relationships are fully wired.
-        return generateAdverbForms(createAdverb(shared), false);
+        const adverb = createAdverb(shared);
+        wordForms?.registerBaseLemmaForm(adverb);
+        return generateAdverbForms(adverb, false, wordForms);
+      }
       case PartOfSpeech.NOUN: {
         // registerBaseLemmaForm() first, before generateNounForms() --
         // both are idempotent find-or-create, but registering base

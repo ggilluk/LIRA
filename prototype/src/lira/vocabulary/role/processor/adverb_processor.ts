@@ -1,4 +1,3 @@
-import type { Text } from "../../../value_objects";
 import { determineGradability as isAdjectiveGradable, isAdjective } from "./adjective_processor";
 import type { Dictionary } from "../../data/dictionary";
 import { SemanticRelationshipKind } from "../../data/enums/semantic_relationship_kind";
@@ -6,6 +5,7 @@ import { PartOfSpeech } from "../../data/enums/part_of_speech";
 import type { Senses } from "../../data/senses";
 import type { SemanticRelationshipStore } from "../../data/semantic_relationship_store";
 import type { Word } from "../../data/entities/word";
+import type { WordForms } from "../../data/word_forms";
 import {
   createWord,
   isPeriphrasticComparison,
@@ -30,24 +30,20 @@ export function isAdverb(word: Word): word is Adverb {
   return word.partOfSpeech === PartOfSpeech.ADVERB;
 }
 
-/** Validates every *_Form field this Adverb carries -- its own row
- * above, plus baseLemmaCanonicalForm via Word's own
- * validateWordFormAttributes -- against WORD_FORM_MATRIX's own ADVERB
- * rules (data/matrices/pos_vs_wordform_matrice.ts). Returns
- * every issue found, not just the first; empty means every populated
- * field is internally consistent with the matrix, not that every field
- * is populated (undefined is never an issue, validateFormText's own
- * docstring). */
-export function validateAdverb(adverb: Adverb): readonly WordFormIssue[] {
+/** Validates every WordForm this Adverb carries -- its own row above,
+ * plus baseLemmaCanonicalForm via Word's own validateWordFormAttributes
+ * -- against WORD_FORM_MATRIX's own ADVERB rules
+ * (data/matrices/pos_vs_wordform_matrice.ts). Returns every issue
+ * found, not just the first; empty means every populated field is
+ * internally consistent with the matrix, not that every field is
+ * populated. validateAuxiliary()'s own exact shape
+ * (role/processor/auxiliary_processor.ts). */
+export function validateAdverb(adverb: Adverb, wordForms: WordForms): readonly WordFormIssue[] {
   const issues: WordFormIssue[] = [...validateWordFormAttributes(adverb)];
-  const check = (field: string, text: Text | undefined): void => {
-    if (text === undefined) return;
-    const issue = validateFormText(field, text, stringPatternsFor(field, PartOfSpeech.ADVERB));
+  for (const form of wordForms.formsOf(adverb)) {
+    const issue = validateFormText(form.field, form.text, stringPatternsFor(form.field, PartOfSpeech.ADVERB));
     if (issue !== undefined) issues.push(issue);
-  };
-  check("positiveDegreeForm", adverb.positiveDegreeForm);
-  check("comparativeDegreeForm", adverb.comparativeDegreeForm);
-  check("superlativeDegreeForm", adverb.superlativeDegreeForm);
+  }
   return issues;
 }
 
@@ -130,21 +126,29 @@ function isAdverbPeriphrasticComparison(lemma: string): boolean {
  * parameter, not repeated here. The one real difference is the
  * comparison-strategy decision itself -- isAdverbPeriphrasticComparison()
  * above, not word_processor.ts's own isPeriphrasticComparison() directly.
- * WordSeeder's own seeding entry points (role/word_seeder.ts) call this. */
-export function generateAdverbForms(adverb: Adverb, gradable: boolean): Adverb {
+ * WordSeeder's own seeding entry points (role/word_seeder.ts) call this.
+ * No-op when `wordForms` is undefined, same convention as
+ * generateAdjectiveForms(). Fields are registered in the Word Form
+ * Matrix's own row order (positive, comparative, superlative). Returns
+ * `adverb` unchanged. */
+export function generateAdverbForms(adverb: Adverb, gradable: boolean, wordForms: WordForms | undefined): Adverb {
+  if (wordForms === undefined) return adverb;
   const lemma = adverb.text;
-  const generated: Partial<Adverb> = {};
-  if (adverb.positiveDegreeForm === undefined) generated.positiveDegreeForm = { value: lemma };
+  const has = (field: string): boolean => wordForms.formsOf(adverb).some((form) => form.field === field);
+
+  if (!has("positiveDegreeForm")) wordForms.registerNamedForm(adverb, "positiveDegreeForm", { value: lemma });
+
   if (gradable) {
     const periphrastic = isAdverbPeriphrasticComparison(lemma);
-    if (adverb.comparativeDegreeForm === undefined) {
+    if (!has("comparativeDegreeForm")) {
       const comparative = periphrastic ? periphrasticDegreeForm(lemma, true) : regularDegreeForm(lemma, true);
-      if (comparative !== undefined) generated.comparativeDegreeForm = comparative;
+      if (comparative !== undefined) wordForms.registerNamedForm(adverb, "comparativeDegreeForm", comparative);
     }
-    if (adverb.superlativeDegreeForm === undefined) {
+    if (!has("superlativeDegreeForm")) {
       const superlative = periphrastic ? periphrasticDegreeForm(lemma, false) : regularDegreeForm(lemma, false);
-      if (superlative !== undefined) generated.superlativeDegreeForm = superlative;
+      if (superlative !== undefined) wordForms.registerNamedForm(adverb, "superlativeDegreeForm", superlative);
     }
   }
-  return { ...adverb, ...generated };
+
+  return adverb;
 }
