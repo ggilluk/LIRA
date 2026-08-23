@@ -133,7 +133,15 @@ function senseSummaryRowHTML(word, s, index, rels) {
 // summary line, so leaving it open by default would dump everything at
 // once. Calls relationshipsSectionHTML() with \`simple: true\` -- a
 // Lexical Relationship row shows just the related word for now, no
-// target-Sense category badge or gloss underneath it.
+// target-Sense category badge, gloss, or repeated rel-sentence
+// underneath it (\`groupHeadingText()\` shows one representative
+// sentence once, as the group's own heading, instead).
+function groupHeadingText(g) {
+  if (g.rels === null) return '…';
+  if (!g.rels.length) return '';
+  const r = g.rels[0];
+  return relationshipSentence(r.kind, r.source_text, r.target_text, r.qualifier);
+}
 function wordFormRelationshipsSectionHTML(sectionClass, heading, senses, rels) {
   const groups = senses
     .map(s => ({ sense: s, rels: rels === null ? null : rels.filter(r => r.via_sense_id === s.id) }))
@@ -146,7 +154,7 @@ function wordFormRelationshipsSectionHTML(sectionClass, heading, senses, rels) {
       <summary>\${heading} (\${total})</summary>
       \${groups.map(g => \`
         <div class="wordform-rel-sense-group\${g.sense.is_primary ? ' primary' : ''}">
-          <div class="wordform-rel-sense-heading">Sense\${g.sense.is_primary ? ' <span class="sense-primary-tag">primary</span>' : ''}: \${g.sense.definition || '<span style="opacity:.6">No definition.</span>'}</div>
+          <div class="wordform-rel-sense-heading">\${groupHeadingText(g)}</div>
           <div class="detail-relationships-section">\${relationshipsSectionHTML(g.rels, true)}</div>
         </div>\`).join('')}
     </details>\`;
