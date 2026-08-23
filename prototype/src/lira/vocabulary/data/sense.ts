@@ -146,7 +146,7 @@ export interface Sense {
   // hand. Mirrors Word.isCommon/Phrase.isCommon exactly.
   isCommon: boolean;
 
-  // Word.isRootWord/interrogativeRootWord/hypernymRootWord/
+  // Noun.isRootWord/interrogativeRootWord/hypernymRootWord/
   // holonymRootWord/vectorPrimitiveRootWord's own exact counterparts --
   // Phrase has no equivalent (root_words.json's own 25 entries are all
   // single-word NOUNs), so DictionaryView.isRootWordFor() only ever
@@ -154,7 +154,7 @@ export interface Sense {
   // "Which sense is the root-word one" is unambiguous here in practice
   // (every root_words.json entry gets its own private, unshared Sense --
   // registerUniqueSense's own docstring), unlike leaving isRootWord on
-  // the whole Word, which would wrongly flag every sense of a Word that
+  // the whole Noun, which would wrongly flag every sense of a Noun that
   // happened to also carry unrelated meanings.
   isRootWord: boolean;
   interrogativeRootWord?: InterrogativeRootWord;

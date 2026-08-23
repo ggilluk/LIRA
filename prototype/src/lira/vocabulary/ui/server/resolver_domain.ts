@@ -7,6 +7,7 @@
 
 import type { Text } from "../../../value_objects";
 import type { Phrase } from "../../data/phrase";
+import { isNoun } from "../../role/processor/noun_processor";
 import type { Senses } from "../../data/senses";
 import type { Word } from "../../data/entities/word";
 
@@ -62,11 +63,15 @@ export function senseFieldsFor(
 /** isRootWord's own exact counterpart to senseFieldsFor() -- kept
  * separate since Phrase has no notion of a root word at all (only one
  * of root_words.json's 25 curated NOUN Words ever has this set), so
- * this only ever takes a Word, not the wider Word | Phrase entry. */
+ * this only ever takes a Word, not the wider Word | Phrase entry.
+ * `isRootWord` itself lives on Noun now, not Word (Noun's own
+ * docstring on why) -- `isNoun(word)` narrows before the fallback read,
+ * so a non-Noun Word (which never has this fact at all) simply reads
+ * false rather than failing to compile. */
 export function isRootWordFor(senses: Senses, word: Word): boolean {
   const primarySenseId = word.senseIds[0];
   const sense = primarySenseId !== undefined ? senses.findByUuid(primarySenseId.value) : undefined;
-  return sense?.isRootWord ?? word.isRootWord;
+  return sense?.isRootWord ?? (isNoun(word) && word.isRootWord);
 }
 
 export function domainLabel(senses: Senses, domainName: string, word: Word | undefined): string | null {

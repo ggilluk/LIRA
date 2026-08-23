@@ -75,7 +75,7 @@ export interface Adjective extends Word {
   // Positive/Comparative/Superlative Degree Form -- are no longer scalar
   // fields here (Auxiliary's own precedent, data/entities/auxiliary.ts):
   // each one now lives as its own `WordForm` record, reached via
-  // `Word.formIds` (data/word_form.ts, data/word_forms.ts's own
+  // `Word.wordFormIds` (data/word_form.ts, data/word_forms.ts's own
   // `WordForms` store), generated the same as ever by
   // generateAdjectiveForms() (role/processor/adjective_processor.ts) but
   // registered there via `WordForms.registerNamedForm()` instead of

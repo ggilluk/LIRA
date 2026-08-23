@@ -410,7 +410,7 @@ export function wordRecordFor(
     editorial_labels: word.editorialLabels.map((label) => EditorialLabel[label]),
     is_common: word.isCommon,
     is_root_word: isRootWordFor(senses, word),
-    is_derivable_noun: word.isDerivableNoun,
+    is_derivable_noun: isNoun(word) && word.isDerivableNoun,
     domain: domainLabel(senses, domainName, word),
     related_domains: senseFields.relatedDomainTags.map((tag) => tag.value),
     is_fully_hydrated: word.isFullyHydrated,

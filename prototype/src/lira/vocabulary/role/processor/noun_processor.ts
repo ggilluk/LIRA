@@ -13,6 +13,8 @@ export function createNoun(init: NounInit): Noun {
   if (noun.isDerivedFromVerbIndicator === undefined) noun.isDerivedFromVerbIndicator = false;
   if (noun.isDerivedFromAdjectiveIndicator === undefined) noun.isDerivedFromAdjectiveIndicator = false;
   if (noun.wordCharacterForms === undefined) noun.wordCharacterForms = [];
+  if (noun.isRootWord === undefined) noun.isRootWord = false;
+  if (noun.isDerivableNoun === undefined) noun.isDerivableNoun = false;
   return noun;
 }
 

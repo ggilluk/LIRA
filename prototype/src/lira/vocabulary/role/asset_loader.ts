@@ -49,11 +49,11 @@ export interface WordFileEntry {
   seeded_pleasure_displeasure_weight?: number | null;
   seeded_arousal_non_arousal_weight?: number | null;
   seeded_dominance_submissive_weight?: number | null;
-  /** Word.isRootWord -- true only for an entry in root_words.json.
-   * Absent (not just false) for every other file, same as this schema's
-   * other rarely-set optional fields. */
+  /** Noun.isRootWord -- true only for an entry in root_words.json (every
+   * one of which is a NOUN). Absent (not just false) for every other
+   * file, same as this schema's other rarely-set optional fields. */
   is_root_word?: boolean;
-  /** Word.interrogativeRootWord/hypernymRootWord/holonymRootWord/
+  /** Noun.interrogativeRootWord/hypernymRootWord/holonymRootWord/
    * vectorPrimitiveRootWord -- the enum member name (e.g. "WHAT"), at
    * most one of these four ever set on a given entry. Only meaningful
    * when is_root_word is true. */
@@ -61,7 +61,7 @@ export interface WordFileEntry {
   hypernym_root_word?: string | null;
   holonym_root_word?: string | null;
   vector_primitive_root_word?: string | null;
-  /** Word.isDerivableNoun -- true for a NOUN entry considered derived
+  /** Noun.isDerivableNoun -- true for a NOUN entry considered derived
    * from (or sharing its form with) a corresponding VERB sense. Optional
    * (absent means false, same as WordSeeder.entryToWord()'s own
    * `?? false`) since most files that predate this field never set it

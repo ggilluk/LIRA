@@ -7,7 +7,7 @@
  * Form, Subjective/Objective/Possessive/Reflexive Case Form) is no
  * longer a scalar field here (Auxiliary's own precedent,
  * data/entities/auxiliary.ts): each would live as its own `WordForm`
- * record instead, reached via `Word.formIds` (data/word_form.ts,
+ * record instead, reached via `Word.wordFormIds` (data/word_form.ts,
  * data/word_forms.ts's own `WordForms` store) -- registered via
  * `WordForms.registerNamedForm()`, the same as every other migrated POS
  * subtype, whenever a future curation pass actually populates one. No

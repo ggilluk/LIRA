@@ -1129,11 +1129,14 @@ describe("WordSeeder against the bundled Common Vocabulary Cache", () => {
 
     // root_words.json's own 25 NOUN entries are the one carve-out --
     // isRootWord/hypernymRootWord and friends have no other seeding path.
+    // Both fields live on Noun now, not Word (Noun's own docstring), so
+    // isNoun() narrows before reading them.
     const entity = dictionary.lookupAll("entity").find((w) => w.partOfSpeech === PartOfSpeech.NOUN);
     expect(entity).toBeDefined();
-    expect(entity?.isRootWord).toBe(true);
-    expect(entity?.hypernymRootWord).toBe(HypernymRootWord.ENTITY);
-    expect(entity?.domainTag?.value).toBe("root_word.common");
+    if (!isNoun(entity!)) throw new Error("unreachable");
+    expect(entity.isRootWord).toBe(true);
+    expect(entity.hypernymRootWord).toBe(HypernymRootWord.ENTITY);
+    expect(entity.domainTag?.value).toBe("root_word.common");
 
     // Every other closed class is unaffected.
     expect(dictionary.lookup("the")?.partOfSpeech).toBe(PartOfSpeech.DETERMINER);
@@ -1169,7 +1172,7 @@ describe("WordSeeder against the bundled Common Vocabulary Cache", () => {
     // to seedClosedClassWords() above), so `she` carries none at all.
     const she = dictionary.lookup("she");
     if (!isPronoun(she!)) throw new Error("unreachable");
-    expect(she.formIds).toEqual([]);
+    expect(she.wordFormIds).toEqual([]);
     expect(she.baseLemmaCanonicalForm).toBeUndefined();
   });
 
@@ -2466,7 +2469,7 @@ describe("DictionaryView.searchWords", () => {
     const dictionary = new Dictionary();
     const big = createWord({ text: "big", partOfSpeech: PartOfSpeech.ADJECTIVE, definition: { value: "of considerable size" } });
     const large = createWord({ text: "large", partOfSpeech: PartOfSpeech.ADJECTIVE, definition: { value: "above average size" } });
-    const cat = createWord({ text: "cat", partOfSpeech: PartOfSpeech.NOUN, definition: { value: "a small domesticated feline" }, isRootWord: true });
+    const cat = createNoun({ text: "cat", definition: { value: "a small domesticated feline" }, isRootWord: true });
     dictionary.append(big);
     dictionary.append(large);
     dictionary.append(cat);

@@ -943,8 +943,14 @@ function registerUniqueSense(
   // entries are all single-word NOUNs) -- the `"words" in entry` check
   // (word.ts's own relatedWords()/addCandidate() use the identical
   // Phrase-vs-Word discriminator) is what tells the two apart here,
-  // since a Phrase's own `words` field doesn't exist on Word.
+  // since a Phrase's own `words` field doesn't exist on Word. Root-word
+  // status itself lives on Noun now, not Word (Noun's own docstring on
+  // why), so `rootWordFields` narrows a step further than `isWord` alone
+  // -- undefined for a Phrase, a non-Noun Word, or a Noun with nothing
+  // to report, so the four ternaries below collapse to one optional-chain
+  // read apiece.
   const isWord = !("words" in entry);
+  const rootWordFields = isWord && isNoun(entry) ? entry : undefined;
   const sense = createSense({
     domainTag: entry.domainTag,
     relatedDomainTags: entry.relatedDomainTags,
@@ -953,11 +959,11 @@ function registerUniqueSense(
     usageNotes: entry.usageNotes,
     sourceReferences: entry.sourceReferences,
     isCommon: entry.isCommon,
-    isRootWord: isWord && entry.isRootWord,
-    interrogativeRootWord: isWord ? entry.interrogativeRootWord : undefined,
-    hypernymRootWord: isWord ? entry.hypernymRootWord : undefined,
-    holonymRootWord: isWord ? entry.holonymRootWord : undefined,
-    vectorPrimitiveRootWord: isWord ? entry.vectorPrimitiveRootWord : undefined,
+    isRootWord: rootWordFields?.isRootWord ?? false,
+    interrogativeRootWord: rootWordFields?.interrogativeRootWord,
+    hypernymRootWord: rootWordFields?.hypernymRootWord,
+    holonymRootWord: rootWordFields?.holonymRootWord,
+    vectorPrimitiveRootWord: rootWordFields?.vectorPrimitiveRootWord,
     seededPleasureDispleasureWeight: pad?.pleasure !== undefined ? { value: pad.pleasure } : undefined,
     seededArousalNonArousalWeight: pad?.arousal !== undefined ? { value: pad.arousal } : undefined,
     seededDominanceSubmissiveWeight: pad?.dominance !== undefined ? { value: pad.dominance } : undefined,
@@ -2736,6 +2742,12 @@ export class WordSeeder {
   }
 
   private wordToEntry(word: Word): WordFileEntry {
+    // Root-word status and isDerivableNoun live on Noun now, not Word
+    // (Noun's own docstring on why) -- `nounFields` is undefined for
+    // every other POS subtype, so each of the six reads below falls
+    // back to WordFileEntry's own "absent/false" default instead of
+    // failing to compile against a field Word no longer has.
+    const nounFields = isNoun(word) ? word : undefined;
     return {
       entry_id: word.entryId.value,
       domain_tag: word.domainTag?.value ?? null,
@@ -2773,12 +2785,12 @@ export class WordSeeder {
       seeded_pleasure_displeasure_weight: null,
       seeded_arousal_non_arousal_weight: null,
       seeded_dominance_submissive_weight: null,
-      is_root_word: word.isRootWord,
-      interrogative_root_word: word.interrogativeRootWord !== undefined ? InterrogativeRootWord[word.interrogativeRootWord] : null,
-      hypernym_root_word: word.hypernymRootWord !== undefined ? HypernymRootWord[word.hypernymRootWord] : null,
-      holonym_root_word: word.holonymRootWord !== undefined ? HolonymRootWord[word.holonymRootWord] : null,
-      vector_primitive_root_word: word.vectorPrimitiveRootWord !== undefined ? VectorPrimitiveRootWord[word.vectorPrimitiveRootWord] : null,
-      is_derivable_noun: word.isDerivableNoun,
+      is_root_word: nounFields?.isRootWord ?? false,
+      interrogative_root_word: nounFields?.interrogativeRootWord !== undefined ? InterrogativeRootWord[nounFields.interrogativeRootWord] : null,
+      hypernym_root_word: nounFields?.hypernymRootWord !== undefined ? HypernymRootWord[nounFields.hypernymRootWord] : null,
+      holonym_root_word: nounFields?.holonymRootWord !== undefined ? HolonymRootWord[nounFields.holonymRootWord] : null,
+      vector_primitive_root_word: nounFields?.vectorPrimitiveRootWord !== undefined ? VectorPrimitiveRootWord[nounFields.vectorPrimitiveRootWord] : null,
+      is_derivable_noun: nounFields?.isDerivableNoun ?? false,
       source_references: word.sourceReferences.map((ref) => ({
         source_name: ref.sourceName.value,
         source_version: ref.sourceVersion?.value ?? null,

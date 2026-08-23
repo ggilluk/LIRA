@@ -1,12 +1,12 @@
 /** Auxiliary: Word's own AUXILIARY-specific subtype. One Word per base
  * lemma (be, have, do, can, may, shall, will, must, ought, need, dare),
  * not one per surface spelling -- "was" and "were" are both values
- * living on WordForm records reached via this Word's own `formIds`
+ * living on WordForm records reached via this Word's own `wordFormIds`
  * (data/entities/word.ts, data/word_form.ts), not two separate Words.
  * Settled after direct back-and-forth on the alternative (one Word per
  * surface form, mirroring the now-retired auxiliaries.json's flat
  * 36-entry layout): a surface-form model would have made
- * `WordForms.lookupByText()`/`Word.formIds` redundant with
+ * `WordForms.lookupByText()`/`Word.wordFormIds` redundant with
  * Dictionary.lookupAll() itself.
  *
  * Every one of its distinguishing spellings (bareInfinitiveForm/

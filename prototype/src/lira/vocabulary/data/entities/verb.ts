@@ -71,7 +71,7 @@ export interface Verb extends Word {
   // Participle/Past Participle/Bare Infinitive Form -- are no longer
   // scalar fields here (Auxiliary's own precedent,
   // data/entities/auxiliary.ts): each one now lives as its own
-  // `WordForm` record, reached via `Word.formIds` (data/word_form.ts,
+  // `WordForm` record, reached via `Word.wordFormIds` (data/word_form.ts,
   // data/word_forms.ts's own `WordForms` store), generated the same as
   // ever by generateVerbForms() (role/processor/verb_processor.ts) but
   // registered there via `WordForms.registerNamedForm()` instead of

@@ -48,15 +48,15 @@ export class WordForms {
   }
 
   /** Records that `word` carries `form` -- appends `form.uuid` onto
-   * `word.formIds` (the field itself, data/entities/word.ts's own
+   * `word.wordFormIds` (the field itself, data/entities/word.ts's own
    * docstring) and indexes `form.text.value` for lookupByText().
    * Senses.registerMember()'s own exact shape, form-onto-word replacing
    * sense-onto-member. Idempotent: registering the same (form, word)
-   * pair twice never duplicates either the `formIds` entry or the text
-   * index entry. */
+   * pair twice never duplicates either the `wordFormIds` entry or the
+   * text index entry. */
   registerMember(form: WordForm, word: Word): void {
-    if (!word.formIds.some((id) => id.value === form.uuid.value)) {
-      word.formIds = [...word.formIds, form.uuid];
+    if (!word.wordFormIds.some((id) => id.value === form.uuid.value)) {
+      word.wordFormIds = [...word.wordFormIds, form.uuid];
     }
     const wordBucket = this.formsByWordId.get(word.uuid.value);
     if (wordBucket === undefined) {
@@ -141,7 +141,7 @@ export class WordForms {
   /** Bootstraps this WordForms store with a copy of every WordForm in
    * `other` -- Senses.seedFrom()'s own exact shape and own exact
    * limitation: membership isn't re-linked to the target Domain's own
-   * copied Words (Word.formIds keeps pointing at the source Domain's
+   * copied Words (Word.wordFormIds keeps pointing at the source Domain's
    * WordForm uuids, not these fresh copies) -- Sense.ts's own docstring
    * on why: "a cross-Domain copy... doesn't carry a matching Sense
    * copy across yet, a known, accepted gap." WordForm inherits that

@@ -3,7 +3,7 @@
  * its own identity, addressable via `senseIds` rather than being
  * inlined as a scalar field; WordForm does the same for one specific
  * *spelling* of a lemma ("am" as a distinct, addressable fact about
- * "be"), addressable via `Word.formIds` rather than a scalar field
+ * "be"), addressable via `Word.wordFormIds` rather than a scalar field
  * like `presentTenseInstanceForm`.
  *
  * Introduced for AUXILIARY only (data/entities/auxiliary.ts, which

@@ -14,14 +14,31 @@
  * Matrix (../matrices/word_form_part_of_speech_matrix.md) -- are no
  * longer scalar fields here (Auxiliary's own precedent,
  * data/entities/auxiliary.ts): each one now lives as its own `WordForm`
- * record, reached via `Word.formIds` (data/word_form.ts, data/word_forms.ts's
+ * record, reached via `Word.wordFormIds` (data/word_form.ts, data/word_forms.ts's
  * own `WordForms` store), generated the same as ever by
  * generateNounForms() (role/processor/noun_processor.ts) but registered
  * there via `WordForms.registerNamedForm()` instead of assigned to a
- * named field on this interface. */
+ * named field on this interface.
+ *
+ * `isRootWord`/`interrogativeRootWord`/`hypernymRootWord`/
+ * `holonymRootWord`/`vectorPrimitiveRootWord`, and `isDerivableNoun`,
+ * used to live on `Word` itself -- moved here once it became clear
+ * every one of them is NOUN-only in practice (`Word`'s own docstring
+ * has the "why moved" note): `assets/common/en/root_words.json`'s own
+ * 25 entries are every one of them `"part_of_speech": "NOUN"`, and each
+ * of the four root-word enums (`../enums/interrogative_root_word.ts`
+ * and its three siblings) is described purely in noun terms (Entity,
+ * Party/Role, Place, ... -- the *answer* to an interrogative, never the
+ * interrogative word itself). Nothing outside `Noun` ever populates
+ * these; every other POS subtype no longer inherits six always-default
+ * fields that never applied to it. */
 
 import type { Identifier, Text } from "../../../value_objects";
 import { PartOfSpeech } from "../enums/part_of_speech";
+import type { HolonymRootWord } from "../enums/holonym_root_word";
+import type { HypernymRootWord } from "../enums/hypernym_root_word";
+import type { InterrogativeRootWord } from "../enums/interrogative_root_word";
+import type { VectorPrimitiveRootWord } from "../enums/vector_primitive_root_word";
 import type { Word } from "./word";
 
 export interface Noun extends Word {
@@ -46,6 +63,41 @@ export interface Noun extends Word {
   // would read from.
   wordCharacterForms: readonly Text[];
 
+  // True only for one of the 25 words seeded from
+  // assets/common/en/root_words.json -- the Interrogative/Hypernym/
+  // Holonym/Vector-Primitive root word table (../enums/interrogative_root_word.ts's
+  // own docstring). Never set true by hand elsewhere; every other Noun
+  // defaults to false via createNoun(). See DictionaryView's own "Show
+  // root words" filter, the reason this flag exists at all rather than
+  // being inferred from whichever of the four fields below is set.
+  isRootWord: boolean;
+
+  // At most one of these four is ever set, and only when isRootWord is
+  // true -- whichever single column of the root word table this Noun
+  // instantiates (e.g. the Noun "entity" carries hypernymRootWord =
+  // HypernymRootWord.ENTITY, and none of the other three). All four
+  // enums share the same numeric ordinal for the same table row (see
+  // each one's own docstring), so a caller holding one root word's
+  // column value can look up its counterpart in another column by
+  // ordinal alone, without this Noun needing to store all four itself.
+  interrogativeRootWord?: InterrogativeRootWord;
+  hypernymRootWord?: HypernymRootWord;
+  holonymRootWord?: HolonymRootWord;
+  vectorPrimitiveRootWord?: VectorPrimitiveRootWord;
+
+  // True for a Noun that can be considered derived from (or shares its
+  // lexical form with) a corresponding VERB sense -- a suffix-derived
+  // nominalisation ("operate" -> "operation", "manifest" ->
+  // "manifestation", "originate" -> "origination") or a genuine
+  // zero-derivation noun/verb pair ("work", "trigger"). Defaults false
+  // via createNoun(); never set true by hand outside WordSeeder's own
+  // entryToWord(). Not itself a LexicalRelationship -- this only flags
+  // that this Noun is a derivable one, it doesn't wire the actual
+  // NOMINALISATION edge to the verb (see
+  // relationships/morphological_relationships.json for that, where one
+  // already exists).
+  isDerivableNoun: boolean;
+
   // Every field in this block is one half of a morphological-derivation
   // pointer pair -- the other half lives on the class named in the
   // field's own name (Verb/Adjective) -- all populated the identical way
@@ -58,7 +110,7 @@ export interface Noun extends Word {
   // Indicator boolean is simply `field !== undefined`, kept as its own
   // property rather than left for every caller to check (never undefined
   // itself -- defaults false via createNoun below, the same convention
-  // Word.isRootWord already uses). Undefined/false for every Common
+  // isRootWord just above already uses). Undefined/false for every Common
   // Vocabulary Cache closed-class Noun, which has no relationship-graph
   // read-back pass of its own. A Noun with more than one qualifying edge
   // keeps only the first one found, the same arbitrary-but-deterministic
@@ -87,7 +139,7 @@ export interface Noun extends Word {
   // produces, never from DERIVED_FORM.
 
   // This Noun's own uuid, per the Verb it nominalizes from ("decision"
-  // <- "decide"). Distinct from Word.isDerivableNoun (that field's own
+  // <- "decide"). Distinct from isDerivableNoun above (that field's own
   // docstring): isDerivableNoun is a hand-curated boolean with no
   // pointer of its own; this is the real thing, read from a genuine
   // NOMINALISATION edge whose source resolves to a Verb specifically --
