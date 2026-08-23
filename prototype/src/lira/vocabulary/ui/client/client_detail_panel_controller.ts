@@ -177,8 +177,15 @@ function fetchDetailLexicalRelsIfNeeded(wordId) {
 // \`rels\` is \`null\` while a selected word's own relationship list is
 // still loading over capacity (relationshipsSectionHTML's own "Loading…"
 // branch) -- distinct from \`[]\`, which means the fetch already resolved
-// and there really are none.
-function relationshipsSectionHTML(rels) {
+// and there really are none. \`simple\`, set only by
+// wordFormRelationshipsSectionHTML()'s own Lexical Relationships call
+// (client_senses_section_html.ts), drops the rel-gloss line -- the
+// target Sense's own lexicographer-category badge ("verb.cognition")
+// and gloss text -- so a Lexical Relationship row reads as just the
+// related word itself for now, not a second sense definition sitting
+// underneath it; Semantic Relationships (senseSummaryRowHTML()'s own
+// inline call, unaffected) keeps the gloss.
+function relationshipsSectionHTML(rels, simple) {
   if (rels === null) return '<div class="detail-empty" style="padding:8px 0">Loading relationships…</div>';
   if (rels.length === 0) return '<div class="detail-empty" style="padding:8px 0">No relationships recorded.</div>';
   return rels.map(r => \`
@@ -191,7 +198,7 @@ function relationshipsSectionHTML(rels) {
         \${domainPill(r.otherDomain)}
       </div>
       <div class="rel-sentence">\${relationshipSentence(r.kind, r.source_text, r.target_text, r.qualifier)}</div>
-      \${(r.otherCategory || r.otherGloss) ? \`<div class="rel-gloss">\${categoryBadge(r.otherCategory)}\${r.otherGloss ? \` \${r.otherGloss}\` : ''}</div>\` : ''}
+      \${(!simple && (r.otherCategory || r.otherGloss)) ? \`<div class="rel-gloss">\${categoryBadge(r.otherCategory)}\${r.otherGloss ? \` \${r.otherGloss}\` : ''}</div>\` : ''}
     </div>\`).join('');
 }
 

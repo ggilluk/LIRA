@@ -131,7 +131,9 @@ function senseSummaryRowHTML(word, s, index, rels) {
 // sense -- unlike the per-Sense \`<details>\`, this one can aggregate a
 // highly polysemous Word's *entire* Lexical Relationship set behind one
 // summary line, so leaving it open by default would dump everything at
-// once.
+// once. Calls relationshipsSectionHTML() with \`simple: true\` -- a
+// Lexical Relationship row shows just the related word for now, no
+// target-Sense category badge or gloss underneath it.
 function wordFormRelationshipsSectionHTML(sectionClass, heading, senses, rels) {
   const groups = senses
     .map(s => ({ sense: s, rels: rels === null ? null : rels.filter(r => r.via_sense_id === s.id) }))
@@ -145,7 +147,7 @@ function wordFormRelationshipsSectionHTML(sectionClass, heading, senses, rels) {
       \${groups.map(g => \`
         <div class="wordform-rel-sense-group\${g.sense.is_primary ? ' primary' : ''}">
           <div class="wordform-rel-sense-heading">Sense\${g.sense.is_primary ? ' <span class="sense-primary-tag">primary</span>' : ''}: \${g.sense.definition || '<span style="opacity:.6">No definition.</span>'}</div>
-          <div class="detail-relationships-section">\${relationshipsSectionHTML(g.rels)}</div>
+          <div class="detail-relationships-section">\${relationshipsSectionHTML(g.rels, true)}</div>
         </div>\`).join('')}
     </details>\`;
 }

@@ -535,6 +535,19 @@ summary.detail-section-title::marker { color: var(--ink-muted); }
 .sense-lexical-rels {
   margin-top: 4px;
 }
+/* .sense-rels sits inline inside a .sense-row, already inside the
+   indented .sense-list (the rule above), so it needs no left-indent of
+   its own. .sense-lexical-rels is a sibling of .sense-list instead
+   (wordFormsSectionHTML()/phraseSensesSectionHTML(), one WordForm-level
+   section rather than nested per Sense), so it gets the exact same
+   margin-left/padding-left/border-left .sense-list itself gets, to
+   read as sitting at the same indent as the Semantic data above it,
+   not flush against the left edge. */
+.sense-list + .sense-lexical-rels {
+  margin: 4px 0 10px 14px;
+  padding-left: 10px;
+  border-left: 2px solid var(--line);
+}
 .sense-rels summary,
 .sense-lexical-rels summary {
   cursor: pointer;
