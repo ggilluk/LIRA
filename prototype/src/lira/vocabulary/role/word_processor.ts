@@ -19,7 +19,7 @@
  * duplicates Word-shaped values, the exact same reason every one of the
  * 11 POS processors already needs them too. */
 
-import type { Text } from "../../value_objects";
+import type { Code, Text } from "../../value_objects";
 import type { Dictionary } from "../data/dictionary";
 import type { DefinitionWordReference } from "../data/definition_word_reference";
 import type { Word } from "../data/entities/word";
@@ -37,9 +37,20 @@ function definitionTokens(definitionText: string): string[] {
   return definitionText.replace(/-/g, " ").match(DEFINITION_WORD_PATTERN) ?? [];
 }
 
-export type WordInit = Pick<Word, "text" | "partOfSpeech"> & Partial<Omit<Word, "text" | "partOfSpeech">>;
+export type WordInit = Pick<Word, "text" | "partOfSpeech"> &
+  Partial<Omit<Word, "text" | "partOfSpeech">> & {
+    // Construction-time convenience, not a Word field of its own --
+    // Text's own docstring (value_objects/data/text.ts) on why
+    // language/script/version live on a Text value instead. Folded
+    // onto the constructed Word's own `lexicalForm` below rather than
+    // left for every caller to do that itself.
+    languageCode?: Code;
+    scriptCode?: Code;
+    version?: string;
+  };
 
 export function createWord(init: WordInit): Word {
+  const { languageCode, scriptCode, version, ...rest } = init;
   const word: Word = {
     pronunciations: [],
     usageNotes: [],
@@ -55,12 +66,16 @@ export function createWord(init: WordInit): Word {
     isFullyHydrated: true,
     uuid: init.uuid ?? { value: newUuid() },
     entryId: init.entryId ?? { value: newUuid() },
-    version: init.version ?? { value: "1.0" },
-    languageCode: init.languageCode ?? { value: "en" },
-    ...init,
+    ...rest,
   };
   if (word.lexicalForm === undefined) word.lexicalForm = { value: word.text };
   if (word.normalisedForm === undefined) word.normalisedForm = { value: word.text.toLowerCase() };
+  word.lexicalForm = {
+    ...word.lexicalForm,
+    languageCode: languageCode ?? { value: "en" },
+    version: version ?? "1.0",
+    ...(scriptCode !== undefined ? { scriptCode } : {}),
+  };
   return word;
 }
 

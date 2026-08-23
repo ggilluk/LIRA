@@ -47,13 +47,14 @@ export interface Word extends LinguisticUnit {
 
   // ── Data Attributes ──────────────────────────────────────
 
-  /** Version of this Word's own record. */
-  version: Text;
-
-  /** Language this Word is defined in. */
-  languageCode: Code;
-
-  /** Spelling of this Word as it is conventionally written. */
+  /**
+   * Spelling of this Word as it is conventionally written.
+   *
+   * Carries this Word's own language, script, and version as its own
+   * `languageCode`/`scriptCode`/`version` attributes (`Text`'s own
+   * docstring, value_objects/data/text.ts) rather than as separate
+   * fields here.
+   */
   lexicalForm?: Text;
 
   /** Case- and diacritic-normalised form of `lexicalForm`. */
@@ -66,9 +67,6 @@ export interface Word extends LinguisticUnit {
    * form.
    */
   baseLemmaCanonicalForm?: Text;
-
-  /** Writing system this Word's own spelling is rendered in. */
-  scriptCode?: Code;
 
   /** Every recorded pronunciation of this Word. */
   pronunciations: readonly Pronunciation[];
