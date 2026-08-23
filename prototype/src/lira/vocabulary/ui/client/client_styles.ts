@@ -337,7 +337,17 @@ tbody tr[data-word-id].selected { background: color-mix(in srgb, var(--accent) 1
   border-radius: var(--radius);
   box-shadow: var(--shadow);
   padding: 18px;
-  max-height: min(52vh, 520px);
+  /* Each Sense now stacks Sense.Semantic.Relationships alongside its own
+     sibling Sense.Lexical.Relationships (plus PAD/Verb-Frame details) --
+     real content, not a scroll-length regression -- so the old 52vh/520px
+     cap regularly hid the Lexical section below this box's own internal
+     scroll fold before a reader ever saw it, reading as if it had been
+     swallowed by the Semantic section right above it rather than sitting
+     beside it. Still capped, not unbounded (a Sense with a large
+     Semantic list, e.g. "big"'s own 96-row primary sense, would
+     otherwise push this sticky panel far past the viewport), just with
+     real headroom instead of a little over half the screen. */
+  max-height: min(85vh, 900px);
   overflow-y: auto;
 }
 .detail-empty {
@@ -521,10 +531,12 @@ summary.detail-section-title::marker { color: var(--ink-muted); }
   font-variant-numeric: tabular-nums;
 }
 .sense-frequency::before { content: "\\2022  "; }
-.sense-rels {
+.sense-rels,
+.sense-lexical-rels {
   margin-top: 4px;
 }
-.sense-rels summary {
+.sense-rels summary,
+.sense-lexical-rels summary {
   cursor: pointer;
   user-select: none;
   font-size: 0.74rem;
@@ -532,10 +544,33 @@ summary.detail-section-title::marker { color: var(--ink-muted); }
   letter-spacing: 0.04em;
   color: var(--ink-muted);
 }
-.sense-rels summary::marker { color: var(--ink-muted); }
+.sense-rels summary::marker,
+.sense-lexical-rels summary::marker { color: var(--ink-muted); }
 .sense-rels .detail-relationships-section,
-.sense-rels .detail-empty {
+.sense-rels .detail-empty,
+.sense-lexical-rels .detail-relationships-section,
+.sense-lexical-rels .detail-empty {
   margin-top: 4px;
+}
+/* wordFormRelationshipsSectionHTML()'s own per-Sense sub-group, nested
+   inside either .sense-rels or .sense-lexical-rels -- one such group
+   per Sense that has ≥ 1 relationship of that section's own kind, so
+   a reader browsing "every Semantic (or Lexical) fact this WordForm
+   has" can still see which Sense each one came from without leaving
+   the section. Indented and left-bordered the same way .sense-list is
+   nested under its own owning .word-form-row, for the same "visibly
+   reads as nested, not a new unrelated block" reason. */
+.wordform-rel-sense-group {
+  margin: 8px 0 8px 10px;
+  padding-left: 10px;
+  border-left: 2px solid var(--line);
+}
+.wordform-rel-sense-group:first-child { margin-top: 6px; }
+.wordform-rel-sense-group.primary { border-left-color: var(--accent); }
+.wordform-rel-sense-heading {
+  font-size: 0.78rem;
+  color: var(--ink-muted);
+  margin-bottom: 2px;
 }
 .sense-pad {
   margin-top: 4px;
