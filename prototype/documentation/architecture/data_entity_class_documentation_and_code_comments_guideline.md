@@ -1,10 +1,10 @@
-# Architecture Coding Guideline — Data Entity Class — Documentation And Code Comments
+# Architecture Coding Guideline — Data Entity Interface — Documentation And Code Comments
 
 ## 1. Purpose
 
-This guideline defines the documentation and code-comment convention for Data Entity Classes.
+This guideline defines the documentation and code-comment convention for Data Entity Interfaces.
 
-A Data Entity Class represents a persistent or identifiable domain object. Its documentation should describe:
+A Data Entity Interface represents a persistent or identifiable domain object. Its documentation should describe:
 
 - what the entity represents;
 - what each property means;
@@ -13,6 +13,8 @@ A Data Entity Class represents a persistent or identifiable domain object. Its d
 - what constraints apply to its data.
 
 Entity documentation should describe the meaning and structure of the data, not the internal behaviour of repositories, indexes, services, or processors that operate on the entity.
+
+**Implementation note:** in this codebase a Data Entity is a plain TypeScript `interface` (`export interface Word { ... }`), not a `class`. It declares data only — no constructor, no methods, no getters. Construction and behaviour live in standalone exported functions in a companion file (typically `role/processor/<entity>_processor.ts`, or `role/word_processor.ts` for `Word` itself), never inside the interface declaration. See sections 15–17 below.
 
 ---
 
@@ -30,14 +32,14 @@ For example:
 
 ```typescript
 /** Identifiers of the WordForms belonging to this Word. */
-formIds: UUID[];
+formIds: readonly Identifier[];
 ```
 
 is preferred over:
 
 ```typescript
 /** IDs populated by WordForms.registerMember() and indexed by formsByWordId. */
-formIds: UUID[];
+formIds: readonly Identifier[];
 ```
 
 The first describes the entity.
@@ -46,28 +48,30 @@ The second describes an external implementation mechanism.
 
 ---
 
-## 3. Entity Class Element Order
+## 3. Entity Interface Element Order
 
-Entity classes should use the following element order.
+An entity's own interface declaration (`data/entities/<entity>.ts`) should use the following element order.
 
-| Order | Section | Purpose |
-|---|---|---|
-| 1 | Class Documentation | Defines what the entity represents |
-| 2 | Identity | Properties that identify the entity |
-| 3 | Classification | Properties that classify or type the entity |
-| 4 | Data Attributes | Values intrinsic to the entity |
-| 5 | References | References to related entities |
-| 6 | System Metadata | Technical or lifecycle metadata |
-| 7 | Constructor | Establishes the entity's initial valid state |
-| 8 | Derived State | Computed values derived from entity data |
+| Order | Section | Purpose | Lives in |
+|---|---|---|---|
+| 1 | Interface Documentation | Defines what the entity represents | the interface's own file |
+| 2 | Identity | Properties that identify the entity | the interface's own file |
+| 3 | Classification | Properties that classify or type the entity | the interface's own file |
+| 4 | Data Attributes | Values intrinsic to the entity | the interface's own file |
+| 5 | References | References to related entities | the interface's own file |
+| 6 | System Metadata | Technical or lifecycle metadata | the interface's own file |
+| 7 | Construction | Establishes the entity's initial valid state | the companion processor file |
+| 8 | Derived State | Computed values derived from entity data | the companion processor file |
 
 Sections with no properties should be omitted.
 
+Sections 7 and 8 are never declared inside the interface itself (an interface cannot hold a constructor, a method body, or a getter) — they are standalone exported functions in the entity's companion processor file. They are listed here because the same ordering and documentation conventions apply to them; see sections 15–17.
+
 ---
 
-## 4. Class Documentation
+## 4. Interface Documentation
 
-Every Data Entity Class should have a class-level documentation comment.
+Every Data Entity Interface should have an interface-level documentation comment.
 
 The first sentence should state what the entity represents.
 
@@ -77,7 +81,7 @@ Preferred pattern:
 /**
  * Represents <domain concept>.
  */
-export class Word {
+export interface Word {
 }
 ```
 
@@ -87,7 +91,7 @@ Example:
 /**
  * Represents a lexical Word within the vocabulary.
  */
-export class Word {
+export interface Word {
 }
 ```
 
@@ -100,7 +104,7 @@ Where additional clarification is required:
  * A Word identifies a lexical entry and references the WordForms
  * and Senses associated with that entry.
  */
-export class Word {
+export interface Word {
 }
 ```
 
@@ -118,20 +122,20 @@ Avoid implementation-oriented descriptions such as:
 
 Identity properties establish the unique identity of the entity.
 
-They should appear first in the class.
+They should appear first in the interface.
 
 ```typescript
 // ── Identity ─────────────────────────────────────────────
 
 /** Unique identifier of this Word. */
-uuid: UUID;
+uuid: Identifier;
 ```
 
 If identity is composite, document the semantic role of each component.
 
 ```typescript
 /** Domain in which this Word is defined. */
-domainId: UUID;
+domainId: Identifier;
 
 /** Lexical value identifying the Word within the Domain. */
 lemma: Text;
@@ -239,10 +243,10 @@ Example:
 // ── References ───────────────────────────────────────────
 
 /** Identifiers of the WordForms belonging to this Word. */
-formIds: UUID[];
+formIds: readonly Identifier[];
 
 /** Identifiers of the Senses associated with this Word. */
-senseIds: UUID[];
+senseIds: readonly Identifier[];
 ```
 
 Avoid documenting how those references are populated.
@@ -251,14 +255,14 @@ Weak:
 
 ```typescript
 /** IDs added by registerMember(). */
-formIds: UUID[];
+formIds: readonly Identifier[];
 ```
 
 Preferred:
 
 ```typescript
 /** Identifiers of the WordForms belonging to this Word. */
-formIds: UUID[];
+formIds: readonly Identifier[];
 ```
 
 ---
@@ -278,7 +282,7 @@ means:
 Whereas:
 
 ```typescript
-wordId: UUID;
+wordId: Identifier;
 ```
 
 means:
@@ -288,7 +292,7 @@ means:
 Collections follow the same convention:
 
 ```typescript
-wordIds: UUID[];
+wordIds: readonly Identifier[];
 ```
 
 Preferred naming:
@@ -300,6 +304,8 @@ Preferred naming:
 | Single entity identifier | `wordId` |
 | Multiple entity identifiers | `wordIds` |
 
+A Data Entity Interface in this codebase almost always stores the identifier form (`wordId`/`wordIds`), not the object form (`word`/`words`) — entities reference each other by `Identifier` and are resolved through a store (`Dictionary`, `Senses`, `WordForms`, ...), never embedded by value. Document the reference as what it points to, not as "an identifier" in the abstract — see section 8.
+
 ---
 
 ## 10. Ownership And Membership
@@ -308,14 +314,14 @@ Where a reference expresses ownership or membership, document the semantic direc
 
 ```typescript
 /** Identifiers of the WordForms belonging to this Word. */
-formIds: UUID[];
+formIds: readonly Identifier[];
 ```
 
 For the opposite direction:
 
 ```typescript
 /** Identifier of the Word to which this WordForm belongs. */
-wordId: UUID;
+wordId: Identifier;
 ```
 
 Relationship direction should be understandable without examining repository or service code.
@@ -332,14 +338,14 @@ Optional properties should document what absence means where this is semanticall
  *
  * Undefined when this entity was not derived from a Sense.
  */
-sourceSenseId?: UUID;
+sourceSenseId?: Identifier;
 ```
 
 Avoid:
 
 ```typescript
 /** Optional Sense ID. */
-sourceSenseId?: UUID;
+sourceSenseId?: Identifier;
 ```
 
 The TypeScript syntax already communicates optionality. The documentation should communicate its meaning.
@@ -352,7 +358,7 @@ Collection documentation should describe what the collection members represent.
 
 ```typescript
 /** Identifiers of the Senses associated with this Word. */
-senseIds: UUID[];
+senseIds: readonly Identifier[];
 ```
 
 Where an empty collection has semantic meaning, document it.
@@ -363,10 +369,12 @@ Where an empty collection has semantic meaning, document it.
  *
  * An empty collection indicates that no Senses are currently associated.
  */
-senseIds: UUID[];
+senseIds: readonly Identifier[];
 ```
 
 Do not document ordinary array mechanics.
+
+Prefer `readonly X[]` over `X[]` for a collection property — the entity itself never mutates its own collection in place; a companion function that adds a member returns/assigns a new array (see section 16).
 
 ---
 
@@ -379,7 +387,7 @@ Enum-backed properties should document the semantic meaning of the selected valu
 partOfSpeech: PartOfSpeech;
 ```
 
-The Data Entity Class should not duplicate the complete definition of the enum.
+The Data Entity Interface should not duplicate the complete definition of the enum.
 
 The enum itself should document its allowed values.
 
@@ -412,46 +420,64 @@ Where such a property carries primary domain meaning rather than system meaning,
 
 ---
 
-## 15. Constructors
+## 15. Construction
 
-The constructor establishes the minimum valid initial state of the entity.
+A Data Entity Interface has no constructor — TypeScript interfaces cannot declare one. Construction is a standalone exported factory function, conventionally named `create<Entity>()`, living in the entity's companion processor file (`role/processor/<entity>_processor.ts`, or `role/word_processor.ts` for `Word` itself), not inside `data/entities/<entity>.ts`.
 
-Constructor documentation should describe construction semantics rather than implementation details.
+The factory function establishes the minimum valid initial state of the entity: required fields come from its `init` parameter, every other field gets an explicit default.
+
+Factory function documentation should describe construction semantics rather than implementation details.
 
 ```typescript
+// data/entities/word.ts
+
 /**
- * Creates a Word with its required identity, lexical text,
- * and grammatical classification.
+ * Represents a lexical Word within the vocabulary.
  */
-constructor(
-  uuid: UUID,
-  text: Text,
-  partOfSpeech: PartOfSpeech,
-) {
-  this.uuid = uuid;
-  this.text = text;
-  this.partOfSpeech = partOfSpeech;
-  this.formIds = [];
-  this.senseIds = [];
+export interface Word {
+  uuid: Identifier;
+  text: Text;
+  partOfSpeech: PartOfSpeech;
+  formIds: readonly Identifier[];
+  senseIds: readonly Identifier[];
 }
 ```
 
-Extensive parameter documentation is unnecessary where parameter meaning is already clear from the entity properties and types.
+```typescript
+// role/word_processor.ts
+
+export type WordInit = Pick<Word, "text" | "partOfSpeech"> & Partial<Omit<Word, "text" | "partOfSpeech">>;
+
+/**
+ * Creates a Word with its required lexical text and grammatical
+ * classification, generating a fresh identity when none is supplied.
+ */
+export function createWord(init: WordInit): Word {
+  return {
+    uuid: init.uuid ?? { value: newUuid() },
+    formIds: [],
+    senseIds: [],
+    ...init,
+  };
+}
+```
+
+Extensive parameter documentation is unnecessary where parameter meaning is already clear from the entity's own properties and types.
 
 ---
 
-## 16. Methods In Data Entity Classes
+## 16. Behaviour And Data Entity Interfaces
 
-Data Entity Classes should contain as little behavioural logic as practical.
+A Data Entity Interface declares no behaviour of its own — no method signatures, no getters. It is data only. Every operation that reads or changes entity data, however small, is a standalone exported function taking the entity as a parameter, living in the entity's companion processor file (the same file as its `create<Entity>()` factory).
 
-Methods may be appropriate when they represent behaviour intrinsic to the entity, such as:
+This applies even to behaviour that would be "intrinsic to the entity" in a class-based design, such as:
 
-- simple state-derived queries;
+- simple state-derived queries (section 17);
 - invariant-preserving entity changes;
 - value comparisons;
 - domain-valid convenience operations.
 
-Behaviour involving several entities, lookup indexes, persistence mechanisms, repositories, or registries should generally remain outside the Data Entity Class.
+Behaviour involving several entities, lookup indexes, persistence mechanisms, repositories, or registries belongs even further out — in a registry, collection, repository, or domain service, never in an entity's own processor file.
 
 For example:
 
@@ -466,34 +492,36 @@ coordinates:
 - relationship registration;
 - lookup indexes.
 
-That behaviour belongs more naturally to a registry, collection, repository, or domain service rather than either entity.
+That behaviour belongs to a registry, collection, repository, or domain service (in this codebase, the `WordForms` store, `data/word_forms.ts`) — not to either entity's own processor file, and certainly not to the entity interface itself.
 
 ---
 
 ## 17. Derived State
 
-Computed properties should document the semantic value they represent rather than merely explaining the implementation expression.
+A Data Entity Interface has no getters — derived values are standalone exported functions, living alongside the entity's `create<Entity>()` factory in its companion processor file, taking the entity as their first parameter.
+
+Function documentation should describe the semantic value the function represents, rather than merely explaining the implementation expression.
 
 Preferred:
 
 ```typescript
-/** Indicates whether this Word has at least one associated Sense. */
-get hasSenses(): boolean {
-  return this.senseIds.length > 0;
+/** Indicates whether `word` has at least one associated Sense. */
+export function hasSenses(word: Word): boolean {
+  return word.senseIds.length > 0;
 }
 ```
 
 Avoid:
 
 ```typescript
-/** Returns whether senseIds.length is greater than zero. */
+/** Returns whether word.senseIds.length is greater than zero. */
 ```
 
 ---
 
 ## 18. Entity Invariants
 
-Entity-wide invariants should be documented at class level where they form part of the entity contract.
+Entity-wide invariants should be documented at interface level where they form part of the entity contract.
 
 ```typescript
 /**
@@ -505,7 +533,7 @@ Entity-wide invariants should be documented at class level where they form part 
  * - Each `senseIds` entry identifies a Sense associated with this Word.
  * - Duplicate reference identifiers are not permitted.
  */
-export class Word {
+export interface Word {
 }
 ```
 
@@ -528,10 +556,10 @@ Avoid:
  * Exceptions:
  * - None.
  */
-uuid: UUID;
+uuid: Identifier;
 ```
 
-Exception documentation is primarily appropriate for constructors or entity methods with validation behaviour.
+Exception documentation is primarily appropriate for a `create<Entity>()` factory function or a companion-file function with validation behaviour — never for a plain property on the interface itself.
 
 ---
 
@@ -557,9 +585,9 @@ Example:
 
 ```typescript
 /** Identifiers of the WordForms belonging to this Word. */
-formIds: UUID[];
+formIds: readonly Identifier[];
 
-// Initialise separately to preserve constructor ordering.
+// Always [] at construction -- WordForms.registerMember() appends to it later.
 ```
 
 Implementation comments should be used only where the implementation is not sufficiently clear from the code itself.
@@ -568,7 +596,7 @@ Implementation comments should be used only where the implementation is not suff
 
 ## 21. Section Comments
 
-Larger Data Entity Classes should use consistent structural comments.
+Larger Data Entity Interfaces should use consistent structural comments, within the interface's own file:
 
 ```typescript
 // ── Identity ─────────────────────────────────────────────
@@ -580,23 +608,27 @@ Larger Data Entity Classes should use consistent structural comments.
 // ── References ───────────────────────────────────────────
 
 // ── System Metadata ──────────────────────────────────────
+```
 
+and, matching the same section names, within the entity's companion processor file:
+
+```typescript
 // ── Construction ─────────────────────────────────────────
 
 // ── Derived State ────────────────────────────────────────
 ```
 
-Small entity classes may omit section comments where they would add unnecessary visual noise.
+Small entity interfaces, and small processor files, may omit section comments where they would add unnecessary visual noise.
 
 ---
 
 ## 22. Documentation Style Rules
 
-Data Entity Class documentation shall follow these rules:
+Data Entity Interface documentation shall follow these rules:
 
 1. Describe semantic meaning, not implementation mechanics.
 2. Use domain terminology consistently.
-3. Use "Represents…" for the primary entity-class definition.
+3. Use "Represents…" for the primary interface definition.
 4. Use "Unique identifier of…" for entity identity.
 5. Use "Identifier of…" or "Identifiers of…" for entity references.
 6. State relationship direction explicitly.
@@ -606,6 +638,7 @@ Data Entity Class documentation shall follow these rules:
 10. Do not describe repository, indexing, caching, lookup, registration, or persistence implementation unless it forms part of the entity contract.
 11. Keep documentation stable when implementation mechanisms change.
 12. Prefer domain language over framework or programming terminology.
+13. Never declare a constructor, method, or getter directly on the interface — construction and derived state are standalone functions in the entity's companion processor file (sections 15–17).
 
 ---
 
@@ -623,14 +656,18 @@ Data Entity Class documentation shall follow these rules:
 | Classification | "... under which this ... is defined" |
 | Boolean | "Indicates whether ..." |
 | Optional value | "Undefined when ..." |
-| Constructor | "Creates a ..." |
+| Factory function | "Creates a ..." |
 | Derived value | "Indicates ..." or "Returns ..." |
 
 ---
 
 ## 24. Complete Example
 
+The entity's own interface declaration:
+
 ```typescript
+// data/entities/word.ts
+
 /**
  * Represents a lexical Word within the vocabulary.
  *
@@ -643,12 +680,12 @@ Data Entity Class documentation shall follow these rules:
  * - Each `senseIds` entry identifies a Sense associated with this Word.
  * - Duplicate reference identifiers are not permitted.
  */
-export class Word {
+export interface Word {
 
   // ── Identity ───────────────────────────────────────────
 
   /** Unique identifier of this Word. */
-  uuid: UUID;
+  uuid: Identifier;
 
 
   // ── Classification ─────────────────────────────────────
@@ -666,46 +703,49 @@ export class Word {
   // ── References ─────────────────────────────────────────
 
   /** Identifiers of the WordForms belonging to this Word. */
-  formIds: UUID[];
+  formIds: readonly Identifier[];
 
   /** Identifiers of the Senses associated with this Word. */
-  senseIds: UUID[];
+  senseIds: readonly Identifier[];
 
 
   // ── System Metadata ────────────────────────────────────
 
   /** System-managed properties associated with this Word. */
   systemProperties: SystemProperties;
+}
+```
+
+Its companion processor file:
+
+```typescript
+// role/word_processor.ts
+
+export type WordInit = Pick<Word, "text" | "partOfSpeech"> & Partial<Omit<Word, "text" | "partOfSpeech">>;
+
+// ── Construction ───────────────────────────────────────
+
+/**
+ * Creates a Word with its required lexical text and grammatical
+ * classification, generating a fresh identity and empty reference
+ * collections when none are supplied.
+ */
+export function createWord(init: WordInit): Word {
+  return {
+    uuid: init.uuid ?? { value: newUuid() },
+    formIds: [],
+    senseIds: [],
+    systemProperties: init.systemProperties ?? createSystemProperties(),
+    ...init,
+  };
+}
 
 
-  // ── Construction ───────────────────────────────────────
+// ── Derived State ──────────────────────────────────────
 
-  /**
-   * Creates a Word with its required identity, lexical text,
-   * and grammatical classification.
-   */
-  constructor(
-    uuid: UUID,
-    text: Text,
-    partOfSpeech: PartOfSpeech,
-    systemProperties: SystemProperties,
-  ) {
-    this.uuid = uuid;
-    this.text = text;
-    this.partOfSpeech = partOfSpeech;
-    this.systemProperties = systemProperties;
-
-    this.formIds = [];
-    this.senseIds = [];
-  }
-
-
-  // ── Derived State ──────────────────────────────────────
-
-  /** Indicates whether this Word has at least one associated Sense. */
-  get hasSenses(): boolean {
-    return this.senseIds.length > 0;
-  }
+/** Indicates whether `word` has at least one associated Sense. */
+export function hasSenses(word: Word): boolean {
+  return word.senseIds.length > 0;
 }
 ```
 
@@ -713,6 +753,6 @@ export class Word {
 
 ## 25. Governing Rule
 
-> *"A Data Entity Class documents what the data is, what it means, and how its elements relate. Other architectural components document what the system does with that data."*
+> *"A Data Entity Interface documents what the data is, what it means, and how its elements relate. Other architectural components document what the system does with that data."*
 
-The purpose of this separation is to preserve the Data Entity Class as a clear representation of the domain model while allowing repositories, registries, services, indexes, and processing mechanisms to evolve independently.
+The purpose of this separation is to preserve the Data Entity Interface as a clear representation of the domain model while allowing repositories, registries, services, indexes, and processing mechanisms — including the entity's own construction and derived-state functions — to evolve independently, in their own companion files.
