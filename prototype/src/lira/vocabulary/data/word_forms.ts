@@ -1,7 +1,7 @@
 import type { Text } from "../../value_objects";
 import type { Word } from "./entities/word";
 import type { Sense } from "./sense";
-import { copyWordFormWithFreshUuid, createWordForm, type WordForm } from "./word_form";
+import { copyWordFormWithFreshUuid, createWordForm, type WordForm, type WordFormAttributes } from "./word_form";
 
 /** WordForm storage: Senses's own exact counterpart one level down
  * (data/word_form.ts's own docstring on why WordForm exists at all).
@@ -111,20 +111,24 @@ export class WordForms {
    * `"baseLemmaCanonicalForm"` special case. Reuses that name
    * deliberately -- it's already the Word Form Matrix's own first row
    * name, so this converges onto that existing concept instead of
-   * inventing a new one for the same idea.
+   * inventing a new one for the same idea. `text` is `word.lexicalForm`
+   * when set, else `word.text` -- the two agree for the vast majority
+   * of Words.
    *
-   * `text` prefers `word.baseLemmaCanonicalForm` (the scalar field's
-   * own docstring, data/entities/word.ts: set only when a Word's own
-   * stored spelling isn't already its canonical form -- e.g. a Word
-   * modelling one specific inflected surface form, pointing back to a
-   * different lemma) over `word.lexicalForm`/`word.text` -- this is
-   * what gives that scalar field a real downstream consumer for the
-   * first time; nothing read it before this. For the ordinary case (a
-   * Word's own `text` already is its canonical spelling, the vast
-   * majority), the two agree, so this WordForm's own `text` is simply
-   * `word.text`. */
-  registerBaseLemmaForm(word: Word): WordForm {
-    return this.registerNamedForm(word, "baseLemmaCanonicalForm", word.baseLemmaCanonicalForm ?? word.lexicalForm ?? { value: word.text });
+   * `extra`, when supplied, sets this WordForm's own pronunciation/
+   * syllable/frequency attributes (`WordForm`'s own docstring on why
+   * those live here, not on Word) -- only ever passed by
+   * WordSeeder.entryToWord()'s own caller, which is the only place any
+   * of that data is actually read from a Common Vocabulary Cache
+   * entry; every other caller omits it, leaving those attributes
+   * undefined the same as `registerNamedForm()`'s own callers already
+   * do. Applied every call, not just the first -- idempotent the same
+   * way the rest of this method is, so a re-seed simply reapplies the
+   * same values rather than needing its own separate guard. */
+  registerBaseLemmaForm(word: Word, extra?: WordFormAttributes): WordForm {
+    const form = this.registerNamedForm(word, "baseLemmaCanonicalForm", word.lexicalForm ?? { value: word.text });
+    if (extra !== undefined) Object.assign(form, extra);
+    return form;
   }
 
   /** Records that `form` carries `sense` -- appends `sense.uuid` onto

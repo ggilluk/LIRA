@@ -1,6 +1,6 @@
 import { PartOfSpeech } from "../../data/enums/part_of_speech";
 import type { Word } from "../../data/entities/word";
-import { createWord, validateFormText, validateWordFormAttributes, type WordFormIssue } from "../word_processor";
+import { createWord, validateFormText, type WordFormIssue } from "../word_processor";
 import type { Auxiliary } from "../../data/entities/auxiliary";
 import { stringPatternsFor } from "../../data/matrices/pos_vs_wordform_matrice";
 import type { WordForms } from "../../data/word_forms";
@@ -27,7 +27,7 @@ export function isAuxiliary(word: Word): word is Auxiliary {
  * itself any more (data/entities/auxiliary.ts's own docstring). Returns
  * every issue found, not just the first. */
 export function validateAuxiliary(auxiliary: Auxiliary, wordForms: WordForms): readonly WordFormIssue[] {
-  const issues: WordFormIssue[] = [...validateWordFormAttributes(auxiliary)];
+  const issues: WordFormIssue[] = [];
   for (const form of wordForms.formsOf(auxiliary)) {
     const issue = validateFormText(form.field, form.text, stringPatternsFor(form.field, PartOfSpeech.AUXILIARY));
     if (issue !== undefined) issues.push(issue);

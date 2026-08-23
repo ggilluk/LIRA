@@ -2,7 +2,7 @@ import type { Text } from "../../../value_objects";
 import { PartOfSpeech } from "../../data/enums/part_of_speech";
 import type { Word } from "../../data/entities/word";
 import type { WordForms } from "../../data/word_forms";
-import { createWord, endsInConsonantY, validateFormText, validateWordFormAttributes, type WordFormIssue } from "../word_processor";
+import { createWord, endsInConsonantY, validateFormText, type WordFormIssue } from "../word_processor";
 import type { Noun } from "../../data/entities/noun";
 import { stringPatternsFor } from "../../data/matrices/pos_vs_wordform_matrice";
 
@@ -23,15 +23,15 @@ export function isNoun(word: Word): word is Noun {
 }
 
 /** Validates every WordForm this Noun carries -- its own row above,
- * plus baseLemmaCanonicalForm via Word's own validateWordFormAttributes
- * -- against WORD_FORM_MATRIX's own NOUN rules
- * (data/matrices/pos_vs_wordform_matrice.ts). Returns every
+ * plus baseLemmaCanonicalForm (both registered onto `wordForms`, so
+ * both are covered by the same loop) -- against WORD_FORM_MATRIX's own
+ * NOUN rules (data/matrices/pos_vs_wordform_matrice.ts). Returns every
  * issue found, not just the first; empty means every populated field
  * is internally consistent with the matrix, not that every field is
  * populated. validateAuxiliary()'s own exact shape
  * (role/processor/auxiliary_processor.ts). */
 export function validateNoun(noun: Noun, wordForms: WordForms): readonly WordFormIssue[] {
-  const issues: WordFormIssue[] = [...validateWordFormAttributes(noun)];
+  const issues: WordFormIssue[] = [];
   for (const form of wordForms.formsOf(noun)) {
     const issue = validateFormText(form.field, form.text, stringPatternsFor(form.field, PartOfSpeech.NOUN));
     if (issue !== undefined) issues.push(issue);

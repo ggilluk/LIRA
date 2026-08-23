@@ -52,7 +52,6 @@ export type WordInit = Pick<Word, "text" | "partOfSpeech"> &
 export function createWord(init: WordInit): Word {
   const { languageCode, scriptCode, version, ...rest } = init;
   const word: Word = {
-    pronunciations: [],
     usageNotes: [],
     registerCodes: [],
     dialectCodes: [],
@@ -200,18 +199,17 @@ export function validateFormText(field: string, text: Text, known: readonly stri
   return undefined;
 }
 
-/** Validates the one *_Form field every POS subtype shares via Word
- * itself: `baseLemmaCanonicalForm`. Fully lexical (that field's own
- * docstring above) -- there is no derivable String Pattern for it at
- * all, so this reports an issue whenever a populated value's own
- * `formats` is set to anything, and nothing otherwise. Every POS
- * subtype's own validate<Class>() (noun.ts, verb.ts, ...) calls this
- * first, then checks its own additional *_Form fields on top. */
-export function validateWordFormAttributes(word: Word): readonly WordFormIssue[] {
-  if (word.baseLemmaCanonicalForm === undefined) return [];
-  const issue = validateFormText("baseLemmaCanonicalForm", word.baseLemmaCanonicalForm, []);
-  return issue === undefined ? [] : [issue];
-}
+// baseLemmaCanonicalForm -- the one *_Form field every POS subtype
+// shares via Word itself -- used to be a scalar field validated here
+// (validateWordFormAttributes(), removed). It's a real WordForm now
+// (WordForms.registerBaseLemmaForm(), data/word_forms.ts), so every
+// POS subtype's own validate<Class>() already checks it: it's simply
+// one of the entries `wordForms.formsOf(word)` returns, run through
+// the exact same stringPatternsFor(field, pos) check every other
+// WordForm gets -- WORD_FORM_MATRIX's own baseLemmaCanonicalForm row
+// declares no String Pattern for any part of speech, so that check
+// still reports an issue whenever a populated value's own `formats` is
+// set to anything, with no separate function needed to say so.
 
 // -- Regular English suffix generation, shared by every open-class POS
 // subtype's own generate<Class>Forms() (noun.ts, verb.ts, adjective.ts,

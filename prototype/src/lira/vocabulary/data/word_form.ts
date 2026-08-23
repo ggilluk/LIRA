@@ -28,7 +28,8 @@
  * the passive-voice auxiliary of "be") -- `Word.senseIds`'s own "a Word
  * can lexicalize several senses" shape, one level down. */
 
-import type { Identifier, Text } from "../../value_objects";
+import type { Code, Identifier, Number_, Text } from "../../value_objects";
+import type { Pronunciation } from "./pronunciation";
 import { newUuid } from "./uuid";
 
 export interface WordForm {
@@ -56,6 +57,37 @@ export interface WordForm {
   // why -- keeps the existing Senses-section UI working unchanged),
   // not a second, independently-authored copy.
   senseIds: readonly Identifier[];
+
+  // Every recorded pronunciation of this specific spelling -- moved
+  // here from Word (Word's own docstring on why: a fact about one
+  // spelling, e.g. "read" pronounced /ri:d/ as the present-tense
+  // WordForm but /rɛd/ as the past-tense one, not about the lemma as
+  // a whole). Only ever populated for the base-lemma WordForm today
+  // (WordForms.registerBaseLemmaForm()'s own `extra` parameter) --
+  // nothing seeds it for any other WordForm yet.
+  pronunciations: readonly Pronunciation[];
+
+  // This spelling's own syllable breakdown/count/stress pattern --
+  // same "fact about one spelling" reasoning as `pronunciations`
+  // above (English regularly changes syllable count under inflection,
+  // e.g. "walk" one syllable, "walking" two). Only ever populated for
+  // the base-lemma WordForm today, from a Common Vocabulary Cache
+  // entry's own syllable_representation/syllable_count/stress_pattern
+  // (WordFileEntry, role/asset_loader.ts) -- undefined for a
+  // WordNet-seeded WordForm, which carries no such curated data.
+  syllableRepresentation?: Text;
+  syllableCount?: Number_;
+  stressPattern?: Text;
+
+  // This spelling's own usage frequency -- same "fact about one
+  // spelling" reasoning again (corpus frequency is measured per
+  // surface form, not per lemma: "ran"/"running"/"runs" each have
+  // their own real count). Only ever populated for the base-lemma
+  // WordForm today, from a Common Vocabulary Cache entry's own
+  // frequency_value/frequency_scale; never populated by
+  // WordSeeder.seedWordNet.
+  frequencyValue?: Number_;
+  frequencyScale?: Code;
 }
 
 // `field`/`text` are the two facts every WordForm must be authored
@@ -65,9 +97,19 @@ export interface WordForm {
 // optional, so Partial alone is enough there).
 export type WordFormInit = Pick<WordForm, "field" | "text"> & Partial<Omit<WordForm, "field" | "text">>;
 
+// WordForms.registerBaseLemmaForm()'s own `extra` parameter shape --
+// every WordForm attribute that's a fact about pronunciation/frequency
+// rather than about spelling or meaning (this file's own docstring on
+// each field), applied onto an already-registered WordForm rather than
+// supplied at creation time the way `field`/`text` are.
+export type WordFormAttributes = Partial<
+  Pick<WordForm, "pronunciations" | "syllableRepresentation" | "syllableCount" | "stressPattern" | "frequencyValue" | "frequencyScale">
+>;
+
 export function createWordForm(init: WordFormInit): WordForm {
   return {
     senseIds: [],
+    pronunciations: [],
     uuid: init.uuid ?? { value: newUuid() },
     entryId: init.entryId ?? { value: newUuid() },
     ...init,

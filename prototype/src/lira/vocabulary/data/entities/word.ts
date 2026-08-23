@@ -17,11 +17,10 @@
  * for the design history behind this shape.
  */
 
-import type { Code, Identifier, Number_, Text } from "../../../value_objects";
+import type { Code, Identifier, Text } from "../../../value_objects";
 import type { LinguisticUnit } from "../../../linguistics/data/linguistic_unit";
 import type { EditorialLabel } from "../enums/editorial_label";
 import { PartOfSpeech } from "../enums/part_of_speech";
-import type { Pronunciation } from "../pronunciation";
 import type { RegisterCode } from "../enums/register_code";
 import type { SourceReference } from "../source_reference";
 
@@ -60,26 +59,6 @@ export interface Word extends LinguisticUnit {
   /** Case- and diacritic-normalised form of `lexicalForm`. */
   normalisedForm?: Text;
 
-  /**
-   * The base lexical form this Word is an inflected spelling of.
-   *
-   * Undefined when this Word's own spelling already is its canonical
-   * form.
-   */
-  baseLemmaCanonicalForm?: Text;
-
-  /** Every recorded pronunciation of this Word. */
-  pronunciations: readonly Pronunciation[];
-
-  /** This Word's own spelling broken into syllables. */
-  syllableRepresentation?: Text;
-
-  /** Number of syllables in this Word's own pronunciation. */
-  syllableCount?: Number_;
-
-  /** Stress pattern of this Word's own pronunciation. */
-  stressPattern?: Text;
-
   /** Short gloss summarising this Word's own primary sense. */
   gloss?: Text;
 
@@ -94,12 +73,6 @@ export interface Word extends LinguisticUnit {
 
   /** Dialects this Word is associated with. */
   dialectCodes: readonly Code[];
-
-  /** Frequency value of this Word's own usage. */
-  frequencyValue?: Number_;
-
-  /** Scale the frequency value above is measured on. */
-  frequencyScale?: Code;
 
   /** Etymology of this Word. */
   etymologyText?: Text;
@@ -156,7 +129,14 @@ export interface Word extends LinguisticUnit {
    */
   contractionOf: readonly Identifier[];
 
-  /** Identifiers of the WordForms belonging to this Word. */
+  /**
+   * Identifiers of the WordForms belonging to this Word.
+   *
+   * Always includes this Word's own base-lemma WordForm -- its
+   * canonical spelling, pronunciation, syllable, and frequency
+   * attributes live there now, not as separate fields here (`WordForm`'s
+   * own docstring, data/word_form.ts).
+   */
   wordFormIds: readonly Identifier[];
 
 

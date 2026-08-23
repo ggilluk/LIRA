@@ -8,7 +8,6 @@ import {
   endsInConsonantY,
   shouldDoubleFinalConsonant,
   validateFormText,
-  validateWordFormAttributes,
   type WordFormIssue,
 } from "../word_processor";
 import type { Verb } from "../../data/entities/verb";
@@ -42,15 +41,15 @@ export function framesForSense(senses: Senses, verb: Verb, senseId: string): rea
 }
 
 /** Validates every WordForm this Verb carries -- its own row above,
- * plus baseLemmaCanonicalForm via Word's own validateWordFormAttributes
- * -- against WORD_FORM_MATRIX's own VERB rules
- * (data/matrices/pos_vs_wordform_matrice.ts). Returns every
+ * plus baseLemmaCanonicalForm (both registered onto `wordForms`, so
+ * both are covered by the same loop) -- against WORD_FORM_MATRIX's own
+ * VERB rules (data/matrices/pos_vs_wordform_matrice.ts). Returns every
  * issue found, not just the first; empty means every populated field
  * is internally consistent with the matrix, not that every field is
  * populated. validateAuxiliary()'s own exact shape
  * (role/processor/auxiliary_processor.ts). */
 export function validateVerb(verb: Verb, wordForms: WordForms): readonly WordFormIssue[] {
-  const issues: WordFormIssue[] = [...validateWordFormAttributes(verb)];
+  const issues: WordFormIssue[] = [];
   for (const form of wordForms.formsOf(verb)) {
     const issue = validateFormText(form.field, form.text, stringPatternsFor(form.field, PartOfSpeech.VERB));
     if (issue !== undefined) issues.push(issue);

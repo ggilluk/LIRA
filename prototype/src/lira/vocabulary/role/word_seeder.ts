@@ -64,6 +64,7 @@ import type { Phrases } from "../data/phrases";
 import { createSense, type Sense } from "../data/sense";
 import type { Senses } from "../data/senses";
 import type { WordForms } from "../data/word_forms";
+import type { WordFormAttributes } from "../data/word_form";
 import type { SourceReference } from "../data/source_reference";
 import { createVerb, generateVerbForms, isVerb } from "./processor/verb_processor";
 import type { Word } from "../data/entities/word";
@@ -1016,6 +1017,18 @@ export class WordSeeder {
   // reads this back to pass into registerUniqueSense, the one place a
   // hand-curated entry's PAD actually reaches its own Sense.
   private cachePad = new Map<string, { pleasure?: number; arousal?: number; dominance?: number }>();
+  // Every cached entry's own raw pronunciation/syllable/frequency
+  // attributes, keyed by entryId -- entryToWord() populates this in
+  // lockstep with `cache` itself (cachePad's own docstring, same
+  // reasoning), since Word no longer carries any of these as its own
+  // field (WordForm's own docstring, data/word_form.ts, on why they
+  // moved) -- seedClosedClassWords() reads this back to pass into
+  // WordForms.registerBaseLemmaForm(), the one place a hand-curated
+  // entry's own values actually reach a WordForm. Phrase has no
+  // equivalent: WordForm is a Word-only concept, so a Phrase entry's
+  // own syllable_count etc. (WordFileEntry's schema is shared) simply
+  // has nowhere to go, the same as before this migration.
+  private cacheWordFormAttributes = new Map<string, WordFormAttributes>();
   private promotedOverlay: PromotedDoc | null = null;
 
   constructor(
@@ -1335,7 +1348,7 @@ export class WordSeeder {
       // section by accident. Idempotent, so registerUniqueSense()'s own
       // later registerBaseLemmaForm() call (inside it) just finds this
       // same WordForm again.
-      wordForms?.registerBaseLemmaForm(copy);
+      wordForms?.registerBaseLemmaForm(copy, this.cacheWordFormAttributes.get(copy.entryId.value));
       if (isNoun(copy)) copy = generateNounForms(copy, wordForms);
       else if (isVerb(copy)) copy = generateVerbForms(copy, wordForms);
       else if (isAdjective(copy)) copy = generateAdjectiveForms(copy, false, wordForms);
@@ -2570,6 +2583,48 @@ export class WordSeeder {
     });
   }
 
+  /** Reads `entry`'s own raw syllable_representation/syllable_count/
+   * stress_pattern/frequency_value/frequency_scale straight off the
+   * WordFileEntry JSON into `cacheWordFormAttributes`, keyed by
+   * entryId -- recordPad()'s own exact shape and reasoning, mirrored
+   * for the WordForm attributes that moved off Word the same way PAD
+   * moved off Word onto Sense (WordForm's own docstring, data/word_form.ts,
+   * on why these five now live on the base-lemma WordForm instead). A
+   * no-op when all five are null/undefined. */
+  private recordWordFormAttributes(entry: WordFileEntry): void {
+    const optText = (value: string | null | undefined) => (value ? { value } : undefined);
+    const optCode = (value: string | null | undefined) => (value ? { value } : undefined);
+    const optNumber = (value: number | null | undefined) => (value === null || value === undefined ? undefined : { value });
+    const syllableRepresentation = entry.syllable_representation;
+    const syllableCount = entry.syllable_count;
+    const stressPattern = entry.stress_pattern;
+    const frequencyValue = entry.frequency_value;
+    const frequencyScale = entry.frequency_scale;
+    if (
+      syllableRepresentation === null &&
+      syllableCount === null &&
+      stressPattern === null &&
+      frequencyValue === null &&
+      frequencyScale === null
+    )
+      return;
+    if (
+      syllableRepresentation === undefined &&
+      syllableCount === undefined &&
+      stressPattern === undefined &&
+      frequencyValue === undefined &&
+      frequencyScale === undefined
+    )
+      return;
+    this.cacheWordFormAttributes.set(entry.entry_id, {
+      syllableRepresentation: optText(syllableRepresentation),
+      syllableCount: optNumber(syllableCount),
+      stressPattern: optText(stressPattern),
+      frequencyValue: optNumber(frequencyValue),
+      frequencyScale: optCode(frequencyScale),
+    });
+  }
+
   /** Dispatches to createNoun/createVerb/createAdjective/createAdverb
    * for the 4 open classes -- synsetMemberToWord's own dispatch, this
    * path's exact counterpart -- and to plain createWord() for every
@@ -2584,8 +2639,8 @@ export class WordSeeder {
   private entryToWord(entry: WordFileEntry): Word {
     const optText = (value: string | null | undefined) => (value ? { value } : undefined);
     const optCode = (value: string | null | undefined) => (value ? { value } : undefined);
-    const optNumber = (value: number | null | undefined) => (value === null || value === undefined ? undefined : { value });
     this.recordPad(entry);
+    this.recordWordFormAttributes(entry);
 
     const sourceReferences = (entry.source_references ?? []).map((ref) => ({
       sourceName: { value: ref.source_name },
@@ -2611,11 +2666,6 @@ export class WordSeeder {
       registerCodes: (entry.register_codes ?? []).map((code) => RegisterCode[code as keyof typeof RegisterCode]),
       dialectCodes: (entry.dialect_codes ?? []).map((code) => ({ value: code })),
       editorialLabels: (entry.editorial_labels ?? []).map((label) => EditorialLabel[label as keyof typeof EditorialLabel]),
-      syllableRepresentation: optText(entry.syllable_representation),
-      syllableCount: optNumber(entry.syllable_count),
-      stressPattern: optText(entry.stress_pattern),
-      frequencyValue: optNumber(entry.frequency_value),
-      frequencyScale: optCode(entry.frequency_scale),
       etymologyText: optText(entry.etymology_text),
       firstRecordedUse: optText(entry.first_recorded_use),
       sourceReferences,
@@ -2766,11 +2816,19 @@ export class WordSeeder {
       editorial_labels: word.editorialLabels.map((label) => EditorialLabel[label]),
       dialect_codes: word.dialectCodes.map((code) => code.value),
       pronunciations: [],
-      syllable_representation: word.syllableRepresentation?.value ?? null,
-      syllable_count: word.syllableCount?.value ?? null,
-      stress_pattern: word.stressPattern?.value ?? null,
-      frequency_value: word.frequencyValue?.value ?? null,
-      frequency_scale: word.frequencyScale?.value ?? null,
+      // Pronunciation/syllable/frequency attributes live on the base-
+      // lemma WordForm now (WordForm's own docstring, data/word_form.ts),
+      // not on Word -- same "only ever receives a bare Word, with no
+      // store to resolve through" situation as the PAD fields just
+      // below, and just as moot in practice for the same reason
+      // (promoteWord() has no caller anywhere in this codebase yet).
+      // If that changes, whoever wires it up will need to thread a
+      // WordForms store through here too.
+      syllable_representation: null,
+      syllable_count: null,
+      stress_pattern: null,
+      frequency_value: null,
+      frequency_scale: null,
       etymology_text: word.etymologyText?.value ?? null,
       first_recorded_use: word.firstRecordedUse?.value ?? null,
       // PAD lives on Sense now (Sense.seededPleasureDispleasureWeight's

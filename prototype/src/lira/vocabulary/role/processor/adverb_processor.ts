@@ -12,7 +12,6 @@ import {
   periphrasticDegreeForm,
   regularDegreeForm,
   validateFormText,
-  validateWordFormAttributes,
   type WordFormIssue,
 } from "../word_processor";
 import type { Adverb } from "../../data/entities/adverb";
@@ -31,15 +30,15 @@ export function isAdverb(word: Word): word is Adverb {
 }
 
 /** Validates every WordForm this Adverb carries -- its own row above,
- * plus baseLemmaCanonicalForm via Word's own validateWordFormAttributes
- * -- against WORD_FORM_MATRIX's own ADVERB rules
- * (data/matrices/pos_vs_wordform_matrice.ts). Returns every issue
- * found, not just the first; empty means every populated field is
- * internally consistent with the matrix, not that every field is
- * populated. validateAuxiliary()'s own exact shape
+ * plus baseLemmaCanonicalForm (both registered onto `wordForms`, so
+ * both are covered by the same loop) -- against WORD_FORM_MATRIX's own
+ * ADVERB rules (data/matrices/pos_vs_wordform_matrice.ts). Returns
+ * every issue found, not just the first; empty means every populated
+ * field is internally consistent with the matrix, not that every
+ * field is populated. validateAuxiliary()'s own exact shape
  * (role/processor/auxiliary_processor.ts). */
 export function validateAdverb(adverb: Adverb, wordForms: WordForms): readonly WordFormIssue[] {
-  const issues: WordFormIssue[] = [...validateWordFormAttributes(adverb)];
+  const issues: WordFormIssue[] = [];
   for (const form of wordForms.formsOf(adverb)) {
     const issue = validateFormText(form.field, form.text, stringPatternsFor(form.field, PartOfSpeech.ADVERB));
     if (issue !== undefined) issues.push(issue);

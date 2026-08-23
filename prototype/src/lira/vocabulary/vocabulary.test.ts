@@ -9,7 +9,7 @@ import { SemanticRelationshipKind } from "./data/enums/semantic_relationship_kin
 import { SemanticRelationshipProcessor } from "./role/semantic_relationship_processor";
 import { PartOfSpeech } from "./data/enums/part_of_speech";
 import type { Word } from "./data/entities/word";
-import { createWord, validateFormText, validateWordFormAttributes } from "./role/word_processor";
+import { createWord, validateFormText } from "./role/word_processor";
 import { stringPatternsFor } from "./data/matrices/pos_vs_wordform_matrice";
 import { AdjectivePosition } from "./data/enums/adjective_position";
 import { createAdjective, determineGradability, generateAdjectiveForms, isAdjective, syntacticPositionForSense, validateAdjective } from "./role/processor/adjective_processor";
@@ -249,10 +249,11 @@ describe("validate<Class>() -- each POS class's own attribute validation", () =>
     expect(validateDeterminer(their, theirWordForms)).toEqual([]);
   });
 
-  it("checks Word.baseLemmaCanonicalForm regardless of POS subtype, via validateWordFormAttributes shared through every validate<Class>()", () => {
-    const dog = createNoun({ text: "dog", baseLemmaCanonicalForm: { value: "dog", formats: ["/s$/i"] } });
-    expect(validateWordFormAttributes(dog)).toHaveLength(1);
-    expect(validateNoun(dog, new WordForms())).toHaveLength(1);
+  it("checks baseLemmaCanonicalForm regardless of POS subtype, via the same per-form loop every validate<Class>() already runs (it's a real WordForm now, not a scalar Word field)", () => {
+    const dog = createNoun({ text: "dog" });
+    const dogWordForms = new WordForms();
+    dogWordForms.registerNamedForm(dog, "baseLemmaCanonicalForm", { value: "dog", formats: ["/s$/i"] });
+    expect(validateNoun(dog, dogWordForms)).toHaveLength(1);
   });
 
   it("checks an Adverb's degree forms the same way as Adjective's", () => {
@@ -1167,13 +1168,13 @@ describe("WordSeeder against the bundled Common Vocabulary Cache", () => {
     expect(isParticle(dictionary.lookup("not")!)).toBe(true);
 
     // Pronoun's own Word Form Matrix fields (subjectiveCaseForm and the
-    // rest) live as WordForm records now, not scalar fields -- not
-    // populated by this seeding path (no `wordForms` store was passed
-    // to seedClosedClassWords() above), so `she` carries none at all.
+    // rest), and even its own base-lemma WordForm, live as WordForm
+    // records now, not scalar fields -- not populated by this seeding
+    // path (no `wordForms` store was passed to seedClosedClassWords()
+    // above), so `she` carries none at all.
     const she = dictionary.lookup("she");
     if (!isPronoun(she!)) throw new Error("unreachable");
     expect(she.wordFormIds).toEqual([]);
-    expect(she.baseLemmaCanonicalForm).toBeUndefined();
   });
 
   it("gives every hand-curated Word/Phrase its own unique Sense, carrying its domainTag/relatedDomainTags, when a Senses is supplied", () => {
