@@ -9,7 +9,7 @@ import { PartOfSpeech } from "../../data/enums/part_of_speech";
 import type { Dictionary } from "../../data/dictionary";
 import type { Phrases } from "../../data/phrases";
 import type { Senses } from "../../data/senses";
-import type { Sense } from "../../data/sense";
+import type { Sense } from "../../data/entities/sense";
 import type { SemanticRelationship } from "../../data/semantic_relationship";
 import type { SemanticRelationshipStore } from "../../data/semantic_relationship_store";
 import type { Word } from "../../data/entities/word";

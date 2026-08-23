@@ -1023,7 +1023,7 @@ export function stringPatternsFor(field: string, pos: PartOfSpeech): readonly st
  * (in place of the older `Object.keys(X_FORM_PATTERNS)` across six
  * separate role/processor/*.ts files), in the matrix's own row order.
  * No production caller left now that every POS subtype registers real
- * `WordForm` records instead of scalar `*_Form` fields (data/word_form.ts's
+ * `WordForm` records instead of scalar `*_Form` fields (data/entities/word_form.ts's
  * own docstring) -- kept alongside `stringPatternsFor()` as a plain,
  * still-correct view over `WORD_FORM_MATRIX` rather than deleted along
  * with its one-time caller. */

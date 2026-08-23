@@ -20,9 +20,9 @@ import { WordForms } from "./word_forms";
  * is Dictionary's multi-word counterpart (phrase.ts's own docstring on
  * why a Phrase is a separate lexical category, not just a Word whose
  * text happens to contain a space); `senses` holds the shared meaning
- * behind a WordNet synset's own members (sense.ts's own docstring);
+ * behind a WordNet synset's own members (data/entities/sense.ts's own docstring);
  * `wordForms` holds one specific inflected spelling's own addressable
- * identity and Senses, AUXILIARY-only today (word_form.ts's own
+ * identity and Senses, AUXILIARY-only today (data/entities/word_form.ts's own
  * docstring on why only that one POS subtype has adopted it so far).
  *
  * `morphologicalPointerRelationships`/`morphologicalPointerRelationshipProcessor`/

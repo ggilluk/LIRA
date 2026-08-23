@@ -61,10 +61,11 @@ import { copyPhraseWithFreshUuid, createPhrase, type Phrase } from "../data/phra
 import { PhraseRole } from "../data/enums/phrase_role";
 import { PhraseType } from "../data/enums/phrase_type";
 import type { Phrases } from "../data/phrases";
-import { createSense, type Sense } from "../data/sense";
+import { createSense } from "./sense_processor";
+import type { Sense } from "../data/entities/sense";
 import type { Senses } from "../data/senses";
 import type { WordForms } from "../data/word_forms";
-import type { WordFormAttributes } from "../data/word_form";
+import type { WordFormAttributes } from "./word_form_processor";
 import type { SourceReference } from "../data/source_reference";
 import { createVerb, generateVerbForms, isVerb } from "./processor/verb_processor";
 import type { Word } from "../data/entities/word";
@@ -920,7 +921,7 @@ function applyDomainTag(target: { domainTag?: Text; relatedDomainTags: readonly 
  * `pad`/`wordDefinition`, unlike every other field this copies, don't
  * come from `entry` itself at all -- neither Word nor Phrase carries PAD
  * any more (Sense.seededPleasureDispleasureWeight's own docstring,
- * data/sense.ts), and Word carries no `definition` of its own any more
+ * data/entities/sense.ts), and Word carries no `definition` of its own any more
  * either (same docstring, the identical accepted-gap reasoning) -- so
  * the caller (seedClosedClassWords) passes both separately, read from
  * WordSeeder's own cachePad/cacheDefinition side-channels (recordPad()'s/
@@ -937,7 +938,7 @@ function applyDomainTag(target: { domainTag?: Text; relatedDomainTags: readonly 
  * `entry`'s own base-lemma WordForm (WordForms.registerBaseLemmaForm()/
  * registerSense(), data/word_forms.ts's own docstrings) -- Phrase-only
  * (no `wordForms` call at all when `entry` is a Phrase: WordForm is a
- * Word-only concept, data/word_form.ts's own docstring). This is the
+ * Word-only concept, data/entities/word_form.ts's own docstring). This is the
  * same dual registration role/auxiliary_seeder.ts already does by hand
  * for AUXILIARY, generalised to every hand-curated Word. */
 function registerUniqueSense(
@@ -1020,7 +1021,7 @@ export class WordSeeder {
   // lockstep with `cache`/`cachePhrases` themselves (cacheFormLinks' own
   // docstring, same reasoning), since neither Word nor Phrase carries
   // PAD as its own field any more (Sense.seededPleasureDispleasureWeight's
-  // own docstring, data/sense.ts, on why it moved) -- seedClosedClassWords
+  // own docstring, data/entities/sense.ts, on why it moved) -- seedClosedClassWords
   // reads this back to pass into registerUniqueSense, the one place a
   // hand-curated entry's PAD actually reaches its own Sense.
   private cachePad = new Map<string, { pleasure?: number; arousal?: number; dominance?: number }>();
@@ -1028,7 +1029,7 @@ export class WordSeeder {
   // syllable/frequency attributes, keyed by entryId -- entryToWord()
   // populates this in lockstep with `cache` itself (cachePad's own
   // docstring, same reasoning), since Word no longer carries any of
-  // these as its own field (WordForm's own docstring, data/word_form.ts,
+  // these as its own field (WordForm's own docstring, data/entities/word_form.ts,
   // on why they moved) -- seedClosedClassWords() reads this back to pass
   // into WordForms.registerBaseLemmaForm(), the one place a hand-curated
   // entry's own values actually reach a WordForm. Phrase has no
@@ -1684,7 +1685,7 @@ export class WordSeeder {
       // base-lemma WordForm here (wordForms.registerBaseLemmaForm()/
       // registerSense(), data/word_forms.ts's own docstrings) --
       // Phrase members skip this, WordForm's own "Word-only" scope
-      // (data/word_form.ts's own docstring); a multi-word member is
+      // (data/entities/word_form.ts's own docstring); a multi-word member is
       // never anything but a Phrase (`"words" in member` narrows it).
       for (const member of members) {
         senseStore.registerMember(sense, member);
@@ -1924,7 +1925,7 @@ export class WordSeeder {
    * reuses the Word's own base-lemma WordForm if seedWordNet's own
    * pass 1 already created one for it, which it always has by this
    * point). A `Phrase` on either side of `pairs` is skipped -- WordForm
-   * is a Word-only concept (data/word_form.ts's own docstring).
+   * is a Word-only concept (data/entities/word_form.ts's own docstring).
    *
    * `DERIVATION_FAMILY` guards against WordNet's own reciprocal `+`/`<`
    * recording (derivationKind()'s own docstring: "WordNet records its
@@ -2646,7 +2647,7 @@ export class WordSeeder {
    * straight off the WordFileEntry JSON into `cacheWordFormAttributes`,
    * keyed by entryId -- recordPad()'s own shape and reasoning, mirrored
    * for the WordForm attributes that moved off Word the same way PAD
-   * moved off Word onto Sense (WordForm's own docstring, data/word_form.ts,
+   * moved off Word onto Sense (WordForm's own docstring, data/entities/word_form.ts,
    * on why these now live on the base-lemma WordForm instead).
    * `normalised_form` is a required WordFileEntry field, so this always
    * records at least that one -- unlike recordPad(), there is no
@@ -2803,7 +2804,7 @@ export class WordSeeder {
    * those are ever populated for a real multi-word Common Vocabulary
    * Cache entry today, and Phrase has no field to carry them even if a
    * future entry tried. PAD is the one exception: it lives on Sense now
-   * (Sense.seededPleasureDispleasureWeight's own docstring, data/sense.ts),
+   * (Sense.seededPleasureDispleasureWeight's own docstring, data/entities/sense.ts),
    * not on Word or Phrase, so recordPad() below wires a multi-word
    * entry's own raw value through the identical path entryToWord()'s
    * does, ready for registerUniqueSense to pick up regardless of which
@@ -2881,7 +2882,7 @@ export class WordSeeder {
       dialect_codes: word.dialectCodes.map((code) => code.value),
       pronunciations: [],
       // Pronunciation/syllable/frequency attributes live on the base-
-      // lemma WordForm now (WordForm's own docstring, data/word_form.ts),
+      // lemma WordForm now (WordForm's own docstring, data/entities/word_form.ts),
       // not on Word -- same "only ever receives a bare Word, with no
       // store to resolve through" situation as the PAD fields just
       // below, and just as moot in practice for the same reason
@@ -2896,7 +2897,7 @@ export class WordSeeder {
       etymology_text: word.etymologyText?.value ?? null,
       first_recorded_use: word.firstRecordedUse?.value ?? null,
       // PAD lives on Sense now (Sense.seededPleasureDispleasureWeight's
-      // own docstring, data/sense.ts), not on Word -- this method only
+      // own docstring, data/entities/sense.ts), not on Word -- this method only
       // ever receives a bare Word (promoteWord()'s own signature, its
       // one caller), with no Senses store to resolve a PAD value through
       // even if it wanted to. Currently moot in practice: promoteWord()

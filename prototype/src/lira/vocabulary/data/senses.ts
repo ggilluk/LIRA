@@ -1,8 +1,9 @@
 import type { Phrase } from "./phrase";
-import { copySenseWithFreshUuid, type Sense } from "./sense";
+import { copySenseWithFreshUuid } from "../role/sense_processor";
+import type { Sense } from "./entities/sense";
 import type { Word } from "./entities/word";
 
-/** Sense storage: Phrases's own counterpart for Sense (sense.ts's
+/** Sense storage: Phrases's own counterpart for Sense (data/entities/sense.ts's
  * own docstring on why a Sense is kept apart from Dictionary/Phrases
  * rather than folded into either). One Senses store per Domain, alongside
  * that Domain's own Dictionary/Phrases (VocabularyContext.senses,
@@ -51,7 +52,7 @@ export class Senses {
   /** Records that `member` lexicalizes `sense` -- for a Phrase, appends
    * `sense.uuid` onto `member.senseIds` (the field itself, data/phrase.ts's
    * own docstring); a Word carries no `senseIds` of its own any more
-   * (moved onto its base-lemma WordForm, data/word_form.ts's own
+   * (moved onto its base-lemma WordForm, data/entities/word_form.ts's own
    * docstring on why) -- WordForms.registerSense() is that field's own
    * write side now, called alongside this one at every real call site
    * (role/word_seeder.ts's own registerUniqueSense()/synset-member loop),

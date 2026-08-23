@@ -603,7 +603,7 @@ to neutral. See `examples/pad_seeding.py` for the full method and
 `vocabulary/data/word.py`'s own field docstrings. (This TS prototype's
 own in-memory representation has since moved these three fields off
 `Word`/`Phrase` onto `Sense` -- `Sense.seededPleasureDispleasureWeight`'s
-own docstring, `data/sense.ts` -- the JSON field names themselves,
+own docstring, `data/entities/sense.ts` -- the JSON field names themselves,
 described above, are unchanged.)
 
 `v1` / `schema_version 2.0.0` / `asset_version 1.19.0` -- promoted

@@ -275,7 +275,7 @@ export class RelationshipSeeder {
 
   /** Every curated fact this cache seeds also lands on its own permanent
    * home -- the target's own base-lemma WordForm's own `contractionOf`
-   * for CONTRACTION (WordForm's own docstring, data/word_form.ts, on why
+   * for CONTRACTION (WordForm's own docstring, data/entities/word_form.ts, on why
    * it's a WordForm-level fact and many-to-many)
    * or a genuine SemanticRelationship for a true sense-to-sense semantic
    * kind (LEXICAL_TO_SEMANTIC_KIND's own docstring, word_seeder.ts, on

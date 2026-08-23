@@ -1,9 +1,9 @@
 import type { Dictionary } from "../data/dictionary";
 import type { Senses } from "../data/senses";
-import { createSense } from "../data/sense";
+import { createSense } from "./sense_processor";
 import { RegisterCode } from "../data/enums/register_code";
 import { createAuxiliary, isAuxiliary } from "./processor/auxiliary_processor";
-import { createWordForm } from "../data/word_form";
+import { createWordForm } from "./word_form_processor";
 import type { WordForms } from "../data/word_forms";
 
 // The closed set of WordForm.field names this seeder ever authors --
@@ -416,7 +416,7 @@ const AUXILIARY_LEMMAS: readonly AuxiliaryLemmaSeed[] = [
  * authors directly rather than reads from an asset file.
  *
  * One Word per lemma, every inflected spelling living on its own
- * WordForm record (data/word_form.ts, data/entities/auxiliary.ts's own
+ * WordForm record (data/entities/word_form.ts, data/entities/auxiliary.ts's own
  * docstring on why, not a scalar *_Form field the way every other POS
  * subtype still has, and not the flat one-Word-per-surface-form shape
  * auxiliaries.json used either). Every distinct meaning of every

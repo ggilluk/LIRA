@@ -83,8 +83,8 @@ export interface Phrase extends LinguisticUnit {
   // Common Vocabulary Cache closed-class Phrase, in particular).
   synsetId?: Identifier;
 
-  // Word.senseIds's own exact counterpart -- every Sense (data/sense.ts)
-  // this Phrase lexicalizes, distinct from synsetId above (sense.ts's
+  // Word.senseIds's own exact counterpart -- every Sense (data/entities/sense.ts)
+  // this Phrase lexicalizes, distinct from synsetId above (data/entities/sense.ts's
   // own docstring on the distinction). Empty for a Phrase that didn't
   // come from WordSeeder.seedWordNet.
   senseIds: readonly Identifier[];

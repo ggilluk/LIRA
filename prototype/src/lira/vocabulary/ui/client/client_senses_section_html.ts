@@ -164,7 +164,7 @@ function wordFormRelationshipsSectionHTML(sectionClass, heading, senses, rels) {
 // WordForm-level Lexical Relationships section a WordForm's own detail
 // gets -- phraseDetailHTML()'s own use (client_detail_panel_controller.ts).
 // A Phrase has no WordForm of its own to nest under at all (WordForm is
-// a Word-only concept, data/word_form.ts's own docstring -- wordFormsFor()
+// a Word-only concept, data/entities/word_form.ts's own docstring -- wordFormsFor()
 // never returns anything for a Phrase-resolved record), so
 // \`phrase.word_forms\` is always empty and WordRecord.senses's own flat,
 // Word-level list (kept for exactly this kind of reader, that field's

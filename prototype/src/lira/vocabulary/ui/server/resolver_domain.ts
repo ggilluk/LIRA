@@ -25,7 +25,7 @@ function primarySenseId(entry: Word | Phrase, wordForms: WordForms): Identifier 
  * preferring its own Sense (WordSeeder's own tagTopicDomain, seedWordNet's
  * own createSense call, and registerUniqueSense all populate a Sense with
  * the identical values `entry`'s own fields already carry, WordNet-sourced
- * and hand-curated alike -- sense.ts's own docstring) and falling back to
+ * and hand-curated alike -- data/entities/sense.ts's own docstring) and falling back to
  * `entry`'s own fields only when its senseId doesn't resolve in this
  * Domain's own Senses. That fallback isn't just defensive: a Phrase copied
  * into a different Domain (VocabularyContext's own Physics-from-Common

@@ -119,7 +119,7 @@ export interface WordRecord {
   // baseLemmaCanonicalForm (every Word has one,
   // WordForms.registerBaseLemmaForm()'s own docstring), plus whichever
   // other inflected forms that POS subtype's own generateXForms()
-  // registered (word_form.ts's own docstring on this migration, every
+  // registered (data/entities/word_form.ts's own docstring on this migration, every
   // POS subtype now). Each entry's own `senses` -- the Word -> WordForm
   // -> Senses nesting the Word Detail UI renders
   // (word_wordform_sense_relationships.md) -- is non-empty only for a
@@ -128,7 +128,7 @@ export interface WordRecord {
   // inflected form, since nothing links a plain spelling variant to a
   // distinct Sense.
   word_forms: WordFormEntry[];
-  // Every Sense (data/sense.ts) this Word lexicalizes, in Word.senseIds's
+  // Every Sense (data/entities/sense.ts) this Word lexicalizes, in Word.senseIds's
   // own order (sensesFor()'s own docstring on how this is
   // built) -- one entry per real WordNet sense for a polysemous Word
   // ("big" ADJECTIVE: "above average in size", "pregnant", "generous",
@@ -166,7 +166,7 @@ export interface WordSenseSummary {
   definition: string;
   gloss: string;
   domain: string;
-  // Sense.senseFrequency's own docstring (data/sense.ts) -- how often
+  // Sense.senseFrequency's own docstring (data/entities/sense.ts) -- how often
   // this exact meaning was tagged in WordNet's own semantic concordance
   // corpus, summed across every lemma that lexicalizes it. `null`, not
   // `0`, for a Sense that didn't come from WordSeeder.seedWordNet at all
@@ -182,7 +182,7 @@ export interface WordSenseSummary {
   frequency: number | null;
   // This Sense's own Seeded Attributes for the PAD (Pleasure-Arousal-
   // Dominance) affective framework (Sense.seededPleasureDispleasureWeight's
-  // own docstring, data/sense.ts) -- null when no PAD value has ever
+  // own docstring, data/entities/sense.ts) -- null when no PAD value has ever
   // been assigned to this specific meaning (every WordNet-seeded Sense,
   // and most hand-curated ones too), not "neutral" (0/0/0 is a genuine
   // seeded-neutral reading, distinct from null). PAD moved here from a
@@ -334,7 +334,7 @@ function sensesFor(entry: Word | Phrase, senses: Senses, domainName: string, wor
  * carries its own nested `senses` (this WordForm's own subset of
  * `wordSenses`, `WordFormEntry.senses`'s own docstring).
  * Every POS subtype now registers real `WordForm` records for all of
- * its own spelling variants (word_form.ts's own docstring on this
+ * its own spelling variants (data/entities/word_form.ts's own docstring on this
  * migration, Auxiliary first, every other POS subtype following) --
  * there is no scalar `*_Form` field left anywhere to fall back to. */
 function wordFormsFor(word: Word, wordForms: WordForms, wordSenses: readonly WordSenseSummary[]): WordFormEntry[] {

@@ -39,7 +39,7 @@ import { isAdjectivePhrase } from "./data/adjective_phrase";
 import { isAdverbPhrase } from "./data/adverb_phrase";
 import { isPrepositionalPhrase } from "./data/prepositional_phrase";
 import { isInfinitivePhrase } from "./data/infinitive_phrase";
-import { createSense } from "./data/sense";
+import { createSense } from "./role/sense_processor";
 import { Senses } from "./data/senses";
 import { AsyncDictionaryHydrator } from "./role/dictionary_hydrator";
 import { DictionaryProcessor } from "./role/dictionary_processor";

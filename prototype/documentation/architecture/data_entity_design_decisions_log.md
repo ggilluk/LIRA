@@ -32,7 +32,7 @@ Names the Princeton WordNet 3.1 synset for this Word's own *primary* sense ("000
 
 ### `senseIds`
 
-Each entry is the referenced Sense's own `uuid` — an internal graph reference, not a WordNet identifier string (`synsetId` above is that; see `sense.ts`'s own docstring on why the two are easy to conflate but distinct). More than one entry is the ordinary case for a polysemous lemma, not an edge case — `Senses.registerMember()` appends here (idempotently) once per synset this Word's own `(partOfSpeech, lemma)` turns out to lexicalize, in whatever order pass 1 happened to visit each synset in; `WordSeeder.seedWordNet`'s own `orderSensesByFrequency` then reorders the whole list by descending `Sense.senseFrequency` once it's known in full, so `senseIds[0]` ends up the highest-frequency Sense. Deliberately additive alongside every field on `Word` that still duplicates from a Sense (`definition`, `usageNotes`, `domainTag`, `relatedDomainTags`) — a Word with several senses duplicates only its *first* (highest-frequency) Sense's copy of those fields.
+Each entry is the referenced Sense's own `uuid` — an internal graph reference, not a WordNet identifier string (`synsetId` above is that; see `data/entities/sense.ts`'s own docstring on why the two are easy to conflate but distinct). More than one entry is the ordinary case for a polysemous lemma, not an edge case — `Senses.registerMember()` appends here (idempotently) once per synset this Word's own `(partOfSpeech, lemma)` turns out to lexicalize, in whatever order pass 1 happened to visit each synset in; `WordSeeder.seedWordNet`'s own `orderSensesByFrequency` then reorders the whole list by descending `Sense.senseFrequency` once it's known in full, so `senseIds[0]` ends up the highest-frequency Sense. Deliberately additive alongside every field on `Word` that still duplicates from a Sense (`definition`, `usageNotes`, `domainTag`, `relatedDomainTags`) — a Word with several senses duplicates only its *first* (highest-frequency) Sense's copy of those fields.
 
 ### `baseLemmaCanonicalForm`
 
@@ -64,7 +64,75 @@ Read back from `WordSeeder`'s own seeding-time-only `LexicalRelationship` graph 
 
 ### `wordFormIds`
 
-Named `wordFormIds`, not `formIds` — unambiguous against `senseIds`'s own "`Xids: Identifier[]` into the `X` store" convention (`WordForms` is the store, `WordForm` the record, so `wordForms` alone would misleadingly suggest full records inlined here rather than a list of pointers). Populated for every POS subtype now (`role/auxiliary_seeder.ts` for AUXILIARY, each `role/processor/*_processor.ts`'s own `generateXForms()` for Noun/Verb/Adjective/Adverb, `role/word_seeder.ts`'s `registerBaseLemmaForm()` for every Word regardless of subtype) — `WordForm`'s own docstring (`data/word_form.ts`) has the full history of this migration.
+Named `wordFormIds`, not `formIds` — unambiguous against `senseIds`'s own "`Xids: Identifier[]` into the `X` store" convention (`WordForms` is the store, `WordForm` the record, so `wordForms` alone would misleadingly suggest full records inlined here rather than a list of pointers). Populated for every POS subtype now (`role/auxiliary_seeder.ts` for AUXILIARY, each `role/processor/*_processor.ts`'s own `generateXForms()` for Noun/Verb/Adjective/Adverb, `role/word_seeder.ts`'s `registerBaseLemmaForm()` for every Word regardless of subtype) — `WordForm`'s own docstring (`data/entities/word_form.ts`) has the full history of this migration.
+
+---
+
+## WordForm (`data/entities/word_form.ts`)
+
+Sense's own exact counterpart one level down: a Sense already gives a shared *meaning* its own identity, addressable via a `senseIds`-shaped reference rather than being inlined as a scalar field; WordForm does the same for one specific *spelling* of a lemma ("am" as a distinct, addressable fact about "be"), addressable via `Word.wordFormIds` rather than a scalar field like `presentTenseInstanceForm`.
+
+Introduced for AUXILIARY only at first (`data/entities/auxiliary.ts`, which dropped its own flat `*_Form` fields in favour of this) — one real example before generalizing, the same discipline `data/matrices/` itself was held to before a second real matrix existed. Every other POS subtype (Noun, Verb, Adjective, Adverb, Pronoun, Determiner) has since followed the same path (each `role/processor/*_processor.ts`'s own `generateXForms()`, or — Pronoun/Determiner — just the base-lemma form every Word gets), and none of them declares a scalar `*_Form` field of its own any more either.
+
+### `field`
+
+A loose string, not a new enum — matches how `WordFormRow.field` already names a `*_Form` field elsewhere in this codebase (`data/matrices/pos_vs_wordform_matrice.ts`). `stringPatternsFor(field, pos)` validates a WordForm's own `text` against the identical matrix rules a scalar field's value used to be checked against; the matrix doesn't care which shape holds the value.
+
+### `text`/`normalisedForm`
+
+Moved here from `Word` (Word's own former `lexicalForm`/`normalisedForm` fields) — the same "fact about one spelling" reasoning as every field below: WordForm's own `field` already discriminates which spelling this is ("baseLemmaCanonicalForm", "pluralNumberForm", ...), so there is no reason for a second, Word-level copy of the base lemma's own spelling to exist alongside it. `text` carries this form's own language, script, and version as its own `languageCode`/`scriptCode`/`version` attributes (`Text`'s own docstring, `value_objects/data/text.ts`) rather than as separate fields here. `normalisedForm` defaults to `text.value.toLowerCase()` when not supplied (`createWordForm()`'s own default, mirroring `createWord()`'s former auto-derivation) — every real Common Vocabulary Cache entry's own `normalised_form` already equals that simple lowercasing (verified against every entry in `assets/common/en/*.json`), so the explicit override `WordSeeder.recordWordFormAttributes()` supplies is a safety net for a future entry that genuinely needs diacritic stripping or similar, not a case any entry actually exercises today.
+
+### `senseIds`
+
+Moved here from `Word` (Word's former `senseIds` field): every hand-curated and WordNet-seeded write site already registered a Sense onto both the owning Word AND its own base-lemma WordForm in lockstep (`role/word_seeder.ts`'s own `registerUniqueSense()`/synset-member loop, `role/auxiliary_seeder.ts`'s own docstring), so the Word-level copy added nothing a caller couldn't already reach through `Word.wordFormIds` -> `WordForms.formsOf()`/`registerBaseLemmaForm()`. Why a WordForm can carry more than one Sense at all: the same spelling can carry more than one meaning ("am" is both the continuous-aspect and the passive-voice auxiliary of "be"). See the Word section's own `senseIds` entry above for the read side (`WordForms.senseIdsOf()`), which unions across every WordForm a Word carries rather than reading the base-lemma form alone — necessary because AUXILIARY genuinely spreads its own senses across more than one WordForm, unlike every other POS.
+
+### `synsetId`
+
+Moved here from `Word` (Word's former `synsetId` field), same reasoning as `senseIds` just above: both facts are written together, at the same call site, every time (`WordSeeder.synsetMemberToWord()`'s own `lexicalForm`/`extra` pairing). `Sense.synsetId` is the *meaning*'s own identity and is untouched by this move — this field is specifically "which synset does *this spelling's* primary sense point at", the same distinction Word's own former `synsetId` docstring drew between itself and `Sense.synsetId`. Undefined for a WordForm with no Princeton WordNet synset of its own (every hand-curated, closed-class WordForm, and every non-base-lemma WordForm).
+
+### `contractionOf`
+
+Moved here from `Word` (Word's former `contractionOf` field): a contraction is a fact about one specific spelling, not about a lemma in the abstract — a Word has no "abstract" spelling any more than it has an abstract pronunciation (`pronunciations` below moved here for the identical reason).
+
+### `pronunciations`/`syllableRepresentation`/`syllableCount`/`stressPattern`/`frequencyValue`/`frequencyScale`
+
+Moved here from `Word` — each one a fact about one spelling, not about the lemma as a whole (e.g. "read" pronounced /riːd/ as the present-tense WordForm but /rɛd/ as the past-tense one; English regularly changes syllable count under inflection too, e.g. "walk" one syllable, "walking" two; corpus frequency is measured per surface form, not per lemma — "ran"/"running"/"runs" each have their own real count). Only ever populated for the base-lemma WordForm today (`WordForms.registerBaseLemmaForm()`'s own `extra` parameter, from a Common Vocabulary Cache entry's own `syllable_representation`/`syllable_count`/`stress_pattern`/`frequency_value`/`frequency_scale`, `WordFileEntry`, `role/asset_loader.ts`) — undefined for a WordNet-seeded WordForm, which carries no such curated data, and never populated for any non-base-lemma WordForm at all yet.
+
+---
+
+## Sense (`data/entities/sense.ts`)
+
+The first-class counterpart to what a Princeton WordNet synset already names ("a set of one or more synonyms" — the Word section's own `synsetId` entry above). Every member of a synset used to carry its own independent copy of that synset's definition/examples/topic-domain tags (`WordSeeder.seedWordNet`'s own `synsetMemberToWord`/`synsetMemberToPhrase`); a Sense holds that data once, and a Word/Phrase that lexicalizes it carries a `senseId` reference instead of a duplicate copy.
+
+Every Word/Phrase gets a Sense now, WordNet-sourced (one per synset, shared by every member) and hand-curated alike (one per entry, `word_seeder.ts`'s own `registerUniqueSense` — a deliberate "for now" stopgap, not a claim that hand-curated synonyms now group the way WordNet's do). `DictionaryView`'s own `senseFieldsFor()`/`isRootWordFor()` (`ui/server/resolver_domain.ts`) are the read side: prefer a Word/Phrase's own Sense, fall back to a Phrase's own fields only when its `senseId` doesn't resolve in that Domain's own Senses (a cross-Domain copy — `VocabularyContext`'s own Physics-from-Common bootstrap — doesn't carry a matching Sense copy across yet, a known, accepted gap, the same one `SemanticRelationshipStore` already has). A Word has no such fallback fields any more — `definition` was removed outright once this gap was accepted for it too (see below); `domainTag`/`relatedDomainTags` stopped being written onto a WordNet-seeded Word/Phrase directly once this Sense existed to hold them instead.
+
+`synsetId` here plays the same "upstream external identity" role `WordForm.synsetId` already does one level up — not to be confused with a Word/Phrase's own `senseId` reference, which is an internal graph reference (this Sense's own `uuid`) to *this* object, not a WordNet identifier string. The client-facing `sense_id` field `DictionaryView` sends (`WordRecord`/`PhraseRecord`) is unrelated to either — it's populated from `WordForms.synsetIdOf()`/`Phrase.synsetId`, not from this field directly.
+
+### `definition` removed from `Word`
+
+`Word.definition` used to duplicate a Word's own primary Sense's definition, kept deliberately alongside the Sense-level copy as an "accepted gap" stopgap (the same cross-Domain gap this section's own second paragraph describes). Removed outright once `synsetId`/`senseIds`/`contractionOf` also moved off Word onto WordForm (see the Word section above) — a cross-Domain Word with no matching Sense in that Domain's own Senses now simply shows no definition until the gap closes, the same accepted behaviour `PAD` (`seededPleasureDispleasureWeight`/`seededArousalNonArousalWeight`/`seededDominanceSubmissiveWeight` below) already had from the day those fields moved onto Sense.
+
+### `senseFrequency`
+
+How often this Sense's own meaning was tagged in Princeton WordNet's semantic concordance corpus (SemCor) — a genuine frequency count, not a qualitative tag, sourced from WordNet's own bundled `dict/index.sense` file (one line per lemma's own `sense_key`/`synset_offset`/`sense_number`/`tag_cnt`; `WordNetSynset.senseFrequency`'s own docstring, `role/wordnet_loader.ts`). Summed across every lemma that lexicalizes this Sense's own `synsetId`, not any one lemma's own count alone — WordNet's raw data is inherently per-lemma ("bank" and "banking_concern" get separate `tag_cnt` entries even where they lexicalize the identical synset), and a Sense is the one shared object standing in for the meaning itself, not for any single lemma that spells it. `WordSeeder.seedWordNet`'s own post-seeding pass uses this to order every polysemous Word/Phrase's own senseIds by real usage centrality, highest first, rather than by incidental seeding order. 0, not undefined, for a Sense WordNet itself never tagged at all in the concordance — a common, real outcome (most senses of most words have zero tagged occurrences), not a parsing gap.
+
+### `domainTag`/`relatedDomainTags`
+
+`Word.domainTag`/`Word.relatedDomainTags`'s own exact counterparts, populated by `WordSeeder.seedWordNet`'s own `tagTopicDomain` for a synset-wide topic-domain pointer (`;c`/`-c`), once per Sense rather than once per member Word/Phrase (`word_seeder.ts`'s own `applyDomainTag` docstring on why: a topic domain is a property of the meaning, not of any one lemma that happens to spell it), and by `registerUniqueSense` for a hand-curated entry (copied straight from the Word/Phrase's own value). A WordNet-seeded Word/Phrase's own `domainTag`/`relatedDomainTags` go unpopulated now — this Sense is the only place that fact lives; a hand-curated Phrase keeps its own fields too, since it's cheap and there's no accumulation risk the way `tagTopicDomain`'s repeated per-pointer writes had.
+
+### `senseDomainTag`
+
+WordNet's own lexicographer-file category for this Sense's own meaning, e.g. "noun.artifact" — `WordNetSynset.senseCategory`'s own exact counterpart (`role/wordnet_loader.ts`'s own docstring there on how it's derived: resolved from the synset's own `lex_filenum` against the bundled `dict/lexnames` file, never guessed from the gloss/first lemma/hypernym/sense number/synset offset). Always the full POS-qualified lexname, never truncated to its bare category half ("noun.artifact", never "artifact") — that qualified form is WordNet's own canonical identifier for it.
+
+Deliberately its own field, never folded into `domainTag` above despite the similar name and shape: `domainTag` is sparse and WordNet-curated (a real `;c`/`-c` topic-domain pointer, ~6,690 of ~117,800 senses) and bubbles all the way up to a Word/Phrase's own headline Domain display (`DictionaryView.domainLabel()`'s own Sense-first fallback) — `senseDomainTag` is universal (every WordNet synset has a `lex_filenum`) and coarse (~41 distinct values total), and is meant to stay a Sense-level-only fact. An earlier version of this feature fed `senseDomainTag` into `domainTag` as a fallback when no real topic-domain pointer existed; that was reverted once it became clear it fragmented the Domain filter/column/headline pill dataset-wide (plain "Common" nearly disappeared) instead of staying contained to wherever a Sense's own fields are shown directly.
+
+### `isRootWord`/`interrogativeRootWord`/`hypernymRootWord`/`holonymRootWord`/`vectorPrimitiveRootWord`
+
+`Noun.isRootWord`/`interrogativeRootWord`/`hypernymRootWord`/`holonymRootWord`/`vectorPrimitiveRootWord`'s own exact counterparts (see the Noun section below) — Phrase has no equivalent (`root_words.json`'s own 25 entries are all single-word NOUNs), so `DictionaryView.isRootWordFor()` only ever takes a Word, never the wider `Word | Phrase` `senseFieldsFor()` does. "Which sense is the root-word one" is unambiguous here in practice (every `root_words.json` entry gets its own private, unshared Sense — `registerUniqueSense`'s own docstring), unlike leaving `isRootWord` on the whole Noun, which would wrongly flag every sense of a Noun that happened to also carry unrelated meanings.
+
+### `seededPleasureDispleasureWeight`/`seededArousalNonArousalWeight`/`seededDominanceSubmissiveWeight`
+
+Previously Word's own fields — moved here since affect is a fact about the *meaning*, the same reasoning `domainTag`/`relatedDomainTags` above already moved on: "quick" the adjective and "quick" a hypothetical distinct sense sharing that spelling could carry genuinely different affect, the way any two unrelated meanings can. Populated only for a hand-curated Common Vocabulary Cache entry (`WordSeeder.seedWordNet`'s own `registerUniqueSense`, `role/word_seeder.ts`, reading the source word file's own `seeded_pleasure_displeasure_weight`/`seeded_arousal_non_arousal_weight`/`seeded_dominance_submissive_weight`) — undefined for every WordNet-seeded Sense, the same "no PAD value assigned yet" reading these fields already had on Word (0.0 is the seeded value for a genuinely neutral word, not "unset"). Unlike `domainTag`/`relatedDomainTags`, there is no Word/Phrase-level fallback field any more — a Word/Phrase copied into a different Domain without its own Sense copy simply shows no PAD value there until the cross-Domain gap above is closed, rather than carrying a second, duplicated copy.
 
 ---
 
@@ -80,7 +148,7 @@ Not a Word Form Matrix field (`../matrices/pos_vs_wordform_matrice.ts` has no ro
 
 ### Singular/Plural Number Form, Possessive Case Form moved to `WordForm`
 
-No longer scalar fields here (Auxiliary's own precedent, `data/entities/auxiliary.ts`): each one now lives as its own `WordForm` record, reached via `Word.wordFormIds` (`data/word_form.ts`, `data/word_forms.ts`'s own `WordForms` store), generated the same as ever by `generateNounForms()` (`role/processor/noun_processor.ts`) but registered there via `WordForms.registerNamedForm()` instead of assigned to a named field on this interface.
+No longer scalar fields here (Auxiliary's own precedent, `data/entities/auxiliary.ts`): each one now lives as its own `WordForm` record, reached via `Word.wordFormIds` (`data/entities/word_form.ts`, `data/word_forms.ts`'s own `WordForms` store), generated the same as ever by `generateNounForms()` (`role/processor/noun_processor.ts`) but registered there via `WordForms.registerNamedForm()` instead of assigned to a named field on this interface.
 
 ### `isRootWord`
 
@@ -186,7 +254,7 @@ One Word per base lemma (be, have, do, can, may, shall, will, must, ought, need,
 
 Every one of its distinguishing spellings (`bareInfinitiveForm`/`presentTenseInstanceForm`/`presentTenseForm`/`thirdPersonSingularPresentForm`/`pastTenseInstanceForm`/`pastTenseForm`/`presentParticipleForm`/`pastParticipleForm`/`modalForm`/`secondaryModalForm`) lives in a `WordForm` record (`WordForms.formsOf(auxiliary)`), addressable and carrying its own Senses rather than being a bare Text value with senses bulk-registered onto this Word's own `senseIds`. `role/auxiliary_seeder.ts` is the only writer; `role/processor/auxiliary_processor.ts`'s `validateAuxiliary()` reads `WordForms.formsOf()` instead of named scalar fields.
 
-Auxiliary was the first POS subtype to adopt `WordForm` this way, one real example before every other POS subtype (Noun, Verb, Adjective, Adverb, Pronoun, Determiner) generalized to the same shape — `WordForm`'s own docstring (`data/word_form.ts`) has the full reasoning, and none of those six subtypes declares a scalar `*_Form` field of its own any more either.
+Auxiliary was the first POS subtype to adopt `WordForm` this way, one real example before every other POS subtype (Noun, Verb, Adjective, Adverb, Pronoun, Determiner) generalized to the same shape — `WordForm`'s own docstring (`data/entities/word_form.ts`) has the full reasoning, and none of those six subtypes declares a scalar `*_Form` field of its own any more either.
 
 ---
 

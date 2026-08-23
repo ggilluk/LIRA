@@ -282,7 +282,7 @@ per-Word copy.
 
 What of this model is already real code today, and where it diverges,
 as of the `WordForm`/`WordForms` introduction
-(`data/word_form.ts`/`data/word_forms.ts`):
+(`data/entities/word_form.ts`/`data/word_forms.ts`):
 
 - **Section 1 (Word -> WordForms -> WordForm -> Senses -> Sense) is
   real for every Word, not just AUXILIARY.** `Word.formIds`

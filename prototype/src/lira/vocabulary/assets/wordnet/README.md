@@ -21,7 +21,7 @@ lemma -> synset lookup has no LIRA counterpart to seed yet.
 `wordnet_loader.ts`'s own `loadSenseFrequencies()` sums its `tag_cnt`
 column (how often a sense_key was tagged in WordNet's own SemCor
 semantic concordance corpus) per synset, seeding `Sense.senseFrequency`
-(`data/sense.ts`) and, via `WordSeeder.seedWordNet`'s own
+(`data/entities/sense.ts`) and, via `WordSeeder.seedWordNet`'s own
 `orderSensesByFrequency`, the order of a polysemous Word/Phrase's own
 `senseIds` -- see those two docstrings for the full mechanism.
 

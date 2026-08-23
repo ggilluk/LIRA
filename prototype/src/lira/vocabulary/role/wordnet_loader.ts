@@ -82,7 +82,7 @@ export interface WordNetSynset {
   // lemma that lexicalizes it -- parsed from the bundled dict/index.sense
   // file (loadSenseFrequencies() below), not this file's own
   // synset_offset/gloss lines (data.* itself carries no frequency data
-  // at all). Sense.senseFrequency's own docstring (data/sense.ts) on why
+  // at all). Sense.senseFrequency's own docstring (data/entities/sense.ts) on why
   // this is a sum across every lemma sharing the synset rather than one
   // lemma's own count alone. 0, not a special value, for a synset
   // index.sense never tags at all -- a real, common outcome, not a

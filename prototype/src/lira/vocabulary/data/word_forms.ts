@@ -1,10 +1,11 @@
 import type { Identifier, Text } from "../../value_objects";
 import type { Word } from "./entities/word";
-import type { Sense } from "./sense";
-import { copyWordFormWithFreshUuid, createWordForm, type WordForm, type WordFormAttributes } from "./word_form";
+import type { Sense } from "./entities/sense";
+import type { WordForm } from "./entities/word_form";
+import { copyWordFormWithFreshUuid, createWordForm, type WordFormAttributes } from "../role/word_form_processor";
 
 /** WordForm storage: Senses's own exact counterpart one level down
- * (data/word_form.ts's own docstring on why WordForm exists at all).
+ * (data/entities/word_form.ts's own docstring on why WordForm exists at all).
  * One WordForms store per Domain, alongside that Domain's own
  * Dictionary/Phrases/Senses (VocabularyContext.wordForms,
  * data/vocabulary_context.ts).
@@ -94,7 +95,7 @@ export class WordForms {
    * registered -- the pure read side registerNamedForm() below builds
    * its own find-or-create on top of. Also how every reader resolves a
    * fact that moved off Word onto its base-lemma WordForm (`senseIds`/
-   * `synsetId`/`contractionOf`, each field's own docstring, data/word_form.ts):
+   * `synsetId`/`contractionOf`, each field's own docstring, data/entities/word_form.ts):
    * `wordForms.findNamedForm(word, "baseLemmaCanonicalForm")?.senseIds ?? []`,
    * baseLemmaFormOf() below's own shorthand for exactly that lookup. */
   findNamedForm(word: Word, field: string): WordForm | undefined {
@@ -214,7 +215,7 @@ export class WordForms {
   }
 
   /** Records that `form` carries `sense` -- appends `sense.uuid` onto
-   * `form.senseIds` (the field itself, data/word_form.ts's own
+   * `form.senseIds` (the field itself, data/entities/word_form.ts's own
    * docstring) -- Senses.registerMember()'s own idempotency shape, one
    * level down: never duplicates an entry already present, safe to call
    * again for the same (form, sense) pair on a re-seed. */

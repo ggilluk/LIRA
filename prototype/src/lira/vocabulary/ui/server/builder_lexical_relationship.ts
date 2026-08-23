@@ -18,7 +18,7 @@ import type { LexicalRelationship } from "../../data/lexical_relationship";
 import type { LexicalRelationshipStore } from "../../data/lexical_relationship_store";
 import type { Phrases } from "../../data/phrases";
 import type { Senses } from "../../data/senses";
-import type { Sense } from "../../data/sense";
+import type { Sense } from "../../data/entities/sense";
 import type { Word } from "../../data/entities/word";
 import type { WordForms } from "../../data/word_forms";
 import { resolveEntry } from "./resolver_entity";

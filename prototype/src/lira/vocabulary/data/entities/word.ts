@@ -99,7 +99,7 @@ export interface Word extends LinguisticUnit {
    * Always includes this Word's own base-lemma WordForm -- its
    * lexical/normalised spelling, pronunciation, syllable, and frequency
    * attributes live there now, not as separate fields here (`WordForm`'s
-   * own docstring, data/word_form.ts). So do `synsetId`/`senseIds`/
+   * own docstring, data/entities/word_form.ts). So do `synsetId`/`senseIds`/
    * `contractionOf` -- WordForms.baseLemmaFormOf(word) is the read side
    * for all three now, not a scalar field on Word.
    */

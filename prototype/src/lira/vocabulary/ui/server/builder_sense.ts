@@ -3,12 +3,12 @@
  * method senseRecordFor and the public method searchSenses). */
 
 import { PartOfSpeech } from "../../data/enums/part_of_speech";
-import type { Sense } from "../../data/sense";
+import type { Sense } from "../../data/entities/sense";
 import type { Senses } from "../../data/senses";
 
 // Sense's own client-facing record -- the Senses tab's own row shape.
 // Unlike WordRecord/PhraseRecord, a Sense has no `lexical_form` of its
-// own to sort/search by (Sense's own docstring, data/sense.ts, on why
+// own to sort/search by (Sense's own docstring, data/entities/sense.ts, on why
 // it's the meaning, not any one spelling of it) -- `lexical_form` here
 // is instead every member's own lexical form joined together ("big,
 // large"), the Senses tab's own headline column, built fresh each call
@@ -33,7 +33,7 @@ export interface SenseRecord {
   member_count: number;
   members: string[];
   sources: string[];
-  // Sense.senseFrequency's own docstring (data/sense.ts) --
+  // Sense.senseFrequency's own docstring (data/entities/sense.ts) --
   // WordSenseSummary.frequency's own exact counterpart for the Senses
   // tab's own row shape, same null-vs-0 distinction.
   sense_frequency: number | null;
