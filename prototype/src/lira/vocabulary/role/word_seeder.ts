@@ -1331,7 +1331,7 @@ export class WordSeeder {
       // same WordForm again.
       wordForms?.registerBaseLemmaForm(copy);
       if (isNoun(copy)) copy = generateNounForms(copy, wordForms);
-      else if (isVerb(copy)) copy = generateVerbForms(copy);
+      else if (isVerb(copy)) copy = generateVerbForms(copy, wordForms);
       else if (isAdjective(copy)) copy = generateAdjectiveForms(copy, false);
       else if (isAdverb(copy)) copy = generateAdverbForms(copy, false);
       dictionary.append(copy);
@@ -2383,8 +2383,14 @@ export class WordSeeder {
       sourceReferences: [WORDNET_SOURCE_REFERENCE],
     };
     switch (synset.partOfSpeech) {
-      case PartOfSpeech.VERB:
-        return generateVerbForms(createVerb(shared));
+      case PartOfSpeech.VERB: {
+        // registerBaseLemmaForm() first, before generateVerbForms() --
+        // Noun's own case just below, same "keep base lemma the *first*
+        // WordForm on record" reasoning.
+        const verb = createVerb(shared);
+        wordForms?.registerBaseLemmaForm(verb);
+        return generateVerbForms(verb, wordForms);
+      }
       case PartOfSpeech.ADJECTIVE:
         return generateAdjectiveForms(createAdjective(shared), false);
       case PartOfSpeech.ADVERB:

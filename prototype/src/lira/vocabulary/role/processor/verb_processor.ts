@@ -2,6 +2,7 @@ import type { Text } from "../../../value_objects";
 import { PartOfSpeech } from "../../data/enums/part_of_speech";
 import type { Senses } from "../../data/senses";
 import type { Word } from "../../data/entities/word";
+import type { WordForms } from "../../data/word_forms";
 import {
   createWord,
   endsInConsonantY,
@@ -40,30 +41,20 @@ export function framesForSense(senses: Senses, verb: Verb, senseId: string): rea
   return senses.metadataFor(senseId, verb.uuid.value)?.frames as readonly string[] | undefined;
 }
 
-/** Validates every *_Form field this Verb carries -- its own row above,
+/** Validates every WordForm this Verb carries -- its own row above,
  * plus baseLemmaCanonicalForm via Word's own validateWordFormAttributes
  * -- against WORD_FORM_MATRIX's own VERB rules
  * (data/matrices/pos_vs_wordform_matrice.ts). Returns every
  * issue found, not just the first; empty means every populated field
  * is internally consistent with the matrix, not that every field is
- * populated (undefined is never an issue, validateFormText's own
- * docstring). */
-export function validateVerb(verb: Verb): readonly WordFormIssue[] {
+ * populated. validateAuxiliary()'s own exact shape
+ * (role/processor/auxiliary_processor.ts). */
+export function validateVerb(verb: Verb, wordForms: WordForms): readonly WordFormIssue[] {
   const issues: WordFormIssue[] = [...validateWordFormAttributes(verb)];
-  const check = (field: string, text: Text | undefined): void => {
-    if (text === undefined) return;
-    const issue = validateFormText(field, text, stringPatternsFor(field, PartOfSpeech.VERB));
+  for (const form of wordForms.formsOf(verb)) {
+    const issue = validateFormText(form.field, form.text, stringPatternsFor(form.field, PartOfSpeech.VERB));
     if (issue !== undefined) issues.push(issue);
-  };
-  check("presentTenseForm", verb.presentTenseForm);
-  check("pastTenseForm", verb.pastTenseForm);
-  check("thirdPersonSingularPresentForm", verb.thirdPersonSingularPresentForm);
-  check("presentParticipleForm", verb.presentParticipleForm);
-  check("pastParticipleForm", verb.pastParticipleForm);
-  check("bareInfinitiveForm", verb.bareInfinitiveForm);
-  check("firstPersonForm", verb.firstPersonForm);
-  check("secondPersonForm", verb.secondPersonForm);
-  check("thirdPersonForm", verb.thirdPersonForm);
+  }
   return issues;
 }
 
@@ -272,57 +263,66 @@ const IRREGULAR_VERB_FORMS: Readonly<Record<string, { past: string; pastParticip
   write: { past: "wrote", pastParticiple: "written" },
 };
 
-/** Fills in this Verb's own derivable *_Form fields wherever still
- * undefined, from its own base lemma (`verb.text`) -- WordSeeder's own
+/** Registers this Verb's own derivable WordForms wherever not already
+ * present, from its own base lemma (`verb.text`) -- WordSeeder's own
  * seeding entry points (role/word_seeder.ts) call this right after
  * createVerb(), so every seeded Verb (WordNet or Common Vocabulary
  * Cache alike) gets its regular-case forms populated automatically,
  * without a hand-authored Verb built elsewhere (a test fixture, say)
- * acquiring fields it never asked for just by calling createVerb().
- * Only ever fills a field that's still undefined -- an explicitly-set
- * value (from `init`, or an earlier call, e.g. `frames`) is never
- * overwritten. pastTenseForm/pastParticipleForm check
- * IRREGULAR_VERB_FORMS first (that constant's own docstring on its two
- * known gaps); "be" gets neither (its own presentParticipleForm is also
- * special-cased separately, just below), and "have" gets its own
- * irregular thirdPersonSingularPresentForm ("has", not "haves")
- * alongside the table. firstPersonForm/secondPersonForm/thirdPersonForm
- * are left
- * alone entirely -- their one applicable rule for Verb (#3, an
- * irregular form like "be" -> "am") is `N/A` even in the matrix itself,
- * needing a person/number-aware Irregular Verb Lookup IRREGULAR_VERB_FORMS's
- * own single-value shape can't express either. Every value this
- * produces is provably one of that field's own recognised String
- * Patterns (WORD_FORM_MATRIX's own VERB rules,
+ * acquiring forms it never asked for just by calling createVerb(). No-op
+ * when `wordForms` is undefined (mirrors `senseStore?:`'s own optional
+ * convention throughout role/word_seeder.ts). Only ever registers a
+ * field not already present via `WordForms.registerNamedForm()`'s own
+ * idempotent find-or-create -- an explicitly-registered value (from an
+ * earlier call, e.g. `frames`) is never overwritten. pastTenseForm/
+ * pastParticipleForm check IRREGULAR_VERB_FORMS first (that constant's
+ * own docstring on its two known gaps); "be" gets neither (its own
+ * presentParticipleForm is also special-cased separately, below), and
+ * "have" gets its own irregular thirdPersonSingularPresentForm ("has",
+ * not "haves") alongside the table. firstPersonForm/secondPersonForm/
+ * thirdPersonForm are left alone entirely -- dropped from the Verb
+ * interface outright (its own docstring), their one applicable rule for
+ * Verb (#3, an irregular form like "be" -> "am") is `N/A` even in the
+ * matrix itself, needing a person/number-aware Irregular Verb Lookup
+ * IRREGULAR_VERB_FORMS's own single-value shape can't express either.
+ * Every value this produces is provably one of that field's own
+ * recognised String Patterns (WORD_FORM_MATRIX's own VERB rules,
  * data/matrices/pos_vs_wordform_matrice.ts) or, for an irregular form, no
  * claimed format at all (matching the matrix's own N/A String Pattern
  * for every irregular rule) -- generateVerbForms() and validateVerb()
  * are built from the exact same matrix rows, so a freshly-generated
- * Verb always passes its own validateVerb() unchanged. */
-export function generateVerbForms(verb: Verb): Verb {
+ * Verb always passes its own validateVerb() unchanged. Fields are
+ * registered in the Word Form Matrix's own row order (present, past,
+ * third-person-singular, present-participle, past-participle, bare
+ * infinitive), not this function's own computation order, so Word Forms
+ * UI display order stays unaffected by this migration. Returns `verb`
+ * unchanged -- registration is a side effect on `wordForms`, not a copy
+ * of `verb` itself. */
+export function generateVerbForms(verb: Verb, wordForms: WordForms | undefined): Verb {
+  if (wordForms === undefined) return verb;
   const lemma = verb.text;
   const irregular = IRREGULAR_VERB_FORMS[lemma];
-  const generated: Partial<Verb> = {};
-  if (verb.presentTenseForm === undefined) generated.presentTenseForm = { value: lemma };
-  if (verb.bareInfinitiveForm === undefined) generated.bareInfinitiveForm = { value: lemma };
-  if (verb.pastTenseForm === undefined) {
-    if (irregular !== undefined) generated.pastTenseForm = { value: irregular.past };
+  const has = (field: string): boolean => wordForms.formsOf(verb).some((form) => form.field === field);
+
+  if (!has("presentTenseForm")) wordForms.registerNamedForm(verb, "presentTenseForm", { value: lemma });
+
+  if (!has("pastTenseForm")) {
+    if (irregular !== undefined) wordForms.registerNamedForm(verb, "pastTenseForm", { value: irregular.past });
     else if (lemma !== "be") {
       const pastTense = regularEdForm(lemma);
-      if (pastTense !== undefined) generated.pastTenseForm = pastTense;
+      if (pastTense !== undefined) wordForms.registerNamedForm(verb, "pastTenseForm", pastTense);
     }
   }
-  if (verb.pastParticipleForm === undefined) {
-    if (irregular !== undefined) generated.pastParticipleForm = { value: irregular.pastParticiple };
-    else if (lemma !== "be") {
-      const pastParticiple = regularEdForm(lemma);
-      if (pastParticiple !== undefined) generated.pastParticipleForm = pastParticiple;
-    }
+
+  if (!has("thirdPersonSingularPresentForm") && lemma !== "be") {
+    wordForms.registerNamedForm(
+      verb,
+      "thirdPersonSingularPresentForm",
+      lemma === "have" ? { value: "has" } : regularThirdPersonSingularForm(lemma),
+    );
   }
-  if (verb.thirdPersonSingularPresentForm === undefined && lemma !== "be") {
-    generated.thirdPersonSingularPresentForm = lemma === "have" ? { value: "has" } : regularThirdPersonSingularForm(lemma);
-  }
-  if (verb.presentParticipleForm === undefined) {
+
+  if (!has("presentParticipleForm")) {
     // "be" is the one lemma regularIngForm() gets wrong: its own
     // consonant-before-silent-e branch assumes there's a real stem left
     // once the "e" is dropped ("writ" + "ing"), but "be" is nothing but
@@ -330,11 +330,22 @@ export function generateVerbForms(verb: Verb): Verb {
     // so the general rule would produce "bing" instead of the real
     // "being". No other English verb is this short, so this is a
     // one-lemma exception, not a flaw in the general rule.
-    if (lemma === "be") generated.presentParticipleForm = { value: "being", formats: ["/ing$/i"] };
+    if (lemma === "be") wordForms.registerNamedForm(verb, "presentParticipleForm", { value: "being", formats: ["/ing$/i"] });
     else {
       const presentParticiple = regularIngForm(lemma);
-      if (presentParticiple !== undefined) generated.presentParticipleForm = presentParticiple;
+      if (presentParticiple !== undefined) wordForms.registerNamedForm(verb, "presentParticipleForm", presentParticiple);
     }
   }
-  return { ...verb, ...generated };
+
+  if (!has("pastParticipleForm")) {
+    if (irregular !== undefined) wordForms.registerNamedForm(verb, "pastParticipleForm", { value: irregular.pastParticiple });
+    else if (lemma !== "be") {
+      const pastParticiple = regularEdForm(lemma);
+      if (pastParticiple !== undefined) wordForms.registerNamedForm(verb, "pastParticipleForm", pastParticiple);
+    }
+  }
+
+  if (!has("bareInfinitiveForm")) wordForms.registerNamedForm(verb, "bareInfinitiveForm", { value: lemma });
+
+  return verb;
 }

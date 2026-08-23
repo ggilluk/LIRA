@@ -27,7 +27,7 @@
  * whole synset plus frame 2 for "stretch" alone, so "extend" (the
  * synset's other member) never gets frame 2. */
 
-import type { Identifier, Text } from "../../../value_objects";
+import type { Identifier } from "../../../value_objects";
 import { PartOfSpeech } from "../enums/part_of_speech";
 import type { Word } from "./word";
 
@@ -67,68 +67,18 @@ export interface Verb extends Word {
 
   // The rest of this subtype's own row of fields from the Word Form to
   // Part of Speech Matrix (../matrices/word_form_part_of_speech_matrix.md) --
-  // undefined until a seeding/curation pass populates them, the same as
-  // `frames` for a non-WordNet-sourced Verb.
-
-  // The purpose is to identify the verb form used for an action,
-  // event, or state that occurs or exists in the present. Fully
-  // lexical, not spelling-derivable (the matrix's own Format/String
-  // Pattern rows are both `N/A`) -- a populated value's own
-  // `Text.formats` should stay unset.
-  presentTenseForm?: Text;
-  // The purpose is to identify the verb form used for an action,
-  // event, or state that occurred or existed in the past. Regular-case
-  // rules #1-4 are regex-derivable (`/ed$/i` twice over, `/ied$/i`, a
-  // doubled-final-consonant pattern) -- a populated regular-case
-  // value's own `Text.formats` should carry whichever matched; rules
-  // #5-6 (irregular / unchanged, "run"->"ran", "cut"->"cut") have no
-  // format at all and need curated data instead.
-  pastTenseForm?: Text;
-  // The purpose is to identify the present-tense verb form used when
-  // the subject is one person or thing other than the speaker or
-  // listener. Rules #1-3 are regex-derivable (`/s$/i`, `/es$/i`,
-  // `/ies$/i`) -- a populated regular-case value's own `Text.formats`
-  // should carry whichever matched; rule #4 (irregular, "have"->"has",
-  // "be"->"is") has no format and needs curated data instead.
-  thirdPersonSingularPresentForm?: Text;
-  // The purpose is to identify the verb form ending in -ing that is
-  // used to describe an action or state as ongoing. Every rule here is
-  // regex-derivable (`/ing$/i` twice over, a doubled-final-consonant
-  // pattern, `/ying$/i`) -- unlike its siblings, this row has no
-  // irregular/curated-only branch at all, so a populated value's own
-  // `Text.formats` should always carry the rule that matched.
-  presentParticipleForm?: Text;
-  // The purpose is to identify the verb form used to construct perfect
-  // tenses and passive expressions. Rules #1-5 are regex-derivable
-  // (`/ed$/i` twice over, `/ied$/i`, a doubled-final-consonant pattern,
-  // `/(en|n)$/i`) -- a populated regular-case value's own `Text.formats`
-  // should carry whichever matched; rules #6-7 (irregular / unchanged,
-  // "go"->"gone", "cut"->"cut") have no format and need curated data
-  // instead.
-  pastParticipleForm?: Text;
-  // The purpose is to identify the basic verb form used without the
-  // word "to", such as "run" in "can run". Fully lexical, not
-  // spelling-derivable (the matrix's own Format/String Pattern rows are
-  // both `N/A`) -- a populated value's own `Text.formats` should stay
-  // unset.
-  bareInfinitiveForm?: Text;
-  // The purpose is to identify the word form used when the speaker
-  // refers to themselves or to a group that includes them. Applies
-  // only to a subset of verb paradigms (e.g. "am" for "be"), not every
-  // verb -- most English verbs don't inflect for person at all. The
-  // matrix's own rules #1-2 for this row are Pronoun's own word lists
-  // ("I"/"we"), not applicable here -- for a Verb specifically only
-  // rule #3 applies, and it's `N/A` (curated data only), so a populated
-  // value's own `Text.formats` should stay unset.
-  firstPersonForm?: Text;
-  // The purpose is to identify the word form used when referring to
-  // the person or people being addressed. Same subset-only caveat, and
-  // same "only rule #3 applies to Verb, and it's N/A" note, as
-  // firstPersonForm above.
-  secondPersonForm?: Text;
-  // The purpose is to identify the word form used when referring to a
-  // person, thing, place, or idea other than the speaker or listener.
-  // Same subset-only caveat, and same "only rule #3 applies to Verb,
-  // and it's N/A" note, as firstPersonForm above.
-  thirdPersonForm?: Text;
+  // Present Tense/Past Tense/Third Person Singular Present/Present
+  // Participle/Past Participle/Bare Infinitive Form -- are no longer
+  // scalar fields here (Auxiliary's own precedent,
+  // data/entities/auxiliary.ts): each one now lives as its own
+  // `WordForm` record, reached via `Word.formIds` (data/word_form.ts,
+  // data/word_forms.ts's own `WordForms` store), generated the same as
+  // ever by generateVerbForms() (role/processor/verb_processor.ts) but
+  // registered there via `WordForms.registerNamedForm()` instead of
+  // assigned to a named field on this interface. First/Second/Third
+  // Person Form (the matrix's own remaining VERB row -- applicable only
+  // to a small subset of verb paradigms, e.g. "am" for "be", and even
+  // then only via curated data the matrix marks fully `N/A` for Verb)
+  // are dropped outright rather than ported -- confirmed by a repo-wide
+  // grep that nothing has ever written to them.
 }

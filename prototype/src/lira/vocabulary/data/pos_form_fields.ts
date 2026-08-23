@@ -53,7 +53,6 @@ function posFormFields(pos: PartOfSpeech): readonly string[] {
 }
 
 export const WORD_FORM_FIELDS: Readonly<Partial<Record<PartOfSpeech, readonly string[]>>> = {
-  [PartOfSpeech.VERB]: posFormFields(PartOfSpeech.VERB),
   [PartOfSpeech.ADJECTIVE]: posFormFields(PartOfSpeech.ADJECTIVE),
   [PartOfSpeech.ADVERB]: posFormFields(PartOfSpeech.ADVERB),
   [PartOfSpeech.PRONOUN]: posFormFields(PartOfSpeech.PRONOUN),

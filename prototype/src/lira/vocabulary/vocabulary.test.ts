@@ -212,11 +212,15 @@ describe("validate<Class>() -- each POS class's own attribute validation", () =>
   });
 
   it("checks a Verb's own fields, including the fully-regex-derivable Present Participle Form", () => {
-    const run = createVerb({ text: "run", presentParticipleForm: { value: "running", formats: ["/([bcdfghjklmnpqrstvwxyz])\\1ing$/i"] } });
-    expect(validateVerb(run)).toEqual([]);
+    const run = createVerb({ text: "run" });
+    const runWordForms = new WordForms();
+    runWordForms.registerNamedForm(run, "presentParticipleForm", { value: "running", formats: ["/([bcdfghjklmnpqrstvwxyz])\\1ing$/i"] });
+    expect(validateVerb(run, runWordForms)).toEqual([]);
 
-    const badRun = createVerb({ text: "run", presentParticipleForm: { value: "runing", formats: ["/([bcdfghjklmnpqrstvwxyz])\\1ing$/i"] } });
-    expect(validateVerb(badRun)).toHaveLength(1);
+    const badRun = createVerb({ text: "run" });
+    const badRunWordForms = new WordForms();
+    badRunWordForms.registerNamedForm(badRun, "presentParticipleForm", { value: "runing", formats: ["/([bcdfghjklmnpqrstvwxyz])\\1ing$/i"] });
+    expect(validateVerb(badRun, badRunWordForms)).toHaveLength(1);
   });
 
   it("checks an Adjective's degree forms", () => {
@@ -289,26 +293,34 @@ describe("generate<Class>Forms() -- deriving *_Form values from a base lemma", (
   });
 
   it("Verb: regular past/participle/third-person/present-participle rules", () => {
-    const walk = generateVerbForms(createVerb({ text: "walk" }));
-    expect(walk.pastTenseForm).toEqual({ value: "walked", formats: ["/ed$/i"] });
-    expect(walk.pastParticipleForm).toEqual({ value: "walked", formats: ["/ed$/i"] });
-    expect(walk.thirdPersonSingularPresentForm).toEqual({ value: "walks", formats: ["/s$/i"] });
-    expect(walk.presentParticipleForm).toEqual({ value: "walking", formats: ["/ing$/i"] });
-    expect(walk.presentTenseForm).toEqual({ value: "walk" });
-    expect(walk.bareInfinitiveForm).toEqual({ value: "walk" });
+    const walk = createVerb({ text: "walk" });
+    const walkForms = new WordForms();
+    generateVerbForms(walk, walkForms);
+    expect(formTextOf(walkForms, walk, "pastTenseForm")).toEqual({ value: "walked", formats: ["/ed$/i"] });
+    expect(formTextOf(walkForms, walk, "pastParticipleForm")).toEqual({ value: "walked", formats: ["/ed$/i"] });
+    expect(formTextOf(walkForms, walk, "thirdPersonSingularPresentForm")).toEqual({ value: "walks", formats: ["/s$/i"] });
+    expect(formTextOf(walkForms, walk, "presentParticipleForm")).toEqual({ value: "walking", formats: ["/ing$/i"] });
+    expect(formTextOf(walkForms, walk, "presentTenseForm")).toEqual({ value: "walk" });
+    expect(formTextOf(walkForms, walk, "bareInfinitiveForm")).toEqual({ value: "walk" });
 
-    const love = generateVerbForms(createVerb({ text: "love" }));
-    expect(love.pastTenseForm).toEqual({ value: "loved", formats: ["/ed$/i"] });
+    const love = createVerb({ text: "love" });
+    const loveForms = new WordForms();
+    generateVerbForms(love, loveForms);
+    expect(formTextOf(loveForms, love, "pastTenseForm")).toEqual({ value: "loved", formats: ["/ed$/i"] });
 
-    const try_ = generateVerbForms(createVerb({ text: "try" }));
-    expect(try_.pastTenseForm).toEqual({ value: "tried", formats: ["/ied$/i"] });
-    expect(try_.thirdPersonSingularPresentForm).toEqual({ value: "tries", formats: ["/ies$/i"] });
+    const try_ = createVerb({ text: "try" });
+    const tryForms = new WordForms();
+    generateVerbForms(try_, tryForms);
+    expect(formTextOf(tryForms, try_, "pastTenseForm")).toEqual({ value: "tried", formats: ["/ied$/i"] });
+    expect(formTextOf(tryForms, try_, "thirdPersonSingularPresentForm")).toEqual({ value: "tries", formats: ["/ies$/i"] });
   });
 
   it("Verb: doubles the final consonant for a monosyllabic CVC lemma, but abstains for a polysyllabic one that ends the same way", () => {
-    const stop = generateVerbForms(createVerb({ text: "stop" }));
-    expect(stop.pastTenseForm).toEqual({ value: "stopped", formats: ["/([bcdfghjklmnpqrstvwxyz])\\1ed$/i"] });
-    expect(stop.presentParticipleForm).toEqual({ value: "stopping", formats: ["/([bcdfghjklmnpqrstvwxyz])\\1ing$/i"] });
+    const stop = createVerb({ text: "stop" });
+    const stopForms = new WordForms();
+    generateVerbForms(stop, stopForms);
+    expect(formTextOf(stopForms, stop, "pastTenseForm")).toEqual({ value: "stopped", formats: ["/([bcdfghjklmnpqrstvwxyz])\\1ed$/i"] });
+    expect(formTextOf(stopForms, stop, "presentParticipleForm")).toEqual({ value: "stopping", formats: ["/([bcdfghjklmnpqrstvwxyz])\\1ing$/i"] });
 
     // "differ"/"open" end the identical consonant-vowel-consonant shape
     // "stop" does, but are two syllables, not one -- real English
@@ -316,42 +328,72 @@ describe("generate<Class>Forms() -- deriving *_Form values from a base lemma", (
     // "openned"), and telling a genuine doubling case like "occur" apart
     // from these needs real stress data this codebase doesn't have, so
     // both fields are left undefined rather than guessed either way.
-    const differ = generateVerbForms(createVerb({ text: "differ" }));
-    expect(differ.pastTenseForm).toBeUndefined();
-    expect(differ.presentParticipleForm).toBeUndefined();
+    const differ = createVerb({ text: "differ" });
+    const differForms = new WordForms();
+    generateVerbForms(differ, differForms);
+    expect(formTextOf(differForms, differ, "pastTenseForm")).toBeUndefined();
+    expect(formTextOf(differForms, differ, "presentParticipleForm")).toBeUndefined();
   });
 
   it("Verb: presentParticipleForm's ie -> ying rule, and abstains on the vowel-before-e silent-e ambiguity", () => {
-    expect(generateVerbForms(createVerb({ text: "lie" })).presentParticipleForm).toEqual({ value: "lying", formats: ["/ying$/i"] });
-    expect(generateVerbForms(createVerb({ text: "tie" })).presentParticipleForm).toEqual({ value: "tying", formats: ["/ying$/i"] });
+    const lie = createVerb({ text: "lie" });
+    const lieForms = new WordForms();
+    generateVerbForms(lie, lieForms);
+    expect(formTextOf(lieForms, lie, "presentParticipleForm")).toEqual({ value: "lying", formats: ["/ying$/i"] });
+
+    const tie = createVerb({ text: "tie" });
+    const tieForms = new WordForms();
+    generateVerbForms(tie, tieForms);
+    expect(formTextOf(tieForms, tie, "presentParticipleForm")).toEqual({ value: "tying", formats: ["/ying$/i"] });
+
     // "agree"/"argue" both end in a vowel immediately before the final
     // "e" -- English keeps the e for some ("agreeing") and drops it for
     // others ("arguing"), which needs real Silent-E Classification data
     // this codebase doesn't have, so both abstain rather than guess.
-    expect(generateVerbForms(createVerb({ text: "agree" })).presentParticipleForm).toBeUndefined();
-    expect(generateVerbForms(createVerb({ text: "argue" })).presentParticipleForm).toBeUndefined();
+    const agree = createVerb({ text: "agree" });
+    const agreeForms = new WordForms();
+    generateVerbForms(agree, agreeForms);
+    expect(formTextOf(agreeForms, agree, "presentParticipleForm")).toBeUndefined();
+
+    const argue = createVerb({ text: "argue" });
+    const argueForms = new WordForms();
+    generateVerbForms(argue, argueForms);
+    expect(formTextOf(argueForms, argue, "presentParticipleForm")).toBeUndefined();
   });
 
   it("Verb: checks IRREGULAR_VERB_FORMS before ever falling through to the regular -ed rules", () => {
-    const eat = generateVerbForms(createVerb({ text: "eat" }));
-    expect(eat.pastTenseForm).toEqual({ value: "ate" });
-    expect(eat.pastParticipleForm).toEqual({ value: "eaten" });
+    const eat = createVerb({ text: "eat" });
+    const eatForms = new WordForms();
+    generateVerbForms(eat, eatForms);
+    expect(formTextOf(eatForms, eat, "pastTenseForm")).toEqual({ value: "ate" });
+    expect(formTextOf(eatForms, eat, "pastParticipleForm")).toEqual({ value: "eaten" });
 
-    const run = generateVerbForms(createVerb({ text: "run" }));
-    expect(run.pastTenseForm).toEqual({ value: "ran" });
-    expect(run.pastParticipleForm).toEqual({ value: "run" });
+    const run = createVerb({ text: "run" });
+    const runForms = new WordForms();
+    generateVerbForms(run, runForms);
+    expect(formTextOf(runForms, run, "pastTenseForm")).toEqual({ value: "ran" });
+    expect(formTextOf(runForms, run, "pastParticipleForm")).toEqual({ value: "run" });
   });
 
   it("Verb: \"have\" and \"be\" both get hand-written irregular values no general rule could produce", () => {
-    const have = generateVerbForms(createVerb({ text: "have" }));
-    expect(have.pastTenseForm).toEqual({ value: "had" });
-    expect(have.thirdPersonSingularPresentForm).toEqual({ value: "has" });
+    const have = createVerb({ text: "have" });
+    const haveForms = new WordForms();
+    generateVerbForms(have, haveForms);
+    expect(formTextOf(haveForms, have, "pastTenseForm")).toEqual({ value: "had" });
+    expect(formTextOf(haveForms, have, "thirdPersonSingularPresentForm")).toEqual({ value: "has" });
 
-    const be = generateVerbForms(createVerb({ text: "be" }));
-    expect(be.pastTenseForm).toBeUndefined();
-    expect(be.pastParticipleForm).toBeUndefined();
-    expect(be.thirdPersonSingularPresentForm).toBeUndefined();
-    expect(be.presentParticipleForm).toEqual({ value: "being", formats: ["/ing$/i"] });
+    const be = createVerb({ text: "be" });
+    const beForms = new WordForms();
+    generateVerbForms(be, beForms);
+    expect(formTextOf(beForms, be, "pastTenseForm")).toBeUndefined();
+    expect(formTextOf(beForms, be, "pastParticipleForm")).toBeUndefined();
+    expect(formTextOf(beForms, be, "thirdPersonSingularPresentForm")).toBeUndefined();
+    expect(formTextOf(beForms, be, "presentParticipleForm")).toEqual({ value: "being", formats: ["/ing$/i"] });
+  });
+
+  it("Verb: no-ops with no WordForms store -- produces a Verb with no inflected forms registered anywhere", () => {
+    const run = createVerb({ text: "run" });
+    expect(generateVerbForms(run, undefined)).toBe(run);
   });
 
   it("Adjective/Adverb: regular comparative/superlative rules, including the shared doubling and y-ending cases", () => {
@@ -426,8 +468,12 @@ describe("generate<Class>Forms() -- deriving *_Form values from a base lemma", (
     const city = createNoun({ text: "city" });
     const cityWordForms = new WordForms();
     expect(validateNoun(generateNounForms(city, cityWordForms), cityWordForms)).toEqual([]);
-    expect(validateVerb(generateVerbForms(createVerb({ text: "stop" })))).toEqual([]);
-    expect(validateVerb(generateVerbForms(createVerb({ text: "eat" })))).toEqual([]);
+    const stop = createVerb({ text: "stop" });
+    const stopWordForms = new WordForms();
+    expect(validateVerb(generateVerbForms(stop, stopWordForms), stopWordForms)).toEqual([]);
+    const eat = createVerb({ text: "eat" });
+    const eatWordForms = new WordForms();
+    expect(validateVerb(generateVerbForms(eat, eatWordForms), eatWordForms)).toEqual([]);
     expect(validateAdjective(generateAdjectiveForms(createAdjective({ text: "happy" }), true))).toEqual([]);
     expect(validateAdverb(generateAdverbForms(createAdverb({ text: "fast" }), true))).toEqual([]);
   });
@@ -554,8 +600,8 @@ describe("generate<Class>Forms() -- deriving *_Form values from a base lemma", (
     expect(dog && formTextOf(wordForms, dog, "pluralNumberForm")).toEqual({ value: "dogs", formats: ["/s$/i"] });
 
     const run = dictionary.lookupAll("run").find(isVerb);
-    expect(run?.pastTenseForm).toEqual({ value: "ran" });
-    expect(run?.pastParticipleForm).toEqual({ value: "run" });
+    expect(run && formTextOf(wordForms, run, "pastTenseForm")).toEqual({ value: "ran" });
+    expect(run && formTextOf(wordForms, run, "pastParticipleForm")).toEqual({ value: "run" });
   }, 30000);
 
   it("populates each seeded Sense's own senseDomainTag from its synset's real WordNet lexicographer-file category", async () => {
@@ -799,65 +845,54 @@ describe("DictionaryProcessor.identifyPhrase", () => {
 });
 
 describe("Dictionary.indexWordForms / lookupFormMatches", () => {
-  // Exercised here via Verb (still scalar-field-based) rather than Noun
-  // -- Noun migrated its own generated forms onto the WordForms store
-  // instead (generateNounForms()'s own docstring), so it no longer
-  // writes anything formTextsOf()/indexWordForms() can see; its own
-  // WordForms-based equivalent lives in the
-  // "PartOfSpeechIdentifier / DictionaryProcessor" describe block below.
+  // Exercised here via Adjective (still scalar-field-based) rather than
+  // Noun/Verb -- both migrated their own generated forms onto the
+  // WordForms store instead (generateNounForms()'s/generateVerbForms()'s
+  // own docstrings), so neither writes anything formTextsOf()/
+  // indexWordForms() can see any more; their own WordForms-based
+  // equivalents live in the "PartOfSpeechIdentifier / DictionaryProcessor"
+  // describe block below.
   it("finds a Word by one of its own generated *_Form values, not its base spelling -- and never duplicates on a repeat call", () => {
     const dictionary = new Dictionary();
-    const walk = generateVerbForms(createVerb({ text: "walk" }));
-    dictionary.append(walk);
-    dictionary.indexWordForms(walk);
+    const big = generateAdjectiveForms(createAdjective({ text: "big" }), true);
+    dictionary.append(big);
+    dictionary.indexWordForms(big);
 
-    // "walks" was never itself appended as a Word -- only reachable via
+    // "bigger" was never itself appended as a Word -- only reachable via
     // the form index, not the ordinary exact-text one.
-    expect(dictionary.lookupAll("walks")).toEqual([]);
-    const matches = dictionary.lookupFormMatches("walks");
+    expect(dictionary.lookupAll("bigger")).toEqual([]);
+    const matches = dictionary.lookupFormMatches("bigger");
     expect(matches).toHaveLength(1);
-    expect(matches[0].word.uuid.value).toBe(walk.uuid.value);
-    expect(matches[0].field).toBe("thirdPersonSingularPresentForm");
+    expect(matches[0].word.uuid.value).toBe(big.uuid.value);
+    expect(matches[0].field).toBe("comparativeDegreeForm");
 
     // Idempotent: indexing the same Word again doesn't add a duplicate
     // entry (WordSeeder's own final-pass reindex, run unconditionally
     // over every Word on every seedWordNet/seedClosedClassWords call,
     // relies on this).
-    dictionary.indexWordForms(walk);
-    expect(dictionary.lookupFormMatches("walks")).toHaveLength(1);
+    dictionary.indexWordForms(big);
+    expect(dictionary.lookupFormMatches("bigger")).toHaveLength(1);
   });
 
   it("never indexes a form value identical to the Word's own base spelling -- lookupAll already finds that case directly", () => {
     const dictionary = new Dictionary();
-    const walk = generateVerbForms(createVerb({ text: "walk" }));
-    dictionary.append(walk);
-    dictionary.indexWordForms(walk);
+    const big = generateAdjectiveForms(createAdjective({ text: "big" }), true);
+    dictionary.append(big);
+    dictionary.indexWordForms(big);
 
-    // presentTenseForm/bareInfinitiveForm are always identical to the base lemma itself.
-    expect(dictionary.lookupFormMatches("walk")).toEqual([]);
-  });
-
-  it("finds a Verb by its own irregular past-tense form", () => {
-    const dictionary = new Dictionary();
-    const run = generateVerbForms(createVerb({ text: "run" }));
-    dictionary.append(run);
-    dictionary.indexWordForms(run);
-
-    expect(dictionary.lookupAll("ran")).toEqual([]);
-    const matches = dictionary.lookupFormMatches("ran");
-    expect(matches).toHaveLength(1);
-    expect(matches[0].word.uuid.value).toBe(run.uuid.value);
-    expect(matches[0].field).toBe("pastTenseForm");
+    // positiveDegreeForm is always identical to the base lemma itself.
+    expect(dictionary.lookupFormMatches("big")).toEqual([]);
   });
 });
 
 describe("PartOfSpeechIdentifier / DictionaryProcessor: inflected-form fallback", () => {
   it("resolves an inflected surface form to its base Word, tagged INFLECTED_FORM with a lower confidence than any exact match and a reason naming the field", () => {
     const dictionary = new Dictionary();
-    const run = generateVerbForms(createVerb({ text: "run" }));
+    const wordForms = new WordForms();
+    const run = createVerb({ text: "run" });
     dictionary.append(run);
-    dictionary.indexWordForms(run);
-    const processor = new DictionaryProcessor(dictionary, new Phrases(), new AsyncDictionaryHydrator(dictionary), "Common");
+    generateVerbForms(run, wordForms);
+    const processor = new DictionaryProcessor(dictionary, new Phrases(), new AsyncDictionaryHydrator(dictionary), "Common", wordForms);
 
     const candidates = processor.identifyWord("ran");
     expect(candidates).toHaveLength(1);
@@ -867,18 +902,32 @@ describe("PartOfSpeechIdentifier / DictionaryProcessor: inflected-form fallback"
     expect(candidates[0].reason).toContain("pastTenseForm");
   });
 
+  it("finds a Verb by its own irregular past-tense form via the WordForms store, now that Verb no longer writes a scalar *_Form field", () => {
+    const dictionary = new Dictionary();
+    const wordForms = new WordForms();
+    const run = createVerb({ text: "run" });
+    dictionary.append(run);
+    generateVerbForms(run, wordForms);
+
+    expect(dictionary.lookupAll("ran")).toEqual([]);
+    const matches = wordForms.lookupByText("ran");
+    expect(matches).toHaveLength(1);
+    expect(matches[0].word.uuid.value).toBe(run.uuid.value);
+    expect(matches[0].form.field).toBe("pastTenseForm");
+  });
+
   it("an exact match always wins outright over an inflected match, even when both exist for the same surface text", () => {
     const dictionary = new Dictionary();
-    const run = generateVerbForms(createVerb({ text: "run" }));
+    const wordForms = new WordForms();
+    const run = createVerb({ text: "run" });
     dictionary.append(run);
-    dictionary.indexWordForms(run);
+    generateVerbForms(run, wordForms);
     // A second, unrelated Word whose own BASE spelling happens to equal
     // "run"'s own pastTenseForm -- contrived, but exactly the precedence
     // case identifySeeded()'s own docstring calls out.
     const ranNoun = createNoun({ text: "ran" });
     dictionary.append(ranNoun);
-    dictionary.indexWordForms(ranNoun);
-    const processor = new DictionaryProcessor(dictionary, new Phrases(), new AsyncDictionaryHydrator(dictionary), "Common");
+    const processor = new DictionaryProcessor(dictionary, new Phrases(), new AsyncDictionaryHydrator(dictionary), "Common", wordForms);
 
     const candidates = processor.identifyWord("ran");
     expect(candidates.every((c) => c.source === IdentificationSource.SEEDED_VOCABULARY)).toBe(true);
