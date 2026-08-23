@@ -1,3 +1,4 @@
+import type { Text } from "../../value_objects";
 import type { Word } from "./entities/word";
 import type { Sense } from "./sense";
 import { copyWordFormWithFreshUuid, createWordForm, type WordForm } from "./word_form";
@@ -8,13 +9,15 @@ import { copyWordFormWithFreshUuid, createWordForm, type WordForm } from "./word
  * Dictionary/Phrases/Senses (VocabularyContext.wordForms,
  * data/vocabulary_context.ts).
  *
- * Two writers today: role/auxiliary_seeder.ts (every AUXILIARY lemma's
- * own inflected forms) and role/word_seeder.ts's registerUniqueSense()/
- * seedWordNet() (every ordinary Word's own base-lemma WordForm,
- * registerBaseLemmaForm()'s own docstring below) -- every other POS
- * subtype's own *inflected* spellings still live in scalar `*_Form`
- * fields (data/pos_form_fields.ts), untouched; only the base/canonical
- * spelling itself gets a WordForm outside AUXILIARY. */
+ * `registerNamedForm()` is the one primitive every writer builds on --
+ * role/auxiliary_seeder.ts (every AUXILIARY lemma's own inflected
+ * forms), each POS's own generateXForms() (role/processor/*_processor.ts,
+ * an inflected spelling per still-migrating POS subtype), and
+ * role/word_seeder.ts's registerUniqueSense()/seedWordNet() (every
+ * ordinary Word's own base-lemma WordForm, via registerBaseLemmaForm()'s
+ * own thin wrapper below). A POS subtype not yet migrated still keeps
+ * its own *inflected* spellings in scalar `*_Form` fields
+ * (data/pos_form_fields.ts) instead. */
 export class WordForms {
   private forms: WordForm[] = [];
   private readonly byUuid = new Map<string, WordForm>();
@@ -90,10 +93,24 @@ export class WordForms {
   }
 
   /** Idempotent find-or-create: the WordForm standing for `word`'s own
-   * base/canonical spelling -- reuses `word`'s own existing entry
-   * (`field === "baseLemmaCanonicalForm"`) if `registerBaseLemmaForm()`
-   * already created one for it, rather than creating a duplicate on a
-   * re-seed. Reuses `"baseLemmaCanonicalForm"` as the field name
+   * `field` -- reuses `word`'s own existing entry for that field if one
+   * was already registered (by this call or any earlier one), rather
+   * than creating a duplicate on a re-seed. The one primitive every
+   * POS's own generateXForms()/hand-curated seeder call uses to store an
+   * inflected spelling -- registerBaseLemmaForm() below is just this,
+   * specialised to `"baseLemmaCanonicalForm"`. */
+  registerNamedForm(word: Word, field: string, text: Text): WordForm {
+    const existing = this.formsOf(word).find((form) => form.field === field);
+    if (existing !== undefined) return existing;
+    const form = createWordForm({ field, text });
+    this.append(form);
+    this.registerMember(form, word);
+    return form;
+  }
+
+  /** Idempotent find-or-create: the WordForm standing for `word`'s own
+   * base/canonical spelling -- registerNamedForm()'s own
+   * `"baseLemmaCanonicalForm"` special case. Reuses that name
    * deliberately -- it's already the Word Form Matrix's own first row
    * and the name `formTextsOf()` (data/pos_form_fields.ts) already
    * recognises as "this Word's own canonical spelling," so this
@@ -111,15 +128,7 @@ export class WordForms {
    * majority), the two agree, so this WordForm's own `text` is simply
    * `word.text`. */
   registerBaseLemmaForm(word: Word): WordForm {
-    const existing = this.formsOf(word).find((form) => form.field === "baseLemmaCanonicalForm");
-    if (existing !== undefined) return existing;
-    const form = createWordForm({
-      field: "baseLemmaCanonicalForm",
-      text: word.baseLemmaCanonicalForm ?? word.lexicalForm ?? { value: word.text },
-    });
-    this.append(form);
-    this.registerMember(form, word);
-    return form;
+    return this.registerNamedForm(word, "baseLemmaCanonicalForm", word.baseLemmaCanonicalForm ?? word.lexicalForm ?? { value: word.text });
   }
 
   /** Records that `form` carries `sense` -- appends `sense.uuid` onto

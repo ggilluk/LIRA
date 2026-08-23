@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { Dictionary } from "../vocabulary/data/dictionary";
 import { PartOfSpeech } from "../vocabulary/data/enums/part_of_speech";
 import { Phrases } from "../vocabulary/data/phrases";
+import { WordForms } from "../vocabulary/data/word_forms";
 import { AsyncDictionaryHydrator } from "../vocabulary/role/dictionary_hydrator";
 import { DictionaryProcessor } from "../vocabulary/role/dictionary_processor";
 import { WordSeeder } from "../vocabulary/role/word_seeder";
@@ -18,9 +19,10 @@ import { createUserPrompt } from "./ui/user_prompt";
 function seededController(): LinguisticController {
   const dictionary = new Dictionary();
   const phraseBook = new Phrases();
-  new WordSeeder("en").seedClosedClassWords(dictionary, phraseBook);
+  const wordForms = new WordForms();
+  new WordSeeder("en").seedClosedClassWords(dictionary, phraseBook, undefined, undefined, wordForms);
   const hydrator = new AsyncDictionaryHydrator(dictionary);
-  const processor = new DictionaryProcessor(dictionary, phraseBook, hydrator, "Common");
+  const processor = new DictionaryProcessor(dictionary, phraseBook, hydrator, "Common", wordForms);
   return new LinguisticController(processor);
 }
 
@@ -95,10 +97,11 @@ describe("LinguisticController against the bundled Common Vocabulary Cache", () 
     // fallback at all -- caught only by checking this).
     const dictionary = new Dictionary();
     const phraseBook = new Phrases();
-    new WordSeeder("en").seedClosedClassWords(dictionary, phraseBook);
+    const wordForms = new WordForms();
+    new WordSeeder("en").seedClosedClassWords(dictionary, phraseBook, undefined, undefined, wordForms);
     expect(dictionary.lookupAll("agencies")).toHaveLength(0);
     const hydrator = new AsyncDictionaryHydrator(dictionary);
-    const processor = new DictionaryProcessor(dictionary, phraseBook, hydrator, "Common");
+    const processor = new DictionaryProcessor(dictionary, phraseBook, hydrator, "Common", wordForms);
     const controller = new LinguisticController(processor);
 
     const sentence = controller.readSentence("The agencies are known.");

@@ -1309,7 +1309,23 @@ export class WordSeeder {
         .lookupAll(word.text)
         .some((existing) => existing.partOfSpeech === word.partOfSpeech && existing.domainTag?.value === wordDomainTag);
       if (alreadyPresent) continue;
-      const copy = copyWordWithFreshUuid(word);
+      let copy = copyWordWithFreshUuid(word);
+      // Open-class generation happens here, against `copy` -- not back
+      // in entryToWord() against the cached, domain-agnostic prototype
+      // `word` -- for the same reason registerUniqueSense() just below
+      // already operates on `copy`: once a POS subtype migrates its own
+      // generateXForms() onto WordForms.registerNamedForm(), a call made
+      // against `word` would register real WordForm records under a
+      // uuid no real Domain's own copy ever has (WordForms indexes by
+      // `word.uuid.value`, and `copyWordWithFreshUuid` mints a fresh one
+      // here). An ADJECTIVE/ADVERB still only gets its own Positive
+      // Degree Form this early -- synsetMemberToWord()'s own docstring
+      // on why Comparative/Superlative wait for the deferred
+      // post-relationship-graph pass further down this file.
+      if (isNoun(copy)) copy = generateNounForms(copy);
+      else if (isVerb(copy)) copy = generateVerbForms(copy);
+      else if (isAdjective(copy)) copy = generateAdjectiveForms(copy, false);
+      else if (isAdverb(copy)) copy = generateAdverbForms(copy, false);
       dictionary.append(copy);
       insertedByEntryId.set(word.entryId.value, copy);
       if (senseStore !== undefined) registerUniqueSense(senseStore, copy, this.cachePad.get(word.entryId.value), wordForms);
@@ -2597,27 +2613,33 @@ export class WordSeeder {
     };
     switch (partOfSpeech) {
       case PartOfSpeech.NOUN:
-        return generateNounForms(createNoun(fields));
+        // generateNounForms() no longer runs here -- this method builds
+        // the cached, domain-agnostic prototype Word every Domain's own
+        // seedClosedClassWords() later copies via copyWordWithFreshUuid();
+        // open-class generation now runs there instead, against each
+        // Domain's own copy (that method's own comment on why).
+        return createNoun(fields);
       case PartOfSpeech.VERB:
-        return generateVerbForms(createVerb(fields));
+        return createVerb(fields);
       case PartOfSpeech.ADJECTIVE:
         // No WordNet Attribute/Hypernym relationship graph exists for a
         // Common Vocabulary Cache entry (this whole path is a hand-
         // curated words.json, not a WordNet synset) -- determineGradability()
-        // (role/processor/adjective_processor.ts) has nothing to check, so this defaults to
-        // non-gradable rather than guessing "yes" the way this codebase
-        // used to (Gradability Evaluation step 6: no established scalar
-        // dimension means Gradable = false). A future curation pass that
-        // hand-authors comparativeDegreeForm/superlativeDegreeForm
-        // directly on a words.json entry still wins here -- this only
-        // ever fills a field that's still undefined.
-        return generateAdjectiveForms(createAdjective(fields), false);
+        // (role/processor/adjective_processor.ts) has nothing to check, so
+        // seedClosedClassWords()'s own generation call always passes
+        // `gradable: false` for this path, same as before (Gradability
+        // Evaluation step 6: no established scalar dimension means
+        // Gradable = false). A future curation pass that hand-authors
+        // comparativeDegreeForm/superlativeDegreeForm directly on a
+        // words.json entry still wins -- generation only ever fills a
+        // field that's still undefined.
+        return createAdjective(fields);
       case PartOfSpeech.ADVERB:
         // Same reasoning as ADJECTIVE just above: no WordNet Pertainym
         // graph exists for a hand-curated Common Vocabulary Cache entry,
-        // so Adverb.determineGradability() (role/processor/adverb_processor.ts) has nothing
-        // to check either -- defaults to non-gradable.
-        return generateAdverbForms(createAdverb(fields), false);
+        // so Adverb.determineGradability() (role/processor/adverb_processor.ts)
+        // has nothing to check either -- defaults to non-gradable.
+        return createAdverb(fields);
       case PartOfSpeech.PRONOUN:
         return createPronoun(fields);
       case PartOfSpeech.DETERMINER:

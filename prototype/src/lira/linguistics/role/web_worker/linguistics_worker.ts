@@ -29,6 +29,7 @@
 import { Dictionary } from "../../../vocabulary/data/dictionary";
 import { PartOfSpeech } from "../../../vocabulary/data/enums/part_of_speech";
 import { Phrases } from "../../../vocabulary/data/phrases";
+import { WordForms } from "../../../vocabulary/data/word_forms";
 import { AsyncDictionaryHydrator } from "../../../vocabulary/role/dictionary_hydrator";
 import { DictionaryProcessor } from "../../../vocabulary/role/dictionary_processor";
 import { WordSeeder } from "../../../vocabulary/role/word_seeder";
@@ -81,11 +82,19 @@ function handleInit(): void {
     post({ type: "status", state: "running", detail: "Seeding the Common Vocabulary Cache…" });
     const dictionary = new Dictionary();
     const phraseBook = new Phrases();
-    const wordsSeeded = new WordSeeder("en").seedClosedClassWords(dictionary, phraseBook);
+    // Threaded through the same way vocabulary_worker.ts already does
+    // (domain.vocabulary.wordForms) -- without it, an inflected
+    // open-class surface form (a Noun's own plural, a Verb's own past
+    // tense, ...) would resolve to UNRESOLVED once each POS's own
+    // generateXForms() stops writing scalar *_Form fields and starts
+    // registering real WordForm records instead; PartOfSpeechIdentifier.
+    // identifySeeded() reads those back via WordForms.lookupByText().
+    const wordForms = new WordForms();
+    const wordsSeeded = new WordSeeder("en").seedClosedClassWords(dictionary, phraseBook, undefined, undefined, wordForms);
 
     post({ type: "status", state: "running", detail: `Seeded ${wordsSeeded} words — configuring grammar…` });
     const hydrator = new AsyncDictionaryHydrator(dictionary);
-    const processor = new DictionaryProcessor(dictionary, phraseBook, hydrator, "Common");
+    const processor = new DictionaryProcessor(dictionary, phraseBook, hydrator, "Common", wordForms);
     controller = new LinguisticController(processor);
 
     post({ type: "status", state: "done", detail: `${wordsSeeded} words ready` });
