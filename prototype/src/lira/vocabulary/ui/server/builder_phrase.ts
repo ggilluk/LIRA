@@ -11,6 +11,7 @@ import { RegisterCode } from "../../data/enums/register_code";
 import type { Phrase } from "../../data/phrase";
 import type { Phrases } from "../../data/phrases";
 import type { Senses } from "../../data/senses";
+import type { WordForms } from "../../data/word_forms";
 import { definitionWordSegment, type DefinitionSegment } from "./builder_segment";
 import { senseFieldsFor } from "./resolver_domain";
 
@@ -56,8 +57,8 @@ export function phraseTypeLabel(phrase: Phrase): string | undefined {
   return phrase.phraseType !== undefined ? PhraseType[phrase.phraseType] : undefined;
 }
 
-export function phraseRecordFor(phrase: Phrase, senses: Senses): PhraseRecord {
-  const senseFields = senseFieldsFor(senses, phrase);
+export function phraseRecordFor(phrase: Phrase, senses: Senses, wordForms: WordForms): PhraseRecord {
+  const senseFields = senseFieldsFor(senses, phrase, wordForms);
   return {
     id: phrase.uuid.value,
     entry_id: phrase.entryId.value,
@@ -85,8 +86,8 @@ export function phraseRecordFor(phrase: Phrase, senses: Senses): PhraseRecord {
  * over-capacity treatment wordRecords() already has, not the "a
  * Phrase count never approaches that range" assumption an earlier
  * version of this function made before WordNet-seeded Phrases existed. */
-export function phraseRecords(phrases: Phrases, senses: Senses): PhraseRecord[] {
-  const records = phrases.all().map((phrase) => phraseRecordFor(phrase, senses));
+export function phraseRecords(phrases: Phrases, senses: Senses, wordForms: WordForms): PhraseRecord[] {
+  const records = phrases.all().map((phrase) => phraseRecordFor(phrase, senses, wordForms));
   records.sort((a, b) => a.lexical_form.toLowerCase().localeCompare(b.lexical_form.toLowerCase()));
   return records;
 }
@@ -102,12 +103,18 @@ export function phraseRecords(phrases: Phrases, senses: Senses): PhraseRecord[] 
  * (Dictionary.findByUuid) rather than re-splitting `text` and
  * re-resolving each token against `dictionary` from scratch -- the
  * whole reason those references were stored ahead of time. */
-export function phraseWordSegments(phrase: Phrase, dictionary: Dictionary, senses: Senses, domainName: string): DefinitionSegment[] {
+export function phraseWordSegments(
+  phrase: Phrase,
+  dictionary: Dictionary,
+  senses: Senses,
+  domainName: string,
+  wordForms: WordForms,
+): DefinitionSegment[] {
   const tokens = phrase.text.trim().split(/\s+/).filter((token) => token.length > 0);
   return tokens.map((token, index) => {
     const ref = phrase.words[index];
     const resolved = ref !== undefined ? dictionary.findByUuid(ref.value) : undefined;
-    return definitionWordSegment(token, resolved, senses, domainName);
+    return definitionWordSegment(token, resolved, senses, domainName, wordForms);
   });
 }
 
@@ -121,10 +128,16 @@ export function phraseWordSegments(phrase: Phrase, dictionary: Dictionary, sense
  * lexical_form/pos/domain/gloss shape by hand -- a Head Word is
  * exactly one more definition-style word reference, just singled out
  * instead of iterated in sequence. */
-export function phraseHeadWordSegment(phrase: Phrase, dictionary: Dictionary, senses: Senses, domainName: string): DefinitionSegment | undefined {
+export function phraseHeadWordSegment(
+  phrase: Phrase,
+  dictionary: Dictionary,
+  senses: Senses,
+  domainName: string,
+  wordForms: WordForms,
+): DefinitionSegment | undefined {
   if (phrase.headWordForm === undefined) return undefined;
   const resolved = phrase.headWord !== undefined ? dictionary.findByUuid(phrase.headWord.value) : undefined;
-  return definitionWordSegment(phrase.headWordForm.value, resolved, senses, domainName);
+  return definitionWordSegment(phrase.headWordForm.value, resolved, senses, domainName, wordForms);
 }
 
 /** searchWords()'s own counterpart for the Phrases tab, over
@@ -142,6 +155,7 @@ export function searchPhrases(
   phrases: Phrases,
   senses: Senses,
   options: { word?: string; gloss?: string; definition?: string; pos?: string; limit?: number },
+  wordForms: WordForms,
 ): {
   phrases: PhraseRecord[];
   totalMatches: number;
@@ -161,7 +175,7 @@ export function searchPhrases(
     if (definitionQuery && !(phrase.definition?.value ?? "").toLowerCase().includes(definitionQuery)) continue;
 
     totalMatches += 1;
-    if (matches.length < limit) matches.push(phraseRecordFor(phrase, senses));
+    if (matches.length < limit) matches.push(phraseRecordFor(phrase, senses, wordForms));
   }
   matches.sort((a, b) => a.lexical_form.toLowerCase().localeCompare(b.lexical_form.toLowerCase()));
   return { phrases: matches, totalMatches };

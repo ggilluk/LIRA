@@ -10,6 +10,7 @@ import { phraseAsWord } from "../../data/phrase";
 import type { Phrases } from "../../data/phrases";
 import type { Senses } from "../../data/senses";
 import type { Word } from "../../data/entities/word";
+import type { WordForms } from "../../data/word_forms";
 
 /** Resolves a relationship endpoint's uuid against this Domain's
  * Dictionary first, falling back to its Phrases (projected onto a
@@ -33,14 +34,14 @@ import type { Word } from "../../data/entities/word";
  * `wordId` path expands a Sense edge out to every member instead of
  * picking just one, since that path already has the querying Word on
  * hand to reconstruct the full fan-out around. */
-export function resolveEntry(dictionary: Dictionary, phrases: Phrases, senses: Senses, id: string): Word | undefined {
+export function resolveEntry(dictionary: Dictionary, phrases: Phrases, senses: Senses, id: string, wordForms: WordForms): Word | undefined {
   const word = dictionary.findByUuid(id);
   if (word !== undefined) return word;
   const phrase = phrases.findByUuid(id);
-  if (phrase !== undefined) return phraseAsWord(phrase);
+  if (phrase !== undefined) return phraseAsWord(phrase, wordForms);
   const sense = senses.findByUuid(id);
   if (sense === undefined) return undefined;
   const representative = senses.membersOf(sense.uuid.value)[0];
   if (representative === undefined) return undefined;
-  return "words" in representative ? phraseAsWord(representative) : representative;
+  return "words" in representative ? phraseAsWord(representative, wordForms) : representative;
 }

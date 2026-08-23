@@ -225,7 +225,7 @@ export class DictionaryView {
     const overCapacitySenses = totalSenseCount > MAX_INTERACTIVE_WORDS;
 
     const words = overCapacity ? [] : wordRecords(this.dictionary, this.relationships, this.senses, this.domainName, this.wordForms);
-    const rels = overCapacity ? [] : relationshipRecords(this.relationships, this.dictionary, this.phrases, this.senses, this.domainName);
+    const rels = overCapacity ? [] : relationshipRecords(this.relationships, this.dictionary, this.phrases, this.senses, this.domainName, this.wordForms);
     // Same overCapacity gate as `rels` just above -- LexicalRelationshipStore's
     // own scale tracks the same Dictionary this.relationships already
     // does (both are populated off the identical seeded Words), so
@@ -237,7 +237,7 @@ export class DictionaryView {
       overCapacity || this.lexicalRelationships === undefined
         ? []
         : lexicalRelationshipRecords(this.lexicalRelationships, this.wordForms, this.dictionary, this.phrases, this.senses, this.domainName);
-    const phrases = overCapacityPhrases ? [] : phraseRecords(this.phrases, this.senses);
+    const phrases = overCapacityPhrases ? [] : phraseRecords(this.phrases, this.senses, this.wordForms);
     const senses = overCapacitySenses ? [] : senseRecords(this.senses, this.domainName);
     const commonCount = allWords.filter((w) => w.isCommon).length;
     const posCounts = new Set(allWords.map((w) => w.partOfSpeech));
@@ -251,7 +251,9 @@ export class DictionaryView {
     // where every dropdown showed nothing at all despite 200,000+ Words
     // actually being there).
     const posValues = [...new Set(allWords.map((w) => PartOfSpeech[w.partOfSpeech]))].sort();
-    const domainValues = [...new Set(allWords.map((w) => domainLabel(this.senses, this.domainName, w)).filter((d): d is string => d !== null))].sort();
+    const domainValues = [
+      ...new Set(allWords.map((w) => domainLabel(this.senses, this.domainName, w, this.wordForms)).filter((d): d is string => d !== null)),
+    ].sort();
     // Just two labels are ever possible for one DictionaryView render
     // ("Common" and this.domainName), so a fixed two-color assignment,
     // not a per-domain palette, is enough.
@@ -373,7 +375,7 @@ export class DictionaryView {
    * duplicating domainLabel's own isCommon/domainTag logic. */
   wordDomainLabels(): Map<string, string | null> {
     const labels = new Map<string, string | null>();
-    for (const word of this.dictionary.all()) labels.set(word.uuid.value, domainLabel(this.senses, this.domainName, word));
+    for (const word of this.dictionary.all()) labels.set(word.uuid.value, domainLabel(this.senses, this.domainName, word, this.wordForms));
     return labels;
   }
 
@@ -394,7 +396,7 @@ export class DictionaryView {
     phrases: PhraseRecord[];
     totalMatches: number;
   } {
-    return searchPhrases(this.phrases, this.senses, options);
+    return searchPhrases(this.phrases, this.senses, options, this.wordForms);
   }
 
   searchSenses(options: { word?: string; gloss?: string; definition?: string; pos?: string; limit?: number }): {
@@ -405,7 +407,7 @@ export class DictionaryView {
   }
 
   searchRelationships(options: { wordId?: string; query?: string; limit?: number }): { relationships: RelationshipRecord[]; totalMatches: number } {
-    return searchRelationships(this.relationships, this.dictionary, this.phrases, this.senses, this.domainName, options);
+    return searchRelationships(this.relationships, this.dictionary, this.phrases, this.senses, this.domainName, options, this.wordForms);
   }
 
   relationshipKindCounts(): RelationshipKindCount[] {
@@ -430,6 +432,6 @@ export class DictionaryView {
   }
 
   resolveHierarchy(options: { kind: string; wordId?: string; limit?: number }): HierarchyResolution {
-    return resolveHierarchy(this.relationships, this.dictionary, this.phrases, this.senses, this.domainName, options);
+    return resolveHierarchy(this.relationships, this.dictionary, this.phrases, this.senses, this.domainName, options, this.wordForms);
   }
 }

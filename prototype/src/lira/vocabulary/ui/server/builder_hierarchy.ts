@@ -8,6 +8,7 @@ import { SemanticRelationshipKind } from "../../data/enums/semantic_relationship
 import type { Phrases } from "../../data/phrases";
 import type { SemanticRelationshipStore } from "../../data/semantic_relationship_store";
 import type { Senses } from "../../data/senses";
+import type { WordForms } from "../../data/word_forms";
 import { domainLabel } from "./resolver_domain";
 import { resolveEntry } from "./resolver_entity";
 
@@ -154,6 +155,7 @@ export function resolveHierarchy(
   senses: Senses,
   domainName: string,
   options: { kind: string; wordId?: string; limit?: number },
+  wordForms: WordForms,
 ): HierarchyResolution {
   const empty: HierarchyResolution = { nodes: [], edges: [], roots: [], totalEdgeCount: 0, totalNodeCount: 0, fellBack: false, truncated: false };
   const kindEnum = SemanticRelationshipKind[options.kind as keyof typeof SemanticRelationshipKind];
@@ -215,10 +217,12 @@ export function resolveHierarchy(
     // node by design.
     let cur = options.wordId;
     if (!allNodeIds.has(cur)) {
-      // senseIds[0] -- the primary, highest-Sense.senseFrequency sense
-      // (Word.senseIds's own docstring) -- same "collapse a whole synset onto one node"
-      // simplification this fallback already documents above.
-      const senseId = resolveEntry(dictionary, phrases, senses, options.wordId)?.senseIds[0]?.value;
+      // senseIdsOf(word)[0] -- the primary, highest-Sense.senseFrequency
+      // sense (WordForms.senseIdsOf()'s own docstring) -- same "collapse
+      // a whole synset onto one node" simplification this fallback
+      // already documents above.
+      const resolved = resolveEntry(dictionary, phrases, senses, options.wordId, wordForms);
+      const senseId = resolved !== undefined ? wordForms.senseIdsOf(resolved)[0]?.value : undefined;
       if (senseId !== undefined && allNodeIds.has(senseId)) cur = senseId;
     }
     if (!allNodeIds.has(cur)) return { ...empty, totalEdgeCount, totalNodeCount };
@@ -298,14 +302,14 @@ export function resolveHierarchy(
 
   const nodes: HierarchyNode[] = [];
   for (const id of includedIds) {
-    const word = resolveEntry(dictionary, phrases, senses, id);
+    const word = resolveEntry(dictionary, phrases, senses, id, wordForms);
     if (!word) continue;
     nodes.push({
       id,
       lexical_form: word.text,
       pos: PartOfSpeech[word.partOfSpeech],
-      domain: domainLabel(senses, domainName, word),
-      sense_id: word.synsetId?.value ?? null,
+      domain: domainLabel(senses, domainName, word, wordForms),
+      sense_id: wordForms.synsetIdOf(word)?.value ?? null,
     });
   }
 

@@ -1,6 +1,7 @@
 import type { Dictionary } from "../data/dictionary";
 import { toSyntheticWord } from "../data/phrase";
 import type { Phrases } from "../data/phrases";
+import type { Senses } from "../data/senses";
 import type { Word } from "../data/entities/word";
 import { definitionWords } from "./word_processor";
 import { createWordLookupContext } from "../data/word_lookup_context";
@@ -164,16 +165,25 @@ export class DictionaryProcessor {
     return word;
   }
 
-  /** Walks `definitionWords(word, this.dictionary)` and queues external
-   * hydration for every token that came back unresolved. A gap in one
-   * Word's own definition is treated as a discovery signal, not a
-   * blocker. Returns the distinct surface forms actually queued, in
-   * first-seen order; a form already in-flight (AsyncDictionaryHydrator's
-   * own dedup) is silently skipped. */
-  queueDefinitionHydration(word: Word): readonly string[] {
+  /** Walks `definitionWords()` and queues external hydration for every
+   * token that came back unresolved. A gap in one Word's own definition
+   * is treated as a discovery signal, not a blocker. Returns the
+   * distinct surface forms actually queued, in first-seen order; a form
+   * already in-flight (AsyncDictionaryHydrator's own dedup) is silently
+   * skipped.
+   *
+   * `word`'s own definition text is resolved through its primary Sense
+   * (`wordForms.senseIdsOf(word)[0]`, `senses.findByUuid()`) -- Word
+   * carries no `definition` of its own to read directly any more
+   * (Sense's own docstring on why). Undefined, same as no definition at
+   * all, when `word` has no base-lemma WordForm registered yet or no
+   * matching Sense resolves. */
+  queueDefinitionHydration(word: Word, senses: Senses, wordForms: WordForms): readonly string[] {
     const queued: string[] = [];
     const seen = new Set<string>();
-    for (const reference of definitionWords(word, this.dictionary)) {
+    const primarySenseId = wordForms.senseIdsOf(word)[0];
+    const definition = primarySenseId !== undefined ? senses.findByUuid(primarySenseId.value)?.definition : undefined;
+    for (const reference of definitionWords(definition, this.dictionary)) {
       if (reference.word !== undefined) continue;
       const normalisedText = reference.text.toLowerCase();
       if (seen.has(normalisedText)) continue;

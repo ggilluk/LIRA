@@ -910,22 +910,28 @@ function applyDomainTag(target: { domainTag?: Text; relatedDomainTags: readonly 
  * now share one Sense the way WordNet synonyms do -- that grouping still
  * lives entirely in RelationshipSeeder's own SYNONYM edges, untouched by
  * this. Carries over every Sense-owned field the entry already holds
- * (domainTag, relatedDomainTags, definition, gloss, usageNotes,
- * sourceReferences, isCommon) so a Sense-aware reader sees the identical
- * picture it would have read from the Word/Phrase directly -- both
- * copies exist side by side afterwards (the entry's own fields are left
- * exactly as they were), the same accepted duplication WordNet's own
- * Sense/Word split still carries for definition/usageNotes today.
+ * (domainTag, relatedDomainTags, gloss, usageNotes, sourceReferences,
+ * isCommon) so a Sense-aware reader sees the identical picture it would
+ * have read from the Word/Phrase directly -- both copies exist side by
+ * side afterwards for a Phrase (the entry's own fields are left exactly
+ * as they were), the same accepted duplication WordNet's own Sense/
+ * Phrase split still carries for definition/usageNotes today.
  *
- * `pad`, unlike every other field this copies, doesn't come from `entry`
- * itself at all -- neither Word nor Phrase carries PAD any more
- * (Sense.seededPleasureDispleasureWeight's own docstring, data/sense.ts)
- * -- so the caller (seedClosedClassWords) passes it separately, read
- * from WordSeeder's own cachePad side-channel (recordPad()'s own
- * docstring) by entryId. This is the one place a hand-curated entry's
- * raw PAD value actually reaches a Sense; undefined (the every-call-site
- * default) leaves every one of the Sense's own three PAD fields
- * undefined too, same as a WordNet-seeded Sense always has.
+ * `pad`/`wordDefinition`, unlike every other field this copies, don't
+ * come from `entry` itself at all -- neither Word nor Phrase carries PAD
+ * any more (Sense.seededPleasureDispleasureWeight's own docstring,
+ * data/sense.ts), and Word carries no `definition` of its own any more
+ * either (same docstring, the identical accepted-gap reasoning) -- so
+ * the caller (seedClosedClassWords) passes both separately, read from
+ * WordSeeder's own cachePad/cacheDefinition side-channels (recordPad()'s/
+ * cacheDefinition's own docstrings) by entryId. `wordDefinition` is
+ * ignored entirely when `entry` is a Phrase (its own `entry.definition`
+ * is used instead, just below) -- only a Word needs the side-channel.
+ * This is the one place a hand-curated Word's raw PAD/definition values
+ * actually reach a Sense; both undefined (the every-call-site default)
+ * leaves the Sense's own fields undefined too, same as a WordNet-seeded
+ * Sense always has for PAD, and same as a Phrase call site's own
+ * `entry.definition` being itself undefined already would.
  *
  * `wordForms`, when supplied, also registers this same Sense onto
  * `entry`'s own base-lemma WordForm (WordForms.registerBaseLemmaForm()/
@@ -939,6 +945,7 @@ function registerUniqueSense(
   entry: Word | Phrase,
   pad?: { pleasure?: number; arousal?: number; dominance?: number },
   wordForms?: WordForms,
+  wordDefinition?: Text,
 ): void {
   // Phrase has no root-word concept at all (root_words.json's own 25
   // entries are all single-word NOUNs) -- the `"words" in entry` check
@@ -955,7 +962,7 @@ function registerUniqueSense(
   const sense = createSense({
     domainTag: entry.domainTag,
     relatedDomainTags: entry.relatedDomainTags,
-    definition: entry.definition,
+    definition: isWord ? wordDefinition : entry.definition,
     gloss: entry.gloss,
     usageNotes: entry.usageNotes,
     sourceReferences: entry.sourceReferences,
@@ -1039,6 +1046,16 @@ export class WordSeeder {
   // `WordForms` store to register it against
   // (WordForms.registerBaseLemmaForm()'s own `text` parameter).
   private cacheLexicalForm = new Map<string, Text>();
+  // Every cached entry's own raw `definition`, keyed by entryId --
+  // entryToWord() populates this the same way it populates
+  // cacheLexicalForm above, for the identical reason: Word carries no
+  // `definition` of its own any more (Sense's own docstring on why --
+  // the accepted gap PAD already has) -- registerUniqueSense() reads
+  // this back for a Word entry specifically (a Phrase entry still
+  // carries its own `definition` field directly, untouched by this
+  // move) so the Sense it creates still gets the entry's own real
+  // definition text.
+  private cacheDefinition = new Map<string, Text>();
   private promotedOverlay: PromotedDoc | null = null;
 
   constructor(
@@ -1365,7 +1382,9 @@ export class WordSeeder {
       else if (isAdverb(copy)) copy = generateAdverbForms(copy, false, wordForms);
       dictionary.append(copy);
       insertedByEntryId.set(word.entryId.value, copy);
-      if (senseStore !== undefined) registerUniqueSense(senseStore, copy, this.cachePad.get(word.entryId.value), wordForms);
+      if (senseStore !== undefined) {
+        registerUniqueSense(senseStore, copy, this.cachePad.get(word.entryId.value), wordForms, this.cacheDefinition.get(word.entryId.value));
+      }
       seeded += 1;
     }
     for (const link of this.cacheFormLinks) {
@@ -1702,8 +1721,8 @@ export class WordSeeder {
     // post-relationships pass, this needs nothing from pass 2 below --
     // senseFrequency is already known once a Sense exists at all -- so
     // it runs here, right after pass 1, not after relationships too.
-    for (const word of dictionary.all()) this.orderSensesByFrequency(word, senseStore);
-    for (const phrase of phraseBook.all()) this.orderSensesByFrequency(phrase, senseStore);
+    for (const word of dictionary.all()) this.orderSensesByFrequency(word, senseStore, wordForms);
+    for (const phrase of phraseBook.all()) this.orderSensesByFrequency(phrase, senseStore, wordForms);
 
     processed = 0;
     for (const synset of synsets) {
@@ -1768,11 +1787,11 @@ export class WordSeeder {
     for (const word of dictionary.all()) {
       if (isAdjective(word)) {
         if (hasBothDegreeForms(word)) continue;
-        const gradable = determineGradability(semanticStore, word);
+        const gradable = determineGradability(semanticStore, word, wordForms);
         generateAdjectiveForms(word, gradable, wordForms);
       } else if (isAdverb(word)) {
         if (hasBothDegreeForms(word)) continue;
-        const gradable = determineAdverbGradability(semanticStore, dictionary, senseStore, word);
+        const gradable = determineAdverbGradability(semanticStore, dictionary, senseStore, word, wordForms);
         generateAdverbForms(word, gradable, wordForms);
       }
     }
@@ -2212,31 +2231,46 @@ export class WordSeeder {
     phrase.headWordForm = headIndex === -1 ? undefined : { value: tokens[headIndex] };
   }
 
-  /** Reorders `entry.senseIds` (Word.senseIds's own docstring) by
-   * descending Sense.senseFrequency -- highest-frequency Sense first,
+  /** Reorders a Phrase's own `entry.senseIds`, or a Word's own base-
+   * lemma WordForm's own `senseIds` (WordForm's own docstring on why
+   * that's where a Word's senses live now, not a scalar Word field) --
+   * by descending Sense.senseFrequency, highest-frequency Sense first,
    * ties broken by keeping their existing relative order (a stable
    * sort, so a re-seed that finds no new sense_frequency data leaves an
    * already-correct ordering untouched). A senseId that doesn't resolve
    * in `senseStore` at all (shouldn't happen for anything seedWordNet
    * itself just registered, but defensive the same way sensesFor()'s
-   * own read side is, ui/dictionary_view.ts) sorts as frequency 0,
-   * same as a real Sense WordNet never tagged.
+   * own read side is, ui/dictionary_view.ts) sorts as frequency 0, same
+   * as a real Sense WordNet never tagged.
    *
-   * Also reassigns `entry.synsetId` to the now-primary Sense's own
-   * synsetId, keeping it in sync with the new `senseIds[0]` -- both
-   * fields are documented (Word.synsetId's own docstring) as always
+   * Also reassigns the same target's own `synsetId` to the now-primary
+   * Sense's own synsetId, keeping it in sync with the new `senseIds[0]`
+   * -- both fields are documented (WordForm's own docstring) as always
    * naming the same "primary sense", and reordering senseIds without
-   * this would silently break that invariant for every Word/Phrase this
-   * pass actually reorders (anything monosemous is unaffected either
-   * way -- a single senseId's own "order" is a no-op). A no-op for a
-   * Word/Phrase with fewer than two senseIds, the ordinary case for
-   * every non-polysemous entry. */
-  private orderSensesByFrequency(entry: Word | Phrase, senseStore: Senses): void {
-    if (entry.senseIds.length < 2) return;
+   * this would silently break that invariant for every entry this pass
+   * actually reorders (anything monosemous is unaffected either way --
+   * a single senseId's own "order" is a no-op). A no-op for a Phrase/
+   * WordForm with fewer than two senseIds (the ordinary case for every
+   * non-polysemous entry), and for a Word with no base-lemma WordForm
+   * registered at all -- AUXILIARY, in particular, whose own senses
+   * spread across more than one WordForm instead
+   * (WordForms.senseIdsOf()'s own docstring) and whose Senses are hand-
+   * authored, never WordNet-frequency-tagged, so this pass has nothing
+   * meaningful to do for it either way. */
+  private orderSensesByFrequency(entry: Word | Phrase, senseStore: Senses, wordForms: WordForms | undefined): void {
     const frequencyOf = (senseId: Identifier): number => senseStore.findByUuid(senseId.value)?.senseFrequency ?? 0;
-    const sorted = [...entry.senseIds].sort((a, b) => frequencyOf(b) - frequencyOf(a));
-    entry.senseIds = sorted;
-    entry.synsetId = senseStore.findByUuid(sorted[0].value)?.synsetId ?? entry.synsetId;
+    if ("words" in entry) {
+      if (entry.senseIds.length < 2) return;
+      const sorted = [...entry.senseIds].sort((a, b) => frequencyOf(b) - frequencyOf(a));
+      entry.senseIds = sorted;
+      entry.synsetId = senseStore.findByUuid(sorted[0].value)?.synsetId ?? entry.synsetId;
+      return;
+    }
+    const form = wordForms?.baseLemmaFormOf(entry);
+    if (form === undefined || form.senseIds.length < 2) return;
+    const sorted = [...form.senseIds].sort((a, b) => frequencyOf(b) - frequencyOf(a));
+    form.senseIds = sorted;
+    form.synsetId = senseStore.findByUuid(sorted[0].value)?.synsetId ?? form.synsetId;
   }
 
   /** Finds the first `kind`-typed edge incident to `word` -- checked in
@@ -2390,9 +2424,7 @@ export class WordSeeder {
   private synsetMemberToWord(synset: WordNetSynset, lemma: string, wordForms: WordForms | undefined): Word {
     const shared = {
       text: lemma,
-      definition: synset.definition ? { value: synset.definition } : undefined,
       usageNotes: synset.examples.map((example) => ({ value: example })),
-      synsetId: { value: synset.synsetId, ...WORDNET_SYNSET_ID_SCHEME },
       isCommon: true,
       sourceReferences: [WORDNET_SOURCE_REFERENCE],
     };
@@ -2404,18 +2436,27 @@ export class WordSeeder {
     // "1.0" default -- matching createWord()'s former identical default
     // for the same case.
     const lexicalForm: Text = { value: lemma, languageCode: { value: this.languageCode } };
+    // synsetId moved off Word onto its own base-lemma WordForm (WordForm's
+    // own docstring on why) -- passed as registerBaseLemmaForm()'s own
+    // `extra` alongside `lexicalForm` below, the same way this method
+    // used to fold it straight into `shared` for createVerb()/createNoun()/
+    // etc. to pick up. `definition` has no equivalent left to pass here at
+    // all: it moved onto Sense, not WordForm, and this synset's own Sense
+    // (createSense({definition: synset.definition, ...}), this class's own
+    // pass-1 synset loop) already carries the identical value independently.
+    const synsetId: Identifier = { value: synset.synsetId, ...WORDNET_SYNSET_ID_SCHEME };
     switch (synset.partOfSpeech) {
       case PartOfSpeech.VERB: {
         // registerBaseLemmaForm() first, before generateVerbForms() --
         // Noun's own case just below, same "keep base lemma the *first*
         // WordForm on record" reasoning.
         const verb = createVerb(shared);
-        wordForms?.registerBaseLemmaForm(verb, lexicalForm);
+        wordForms?.registerBaseLemmaForm(verb, lexicalForm, { synsetId });
         return generateVerbForms(verb, wordForms);
       }
       case PartOfSpeech.ADJECTIVE: {
         const adjective = createAdjective(shared);
-        wordForms?.registerBaseLemmaForm(adjective, lexicalForm);
+        wordForms?.registerBaseLemmaForm(adjective, lexicalForm, { synsetId });
         return generateAdjectiveForms(adjective, false, wordForms);
       }
       case PartOfSpeech.ADVERB: {
@@ -2426,7 +2467,7 @@ export class WordSeeder {
         // (this method's own final loop) revisits every seeded Adverb
         // too, once relationships are fully wired.
         const adverb = createAdverb(shared);
-        wordForms?.registerBaseLemmaForm(adverb, lexicalForm);
+        wordForms?.registerBaseLemmaForm(adverb, lexicalForm, { synsetId });
         return generateAdverbForms(adverb, false, wordForms);
       }
       case PartOfSpeech.NOUN: {
@@ -2438,7 +2479,7 @@ export class WordSeeder {
         // whichever POS-specific field generateNounForms() adds land
         // ahead of it and reorder the Word Forms section for no reason.
         const noun = createNoun(shared);
-        wordForms?.registerBaseLemmaForm(noun, lexicalForm);
+        wordForms?.registerBaseLemmaForm(noun, lexicalForm, { synsetId });
         return generateNounForms(noun, wordForms);
       }
       default: {
@@ -2448,7 +2489,7 @@ export class WordSeeder {
         // so this switch has a total, not partial, mapping over
         // PartOfSpeech's other 12 values.
         const noun = createNoun(shared);
-        wordForms?.registerBaseLemmaForm(noun, lexicalForm);
+        wordForms?.registerBaseLemmaForm(noun, lexicalForm, { synsetId });
         return generateNounForms(noun, wordForms);
       }
     }
@@ -2652,6 +2693,8 @@ export class WordSeeder {
       version: entry.version ?? "1.0",
       ...(scriptCode !== undefined ? { scriptCode } : {}),
     });
+    const definition = optText(entry.definition);
+    if (definition !== undefined) this.cacheDefinition.set(entry.entry_id, definition);
 
     const sourceReferences = (entry.source_references ?? []).map((ref) => ({
       sourceName: { value: ref.source_name },
@@ -2667,7 +2710,6 @@ export class WordSeeder {
       entryId: { value: entry.entry_id },
       partOfSpeech,
       gloss: optText(entry.gloss),
-      definition: optText(entry.definition),
       usageNotes: (entry.usage_notes ?? []).map((note) => ({ value: note })),
       registerCodes: (entry.register_codes ?? []).map((code) => RegisterCode[code as keyof typeof RegisterCode]),
       dialectCodes: (entry.dialect_codes ?? []).map((code) => ({ value: code })),
@@ -2824,7 +2866,14 @@ export class WordSeeder {
       script_code: null,
       part_of_speech: PartOfSpeech[word.partOfSpeech],
       closed_class: false,
-      definition: word.definition?.value ?? null,
+      // definition lives on Sense now (Sense's own docstring, the
+      // accepted gap PAD already has), not on Word -- same "only ever
+      // receives a bare Word, with no Senses/WordForms store to resolve
+      // a primary Sense through" situation as PAD/the WordForm
+      // attributes above, and just as moot in practice for the same
+      // reason (promoteWord() has no caller anywhere in this codebase
+      // yet).
+      definition: null,
       gloss: word.gloss?.value ?? null,
       usage_notes: word.usageNotes.map((note) => note.value),
       register_codes: word.registerCodes.map((code) => RegisterCode[code]),

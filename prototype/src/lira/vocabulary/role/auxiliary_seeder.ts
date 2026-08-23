@@ -463,7 +463,6 @@ export class AuxiliarySeeder {
       const word = createAuxiliary({
         text: lemmaSeed.lemma,
         entryId: { value: lemmaSeed.entryId },
-        definition: { value: lemmaSeed.definition },
         gloss: { value: lemmaSeed.definition },
         isCommon: true,
         registerCodes: [RegisterCode.NEUTRAL],

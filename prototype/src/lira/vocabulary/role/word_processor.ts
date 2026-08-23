@@ -47,8 +47,6 @@ export function createWord(init: WordInit): Word {
     editorialLabels: [],
     relatedDomainTags: [],
     sourceReferences: [],
-    senseIds: [],
-    contractionOf: [],
     wordFormIds: [],
     isCommon: false,
     isFullyHydrated: true,
@@ -94,21 +92,30 @@ export function copyWordWithFreshUuid(word: Word): Word {
 // this Word, not a claimed relationship between two Words, so there is
 // no LexicalRelationship to read.
 
-/** Breaks `word`'s own `definition` text into its own sequenced array
- * of DefinitionWordReferences, one per token in reading order --
- * unlike relatedWords, duplicates are kept and position is preserved,
- * since this describes a sentence, not a set of related Words. Empty
- * when `definition` is undefined.
+/** Breaks `definitionText` into its own sequenced array of
+ * DefinitionWordReferences, one per token in reading order -- unlike
+ * relatedWords, duplicates are kept and position is preserved, since
+ * this describes a sentence, not a set of related Words. Empty when
+ * `definitionText` is undefined.
+ *
+ * Takes the definition `Text` directly rather than a `Word` to read it
+ * from -- Word carries no `definition` of its own any more (Sense's own
+ * docstring on why); the caller resolves it through the Word's own
+ * primary Sense first (ui/server/resolver_domain.ts's own
+ * senseFieldsFor(), role/dictionary_processor.ts's own
+ * queueDefinitionHydration()), keeping this function itself free of a
+ * Senses/WordForms dependency it would otherwise need just to read one
+ * field.
  *
  * Each token is resolved against `dictionary` domain-first: every
  * same-text candidate `Dictionary.lookupAll` returns, preferring one
  * with `isCommon=false` if any exists, else falling back to
  * lookupAll's own first-seeded order. A token with no candidate at all
  * resolves to `word=undefined`, reported rather than guessed. */
-export function definitionWords(word: Word, dictionary: Dictionary): readonly DefinitionWordReference[] {
-  if (word.definition === undefined) return [];
+export function definitionWords(definitionText: Text | undefined, dictionary: Dictionary): readonly DefinitionWordReference[] {
+  if (definitionText === undefined) return [];
   const references: DefinitionWordReference[] = [];
-  for (const token of definitionTokens(word.definition.value)) {
+  for (const token of definitionTokens(definitionText.value)) {
     const candidates = dictionary.lookupAll(token);
     const resolved = candidates.length > 0 ? (candidates.find((w) => !w.isCommon) ?? candidates[0]) : undefined;
     references.push({ text: token, word: resolved });

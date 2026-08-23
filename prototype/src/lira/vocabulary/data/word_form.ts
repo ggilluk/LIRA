@@ -25,8 +25,9 @@
  *
  * Why a WordForm can carry more than one Sense: the same spelling can
  * carry more than one meaning ("am" is both the continuous-aspect and
- * the passive-voice auxiliary of "be") -- `Word.senseIds`'s own "a Word
- * can lexicalize several senses" shape, one level down. */
+ * the passive-voice auxiliary of "be"). `senseIds`, `synsetId`, and
+ * `contractionOf` all live here now, not on Word at all -- each field's
+ * own docstring below on why. */
 
 import type { Code, Identifier, Number_, Text } from "../../value_objects";
 import type { Pronunciation } from "./pronunciation";
@@ -77,13 +78,42 @@ export interface WordForm {
   // syllableRepresentation/stressPattern genuinely can be.
   normalisedForm: Text;
 
-  // This spelling's own distinct meanings, 0..* -- Word.senseIds's own
-  // exact shape, one level down. A Sense referenced here is the same
-  // object (and uuid) that's also, today, registered onto the owning
-  // Word's own senseIds (role/auxiliary_seeder.ts's own docstring on
-  // why -- keeps the existing Senses-section UI working unchanged),
-  // not a second, independently-authored copy.
+  // This spelling's own distinct meanings, 0..* -- moved here from Word
+  // (Word's former `senseIds` field: every hand-curated and WordNet-
+  // seeded write site already registered a Sense onto both the owning
+  // Word AND its own base-lemma WordForm in lockstep -- role/word_seeder.ts's
+  // own registerUniqueSense()/synset-member loop, role/auxiliary_seeder.ts's
+  // own docstring -- so the Word-level copy added nothing a caller
+  // couldn't already reach through `Word.wordFormIds` ->
+  // WordForms.formsOf()/registerBaseLemmaForm(). Why a WordForm can
+  // carry more than one Sense at all: the same spelling can carry more
+  // than one meaning ("am" is both the continuous-aspect and the
+  // passive-voice auxiliary of "be").
   senseIds: readonly Identifier[];
+
+  // The Princeton WordNet synset naming this WordForm's own primary
+  // (senseIds[0]) Sense -- moved here from Word (former `synsetId`
+  // field), same reasoning as `senseIds` just above: both facts are
+  // written together, at the same call site, every time
+  // (WordSeeder.synsetMemberToWord()'s own `lexicalForm`/`extra`
+  // pairing). Sense.synsetId is the *meaning*'s own identity and is
+  // untouched by this move -- this field is specifically "which synset
+  // does *this spelling's* primary sense point at", the same
+  // distinction Word.synsetId's own former docstring drew between
+  // itself and Sense.synsetId. Undefined for a WordForm with no
+  // Princeton WordNet synset of its own (every hand-curated,
+  // closed-class WordForm, and every non-base-lemma WordForm).
+  synsetId?: Identifier;
+
+  // Identifiers of the closed-class Words this contracted form spells
+  // (e.g. "don't" spells "do" and "not") -- moved here from Word
+  // (former `contractionOf` field): a contraction is a fact about one
+  // specific spelling, not about a lemma in the abstract (a Word has no
+  // "abstract" spelling any more than it has an abstract pronunciation
+  // -- WordForm's own docstring on why `text`/`pronunciations` both
+  // moved here for the identical reason). Empty when this WordForm is
+  // not itself a contraction.
+  contractionOf: readonly Identifier[];
 
   // Every recorded pronunciation of this specific spelling -- moved
   // here from Word (Word's own docstring on why: a fact about one
@@ -132,13 +162,21 @@ export type WordFormInit = Pick<WordForm, "field" | "text"> & Partial<Omit<WordF
 export type WordFormAttributes = Partial<
   Pick<
     WordForm,
-    "normalisedForm" | "pronunciations" | "syllableRepresentation" | "syllableCount" | "stressPattern" | "frequencyValue" | "frequencyScale"
+    | "normalisedForm"
+    | "synsetId"
+    | "pronunciations"
+    | "syllableRepresentation"
+    | "syllableCount"
+    | "stressPattern"
+    | "frequencyValue"
+    | "frequencyScale"
   >
 >;
 
 export function createWordForm(init: WordFormInit): WordForm {
   return {
     senseIds: [],
+    contractionOf: [],
     pronunciations: [],
     uuid: init.uuid ?? { value: newUuid() },
     entryId: init.entryId ?? { value: newUuid() },

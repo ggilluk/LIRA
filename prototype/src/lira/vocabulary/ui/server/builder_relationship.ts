@@ -13,6 +13,7 @@ import type { Sense } from "../../data/sense";
 import type { SemanticRelationship } from "../../data/semantic_relationship";
 import type { SemanticRelationshipStore } from "../../data/semantic_relationship_store";
 import type { Word } from "../../data/entities/word";
+import type { WordForms } from "../../data/word_forms";
 import { resolveEntry } from "./resolver_entity";
 import { domainLabel } from "./resolver_domain";
 
@@ -100,11 +101,11 @@ export interface RelationshipKindCount {
  * not-perfectly-precise stand-in for that one synthetic case, the same
  * kind of representative simplification resolveEntry() already makes
  * for source_text/target_text on the exact same rows. */
-function resolveSenseFor(id: string, dictionary: Dictionary, phrases: Phrases, senses: Senses): Sense | undefined {
+function resolveSenseFor(id: string, dictionary: Dictionary, phrases: Phrases, senses: Senses, wordForms: WordForms): Sense | undefined {
   const direct = senses.findByUuid(id);
   if (direct !== undefined) return direct;
-  const entity = resolveEntry(dictionary, phrases, senses, id);
-  const primarySenseId = entity?.senseIds[0]?.value;
+  const entity = resolveEntry(dictionary, phrases, senses, id, wordForms);
+  const primarySenseId = entity !== undefined ? wordForms.senseIdsOf(entity)[0]?.value : undefined;
   return primarySenseId !== undefined ? senses.findByUuid(primarySenseId) : undefined;
 }
 
@@ -124,25 +125,32 @@ function resolveSenseFor(id: string, dictionary: Dictionary, phrases: Phrases, s
  * this keeps reporting the same "Lexical Semantic" group number every
  * relationship here always was, back when LexicalRelationshipType's
  * own group 1 held these same kinds. */
-export function relationshipRecordFor(rel: SemanticRelationship, dictionary: Dictionary, phrases: Phrases, senses: Senses, domainName: string): RelationshipRecord {
-  const source = resolveEntry(dictionary, phrases, senses, rel.sourceSenseId.value);
-  const target = resolveEntry(dictionary, phrases, senses, rel.targetSenseId.value);
-  const sourceSense = resolveSenseFor(rel.sourceSenseId.value, dictionary, phrases, senses);
-  const targetSense = resolveSenseFor(rel.targetSenseId.value, dictionary, phrases, senses);
+export function relationshipRecordFor(
+  rel: SemanticRelationship,
+  dictionary: Dictionary,
+  phrases: Phrases,
+  senses: Senses,
+  domainName: string,
+  wordForms: WordForms,
+): RelationshipRecord {
+  const source = resolveEntry(dictionary, phrases, senses, rel.sourceSenseId.value, wordForms);
+  const target = resolveEntry(dictionary, phrases, senses, rel.targetSenseId.value, wordForms);
+  const sourceSense = resolveSenseFor(rel.sourceSenseId.value, dictionary, phrases, senses, wordForms);
+  const targetSense = resolveSenseFor(rel.targetSenseId.value, dictionary, phrases, senses, wordForms);
   return {
     id: rel.uuid.value,
     source_id: rel.sourceSenseId.value,
     source_text: source?.text ?? "?",
     source_pos: source ? PartOfSpeech[source.partOfSpeech] : null,
-    source_domain: domainLabel(senses, domainName, source),
-    source_sense_id: source?.synsetId?.value ?? null,
+    source_domain: domainLabel(senses, domainName, source, wordForms),
+    source_sense_id: (source !== undefined ? wordForms.synsetIdOf(source) : undefined)?.value ?? null,
     source_category: sourceSense?.senseDomainTag?.value ?? null,
     source_gloss: sourceSense?.gloss?.value ?? sourceSense?.definition?.value ?? null,
     target_id: rel.targetSenseId.value,
     target_text: target?.text ?? "?",
     target_pos: target ? PartOfSpeech[target.partOfSpeech] : null,
-    target_domain: domainLabel(senses, domainName, target),
-    target_sense_id: target?.synsetId?.value ?? null,
+    target_domain: domainLabel(senses, domainName, target, wordForms),
+    target_sense_id: (target !== undefined ? wordForms.synsetIdOf(target) : undefined)?.value ?? null,
     target_category: targetSense?.senseDomainTag?.value ?? null,
     target_gloss: targetSense?.gloss?.value ?? targetSense?.definition?.value ?? null,
     kind: SemanticRelationshipKind[rel.relationshipType],
@@ -154,8 +162,15 @@ export function relationshipRecordFor(rel: SemanticRelationship, dictionary: Dic
   };
 }
 
-export function relationshipRecords(relationships: SemanticRelationshipStore, dictionary: Dictionary, phrases: Phrases, senses: Senses, domainName: string): RelationshipRecord[] {
-  return relationships.all().map((rel) => relationshipRecordFor(rel, dictionary, phrases, senses, domainName));
+export function relationshipRecords(
+  relationships: SemanticRelationshipStore,
+  dictionary: Dictionary,
+  phrases: Phrases,
+  senses: Senses,
+  domainName: string,
+  wordForms: WordForms,
+): RelationshipRecord[] {
+  return relationships.all().map((rel) => relationshipRecordFor(rel, dictionary, phrases, senses, domainName, wordForms));
 }
 
 /** `word`'s own Sense-level relationships, expanded back out to one
@@ -188,10 +203,11 @@ function senseExpandedRelationships(
   word: Word,
   relationships: SemanticRelationshipStore,
   senses: Senses,
+  wordForms: WordForms,
 ): { relationships: readonly SemanticRelationship[]; viaSenseId: ReadonlyMap<string, string> } {
   const expanded: SemanticRelationship[] = [];
   const viaSenseId = new Map<string, string>();
-  for (const ownSenseId of word.senseIds) {
+  for (const ownSenseId of wordForms.senseIdsOf(word)) {
     const senseId = ownSenseId.value;
     for (const rel of [...relationships.outgoing(senseId), ...relationships.incoming(senseId)]) {
       const outgoingFromSense = rel.sourceSenseId.value === senseId;
@@ -231,20 +247,22 @@ export function searchRelationships(
   senses: Senses,
   domainName: string,
   options: { wordId?: string; query?: string; limit?: number },
+  wordForms: WordForms,
 ): { relationships: RelationshipRecord[]; totalMatches: number } {
   const limit = options.limit ?? 1000;
   const query = options.query?.trim().toLowerCase();
   let candidates: readonly SemanticRelationship[];
   let viaSenseId: ReadonlyMap<string, string> = new Map();
   if (options.wordId !== undefined) {
-    const word = resolveEntry(dictionary, phrases, senses, options.wordId);
+    const word = resolveEntry(dictionary, phrases, senses, options.wordId, wordForms);
     // No direct `relationships.outgoing(options.wordId)`/
     // `incoming(...)` query any more, unlike the SemanticRelationshipStore
     // era -- SemanticRelationshipStore is Sense-keyed exclusively now
     // (DictionaryView's own class docstring), so a raw Word/Phrase id
     // can never itself be a key in it; senseExpandedRelationships()
     // above is the only source of a word-scoped relationship list.
-    const senseExpanded = word !== undefined ? senseExpandedRelationships(word, relationships, senses) : { relationships: [], viaSenseId: new Map() };
+    const senseExpanded =
+      word !== undefined ? senseExpandedRelationships(word, relationships, senses, wordForms) : { relationships: [], viaSenseId: new Map() };
     candidates = senseExpanded.relationships;
     viaSenseId = senseExpanded.viaSenseId;
   } else {
@@ -254,7 +272,7 @@ export function searchRelationships(
   const matches: RelationshipRecord[] = [];
   let totalMatches = 0;
   for (const rel of candidates) {
-    const record = relationshipRecordFor(rel, dictionary, phrases, senses, domainName);
+    const record = relationshipRecordFor(rel, dictionary, phrases, senses, domainName, wordForms);
     const senseId = viaSenseId.get(rel.uuid.value);
     if (senseId !== undefined) record.via_sense_id = senseId;
     if (query) {

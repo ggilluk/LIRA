@@ -274,8 +274,9 @@ export class RelationshipSeeder {
   }
 
   /** Every curated fact this cache seeds also lands on its own permanent
-   * home -- a POS-class attribute for CONTRACTION (Word.contractionOf's
-   * own docstring, data/entities/word.ts, on why it's Word-level and many-to-many)
+   * home -- the target's own base-lemma WordForm's own `contractionOf`
+   * for CONTRACTION (WordForm's own docstring, data/word_form.ts, on why
+   * it's a WordForm-level fact and many-to-many)
    * or a genuine SemanticRelationship for a true sense-to-sense semantic
    * kind (LEXICAL_TO_SEMANTIC_KIND's own docstring, word_seeder.ts, on
    * exactly which those are and why this cache uses four kinds --
@@ -303,15 +304,22 @@ export class RelationshipSeeder {
     relationshipType: LexicalRelationshipType,
   ): void {
     if (relationshipType === LexicalRelationshipType.CONTRACTION) {
-      if (!targetWord.contractionOf.some((id) => id.value === sourceWord.uuid.value)) {
-        targetWord.contractionOf = [...targetWord.contractionOf, sourceWord.uuid];
+      // contractionOf lives on the target's own base-lemma WordForm now
+      // (WordForm's own docstring on why), not on Word -- `wordForms`
+      // undefined (defensively possible, this method's own docstring)
+      // means there's nowhere left to record this fact at all, the same
+      // "silently contributes nothing" outcome a missing Sense already
+      // gets just below.
+      const targetForm = wordForms?.registerBaseLemmaForm(targetWord);
+      if (targetForm !== undefined && !targetForm.contractionOf.some((id) => id.value === sourceWord.uuid.value)) {
+        targetForm.contractionOf = [...targetForm.contractionOf, sourceWord.uuid];
       }
     }
 
     const semanticKind = LEXICAL_TO_SEMANTIC_KIND[relationshipType];
     if (semanticKind !== undefined) {
-      const sourceSenseId = sourceWord.senseIds[0];
-      const targetSenseId = targetWord.senseIds[0];
+      const sourceSenseId = wordForms?.senseIdsOf(sourceWord)[0];
+      const targetSenseId = wordForms?.senseIdsOf(targetWord)[0];
       if (sourceSenseId !== undefined && targetSenseId !== undefined && sourceSenseId.value !== targetSenseId.value) {
         const key = `${sourceSenseId.value}|${targetSenseId.value}|${semanticKind}`;
         if (!semanticExistingEdges.has(key)) {
@@ -342,8 +350,8 @@ export class RelationshipSeeder {
     // "one per entry" contract), so senseIds[0] is unambiguous, not an
     // arbitrary-primary-of-several simplification.
     if (lexicalProcessor === undefined || wordForms === undefined) return;
-    const sourceSenseId = sourceWord.senseIds[0];
-    const targetSenseId = targetWord.senseIds[0];
+    const sourceSenseId = wordForms.senseIdsOf(sourceWord)[0];
+    const targetSenseId = wordForms.senseIdsOf(targetWord)[0];
     if (sourceSenseId === undefined || targetSenseId === undefined || sourceSenseId.value === targetSenseId.value) return;
     const sourceForm = wordForms.registerBaseLemmaForm(sourceWord);
     const targetForm = wordForms.registerBaseLemmaForm(targetWord);

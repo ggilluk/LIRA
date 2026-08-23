@@ -250,7 +250,7 @@ function formFieldLabel(field: string): string {
  * silently omitted rather than included with a null target, since an
  * unresolved pointer would mean something else went wrong, not an
  * expected case worth surfacing as its own UI state. */
-function morphologicalDerivations(word: Word, dictionary: Dictionary): WordRecord["derivations"] {
+function morphologicalDerivations(word: Word, dictionary: Dictionary, wordForms: WordForms): WordRecord["derivations"] {
   const derivations: WordRecord["derivations"] = [];
   const addIfSet = (attribute: string, pointer: Identifier | undefined): void => {
     if (pointer === undefined) return;
@@ -277,7 +277,7 @@ function morphologicalDerivations(word: Word, dictionary: Dictionary): WordRecor
   // speech happen to combine), and many-to-many rather than a single
   // pointer, so this pushes one row per component instead of the one
   // addIfSet() call every other field above gets.
-  for (const pointer of word.contractionOf) addIfSet("contractionOf", pointer);
+  for (const pointer of wordForms.contractionOfOf(word)) addIfSet("contractionOf", pointer);
   return derivations;
 }
 
@@ -295,9 +295,10 @@ function morphologicalDerivations(word: Word, dictionary: Dictionary): WordRecor
  * show. `synonyms` is that Sense's own membership (Senses.membersOf()),
  * `entry` itself excluded -- deliberately scoped to just this one
  * Sense, not `entry`'s other, unrelated senses. */
-function sensesFor(entry: Word | Phrase, senses: Senses, domainName: string): WordSenseSummary[] {
+function sensesFor(entry: Word | Phrase, senses: Senses, domainName: string, wordForms: WordForms): WordSenseSummary[] {
   const summaries: WordSenseSummary[] = [];
-  entry.senseIds.forEach((senseId, index) => {
+  const senseIds = "words" in entry ? entry.senseIds : wordForms.senseIdsOf(entry);
+  senseIds.forEach((senseId, index) => {
     const sense = senses.findByUuid(senseId.value);
     if (sense === undefined) return;
     const domain = !sense.isCommon ? domainName : (sense.domainTag?.value ?? "Common");
@@ -325,20 +326,21 @@ function sensesFor(entry: Word | Phrase, senses: Senses, domainName: string): Wo
 }
 
 /** Every WordForm Word/WordForm/Senses UI row for `word` -- real
- * `WordForm` records (`wordForms.formsOf(word)`, when a `WordForms`
- * store is supplied -- optional so every pre-existing caller that
- * builds a `DictionaryView` without one, mostly `vocabulary.test.ts`'s
- * own fixtures, keeps working exactly as before, just with an empty
- * list), each carrying its own nested `senses` (this WordForm's own
- * subset of `wordSenses`, `WordFormEntry.senses`'s own docstring).
+ * `WordForm` records (`wordForms.formsOf(word)`), required now, not
+ * optional: `word.senseIds`/`synsetId`/`contractionOf` no longer exist
+ * to fall back to (WordForm's own docstring on why), so a `Word` with
+ * no matching `WordForms` entries shows no senses/sense_id/derivations
+ * at all any more, not just an empty Word Forms section. Each entry
+ * carries its own nested `senses` (this WordForm's own subset of
+ * `wordSenses`, `WordFormEntry.senses`'s own docstring).
  * Every POS subtype now registers real `WordForm` records for all of
  * its own spelling variants (word_form.ts's own docstring on this
  * migration, Auxiliary first, every other POS subtype following) --
  * there is no scalar `*_Form` field left anywhere to fall back to. */
-function wordFormsFor(word: Word, wordForms: WordForms | undefined, wordSenses: readonly WordSenseSummary[]): WordFormEntry[] {
+function wordFormsFor(word: Word, wordForms: WordForms, wordSenses: readonly WordSenseSummary[]): WordFormEntry[] {
   const senseById = new Map(wordSenses.map((sense) => [sense.id, sense]));
   const forms: WordFormEntry[] = [];
-  for (const form of wordForms?.formsOf(word) ?? []) {
+  for (const form of wordForms.formsOf(word)) {
     const formSenses = form.senseIds.map((id) => senseById.get(id.value)).filter((sense): sense is WordSenseSummary => sense !== undefined);
     forms.push({ field: form.field, label: formFieldLabel(form.field), value: form.text.value, senses: formSenses });
   }
@@ -382,44 +384,45 @@ export function wordRecordFor(
   relationships: SemanticRelationshipStore,
   senses: Senses,
   domainName: string,
-  wordForms?: WordForms,
+  wordForms: WordForms,
 ): WordRecord {
   const wordId = word.uuid.value;
+  const wordSenseIds = wordForms.senseIdsOf(word);
   // SemanticRelationshipStore is Sense-keyed, not Word-keyed (every
   // fact this view reads through it now, DictionaryView's own class
   // docstring on why) -- so this word's own relationship count is the
   // sum across every one of its own senses, not a single direct
   // lookup by `wordId` the way it used to be.
-  const relationshipCount = word.senseIds.reduce(
+  const relationshipCount = wordSenseIds.reduce(
     (total, senseId) => total + relationships.outgoing(senseId.value).length + relationships.incoming(senseId.value).length,
     0,
   );
-  const senseFields = senseFieldsFor(senses, word);
-  const wordSenses = sensesFor(word, senses, domainName);
+  const senseFields = senseFieldsFor(senses, word, wordForms);
+  const wordSenses = sensesFor(word, senses, domainName, wordForms);
   return {
     id: wordId,
     entry_id: word.entryId.value,
     lexical_form: word.text,
     text: word.text,
     pos: PartOfSpeech[word.partOfSpeech],
-    sense_id: word.synsetId?.value ?? null,
+    sense_id: wordForms.synsetIdOf(word)?.value ?? null,
     definition: senseFields.definition?.value ?? "",
     gloss: senseFields.gloss?.value ?? "",
     register_codes: word.registerCodes.map((code) => RegisterCode[code]),
     dialect_codes: word.dialectCodes.map((code) => code.value),
     editorial_labels: word.editorialLabels.map((label) => EditorialLabel[label]),
     is_common: word.isCommon,
-    is_root_word: isRootWordFor(senses, word),
+    is_root_word: isRootWordFor(senses, word, wordForms),
     is_derivable_noun: isNoun(word) && word.isDerivableNoun,
-    domain: domainLabel(senses, domainName, word),
+    domain: domainLabel(senses, domainName, word, wordForms),
     related_domains: senseFields.relatedDomainTags.map((tag) => tag.value),
     is_fully_hydrated: word.isFullyHydrated,
     sources: word.sourceReferences.map((ref) => ref.sourceName.value),
     relationship_count: relationshipCount,
-    definition_segments: definitionSegments(word, dictionary, senses, domainName),
+    definition_segments: definitionSegments(word, dictionary, senses, domainName, wordForms),
     word_forms: wordFormsFor(word, wordForms, wordSenses),
     senses: wordSenses,
-    derivations: morphologicalDerivations(word, dictionary),
+    derivations: morphologicalDerivations(word, dictionary, wordForms),
   };
 }
 
@@ -428,7 +431,7 @@ export function wordRecords(
   relationships: SemanticRelationshipStore,
   senses: Senses,
   domainName: string,
-  wordForms?: WordForms,
+  wordForms: WordForms,
 ): WordRecord[] {
   const records = dictionary.all().map((word) => wordRecordFor(word, dictionary, relationships, senses, domainName, wordForms));
   records.sort((a, b) => a.lexical_form.toLowerCase().localeCompare(b.lexical_form.toLowerCase()));
@@ -477,7 +480,7 @@ export function searchWords(
     rootWordsOnly?: boolean;
     limit?: number;
   },
-  wordForms?: WordForms,
+  wordForms: WordForms,
 ): { words: WordRecord[]; totalMatches: number } {
   if (options.wordId !== undefined) {
     // Checked directly against the Phrase itself, not via
@@ -489,14 +492,14 @@ export function searchWords(
     // the original Phrase, not just its Word-shaped view.
     const phrase = phrases.findByUuid(options.wordId);
     if (phrase !== undefined) {
-      const record = wordRecordFor(phraseAsWord(phrase), dictionary, relationships, senses, domainName, wordForms);
+      const record = wordRecordFor(phraseAsWord(phrase, wordForms), dictionary, relationships, senses, domainName, wordForms);
       return {
         words: [
           {
             ...record,
-            phrase_word_segments: phraseWordSegments(phrase, dictionary, senses, domainName),
+            phrase_word_segments: phraseWordSegments(phrase, dictionary, senses, domainName, wordForms),
             phrase_type: phraseTypeLabel(phrase),
-            head_word: phraseHeadWordSegment(phrase, dictionary, senses, domainName),
+            head_word: phraseHeadWordSegment(phrase, dictionary, senses, domainName, wordForms),
           },
         ],
         totalMatches: 1,
@@ -516,14 +519,14 @@ export function searchWords(
     const representative = sense !== undefined ? senses.membersOf(sense.uuid.value)[0] : undefined;
     if (representative !== undefined) {
       if ("words" in representative) {
-        const record = wordRecordFor(phraseAsWord(representative), dictionary, relationships, senses, domainName, wordForms);
+        const record = wordRecordFor(phraseAsWord(representative, wordForms), dictionary, relationships, senses, domainName, wordForms);
         return {
           words: [
             {
               ...record,
-              phrase_word_segments: phraseWordSegments(representative, dictionary, senses, domainName),
+              phrase_word_segments: phraseWordSegments(representative, dictionary, senses, domainName, wordForms),
               phrase_type: phraseTypeLabel(representative),
-              head_word: phraseHeadWordSegment(representative, dictionary, senses, domainName),
+              head_word: phraseHeadWordSegment(representative, dictionary, senses, domainName, wordForms),
             },
           ],
           totalMatches: 1,
@@ -543,12 +546,12 @@ export function searchWords(
   let totalMatches = 0;
   for (const word of dictionary.all()) {
     if (options.pos && PartOfSpeech[word.partOfSpeech] !== options.pos) continue;
-    if (options.rootWordsOnly && !isRootWordFor(senses, word)) continue;
-    if (options.domain && domainLabel(senses, domainName, word) !== options.domain) continue;
+    if (options.rootWordsOnly && !isRootWordFor(senses, word, wordForms)) continue;
+    if (options.domain && domainLabel(senses, domainName, word, wordForms) !== options.domain) continue;
     const lexicalForm = word.text.toLowerCase();
     if (wordQuery && !lexicalForm.includes(wordQuery)) continue;
     if (glossQuery && !(word.gloss?.value ?? "").toLowerCase().includes(glossQuery)) continue;
-    if (definitionQuery && !(word.definition?.value ?? "").toLowerCase().includes(definitionQuery)) continue;
+    if (definitionQuery && !(senseFieldsFor(senses, word, wordForms).definition?.value ?? "").toLowerCase().includes(definitionQuery)) continue;
 
     totalMatches += 1;
     if (matches.length < limit) matches.push(wordRecordFor(word, dictionary, relationships, senses, domainName, wordForms));

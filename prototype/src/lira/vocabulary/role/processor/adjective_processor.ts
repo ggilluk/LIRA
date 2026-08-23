@@ -110,8 +110,8 @@ export function validateAdjective(adjective: Adjective, wordForms: WordForms): r
  * therefore which direction the one stored edge ends up facing --
  * depends on synset file order, not on anything this function should
  * have to know or care about. */
-export function determineGradability(relationships: SemanticRelationshipStore, adjective: Adjective): boolean {
-  for (const senseId of adjective.senseIds) {
+export function determineGradability(relationships: SemanticRelationshipStore, adjective: Adjective, wordForms: WordForms | undefined): boolean {
+  for (const senseId of wordForms?.senseIdsOf(adjective) ?? []) {
     const edges = [...relationships.outgoing(senseId.value), ...relationships.incoming(senseId.value)];
     if (edges.some((edge) => edge.relationshipType === SemanticRelationshipKind.ATTRIBUTE)) return true;
   }

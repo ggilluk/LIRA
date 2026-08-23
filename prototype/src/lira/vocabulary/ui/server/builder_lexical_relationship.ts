@@ -63,11 +63,11 @@ export interface LexicalRelationshipKindCount {
 }
 
 /** `builder_relationship.ts`'s own `resolveSenseFor()`, verbatim. */
-function resolveSenseFor(id: string, dictionary: Dictionary, phrases: Phrases, senses: Senses): Sense | undefined {
+function resolveSenseFor(id: string, dictionary: Dictionary, phrases: Phrases, senses: Senses, wordForms: WordForms): Sense | undefined {
   const direct = senses.findByUuid(id);
   if (direct !== undefined) return direct;
-  const entity = resolveEntry(dictionary, phrases, senses, id);
-  const primarySenseId = entity?.senseIds[0]?.value;
+  const entity = resolveEntry(dictionary, phrases, senses, id, wordForms);
+  const primarySenseId = entity !== undefined ? wordForms.senseIdsOf(entity)[0]?.value : undefined;
   return primarySenseId !== undefined ? senses.findByUuid(primarySenseId) : undefined;
 }
 
@@ -90,26 +90,26 @@ export function lexicalRelationshipRecordFor(
 ): LexicalRelationshipRecord {
   const sourceForm = wordForms.findByUuid(rel.sourceWordFormId.value);
   const targetForm = wordForms.findByUuid(rel.targetWordFormId.value);
-  const source = resolveEntry(dictionary, phrases, senses, rel.sourceSenseId.value);
-  const target = resolveEntry(dictionary, phrases, senses, rel.targetSenseId.value);
-  const sourceSense = resolveSenseFor(rel.sourceSenseId.value, dictionary, phrases, senses);
-  const targetSense = resolveSenseFor(rel.targetSenseId.value, dictionary, phrases, senses);
+  const source = resolveEntry(dictionary, phrases, senses, rel.sourceSenseId.value, wordForms);
+  const target = resolveEntry(dictionary, phrases, senses, rel.targetSenseId.value, wordForms);
+  const sourceSense = resolveSenseFor(rel.sourceSenseId.value, dictionary, phrases, senses, wordForms);
+  const targetSense = resolveSenseFor(rel.targetSenseId.value, dictionary, phrases, senses, wordForms);
   return {
     id: rel.uuid.value,
     source_id: rel.sourceSenseId.value,
     source_word_form_id: rel.sourceWordFormId.value,
     source_text: sourceForm?.text.value ?? source?.text ?? "?",
     source_pos: source ? PartOfSpeech[source.partOfSpeech] : null,
-    source_domain: domainLabel(senses, domainName, source),
-    source_sense_id: source?.synsetId?.value ?? null,
+    source_domain: domainLabel(senses, domainName, source, wordForms),
+    source_sense_id: (source !== undefined ? wordForms.synsetIdOf(source) : undefined)?.value ?? null,
     source_category: sourceSense?.senseDomainTag?.value ?? null,
     source_gloss: sourceSense?.gloss?.value ?? sourceSense?.definition?.value ?? null,
     target_id: rel.targetSenseId.value,
     target_word_form_id: rel.targetWordFormId.value,
     target_text: targetForm?.text.value ?? target?.text ?? "?",
     target_pos: target ? PartOfSpeech[target.partOfSpeech] : null,
-    target_domain: domainLabel(senses, domainName, target),
-    target_sense_id: target?.synsetId?.value ?? null,
+    target_domain: domainLabel(senses, domainName, target, wordForms),
+    target_sense_id: (target !== undefined ? wordForms.synsetIdOf(target) : undefined)?.value ?? null,
     target_category: targetSense?.senseDomainTag?.value ?? null,
     target_gloss: targetSense?.gloss?.value ?? targetSense?.definition?.value ?? null,
     kind: LexicalRelationshipType[rel.relationshipType],
@@ -133,8 +133,8 @@ export function lexicalRelationshipRecords(
 }
 
 /** `senseExpandedRelationships()`'s own exact mirror -- `word`'s own
- * Sense-level LexicalRelationships, unioned across every Sense in
- * `word.senseIds`. Deliberately NOT `senseExpandedRelationships()`'s own
+ * Sense-level LexicalRelationships, unioned across every Sense
+ * `WordForms.senseIdsOf(word)` names. Deliberately NOT `senseExpandedRelationships()`'s own
  * member-fanout -- that expansion exists because a SemanticRelationship
  * only ever names a Sense on each end (senseExpandedRelationships()'s
  * own docstring on why a Word-level view has to fan the *other* Sense
@@ -177,7 +177,7 @@ function senseExpandedLexicalRelationships(
   const ownFormIds = new Set(wordForms.formsOf(word).map((form) => form.uuid.value));
   const expanded: LexicalRelationship[] = [];
   const viaSenseId = new Map<string, string>();
-  for (const ownSenseId of word.senseIds) {
+  for (const ownSenseId of wordForms.senseIdsOf(word)) {
     const senseId = ownSenseId.value;
     for (const rel of [...relationships.outgoing(senseId), ...relationships.incoming(senseId)]) {
       const outgoingFromSense = rel.sourceSenseId.value === senseId;
@@ -211,7 +211,7 @@ export function searchLexicalRelationships(
   let candidates: readonly LexicalRelationship[];
   let viaSenseId: ReadonlyMap<string, string> = new Map();
   if (options.wordId !== undefined) {
-    const word = resolveEntry(dictionary, phrases, senses, options.wordId);
+    const word = resolveEntry(dictionary, phrases, senses, options.wordId, wordForms);
     const senseExpanded = word !== undefined ? senseExpandedLexicalRelationships(word, relationships, wordForms) : { relationships: [], viaSenseId: new Map() };
     candidates = senseExpanded.relationships;
     viaSenseId = senseExpanded.viaSenseId;

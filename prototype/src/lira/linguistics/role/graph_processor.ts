@@ -136,7 +136,7 @@ export class GraphProcessor {
       node = createWord({
         text: reading.text,
         partOfSpeech: PartOfSpeech.OTHER,
-        definition: { value: "Pending external hydration; part of speech not yet identified." },
+        gloss: { value: "Pending external hydration; part of speech not yet identified." },
         isCommon: false,
         isFullyHydrated: false,
       });

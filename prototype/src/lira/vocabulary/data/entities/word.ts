@@ -49,9 +49,6 @@ export interface Word extends LinguisticUnit {
   /** Short gloss summarising this Word's own primary sense. */
   gloss?: Text;
 
-  /** Definition of this Word's own primary sense. */
-  definition?: Text;
-
   /** Usage notes for this Word. */
   usageNotes: readonly Text[];
 
@@ -97,32 +94,14 @@ export interface Word extends LinguisticUnit {
   // ── References ───────────────────────────────────────────
 
   /**
-   * Identifier of this Word's own primary Sense's Princeton WordNet
-   * synset.
-   *
-   * Undefined when this Word has no Princeton WordNet synset of its
-   * own.
-   */
-  synsetId?: Identifier;
-
-  /** Identifiers of every Sense this Word lexicalizes. */
-  senseIds: readonly Identifier[];
-
-  /**
-   * Identifiers of the closed-class Words this contracted form
-   * spells (e.g. "don't" spells "do" and "not").
-   *
-   * Empty when this Word is not itself a contraction.
-   */
-  contractionOf: readonly Identifier[];
-
-  /**
    * Identifiers of the WordForms belonging to this Word.
    *
    * Always includes this Word's own base-lemma WordForm -- its
    * lexical/normalised spelling, pronunciation, syllable, and frequency
    * attributes live there now, not as separate fields here (`WordForm`'s
-   * own docstring, data/word_form.ts).
+   * own docstring, data/word_form.ts). So do `synsetId`/`senseIds`/
+   * `contractionOf` -- WordForms.baseLemmaFormOf(word) is the read side
+   * for all three now, not a scalar field on Word.
    */
   wordFormIds: readonly Identifier[];
 

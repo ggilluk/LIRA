@@ -73,13 +73,19 @@ export function validateAdverb(adverb: Adverb, wordForms: WordForms): readonly W
  * nothing to inherit from and comes out non-gradable, matching
  * Gradability Evaluation step 6's own default (adjective_processor.ts's
  * docstring): no established scalar dimension means Gradable = false. */
-export function determineGradability(relationships: SemanticRelationshipStore, dictionary: Dictionary, senses: Senses, adverb: Adverb): boolean {
-  for (const senseId of adverb.senseIds) {
+export function determineGradability(
+  relationships: SemanticRelationshipStore,
+  dictionary: Dictionary,
+  senses: Senses,
+  adverb: Adverb,
+  wordForms: WordForms | undefined,
+): boolean {
+  for (const senseId of wordForms?.senseIdsOf(adverb) ?? []) {
     for (const edge of relationships.outgoing(senseId.value)) {
       if (edge.relationshipType !== SemanticRelationshipKind.PERTAINYM) continue;
       for (const target of senses.membersOf(edge.targetSenseId.value)) {
         if ("words" in target || !isAdjective(target)) continue;
-        if (isAdjectiveGradable(relationships, target)) return true;
+        if (isAdjectiveGradable(relationships, target, wordForms)) return true;
       }
     }
   }
@@ -95,7 +101,7 @@ export function determineGradability(relationships: SemanticRelationshipStore, d
   // own "hegira"/"Hegira" case, its own docstring).
   for (const candidate of dictionary.lookupAll(adverb.text)) {
     if (!isAdjective(candidate) || candidate.text !== adverb.text) continue;
-    if (isAdjectiveGradable(relationships, candidate)) return true;
+    if (isAdjectiveGradable(relationships, candidate, wordForms)) return true;
   }
   return false;
 }

@@ -40,6 +40,7 @@ import type { PhraseType } from "./enums/phrase_type";
 import type { RegisterCode } from "./enums/register_code";
 import type { SourceReference } from "./source_reference";
 import type { Word } from "./entities/word";
+import type { WordForms } from "./word_forms";
 // Known, approved exception to data/ never importing role/ -- see
 // role/word_processor.ts's own docstring: createWord() is Word's own
 // base-entity constructor, needed here (toSyntheticWord/phraseAsWord
@@ -238,7 +239,6 @@ export function toSyntheticWord(phrase: Phrase): Word {
     entryId: phrase.entryId,
     partOfSpeech: phrase.partOfSpeech,
     gloss: phrase.gloss,
-    definition: phrase.definition,
     usageNotes: phrase.usageNotes,
     registerCodes: phrase.registerCodes,
     dialectCodes: phrase.dialectCodes,
@@ -263,17 +263,26 @@ export function toSyntheticWord(phrase: Phrase): Word {
  * able to turn that endpoint back into something displayable
  * regardless of which store actually holds it; this is that
  * conversion, called only after a Dictionary lookup by the same uuid
- * has already failed. */
-export function phraseAsWord(phrase: Phrase): Word {
-  return createWord({
+ * has already failed.
+ *
+ * `wordForms`, when supplied, registers a matching base-lemma WordForm
+ * under this same `phrase.uuid` (idempotent, WordForms.registerBaseLemmaForm()'s
+ * own find-or-create), carrying `phrase.senseIds`/`phrase.synsetId` --
+ * senseIds/synsetId are Word-only fields no longer, they live on a
+ * Word's own base-lemma WordForm now (WordForm's own docstring on why),
+ * and a bare `createWord()` result has no WordForm of its own unless
+ * something registers one. Without `wordForms`, the returned Word
+ * carries no senses at all -- correct for a caller that only needs
+ * `.text`/`.partOfSpeech`, wrong for one that also needs to resolve
+ * this Phrase's own meaning (builder_word.ts's own wordRecordFor(),
+ * in particular, which is why its own two call sites always pass one). */
+export function phraseAsWord(phrase: Phrase, wordForms?: WordForms): Word {
+  const word = createWord({
     text: phrase.text,
     uuid: phrase.uuid,
     entryId: phrase.entryId,
-    synsetId: phrase.synsetId,
-    senseIds: phrase.senseIds,
     partOfSpeech: phrase.partOfSpeech,
     gloss: phrase.gloss,
-    definition: phrase.definition,
     usageNotes: phrase.usageNotes,
     registerCodes: phrase.registerCodes,
     dialectCodes: phrase.dialectCodes,
@@ -283,4 +292,7 @@ export function phraseAsWord(phrase: Phrase): Word {
     domainTag: phrase.domainTag,
     relatedDomainTags: phrase.relatedDomainTags,
   });
+  const form = wordForms?.registerBaseLemmaForm(word, undefined, { synsetId: phrase.synsetId });
+  if (form !== undefined) form.senseIds = phrase.senseIds;
+  return word;
 }

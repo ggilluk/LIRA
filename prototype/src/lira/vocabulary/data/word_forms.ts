@@ -1,4 +1,4 @@
-import type { Text } from "../../value_objects";
+import type { Identifier, Text } from "../../value_objects";
 import type { Word } from "./entities/word";
 import type { Sense } from "./sense";
 import { copyWordFormWithFreshUuid, createWordForm, type WordForm, type WordFormAttributes } from "./word_form";
@@ -90,6 +90,78 @@ export class WordForms {
     return this.textIndex.get(text.toLowerCase())?.slice() ?? [];
   }
 
+  /** The WordForm standing for `word`'s own `field`, if one has been
+   * registered -- the pure read side registerNamedForm() below builds
+   * its own find-or-create on top of. Also how every reader resolves a
+   * fact that moved off Word onto its base-lemma WordForm (`senseIds`/
+   * `synsetId`/`contractionOf`, each field's own docstring, data/word_form.ts):
+   * `wordForms.findNamedForm(word, "baseLemmaCanonicalForm")?.senseIds ?? []`,
+   * baseLemmaFormOf() below's own shorthand for exactly that lookup. */
+  findNamedForm(word: Word, field: string): WordForm | undefined {
+    return this.formsOf(word).find((form) => form.field === field);
+  }
+
+  /** findNamedForm()'s own `"baseLemmaCanonicalForm"` shorthand --
+   * every Word's own base-lemma WordForm, when one has been registered
+   * (every real seeded Word has one; a bare `createWord()`/`createNoun()`
+   * result with no WordForms store involved at all does not). */
+  baseLemmaFormOf(word: Word): WordForm | undefined {
+    return this.findNamedForm(word, "baseLemmaCanonicalForm");
+  }
+
+  /** Every Sense any of `word`'s own WordForms carries, unioned across
+   * all of them in WordForm registration order, each senseId appearing
+   * once -- Word's former `senseIds` field's own exact replacement,
+   * generalized past "always the base-lemma form alone": every POS
+   * subtype except AUXILIARY only ever registers a Sense onto the
+   * base-lemma form (so this reduces to that one form's own senseIds
+   * for all of them), but AUXILIARY genuinely spreads its own senses
+   * across more than one WordForm ("am"'s own senses differ from
+   * "is"'s own -- role/auxiliary_seeder.ts's own docstring on the dual
+   * registration this replaces), so reading only the base-lemma form
+   * would silently under-report an Auxiliary Word's own senses.
+   * `senseIdsOf(word)[0]` is this Word's own "primary sense", the exact
+   * same entry `word.senseIds[0]` used to name -- the accumulation
+   * order here (form-by-form, each form's own senses in its own
+   * registration order) exactly reproduces how the old field itself
+   * used to fill up, base-lemma-first for every non-AUXILIARY POS. */
+  senseIdsOf(word: Word): readonly Identifier[] {
+    const seen = new Set<string>();
+    const result: Identifier[] = [];
+    for (const form of this.formsOf(word)) {
+      for (const senseId of form.senseIds) {
+        if (!seen.has(senseId.value)) {
+          seen.add(senseId.value);
+          result.push(senseId);
+        }
+      }
+    }
+    return result;
+  }
+
+  /** `word`'s own base-lemma WordForm's own `synsetId` -- Word's former
+   * `synsetId` field's own exact replacement. Unlike `senseIdsOf()`
+   * above, no cross-form union is needed: synsetId is only ever set on
+   * the base-lemma form (WordSeeder.synsetMemberToWord()'s own `extra`
+   * parameter, the WordNet path's only writer), never on any other
+   * WordForm, AUXILIARY's own included. */
+  synsetIdOf(word: Word): Identifier | undefined {
+    return this.baseLemmaFormOf(word)?.synsetId;
+  }
+
+  /** `word`'s own base-lemma WordForm's own `contractionOf` -- Word's
+   * former `contractionOf` field's own exact replacement.
+   * RelationshipSeeder's own CONTRACTION handling is this field's only
+   * writer, and always targets the base-lemma form directly (a
+   * contraction's own identity is a fact about its one spelling, not
+   * about any of its other inflected forms, none of which a
+   * contraction like "don't" even has). Empty, not undefined, when
+   * `word` has no base-lemma WordForm registered at all -- matches the
+   * old field's own "empty when not itself a contraction" default. */
+  contractionOfOf(word: Word): readonly Identifier[] {
+    return this.baseLemmaFormOf(word)?.contractionOf ?? [];
+  }
+
   /** Idempotent find-or-create: the WordForm standing for `word`'s own
    * `field` -- reuses `word`'s own existing entry for that field if one
    * was already registered (by this call or any earlier one), rather
@@ -98,7 +170,7 @@ export class WordForms {
    * inflected spelling -- registerBaseLemmaForm() below is just this,
    * specialised to `"baseLemmaCanonicalForm"`. */
   registerNamedForm(word: Word, field: string, text: Text): WordForm {
-    const existing = this.formsOf(word).find((form) => form.field === field);
+    const existing = this.findNamedForm(word, field);
     if (existing !== undefined) return existing;
     const form = createWordForm({ field, text });
     this.append(form);

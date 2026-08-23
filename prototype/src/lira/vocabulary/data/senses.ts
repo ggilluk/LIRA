@@ -48,10 +48,17 @@ export class Senses {
     return this.senses.length;
   }
 
-  /** Records that `member` lexicalizes `sense` -- appends `sense.uuid`
-   * onto `member.senseIds` (the field itself, data/entities/word.ts's/phrase.ts's own
-   * docstring) and adds `member` to that Sense's own membership index.
-   * A Word/Phrase is now unique by (partOfSpeech, lemma), not by Sense
+  /** Records that `member` lexicalizes `sense` -- for a Phrase, appends
+   * `sense.uuid` onto `member.senseIds` (the field itself, data/phrase.ts's
+   * own docstring); a Word carries no `senseIds` of its own any more
+   * (moved onto its base-lemma WordForm, data/word_form.ts's own
+   * docstring on why) -- WordForms.registerSense() is that field's own
+   * write side now, called alongside this one at every real call site
+   * (role/word_seeder.ts's own registerUniqueSense()/synset-member loop),
+   * not something this method can do itself with no WordForms store of
+   * its own to reach through. Also adds `member` to that Sense's own
+   * membership index either way, Word and Phrase alike. A Word/Phrase is
+   * now unique by (partOfSpeech, lemma), not by Sense
    * (WordSeeder.seedWordNet's own find-or-create, role/word_seeder.ts),
    * so `member` having already been registered under a *different*
    * Sense before this call is the ordinary case for a polysemous lemma,
@@ -61,7 +68,7 @@ export class Senses {
    * seedWordNet re-run) doesn't duplicate either the `senseIds` entry
    * or the membership entry. */
   registerMember(sense: Sense, member: Word | Phrase): void {
-    if (!member.senseIds.some((id) => id.value === sense.uuid.value)) {
+    if ("words" in member && !member.senseIds.some((id) => id.value === sense.uuid.value)) {
       member.senseIds = [...member.senseIds, sense.uuid];
     }
     const bucket = this.membersBySenseId.get(sense.uuid.value);
