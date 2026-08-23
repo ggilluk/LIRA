@@ -17,7 +17,6 @@ import type { Senses } from "../../data/senses";
 import type { SemanticRelationshipStore } from "../../data/semantic_relationship_store";
 import { framesForSense, isVerb } from "../../role/processor/verb_processor";
 import type { Word } from "../../data/entities/word";
-import { formTextsOf } from "../../data/pos_form_fields";
 import type { WordForms } from "../../data/word_forms";
 import { phraseHeadWordSegment, phraseTypeLabel, phraseWordSegments } from "./builder_phrase";
 import { definitionSegments, type DefinitionSegment } from "./builder_segment";
@@ -114,24 +113,20 @@ export interface WordRecord {
   // Word, and for a Phrase with no identified Head (every Common
   // Vocabulary Cache closed-class Phrase, in particular).
   head_word?: DefinitionSegment;
-  // Every *_Form Text field this Word's own concrete POS subtype
-  // carries a populated value for, in the Word Form to Part of Speech
-  // Matrix's own field order (data/matrices/word_form_part_of_speech_matrix.md)
-  // -- wordFormsFor()'s own docstring on how this is
-  // built. Always includes baseLemmaCanonicalForm (every Word has one,
+  // Every real WordForm record `WordForms` holds for this Word
+  // (`wordForms.formsOf(word)`, wordFormsFor()'s own docstring on how
+  // this is built), in registration order -- always includes
+  // baseLemmaCanonicalForm (every Word has one,
   // WordForms.registerBaseLemmaForm()'s own docstring), plus whichever
-  // of that subtype's own fields (Noun/Verb/Adjective/Adverb/Pronoun/
-  // Determiner -- the other five POS classes declare no *_Form field of
-  // their own beyond baseLemmaCanonicalForm) are populated, plus every
-  // real WordForm record `WordForms` holds for this Word (Auxiliary's
-  // own several inflected forms, word_form.ts's own docstring). Each
-  // entry's own `senses` -- the Word -> WordForm -> Senses nesting the
-  // Word Detail UI now renders (word_wordform_sense_relationships.md) --
-  // is non-empty only for a WordForm that genuinely has one or more
-  // Senses registered onto it (WordForms.registerSense()'s own
-  // docstring); every scalar-field-derived entry (no real WordForm
-  // record backs it) always carries `senses: []`, since nothing links a
-  // spelling-only field to a Sense today.
+  // other inflected forms that POS subtype's own generateXForms()
+  // registered (word_form.ts's own docstring on this migration, every
+  // POS subtype now). Each entry's own `senses` -- the Word -> WordForm
+  // -> Senses nesting the Word Detail UI renders
+  // (word_wordform_sense_relationships.md) -- is non-empty only for a
+  // WordForm that genuinely has one or more Senses registered onto it
+  // (WordForms.registerSense()'s own docstring); empty for an ordinary
+  // inflected form, since nothing links a plain spelling variant to a
+  // distinct Sense.
   word_forms: WordFormEntry[];
   // Every Sense (data/sense.ts) this Word lexicalizes, in Word.senseIds's
   // own order (sensesFor()'s own docstring on how this is
@@ -333,38 +328,24 @@ function sensesFor(entry: Word | Phrase, senses: Senses, domainName: string): Wo
  * `WordForm` records (`wordForms.formsOf(word)`, when a `WordForms`
  * store is supplied -- optional so every pre-existing caller that
  * builds a `DictionaryView` without one, mostly `vocabulary.test.ts`'s
- * own fixtures, keeps working exactly as before, just with `senses: []`
- * on every entry) first, each carrying its own nested `senses` (this
- * WordForm's own subset of `wordSenses`, `WordFormEntry.senses`'s own
- * docstring), followed by whichever of `formTextsOf(word)`'s own
- * scalar *_Form fields aren't already covered by a real WordForm
- * record (`realFields` -- today that's only ever `baseLemmaCanonicalForm`,
- * since every Word gets a real base-lemma WordForm now,
- * WordForms.registerBaseLemmaForm()'s own docstring, but Noun/Verb/
- * Adjective/Adverb/Pronoun/Determiner's own inflected `*_Form` fields
- * -- pluralNumberForm, presentTenseForm, ... -- still live as plain
- * scalars, data/pos_form_fields.ts's own module docstring, so this
- * still reads them the original way, just deduplicated against the
- * real-WordForm entries above rather than replaced by them). Each
- * scalar-derived entry always carries `senses: []` -- nothing links a
- * spelling-only field to a Sense today. */
+ * own fixtures, keeps working exactly as before, just with an empty
+ * list), each carrying its own nested `senses` (this WordForm's own
+ * subset of `wordSenses`, `WordFormEntry.senses`'s own docstring).
+ * Every POS subtype now registers real `WordForm` records for all of
+ * its own spelling variants (word_form.ts's own docstring on this
+ * migration, Auxiliary first, every other POS subtype following) --
+ * there is no scalar `*_Form` field left anywhere to fall back to. */
 function wordFormsFor(word: Word, wordForms: WordForms | undefined, wordSenses: readonly WordSenseSummary[]): WordFormEntry[] {
   const senseById = new Map(wordSenses.map((sense) => [sense.id, sense]));
   const forms: WordFormEntry[] = [];
-  const realForms = wordForms?.formsOf(word) ?? [];
-  const realFields = new Set(realForms.map((form) => form.field));
-  for (const form of realForms) {
+  for (const form of wordForms?.formsOf(word) ?? []) {
     const formSenses = form.senseIds.map((id) => senseById.get(id.value)).filter((sense): sense is WordSenseSummary => sense !== undefined);
     forms.push({ field: form.field, label: formFieldLabel(form.field), value: form.text.value, senses: formSenses });
   }
-  for (const { field, text } of formTextsOf(word)) {
-    if (realFields.has(field)) continue;
-    forms.push({ field, label: formFieldLabel(field), value: text.value, senses: [] });
-  }
   // Noun.wordCharacterForms isn't a Word Form Matrix field (that
   // field's own docstring, data/entities/noun.ts) -- not spelling-derivable, so
-  // it has no WORD_FORM_MATRIX row and formTextsOf() never returns
-  // it above -- appended here instead, the same "rendered in this
+  // it has no WORD_FORM_MATRIX row and no real WordForm record ever
+  // covers it -- appended here instead, the same "rendered in this
   // section without being a Matrix field" treatment `derivations`
   // already gets (WordRecord.derivations's own docstring on why that
   // lives here too rather than its own section). Every character

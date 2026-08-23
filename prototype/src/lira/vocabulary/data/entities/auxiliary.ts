@@ -6,25 +6,26 @@
  * Settled after direct back-and-forth on the alternative (one Word per
  * surface form, mirroring the now-retired auxiliaries.json's flat
  * 36-entry layout): a surface-form model would have made
- * `lookupFormMatches()`/Dictionary.indexWordForms() (data/dictionary.ts)
- * redundant with Dictionary.lookupAll() itself.
+ * `WordForms.lookupByText()`/`Word.formIds` redundant with
+ * Dictionary.lookupAll() itself.
  *
- * Unlike every other POS subtype (Noun, Verb, Adjective, Adverb,
- * Pronoun, Determiner), Auxiliary declares no scalar `*_Form` fields of
- * its own at all -- every one of its distinguishing spellings
- * (bareInfinitiveForm/presentTenseInstanceForm/presentTenseForm/
- * thirdPersonSingularPresentForm/pastTenseInstanceForm/pastTenseForm/
- * presentParticipleForm/pastParticipleForm/modalForm/secondaryModalForm)
- * now lives in a WordForm record instead (`WordForms.formsOf(auxiliary)`,
- * data/word_forms.ts), addressable and carrying its own Senses rather
- * than being a bare Text value with senses bulk-registered onto this
- * Word's own `senseIds`. `role/auxiliary_seeder.ts` is the only writer;
+ * Every one of its distinguishing spellings (bareInfinitiveForm/
+ * presentTenseInstanceForm/presentTenseForm/thirdPersonSingularPresentForm/
+ * pastTenseInstanceForm/pastTenseForm/presentParticipleForm/
+ * pastParticipleForm/modalForm/secondaryModalForm) lives in a WordForm
+ * record (`WordForms.formsOf(auxiliary)`, data/word_forms.ts),
+ * addressable and carrying its own Senses rather than being a bare
+ * Text value with senses bulk-registered onto this Word's own
+ * `senseIds`. `role/auxiliary_seeder.ts` is the only writer;
  * `role/processor/auxiliary_processor.ts`'s `validateAuxiliary()` reads
  * `WordForms.formsOf()` instead of named scalar fields.
  *
- * This is the one POS subtype that's adopted WordForm so far -- a
- * deliberate scope limit, not a claim every subtype should follow;
- * WordForm's own docstring (data/word_form.ts) has the full reasoning. */
+ * Auxiliary was the first POS subtype to adopt WordForm this way, one
+ * real example before every other POS subtype (Noun, Verb, Adjective,
+ * Adverb, Pronoun, Determiner) generalized to the same shape --
+ * WordForm's own docstring (data/word_form.ts) has the full reasoning,
+ * and none of those six subtypes declares a scalar `*_Form` field of
+ * its own any more either. */
 
 import { PartOfSpeech } from "../enums/part_of_speech";
 import type { Word } from "./word";

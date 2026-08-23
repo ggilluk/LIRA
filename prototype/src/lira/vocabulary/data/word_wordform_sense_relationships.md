@@ -294,16 +294,16 @@ as of the `WordForm`/`WordForms` introduction
   and referenced by `Identifier`, never copied -- the "dictionary master
   level" invariant above already holds for these two stores
   specifically. Every Word gets at least a base-lemma `WordForm`
-  (`WordForms.registerBaseLemmaForm()`); AUXILIARY still gets several
-  more, one per inflected form. The Word Detail UI reflects this nesting
-  directly (`ui/server/builder_word.ts`'s `wordFormsFor()`/`sensesFor()`,
-  `WordFormEntry.senses`) -- every other POS subtype (Noun, Verb,
-  Adjective, Adverb, Pronoun, Determiner) still ALSO spells its own
-  *inflected* forms as scalar `*_Form` fields directly on the Word
-  (`data/pos_form_fields.ts`), not through their own `WordForm` records
-  -- only the base/canonical spelling has a real `WordForm` for those
-  six subtypes; this document's Section 1 is their inflected forms' own
-  target shape, not their current one.
+  (`WordForms.registerBaseLemmaForm()`); AUXILIARY, and every other POS
+  subtype (Noun, Verb, Adjective, Adverb, Pronoun, Determiner) as of
+  their own later migration, gets several more, one per inflected form
+  (each POS's own `role/processor/*_processor.ts` `generateXForms()`).
+  The Word Detail UI reflects this nesting directly
+  (`ui/server/builder_word.ts`'s `wordFormsFor()`/`sensesFor()`,
+  `WordFormEntry.senses`) -- no POS subtype spells its own inflected
+  forms as scalar `*_Form` fields on the Word any more; this document's
+  Section 1 is now every POS subtype's actual shape, not just
+  AUXILIARY's.
 
 - **`SemanticRelationship` (`data/semantic_relationship.ts`) is close
   to Section 2's shape, but Sense-only, no `WordForm` dimension.** It

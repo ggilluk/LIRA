@@ -7,22 +7,21 @@
  * like `presentTenseInstanceForm`.
  *
  * Introduced for AUXILIARY only (data/entities/auxiliary.ts, which
- * dropped its own flat *_Form fields in favour of this) -- every other
- * POS subtype (Noun, Verb, Adjective, Adverb, Pronoun, Determiner)
- * keeps its scalar `*_Form` fields exactly as before
- * (data/pos_form_fields.ts), a deliberate "one real example before
- * generalizing" scope limit, the same one `data/matrices/` itself was
- * held to before a second real matrix existed. Nothing stops a future
- * POS subtype from adopting WordForm the same way, but nothing forces
- * it to either.
+ * dropped its own flat *_Form fields in favour of this) -- one real
+ * example before generalizing, the same discipline `data/matrices/`
+ * itself was held to before a second real matrix existed. Every other
+ * POS subtype (Noun, Verb, Adjective, Adverb, Pronoun, Determiner) has
+ * since followed the same path (each role/processor/*_processor.ts's
+ * own generateXForms(), or -- Pronoun/Determiner -- just the base-lemma
+ * form every Word gets) and none of them declares a scalar `*_Form`
+ * field of its own any more either.
  *
  * `field` is a loose string, not a new enum, matching how
- * `WordFormRow.field`/`WordFormEntry.field` already name a *_Form field
- * elsewhere in this codebase (data/matrices/pos_vs_wordform_matrice.ts,
- * data/pos_form_fields.ts) -- `stringPatternsFor(field, pos)` validates
- * a WordForm's own `text` against the identical matrix rules a scalar
- * field's value would be checked against; the matrix doesn't care which
- * shape holds the value.
+ * `WordFormRow.field` already names a *_Form field elsewhere in this
+ * codebase (data/matrices/pos_vs_wordform_matrice.ts) --
+ * `stringPatternsFor(field, pos)` validates a WordForm's own `text`
+ * against the identical matrix rules a scalar field's value used to be
+ * checked against; the matrix doesn't care which shape holds the value.
  *
  * Why a WordForm can carry more than one Sense: the same spelling can
  * carry more than one meaning ("am" is both the continuous-aspect and

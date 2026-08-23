@@ -4,15 +4,6 @@ import type { Word } from "./entities/word";
 // Word's own base-entity copier, needed here the same way every POS
 // processor already needs it.
 import { copyWordWithFreshUuid } from "../role/word_processor";
-import { formTextsOf } from "./pos_form_fields";
-
-/** One Word matched by lookupFormMatches, tagged with which of its own
- * *_Form fields actually equalled the searched text -- e.g. `field:
- * "pluralNumberForm"` for "comma" matched via "commas". */
-export interface WordFormMatch {
-  word: Word;
-  field: string;
-}
 
 /** One inflected form linked to a base lemma (or, from lemmaOf's own
  * side, one base lemma linked to a form) -- Dictionary.linkForm/
@@ -68,7 +59,6 @@ export class Dictionary {
   private readonly byUuid = new Map<string, Word>();
   private readonly formsByBase = new Map<string, LemmaFormLink[]>();
   private readonly baseByForm = new Map<string, LemmaFormLink>();
-  private readonly formTextIndex = new Map<string, WordFormMatch[]>();
   private maxPhraseSpan = 1;
 
   all(): readonly Word[] {
@@ -160,50 +150,6 @@ export class Dictionary {
     return this.baseByForm.get(form.uuid.value);
   }
 
-  /** Indexes every populated *_Form value `word` carries (formTextsOf(),
-   * data/word_forms.ts) so lookupFormMatches can find `word` again by an
-   * inflected spelling it never had its own Dictionary entry for --
-   * "comma"'s own pluralNumberForm "commas" becomes findable even though
-   * "commas" was never itself appended as a Word (unlike formsByBase/
-   * baseByForm above, which link two *already-separately-seeded* Words --
-   * a genuinely different index for a genuinely different situation). Not
-   * called automatically from append(): a WordNet Adjective/Adverb's own
-   * comparativeDegreeForm/superlativeDegreeForm are only known once
-   * WordSeeder.seedWordNet's own post-relationship-graph gradability pass
-   * has run, well after that Word was first appended, so indexing has to
-   * be a separate, later, explicit step (WordSeeder's own final pass over
-   * dictionary.all(), that method's own docstring). Safe to call more
-   * than once for the same Word -- entries are deduplicated by uuid, not
-   * accumulated as duplicates, so a later re-index after forms change
-   * (the gradability case above) just adds what's newly there. A form
-   * value identical to the Word's own base spelling is skipped -- nothing
-   * for lookupFormMatches to usefully add over lookupAll() finding it
-   * directly. */
-  indexWordForms(word: Word): void {
-    const baseKey = word.text.toLowerCase();
-    for (const { field, text } of formTextsOf(word)) {
-      const key = text.value.toLowerCase();
-      if (key === baseKey) continue;
-      const bucket = this.formTextIndex.get(key);
-      const match: WordFormMatch = { word, field };
-      if (bucket === undefined) {
-        this.formTextIndex.set(key, [match]);
-      } else if (!bucket.some((entry) => entry.word.uuid.value === word.uuid.value && entry.field === field)) {
-        bucket.push(match);
-      }
-    }
-  }
-
-  /** Every Word whose own *_Form field equals `text` verbatim (case-
-   * insensitive), each tagged with which field matched -- empty when
-   * nothing does. Deliberately separate from lookupAll(): a caller
-   * decides whether and how to treat an inflected match differently from
-   * an exact one (PartOfSpeechIdentifier.identifySeeded's own lower
-   * confidence for exactly this reason). */
-  lookupFormMatches(text: string): readonly WordFormMatch[] {
-    return this.formTextIndex.get(text.toLowerCase())?.slice() ?? [];
-  }
-
   /** Bootstraps this Dictionary with a copy of every Word in `other` --
    * used to seed a newly created Domain's Dictionary from the reserved
    * Common Domain's Dictionary. Each Word is shallow-copied so the two
@@ -221,16 +167,13 @@ export class Dictionary {
    * uuid -> copy map this builds along the way) -- without this,
    * Physics's own inherited Dictionary would silently lose every
    * formsOf/lemmaOf link Common had, even though every Word itself
-   * carried over correctly. indexWordForms() is re-run per copy for the
-   * identical reason -- a shallow copy keeps its own *_Form Text values
-   * unchanged, but this Dictionary's own formTextIndex starts empty. */
+   * carried over correctly. */
   seedFrom(other: Dictionary): void {
     const copyByOriginalUuid = new Map<string, Word>();
     for (const word of other.words) {
       const copy = copyWordWithFreshUuid(word);
       this.append(copy);
       copyByOriginalUuid.set(word.uuid.value, copy);
-      this.indexWordForms(copy);
     }
     for (const word of other.words) {
       const copy = copyByOriginalUuid.get(word.uuid.value);

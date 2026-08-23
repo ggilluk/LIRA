@@ -234,12 +234,12 @@ export interface Word extends LinguisticUnit {
   // Every WordForm (data/word_form.ts) registered against this Word --
   // one per inflected spelling that carries its own addressable
   // identity and its own Senses, `senseIds`'s own exact counterpart one
-  // level down. AUXILIARY-only today (role/auxiliary_seeder.ts is the
-  // only writer, via WordForms.registerMember()) -- every other POS
-  // subtype still spells its own inflected forms as scalar `*_Form`
-  // fields on its own subtype interface (data/pos_form_fields.ts),
-  // untouched; WordForm's own docstring has the full reasoning for why
-  // only Auxiliary moved. Always [] for a Word this fact doesn't apply
-  // to, `contractionOf`'s own exact convention.
+  // level down. Populated for every POS subtype now (role/auxiliary_seeder.ts
+  // for AUXILIARY, each role/processor/*_processor.ts's own generateXForms()
+  // for Noun/Verb/Adjective/Adverb, role/word_seeder.ts's
+  // registerBaseLemmaForm() for every Word regardless of subtype) --
+  // WordForm's own docstring has the full history of this migration.
+  // Always [] for a Word this fact doesn't apply to, `contractionOf`'s
+  // own exact convention.
   formIds: readonly Identifier[];
 }

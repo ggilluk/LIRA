@@ -3,8 +3,7 @@
  * ui/dictionary_view.ts's own DictionaryView class (formerly the private
  * methods senseFieldsFor/isRootWordFor/domainLabel) into plain exported
  * functions taking their data dependencies (Senses, domainName) as explicit
- * parameters, the same conversion data/word_forms.ts's own formTextsOf()
- * already uses in this codebase. */
+ * parameters. */
 
 import type { Text } from "../../../value_objects";
 import type { Phrase } from "../../data/phrase";

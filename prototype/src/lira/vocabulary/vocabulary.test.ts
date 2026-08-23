@@ -894,16 +894,16 @@ describe("DictionaryProcessor.identifyPhrase", () => {
 // its own generated forms onto the WordForms store instead
 // (generateNounForms()'s/generateVerbForms()'s/generateAdjectiveForms()'s/
 // generateAdverbForms()'s own docstrings). Pronoun/Determiner's own
-// migration (data/entities/pronoun.ts's own docstring) was the last
-// POS pair with any scalar `*_Form` field left to fixture against --
-// every POS subtype now registers real WordForm records instead, so
-// `formTextsOf()` (data/pos_form_fields.ts) has nothing left to
-// reflect over and this mechanism is fully dead code, not just
-// under-exercised. Removed rather than kept synthetic (hand-faking a
-// scalar field onto a Word no real seeding path would ever produce).
-// The underlying `Dictionary.indexWordForms()`/`lookupFormMatches()`/
-// `formTextIndex`/`WordFormMatch` themselves are slated for deletion
-// in the same migration's own final cleanup pass.
+// migration (data/entities/pronoun.ts's own docstring) was the last POS
+// pair with any scalar `*_Form` field left to fixture against -- every
+// POS subtype now registers real WordForm records instead, so this
+// mechanism became fully dead code, not just under-exercised. Removed
+// rather than kept synthetic (hand-faking a scalar field onto a Word no
+// real seeding path would ever produce). The underlying
+// `Dictionary.indexWordForms()`/`lookupFormMatches()`/`formTextIndex`/
+// `WordFormMatch`, plus `pos_form_fields.ts`'s own `formTextsOf()`/
+// `WordFormEntry`/`WORD_FORM_FIELDS`, were deleted in the same
+// migration's own final cleanup pass.
 
 describe("PartOfSpeechIdentifier / DictionaryProcessor: inflected-form fallback", () => {
   it("resolves an inflected surface form to its base Word, tagged INFLECTED_FORM with a lower confidence than any exact match and a reason naming the field", () => {

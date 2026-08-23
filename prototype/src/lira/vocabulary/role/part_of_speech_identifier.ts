@@ -26,23 +26,21 @@ export class PartOfSpeechIdentifier {
 
   /** An exact lookupAll() match always wins outright when one exists --
    * only once that comes back empty does this fall back to
-   * Dictionary.lookupFormMatches() (every scalar-field POS subtype's
-   * own generated *_Form values, e.g. "commas" -> "comma" via
-   * pluralNumberForm, "ran" -> "run" via pastTenseForm) merged with
-   * WordForms.lookupByText() (AUXILIARY's own WordForm records, e.g.
-   * "was" -> "be" via a pastTenseInstanceForm WordForm --
-   * data/word_forms.ts's own docstring on why Auxiliary needs a
-   * second index here instead of just extending Dictionary's own).
-   * This is the one choke point both DictionaryProcessor.identifyWord
-   * and identifyPhrase call for every span they try (identifyPhrase's
-   * own docstring), so the merged fallback covers ordinary single-word
-   * identification and every phrase-search span alike without either
-   * caller needing its own copy of this logic. An inflected match is
-   * real evidence, just weaker than the Word's own canonical spelling,
-   * so it's scored below every exact match (inflectedConfidence()) and
-   * tagged IdentificationSource.INFLECTED_FORM rather than
-   * SEEDED_VOCABULARY, with a reason naming the specific field that
-   * matched. */
+   * WordForms.lookupByText() (every migrated POS subtype's own
+   * generated WordForm records, e.g. "commas" -> "comma" via
+   * pluralNumberForm, "ran" -> "run" via pastTenseForm, "was" -> "be"
+   * via a pastTenseInstanceForm WordForm -- every POS now registers
+   * its own inflected spellings there, data/word_forms.ts's own
+   * docstring). This is the one choke point both
+   * DictionaryProcessor.identifyWord and identifyPhrase call for every
+   * span they try (identifyPhrase's own docstring), so this fallback
+   * covers ordinary single-word identification and every phrase-search
+   * span alike without either caller needing its own copy of this
+   * logic. An inflected match is real evidence, just weaker than the
+   * Word's own canonical spelling, so it's scored below every exact
+   * match (inflectedConfidence()) and tagged
+   * IdentificationSource.INFLECTED_FORM rather than SEEDED_VOCABULARY,
+   * with a reason naming the specific field that matched. */
   identifySeeded(context: WordLookupContext): readonly WordIdentifier[] {
     const seededWords = this.dictionary.lookupAll(context.normalisedText);
     if (seededWords.length > 0) {
@@ -57,10 +55,8 @@ export class PartOfSpeechIdentifier {
       return candidates;
     }
 
-    const formMatches: readonly { word: Word; field: string }[] = [
-      ...this.dictionary.lookupFormMatches(context.normalisedText),
-      ...(this.wordForms?.lookupByText(context.normalisedText).map(({ word, form }) => ({ word, field: form.field })) ?? []),
-    ];
+    const formMatches: readonly { word: Word; field: string }[] =
+      this.wordForms?.lookupByText(context.normalisedText).map(({ word, form }) => ({ word, field: form.field })) ?? [];
     const candidates: WordIdentifier[] = formMatches.map(({ word, field }) => ({
       word,
       partOfSpeech: word.partOfSpeech,

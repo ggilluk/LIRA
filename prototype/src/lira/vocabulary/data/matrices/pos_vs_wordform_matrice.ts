@@ -1,6 +1,5 @@
 /** The Word Form to Part of Speech Matrix, as real data -- the single
- * source both the code (validateX()'s own String Pattern check,
- * data/word_forms.ts's own WORD_FORM_FIELDS) and
+ * source both the code (validateX()'s own String Pattern check) and
  * data/matrices/word_form_part_of_speech_matrix.md's own narrative
  * derive from, replacing what used to be six independent, hand-copied
  * `*_FORM_PATTERNS` constants (one per role/processor/*_processor.ts
@@ -23,11 +22,12 @@
  * duplicating it"), not a shared TypeScript abstraction guessed at in
  * advance.
  *
- * Only two columns of the matrix are mechanically consumed by code
+ * Only one column of the matrix is mechanically consumed by code
  * today -- String Pattern (via stringPatternsFor(), validateX()'s own
- * check() closure, role/word_processor.ts's validateFormText()) and POS
- * applicability (via fieldsFor(), data/word_forms.ts's own
- * WORD_FORM_FIELDS). Every other column (Base Lemma Preconditions,
+ * check() closure, role/word_processor.ts's validateFormText()); POS
+ * applicability (fieldsFor()) no longer has a caller now that every POS
+ * subtype registers real `WordForm` records instead of scalar `*_Form`
+ * fields. Every other column (Base Lemma Preconditions,
  * Base Lemma Pattern, Generation Transform, Reduction Transform,
  * Required Linguistic Data, Exception Lookup) is carried as real data
  * too -- so the .md's own table can eventually be generated from this
@@ -1018,13 +1018,15 @@ export function stringPatternsFor(field: string, pos: PartOfSpeech): readonly st
   return [...new Set(patterns.filter((p): p is string => p !== undefined))];
 }
 
-/** data/word_forms.ts's own WORD_FORM_FIELDS is built from this per
- * PartOfSpeech, in place of the old `Object.keys(X_FORM_PATTERNS)`
- * across six separate role/processor/*.ts files -- every row with at
- * least one rule whose `appliesTo` includes `pos`, in the matrix's own
- * row order (matching the Word Form to Part of Speech Matrix's own
- * field order, the same order WORD_FORM_FIELDS has always documented
- * itself as using). */
+/** Every row applicable to `pos` -- once the single source the now-
+ * deleted `pos_form_fields.ts`'s own `WORD_FORM_FIELDS` was built from
+ * (in place of the older `Object.keys(X_FORM_PATTERNS)` across six
+ * separate role/processor/*.ts files), in the matrix's own row order.
+ * No production caller left now that every POS subtype registers real
+ * `WordForm` records instead of scalar `*_Form` fields (data/word_form.ts's
+ * own docstring) -- kept alongside `stringPatternsFor()` as a plain,
+ * still-correct view over `WORD_FORM_MATRIX` rather than deleted along
+ * with its one-time caller. */
 export function fieldsFor(pos: PartOfSpeech): readonly string[] {
   return WORD_FORM_MATRIX.filter((row) => row.rules.some((rule) => rule.appliesTo.includes(pos))).map((row) => row.field);
 }

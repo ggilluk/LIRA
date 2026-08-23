@@ -12,26 +12,26 @@ import { copyWordFormWithFreshUuid, createWordForm, type WordForm } from "./word
  * `registerNamedForm()` is the one primitive every writer builds on --
  * role/auxiliary_seeder.ts (every AUXILIARY lemma's own inflected
  * forms), each POS's own generateXForms() (role/processor/*_processor.ts,
- * an inflected spelling per still-migrating POS subtype), and
+ * an inflected spelling per POS subtype -- every one of them now,
+ * Auxiliary having been the first to migrate), and
  * role/word_seeder.ts's registerUniqueSense()/seedWordNet() (every
  * ordinary Word's own base-lemma WordForm, via registerBaseLemmaForm()'s
- * own thin wrapper below). A POS subtype not yet migrated still keeps
- * its own *inflected* spellings in scalar `*_Form` fields
- * (data/pos_form_fields.ts) instead. */
+ * own thin wrapper below). */
 export class WordForms {
   private forms: WordForm[] = [];
   private readonly byUuid = new Map<string, WordForm>();
   private readonly formsByWordId = new Map<string, WordForm[]>();
   // Case-insensitive text -> every (form, owning word) pair whose own
-  // `text.value` equals that text -- Dictionary.lookupFormMatches()'s
-  // own exact index shape (data/dictionary.ts), built eagerly as forms
-  // are registered rather than as a deferred batch pass: unlike
-  // Adjective/Adverb (whose gradability-derived comparativeDegreeForm/
+  // `text.value` equals that text -- built eagerly as forms are
+  // registered rather than as a deferred batch pass: unlike Adjective/
+  // Adverb (whose gradability-derived comparativeDegreeForm/
   // superlativeDegreeForm aren't known until after the relationship
-  // graph seeds, Dictionary.indexWordForms()'s own docstring), every
-  // Auxiliary WordForm is fully known at creation time in
-  // AuxiliarySeeder, so there's no later pass this index would need to
-  // wait for.
+  // graph seeds), every Auxiliary WordForm is fully known at creation
+  // time in AuxiliarySeeder, so there's no later pass this index would
+  // need to wait for -- and every other POS's own generateXForms()
+  // simply calls registerNamedForm() again, harmlessly, once its own
+  // later-known fields are ready, the same idempotent find-or-create
+  // this index already relies on throughout.
   private readonly textIndex = new Map<string, Array<{ form: WordForm; word: Word }>>();
 
   all(): readonly WordForm[] {
@@ -83,11 +83,9 @@ export class WordForms {
   }
 
   /** Every (form, owning word) pair whose own `text` equals `text`
-   * verbatim (case-insensitive) -- Dictionary.lookupFormMatches()'s own
-   * exact contract, so PartOfSpeechIdentifier.identifySeeded() can
-   * merge this store's own results with Dictionary's without either
-   * caller needing a different shape for the two. Empty when nothing
-   * matches. */
+   * verbatim (case-insensitive) -- PartOfSpeechIdentifier.identifySeeded()'s
+   * own inflected-form fallback, tried once an exact
+   * Dictionary.lookupAll() match fails. Empty when nothing matches. */
   lookupByText(text: string): readonly { form: WordForm; word: Word }[] {
     return this.textIndex.get(text.toLowerCase())?.slice() ?? [];
   }
@@ -112,10 +110,8 @@ export class WordForms {
    * base/canonical spelling -- registerNamedForm()'s own
    * `"baseLemmaCanonicalForm"` special case. Reuses that name
    * deliberately -- it's already the Word Form Matrix's own first row
-   * and the name `formTextsOf()` (data/pos_form_fields.ts) already
-   * recognises as "this Word's own canonical spelling," so this
-   * converges onto that existing concept instead of inventing a new
-   * name for the same idea.
+   * name, so this converges onto that existing concept instead of
+   * inventing a new one for the same idea.
    *
    * `text` prefers `word.baseLemmaCanonicalForm` (the scalar field's
    * own docstring, data/entities/word.ts: set only when a Word's own
