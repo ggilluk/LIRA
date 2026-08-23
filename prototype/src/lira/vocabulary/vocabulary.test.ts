@@ -2134,7 +2134,6 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     expect(isAdjective(afraid)).toBe(true);
     if (!isAdjective(afraid)) throw new Error("unreachable");
     expect(afraid.text).toBe("afraid");
-    expect(afraid.lexicalForm?.value).toBe("afraid");
     expect(syntacticPositionForSense(senseStore, afraid, afraidSenseId)).toBe(AdjectivePosition.PREDICATE_ONLY);
 
     // "big" (01385012-a, already used elsewhere in this file) carries no

@@ -111,22 +111,32 @@ export class WordForms {
    * `"baseLemmaCanonicalForm"` special case. Reuses that name
    * deliberately -- it's already the Word Form Matrix's own first row
    * name, so this converges onto that existing concept instead of
-   * inventing a new one for the same idea. `text` is `word.lexicalForm`
-   * when set, else `word.text` -- the two agree for the vast majority
-   * of Words.
+   * inventing a new one for the same idea.
    *
-   * `extra`, when supplied, sets this WordForm's own pronunciation/
-   * syllable/frequency attributes (`WordForm`'s own docstring on why
-   * those live here, not on Word) -- only ever passed by
-   * WordSeeder.entryToWord()'s own caller, which is the only place any
-   * of that data is actually read from a Common Vocabulary Cache
-   * entry; every other caller omits it, leaving those attributes
-   * undefined the same as `registerNamedForm()`'s own callers already
-   * do. Applied every call, not just the first -- idempotent the same
-   * way the rest of this method is, so a re-seed simply reapplies the
-   * same values rather than needing its own separate guard. */
-  registerBaseLemmaForm(word: Word, extra?: WordFormAttributes): WordForm {
-    const form = this.registerNamedForm(word, "baseLemmaCanonicalForm", word.lexicalForm ?? { value: word.text });
+   * `text`, when supplied, is this WordForm's own rich spelling
+   * (language/script/version, `Text`'s own docstring, value_objects/
+   * data/text.ts) -- Word carries no `lexicalForm` of its own any more
+   * for this to read (`WordForm`'s own docstring on why), so a caller
+   * constructing a brand-new Word passes it explicitly (WordSeeder's
+   * own synsetMemberToWord()/seedClosedClassWords()). Defaults to
+   * `{value: word.text}` when omitted -- correct for every later,
+   * idempotent call for a Word whose base-lemma form was already
+   * registered with the real Text on its first call (registerUniqueSense()'s
+   * own call, in particular, always omits it for exactly this reason).
+   *
+   * `extra`, when supplied, sets this WordForm's own normalised-spelling/
+   * pronunciation/syllable/frequency attributes (`WordForm`'s own
+   * docstring on why those live here, not on Word) -- only ever passed
+   * by WordSeeder.entryToWord()'s own caller and role/dictionary_hydrator.ts,
+   * the only two places any of that data is actually read from outside
+   * this codebase; every other caller omits it, leaving those attributes
+   * at createWordForm()'s own defaults the same as `registerNamedForm()`'s
+   * own callers already do. Applied every call, not just the first --
+   * idempotent the same way the rest of this method is, so a re-seed
+   * simply reapplies the same values rather than needing its own
+   * separate guard. */
+  registerBaseLemmaForm(word: Word, text?: Text, extra?: WordFormAttributes): WordForm {
+    const form = this.registerNamedForm(word, "baseLemmaCanonicalForm", text ?? { value: word.text });
     if (extra !== undefined) Object.assign(form, extra);
     return form;
   }

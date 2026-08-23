@@ -156,9 +156,9 @@ export class DictionaryProcessor {
   /** Registers `word` as a distinct sense of a lexical form already
    * present in this Dictionary under a different meaning -- the "keep
    * both, tell them apart by identity" resolution path for a
-   * word-sense conflict. Neither `word.text` nor `word.lexicalForm` is
-   * touched: both senses keep the identical, unmangled lexicalForm,
-   * and stay distinguishable by their own `entryId` instead. */
+   * word-sense conflict. `word.text` is never touched: both senses keep
+   * the identical, unmangled spelling, and stay distinguishable by their
+   * own `entryId` instead. */
   registerConflictingSense(word: Word): Word {
     this.dictionary.append(word);
     return word;

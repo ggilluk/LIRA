@@ -93,9 +93,8 @@ export class Dictionary {
    * partOfSpeech) (a word-sense conflict, 9.2), is modelled as multiple
    * Word entries (4.1: "one lexical form in one language and one
    * grammatical category"), each sharing the same unmodified `text`
-   * and `lexicalForm` but each with its own `entryId` -- lookup() only
-   * ever surfaces the first such entry; this is how the rest become
-   * visible too. */
+   * but each with its own `entryId` -- lookup() only ever surfaces the
+   * first such entry; this is how the rest become visible too. */
   lookupAll(text: string): readonly Word[] {
     return this.byText.get(text.toLowerCase())?.slice() ?? [];
   }

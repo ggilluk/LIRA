@@ -28,7 +28,7 @@ export function definitionWordSegment(surfaceText: string, resolved: Word | unde
     word: true,
     resolved: true,
     word_id: resolved.uuid.value,
-    lexical_form: resolved.lexicalForm?.value ?? resolved.text,
+    lexical_form: resolved.text,
     pos: PartOfSpeech[resolved.partOfSpeech],
     domain: domainLabel(senses, domainName, resolved),
     gloss: resolved.gloss?.value ?? resolved.definition?.value ?? "",

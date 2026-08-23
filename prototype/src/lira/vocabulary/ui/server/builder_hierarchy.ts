@@ -302,7 +302,7 @@ export function resolveHierarchy(
     if (!word) continue;
     nodes.push({
       id,
-      lexical_form: word.lexicalForm?.value ?? word.text,
+      lexical_form: word.text,
       pos: PartOfSpeech[word.partOfSpeech],
       domain: domainLabel(senses, domainName, word),
       sense_id: word.synsetId?.value ?? null,

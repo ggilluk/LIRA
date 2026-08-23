@@ -52,7 +52,7 @@ export function senseRecordFor(sense: Sense, senses: Senses, domainName: string)
     id: sense.uuid.value,
     entry_id: sense.entryId.value,
     synset_id: sense.synsetId?.value ?? null,
-    lexical_form: members.map((member) => member.lexicalForm?.value ?? member.text).join(", "),
+    lexical_form: members.map((member) => member.text).join(", "),
     pos: members.length > 0 ? PartOfSpeech[members[0].partOfSpeech] : null,
     gloss: sense.gloss?.value ?? "",
     definition: sense.definition?.value ?? "",
@@ -61,7 +61,7 @@ export function senseRecordFor(sense: Sense, senses: Senses, domainName: string)
     domain,
     related_domains: sense.relatedDomainTags.map((tag) => tag.value),
     member_count: members.length,
-    members: members.map((member) => member.lexicalForm?.value ?? member.text),
+    members: members.map((member) => member.text),
     sources: sense.sourceReferences.map((ref) => ref.sourceName.value),
     sense_frequency: sense.senseFrequency ?? null,
   };

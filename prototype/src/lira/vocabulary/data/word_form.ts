@@ -48,7 +48,34 @@ export interface WordForm {
   // POS subtype would have declared this value under.
   field: string;
 
+  // Spelling of this WordForm as it is conventionally written -- carries
+  // this form's own language, script, and version as its own
+  // `languageCode`/`scriptCode`/`version` attributes (`Text`'s own
+  // docstring, value_objects/data/text.ts) rather than as separate
+  // fields here. Moved here from Word (Word's own former `lexicalForm`
+  // field) -- the same "fact about one spelling" reasoning as every
+  // other field below: WordForm's own `field` already discriminates
+  // which spelling this is ("baseLemmaCanonicalForm", "pluralNumberForm",
+  // ...), so there is no reason for a second, Word-level copy of the
+  // base lemma's own spelling to exist alongside it.
   text: Text;
+
+  // Case- and diacritic-normalised form of `text` -- moved here from
+  // Word (former `normalisedForm` field) for the identical reason `text`
+  // itself moved: a normalised spelling is a fact about *this* form, not
+  // about the lemma as a whole ("running" normalises differently from
+  // "run"). Defaults to `text.value.toLowerCase()` when not supplied
+  // (createWordForm()'s own default, mirroring createWord()'s former
+  // auto-derivation) -- every real Common Vocabulary Cache entry's own
+  // normalised_form already equals that simple lowercasing (verified
+  // against every entry in assets/common/en/*.json), so the explicit
+  // override WordSeeder.recordWordFormAttributes() supplies is a safety
+  // net for a future entry that genuinely needs diacritic stripping or
+  // similar, not a case any entry actually exercises today. Always
+  // present after createWordForm() runs (its own default), same as
+  // `pronunciations`/`senseIds` below -- never left undefined the way
+  // syllableRepresentation/stressPattern genuinely can be.
+  normalisedForm: Text;
 
   // This spelling's own distinct meanings, 0..* -- Word.senseIds's own
   // exact shape, one level down. A Sense referenced here is the same
@@ -98,12 +125,15 @@ export interface WordForm {
 export type WordFormInit = Pick<WordForm, "field" | "text"> & Partial<Omit<WordForm, "field" | "text">>;
 
 // WordForms.registerBaseLemmaForm()'s own `extra` parameter shape --
-// every WordForm attribute that's a fact about pronunciation/frequency
-// rather than about spelling or meaning (this file's own docstring on
-// each field), applied onto an already-registered WordForm rather than
-// supplied at creation time the way `field`/`text` are.
+// every WordForm attribute that isn't required at creation time the way
+// `field`/`text` are (this file's own docstring on each field: spelling
+// facts like `normalisedForm` alongside pronunciation/frequency ones),
+// applied onto an already-registered WordForm instead.
 export type WordFormAttributes = Partial<
-  Pick<WordForm, "pronunciations" | "syllableRepresentation" | "syllableCount" | "stressPattern" | "frequencyValue" | "frequencyScale">
+  Pick<
+    WordForm,
+    "normalisedForm" | "pronunciations" | "syllableRepresentation" | "syllableCount" | "stressPattern" | "frequencyValue" | "frequencyScale"
+  >
 >;
 
 export function createWordForm(init: WordFormInit): WordForm {
@@ -113,6 +143,7 @@ export function createWordForm(init: WordFormInit): WordForm {
     uuid: init.uuid ?? { value: newUuid() },
     entryId: init.entryId ?? { value: newUuid() },
     ...init,
+    normalisedForm: init.normalisedForm ?? { value: init.text.value.toLowerCase() },
   };
 }
 

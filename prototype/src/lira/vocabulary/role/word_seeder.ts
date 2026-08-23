@@ -1017,18 +1017,28 @@ export class WordSeeder {
   // reads this back to pass into registerUniqueSense, the one place a
   // hand-curated entry's PAD actually reaches its own Sense.
   private cachePad = new Map<string, { pleasure?: number; arousal?: number; dominance?: number }>();
-  // Every cached entry's own raw pronunciation/syllable/frequency
-  // attributes, keyed by entryId -- entryToWord() populates this in
-  // lockstep with `cache` itself (cachePad's own docstring, same
-  // reasoning), since Word no longer carries any of these as its own
-  // field (WordForm's own docstring, data/word_form.ts, on why they
-  // moved) -- seedClosedClassWords() reads this back to pass into
-  // WordForms.registerBaseLemmaForm(), the one place a hand-curated
+  // Every cached entry's own raw normalised-spelling/pronunciation/
+  // syllable/frequency attributes, keyed by entryId -- entryToWord()
+  // populates this in lockstep with `cache` itself (cachePad's own
+  // docstring, same reasoning), since Word no longer carries any of
+  // these as its own field (WordForm's own docstring, data/word_form.ts,
+  // on why they moved) -- seedClosedClassWords() reads this back to pass
+  // into WordForms.registerBaseLemmaForm(), the one place a hand-curated
   // entry's own values actually reach a WordForm. Phrase has no
   // equivalent: WordForm is a Word-only concept, so a Phrase entry's
   // own syllable_count etc. (WordFileEntry's schema is shared) simply
   // has nowhere to go, the same as before this migration.
   private cacheWordFormAttributes = new Map<string, WordFormAttributes>();
+  // Every cached entry's own rich lexical-form Text (value, language,
+  // script, version) -- entryToWord() populates this the same way it
+  // populates cacheWordFormAttributes above, for the identical reason:
+  // Word carries no `lexicalForm` of its own any more (WordForm's own
+  // docstring on why), so the value entryToWord() would otherwise have
+  // stashed straight on the Word has to wait here until
+  // seedClosedClassWords()'s own loop has a real per-Domain `copy` and a
+  // `WordForms` store to register it against
+  // (WordForms.registerBaseLemmaForm()'s own `text` parameter).
+  private cacheLexicalForm = new Map<string, Text>();
   private promotedOverlay: PromotedDoc | null = null;
 
   constructor(
@@ -1348,7 +1358,7 @@ export class WordSeeder {
       // section by accident. Idempotent, so registerUniqueSense()'s own
       // later registerBaseLemmaForm() call (inside it) just finds this
       // same WordForm again.
-      wordForms?.registerBaseLemmaForm(copy, this.cacheWordFormAttributes.get(copy.entryId.value));
+      wordForms?.registerBaseLemmaForm(copy, this.cacheLexicalForm.get(copy.entryId.value), this.cacheWordFormAttributes.get(copy.entryId.value));
       if (isNoun(copy)) copy = generateNounForms(copy, wordForms);
       else if (isVerb(copy)) copy = generateVerbForms(copy, wordForms);
       else if (isAdjective(copy)) copy = generateAdjectiveForms(copy, false, wordForms);
@@ -2380,25 +2390,32 @@ export class WordSeeder {
   private synsetMemberToWord(synset: WordNetSynset, lemma: string, wordForms: WordForms | undefined): Word {
     const shared = {
       text: lemma,
-      languageCode: { value: this.languageCode },
       definition: synset.definition ? { value: synset.definition } : undefined,
       usageNotes: synset.examples.map((example) => ({ value: example })),
       synsetId: { value: synset.synsetId, ...WORDNET_SYNSET_ID_SCHEME },
       isCommon: true,
       sourceReferences: [WORDNET_SOURCE_REFERENCE],
     };
+    // The base-lemma WordForm's own rich Text -- entryToWord()'s own
+    // cacheLexicalForm construction, this path's exact counterpart
+    // (word.lexicalForm no longer exists for createWord() to populate
+    // this from directly). No `version` override is ever passed for a
+    // WordNet-seeded lemma, so this always takes createWordForm()'s own
+    // "1.0" default -- matching createWord()'s former identical default
+    // for the same case.
+    const lexicalForm: Text = { value: lemma, languageCode: { value: this.languageCode } };
     switch (synset.partOfSpeech) {
       case PartOfSpeech.VERB: {
         // registerBaseLemmaForm() first, before generateVerbForms() --
         // Noun's own case just below, same "keep base lemma the *first*
         // WordForm on record" reasoning.
         const verb = createVerb(shared);
-        wordForms?.registerBaseLemmaForm(verb);
+        wordForms?.registerBaseLemmaForm(verb, lexicalForm);
         return generateVerbForms(verb, wordForms);
       }
       case PartOfSpeech.ADJECTIVE: {
         const adjective = createAdjective(shared);
-        wordForms?.registerBaseLemmaForm(adjective);
+        wordForms?.registerBaseLemmaForm(adjective, lexicalForm);
         return generateAdjectiveForms(adjective, false, wordForms);
       }
       case PartOfSpeech.ADVERB: {
@@ -2409,7 +2426,7 @@ export class WordSeeder {
         // (this method's own final loop) revisits every seeded Adverb
         // too, once relationships are fully wired.
         const adverb = createAdverb(shared);
-        wordForms?.registerBaseLemmaForm(adverb);
+        wordForms?.registerBaseLemmaForm(adverb, lexicalForm);
         return generateAdverbForms(adverb, false, wordForms);
       }
       case PartOfSpeech.NOUN: {
@@ -2421,7 +2438,7 @@ export class WordSeeder {
         // whichever POS-specific field generateNounForms() adds land
         // ahead of it and reorder the Word Forms section for no reason.
         const noun = createNoun(shared);
-        wordForms?.registerBaseLemmaForm(noun);
+        wordForms?.registerBaseLemmaForm(noun, lexicalForm);
         return generateNounForms(noun, wordForms);
       }
       default: {
@@ -2431,7 +2448,7 @@ export class WordSeeder {
         // so this switch has a total, not partial, mapping over
         // PartOfSpeech's other 12 values.
         const noun = createNoun(shared);
-        wordForms?.registerBaseLemmaForm(noun);
+        wordForms?.registerBaseLemmaForm(noun, lexicalForm);
         return generateNounForms(noun, wordForms);
       }
     }
@@ -2530,7 +2547,7 @@ export class WordSeeder {
     const doc = this.loadPromotedDoc();
     const domainTag = word.domainTag?.value ?? null;
     const alreadyPromoted = doc.words.some(
-      (entry) => entry.lexical_form === word.lexicalForm?.value && entry.part_of_speech === PartOfSpeech[word.partOfSpeech]
+      (entry) => entry.lexical_form === word.text && entry.part_of_speech === PartOfSpeech[word.partOfSpeech]
         && (entry.domain_tag ?? null) === domainTag,
     );
     if (alreadyPromoted) return false;
@@ -2550,7 +2567,7 @@ export class WordSeeder {
     if (referenceCount >= this.demotionThreshold) return false;
     const doc = this.loadPromotedDoc();
     const before = doc.words.length;
-    doc.words = doc.words.filter((entry) => entry.lexical_form !== word.lexicalForm?.value);
+    doc.words = doc.words.filter((entry) => entry.lexical_form !== word.text);
     if (doc.words.length === before) return false;
     doc.count = doc.words.length;
     this.cache = null;
@@ -2583,45 +2600,27 @@ export class WordSeeder {
     });
   }
 
-  /** Reads `entry`'s own raw syllable_representation/syllable_count/
-   * stress_pattern/frequency_value/frequency_scale straight off the
-   * WordFileEntry JSON into `cacheWordFormAttributes`, keyed by
-   * entryId -- recordPad()'s own exact shape and reasoning, mirrored
+  /** Reads `entry`'s own raw normalised_form/syllable_representation/
+   * syllable_count/stress_pattern/frequency_value/frequency_scale
+   * straight off the WordFileEntry JSON into `cacheWordFormAttributes`,
+   * keyed by entryId -- recordPad()'s own shape and reasoning, mirrored
    * for the WordForm attributes that moved off Word the same way PAD
    * moved off Word onto Sense (WordForm's own docstring, data/word_form.ts,
-   * on why these five now live on the base-lemma WordForm instead). A
-   * no-op when all five are null/undefined. */
+   * on why these now live on the base-lemma WordForm instead).
+   * `normalised_form` is a required WordFileEntry field, so this always
+   * records at least that one -- unlike recordPad(), there is no
+   * genuinely-empty case to no-op on. */
   private recordWordFormAttributes(entry: WordFileEntry): void {
     const optText = (value: string | null | undefined) => (value ? { value } : undefined);
     const optCode = (value: string | null | undefined) => (value ? { value } : undefined);
     const optNumber = (value: number | null | undefined) => (value === null || value === undefined ? undefined : { value });
-    const syllableRepresentation = entry.syllable_representation;
-    const syllableCount = entry.syllable_count;
-    const stressPattern = entry.stress_pattern;
-    const frequencyValue = entry.frequency_value;
-    const frequencyScale = entry.frequency_scale;
-    if (
-      syllableRepresentation === null &&
-      syllableCount === null &&
-      stressPattern === null &&
-      frequencyValue === null &&
-      frequencyScale === null
-    )
-      return;
-    if (
-      syllableRepresentation === undefined &&
-      syllableCount === undefined &&
-      stressPattern === undefined &&
-      frequencyValue === undefined &&
-      frequencyScale === undefined
-    )
-      return;
     this.cacheWordFormAttributes.set(entry.entry_id, {
-      syllableRepresentation: optText(syllableRepresentation),
-      syllableCount: optNumber(syllableCount),
-      stressPattern: optText(stressPattern),
-      frequencyValue: optNumber(frequencyValue),
-      frequencyScale: optCode(frequencyScale),
+      normalisedForm: { value: entry.normalised_form },
+      syllableRepresentation: optText(entry.syllable_representation),
+      syllableCount: optNumber(entry.syllable_count),
+      stressPattern: optText(entry.stress_pattern),
+      frequencyValue: optNumber(entry.frequency_value),
+      frequencyScale: optCode(entry.frequency_scale),
     });
   }
 
@@ -2641,6 +2640,18 @@ export class WordSeeder {
     const optCode = (value: string | null | undefined) => (value ? { value } : undefined);
     this.recordPad(entry);
     this.recordWordFormAttributes(entry);
+    // The base-lemma WordForm's own rich Text -- cached by entryId
+    // (cacheLexicalForm's own docstring on why: Word no longer carries
+    // `lexicalForm` of its own for this to land on directly). `scriptCode`
+    // is the one of the three genuinely optional in WordFileEntry's own
+    // schema, so it's the only one omitted rather than defaulted.
+    const scriptCode = optCode(entry.script_code);
+    this.cacheLexicalForm.set(entry.entry_id, {
+      value: entry.lexical_form,
+      languageCode: { value: entry.language_code },
+      version: entry.version ?? "1.0",
+      ...(scriptCode !== undefined ? { scriptCode } : {}),
+    });
 
     const sourceReferences = (entry.source_references ?? []).map((ref) => ({
       sourceName: { value: ref.source_name },
@@ -2655,11 +2666,6 @@ export class WordSeeder {
       text: entry.text ?? entry.lexical_form,
       entryId: { value: entry.entry_id },
       partOfSpeech,
-      version: entry.version,
-      languageCode: { value: entry.language_code },
-      lexicalForm: { value: entry.lexical_form },
-      normalisedForm: { value: entry.normalised_form },
-      scriptCode: optCode(entry.script_code),
       gloss: optText(entry.gloss),
       definition: optText(entry.definition),
       usageNotes: (entry.usage_notes ?? []).map((note) => ({ value: note })),
@@ -2801,12 +2807,21 @@ export class WordSeeder {
     return {
       entry_id: word.entryId.value,
       domain_tag: word.domainTag?.value ?? null,
-      lexical_form: word.lexicalForm?.value ?? word.text,
-      normalised_form: word.normalisedForm?.value ?? word.text.toLowerCase(),
+      // lexicalForm/normalisedForm/version/language_code/script_code all
+      // live on the base-lemma WordForm now (WordForm's own docstring),
+      // not on Word -- same "only ever receives a bare Word, with no
+      // store to resolve through" situation as the WordForm attributes/
+      // PAD fields just below, and just as moot in practice for the same
+      // reason (promoteWord() has no caller anywhere in this codebase
+      // yet). `text`/`this.languageCode`/"1.0" are the identical defaults
+      // createWord()/createWordForm() themselves would have fallen back
+      // to for a Word/WordForm with no richer Text of its own.
+      lexical_form: word.text,
+      normalised_form: word.text.toLowerCase(),
       text: word.text,
-      version: word.lexicalForm?.version ?? "1.0",
-      language_code: word.lexicalForm?.languageCode?.value ?? this.languageCode,
-      script_code: word.lexicalForm?.scriptCode?.value ?? null,
+      version: "1.0",
+      language_code: this.languageCode,
+      script_code: null,
       part_of_speech: PartOfSpeech[word.partOfSpeech],
       closed_class: false,
       definition: word.definition?.value ?? null,

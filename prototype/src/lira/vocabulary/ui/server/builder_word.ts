@@ -256,7 +256,7 @@ function morphologicalDerivations(word: Word, dictionary: Dictionary): WordRecor
     if (pointer === undefined) return;
     const target = dictionary.findByUuid(pointer.value);
     if (target === undefined) return;
-    derivations.push({ attribute, label: formFieldLabel(attribute), target: { id: target.uuid.value, text: target.lexicalForm?.value ?? target.text } });
+    derivations.push({ attribute, label: formFieldLabel(attribute), target: { id: target.uuid.value, text: target.text } });
   };
   if (isNoun(word)) {
     addIfSet("isDerivedFromVerb", word.isDerivedFromVerb);
@@ -317,7 +317,7 @@ function sensesFor(entry: Word | Phrase, senses: Senses, domainName: string): Wo
       synonyms: senses
         .membersOf(senseId.value)
         .filter((member) => member.uuid.value !== entry.uuid.value)
-        .map((member) => ({ id: member.uuid.value, text: member.lexicalForm?.value ?? member.text })),
+        .map((member) => ({ id: member.uuid.value, text: member.text })),
       ...(frames !== undefined && frames.length > 0 ? { frames: [...frames] } : {}),
     });
   });
@@ -399,7 +399,7 @@ export function wordRecordFor(
   return {
     id: wordId,
     entry_id: word.entryId.value,
-    lexical_form: word.lexicalForm?.value ?? word.text,
+    lexical_form: word.text,
     text: word.text,
     pos: PartOfSpeech[word.partOfSpeech],
     sense_id: word.synsetId?.value ?? null,
@@ -545,7 +545,7 @@ export function searchWords(
     if (options.pos && PartOfSpeech[word.partOfSpeech] !== options.pos) continue;
     if (options.rootWordsOnly && !isRootWordFor(senses, word)) continue;
     if (options.domain && domainLabel(senses, domainName, word) !== options.domain) continue;
-    const lexicalForm = (word.lexicalForm?.value ?? word.text).toLowerCase();
+    const lexicalForm = word.text.toLowerCase();
     if (wordQuery && !lexicalForm.includes(wordQuery)) continue;
     if (glossQuery && !(word.gloss?.value ?? "").toLowerCase().includes(glossQuery)) continue;
     if (definitionQuery && !(word.definition?.value ?? "").toLowerCase().includes(definitionQuery)) continue;

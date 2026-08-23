@@ -93,7 +93,7 @@ function handleInit(): void {
     const wordsSeeded = new WordSeeder("en").seedClosedClassWords(dictionary, phraseBook, undefined, undefined, wordForms);
 
     post({ type: "status", state: "running", detail: `Seeded ${wordsSeeded} words — configuring grammar…` });
-    const hydrator = new AsyncDictionaryHydrator(dictionary);
+    const hydrator = new AsyncDictionaryHydrator(dictionary, wordForms);
     const processor = new DictionaryProcessor(dictionary, phraseBook, hydrator, "Common", wordForms);
     controller = new LinguisticController(processor);
 

@@ -46,19 +46,6 @@ export interface Word extends LinguisticUnit {
 
   // ── Data Attributes ──────────────────────────────────────
 
-  /**
-   * Spelling of this Word as it is conventionally written.
-   *
-   * Carries this Word's own language, script, and version as its own
-   * `languageCode`/`scriptCode`/`version` attributes (`Text`'s own
-   * docstring, value_objects/data/text.ts) rather than as separate
-   * fields here.
-   */
-  lexicalForm?: Text;
-
-  /** Case- and diacritic-normalised form of `lexicalForm`. */
-  normalisedForm?: Text;
-
   /** Short gloss summarising this Word's own primary sense. */
   gloss?: Text;
 
@@ -133,7 +120,7 @@ export interface Word extends LinguisticUnit {
    * Identifiers of the WordForms belonging to this Word.
    *
    * Always includes this Word's own base-lemma WordForm -- its
-   * canonical spelling, pronunciation, syllable, and frequency
+   * lexical/normalised spelling, pronunciation, syllable, and frequency
    * attributes live there now, not as separate fields here (`WordForm`'s
    * own docstring, data/word_form.ts).
    */

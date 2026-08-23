@@ -67,7 +67,7 @@ export class VocabularyContext {
   lexicalRelationshipProcessor: LexicalRelationshipProcessor;
 
   constructor(domainName: string) {
-    this.hydrator = new AsyncDictionaryHydrator(this.dictionary);
+    this.hydrator = new AsyncDictionaryHydrator(this.dictionary, this.wordForms);
     // domainName is a lookup hint for external hydration (ranks, never
     // proves, which externally-supported sense applies), not a new
     // piece of Domain state duplicated here.
