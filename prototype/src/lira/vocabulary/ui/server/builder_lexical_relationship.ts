@@ -220,11 +220,29 @@ export function searchLexicalRelationships(
   }
 
   const matches: LexicalRelationshipRecord[] = [];
+  // Two rows that render identically -- same kind, same source/target
+  // WordForm, same subject Sense -- are indistinguishable to a reader
+  // even when their underlying (sourceSense, targetSense) pair genuinely
+  // differs. WordNet itself is the reason this happens at all: it
+  // sometimes carries two near-duplicate synsets for the same real
+  // meaning (e.g. two separate VERB synsets both lexicalizing "abandon,
+  // give up"), each independently deriving to the identical target noun
+  // sense -- copyLexicalRelationship()'s own reciprocal-pointer dedup
+  // (role/word_seeder.ts) correctly keeps both as genuinely distinct
+  // facts (different sourceSenseId), so the store itself isn't wrong,
+  // but showing "abandonment is the noun form of abandon." twice, back
+  // to back, with no visible difference between the two rows, reads as
+  // a bug regardless. `seen` collapses that here, at render time, rather
+  // than papering over it in the data itself.
+  const seen = new Set<string>();
   let totalMatches = 0;
   for (const rel of candidates) {
     const record = lexicalRelationshipRecordFor(rel, wordForms, dictionary, phrases, senses, domainName);
     const senseId = viaSenseId.get(rel.uuid.value);
     if (senseId !== undefined) record.via_sense_id = senseId;
+    const dedupeKey = `${record.via_sense_id ?? ""}|${record.kind}|${record.source_word_form_id}|${record.target_word_form_id}`;
+    if (seen.has(dedupeKey)) continue;
+    seen.add(dedupeKey);
     if (query) {
       const sourceHit = record.source_text.toLowerCase().includes(query);
       const targetHit = record.target_text.toLowerCase().includes(query);
