@@ -1900,21 +1900,31 @@ function verbFrameText(word, frame) {
   return frame.replace(/----ing/g, ing).replace(/----s/g, thirdPerson).replace(/----/g, base);
 }
 
-// One Sense's own plain info -- definition/frequency/synonyms, plus its
-// own PAD affect and Verb Frames \`<details>\` when seeded -- no
-// relationship data of any kind. Open by default only for the primary
-// sense's own PAD/Frames \`<details>\` (same reasoning as before: a
-// highly polysemous Word shouldn't dump every sense's own affect/frame
-// data expanded at once); the row itself is always shown, never
-// collapsed, since this list is the one place a reader finds out what a
-// Sense actually *means* before deciding whether to open either
-// relationship-kind section below for it.
-function senseSummaryRowHTML(word, s, index) {
+// One Sense's own plain info -- definition/frequency/synonyms -- plus
+// its own inline Sense.Semantic.Relationships details and its own
+// PAD affect / Verb Frames details when seeded. Lexical
+// Relationships is deliberately NOT rendered here any more --
+// wordFormRelationshipsSectionHTML() below owns that one, aggregated
+// once per WordForm rather than repeated per Sense. rels follows
+// relationshipsSectionHTML's own null/[]/populated convention -- null
+// while still loading over capacity, so the count reads "…" rather
+// than a wrong "0" until the real fetch resolves. Open by default only
+// for the primary sense's own Semantic/PAD/Frames \`<details>\` (a
+// highly polysemous Word shouldn't dump every sense's own relationship/
+// affect/frame data expanded at once); the row itself is always shown,
+// never collapsed.
+function senseSummaryRowHTML(word, s, index, rels) {
+  const senseRels = rels === null ? null : rels.filter(r => r.via_sense_id === s.id);
+  const count = senseRels === null ? '…' : senseRels.length;
   return \`
     <li class="sense-row\${s.is_primary ? ' primary' : ''}">
       <span class="sense-number">\${index + 1}\${s.is_primary ? ' <span class="sense-primary-tag">primary</span>' : ''}</span>
       <span class="sense-definition">\${s.definition || '<span style="opacity:.6">No definition.</span>'}</span>
       <span class="sense-meta">\${domainPill(s.domain)}\${s.frequency !== null ? \` <span class="sense-frequency" title="WordNet tagged-occurrence count (SemCor semantic concordance)">freq \${s.frequency.toLocaleString()}</span>\` : ''}\${s.synonyms.length ? \` <span class="sense-synonyms">synonyms: \${s.synonyms.map(syn => \`<button class="link-btn" data-pivot-id="\${syn.id}">\${syn.text}</button>\`).join(', ')}</span>\` : ''}</span>
+      <details class="sense-rels"\${s.is_primary ? ' open' : ''}>
+        <summary>Sense.Semantic.Relationships (\${count})</summary>
+        <div class="detail-relationships-section">\${relationshipsSectionHTML(senseRels)}</div>
+      </details>
       \${s.pad ? \`
       <details class="sense-pad"\${s.is_primary ? ' open' : ''}>
         <summary>Affect (PAD, seeded)</summary>
@@ -1932,24 +1942,23 @@ function senseSummaryRowHTML(word, s, index) {
     </li>\`;
 }
 
-// The new primary-axis-by-kind section -- one call each for Semantic
-// and Lexical (\`sectionClass\`/\`heading\` name which). \`rels\` follows
-// relationshipsSectionHTML's own null/[]/populated convention -- null
-// while still loading over capacity, so the header count reads "…"
-// rather than a wrong "0" until the real fetch resolves; a Sense is
-// still shown as its own sub-group while loading (nothing to filter out
-// yet), just with an unresolved count of its own. Once loaded, only a
-// Sense that actually has ≥ 1 relationship of this one kind gets a
-// sub-group at all -- \`senses\` is every Sense the owning WordForm (or,
-// for a Phrase, every Sense it carries) has, most of which carry zero
-// relationships of any one given kind, and repeating "Sense: <definition>
+// The WordForm-level, kind-first section -- Lexical Relationships only
+// (Semantic stays inline per-Sense, senseSummaryRowHTML() above).
+// \`rels\` follows relationshipsSectionHTML's own null/[]/populated
+// convention -- null while still loading over capacity, so the header
+// count reads "…" rather than a wrong "0" until the real fetch
+// resolves; a Sense is still shown as its own sub-group while loading
+// (nothing to filter out yet), just with an unresolved count of its
+// own. Once loaded, only a Sense that actually has ≥ 1 Lexical
+// Relationship gets a sub-group at all -- \`senses\` is every Sense the
+// owning WordForm (or, for a Phrase, every Sense it carries) has, most
+// of which carry zero Lexical facts, and repeating "Sense: <definition>
 // (0)" for each would bury the ones that actually have something to
 // show. Closed by default (no \`open\` attribute) regardless of primary
-// sense -- unlike the old per-Sense \`<details>\`, this one can now
-// aggregate a highly polysemous Word's *entire* relationship set behind
-// one summary line, so leaving it open by default would be the exact
-// "dump everything at once" outcome the old per-sense open/closed split
-// was already trying to avoid.
+// sense -- unlike the per-Sense \`<details>\`, this one can aggregate a
+// highly polysemous Word's *entire* Lexical Relationship set behind one
+// summary line, so leaving it open by default would dump everything at
+// once.
 function wordFormRelationshipsSectionHTML(sectionClass, heading, senses, rels) {
   const groups = senses
     .map(s => ({ sense: s, rels: rels === null ? null : rels.filter(r => r.via_sense_id === s.id) }))
@@ -1968,48 +1977,51 @@ function wordFormRelationshipsSectionHTML(sectionClass, heading, senses, rels) {
     </details>\`;
 }
 
-// senseSummaryRowHTML()'s own flat, ungrouped list, plus the same two
-// relationship-kind sections a WordForm's own detail gets -- phraseDetailHTML()'s
-// own use (client_detail_panel_controller.ts). A Phrase has no WordForm
-// of its own to nest under at all (WordForm is a Word-only concept,
-// data/word_form.ts's own docstring -- wordFormsFor() never returns
-// anything for a Phrase-resolved record), so \`phrase.word_forms\` is
-// always empty and WordRecord.senses's own flat, Word-level list (kept
-// for exactly this kind of reader, that field's own docstring) stands
-// in for the WordForm-scoped \`senses\` argument \`wordFormRelationshipsSectionHTML()\`
-// otherwise expects.
+// senseSummaryRowHTML()'s own flat, ungrouped list, plus the same
+// WordForm-level Lexical Relationships section a WordForm's own detail
+// gets -- phraseDetailHTML()'s own use (client_detail_panel_controller.ts).
+// A Phrase has no WordForm of its own to nest under at all (WordForm is
+// a Word-only concept, data/word_form.ts's own docstring -- wordFormsFor()
+// never returns anything for a Phrase-resolved record), so
+// \`phrase.word_forms\` is always empty and WordRecord.senses's own flat,
+// Word-level list (kept for exactly this kind of reader, that field's
+// own docstring) stands in for the WordForm-scoped \`senses\` argument
+// \`wordFormRelationshipsSectionHTML()\` otherwise expects.
 function phraseSensesSectionHTML(phrase, rels, lexicalRels) {
   if (!phrase.senses || !phrase.senses.length) return '';
   return \`
     <div class="detail-section-title">Senses (\${phrase.senses.length})</div>
     <ol class="sense-list">
-      \${phrase.senses.map((s, i) => senseSummaryRowHTML(phrase, s, i)).join('')}
+      \${phrase.senses.map((s, i) => senseSummaryRowHTML(phrase, s, i, rels)).join('')}
     </ol>
-    \${wordFormRelationshipsSectionHTML('sense-rels', 'Semantic Relationships', phrase.senses, rels)}
     \${wordFormRelationshipsSectionHTML('sense-lexical-rels', 'Lexical Relationships', phrase.senses, lexicalRels)}
   \`;
 }
-`,no=`// Word -> WordForm -> [plain Senses list, Semantic Relationships,
-// Lexical Relationships], one section, not a separate top-level
-// "Senses" section -- an earlier version rendered a separate "Senses"
-// section (grouped by WordForm) above this one's own flat, sense-less
-// field/value rows, so a Sense never visibly sat "under" any Word Form
-// a reader could actually see (a real bug: the two sections just
-// happened to both mention the same WordForm label). Every entry in
-// \`word.word_forms\` (WordRecord.word_forms, ui/server/builder_word.ts)
-// gets its label/value row here, and -- only when that entry's own
-// \`senses\` (WordFormEntry.senses's own docstring) is non-empty, i.e.
-// it's backed by a real WordForm record, not a bare scalar *_Form
-// field -- three pieces immediately follow that same row:
-// \`senseSummaryRowHTML()\`'s own plain \`<ol class="sense-list">\`
-// (definition/frequency/synonyms/PAD/Verb-Frames, no relationship
-// data), then \`wordFormRelationshipsSectionHTML()\` called once for
-// Semantic and once for Lexical -- each aggregating every one of this
-// WordForm's Senses' own relationships of that one kind, sub-grouped
-// by which Sense they came from (client_senses_section_html.ts, this
-// file's own sibling in the assembled script). \`derivations\`
-// (Word-level attribute pointers, not Sense-scoped) keep rendering as
-// their own trailing rows, same as before.
+`,no=`// Word -> WordForm -> [plain Senses list (each carrying its own inline
+// Semantic Relationships), Lexical Relationships], one section, not a
+// separate top-level "Senses" section -- an earlier version rendered a
+// separate "Senses" section (grouped by WordForm) above this one's own
+// flat, sense-less field/value rows, so a Sense never visibly sat
+// "under" any Word Form a reader could actually see (a real bug: the
+// two sections just happened to both mention the same WordForm label).
+// Every entry in \`word.word_forms\` (WordRecord.word_forms,
+// ui/server/builder_word.ts) gets its label/value row here, and -- only
+// when that entry's own \`senses\` (WordFormEntry.senses's own
+// docstring) is non-empty, i.e. it's backed by a real WordForm record,
+// not a bare scalar *_Form field -- two pieces immediately follow that
+// same row: \`senseSummaryRowHTML()\`'s own \`<ol class="sense-list">\`
+// (definition/frequency/synonyms/PAD/Verb-Frames, each Sense also
+// carrying its own inline Sense.Semantic.Relationships \`<details>\` --
+// a Sense's semantic facts read together with its own definition, not
+// aggregated across the WordForm), then \`wordFormRelationshipsSectionHTML()\`
+// for Lexical Relationships only -- aggregating every one of this
+// WordForm's Senses' own Lexical facts (naturally WordForm-scoped,
+// since they connect *forms* -- derivation/inflection/contraction/...
+// -- not concepts), sub-grouped by which Sense they came from
+// (client_senses_section_html.ts, this file's own sibling in the
+// assembled script). \`derivations\` (Word-level attribute pointers, not
+// Sense-scoped) keep rendering as their own trailing rows, same as
+// before.
 function wordFormsSectionHTML(word, rels, lexicalRels) {
   const hasForms = word.word_forms && word.word_forms.length;
   const hasDerivations = word.derivations && word.derivations.length;
@@ -2026,9 +2038,8 @@ function wordFormsSectionHTML(word, rels, lexicalRels) {
       </div>
       \${f.senses && f.senses.length ? \`
       <ol class="sense-list">
-        \${f.senses.map((s, i) => senseSummaryRowHTML(word, s, i)).join('')}
+        \${f.senses.map((s, i) => senseSummaryRowHTML(word, s, i, rels)).join('')}
       </ol>
-      \${wordFormRelationshipsSectionHTML('sense-rels', 'Semantic Relationships', f.senses, rels)}
       \${wordFormRelationshipsSectionHTML('sense-lexical-rels', 'Lexical Relationships', f.senses, lexicalRels)}\` : ''}\`).join('')}
     \${(word.derivations || []).map(d => \`
       <div class="word-form-row">
