@@ -22,6 +22,7 @@ import { HypernymRootWord } from "./data/enums/hypernym_root_word";
 import { isInterjection } from "./role/processor/interjection_processor";
 import { createNoun, generateNounForms, isNoun, validateNoun } from "./role/processor/noun_processor";
 import type { Noun } from "./data/entities/noun";
+import { WordForms } from "./data/word_forms";
 import { isNumeral } from "./role/processor/numeral_processor";
 import { isParticle } from "./role/processor/particle_processor";
 import { isPreposition } from "./role/processor/preposition_processor";
@@ -49,6 +50,13 @@ import { NounCharacterFormSeeder } from "./role/noun_character_form_seeder";
 import { IdentificationSource } from "./role/word_identifier";
 import { loadWordNetSynsets } from "./role/wordnet_loader";
 import { DictionaryView } from "./ui/server/dictionary_controller";
+
+// generateXForms()'s own migrated POS types register a WordForm instead
+// of assigning a named scalar field -- this reads one back the same way
+// `word.field` used to, for test assertions.
+function formTextOf(wordForms: WordForms, word: Word, field: string) {
+  return wordForms.formsOf(word).find((form) => form.field === field)?.text;
+}
 
 describe("PhraseType", () => {
   it("carries the same six numeric codes, in the same order, as Linguistics' own PhraseType", () => {
@@ -182,25 +190,23 @@ describe("validateFormText (role/word_processor.ts) -- the mechanism every POS c
 
 describe("validate<Class>() -- each POS class's own attribute validation", () => {
   it("returns no issues for a Word with nothing populated", () => {
-    expect(validateNoun(createNoun({ text: "dog" }))).toEqual([]);
+    expect(validateNoun(createNoun({ text: "dog" }), new WordForms())).toEqual([]);
   });
 
   it("returns no issues when every populated field's formats are internally consistent", () => {
-    const dog = createNoun({
-      text: "dog",
-      pluralNumberForm: { value: "dogs", formats: ["/s$/i"] },
-      possessiveCaseForm: { value: "dog's", formats: ["/'s$/i"] },
-    });
-    expect(validateNoun(dog)).toEqual([]);
+    const dog = createNoun({ text: "dog" });
+    const wordForms = new WordForms();
+    wordForms.registerNamedForm(dog, "pluralNumberForm", { value: "dogs", formats: ["/s$/i"] });
+    wordForms.registerNamedForm(dog, "possessiveCaseForm", { value: "dog's", formats: ["/'s$/i"] });
+    expect(validateNoun(dog, wordForms)).toEqual([]);
   });
 
   it("collects every issue found, not just the first", () => {
-    const dog = createNoun({
-      text: "dog",
-      pluralNumberForm: { value: "dog", formats: ["/s$/i"] }, // value doesn't match
-      possessiveCaseForm: { value: "dog's", formats: ["/self$/i"] }, // unrecognised pattern for this field
-    });
-    const issues = validateNoun(dog);
+    const dog = createNoun({ text: "dog" });
+    const wordForms = new WordForms();
+    wordForms.registerNamedForm(dog, "pluralNumberForm", { value: "dog", formats: ["/s$/i"] }); // value doesn't match
+    wordForms.registerNamedForm(dog, "possessiveCaseForm", { value: "dog's", formats: ["/self$/i"] }); // unrecognised pattern for this field
+    const issues = validateNoun(dog, wordForms);
     expect(issues).toHaveLength(2);
     expect(issues.map((i) => i.field)).toEqual(["pluralNumberForm", "possessiveCaseForm"]);
   });
@@ -234,7 +240,7 @@ describe("validate<Class>() -- each POS class's own attribute validation", () =>
   it("checks Word.baseLemmaCanonicalForm regardless of POS subtype, via validateWordFormAttributes shared through every validate<Class>()", () => {
     const dog = createNoun({ text: "dog", baseLemmaCanonicalForm: { value: "dog", formats: ["/s$/i"] } });
     expect(validateWordFormAttributes(dog)).toHaveLength(1);
-    expect(validateNoun(dog)).toHaveLength(1);
+    expect(validateNoun(dog, new WordForms())).toHaveLength(1);
   });
 
   it("checks an Adverb's degree forms the same way as Adjective's", () => {
@@ -245,21 +251,41 @@ describe("validate<Class>() -- each POS class's own attribute validation", () =>
 
 describe("generate<Class>Forms() -- deriving *_Form values from a base lemma", () => {
   it("Noun: regular plural rules (-s, -es, -ies) and the always-on possessive", () => {
-    expect(generateNounForms(createNoun({ text: "dog" })).pluralNumberForm).toEqual({ value: "dogs", formats: ["/s$/i"] });
-    expect(generateNounForms(createNoun({ text: "box" })).pluralNumberForm).toEqual({ value: "boxes", formats: ["/es$/i"] });
-    expect(generateNounForms(createNoun({ text: "city" })).pluralNumberForm).toEqual({ value: "cities", formats: ["/ies$/i"] });
-    expect(generateNounForms(createNoun({ text: "dog" })).possessiveCaseForm).toEqual({ value: "dog's", formats: ["/'s$/i"] });
-    expect(generateNounForms(createNoun({ text: "dog" })).singularNumberForm).toEqual({ value: "dog" });
+    const dog = createNoun({ text: "dog" });
+    const box = createNoun({ text: "box" });
+    const city = createNoun({ text: "city" });
+    const wordForms = new WordForms();
+    generateNounForms(dog, wordForms);
+    generateNounForms(box, wordForms);
+    generateNounForms(city, wordForms);
+    expect(formTextOf(wordForms, dog, "pluralNumberForm")).toEqual({ value: "dogs", formats: ["/s$/i"] });
+    expect(formTextOf(wordForms, box, "pluralNumberForm")).toEqual({ value: "boxes", formats: ["/es$/i"] });
+    expect(formTextOf(wordForms, city, "pluralNumberForm")).toEqual({ value: "cities", formats: ["/ies$/i"] });
+    expect(formTextOf(wordForms, dog, "possessiveCaseForm")).toEqual({ value: "dog's", formats: ["/'s$/i"] });
+    expect(formTextOf(wordForms, dog, "singularNumberForm")).toEqual({ value: "dog" });
   });
 
   it("Noun: abstains on pluralNumberForm for an f/fe-ending lemma -- roof/roofs vs. knife/knives can't be told apart from spelling alone", () => {
-    expect(generateNounForms(createNoun({ text: "knife" })).pluralNumberForm).toBeUndefined();
-    expect(generateNounForms(createNoun({ text: "roof" })).pluralNumberForm).toBeUndefined();
+    const knife = createNoun({ text: "knife" });
+    const roof = createNoun({ text: "roof" });
+    const wordForms = new WordForms();
+    generateNounForms(knife, wordForms);
+    generateNounForms(roof, wordForms);
+    expect(formTextOf(wordForms, knife, "pluralNumberForm")).toBeUndefined();
+    expect(formTextOf(wordForms, roof, "pluralNumberForm")).toBeUndefined();
   });
 
-  it("Noun: never overwrites a field the caller already set", () => {
-    const child = createNoun({ text: "child", pluralNumberForm: { value: "children" } });
-    expect(generateNounForms(child).pluralNumberForm).toEqual({ value: "children" });
+  it("Noun: never overwrites a field already registered", () => {
+    const child = createNoun({ text: "child" });
+    const wordForms = new WordForms();
+    wordForms.registerNamedForm(child, "pluralNumberForm", { value: "children" });
+    generateNounForms(child, wordForms);
+    expect(formTextOf(wordForms, child, "pluralNumberForm")).toEqual({ value: "children" });
+  });
+
+  it("Noun: no-ops with no WordForms store -- produces a Noun with no inflected forms registered anywhere", () => {
+    const dog = createNoun({ text: "dog" });
+    expect(generateNounForms(dog, undefined)).toBe(dog);
   });
 
   it("Verb: regular past/participle/third-person/present-participle rules", () => {
@@ -397,7 +423,9 @@ describe("generate<Class>Forms() -- deriving *_Form values from a base lemma", (
   });
 
   it("every generated Word passes its own validate<Class>() unchanged -- generation and validation are built from the same matrix rows", () => {
-    expect(validateNoun(generateNounForms(createNoun({ text: "city" })))).toEqual([]);
+    const city = createNoun({ text: "city" });
+    const cityWordForms = new WordForms();
+    expect(validateNoun(generateNounForms(city, cityWordForms), cityWordForms)).toEqual([]);
     expect(validateVerb(generateVerbForms(createVerb({ text: "stop" })))).toEqual([]);
     expect(validateVerb(generateVerbForms(createVerb({ text: "eat" })))).toEqual([]);
     expect(validateAdjective(generateAdjectiveForms(createAdjective({ text: "happy" }), true))).toEqual([]);
@@ -517,12 +545,13 @@ describe("generate<Class>Forms() -- deriving *_Form values from a base lemma", (
       semanticRelationships,
       new SemanticRelationshipSystemPropertyTensor(),
     );
+    const wordForms = new WordForms();
     await new WordSeeder("en").seedWordNet({
-      vocabulary: { dictionary, phrases: new Phrases(), senses: new Senses(), morphologicalPointerRelationships, morphologicalPointerRelationshipProcessor, semanticRelationships, semanticRelationshipProcessor },
+      vocabulary: { dictionary, phrases: new Phrases(), senses: new Senses(), wordForms, morphologicalPointerRelationships, morphologicalPointerRelationshipProcessor, semanticRelationships, semanticRelationshipProcessor },
     });
 
     const dog = dictionary.lookupAll("dog").find(isNoun);
-    expect(dog?.pluralNumberForm).toEqual({ value: "dogs", formats: ["/s$/i"] });
+    expect(dog && formTextOf(wordForms, dog, "pluralNumberForm")).toEqual({ value: "dogs", formats: ["/s$/i"] });
 
     const run = dictionary.lookupAll("run").find(isVerb);
     expect(run?.pastTenseForm).toEqual({ value: "ran" });
@@ -770,36 +799,42 @@ describe("DictionaryProcessor.identifyPhrase", () => {
 });
 
 describe("Dictionary.indexWordForms / lookupFormMatches", () => {
+  // Exercised here via Verb (still scalar-field-based) rather than Noun
+  // -- Noun migrated its own generated forms onto the WordForms store
+  // instead (generateNounForms()'s own docstring), so it no longer
+  // writes anything formTextsOf()/indexWordForms() can see; its own
+  // WordForms-based equivalent lives in the
+  // "PartOfSpeechIdentifier / DictionaryProcessor" describe block below.
   it("finds a Word by one of its own generated *_Form values, not its base spelling -- and never duplicates on a repeat call", () => {
     const dictionary = new Dictionary();
-    const comma = generateNounForms(createNoun({ text: "comma" }));
-    dictionary.append(comma);
-    dictionary.indexWordForms(comma);
+    const walk = generateVerbForms(createVerb({ text: "walk" }));
+    dictionary.append(walk);
+    dictionary.indexWordForms(walk);
 
-    // "commas" was never itself appended as a Word -- only reachable via
+    // "walks" was never itself appended as a Word -- only reachable via
     // the form index, not the ordinary exact-text one.
-    expect(dictionary.lookupAll("commas")).toEqual([]);
-    const matches = dictionary.lookupFormMatches("commas");
+    expect(dictionary.lookupAll("walks")).toEqual([]);
+    const matches = dictionary.lookupFormMatches("walks");
     expect(matches).toHaveLength(1);
-    expect(matches[0].word.uuid.value).toBe(comma.uuid.value);
-    expect(matches[0].field).toBe("pluralNumberForm");
+    expect(matches[0].word.uuid.value).toBe(walk.uuid.value);
+    expect(matches[0].field).toBe("thirdPersonSingularPresentForm");
 
     // Idempotent: indexing the same Word again doesn't add a duplicate
     // entry (WordSeeder's own final-pass reindex, run unconditionally
     // over every Word on every seedWordNet/seedClosedClassWords call,
     // relies on this).
-    dictionary.indexWordForms(comma);
-    expect(dictionary.lookupFormMatches("commas")).toHaveLength(1);
+    dictionary.indexWordForms(walk);
+    expect(dictionary.lookupFormMatches("walks")).toHaveLength(1);
   });
 
   it("never indexes a form value identical to the Word's own base spelling -- lookupAll already finds that case directly", () => {
     const dictionary = new Dictionary();
-    const comma = generateNounForms(createNoun({ text: "comma" }));
-    dictionary.append(comma);
-    dictionary.indexWordForms(comma);
+    const walk = generateVerbForms(createVerb({ text: "walk" }));
+    dictionary.append(walk);
+    dictionary.indexWordForms(walk);
 
-    // singularNumberForm is always identical to the base lemma itself.
-    expect(dictionary.lookupFormMatches("comma")).toEqual([]);
+    // presentTenseForm/bareInfinitiveForm are always identical to the base lemma itself.
+    expect(dictionary.lookupFormMatches("walk")).toEqual([]);
   });
 
   it("finds a Verb by its own irregular past-tense form", () => {
@@ -855,18 +890,20 @@ describe("PartOfSpeechIdentifier / DictionaryProcessor: inflected-form fallback"
 
   it("resolves a real WordNet-seeded plural back to its base Noun via the inflected-form fallback", async () => {
     const dictionary = new Dictionary();
+    const wordForms = new WordForms();
     await new WordSeeder("en").seedWordNet({
       vocabulary: {
         dictionary,
         phrases: new Phrases(),
         senses: new Senses(),
+        wordForms,
         morphologicalPointerRelationships: new MorphologicalPointerRelationshipStore(),
         morphologicalPointerRelationshipProcessor: new MorphologicalPointerRelationshipProcessor(new MorphologicalPointerRelationshipStore(), new MorphologicalPointerRelationshipSystemPropertyTensor()),
         semanticRelationships: new SemanticRelationshipStore(),
         semanticRelationshipProcessor: new SemanticRelationshipProcessor(new SemanticRelationshipStore(), new SemanticRelationshipSystemPropertyTensor()),
       },
     });
-    const processor = new DictionaryProcessor(dictionary, new Phrases(), new AsyncDictionaryHydrator(dictionary), "Common");
+    const processor = new DictionaryProcessor(dictionary, new Phrases(), new AsyncDictionaryHydrator(dictionary), "Common", wordForms);
 
     expect(dictionary.lookupAll("commas")).toEqual([]);
     const candidates = processor.identifyWord("commas");
@@ -874,6 +911,22 @@ describe("PartOfSpeechIdentifier / DictionaryProcessor: inflected-form fallback"
     expect(candidates[0].word?.text).toBe("comma");
     expect(candidates[0].source).toBe(IdentificationSource.INFLECTED_FORM);
   }, 30000);
+
+  it("resolves an inflected Noun surface form via the new WordForms store, now that Noun no longer writes a scalar *_Form field", () => {
+    const dictionary = new Dictionary();
+    const wordForms = new WordForms();
+    const dog = createNoun({ text: "dog" });
+    dictionary.append(dog);
+    generateNounForms(dog, wordForms);
+    const processor = new DictionaryProcessor(dictionary, new Phrases(), new AsyncDictionaryHydrator(dictionary), "Common", wordForms);
+
+    expect(dictionary.lookupAll("dogs")).toEqual([]);
+    const candidates = processor.identifyWord("dogs");
+    expect(candidates).toHaveLength(1);
+    expect(candidates[0].word?.uuid.value).toBe(dog.uuid.value);
+    expect(candidates[0].source).toBe(IdentificationSource.INFLECTED_FORM);
+    expect(candidates[0].reason).toContain("pluralNumberForm");
+  });
 });
 
 describe("Word derived properties", () => {
@@ -2395,18 +2448,17 @@ describe("DictionaryView.searchWords", () => {
     expect(result.totalMatches).toBe(10);
   });
 
-  it("a WordRecord's own word_forms carries every populated *_Form field for its POS subtype, labelled and in matrix field order, and stays empty when nothing is seeded", () => {
+  it("a WordRecord's own word_forms carries every real WordForm this Word carries, labelled and in registration order, and stays empty when nothing is seeded", () => {
     const dictionary = new Dictionary();
-    const dog = createNoun({
-      text: "dog",
-      baseLemmaCanonicalForm: { value: "dog" },
-      pluralNumberForm: { value: "dogs", formats: ["/s$/i"] },
-      possessiveCaseForm: { value: "dog's", formats: ["/'s$/i"] },
-    });
+    const wordForms = new WordForms();
+    const dog = createNoun({ text: "dog" });
     const cat = createNoun({ text: "cat" });
     dictionary.append(dog);
     dictionary.append(cat);
-    const view = new DictionaryView(dictionary, new SemanticRelationshipStore(), { domainName: "Common" });
+    wordForms.registerNamedForm(dog, "baseLemmaCanonicalForm", { value: "dog" });
+    wordForms.registerNamedForm(dog, "pluralNumberForm", { value: "dogs", formats: ["/s$/i"] });
+    wordForms.registerNamedForm(dog, "possessiveCaseForm", { value: "dog's", formats: ["/'s$/i"] });
+    const view = new DictionaryView(dictionary, new SemanticRelationshipStore(), { domainName: "Common", wordForms });
 
     const dogRecord = view.searchWords({ wordId: dog.uuid.value }).words[0];
     expect(dogRecord.word_forms).toEqual([

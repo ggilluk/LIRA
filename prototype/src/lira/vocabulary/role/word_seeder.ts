@@ -1322,7 +1322,15 @@ export class WordSeeder {
       // Degree Form this early -- synsetMemberToWord()'s own docstring
       // on why Comparative/Superlative wait for the deferred
       // post-relationship-graph pass further down this file.
-      if (isNoun(copy)) copy = generateNounForms(copy);
+      // registerBaseLemmaForm() first, before any generateXForms() call
+      // below -- synsetMemberToWord()'s own comment on why: keeps base
+      // lemma the *first* WordForm on record, matching the Word Form
+      // Matrix's own first row, rather than reordering the Word Forms
+      // section by accident. Idempotent, so registerUniqueSense()'s own
+      // later registerBaseLemmaForm() call (inside it) just finds this
+      // same WordForm again.
+      wordForms?.registerBaseLemmaForm(copy);
+      if (isNoun(copy)) copy = generateNounForms(copy, wordForms);
       else if (isVerb(copy)) copy = generateVerbForms(copy);
       else if (isAdjective(copy)) copy = generateAdjectiveForms(copy, false);
       else if (isAdverb(copy)) copy = generateAdverbForms(copy, false);
@@ -1609,7 +1617,7 @@ export class WordSeeder {
         if (existing !== undefined) {
           word = existing;
         } else {
-          word = this.synsetMemberToWord(synset, lemma);
+          word = this.synsetMemberToWord(synset, lemma, wordForms);
           dictionary.append(word);
           wordsSeeded += 1;
         }
@@ -2364,7 +2372,7 @@ export class WordSeeder {
    * below revisits every seeded Adjective once pass 2 has finished
    * wiring relationships and fills Comparative/Superlative Degree Form
    * in then, once gradability is actually knowable. */
-  private synsetMemberToWord(synset: WordNetSynset, lemma: string): Word {
+  private synsetMemberToWord(synset: WordNetSynset, lemma: string, wordForms: WordForms | undefined): Word {
     const shared = {
       text: lemma,
       languageCode: { value: this.languageCode },
@@ -2387,15 +2395,28 @@ export class WordSeeder {
         // (this method's own final loop) revisits every seeded Adverb
         // too, once relationships are fully wired.
         return generateAdverbForms(createAdverb(shared), false);
-      case PartOfSpeech.NOUN:
-        return generateNounForms(createNoun(shared));
-      default:
+      case PartOfSpeech.NOUN: {
+        // registerBaseLemmaForm() first, before generateNounForms() --
+        // both are idempotent find-or-create, but registering base
+        // lemma first here keeps it the *first* WordForm on record for
+        // this Word (the Word Form Matrix's own first row, every other
+        // seeding path's own convention too), rather than letting
+        // whichever POS-specific field generateNounForms() adds land
+        // ahead of it and reorder the Word Forms section for no reason.
+        const noun = createNoun(shared);
+        wordForms?.registerBaseLemmaForm(noun);
+        return generateNounForms(noun, wordForms);
+      }
+      default: {
         // posForSsType (wordnet_loader.ts) only ever produces NOUN/VERB/
         // ADJECTIVE/ADVERB for a real synset (anything else throws
         // there first) -- unreachable for real WordNet data, kept only
         // so this switch has a total, not partial, mapping over
         // PartOfSpeech's other 12 values.
-        return generateNounForms(createNoun(shared));
+        const noun = createNoun(shared);
+        wordForms?.registerBaseLemmaForm(noun);
+        return generateNounForms(noun, wordForms);
+      }
     }
   }
 

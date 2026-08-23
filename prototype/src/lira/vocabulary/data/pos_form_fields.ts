@@ -17,22 +17,23 @@
  * `partOfSpeech`) -- they live in WordForm records reached via
  * `Word.formIds` (data/word_form.ts, data/word_forms.ts's own
  * `WordForms` store), which needed its own file, and `word_forms.ts`
- * was the more forward-looking name to free up for it. This file is
- * exactly what it always was for the POS subtypes that still use it --
- * Noun/Verb/Adjective/Adverb/Pronoun/Determiner keep their flat
- * `*_Form` fields untouched; only Auxiliary moved. `Dictionary.indexWordForms()`/
- * `formTextsOf()` below correctly no-op for an Auxiliary Word now (no
- * entry in WORD_FORM_FIELDS for it) -- `PartOfSpeechIdentifier.identifySeeded()`
- * (role/part_of_speech_identifier.ts) is what covers Auxiliary's own
- * inflected-form lookup instead, via `WordForms.lookupByText()`
+ * was the more forward-looking name to free up for it. Every other POS
+ * subtype is following the same path one at a time (WordForm's own
+ * docstring calls Auxiliary "one real example before generalizing") --
+ * a POS's own key in WORD_FORM_FIELDS below is removed the moment its
+ * own scalar `*_Form` fields are, so this map's own shape always
+ * reflects which POS subtypes still use scalar fields at all, not a
+ * stale record of some earlier state. `Dictionary.indexWordForms()`/
+ * `formTextsOf()` below correctly no-op for any POS with no entry here
+ * (no scalar field left to reflect over) -- `PartOfSpeechIdentifier.identifySeeded()`
+ * (role/part_of_speech_identifier.ts) is what covers a migrated POS's
+ * own inflected-form lookup instead, via `WordForms.lookupByText()`
  * alongside `Dictionary.lookupFormMatches()`.
  *
- * Every PartOfSpeech not listed in WORD_FORM_FIELDS below (Auxiliary,
- * Preposition, Conjunction, Interjection, Numeral, Particle, ProperNoun,
- * Symbol, Punctuation, Other) carries no *_Form scalar field of its own
- * -- absent from this record entirely, not listed with an empty array,
- * since `formTextsOf`'s own `?? []` already treats a missing key that
- * way. */
+ * Every PartOfSpeech not listed in WORD_FORM_FIELDS below carries no
+ * *_Form scalar field of its own -- absent from this record entirely,
+ * not listed with an empty array, since `formTextsOf`'s own `?? []`
+ * already treats a missing key that way. */
 
 import { fieldsFor } from "./matrices/pos_vs_wordform_matrice";
 import { PartOfSpeech } from "./enums/part_of_speech";
@@ -52,7 +53,6 @@ function posFormFields(pos: PartOfSpeech): readonly string[] {
 }
 
 export const WORD_FORM_FIELDS: Readonly<Partial<Record<PartOfSpeech, readonly string[]>>> = {
-  [PartOfSpeech.NOUN]: posFormFields(PartOfSpeech.NOUN),
   [PartOfSpeech.VERB]: posFormFields(PartOfSpeech.VERB),
   [PartOfSpeech.ADJECTIVE]: posFormFields(PartOfSpeech.ADJECTIVE),
   [PartOfSpeech.ADVERB]: posFormFields(PartOfSpeech.ADVERB),

@@ -1,6 +1,7 @@
 import type { Text } from "../../../value_objects";
 import { PartOfSpeech } from "../../data/enums/part_of_speech";
 import type { Word } from "../../data/entities/word";
+import type { WordForms } from "../../data/word_forms";
 import { createWord, endsInConsonantY, validateFormText, validateWordFormAttributes, type WordFormIssue } from "../word_processor";
 import type { Noun } from "../../data/entities/noun";
 import { stringPatternsFor } from "../../data/matrices/pos_vs_wordform_matrice";
@@ -19,24 +20,20 @@ export function isNoun(word: Word): word is Noun {
   return word.partOfSpeech === PartOfSpeech.NOUN;
 }
 
-/** Validates every *_Form field this Noun carries -- its own row above,
+/** Validates every WordForm this Noun carries -- its own row above,
  * plus baseLemmaCanonicalForm via Word's own validateWordFormAttributes
  * -- against WORD_FORM_MATRIX's own NOUN rules
  * (data/matrices/pos_vs_wordform_matrice.ts). Returns every
  * issue found, not just the first; empty means every populated field
  * is internally consistent with the matrix, not that every field is
- * populated (undefined is never an issue, validateFormText's own
- * docstring). */
-export function validateNoun(noun: Noun): readonly WordFormIssue[] {
+ * populated. validateAuxiliary()'s own exact shape
+ * (role/processor/auxiliary_processor.ts). */
+export function validateNoun(noun: Noun, wordForms: WordForms): readonly WordFormIssue[] {
   const issues: WordFormIssue[] = [...validateWordFormAttributes(noun)];
-  const check = (field: string, text: Text | undefined): void => {
-    if (text === undefined) return;
-    const issue = validateFormText(field, text, stringPatternsFor(field, PartOfSpeech.NOUN));
+  for (const form of wordForms.formsOf(noun)) {
+    const issue = validateFormText(form.field, form.text, stringPatternsFor(form.field, PartOfSpeech.NOUN));
     if (issue !== undefined) issues.push(issue);
-  };
-  check("singularNumberForm", noun.singularNumberForm);
-  check("pluralNumberForm", noun.pluralNumberForm);
-  check("possessiveCaseForm", noun.possessiveCaseForm);
+  }
   return issues;
 }
 
@@ -55,28 +52,37 @@ function generatedPluralNumberForm(lemma: string): Text | undefined {
   return { value: `${lemma}s`, formats: ["/s$/i"] };
 }
 
-/** Fills in this Noun's own derivable *_Form fields wherever still
- * undefined, from its own base lemma (`noun.text`) -- WordSeeder's own
+/** Registers this Noun's own derivable WordForms wherever not already
+ * present, from its own base lemma (`noun.text`) -- WordSeeder's own
  * seeding entry points (role/word_seeder.ts) call this right after
  * createNoun(), so every seeded Noun (WordNet or Common Vocabulary
  * Cache alike) gets its regular-case forms populated automatically,
  * without a hand-authored Noun built elsewhere (a test fixture, say)
- * acquiring fields it never asked for just by calling createNoun().
- * Only ever fills a field that's still undefined -- an explicitly-set
- * value (from `init`, or an earlier call) is never overwritten. Every
- * value this produces is provably one of that field's own recognised
- * String Patterns (WORD_FORM_MATRIX's own NOUN rules), by construction --
- * generateNounForms() and validateNoun() are built from the exact same
- * matrix rules, so a freshly-generated Noun always passes its own
- * validateNoun() unchanged. */
-export function generateNounForms(noun: Noun): Noun {
+ * acquiring forms it never asked for just by calling createNoun(). No-op
+ * when `wordForms` is undefined (mirrors `senseStore?:`'s own optional
+ * convention throughout role/word_seeder.ts) -- produces a Noun with no
+ * inflected forms beyond whatever's already registered. Only ever
+ * registers a field not already present via
+ * `WordForms.registerNamedForm()`'s own idempotent find-or-create --- an
+ * explicitly-registered value (from an earlier call, or hand-curated
+ * seeding) is never overwritten. Every value this produces is provably
+ * one of that field's own recognised String Patterns (WORD_FORM_MATRIX's
+ * own NOUN rules), by construction -- generateNounForms() and
+ * validateNoun() are built from the exact same matrix rules, so a
+ * freshly-generated Noun always passes its own validateNoun() unchanged.
+ * Fields are registered in the same order they're declared on Noun
+ * (singular, plural, possessive) so Word Forms UI display order stays
+ * unaffected by this migration. Returns `noun` unchanged -- registration
+ * is a side effect on `wordForms`, not a copy of `noun` itself. */
+export function generateNounForms(noun: Noun, wordForms: WordForms | undefined): Noun {
+  if (wordForms === undefined) return noun;
   const lemma = noun.text;
-  const generated: Partial<Noun> = {};
-  if (noun.singularNumberForm === undefined) generated.singularNumberForm = { value: lemma };
-  if (noun.pluralNumberForm === undefined) {
+  const has = (field: string): boolean => wordForms.formsOf(noun).some((form) => form.field === field);
+  if (!has("singularNumberForm")) wordForms.registerNamedForm(noun, "singularNumberForm", { value: lemma });
+  if (!has("pluralNumberForm")) {
     const plural = generatedPluralNumberForm(lemma);
-    if (plural !== undefined) generated.pluralNumberForm = plural;
+    if (plural !== undefined) wordForms.registerNamedForm(noun, "pluralNumberForm", plural);
   }
-  if (noun.possessiveCaseForm === undefined) generated.possessiveCaseForm = { value: `${lemma}'s`, formats: ["/'s$/i"] };
-  return { ...noun, ...generated };
+  if (!has("possessiveCaseForm")) wordForms.registerNamedForm(noun, "possessiveCaseForm", { value: `${lemma}'s`, formats: ["/'s$/i"] });
+  return noun;
 }
