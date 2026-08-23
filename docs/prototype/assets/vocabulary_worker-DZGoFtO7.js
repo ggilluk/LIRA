@@ -1973,7 +1973,15 @@ function senseSummaryRowHTML(word, s, index, rels) {
 // summary line, so leaving it open by default would dump everything at
 // once. Calls relationshipsSectionHTML() with \`simple: true\` -- a
 // Lexical Relationship row shows just the related word for now, no
-// target-Sense category badge or gloss underneath it.
+// target-Sense category badge, gloss, or repeated rel-sentence
+// underneath it (\`groupHeadingText()\` shows one representative
+// sentence once, as the group's own heading, instead).
+function groupHeadingText(g) {
+  if (g.rels === null) return '…';
+  if (!g.rels.length) return '';
+  const r = g.rels[0];
+  return relationshipSentence(r.kind, r.source_text, r.target_text, r.qualifier);
+}
 function wordFormRelationshipsSectionHTML(sectionClass, heading, senses, rels) {
   const groups = senses
     .map(s => ({ sense: s, rels: rels === null ? null : rels.filter(r => r.via_sense_id === s.id) }))
@@ -1986,7 +1994,7 @@ function wordFormRelationshipsSectionHTML(sectionClass, heading, senses, rels) {
       <summary>\${heading} (\${total})</summary>
       \${groups.map(g => \`
         <div class="wordform-rel-sense-group\${g.sense.is_primary ? ' primary' : ''}">
-          <div class="wordform-rel-sense-heading">Sense\${g.sense.is_primary ? ' <span class="sense-primary-tag">primary</span>' : ''}: \${g.sense.definition || '<span style="opacity:.6">No definition.</span>'}</div>
+          <div class="wordform-rel-sense-heading">\${groupHeadingText(g)}</div>
           <div class="detail-relationships-section">\${relationshipsSectionHTML(g.rels, true)}</div>
         </div>\`).join('')}
     </details>\`;
@@ -2182,12 +2190,14 @@ function fetchDetailLexicalRelsIfNeeded(wordId) {
 // branch) -- distinct from \`[]\`, which means the fetch already resolved
 // and there really are none. \`simple\`, set only by
 // wordFormRelationshipsSectionHTML()'s own Lexical Relationships call
-// (client_senses_section_html.ts), drops the rel-gloss line -- the
-// target Sense's own lexicographer-category badge ("verb.cognition")
-// and gloss text -- so a Lexical Relationship row reads as just the
-// related word itself for now, not a second sense definition sitting
-// underneath it; Semantic Relationships (senseSummaryRowHTML()'s own
-// inline call, unaffected) keeps the gloss.
+// (client_senses_section_html.ts), drops both the rel-gloss line (the
+// target Sense's own lexicographer-category badge, e.g. "verb.cognition",
+// and gloss text) and the rel-sentence line -- that group's own heading
+// (wordFormRelationshipsSectionHTML()'s own \`groupHeadingText()\`)
+// already shows one representative sentence once per Sense group, so
+// repeating it under every single row in that group read as
+// duplicated, not descriptive. Semantic Relationships
+// (senseSummaryRowHTML()'s own inline call, unaffected) keeps both.
 function relationshipsSectionHTML(rels, simple) {
   if (rels === null) return '<div class="detail-empty" style="padding:8px 0">Loading relationships…</div>';
   if (rels.length === 0) return '<div class="detail-empty" style="padding:8px 0">No relationships recorded.</div>';
@@ -2200,7 +2210,7 @@ function relationshipsSectionHTML(rels, simple) {
         \${senseIdBadge(r.otherSenseId)}
         \${domainPill(r.otherDomain)}
       </div>
-      <div class="rel-sentence">\${relationshipSentence(r.kind, r.source_text, r.target_text, r.qualifier)}</div>
+      \${!simple ? \`<div class="rel-sentence">\${relationshipSentence(r.kind, r.source_text, r.target_text, r.qualifier)}</div>\` : ''}
       \${(!simple && (r.otherCategory || r.otherGloss)) ? \`<div class="rel-gloss">\${categoryBadge(r.otherCategory)}\${r.otherGloss ? \` \${r.otherGloss}\` : ''}</div>\` : ''}
     </div>\`).join('');
 }
