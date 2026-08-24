@@ -1,4 +1,4 @@
-import type { Link } from "../metadata/link";
+import type { Link } from "../reference/link";
 import type { Metadata } from "../metadata/metadata";
 import type { Title } from "../metadata/title";
 
