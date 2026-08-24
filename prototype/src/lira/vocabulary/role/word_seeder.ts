@@ -2642,22 +2642,20 @@ export class WordSeeder {
     });
   }
 
-  /** Reads `entry`'s own raw normalised_form/syllable_representation/
-   * syllable_count/stress_pattern/frequency_value/frequency_scale
-   * straight off the WordFileEntry JSON into `cacheWordFormAttributes`,
-   * keyed by entryId -- recordPad()'s own shape and reasoning, mirrored
-   * for the WordForm attributes that moved off Word the same way PAD
-   * moved off Word onto Sense (WordForm's own docstring, data/entities/word_form.ts,
-   * on why these now live on the base-lemma WordForm instead).
-   * `normalised_form` is a required WordFileEntry field, so this always
-   * records at least that one -- unlike recordPad(), there is no
-   * genuinely-empty case to no-op on. */
+  /** Reads `entry`'s own raw syllable_representation/syllable_count/
+   * stress_pattern/frequency_value/frequency_scale straight off the
+   * WordFileEntry JSON into `cacheWordFormAttributes`, keyed by
+   * entryId -- recordPad()'s own shape and reasoning, mirrored for the
+   * WordForm attributes that moved off Word the same way PAD moved off
+   * Word onto Sense (WordForm's own docstring, data/entities/word_form.ts,
+   * on why these now live on the base-lemma WordForm instead). Every
+   * one of these is genuinely optional in WordFileEntry, so (unlike
+   * recordPad()) there's no field here guaranteed to be set. */
   private recordWordFormAttributes(entry: WordFileEntry): void {
     const optText = (value: string | null | undefined) => (value ? { value } : undefined);
     const optCode = (value: string | null | undefined) => (value ? { value } : undefined);
     const optNumber = (value: number | null | undefined) => (value === null || value === undefined ? undefined : { value });
     this.cacheWordFormAttributes.set(entry.entry_id, {
-      normalisedForm: { value: entry.normalised_form },
       syllableRepresentation: optText(entry.syllable_representation),
       syllableCount: optNumber(entry.syllable_count),
       stressPattern: optText(entry.stress_pattern),
@@ -2850,9 +2848,9 @@ export class WordSeeder {
     return {
       entry_id: word.entryId.value,
       domain_tag: word.domainTag?.value ?? null,
-      // lexicalForm/normalisedForm/version/language_code/script_code all
-      // live on the base-lemma WordForm now (WordForm's own docstring),
-      // not on Word -- same "only ever receives a bare Word, with no
+      // lexicalForm/version/language_code/script_code all live on the
+      // base-lemma WordForm now (WordForm's own docstring), not on
+      // Word -- same "only ever receives a bare Word, with no
       // store to resolve through" situation as the WordForm attributes/
       // PAD fields just below, and just as moot in practice for the same
       // reason (promoteWord() has no caller anywhere in this codebase

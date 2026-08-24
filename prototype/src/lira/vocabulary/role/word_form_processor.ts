@@ -31,7 +31,6 @@ export type WordFormInit = Pick<WordForm, "field" | "text"> & Partial<Omit<WordF
 export type WordFormAttributes = Partial<
   Pick<
     WordForm,
-    | "normalisedForm"
     | "synsetId"
     | "pronunciations"
     | "syllableRepresentation"
@@ -50,7 +49,6 @@ export function createWordForm(init: WordFormInit): WordForm {
     uuid: init.uuid ?? { value: newUuid() },
     entryId: init.entryId ?? { value: newUuid() },
     ...init,
-    normalisedForm: init.normalisedForm ?? { value: init.text.value.toLowerCase() },
   };
 }
 

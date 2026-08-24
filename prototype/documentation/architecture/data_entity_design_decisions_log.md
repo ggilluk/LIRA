@@ -78,9 +78,13 @@ Introduced for AUXILIARY only at first (`data/entities/auxiliary.ts`, which drop
 
 A loose string, not a new enum — matches how `WordFormRow.field` already names a `*_Form` field elsewhere in this codebase (`data/matrices/pos_vs_wordform_matrice.ts`). `stringPatternsFor(field, pos)` validates a WordForm's own `text` against the identical matrix rules a scalar field's value used to be checked against; the matrix doesn't care which shape holds the value.
 
-### `text`/`normalisedForm`
+### `text`
 
-Moved here from `Word` (Word's own former `lexicalForm`/`normalisedForm` fields) — the same "fact about one spelling" reasoning as every field below: WordForm's own `field` already discriminates which spelling this is ("baseLemmaCanonicalForm", "pluralNumberForm", ...), so there is no reason for a second, Word-level copy of the base lemma's own spelling to exist alongside it. `text` carries this form's own language, script, and version as its own `languageCode`/`scriptCode`/`version` attributes (`Text`'s own docstring, `value_objects/data/text.ts`) rather than as separate fields here. `normalisedForm` defaults to `text.value.toLowerCase()` when not supplied (`createWordForm()`'s own default, mirroring `createWord()`'s former auto-derivation) — every real Common Vocabulary Cache entry's own `normalised_form` already equals that simple lowercasing (verified against every entry in `assets/common/en/*.json`), so the explicit override `WordSeeder.recordWordFormAttributes()` supplies is a safety net for a future entry that genuinely needs diacritic stripping or similar, not a case any entry actually exercises today.
+Moved here from `Word` (Word's own former `lexicalForm` field) — the same "fact about one spelling" reasoning as every field below: WordForm's own `field` already discriminates which spelling this is ("baseLemmaCanonicalForm", "pluralNumberForm", ...), so there is no reason for a second, Word-level copy of the base lemma's own spelling to exist alongside it. Carries this form's own language, script, and version as its own `languageCode`/`scriptCode`/`version` attributes (`Text`'s own docstring, `value_objects/data/text.ts`) rather than as separate fields here.
+
+### `normalisedForm` removed
+
+Used to sit alongside `text` (moved here from `Word`'s own former `normalisedForm` field, defaulting to `text.value.toLowerCase()` when not supplied, `createWordForm()`'s own former default). Removed outright rather than kept: a repo-wide check turned up no reader anywhere — `WordForms.lookupByText()` builds its own case-insensitive index off `form.text.value.toLowerCase()` directly, never off this field, and no UI builder (`WordFormEntry`, `ui/server/builder_word.ts`) ever surfaced it to a client either. Write-only data with zero consumers, unlike `Phrase.normalisedForm` (a distinct field on a distinct entity), which genuinely is read on that entity's own matching path — this WordForm-side copy just never grew a reader before this migration and never needed to.
 
 ### `senseIds`
 

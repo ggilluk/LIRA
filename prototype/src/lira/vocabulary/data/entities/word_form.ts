@@ -42,9 +42,6 @@ export interface WordForm {
   /** Spelling of this WordForm as it is conventionally written. */
   text: Text;
 
-  /** Case- and diacritic-normalised form of `text`. */
-  normalisedForm: Text;
-
   /** Every recorded pronunciation of this spelling. */
   pronunciations: readonly Pronunciation[];
 
