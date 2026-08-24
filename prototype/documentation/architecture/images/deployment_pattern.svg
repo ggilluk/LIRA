@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="700" viewBox="0 0 1000 700" role="img" aria-labelledby="title desc">
+<title id="title">Current Browser Deployment Pattern</title>
+<desc id="desc">Browser or Prototype Runtime hosting a Main UI Thread, Web Worker Service A, Web Worker Service B with its own owned state and processors, and a Worker Pool used where required.</desc>
+<style>
+text{font-family:Arial,sans-serif;fill:#102a56}
+.title{font-size:24px;font-weight:700}
+.sub{font-size:14px;fill:#2759a5}
+.h{font-size:18px;font-weight:700}
+.b{font-size:14px}
+.runtime{fill:#f8fbff;stroke:#7aa7d9;stroke-width:2}
+.ui{fill:#eef7ff;stroke:#4d91d9;stroke-width:2}
+.worker{fill:#f6f1ff;stroke:#8166cf;stroke-width:2}
+.inner{fill:#ffffff;stroke:#8166cf;stroke-width:1.5}
+.pool{fill:#effbea;stroke:#65a95d;stroke-width:2}
+.poolitem{fill:#ffffff;stroke:#65a95d;stroke-width:1.5}
+</style>
+
+<text x="500" y="36" text-anchor="middle" class="title">Current Browser Deployment Pattern</text>
+<text x="500" y="58" text-anchor="middle" class="sub">Prototype hosting — not the permanent definition of the domain model</text>
+
+<rect x="30" y="85" width="940" height="580" rx="18" class="runtime"/>
+<text x="55" y="120" class="h">Browser / Prototype Runtime</text>
+
+<rect x="60" y="145" width="880" height="70" rx="12" class="ui"/>
+<text x="85" y="188" class="h">Main UI Thread</text>
+
+<rect x="60" y="235" width="420" height="90" rx="12" class="worker"/>
+<text x="85" y="270" class="h">Web Worker Service A</text>
+<text x="85" y="298" class="b">isolated worker thread</text>
+
+<rect x="520" y="235" width="420" height="230" rx="12" class="worker"/>
+<text x="545" y="270" class="h">Web Worker Service B</text>
+<rect x="545" y="290" width="370" height="70" rx="10" class="inner"/>
+<text x="565" y="330" class="b">owned state</text>
+<rect x="545" y="375" width="370" height="70" rx="10" class="inner"/>
+<text x="565" y="415" class="b">processors</text>
+
+<rect x="60" y="345" width="420" height="290" rx="12" class="pool"/>
+<text x="85" y="380" class="h">Worker Pool</text>
+<text x="85" y="404" class="b">where required</text>
+<rect x="85" y="425" width="360" height="55" rx="8" class="poolitem"/>
+<text x="105" y="459" class="b">worker 1</text>
+<rect x="85" y="495" width="360" height="55" rx="8" class="poolitem"/>
+<text x="105" y="529" class="b">worker 2</text>
+<rect x="85" y="565" width="360" height="55" rx="8" class="poolitem"/>
+<text x="105" y="599" class="b">worker N</text>
+
+<text x="545" y="620" class="sub">Concurrency is scaled by explicit runtime units (workers/pools),</text>
+<text x="545" y="640" class="sub">not by silently changing domain semantics.</text>
+</svg>

@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="900" viewBox="0 0 1200 900" role="img" aria-labelledby="title desc">
+<title id="title">LIRA Architecture Viewpoint Relationships</title>
+<desc id="desc">VP-01 Requirements constrains and traces into VP-02 Conceptual Architecture, VP-03 Service/Component and VP-04 Information. These converge into VP-05 Deployment, then VP-06 Security. VP-07 Decision and Rationale applies across every viewpoint.</desc>
+<style>
+text{font-family:Arial,sans-serif;fill:#102a56}
+.title{font-size:26px;font-weight:700}
+.sub{font-size:14px;fill:#2759a5}
+.h{font-size:17px;font-weight:700}
+.req{fill:#fff1f3;stroke:#db6f7d;stroke-width:2}
+.mid{fill:#f6f1ff;stroke:#8166cf;stroke-width:2}
+.dep{fill:#eef7ff;stroke:#4d91d9;stroke-width:2}
+.sec{fill:#effbea;stroke:#65a95d;stroke-width:2}
+.rationale{fill:#fbf7ee;stroke:#c99a3c;stroke-width:2;stroke-dasharray:8 5}
+.arrow{stroke:#315f9e;stroke-width:4;fill:none;marker-end:url(#a)}
+.link{stroke:#5b6b85;stroke-width:2.5;fill:none}
+.label{font-size:13px;fill:#2759a5;font-style:italic}
+</style>
+<defs><marker id="a" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#315f9e"/></marker></defs>
+
+<text x="600" y="36" text-anchor="middle" class="title">Architecture Viewpoint Relationships</text>
+
+<rect x="470" y="55" width="260" height="65" rx="14" class="req"/>
+<text x="600" y="94" text-anchor="middle" class="h">VP-01 Requirements</text>
+
+<path d="M600 120 V150" class="arrow"/>
+<text x="615" y="140" class="label">constrains / traces</text>
+
+<path d="M600 150 H180 V190" class="link"/>
+<path d="M600 150 H600 V190" class="link"/>
+<path d="M600 150 H1020 V190" class="link"/>
+<path d="M180 185 L180 190" class="arrow"/>
+<path d="M600 185 L600 190" class="arrow"/>
+<path d="M1020 185 L1020 190" class="arrow"/>
+
+<rect x="45" y="190" width="270" height="80" rx="14" class="mid"/>
+<text x="180" y="225" text-anchor="middle" class="h">VP-02</text>
+<text x="180" y="248" text-anchor="middle" class="h">Conceptual</text>
+
+<rect x="465" y="190" width="270" height="80" rx="14" class="mid"/>
+<text x="600" y="225" text-anchor="middle" class="h">VP-03</text>
+<text x="600" y="248" text-anchor="middle" class="h">Service / Component</text>
+
+<rect x="885" y="190" width="270" height="80" rx="14" class="mid"/>
+<text x="1020" y="225" text-anchor="middle" class="h">VP-04</text>
+<text x="1020" y="248" text-anchor="middle" class="h">Information</text>
+
+<path d="M600 270 V320" class="link"/>
+<path d="M1020 270 V300 H700 V320" class="link"/>
+<path d="M180 270 V350 H580" class="link"/>
+<path d="M580 350 L620 350" class="link"/>
+<path d="M600 320 V350" class="link"/>
+<path d="M700 320 V350" class="link"/>
+<path d="M600 350 H620" class="link"/>
+<path d="M600 350 V390" class="arrow"/>
+
+<rect x="470" y="400" width="260" height="65" rx="14" class="dep"/>
+<text x="600" y="439" text-anchor="middle" class="h">VP-05 Deployment</text>
+
+<path d="M600 465 V495" class="arrow"/>
+
+<rect x="470" y="495" width="260" height="65" rx="14" class="sec"/>
+<text x="600" y="534" text-anchor="middle" class="h">VP-06 Security</text>
+
+<rect x="60" y="640" width="1080" height="120" rx="16" class="rationale"/>
+<text x="600" y="685" text-anchor="middle" class="h">VP-07 Decision &amp; Rationale</text>
+<text x="600" y="715" text-anchor="middle" class="sub">Applies across every viewpoint above — requirements, conceptual, service, information, deployment and security alike.</text>
+
+<line x1="600" y1="560" x2="600" y2="640" stroke="#c99a3c" stroke-width="2" stroke-dasharray="6 5"/>
+<line x1="180" y1="270" x2="120" y2="640" stroke="#c99a3c" stroke-width="1.5" stroke-dasharray="4 5" opacity="0.55"/>
+<line x1="1020" y1="270" x2="1080" y2="640" stroke="#c99a3c" stroke-width="1.5" stroke-dasharray="4 5" opacity="0.55"/>
+
+<text x="600" y="820" text-anchor="middle" class="sub">A detailed architecture description need not repeat every fact in every view —</text>
+<text x="600" y="842" text-anchor="middle" class="sub">each fact appears where it is most meaningful, and is referenced/traced elsewhere.</text>
+</svg>

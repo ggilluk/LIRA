@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="800" viewBox="0 0 900 800" role="img" aria-labelledby="title desc">
+<title id="title">LIRA System of Interest — Information Flow</title>
+<desc id="desc">External information passes through Ingestion (HTML Crawler), Linguistics (Document, Text, LinguisticUnit), and Vocabulary (Word, WordForm, Sense, Phrase, Relationships), into LIRA semantic and reasoning structures.</desc>
+<style>
+text{font-family:Arial,sans-serif;fill:#102a56}
+.title{font-size:26px;font-weight:700}
+.sub{font-size:15px;fill:#2759a5}
+.h{font-size:20px;font-weight:700}
+.b{font-size:15px}
+.source{fill:#f3f3f3;stroke:#9aa3ad;stroke-width:2;stroke-dasharray:6 5}
+.ingest{fill:#effbea;stroke:#65a95d;stroke-width:2}
+.ling{fill:#f6f1ff;stroke:#8166cf;stroke-width:2}
+.vocab{fill:#eef7ff;stroke:#4d91d9;stroke-width:2}
+.lira{fill:#fff1f3;stroke:#db6f7d;stroke-width:2}
+.arrow{stroke:#315f9e;stroke-width:5;fill:none;marker-end:url(#a)}
+</style>
+<defs><marker id="a" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#315f9e"/></marker></defs>
+
+<text x="450" y="40" text-anchor="middle" class="title">System of Interest — Information Flow</text>
+<text x="450" y="64" text-anchor="middle" class="sub">External information becomes canonical LIRA data, then LIRA reasoning structures</text>
+
+<rect x="250" y="95" width="400" height="60" rx="14" class="source"/>
+<text x="450" y="132" text-anchor="middle" class="h">External Information</text>
+
+<path d="M450 155 V190" class="arrow"/>
+
+<rect x="190" y="190" width="520" height="90" rx="16" class="ingest"/>
+<text x="220" y="222" class="h">Ingestion</text>
+<text x="220" y="252" class="b">HTML Crawler</text>
+
+<path d="M450 280 V315" class="arrow"/>
+
+<rect x="190" y="315" width="520" height="100" rx="16" class="ling"/>
+<text x="220" y="347" class="h">Linguistics</text>
+<text x="220" y="378" class="b">Document / Text / LinguisticUnit</text>
+
+<path d="M450 415 V450" class="arrow"/>
+
+<rect x="190" y="450" width="520" height="120" rx="16" class="vocab"/>
+<text x="220" y="482" class="h">Vocabulary</text>
+<text x="220" y="513" class="b">Word / WordForm</text>
+<text x="220" y="538" class="b">Sense / Phrase</text>
+<text x="220" y="563" class="b">Relationships</text>
+
+<path d="M450 570 V605" class="arrow"/>
+
+<rect x="190" y="605" width="520" height="100" rx="16" class="lira"/>
+<text x="220" y="645" class="h">LIRA Semantic /</text>
+<text x="220" y="675" class="h">Reasoning Structures</text>
+
+<text x="450" y="750" text-anchor="middle" class="sub">Browser Web Workers are the current prototype service hosts — not the definition of the domain model.</text>
+</svg>

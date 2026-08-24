@@ -32,36 +32,7 @@ The system of interest is the **LIRA TypeScript Prototype**: a modular reasoning
 
 The current documented implementation boundary includes particularly mature views of:
 
-```text
-External Information
-        |
-        v
-+-----------------------+
-| Ingestion             |
-| HTML Crawler          |
-+-----------+-----------+
-            |
-            v
-+-----------------------+
-| Linguistics           |
-| Document / Text       |
-| LinguisticUnit        |
-+-----------+-----------+
-            |
-            v
-+-----------------------+
-| Vocabulary            |
-| Word / WordForm       |
-| Sense / Phrase        |
-| Relationships         |
-+-----------+-----------+
-            |
-            v
-+-----------------------+
-| LIRA semantic /       |
-| reasoning structures  |
-+-----------------------+
-```
+![System of Interest — information flow from external sources through Ingestion (HTML Crawler), Linguistics (Document / Text / LinguisticUnit) and Vocabulary (Word / WordForm / Sense / Phrase / Relationships) into LIRA semantic and reasoning structures](images/system_of_interest.svg)
 
 The architecture is deliberately described independently from a single deployment mechanism. Browser Web Workers are the current prototype service hosts; they are not the definition of the domain model.
 
@@ -243,21 +214,7 @@ A box-and-arrow or equivalent diagram showing major concepts and directional dep
 
 Example pattern:
 
-```text
-Source
-  |
-  v
-Acquisition / Input
-  |
-  v
-Interpretation / Processing
-  |
-  v
-Canonical LIRA Data
-  |
-  v
-Downstream LIRA Capability
-```
+![Conceptual Context Diagram example pattern — Source flows through Acquisition / Input and Interpretation / Processing into Canonical LIRA Data, then into Downstream LIRA Capability](images/conceptual_context_pattern.svg)
 
 ### Concept Responsibility Table
 
@@ -432,19 +389,7 @@ Shows runtime nodes and deployed services/components.
 
 Current browser pattern:
 
-```text
-Browser / Prototype Runtime
-|
-+-- Main UI Thread
-|
-+-- Web Worker Service A
-|
-+-- Web Worker Service B
-|   +-- owned state
-|   +-- processors
-|
-+-- Worker Pool where required
-```
+![Current browser deployment pattern — Browser / Prototype Runtime hosting the Main UI Thread, Web Worker Service A, Web Worker Service B (with its own owned state and processors), and a Worker Pool where required](images/deployment_pattern.svg)
 
 ### Deployment Responsibility Table
 
@@ -570,36 +515,7 @@ The existing `data_entity_design_decisions_log.md` is a specialised decision log
 
 The viewpoints are intentionally connected.
 
-```text
-                    +----------------------+
-                    | VP-01 Requirements   |
-                    +----------+-----------+
-                               |
-                         constrains / traces
-                               |
-          +--------------------+--------------------+
-          |                    |                    |
-          v                    v                    v
-+------------------+  +------------------+  +------------------+
-| VP-02 Conceptual |  | VP-03 Service    |  | VP-04 Information|
-+--------+---------+  +--------+---------+  +---------+--------+
-         |                     |                      |
-         |                     +----------+-----------+
-         |                                |
-         +----------------+---------------+
-                          |
-                          v
-                +------------------+
-                | VP-05 Deployment |
-                +--------+---------+
-                         |
-                         v
-                +------------------+
-                | VP-06 Security   |
-                +------------------+
-
-VP-07 Decision & Rationale applies across every viewpoint.
-```
+![Viewpoint relationships — VP-01 Requirements constrains and traces into VP-02 Conceptual Architecture, VP-03 Service/Component and VP-04 Information, which converge into VP-05 Deployment and then VP-06 Security; VP-07 Decision and Rationale applies across every viewpoint](images/viewpoint_relationships.svg)
 
 A detailed architecture description need not repeat every fact in every view. Instead, each fact should appear in the view where it is most meaningful and be referenced/traced where another concern depends on it.
 
@@ -748,21 +664,7 @@ The existing Dictionary Web Worker architecture also follows the viewpoint patte
 
 The LIRA prototype architecture is described through seven complementary ISO/IEC/IEEE 42010-aligned viewpoints:
 
-```text
-Requirements
-     |
-Conceptual Architecture
-     |
-Service / Component ---- Information
-     |                       |
-     +-----------+-----------+
-                 |
-             Deployment
-                 |
-              Security
-
-Decision & Rationale spans all views.
-```
+![Summary flow of the seven viewpoints — Requirements into Conceptual Architecture, into Service/Component and Information side by side, into Deployment, then Security; Decision and Rationale spans all views](images/viewpoint_summary_flow.svg)
 
 Together these viewpoints provide a consistent mechanism for describing **what LIRA must do, what it is conceptually, how responsibilities are implemented, what information exists and flows, where services execute, how the system is protected, and why significant architectural choices were made**.
 

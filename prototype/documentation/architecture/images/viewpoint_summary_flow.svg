@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="760" viewBox="0 0 900 760" role="img" aria-labelledby="title desc">
+<title id="title">Summary Flow of the Seven LIRA Viewpoints</title>
+<desc id="desc">Requirements flows into Conceptual Architecture, then into Service/Component and Information side by side, then into Deployment, then into Security. Decision and Rationale spans all views.</desc>
+<style>
+text{font-family:Arial,sans-serif;fill:#102a56}
+.title{font-size:24px;font-weight:700}
+.sub{font-size:14px;fill:#2759a5}
+.h{font-size:17px;font-weight:700}
+.req{fill:#fff1f3;stroke:#db6f7d;stroke-width:2}
+.mid{fill:#f6f1ff;stroke:#8166cf;stroke-width:2}
+.dep{fill:#eef7ff;stroke:#4d91d9;stroke-width:2}
+.sec{fill:#effbea;stroke:#65a95d;stroke-width:2}
+.rationale{fill:#fbf7ee;stroke:#c99a3c;stroke-width:2;stroke-dasharray:8 5}
+.arrow{stroke:#315f9e;stroke-width:4;fill:none;marker-end:url(#a)}
+.link{stroke:#5b6b85;stroke-width:2.5;fill:none}
+</style>
+<defs><marker id="a" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#315f9e"/></marker></defs>
+
+<text x="450" y="34" text-anchor="middle" class="title">Summary Flow of the Seven Viewpoints</text>
+
+<rect x="320" y="60" width="260" height="65" rx="14" class="req"/>
+<text x="450" y="99" text-anchor="middle" class="h">Requirements</text>
+
+<path d="M450 125 V160" class="arrow"/>
+
+<rect x="270" y="160" width="360" height="65" rx="14" class="mid"/>
+<text x="450" y="199" text-anchor="middle" class="h">Conceptual Architecture</text>
+
+<path d="M450 225 V255" class="link"/>
+<path d="M450 255 H220 V285" class="link"/>
+<path d="M450 255 H680 V285" class="link"/>
+<path d="M220 280 L220 285" class="arrow"/>
+<path d="M680 280 L680 285" class="arrow"/>
+
+<rect x="80" y="285" width="280" height="65" rx="14" class="mid"/>
+<text x="220" y="324" text-anchor="middle" class="h">Service / Component</text>
+
+<rect x="540" y="285" width="280" height="65" rx="14" class="mid"/>
+<text x="680" y="324" text-anchor="middle" class="h">Information</text>
+
+<line x1="360" y1="317" x2="540" y2="317" stroke="#8166cf" stroke-width="2" stroke-dasharray="6 5"/>
+
+<path d="M220 350 V390 H420" class="link"/>
+<path d="M680 350 V390 H480" class="link"/>
+<path d="M450 390 V420" class="arrow"/>
+
+<rect x="320" y="420" width="260" height="65" rx="14" class="dep"/>
+<text x="450" y="459" text-anchor="middle" class="h">Deployment</text>
+
+<path d="M450 485 V515" class="arrow"/>
+
+<rect x="320" y="515" width="260" height="65" rx="14" class="sec"/>
+<text x="450" y="554" text-anchor="middle" class="h">Security</text>
+
+<rect x="60" y="620" width="780" height="100" rx="16" class="rationale"/>
+<text x="450" y="660" text-anchor="middle" class="h">Decision &amp; Rationale</text>
+<text x="450" y="686" text-anchor="middle" class="sub">Spans all views above.</text>
+
+<line x1="450" y1="580" x2="450" y2="620" stroke="#c99a3c" stroke-width="2" stroke-dasharray="6 5"/>
+</svg>
