@@ -1,9 +1,13 @@
-/** Message protocol between the main thread and HTML_web_worker.ts.
- * Mirrors the existing Linguistics/Vocabulary worker split: requests and
- * messages are plain structured-clone-safe data, while the worker owns the
- * real HTMLProcessor/WebCrawler instances inside its own global scope. */
+/** Message protocol for one HTML Processor Web Worker.
+ *
+ * The HTML worker no longer owns crawl state. It performs exactly one page job
+ * at a time: read the URL, parse it into LIRA HTML data, discover the page's
+ * outgoing HTTP(S) links, and return the result to its coordinator.
+ *
+ * WebCrawler_web_worker.ts owns URL scheduling, de-duplication, depth/limits and
+ * the pool of these workers. */
 
-import type { CrawledPage } from "./WebCrawler";
+import type { Document as HtmlDocument } from "../../data/html/document/document";
 
 export type HTMLServiceState = "idle" | "running" | "done" | "error";
 
@@ -11,28 +15,14 @@ export interface HTMLWorkerInitRequest {
   type: "init";
 }
 
-/** Clone-safe subset of WebCrawlerOptions. `shouldVisit` is deliberately not
- * present because functions cannot cross a Web Worker postMessage boundary. */
-export interface HTMLCrawlOptions {
-  maxPages?: number;
-  maxDepth?: number;
-  sameOriginOnly?: boolean;
-  requestDelayMs?: number;
-}
-
-export interface HTMLCrawlRequest {
-  type: "crawl";
+export interface HTMLProcessPageRequest {
+  type: "process-page";
   requestId: string;
-  seedUrl: string;
-  options?: HTMLCrawlOptions;
+  url: string;
+  depth: number;
 }
 
-export interface HTMLCancelCrawlRequest {
-  type: "cancel-crawl";
-  requestId: string;
-}
-
-export type HTMLWorkerRequest = HTMLWorkerInitRequest | HTMLCrawlRequest | HTMLCancelCrawlRequest;
+export type HTMLWorkerRequest = HTMLWorkerInitRequest | HTMLProcessPageRequest;
 
 export interface HTMLStatusMessage {
   type: "status";
@@ -45,23 +35,20 @@ export interface HTMLReadyMessage {
   type: "ready";
 }
 
-/** One successfully-read page is streamed as soon as WebCrawler has already
- * supplied it to HTMLProcessor and received its LIRA HTML Document. */
-export interface HTMLCrawledPageMessage {
-  type: "crawl-page";
-  requestId: string;
-  page: CrawledPage;
+/** Structured-clone-safe result of one HTML processing job. */
+export interface HTMLProcessedPage {
+  url: string;
+  depth: number;
+  html: string;
+  document: HtmlDocument;
+  /** Absolute, fragment-free HTTP(S) destinations discovered in <a href>. */
+  discoveredUrls: readonly string[];
 }
 
-export interface HTMLCrawlResult {
-  pageCount: number;
-  cancelled: boolean;
-}
-
-export interface HTMLCrawlResultMessage {
-  type: "crawl-result";
+export interface HTMLProcessPageResultMessage {
+  type: "process-page-result";
   requestId: string;
-  result: HTMLCrawlResult;
+  page: HTMLProcessedPage;
 }
 
 export interface HTMLErrorMessage {
@@ -73,6 +60,5 @@ export interface HTMLErrorMessage {
 export type HTMLWorkerMessage =
   | HTMLStatusMessage
   | HTMLReadyMessage
-  | HTMLCrawledPageMessage
-  | HTMLCrawlResultMessage
+  | HTMLProcessPageResultMessage
   | HTMLErrorMessage;
