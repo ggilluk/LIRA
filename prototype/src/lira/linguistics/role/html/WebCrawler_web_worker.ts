@@ -128,6 +128,12 @@ class HTMLProcessorSlot {
 }
 
 async function handleInit(processorCount = 4): Promise<void> {
+  if (activeCrawls.size > 0) {
+    const message = "Web Crawler Service: cannot reinitialise the processor pool while a crawl is running";
+    post({ type: "status", state: "error", detail: message });
+    post({ type: "error", message });
+    return;
+  }
   if (!Number.isInteger(processorCount) || processorCount <= 0) {
     const message = "Web Crawler Service: processorCount must be a positive integer";
     post({ type: "status", state: "error", detail: message });
@@ -155,8 +161,8 @@ async function handleCrawl(request: WebCrawlerCrawlRequest): Promise<void> {
     post({ type: "error", requestId: request.requestId, message: "Web Crawler Service: not initialised" });
     return;
   }
-  if (activeCrawls.has(request.requestId)) {
-    post({ type: "error", requestId: request.requestId, message: `Web Crawler Service: crawl '${request.requestId}' is already running` });
+  if (activeCrawls.size > 0) {
+    post({ type: "error", requestId: request.requestId, message: "Web Crawler Service: one crawl is already running" });
     return;
   }
 
@@ -228,10 +234,14 @@ async function handleCrawl(request: WebCrawlerCrawlRequest): Promise<void> {
       }
     }
 
-    // Cooperative cancellation stops new dispatch immediately. Existing page
-    // jobs are allowed to finish in their processor workers; their results are
-    // deliberately ignored for this crawl after cancellation.
     const cancelled = cancelledCrawls.has(request.requestId);
+    if (cancelled && inFlight.size > 0) {
+      // Stop scheduling immediately, then drain already-dispatched jobs before
+      // reporting completion so every processor slot is idle and safe for the
+      // next crawl. Their results are intentionally discarded.
+      await Promise.allSettled(Array.from(inFlight));
+    }
+
     post({
       type: "status",
       state: "done",
