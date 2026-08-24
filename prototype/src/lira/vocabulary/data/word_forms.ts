@@ -2,7 +2,7 @@ import type { Identifier, Text } from "../../value_objects";
 import type { Word } from "./entities/word";
 import type { Sense } from "./entities/sense";
 import type { WordForm } from "./entities/word_form";
-import { copyWordFormWithFreshUuid, createWordForm, type WordFormAttributes } from "../role/word_form_processor";
+import { copyWordFormWithFreshUuid, createWordForm, graphUuid, type WordFormAttributes } from "../role/word_form_processor";
 
 /** WordForm storage: Senses's own exact counterpart one level down
  * (data/entities/word_form.ts's own docstring on why WordForm exists at all).
@@ -45,24 +45,25 @@ export class WordForms {
 
   append(form: WordForm): void {
     this.forms.push(form);
-    this.byUuid.set(form.uuid.value, form);
+    this.byUuid.set(graphUuid(form), form);
   }
 
-  /** Records that `word` carries `form` -- appends `form.uuid` onto
-   * `word.wordFormIds` (the field itself, data/entities/word.ts's own
-   * docstring) and indexes `form.text.value` for lookupByText().
-   * Senses.registerMember()'s own exact shape, form-onto-word replacing
-   * sense-onto-member. Idempotent: registering the same (form, word)
-   * pair twice never duplicates either the `wordFormIds` entry or the
-   * text index entry. */
+  /** Records that `word` carries `form` -- appends `form`'s own
+   * per-Domain uuid (`graphUuid()` below) onto `word.wordFormIds` (the
+   * field itself, data/entities/word.ts's own docstring) and indexes
+   * `form.text.value` for lookupByText(). Senses.registerMember()'s own
+   * exact shape, form-onto-word replacing sense-onto-member. Idempotent:
+   * registering the same (form, word) pair twice never duplicates either
+   * the `wordFormIds` entry or the text index entry. */
   registerMember(form: WordForm, word: Word): void {
-    if (!word.wordFormIds.some((id) => id.value === form.uuid.value)) {
-      word.wordFormIds = [...word.wordFormIds, form.uuid];
+    const uuid = graphUuid(form);
+    if (!word.wordFormIds.some((id) => id.value === uuid)) {
+      word.wordFormIds = [...word.wordFormIds, { value: uuid }];
     }
     const wordBucket = this.formsByWordId.get(word.uuid.value);
     if (wordBucket === undefined) {
       this.formsByWordId.set(word.uuid.value, [form]);
-    } else if (!wordBucket.some((existing) => existing.uuid.value === form.uuid.value)) {
+    } else if (!wordBucket.some((existing) => graphUuid(existing) === uuid)) {
       wordBucket.push(form);
     }
 
@@ -71,7 +72,7 @@ export class WordForms {
     const entry = { form, word };
     if (textBucket === undefined) {
       this.textIndex.set(key, [entry]);
-    } else if (!textBucket.some((existing) => existing.form.uuid.value === form.uuid.value)) {
+    } else if (!textBucket.some((existing) => graphUuid(existing.form) === uuid)) {
       textBucket.push(entry);
     }
   }
@@ -229,7 +230,7 @@ export class WordForms {
    * `other` -- Senses.seedFrom()'s own exact shape and own exact
    * limitation: membership isn't re-linked to the target Domain's own
    * copied Words (Word.wordFormIds keeps pointing at the source Domain's
-   * WordForm uuids, not these fresh copies) -- Sense.ts's own docstring
+   * WordForm uuids, not these fresh copies) -- data/entities/sense.ts's own docstring
    * on why: "a cross-Domain copy... doesn't carry a matching Sense
    * copy across yet, a known, accepted gap." WordForm inherits that
    * same accepted gap rather than solving it unilaterally one layer

@@ -21,6 +21,7 @@ import type { Senses } from "../../data/senses";
 import type { Sense } from "../../data/entities/sense";
 import type { Word } from "../../data/entities/word";
 import type { WordForms } from "../../data/word_forms";
+import { graphUuid } from "../../role/word_form_processor";
 import { resolveEntry } from "./resolver_entity";
 import { domainLabel } from "./resolver_domain";
 
@@ -174,7 +175,7 @@ function senseExpandedLexicalRelationships(
   relationships: LexicalRelationshipStore,
   wordForms: WordForms,
 ): { relationships: readonly LexicalRelationship[]; viaSenseId: ReadonlyMap<string, string> } {
-  const ownFormIds = new Set(wordForms.formsOf(word).map((form) => form.uuid.value));
+  const ownFormIds = new Set(wordForms.formsOf(word).map((form) => graphUuid(form)));
   const expanded: LexicalRelationship[] = [];
   const viaSenseId = new Map<string, string>();
   for (const ownSenseId of wordForms.senseIdsOf(word)) {

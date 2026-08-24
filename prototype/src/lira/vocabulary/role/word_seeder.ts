@@ -65,7 +65,7 @@ import { createSense } from "./sense_processor";
 import type { Sense } from "../data/entities/sense";
 import type { Senses } from "../data/senses";
 import type { WordForms } from "../data/word_forms";
-import type { WordFormAttributes } from "./word_form_processor";
+import { graphUuid, type WordFormAttributes } from "./word_form_processor";
 import type { SourceReference } from "../data/source_reference";
 import { createVerb, generateVerbForms, isVerb } from "./processor/verb_processor";
 import type { Word } from "../data/entities/word";
@@ -2009,19 +2009,21 @@ export class WordSeeder {
       if ("words" in sw || "words" in tw) continue;
       const sourceForm = wordForms.registerBaseLemmaForm(sw);
       const targetForm = wordForms.registerBaseLemmaForm(tw);
-      const key = `${sourceForm.uuid.value}|${sourceSideSense.uuid.value}|${targetForm.uuid.value}|${targetSideSense.uuid.value}|${resolved.kind}`;
+      const sourceFormUuid = graphUuid(sourceForm);
+      const targetFormUuid = graphUuid(targetForm);
+      const key = `${sourceFormUuid}|${sourceSideSense.uuid.value}|${targetFormUuid}|${targetSideSense.uuid.value}|${resolved.kind}`;
       if (lexicalExistingEdges.has(key)) continue;
       if (
         DERIVATION_FAMILY.has(resolved.kind) &&
-        hasReciprocalDerivationEdge(lexicalExistingEdges, targetForm.uuid.value, targetSideSense.uuid.value, sourceForm.uuid.value, sourceSideSense.uuid.value)
+        hasReciprocalDerivationEdge(lexicalExistingEdges, targetFormUuid, targetSideSense.uuid.value, sourceFormUuid, sourceSideSense.uuid.value)
       ) {
         continue;
       }
       lexicalExistingEdges.add(key);
       lexicalProcessor.create({
-        sourceWordFormId: sourceForm.uuid.value,
+        sourceWordFormId: sourceFormUuid,
         sourceSenseId: sourceSideSense.uuid.value,
-        targetWordFormId: targetForm.uuid.value,
+        targetWordFormId: targetFormUuid,
         targetSenseId: targetSideSense.uuid.value,
         relationshipType: resolved.kind,
         sourceReferences: [WORDNET_SOURCE_REFERENCE],

@@ -14,6 +14,7 @@
  * reason data/phrase.ts and data/dictionary.ts already import
  * createWord()/copyWordWithFreshUuid() from role/word_processor.ts. */
 
+import { identifier } from "../../value_objects";
 import { newUuid } from "../data/uuid";
 import type { WordForm } from "../data/entities/word_form";
 
@@ -46,18 +47,38 @@ export function createWordForm(init: WordFormInit): WordForm {
     senseIds: [],
     contractionOf: [],
     pronunciations: [],
-    uuid: init.uuid ?? { value: newUuid() },
-    entryId: init.entryId ?? { value: newUuid() },
+    // identifier()'s own auto-assigned `uuid` (value_objects/data/identifier.ts)
+    // is this WordForm's own per-Domain identity -- Word/Sense's own
+    // separate top-level `uuid` field, folded into `entryId` itself now
+    // that Identifier carries a `uuid` of its own; no reason for a
+    // second Identifier-typed field to exist alongside it.
+    entryId: init.entryId ?? identifier(newUuid()),
     ...init,
   };
 }
 
 /** A shallow copy of `form`, sharing every field's own object identity
- * except `uuid`, which becomes a fresh Identifier -- copySense/
- * copyWordWithFreshUuid's own exact counterpart, used by
- * WordForms.seedFrom for the same reason: two Domains' independent
- * copies of the same form must never be confused as the same graph
- * node. */
+ * except `entryId.uuid`, which becomes a fresh uuid -- `entryId.value`
+ * (and every other field) stays the same, so this copy is still
+ * recognisably the same underlying WordForm, just a distinct graph
+ * node -- copySense/copyWordWithFreshUuid's own exact counterpart,
+ * used by WordForms.seedFrom for the same reason: two Domains'
+ * independent copies of the same form must never be confused as the
+ * same graph node. */
 export function copyWordFormWithFreshUuid(form: WordForm): WordForm {
-  return { ...form, uuid: { value: newUuid() } };
+  return { ...form, entryId: { ...form.entryId, uuid: newUuid() } };
+}
+
+/** `form`'s own per-Domain graph identity -- `form.entryId.uuid`,
+ * always set for a real WordForm (createWordForm()/
+ * copyWordFormWithFreshUuid() above are its only two constructors, and
+ * both always assign it); the assertion here just names that guarantee
+ * once instead of repeating it at every call site that needs a
+ * WordForm's own identity as a plain string (WordForms's own `byUuid`
+ * map key, LexicalRelationship's own sourceWordFormId/targetWordFormId,
+ * ...). `entryId.value` is the stable, cross-Domain identity --
+ * deliberately not what this reads (data/entities/word_form.ts's own
+ * docstring on the two roles `entryId` now plays). */
+export function graphUuid(form: WordForm): string {
+  return form.entryId.uuid!;
 }

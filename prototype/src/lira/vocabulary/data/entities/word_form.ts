@@ -18,12 +18,14 @@ export interface WordForm {
 
   // ── Identity ─────────────────────────────────────────────
 
-  /** Unique identifier of this WordForm within its own Domain. */
-  uuid: Identifier;
-
   /**
    * Identifier of the underlying WordForm entry this record
-   * represents, stable across every Domain that holds a copy of it.
+   * represents.
+   *
+   * `entryId.value` is stable across every Domain that holds a copy
+   * of this WordForm; `entryId.uuid` is this WordForm's own unique
+   * identifier within its own Domain, freshly regenerated every time
+   * this WordForm is copied into another Domain.
    */
   entryId: Identifier;
 

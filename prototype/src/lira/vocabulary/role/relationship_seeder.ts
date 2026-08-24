@@ -20,6 +20,7 @@ import type { LexicalRelationshipStore } from "../data/lexical_relationship_stor
 import type { SourceReference } from "../data/source_reference";
 import type { Word } from "../data/entities/word";
 import type { WordForms } from "../data/word_forms";
+import { graphUuid } from "./word_form_processor";
 import {
   readRelationshipFile,
   readRelationshipFileRaw,
@@ -355,13 +356,15 @@ export class RelationshipSeeder {
     if (sourceSenseId === undefined || targetSenseId === undefined || sourceSenseId.value === targetSenseId.value) return;
     const sourceForm = wordForms.registerBaseLemmaForm(sourceWord);
     const targetForm = wordForms.registerBaseLemmaForm(targetWord);
-    const key = `${sourceForm.uuid.value}|${sourceSenseId.value}|${targetForm.uuid.value}|${targetSenseId.value}|${relationshipType}`;
+    const sourceFormUuid = graphUuid(sourceForm);
+    const targetFormUuid = graphUuid(targetForm);
+    const key = `${sourceFormUuid}|${sourceSenseId.value}|${targetFormUuid}|${targetSenseId.value}|${relationshipType}`;
     if (lexicalExistingEdges.has(key)) return;
     lexicalExistingEdges.add(key);
     lexicalProcessor.create({
-      sourceWordFormId: sourceForm.uuid.value,
+      sourceWordFormId: sourceFormUuid,
       sourceSenseId: sourceSenseId.value,
-      targetWordFormId: targetForm.uuid.value,
+      targetWordFormId: targetFormUuid,
       targetSenseId: targetSenseId.value,
       relationshipType,
       sourceReferences: [CACHE_SOURCE_REFERENCE],
