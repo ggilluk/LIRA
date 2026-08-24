@@ -1,36 +1,24 @@
 import type {
-  HTMLCrawlOptions,
-  HTMLCrawlResult,
+  HTMLProcessedPage,
   HTMLServiceState,
   HTMLWorkerMessage,
   HTMLWorkerRequest,
 } from "./HTML_web_worker_protocol";
-import type { CrawledPage } from "./WebCrawler";
 
 export type HTMLStatusListener = (state: HTMLServiceState, detail?: string, requestId?: string) => void;
-export type HTMLPageListener = (page: CrawledPage) => void;
 
-export interface HTMLCrawlHandle {
-  /** Worker request identity, exposed so callers can correlate UI state. */
-  requestId: string;
-  /** Resolves when the crawl completes or is cooperatively cancelled. */
-  result: Promise<HTMLCrawlResult>;
-  /** Requests cooperative cancellation of this crawl. */
-  cancel(): void;
-}
-
-/** Main-thread handle to HTML_web_worker.ts -- the same client/service split
- * used by LinguisticsWorkerClient and VocabularyWorkerClient. One client owns
- * exactly one module worker and turns its postMessage protocol into init/crawl
- * calls plus status and per-page listeners. */
+/** Main-thread/direct-owner handle to one HTML Processor worker.
+ *
+ * WebCrawler_web_worker.ts creates multiple raw workers directly for its pool,
+ * but this client keeps the same promise-oriented convention available to any
+ * other caller that needs one dedicated HTML Processor Service. */
 export class HTMLWorkerClient {
   private readonly worker: Worker;
   private readonly statusListeners = new Set<HTMLStatusListener>();
   private readyResolvers: Array<{ resolve: () => void; reject: (error: Error) => void }> = [];
-  private readonly pendingCrawls = new Map<string, {
-    resolve: (result: HTMLCrawlResult) => void;
+  private readonly pendingPages = new Map<string, {
+    resolve: (page: HTMLProcessedPage) => void;
     reject: (error: Error) => void;
-    onPage?: HTMLPageListener;
   }>();
 
   constructor() {
@@ -40,7 +28,6 @@ export class HTMLWorkerClient {
     });
   }
 
-  /** Subscribes to worker service/crawl status. Returns an unsubscribe function. */
   onStatus(listener: HTMLStatusListener): () => void {
     this.statusListeners.add(listener);
     return () => {
@@ -48,7 +35,6 @@ export class HTMLWorkerClient {
     };
   }
 
-  /** Confirms that the worker runtime can host HTMLProcessor/WebCrawler. */
   init(): Promise<void> {
     return new Promise((resolve, reject) => {
       this.readyResolvers.push({ resolve, reject });
@@ -56,21 +42,17 @@ export class HTMLWorkerClient {
     });
   }
 
-  /** Starts one crawl. Pages are delivered incrementally through `onPage`
-   * immediately after the worker's WebCrawler has supplied them to
-   * HTMLProcessor. The returned handle owns completion and cancellation. */
-  crawl(seedUrl: string | URL, options: HTMLCrawlOptions = {}, onPage?: HTMLPageListener): HTMLCrawlHandle {
-    const requestId = `html-crawl-${Math.random().toString(36).slice(2)}`;
-    const result = new Promise<HTMLCrawlResult>((resolve, reject) => {
-      this.pendingCrawls.set(requestId, { resolve, reject, onPage });
-      this.post({ type: "crawl", requestId, seedUrl: String(seedUrl), options });
+  /** Reads and parses exactly one page in this worker. */
+  processPage(url: string | URL, depth = 0): Promise<HTMLProcessedPage> {
+    const requestId = `html-page-${Math.random().toString(36).slice(2)}`;
+    return new Promise((resolve, reject) => {
+      this.pendingPages.set(requestId, { resolve, reject });
+      this.post({ type: "process-page", requestId, url: String(url), depth });
     });
+  }
 
-    return {
-      requestId,
-      result,
-      cancel: () => this.post({ type: "cancel-crawl", requestId }),
-    };
+  terminate(): void {
+    this.worker.terminate();
   }
 
   private post(request: HTMLWorkerRequest): void {
@@ -83,19 +65,17 @@ export class HTMLWorkerClient {
     } else if (message.type === "ready") {
       const pending = this.readyResolvers.splice(0);
       for (const { resolve } of pending) resolve();
-    } else if (message.type === "crawl-page") {
-      this.pendingCrawls.get(message.requestId)?.onPage?.(message.page);
-    } else if (message.type === "crawl-result") {
-      const pending = this.pendingCrawls.get(message.requestId);
+    } else if (message.type === "process-page-result") {
+      const pending = this.pendingPages.get(message.requestId);
       if (pending) {
-        this.pendingCrawls.delete(message.requestId);
-        pending.resolve(message.result);
+        this.pendingPages.delete(message.requestId);
+        pending.resolve(message.page);
       }
     } else if (message.type === "error") {
       if (message.requestId) {
-        const pending = this.pendingCrawls.get(message.requestId);
+        const pending = this.pendingPages.get(message.requestId);
         if (pending) {
-          this.pendingCrawls.delete(message.requestId);
+          this.pendingPages.delete(message.requestId);
           pending.reject(new Error(message.message));
           return;
         }
@@ -103,7 +83,7 @@ export class HTMLWorkerClient {
 
       const initPending = this.readyResolvers.splice(0);
       for (const { reject } of initPending) reject(new Error(message.message));
-      if (initPending.length === 0) console.error("HTML Service error:", message.message);
+      if (initPending.length === 0) console.error("HTML Processor Service error:", message.message);
     }
   }
 }
