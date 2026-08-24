@@ -30,7 +30,7 @@ working vocabulary immediately, not to be a system of record.
 | File | Contents | Required entries |
 |------|----------|-------------------|
 | `manifest.json` | Schema/asset version, language, per-file and total lexical form counts | -- |
-| `determiners.json` | Determiners (the, a, this, my, some, ...) | 37 |
+| `determiners.json` | **Retired in `asset_version 1.26.0`.** Its 37 flat one-Word-per-surface-form entries are now seeded directly by `role/determiner_seeder.ts` -- one Word per base lemma (44 lemmas: "a"/"an" collapse into one lemma, "this"/"these" and "that"/"those" collapse into one lemma apiece, "which"/"what" stay excluded -- see the file-placement note below -- and "whose"/"whichever" gain a first `DETERMINER` entry alongside their existing `PRONOUN` one), every inflected spelling living on its own `WordForm` record instead of its own flat entry (`data/entities/determiner.ts`'s own docstring). | 0 (retired) |
 | `pronouns.json` | Personal, possessive, reflexive, interrogative, relative, reciprocal, and indefinite pronouns, plus `which`/`what`'s secondary `DETERMINER` entries (see the file-placement note above) | 99 |
 | `auxiliaries.json` | **Retired in `asset_version 1.24.0`** (extended in `1.25.0`). Its 11 primary-auxiliary/modal/semi-modal lemmas (be, have, do, can, may, shall, will, must, ought, need, dare) are now seeded directly by `role/auxiliary_seeder.ts` -- one Word per lemma, every inflected spelling ("am", "was", "could", "doing", ...) living on a `*_Form` field instead of its own flat entry (`data/entities/auxiliary.ts`'s own docstring). Its remaining 7 entries (the full contractions -- see Contractions below) have no lemma-model equivalent yet; tracked as a GitHub issue, not silently dropped. | 0 (retired) |
 | `prepositions.json` | Simple and compound/complex prepositions, including multi-word units (because of, in spite of, according to, as well as, ...) | 94 |
@@ -363,6 +363,21 @@ type boundaries. Every existing relationship that resolves these words
 by lexical form (e.g. `that` → `those` `PLURAL_FORM`) continues to
 resolve to the correct sense either way. `Dictionary.lookup_all(text)`
 returns every sense regardless of file placement or load order.
+
+`determiners.json` itself no longer exists (`asset_version 1.26.0`'s
+own retirement, `role/determiner_seeder.ts`'s own File row above) --
+`this`/`that`'s own `DETERMINER` entry, and every other DETERMINER
+lemma's, now comes from that seeder instead, which runs before
+`pronouns.json` loads, preserving the exact same "DETERMINER loads
+first" ordering the paragraph above describes. `which`/`what` are
+untouched by the retirement -- their `DETERMINER` entry still lives
+inside `pronouns.json` exactly as this section describes, deliberately
+excluded from `role/determiner_seeder.ts` for the same load-order
+reason. `whose`/`whichever` are new: `role/determiner_seeder.ts` gives
+each a first `DETERMINER` entry ahead of its own existing `pronouns.json`
+`PRONOUN` entry, so `DETERMINER` is now their default sense too -- a
+genuinely new homograph pair this file's own "six words" count above
+didn't include, not merely a format change to an existing one.
 
 ### Polysemous senses
 

@@ -164,6 +164,12 @@ async function handleSeedCommonVocabulary(request: SeedCommonVocabularyRequest):
     // AUXILIARY their default sense (AuxiliarySeeder's own docstring on
     // why this ordering matters, role/auxiliary_seeder.ts).
     new AuxiliarySeeder(domain.vocabulary.dictionary, domain.vocabulary.senses, domain.vocabulary.wordForms).seed();
+    // No separate DeterminerSeeder call needed here, unlike AuxiliarySeeder
+    // immediately above -- WordSeeder.seedClosedClassWords() (called by
+    // seedDomain() below) already runs it internally, before its own
+    // loadCache() loop, for every caller (role/word_seeder.ts's own
+    // docstring on why DETERMINER, unlike AUXILIARY, isn't left as a
+    // caller-remembered step).
     // excludeOpenClasses: "Load WordNet" is this prototype's actual
     // source of truth for NOUN/VERB/ADJECTIVE/ADVERB coverage now
     // (word_seeder.ts's own seedClosedClassWords docstring) -- paired

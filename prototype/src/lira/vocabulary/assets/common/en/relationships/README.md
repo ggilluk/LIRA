@@ -3,8 +3,10 @@
 ## Purpose
 
 This cache provides the intrinsic lexical relationships between the
-mandatory English closed-class Words (`../determiners.json`,
-`../pronouns.json`, etc.) -- verb conjugations, pronoun paradigms,
+mandatory English closed-class Words (`../pronouns.json`,
+`../prepositions.json`, etc., plus the DETERMINER lemmas
+`role/determiner_seeder.ts` seeds directly) -- verb conjugations,
+pronoun paradigms,
 comparative/superlative forms, and a small set of universally-true
 prepositional synonym/antonym pairs. Relationships are seeded after
 the Words themselves, never before (a relationship can't resolve a

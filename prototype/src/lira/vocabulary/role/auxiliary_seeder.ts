@@ -5,6 +5,7 @@ import { RegisterCode } from "../data/enums/register_code";
 import { createAuxiliary, isAuxiliary } from "./processor/auxiliary_processor";
 import { createWordForm } from "./word_form_processor";
 import type { WordForms } from "../data/word_forms";
+import { identifier } from "../../value_objects";
 
 // The closed set of WordForm.field names this seeder ever authors --
 // kept as its own alias so AUXILIARY_LEMMAS below reads as plain data,
@@ -462,7 +463,18 @@ export class AuxiliarySeeder {
 
       const word = createAuxiliary({
         text: lemmaSeed.lemma,
-        entryId: { value: lemmaSeed.entryId },
+        // identifier(), not a bare `{ value }` literal -- createWord()'s
+        // own defaulting (`init.entryId ?? identifier(newUuid())`) only
+        // auto-generates a fresh `uuid` when `entryId` is omitted
+        // entirely; a caller-supplied partial entryId is trusted as-is.
+        // Every other Word-creation path in this codebase either omits
+        // entryId (letting createWord() generate one outright) or is a
+        // `copyWordWithFreshUuid()` result (always overwrites `uuid`
+        // explicitly) -- this seeder is neither, so it must build a
+        // real, complete Identifier itself, or every lemma below shares
+        // one `undefined` `entryId.uuid`, silently colliding in
+        // Dictionary.byUuid and WordForms.formsByWordId alike.
+        entryId: identifier(lemmaSeed.entryId),
         gloss: { value: lemmaSeed.definition },
         isCommon: true,
         registerCodes: [RegisterCode.NEUTRAL],

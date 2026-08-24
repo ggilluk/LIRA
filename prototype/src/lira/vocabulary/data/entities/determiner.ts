@@ -4,7 +4,8 @@
  * See `documentation/architecture/data_entity_design_decisions_log.md`
  * for the design history behind this shape, including why its own
  * Word Form to Part of Speech Matrix fields (Singular/Plural Number
- * Form, Possessive Case Form) are not declared here.
+ * Form, Possessive Case Form, Consonant/Vowel-Sound Form) are not
+ * declared here.
  */
 
 import { PartOfSpeech } from "../enums/part_of_speech";

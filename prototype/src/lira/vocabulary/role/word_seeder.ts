@@ -36,6 +36,7 @@ import { createNounPhrase } from "../data/noun_phrase";
 import { createPrepositionalPhrase } from "../data/prepositional_phrase";
 import { createVerbPhrase } from "../data/verb_phrase";
 import { createDeterminer } from "./processor/determiner_processor";
+import { DeterminerSeeder } from "./determiner_seeder";
 import { createInterjection } from "./processor/interjection_processor";
 import { createNoun, generateNounForms, isNoun } from "./processor/noun_processor";
 import { createNumeral } from "./processor/numeral_processor";
@@ -123,7 +124,7 @@ interface FormLink {
 // seeding AUXILIARY's 11 base lemmas directly (be, have, do, can, may,
 // shall, will, must, ought, need, dare) -- a one-Word-per-lemma model
 // with the old file's own flat one-Word-per-surface-form entries folded
-// into *_Form fields instead (data/entities/auxiliary.ts's own
+// into WordForm records instead (data/entities/auxiliary.ts's own
 // docstring). AuxiliarySeeder runs before this list is loaded
 // (vocabulary_worker.ts's own handleSeedCommonVocabulary), preserving
 // this list's own "loads before every SUPPLEMENTARY_FILES entry"
@@ -132,8 +133,18 @@ interface FormLink {
 // lemma-model equivalent yet (the 7 full contractions) -- tracked as a
 // follow-up, not silently dropped (see the GitHub issue this retirement
 // filed, and assets/common/en/README.md's own note on it).
+//
+// determiners.json was retired the same way once role/determiner_seeder.ts
+// started seeding DETERMINER's own 44 base lemmas directly (its own
+// docstring has the full list and rationale) -- also run before this
+// list is loaded, from the exact same call site as AuxiliarySeeder.
+// Unlike Auxiliary, nothing here still shares this list with
+// determiners.json's old entries: every lemma either moved to
+// DeterminerSeeder or (which/what) already lived in pronouns.json,
+// which now loads first below purely because determiners.json's own
+// slot is gone, not because anything about its own internal PRONOUN-
+// before-DETERMINER ordering changed.
 export const MANDATORY_FILES = [
-  "determiners.json",
   "pronouns.json",
   "prepositions.json",
   "coordinating_conjunctions.json",
@@ -1358,11 +1369,24 @@ export class WordSeeder {
    * `excludeOpenClasses` is set -- not general vocabulary coverage, the
    * curated Interrogative/Hypernym/Holonym/Vector-Primitive root-word
    * table, with no seeding path of its own outside this cache. Every
-   * other closed class (pronoun, determiner, preposition, ..., symbol,
-   * numeral, proper noun, interjection) is unaffected either way --
-   * WordNet itself only ever seeds NOUN/VERB/ADJECTIVE/ADVERB Words, so
-   * there's nothing for this cache's own closed-class entries to
-   * compete with there. */
+   * other closed class (pronoun, preposition, ..., symbol, numeral,
+   * proper noun, interjection) is unaffected either way -- WordNet
+   * itself only ever seeds NOUN/VERB/ADJECTIVE/ADVERB Words, so there's
+   * nothing for this cache's own closed-class entries to compete with
+   * there.
+   *
+   * DETERMINER is the one closed class seeded from a *different* place
+   * -- `DeterminerSeeder` (role/determiner_seeder.ts), called right
+   * below, before this cache's own loop -- rather than from a
+   * `loadCache()` entry the way every other closed class still is
+   * (determiners.json itself is retired). Folded in here, unlike
+   * `AuxiliarySeeder`'s own deliberately-separate, caller-invoked
+   * shape, because every one of this method's own callers (this
+   * codebase's tests included, not just vocabulary_worker.ts's own
+   * production call site) already expects a real DETERMINER Word for
+   * "the"/"a"/... the moment this method returns -- there is no
+   * equivalent "caller may reasonably skip this" case for DETERMINER
+   * the way there already was, and stays, for AUXILIARY. */
   seedClosedClassWords(
     dictionary: Dictionary,
     phraseBook: Phrases,
@@ -1371,6 +1395,7 @@ export class WordSeeder {
     wordForms?: WordForms,
   ): number {
     const excludeOpenClasses = options?.excludeOpenClasses ?? false;
+    new DeterminerSeeder(dictionary, senseStore, wordForms).seed();
     let seeded = 0;
     const insertedByEntryId = new Map<string, Word>();
     for (const word of this.loadCache()) {

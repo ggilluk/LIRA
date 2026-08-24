@@ -972,6 +972,36 @@ export const WORD_FORM_MATRIX: readonly WordFormRow[] = [
     ],
   },
   {
+    field: "consonantSoundForm",
+    label: "Consonant-Sound Form",
+    purpose: "Identifies the word form used immediately before a word beginning with a consonant sound.",
+    rules: [
+      {
+        appliesTo: [P.DETERMINER],
+        format: "Uses an explicitly assigned form selected by the phonetic onset of the following word. Example: a (a cat).",
+        baseLemmaPreconditions: "The lemma must have an explicitly assigned consonant-sound form.",
+        generationTransform: "Return the assigned consonant-sound form.",
+        reductionTransform: "Resolve the consonant-sound form to its canonical lemma.",
+        requiredLinguisticData: "Lexical Form Mapping; Phonetic Onset of the following word.",
+      },
+    ],
+  },
+  {
+    field: "vowelSoundForm",
+    label: "Vowel-Sound Form",
+    purpose: "Identifies the word form used immediately before a word beginning with a vowel sound.",
+    rules: [
+      {
+        appliesTo: [P.DETERMINER],
+        format: "Uses an explicitly assigned form selected by the phonetic onset of the following word. Example: an (an apple).",
+        baseLemmaPreconditions: "The lemma must have an explicitly assigned vowel-sound form.",
+        generationTransform: "Return the assigned vowel-sound form.",
+        reductionTransform: "Resolve the vowel-sound form to its canonical lemma.",
+        requiredLinguisticData: "Lexical Form Mapping; Phonetic Onset of the following word.",
+      },
+    ],
+  },
+  {
     field: "reflexiveCaseForm",
     label: "Reflexive Case Form",
     purpose: "Identifies the pronoun form used when a person or thing refers back to itself.",

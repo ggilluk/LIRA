@@ -1,13 +1,9 @@
 {
   "schema_version": "2.0.0",
-  "asset_version": "1.24.0",
+  "asset_version": "1.26.0",
   "language_code": "en",
-  "total_lexical_forms": 399,
+  "total_lexical_forms": 362,
   "files": [
-    {
-      "file": "determiners.json",
-      "count": 37
-    },
     {
       "file": "pronouns.json",
       "count": 100

@@ -8,6 +8,7 @@
 export { VocabularyAgent } from "./agents";
 export { AsyncDictionaryHydrator } from "./role/dictionary_hydrator";
 export { AuxiliarySeeder } from "./role/auxiliary_seeder";
+export { DeterminerSeeder } from "./role/determiner_seeder";
 export { DictionaryProcessor } from "./role/dictionary_processor";
 export { ExternalDictionaryAdapter } from "./role/external_dictionary_adapter";
 export { IdentificationSource, type WordIdentifier } from "./role/word_identifier";
