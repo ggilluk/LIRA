@@ -6,6 +6,7 @@ import type { WordForms } from "../../data/word_forms";
 import {
   createWord,
   endsInConsonantY,
+  graphUuid,
   shouldDoubleFinalConsonant,
   validateFormText,
   type WordFormIssue,
@@ -37,7 +38,7 @@ export function isVerb(word: Word): word is Verb {
  * WordSeeder.seedWordNet (every Common Vocabulary Cache entry, which has
  * no frame data of its own). */
 export function framesForSense(senses: Senses, verb: Verb, senseId: string): readonly string[] | undefined {
-  return senses.metadataFor(senseId, verb.uuid.value)?.frames as readonly string[] | undefined;
+  return senses.metadataFor(senseId, graphUuid(verb))?.frames as readonly string[] | undefined;
 }
 
 /** Validates every WordForm this Verb carries -- its own row above,

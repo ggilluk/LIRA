@@ -61,7 +61,7 @@ import { copyPhraseWithFreshUuid, createPhrase, type Phrase } from "../data/phra
 import { PhraseRole } from "../data/enums/phrase_role";
 import { PhraseType } from "../data/enums/phrase_type";
 import type { Phrases } from "../data/phrases";
-import { createSense } from "./sense_processor";
+import { createSense, graphUuid as senseGraphUuid } from "./sense_processor";
 import type { Sense } from "../data/entities/sense";
 import type { Senses } from "../data/senses";
 import type { WordForms } from "../data/word_forms";
@@ -69,7 +69,7 @@ import { graphUuid, type WordFormAttributes } from "./word_form_processor";
 import type { SourceReference } from "../data/source_reference";
 import { createVerb, generateVerbForms, isVerb } from "./processor/verb_processor";
 import type { Word } from "../data/entities/word";
-import { copyWordWithFreshUuid, createWord } from "./word_processor";
+import { copyWordWithFreshUuid, createWord, graphUuid as wordGraphUuid } from "./word_processor";
 import type { SemanticRelationshipStore } from "../data/semantic_relationship_store";
 import {
   languageHasCommonCache,
@@ -86,12 +86,27 @@ import { loadWordNetSynsets, type WordNetPointer, type WordNetSynset } from "./w
 
 /** createEdges' own pair-member type -- a MorphologicalPointerRelationship's
  * sourceWordId/targetWordId are opaque uuid strings regardless of what
- * they name, so createEdges itself only ever reads `.uuid.value` off
- * each side; ordinarily that's a Word or Phrase, but seedPointerRelationship's
- * own semantic-group-and-synset-wide branch (that method's own docstring)
- * creates a single Sense-to-Sense edge instead of a member×member cross
+ * they name, so createEdges itself only ever reads each side's own
+ * per-Domain graph uuid (endpointUuid() below); ordinarily that's a
+ * Word or Phrase, but seedPointerRelationship's own semantic-group-
+ * and-synset-wide branch (that method's own docstring) creates a
+ * single Sense-to-Sense edge instead of a member×member cross
  * product, so this union includes Sense too. */
 type RelationshipEndpoint = Word | Phrase | Sense;
+
+/** `endpoint`'s own per-Domain graph identity, whichever of the three
+ * RelationshipEndpoint shapes it actually is -- Phrase keeps its own
+ * separate top-level `uuid` field (out of scope for the
+ * Word/Sense/WordForm fold), narrowed first via `"words" in endpoint`
+ * the same way every other Phrase-vs-Word check in this codebase
+ * does; `isRootWord` is Sense-only (never a Word field, even after
+ * root-word status moved onto Noun specifically) so it's what
+ * distinguishes the remaining two. */
+function endpointUuid(endpoint: RelationshipEndpoint): string {
+  if ("words" in endpoint) return endpoint.uuid.value;
+  if ("isRootWord" in endpoint) return senseGraphUuid(endpoint);
+  return wordGraphUuid(endpoint);
+}
 
 /** One flattened nested form's link back to its base lemma, keyed by
  * entryId (the stable Qualified Word Identity, unaffected by
@@ -882,6 +897,15 @@ function indexedWord(members: readonly (Word | Phrase)[], oneBasedIndex: number)
   return word === undefined ? [] : [word];
 }
 
+/** `member`'s own per-Domain graph identity -- Phrase still keeps its
+ * own separate top-level `uuid` field (out of scope for the
+ * Word/Sense/WordForm fold, `data/entities/word.ts`'s own docstring),
+ * so only the Word side needs `wordGraphUuid()`'s own `entryId.uuid`
+ * read. `data/senses.ts`'s own identical `memberUuid()`. */
+function memberUuid(member: Word | Phrase): string {
+  return "words" in member ? member.uuid.value : wordGraphUuid(member);
+}
+
 /** Applies one topic-domain tag to `target` -- shared by tagTopicDomain's
  * own Sense-level (synset-wide `;c`/`-c` pointer) and Word/Phrase-level
  * (word-specific pointer) paths, since Sense/Word/Phrase all share the
@@ -1364,8 +1388,8 @@ export class WordSeeder {
       // generateXForms() onto WordForms.registerNamedForm(), a call made
       // against `word` would register real WordForm records under a
       // uuid no real Domain's own copy ever has (WordForms indexes by
-      // `word.uuid.value`, and `copyWordWithFreshUuid` mints a fresh one
-      // here). An ADJECTIVE/ADVERB still only gets its own Positive
+      // each Word's own per-Domain graph uuid, `word.entryId.uuid`, and
+      // `copyWordWithFreshUuid` mints a fresh one here). An ADJECTIVE/ADVERB still only gets its own Positive
       // Degree Form this early -- synsetMemberToWord()'s own docstring
       // on why Comparative/Superlative wait for the deferred
       // post-relationship-graph pass further down this file.
@@ -1667,7 +1691,7 @@ export class WordSeeder {
         }
         members.push(word);
         const senseMetadata = this.memberSenseMetadata(synset, lemmaIndex);
-        if (senseMetadata !== undefined) senseStore.setMemberMetadata(sense.uuid.value, word.uuid.value, senseMetadata);
+        if (senseMetadata !== undefined) senseStore.setMemberMetadata(senseGraphUuid(sense), wordGraphUuid(word), senseMetadata);
       }
       // Every member linked to this synset's own Sense, new or reused
       // (a reused member from an earlier seedWordNet run, before this
@@ -1874,7 +1898,7 @@ export class WordSeeder {
     if (pointer.sourceWordIndex === 0 && pointer.targetWordIndex === 0 && relationshipGroup(resolved.kind) === 1) {
       const sourceSense = senseStore.findBySynsetId(synset.synsetId);
       const targetSense = senseStore.findBySynsetId(pointer.targetSynsetId);
-      if (sourceSense === undefined || targetSense === undefined || sourceSense.uuid.value === targetSense.uuid.value) return 0;
+      if (sourceSense === undefined || targetSense === undefined || senseGraphUuid(sourceSense) === senseGraphUuid(targetSense)) return 0;
       const pair: readonly [Sense, Sense] = resolved.swap ? [targetSense, sourceSense] : [sourceSense, targetSense];
       return this.createEdges(processor, existingEdges, resolved.kind, [pair], qualifiers);
     }
@@ -1885,7 +1909,7 @@ export class WordSeeder {
     const pairs: Array<readonly [Word | Phrase, Word | Phrase]> = [];
     for (const sw of sourceWords) {
       for (const tw of targetWords) {
-        if (sw.uuid.value === tw.uuid.value) continue;
+        if (memberUuid(sw) === memberUuid(tw)) continue;
         pairs.push(resolved.swap ? [tw, sw] : [sw, tw]);
       }
     }
@@ -2002,8 +2026,10 @@ export class WordSeeder {
 
     const sourceSense = senseStore.findBySynsetId(synset.synsetId);
     const targetSense = senseStore.findBySynsetId(pointer.targetSynsetId);
-    if (sourceSense === undefined || targetSense === undefined || sourceSense.uuid.value === targetSense.uuid.value) return;
+    if (sourceSense === undefined || targetSense === undefined || senseGraphUuid(sourceSense) === senseGraphUuid(targetSense)) return;
     const [sourceSideSense, targetSideSense] = resolved.swap ? [targetSense, sourceSense] : [sourceSense, targetSense];
+    const sourceSideSenseUuid = senseGraphUuid(sourceSideSense);
+    const targetSideSenseUuid = senseGraphUuid(targetSideSense);
 
     for (const [sw, tw] of pairs) {
       if ("words" in sw || "words" in tw) continue;
@@ -2011,20 +2037,20 @@ export class WordSeeder {
       const targetForm = wordForms.registerBaseLemmaForm(tw);
       const sourceFormUuid = graphUuid(sourceForm);
       const targetFormUuid = graphUuid(targetForm);
-      const key = `${sourceFormUuid}|${sourceSideSense.uuid.value}|${targetFormUuid}|${targetSideSense.uuid.value}|${resolved.kind}`;
+      const key = `${sourceFormUuid}|${sourceSideSenseUuid}|${targetFormUuid}|${targetSideSenseUuid}|${resolved.kind}`;
       if (lexicalExistingEdges.has(key)) continue;
       if (
         DERIVATION_FAMILY.has(resolved.kind) &&
-        hasReciprocalDerivationEdge(lexicalExistingEdges, targetFormUuid, targetSideSense.uuid.value, sourceFormUuid, sourceSideSense.uuid.value)
+        hasReciprocalDerivationEdge(lexicalExistingEdges, targetFormUuid, targetSideSenseUuid, sourceFormUuid, sourceSideSenseUuid)
       ) {
         continue;
       }
       lexicalExistingEdges.add(key);
       lexicalProcessor.create({
         sourceWordFormId: sourceFormUuid,
-        sourceSenseId: sourceSideSense.uuid.value,
+        sourceSenseId: sourceSideSenseUuid,
         targetWordFormId: targetFormUuid,
-        targetSenseId: targetSideSense.uuid.value,
+        targetSenseId: targetSideSenseUuid,
         relationshipType: resolved.kind,
         sourceReferences: [WORDNET_SOURCE_REFERENCE],
         qualifiers,
@@ -2071,14 +2097,16 @@ export class WordSeeder {
     if (semanticKind === undefined) return;
     const sourceSense = senseStore.findBySynsetId(synset.synsetId);
     const targetSense = senseStore.findBySynsetId(pointer.targetSynsetId);
-    if (sourceSense === undefined || targetSense === undefined || sourceSense.uuid.value === targetSense.uuid.value) return;
+    if (sourceSense === undefined || targetSense === undefined || senseGraphUuid(sourceSense) === senseGraphUuid(targetSense)) return;
     const [source, target] = resolved.swap ? [targetSense, sourceSense] : [sourceSense, targetSense];
-    const key = `${source.uuid.value}|${target.uuid.value}|${semanticKind}`;
+    const sourceUuid = senseGraphUuid(source);
+    const targetUuid = senseGraphUuid(target);
+    const key = `${sourceUuid}|${targetUuid}|${semanticKind}`;
     if (semanticExistingEdges.has(key)) return;
     semanticExistingEdges.add(key);
     semanticProcessor.create({
-      sourceSenseId: source.uuid.value,
-      targetSenseId: target.uuid.value,
+      sourceSenseId: sourceUuid,
+      targetSenseId: targetUuid,
       relationshipType: semanticKind,
       sourceReferences: [WORDNET_SOURCE_REFERENCE],
       qualifiers,
@@ -2177,12 +2205,14 @@ export class WordSeeder {
     const symmetric = SYMMETRIC_RELATIONSHIP_KINDS.has(kind);
     let created = 0;
     for (const [source, target] of pairs) {
-      const key = `${source.uuid.value}|${target.uuid.value}|${kind}`;
-      const reverseKey = symmetric ? `${target.uuid.value}|${source.uuid.value}|${kind}` : undefined;
+      const sourceUuid = endpointUuid(source);
+      const targetUuid = endpointUuid(target);
+      const key = `${sourceUuid}|${targetUuid}|${kind}`;
+      const reverseKey = symmetric ? `${targetUuid}|${sourceUuid}|${kind}` : undefined;
       if (existingEdges.has(key) || (reverseKey !== undefined && existingEdges.has(reverseKey))) continue;
       processor.create({
-        sourceWordId: source.uuid.value,
-        targetWordId: target.uuid.value,
+        sourceWordId: sourceUuid,
+        targetWordId: targetUuid,
         relationshipType: kind,
         sourceReferences: [WORDNET_SOURCE_REFERENCE],
         qualifiers,
@@ -2227,7 +2257,10 @@ export class WordSeeder {
    * leaving every later caller to re-scan `wordRoles` for it themselves. */
   private linkPhraseWords(phrase: Phrase, dictionary: Dictionary): void {
     const tokens = phrase.text.trim().split(/\s+/).filter((token) => token.length > 0);
-    phrase.words = tokens.map((token) => dictionary.lookup(token)?.uuid);
+    phrase.words = tokens.map((token) => {
+      const word = dictionary.lookup(token);
+      return word === undefined ? undefined : { value: wordGraphUuid(word) };
+    });
     phrase.wordRoles = classifyPhraseRoles(phrase.phraseType, tokens, dictionary);
     const headIndex = phrase.wordRoles.indexOf(PhraseRole.HEAD);
     phrase.headWord = headIndex === -1 ? undefined : phrase.words[headIndex];
@@ -2303,7 +2336,8 @@ export class WordSeeder {
     direction: "outgoing" | "incoming",
     otherPos: (candidate: Word) => boolean,
   ): Word | undefined {
-    const edges = direction === "outgoing" ? relationships.outgoing(word.uuid.value) : relationships.incoming(word.uuid.value);
+    const wordUuid = wordGraphUuid(word);
+    const edges = direction === "outgoing" ? relationships.outgoing(wordUuid) : relationships.incoming(wordUuid);
     for (const edge of edges) {
       if (edge.relationshipType !== kind) continue;
       const otherId = direction === "outgoing" ? edge.targetWordId : edge.sourceWordId;
@@ -2355,38 +2389,43 @@ export class WordSeeder {
    * here, left for a future pass rather than forced into this one. */
   private deriveMorphologicalPointers(relationships: MorphologicalPointerRelationshipStore, dictionary: Dictionary, word: Word): void {
     const { NOMINALISATION, ADJECTIVAL_DERIVATION, ADVERBIAL_DERIVATION } = LexicalRelationshipType;
+    // Each of these `*Word` fields (Noun.isDerivedFromVerb, ...) is an
+    // Identifier pointing at another Word by its own per-Domain graph
+    // uuid, not a bare uuid string -- this wraps findDerivationTarget()'s
+    // own `Word | undefined` result into that shape.
+    const idOf = (target: Word | undefined): Identifier | undefined => (target === undefined ? undefined : { value: wordGraphUuid(target) });
 
     if (isNoun(word)) {
       const derivedFromVerb = this.findDerivationTarget(relationships, dictionary, word, NOMINALISATION, "incoming", isVerb);
-      word.isDerivedFromVerb = derivedFromVerb?.uuid;
+      word.isDerivedFromVerb = idOf(derivedFromVerb);
       word.isDerivedFromVerbIndicator = derivedFromVerb !== undefined;
 
       const derivedFromAdjective = this.findDerivationTarget(relationships, dictionary, word, NOMINALISATION, "incoming", isAdjective);
-      word.isDerivedFromAdjective = derivedFromAdjective?.uuid;
+      word.isDerivedFromAdjective = idOf(derivedFromAdjective);
       word.isDerivedFromAdjectiveIndicator = derivedFromAdjective !== undefined;
     } else if (isVerb(word)) {
       const nominalised = this.findDerivationTarget(relationships, dictionary, word, NOMINALISATION, "outgoing", isNoun);
-      word.isNominalised = nominalised?.uuid;
+      word.isNominalised = idOf(nominalised);
       word.isNominalisedIndicator = nominalised !== undefined;
 
       const adjectivised = this.findDerivationTarget(relationships, dictionary, word, ADJECTIVAL_DERIVATION, "outgoing", isAdjective);
-      word.isAdjectivised = adjectivised?.uuid;
+      word.isAdjectivised = idOf(adjectivised);
       word.isAdjectivisedIndicator = adjectivised !== undefined;
     } else if (isAdjective(word)) {
       const nominalised = this.findDerivationTarget(relationships, dictionary, word, NOMINALISATION, "outgoing", isNoun);
-      word.isNominalised = nominalised?.uuid;
+      word.isNominalised = idOf(nominalised);
       word.isNominalisedIndicator = nominalised !== undefined;
 
       const adverbialised = this.findDerivationTarget(relationships, dictionary, word, ADVERBIAL_DERIVATION, "outgoing", isAdverb);
-      word.isAdverbialised = adverbialised?.uuid;
+      word.isAdverbialised = idOf(adverbialised);
       word.isAdverbialisedIndicator = adverbialised !== undefined;
 
       const derivedFromVerb = this.findDerivationTarget(relationships, dictionary, word, ADJECTIVAL_DERIVATION, "incoming", isVerb);
-      word.isDerivedFromVerb = derivedFromVerb?.uuid;
+      word.isDerivedFromVerb = idOf(derivedFromVerb);
       word.isDerivedFromVerbIndicator = derivedFromVerb !== undefined;
     } else if (isAdverb(word)) {
       const derivedFromAdjective = this.findDerivationTarget(relationships, dictionary, word, ADVERBIAL_DERIVATION, "incoming", isAdjective);
-      word.isDerivedFromAdjective = derivedFromAdjective?.uuid;
+      word.isDerivedFromAdjective = idOf(derivedFromAdjective);
       word.isDerivedFromAdjectiveIndicator = derivedFromAdjective !== undefined;
     }
   }

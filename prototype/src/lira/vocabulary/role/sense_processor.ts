@@ -13,6 +13,7 @@
  * data/phrase.ts and data/dictionary.ts already import
  * createWord()/copyWordWithFreshUuid() from role/word_processor.ts. */
 
+import { identifier } from "../../value_objects";
 import { newUuid } from "../data/uuid";
 import type { Sense } from "../data/entities/sense";
 
@@ -25,18 +26,37 @@ export function createSense(init: SenseInit = {}): Sense {
     sourceReferences: [],
     isCommon: false,
     isRootWord: false,
-    uuid: init.uuid ?? { value: newUuid() },
-    entryId: init.entryId ?? { value: newUuid() },
+    // identifier()'s own auto-assigned `uuid` (value_objects/data/identifier.ts)
+    // is this Sense's own per-Domain identity -- folded into `entryId`
+    // itself now that Identifier carries a `uuid` of its own, no
+    // reason for a second Identifier-typed field to exist alongside it
+    // (WordForm's own identical fold, role/word_form_processor.ts).
+    entryId: init.entryId ?? identifier(newUuid()),
     ...init,
   };
 }
 
 /** A shallow copy of `sense`, sharing every field's own object identity
- * except `uuid`, which becomes a fresh Identifier -- copyWordForm/
- * copyWordWithFreshUuid's own exact counterpart (role/word_processor.ts),
- * used by Senses.seedFrom for the same reason: two Domains' independent
- * copies of the same sense must never be confused as the same graph
- * node. */
+ * except `entryId.uuid`, which becomes a fresh uuid -- `entryId.value`
+ * (and every other field) stays the same, so this copy is still
+ * recognisably the same underlying Sense, just a distinct graph node --
+ * copyWordForm/copyWordWithFreshUuid's own exact counterpart
+ * (role/word_processor.ts), used by Senses.seedFrom for the same
+ * reason: two Domains' independent copies of the same sense must never
+ * be confused as the same graph node. */
 export function copySenseWithFreshUuid(sense: Sense): Sense {
-  return { ...sense, uuid: { value: newUuid() } };
+  return { ...sense, entryId: { ...sense.entryId, uuid: newUuid() } };
+}
+
+/** `sense`'s own per-Domain graph identity -- `sense.entryId.uuid`,
+ * always set for a real Sense (createSense()/copySenseWithFreshUuid()
+ * above are its only two constructors, and both always assign it);
+ * the assertion here just names that guarantee once instead of
+ * repeating it at every call site that needs a Sense's own identity as
+ * a plain string. `entryId.value` is the stable, cross-Domain identity
+ * -- deliberately not what this reads (data/entities/sense.ts's own
+ * docstring on the two roles `entryId` now plays). Word's own
+ * identical graphUuid() (role/word_processor.ts). */
+export function graphUuid(sense: Sense): string {
+  return sense.entryId.uuid!;
 }

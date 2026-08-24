@@ -7,9 +7,10 @@
  * uses share this same shape.
  *
  * Invariants:
- * - `uuid` uniquely identifies this Word within its own Domain.
- * - `entryId` identifies the same underlying vocabulary entry across
- *   every Domain that holds a copy of it.
+ * - `entryId.uuid` uniquely identifies this Word within its own
+ *   Domain.
+ * - `entryId.value` identifies the same underlying vocabulary entry
+ *   across every Domain that holds a copy of it.
  * - A Word carries no system-tensor properties of its own -- those
  *   belong to a claimed LexicalRelationship between two Words.
  *
@@ -28,12 +29,14 @@ export interface Word extends LinguisticUnit {
 
   // ── Identity ─────────────────────────────────────────────
 
-  /** Unique identifier of this Word within its own Domain. */
-  uuid: Identifier;
-
   /**
    * Identifier of the underlying vocabulary entry this Word
-   * represents, stable across every Domain that holds a copy of it.
+   * represents.
+   *
+   * `entryId.value` is stable across every Domain that holds a copy
+   * of this Word; `entryId.uuid` is this Word's own unique identifier
+   * within its own Domain, freshly regenerated every time this Word
+   * is copied into another Domain.
    */
   entryId: Identifier;
 

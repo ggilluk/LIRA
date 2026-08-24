@@ -22,6 +22,7 @@ import type { Sense } from "../../data/entities/sense";
 import type { Word } from "../../data/entities/word";
 import type { WordForms } from "../../data/word_forms";
 import { graphUuid } from "../../role/word_form_processor";
+import { graphUuid as wordGraphUuid } from "../../role/word_processor";
 import { resolveEntry } from "./resolver_entity";
 import { domainLabel } from "./resolver_domain";
 
@@ -164,8 +165,9 @@ export function lexicalRelationshipRecords(
  * an incoming row only counts if `word` itself owns `targetWordFormId`
  * -- a fellow member's own row, sharing the Sense but naming a
  * different WordForm on the relevant side, is filtered out here rather
- * than misattributed to `word`. Only the subject's own `word.uuid`
- * substitution survives from the member-fanout pattern above -- needed
+ * than misattributed to `word`. Only the subject's own per-Domain
+ * graph uuid substitution (`wordGraphUuid(word)`) survives from the
+ * member-fanout pattern above -- needed
  * so `source_id`/`target_id` (client's `relationshipsForWord()`-style
  * `r.source_id === wordId` check) resolve correctly regardless of which
  * of `word`'s own several WordForms the stored row's own
@@ -188,8 +190,8 @@ function senseExpandedLexicalRelationships(
       expanded.push({
         ...rel,
         uuid,
-        sourceSenseId: outgoingFromSense ? { value: word.uuid.value } : rel.sourceSenseId,
-        targetSenseId: outgoingFromSense ? rel.targetSenseId : { value: word.uuid.value },
+        sourceSenseId: outgoingFromSense ? { value: wordGraphUuid(word) } : rel.sourceSenseId,
+        targetSenseId: outgoingFromSense ? rel.targetSenseId : { value: wordGraphUuid(word) },
       });
       viaSenseId.set(uuid.value, senseId);
     }

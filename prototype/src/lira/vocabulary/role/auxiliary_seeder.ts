@@ -1,6 +1,6 @@
 import type { Dictionary } from "../data/dictionary";
 import type { Senses } from "../data/senses";
-import { createSense } from "./sense_processor";
+import { createSense, graphUuid } from "./sense_processor";
 import { RegisterCode } from "../data/enums/register_code";
 import { createAuxiliary, isAuxiliary } from "./processor/auxiliary_processor";
 import { createWordForm } from "./word_form_processor";
@@ -480,7 +480,7 @@ export class AuxiliarySeeder {
           const sense = createSense({ definition: { value: definition }, gloss: { value: definition }, isCommon: true });
           this.senses.append(sense);
           this.senses.registerMember(sense, word);
-          form.senseIds = [...form.senseIds, sense.uuid];
+          form.senseIds = [...form.senseIds, { value: graphUuid(sense) }];
         }
       }
     }

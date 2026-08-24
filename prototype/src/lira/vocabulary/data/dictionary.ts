@@ -3,7 +3,7 @@ import type { Word } from "./entities/word";
 // role/word_processor.ts's own docstring: copyWordWithFreshUuid() is
 // Word's own base-entity copier, needed here the same way every POS
 // processor already needs it.
-import { copyWordWithFreshUuid } from "../role/word_processor";
+import { copyWordWithFreshUuid, graphUuid } from "../role/word_processor";
 
 /** One inflected form linked to a base lemma (or, from lemmaOf's own
  * side, one base lemma linked to a form) -- Dictionary.linkForm/
@@ -49,10 +49,12 @@ export interface LemmaFormLink {
  * "what forms does this lemma have" / "what lemma is this form of"
  * never needs a scan over LexicalRelationshipStore's morphological
  * edges (that store, and Word's own related-word derived properties,
- * are untouched -- this index is purely additive). Keyed by Word.uuid
- * (this Dictionary's own runtime identity for each Word, not the
- * persistent entryId), since formsOf/lemmaOf take and return live Word
- * instances that must actually belong to this Dictionary. */
+ * are untouched -- this index is purely additive). Keyed by each
+ * Word's own per-Domain graph uuid (`graphUuid()`, role/word_processor.ts
+ * -- `entryId.uuid`, this Dictionary's own runtime identity for each
+ * Word, not the persistent `entryId.value`), since formsOf/lemmaOf
+ * take and return live Word instances that must actually belong to
+ * this Dictionary. */
 export class Dictionary {
   private words: Word[] = [];
   private readonly byText = new Map<string, Word[]>();
@@ -109,7 +111,7 @@ export class Dictionary {
     const bucket = this.byText.get(key);
     if (bucket) bucket.push(word);
     else this.byText.set(key, [word]);
-    this.byUuid.set(word.uuid.value, word);
+    this.byUuid.set(graphUuid(word), word);
 
     const wordCount = key.trim().split(/\s+/).filter(Boolean).length;
     if (wordCount > this.maxPhraseSpan) this.maxPhraseSpan = wordCount;
@@ -126,10 +128,10 @@ export class Dictionary {
    * (i.e. already appended); linking never appends anything itself. */
   linkForm(base: Word, form: Word, derivationKinds: readonly string[]): void {
     const link: LemmaFormLink = { word: form, derivationKinds };
-    const bucket = this.formsByBase.get(base.uuid.value);
+    const bucket = this.formsByBase.get(graphUuid(base));
     if (bucket) bucket.push(link);
-    else this.formsByBase.set(base.uuid.value, [link]);
-    this.baseByForm.set(form.uuid.value, { word: base, derivationKinds });
+    else this.formsByBase.set(graphUuid(base), [link]);
+    this.baseByForm.set(graphUuid(form), { word: base, derivationKinds });
   }
 
   /** Every inflected form linked to `base` (e.g. "judge" ->
@@ -140,26 +142,27 @@ export class Dictionary {
    * prototype's own nesting (asset_loader.ts's own WordFileEntry.forms
    * docstring: only ever one level deep). */
   formsOf(base: Word): readonly LemmaFormLink[] {
-    return this.formsByBase.get(base.uuid.value)?.slice() ?? [];
+    return this.formsByBase.get(graphUuid(base))?.slice() ?? [];
   }
 
   /** The base lemma `form` is an inflected form of, if any -- the
    * reverse of formsOf. */
   lemmaOf(form: Word): LemmaFormLink | undefined {
-    return this.baseByForm.get(form.uuid.value);
+    return this.baseByForm.get(graphUuid(form));
   }
 
   /** Bootstraps this Dictionary with a copy of every Word in `other` --
    * used to seed a newly created Domain's Dictionary from the reserved
    * Common Domain's Dictionary. Each Word is shallow-copied so the two
    * Domains never share a mutable Word instance, and given a freshly
-   * generated uuid -- a shallow copy shares the *same* Identifier
-   * object (and so the same uuid.value) as the original otherwise,
-   * which would give two different Domains' copies of "be" the
-   * identical per-Domain-graph identity. `entryId` is deliberately left
-   * untouched by the shallow copy: it's the stable Qualified Word
-   * Identity, the same underlying Common Vocabulary Cache entry
-   * regardless of how many Domains hold their own runtime copy of it.
+   * generated `entryId.uuid` (copyWordWithFreshUuid(), role/word_processor.ts)
+   * -- a shallow copy shares the *same* `entryId` object (and so the
+   * same graph uuid) as the original otherwise, which would give two
+   * different Domains' copies of "be" the identical per-Domain-graph
+   * identity. `entryId.value` is deliberately left untouched by the
+   * shallow copy: it's the stable Qualified Word Identity, the same
+   * underlying Common Vocabulary Cache entry regardless of how many
+   * Domains hold their own runtime copy of it.
    *
    * `other`'s own lemma index is replayed onto the fresh copies too
    * (looked up by `other`'s original Word instances, re-linked via the
@@ -172,13 +175,13 @@ export class Dictionary {
     for (const word of other.words) {
       const copy = copyWordWithFreshUuid(word);
       this.append(copy);
-      copyByOriginalUuid.set(word.uuid.value, copy);
+      copyByOriginalUuid.set(graphUuid(word), copy);
     }
     for (const word of other.words) {
-      const copy = copyByOriginalUuid.get(word.uuid.value);
+      const copy = copyByOriginalUuid.get(graphUuid(word));
       if (!copy) continue;
       for (const link of other.formsOf(word)) {
-        const formCopy = copyByOriginalUuid.get(link.word.uuid.value);
+        const formCopy = copyByOriginalUuid.get(graphUuid(link.word));
         if (formCopy) this.linkForm(copy, formCopy, link.derivationKinds);
       }
     }

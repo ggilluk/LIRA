@@ -3,6 +3,8 @@ import type { Word } from "./entities/word";
 import type { Sense } from "./entities/sense";
 import type { WordForm } from "./entities/word_form";
 import { copyWordFormWithFreshUuid, createWordForm, graphUuid, type WordFormAttributes } from "../role/word_form_processor";
+import { graphUuid as wordGraphUuid } from "../role/word_processor";
+import { graphUuid as senseGraphUuid } from "../role/sense_processor";
 
 /** WordForm storage: Senses's own exact counterpart one level down
  * (data/entities/word_form.ts's own docstring on why WordForm exists at all).
@@ -60,9 +62,9 @@ export class WordForms {
     if (!word.wordFormIds.some((id) => id.value === uuid)) {
       word.wordFormIds = [...word.wordFormIds, { value: uuid }];
     }
-    const wordBucket = this.formsByWordId.get(word.uuid.value);
+    const wordBucket = this.formsByWordId.get(wordGraphUuid(word));
     if (wordBucket === undefined) {
-      this.formsByWordId.set(word.uuid.value, [form]);
+      this.formsByWordId.set(wordGraphUuid(word), [form]);
     } else if (!wordBucket.some((existing) => graphUuid(existing) === uuid)) {
       wordBucket.push(form);
     }
@@ -81,7 +83,7 @@ export class WordForms {
    * Senses.membersOf()'s own shape, reversed direction (a Word's own
    * forms, not a Sense's own members). */
   formsOf(word: Word): readonly WordForm[] {
-    return this.formsByWordId.get(word.uuid.value)?.slice() ?? [];
+    return this.formsByWordId.get(wordGraphUuid(word))?.slice() ?? [];
   }
 
   /** Every (form, owning word) pair whose own `text` equals `text`
@@ -215,14 +217,15 @@ export class WordForms {
     return form;
   }
 
-  /** Records that `form` carries `sense` -- appends `sense.uuid` onto
-   * `form.senseIds` (the field itself, data/entities/word_form.ts's own
+  /** Records that `form` carries `sense` -- appends `sense`'s own
+   * per-Domain graph uuid onto `form.senseIds` (the field itself, data/entities/word_form.ts's own
    * docstring) -- Senses.registerMember()'s own idempotency shape, one
    * level down: never duplicates an entry already present, safe to call
    * again for the same (form, sense) pair on a re-seed. */
   registerSense(form: WordForm, sense: Sense): void {
-    if (!form.senseIds.some((id) => id.value === sense.uuid.value)) {
-      form.senseIds = [...form.senseIds, sense.uuid];
+    const senseUuid = senseGraphUuid(sense);
+    if (!form.senseIds.some((id) => id.value === senseUuid)) {
+      form.senseIds = [...form.senseIds, { value: senseUuid }];
     }
   }
 

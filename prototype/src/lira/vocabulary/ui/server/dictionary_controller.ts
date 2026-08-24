@@ -57,6 +57,7 @@ import {
 import { resolveHierarchy, type HierarchyResolution } from "./builder_hierarchy";
 import { searchWords, wordRecords, type WordRecord } from "./builder_word";
 import { domainLabel } from "./resolver_domain";
+import { graphUuid } from "../../role/word_processor";
 
 export interface DictionaryViewOptions {
   title?: string;
@@ -368,14 +369,14 @@ export class DictionaryView {
     URL.revokeObjectURL(url);
   }
 
-  /** word.uuid.value -> domain label (word.isCommon's own "Common"/
+  /** A Word's own per-Domain graph uuid -> domain label (word.isCommon's own "Common"/
    * domainTag, or this view's own domainName), for every Word in this
    * Dictionary -- Concept-to-Domain lookups for a page composing this
    * view with another (knowledge/ui/knowledge_view.ts), without
    * duplicating domainLabel's own isCommon/domainTag logic. */
   wordDomainLabels(): Map<string, string | null> {
     const labels = new Map<string, string | null>();
-    for (const word of this.dictionary.all()) labels.set(word.uuid.value, domainLabel(this.senses, this.domainName, word, this.wordForms));
+    for (const word of this.dictionary.all()) labels.set(graphUuid(word), domainLabel(this.senses, this.domainName, word, this.wordForms));
     return labels;
   }
 

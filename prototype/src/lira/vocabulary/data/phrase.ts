@@ -70,11 +70,15 @@ export interface Phrase extends LinguisticUnit {
 
   uuid: Identifier;
 
-  // Same persistent-vs-per-Domain-copy distinction as Word.entryId/
-  // Word.uuid (data/entities/word.ts's own docstring) -- entryId is assigned once,
-  // when a Phrase is first authored in the Common Vocabulary Cache,
-  // and stays untouched by every later per-Domain copy; uuid is fresh
-  // every time.
+  // Same persistent-vs-per-Domain-copy distinction Word's own entryId
+  // now folds into one Identifier (`entryId.value`/`entryId.uuid`,
+  // data/entities/word.ts's own docstring) -- Phrase deliberately keeps
+  // the two as separate top-level fields, out of scope for that fold
+  // (data/entities/word_form.ts's own decision-log entry on why it applies
+  // to WordForm/Word/Sense specifically, not to Phrase). entryId is
+  // assigned once, when a Phrase is first authored in the Common
+  // Vocabulary Cache, and stays untouched by every later per-Domain
+  // copy; uuid (below) is fresh every time.
   entryId: Identifier;
 
   // The Princeton WordNet 3.1 synset this Phrase corresponds to, when
@@ -236,7 +240,7 @@ export function copyPhraseWithFreshUuid(phrase: Phrase): Phrase {
 export function toSyntheticWord(phrase: Phrase): Word {
   return createWord({
     text: phrase.text,
-    entryId: phrase.entryId,
+    entryId: { ...phrase.entryId, uuid: newUuid() },
     partOfSpeech: phrase.partOfSpeech,
     gloss: phrase.gloss,
     usageNotes: phrase.usageNotes,
@@ -279,8 +283,13 @@ export function toSyntheticWord(phrase: Phrase): Word {
 export function phraseAsWord(phrase: Phrase, wordForms?: WordForms): Word {
   const word = createWord({
     text: phrase.text,
-    uuid: phrase.uuid,
-    entryId: phrase.entryId,
+    // Word's own entryId now carries both roles Phrase still keeps
+    // separate (`data/entities/word.ts`'s own docstring on the fold) --
+    // entryId.value from phrase.entryId (the stable identity) and
+    // entryId.uuid from phrase.uuid.value (the per-Domain graph
+    // identity), so this synthetic Word resolves under the identical
+    // identity the Phrase itself is known by.
+    entryId: { ...phrase.entryId, uuid: phrase.uuid.value },
     partOfSpeech: phrase.partOfSpeech,
     gloss: phrase.gloss,
     usageNotes: phrase.usageNotes,

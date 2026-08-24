@@ -6,6 +6,7 @@ import type { Word } from "../../data/entities/word";
 import type { WordForms } from "../../data/word_forms";
 import {
   createWord,
+  graphUuid,
   isPeriphrasticComparison,
   periphrasticDegreeForm,
   regularDegreeForm,
@@ -39,7 +40,7 @@ export function isAdjective(word: Word): word is Adjective {
  * senseId this Adjective doesn't actually lexicalize just returns
  * undefined, the same as no restriction ever having been recorded. */
 export function syntacticPositionForSense(senses: Senses, adjective: Adjective, senseId: string): AdjectivePosition | undefined {
-  return senses.metadataFor(senseId, adjective.uuid.value)?.syntacticPosition as AdjectivePosition | undefined;
+  return senses.metadataFor(senseId, graphUuid(adjective))?.syntacticPosition as AdjectivePosition | undefined;
 }
 
 /** Validates every WordForm this Adjective carries -- its own row

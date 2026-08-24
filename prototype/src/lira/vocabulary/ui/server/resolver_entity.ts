@@ -11,6 +11,7 @@ import type { Phrases } from "../../data/phrases";
 import type { Senses } from "../../data/senses";
 import type { Word } from "../../data/entities/word";
 import type { WordForms } from "../../data/word_forms";
+import { graphUuid } from "../../role/sense_processor";
 
 /** Resolves a relationship endpoint's uuid against this Domain's
  * Dictionary first, falling back to its Phrases (projected onto a
@@ -41,7 +42,7 @@ export function resolveEntry(dictionary: Dictionary, phrases: Phrases, senses: S
   if (phrase !== undefined) return phraseAsWord(phrase, wordForms);
   const sense = senses.findByUuid(id);
   if (sense === undefined) return undefined;
-  const representative = senses.membersOf(sense.uuid.value)[0];
+  const representative = senses.membersOf(graphUuid(sense))[0];
   if (representative === undefined) return undefined;
   return "words" in representative ? phraseAsWord(representative, wordForms) : representative;
 }

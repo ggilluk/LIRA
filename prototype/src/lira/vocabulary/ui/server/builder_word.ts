@@ -18,9 +18,20 @@ import type { SemanticRelationshipStore } from "../../data/semantic_relationship
 import { framesForSense, isVerb } from "../../role/processor/verb_processor";
 import type { Word } from "../../data/entities/word";
 import type { WordForms } from "../../data/word_forms";
+import { graphUuid as wordGraphUuid } from "../../role/word_processor";
+import { graphUuid as senseGraphUuid } from "../../role/sense_processor";
 import { phraseHeadWordSegment, phraseTypeLabel, phraseWordSegments } from "./builder_phrase";
 import { definitionSegments, type DefinitionSegment } from "./builder_segment";
 import { domainLabel, isRootWordFor, senseFieldsFor } from "./resolver_domain";
+
+/** `member`'s own per-Domain graph identity -- Phrase still keeps its
+ * own separate top-level `uuid` field (out of scope for the
+ * Word/Sense/WordForm fold), so only the Word side needs
+ * `wordGraphUuid()`'s own `entryId.uuid` read. `data/senses.ts`'s own
+ * identical `memberUuid()`. */
+function memberUuid(member: Word | Phrase): string {
+  return "words" in member ? member.uuid.value : wordGraphUuid(member);
+}
 
 export interface WordRecord {
   id: string;
@@ -256,7 +267,7 @@ function morphologicalDerivations(word: Word, dictionary: Dictionary, wordForms:
     if (pointer === undefined) return;
     const target = dictionary.findByUuid(pointer.value);
     if (target === undefined) return;
-    derivations.push({ attribute, label: formFieldLabel(attribute), target: { id: target.uuid.value, text: target.text } });
+    derivations.push({ attribute, label: formFieldLabel(attribute), target: { id: wordGraphUuid(target), text: target.text } });
   };
   if (isNoun(word)) {
     addIfSet("isDerivedFromVerb", word.isDerivedFromVerb);
@@ -317,8 +328,8 @@ function sensesFor(entry: Word | Phrase, senses: Senses, domainName: string, wor
       pad: p !== undefined && a !== undefined && d !== undefined ? { pleasure: p.value, arousal: a.value, dominance: d.value } : null,
       synonyms: senses
         .membersOf(senseId.value)
-        .filter((member) => member.uuid.value !== entry.uuid.value)
-        .map((member) => ({ id: member.uuid.value, text: member.text })),
+        .filter((member) => memberUuid(member) !== memberUuid(entry))
+        .map((member) => ({ id: memberUuid(member), text: member.text })),
       ...(frames !== undefined && frames.length > 0 ? { frames: [...frames] } : {}),
     });
   });
@@ -386,7 +397,7 @@ export function wordRecordFor(
   domainName: string,
   wordForms: WordForms,
 ): WordRecord {
-  const wordId = word.uuid.value;
+  const wordId = wordGraphUuid(word);
   const wordSenseIds = wordForms.senseIdsOf(word);
   // SemanticRelationshipStore is Sense-keyed, not Word-keyed (every
   // fact this view reads through it now, DictionaryView's own class
@@ -516,7 +527,7 @@ export function searchWords(
     // representative turns out to be, so a Sense whose one member is a
     // Phrase still gets its own phrase_word_segments.
     const sense = senses.findByUuid(options.wordId);
-    const representative = sense !== undefined ? senses.membersOf(sense.uuid.value)[0] : undefined;
+    const representative = sense !== undefined ? senses.membersOf(senseGraphUuid(sense))[0] : undefined;
     if (representative !== undefined) {
       if ("words" in representative) {
         const record = wordRecordFor(phraseAsWord(representative, wordForms), dictionary, relationships, senses, domainName, wordForms);

@@ -21,6 +21,7 @@ import type { SourceReference } from "../data/source_reference";
 import type { Word } from "../data/entities/word";
 import type { WordForms } from "../data/word_forms";
 import { graphUuid } from "./word_form_processor";
+import { graphUuid as wordGraphUuid } from "./word_processor";
 import {
   readRelationshipFile,
   readRelationshipFileRaw,
@@ -246,10 +247,10 @@ export class RelationshipSeeder {
     let seeded = 0;
     const semanticExistingEdges = new Set<string>();
     for (const [sourceWord, targetWord, relationshipType] of resolved) {
-      if (!this.relationshipExists(store, sourceWord.uuid.value, targetWord.uuid.value, relationshipType)) {
+      if (!this.relationshipExists(store, wordGraphUuid(sourceWord), wordGraphUuid(targetWord), relationshipType)) {
         processor.create({
-          sourceWordId: sourceWord.uuid.value,
-          targetWordId: targetWord.uuid.value,
+          sourceWordId: wordGraphUuid(sourceWord),
+          targetWordId: wordGraphUuid(targetWord),
           relationshipType,
           sourceReferences: [CACHE_SOURCE_REFERENCE],
           confidence: SEEDER_DEFAULT_WEIGHT,
@@ -312,8 +313,9 @@ export class RelationshipSeeder {
       // "silently contributes nothing" outcome a missing Sense already
       // gets just below.
       const targetForm = wordForms?.registerBaseLemmaForm(targetWord);
-      if (targetForm !== undefined && !targetForm.contractionOf.some((id) => id.value === sourceWord.uuid.value)) {
-        targetForm.contractionOf = [...targetForm.contractionOf, sourceWord.uuid];
+      const sourceWordUuid = wordGraphUuid(sourceWord);
+      if (targetForm !== undefined && !targetForm.contractionOf.some((id) => id.value === sourceWordUuid)) {
+        targetForm.contractionOf = [...targetForm.contractionOf, { value: sourceWordUuid }];
       }
     }
 

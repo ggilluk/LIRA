@@ -5,6 +5,7 @@
 import { PartOfSpeech } from "../../data/enums/part_of_speech";
 import type { Sense } from "../../data/entities/sense";
 import type { Senses } from "../../data/senses";
+import { graphUuid } from "../../role/sense_processor";
 
 // Sense's own client-facing record -- the Senses tab's own row shape.
 // Unlike WordRecord/PhraseRecord, a Sense has no `lexical_form` of its
@@ -46,10 +47,11 @@ export interface SenseRecord {
  * since a Sense already *is* the thing senseFieldsFor() resolves a
  * Word/Phrase through. */
 export function senseRecordFor(sense: Sense, senses: Senses, domainName: string): SenseRecord {
-  const members = senses.membersOf(sense.uuid.value);
+  const senseUuid = graphUuid(sense);
+  const members = senses.membersOf(senseUuid);
   const domain = !sense.isCommon ? domainName : (sense.domainTag?.value ?? "Common");
   return {
-    id: sense.uuid.value,
+    id: senseUuid,
     entry_id: sense.entryId.value,
     synset_id: sense.synsetId?.value ?? null,
     lexical_form: members.map((member) => member.text).join(", "),

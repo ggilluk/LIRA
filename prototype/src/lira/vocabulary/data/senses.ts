@@ -1,7 +1,16 @@
 import type { Phrase } from "./phrase";
-import { copySenseWithFreshUuid } from "../role/sense_processor";
+import { copySenseWithFreshUuid, graphUuid } from "../role/sense_processor";
+import { graphUuid as wordGraphUuid } from "../role/word_processor";
 import type { Sense } from "./entities/sense";
 import type { Word } from "./entities/word";
+
+/** `member`'s own per-Domain graph identity -- Phrase still keeps its
+ * own separate top-level `uuid` field (out of scope for the
+ * Word/Sense/WordForm fold, `data/entities/word.ts`'s own docstring),
+ * so only the Word side needs `graphUuid()`'s own `entryId.uuid` read. */
+export function memberUuid(member: Word | Phrase): string {
+  return "words" in member ? member.uuid.value : wordGraphUuid(member);
+}
 
 /** Sense storage: Phrases's own counterpart for Sense (data/entities/sense.ts's
  * own docstring on why a Sense is kept apart from Dictionary/Phrases
@@ -41,7 +50,7 @@ export class Senses {
 
   append(sense: Sense): void {
     this.senses.push(sense);
-    this.byUuid.set(sense.uuid.value, sense);
+    this.byUuid.set(graphUuid(sense), sense);
     if (sense.synsetId !== undefined) this.bySynsetId.set(sense.synsetId.value, sense);
   }
 
@@ -50,7 +59,7 @@ export class Senses {
   }
 
   /** Records that `member` lexicalizes `sense` -- for a Phrase, appends
-   * `sense.uuid` onto `member.senseIds` (the field itself, data/phrase.ts's
+   * `sense`'s own per-Domain graph uuid onto `member.senseIds` (the field itself, data/phrase.ts's
    * own docstring); a Word carries no `senseIds` of its own any more
    * (moved onto its base-lemma WordForm, data/entities/word_form.ts's own
    * docstring on why) -- WordForms.registerSense() is that field's own
@@ -69,13 +78,14 @@ export class Senses {
    * seedWordNet re-run) doesn't duplicate either the `senseIds` entry
    * or the membership entry. */
   registerMember(sense: Sense, member: Word | Phrase): void {
-    if ("words" in member && !member.senseIds.some((id) => id.value === sense.uuid.value)) {
-      member.senseIds = [...member.senseIds, sense.uuid];
+    const senseUuid = graphUuid(sense);
+    if ("words" in member && !member.senseIds.some((id) => id.value === senseUuid)) {
+      member.senseIds = [...member.senseIds, { value: senseUuid }];
     }
-    const bucket = this.membersBySenseId.get(sense.uuid.value);
+    const bucket = this.membersBySenseId.get(senseUuid);
     if (bucket === undefined) {
-      this.membersBySenseId.set(sense.uuid.value, [member]);
-    } else if (!bucket.some((existing) => existing.uuid.value === member.uuid.value)) {
+      this.membersBySenseId.set(senseUuid, [member]);
+    } else if (!bucket.some((existing) => memberUuid(existing) === memberUuid(member))) {
       bucket.push(member);
     }
   }
