@@ -135,6 +135,10 @@ The **LIRA HTML data model is the structured document** produced by interpretati
 
 At the bottom of the meaningful textual structure, **Text becomes LinguisticUnit input**. From there the existing LIRA Linguistics model decomposes language through Sentence, Clause and Phrase toward Word, Part of Speech, WordForm and ultimately Text. Non-linguistic values such as URLs and media references remain typed values.
 
+![HTML Crawler & Document Processor — Conceptual Architecture](images/html_crawler_conceptual_architecture.svg)
+
+*Conceptual architecture framing the Picture in Words: one crawler coordinator dispatches pages to N HTML processor workers, which produce structured LIRA HTML documents for Linguistics.*
+
 ```text
 Internet / Web Site
         |
