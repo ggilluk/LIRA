@@ -7,5 +7,5 @@ import type { Coordination } from "./coordination";
  * Example:
  * "in London or in Paris"
  */
-export interface PrepositionPhraseCoordination
+export interface PrepositionalPhraseCoordination
   extends Coordination<PrepositionalPhrase> {}
