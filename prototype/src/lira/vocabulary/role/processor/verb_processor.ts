@@ -13,6 +13,7 @@ import {
 } from "../word_processor";
 import type { Verb } from "../../data/entities/verb";
 import { stringPatternsFor } from "../../data/matrices/pos_vs_wordform_matrice";
+import { WordFormField } from "../../data/enums/word_forms_enum";
 
 export type VerbInit = Pick<Verb, "text"> & Partial<Omit<Verb, "text" | "partOfSpeech">>;
 
@@ -302,27 +303,27 @@ export function generateVerbForms(verb: Verb, wordForms: WordForms | undefined):
   if (wordForms === undefined) return verb;
   const lemma = verb.text;
   const irregular = IRREGULAR_VERB_FORMS[lemma];
-  const has = (field: string): boolean => wordForms.formsOf(verb).some((form) => form.field === field);
+  const has = (field: WordFormField): boolean => wordForms.formsOf(verb).some((form) => form.field === field);
 
-  if (!has("presentTenseForm")) wordForms.registerNamedForm(verb, "presentTenseForm", { value: lemma });
+  if (!has(WordFormField.PRESENT_TENSE_FORM)) wordForms.registerNamedForm(verb, WordFormField.PRESENT_TENSE_FORM, { value: lemma });
 
-  if (!has("pastTenseForm")) {
-    if (irregular !== undefined) wordForms.registerNamedForm(verb, "pastTenseForm", { value: irregular.past });
+  if (!has(WordFormField.PAST_TENSE_FORM)) {
+    if (irregular !== undefined) wordForms.registerNamedForm(verb, WordFormField.PAST_TENSE_FORM, { value: irregular.past });
     else if (lemma !== "be") {
       const pastTense = regularEdForm(lemma);
-      if (pastTense !== undefined) wordForms.registerNamedForm(verb, "pastTenseForm", pastTense);
+      if (pastTense !== undefined) wordForms.registerNamedForm(verb, WordFormField.PAST_TENSE_FORM, pastTense);
     }
   }
 
-  if (!has("thirdPersonSingularPresentForm") && lemma !== "be") {
+  if (!has(WordFormField.THIRD_PERSON_SINGULAR_PRESENT_FORM) && lemma !== "be") {
     wordForms.registerNamedForm(
       verb,
-      "thirdPersonSingularPresentForm",
+      WordFormField.THIRD_PERSON_SINGULAR_PRESENT_FORM,
       lemma === "have" ? { value: "has" } : regularThirdPersonSingularForm(lemma),
     );
   }
 
-  if (!has("presentParticipleForm")) {
+  if (!has(WordFormField.PRESENT_PARTICIPLE_FORM)) {
     // "be" is the one lemma regularIngForm() gets wrong: its own
     // consonant-before-silent-e branch assumes there's a real stem left
     // once the "e" is dropped ("writ" + "ing"), but "be" is nothing but
@@ -330,22 +331,22 @@ export function generateVerbForms(verb: Verb, wordForms: WordForms | undefined):
     // so the general rule would produce "bing" instead of the real
     // "being". No other English verb is this short, so this is a
     // one-lemma exception, not a flaw in the general rule.
-    if (lemma === "be") wordForms.registerNamedForm(verb, "presentParticipleForm", { value: "being", formats: ["/ing$/i"] });
+    if (lemma === "be") wordForms.registerNamedForm(verb, WordFormField.PRESENT_PARTICIPLE_FORM, { value: "being", formats: ["/ing$/i"] });
     else {
       const presentParticiple = regularIngForm(lemma);
-      if (presentParticiple !== undefined) wordForms.registerNamedForm(verb, "presentParticipleForm", presentParticiple);
+      if (presentParticiple !== undefined) wordForms.registerNamedForm(verb, WordFormField.PRESENT_PARTICIPLE_FORM, presentParticiple);
     }
   }
 
-  if (!has("pastParticipleForm")) {
-    if (irregular !== undefined) wordForms.registerNamedForm(verb, "pastParticipleForm", { value: irregular.pastParticiple });
+  if (!has(WordFormField.PAST_PARTICIPLE_FORM)) {
+    if (irregular !== undefined) wordForms.registerNamedForm(verb, WordFormField.PAST_PARTICIPLE_FORM, { value: irregular.pastParticiple });
     else if (lemma !== "be") {
       const pastParticiple = regularEdForm(lemma);
-      if (pastParticiple !== undefined) wordForms.registerNamedForm(verb, "pastParticipleForm", pastParticiple);
+      if (pastParticiple !== undefined) wordForms.registerNamedForm(verb, WordFormField.PAST_PARTICIPLE_FORM, pastParticiple);
     }
   }
 
-  if (!has("bareInfinitiveForm")) wordForms.registerNamedForm(verb, "bareInfinitiveForm", { value: lemma });
+  if (!has(WordFormField.BARE_INFINITIVE_FORM)) wordForms.registerNamedForm(verb, WordFormField.BARE_INFINITIVE_FORM, { value: lemma });
 
   return verb;
 }

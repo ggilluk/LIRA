@@ -16,6 +16,7 @@ import {
 } from "../word_processor";
 import type { Adverb } from "../../data/entities/adverb";
 import { stringPatternsFor } from "../../data/matrices/pos_vs_wordform_matrice";
+import { WordFormField } from "../../data/enums/word_forms_enum";
 
 export type AdverbInit = Pick<Adverb, "text"> & Partial<Omit<Adverb, "text" | "partOfSpeech">>;
 
@@ -139,19 +140,19 @@ function isAdverbPeriphrasticComparison(lemma: string): boolean {
 export function generateAdverbForms(adverb: Adverb, gradable: boolean, wordForms: WordForms | undefined): Adverb {
   if (wordForms === undefined) return adverb;
   const lemma = adverb.text;
-  const has = (field: string): boolean => wordForms.formsOf(adverb).some((form) => form.field === field);
+  const has = (field: WordFormField): boolean => wordForms.formsOf(adverb).some((form) => form.field === field);
 
-  if (!has("positiveDegreeForm")) wordForms.registerNamedForm(adverb, "positiveDegreeForm", { value: lemma });
+  if (!has(WordFormField.POSITIVE_DEGREE_FORM)) wordForms.registerNamedForm(adverb, WordFormField.POSITIVE_DEGREE_FORM, { value: lemma });
 
   if (gradable) {
     const periphrastic = isAdverbPeriphrasticComparison(lemma);
-    if (!has("comparativeDegreeForm")) {
+    if (!has(WordFormField.COMPARATIVE_DEGREE_FORM)) {
       const comparative = periphrastic ? periphrasticDegreeForm(lemma, true) : regularDegreeForm(lemma, true);
-      if (comparative !== undefined) wordForms.registerNamedForm(adverb, "comparativeDegreeForm", comparative);
+      if (comparative !== undefined) wordForms.registerNamedForm(adverb, WordFormField.COMPARATIVE_DEGREE_FORM, comparative);
     }
-    if (!has("superlativeDegreeForm")) {
+    if (!has(WordFormField.SUPERLATIVE_DEGREE_FORM)) {
       const superlative = periphrastic ? periphrasticDegreeForm(lemma, false) : regularDegreeForm(lemma, false);
-      if (superlative !== undefined) wordForms.registerNamedForm(adverb, "superlativeDegreeForm", superlative);
+      if (superlative !== undefined) wordForms.registerNamedForm(adverb, WordFormField.SUPERLATIVE_DEGREE_FORM, superlative);
     }
   }
 

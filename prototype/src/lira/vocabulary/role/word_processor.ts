@@ -24,6 +24,7 @@ import type { Dictionary } from "../data/dictionary";
 import type { DefinitionWordReference } from "../data/definition_word_reference";
 import type { Word } from "../data/entities/word";
 import { newUuid } from "../data/uuid";
+import type { WordFormField } from "../data/enums/word_forms_enum";
 
 // Splits a definition's prose into its own word tokens -- deliberately a
 // local regex, not a Linguistics-Layer LinguisticLexer import: Vocabulary
@@ -160,7 +161,7 @@ export function definitionWords(definitionText: Text | undefined, dictionary: Di
  * `field` is the plain field name (e.g. "pluralNumberForm"), `reason`
  * says which of the two ways a claimed Text.formats entry failed. */
 export interface WordFormIssue {
-  field: string;
+  field: WordFormField;
   reason: string;
 }
 
@@ -192,7 +193,7 @@ export function parseFormatPattern(pattern: string): RegExp {
  * `text.value` itself doesn't actually match it (stale data -- the
  * value changed after `formats` was set, or the two were never
  * consistent to begin with). */
-export function validateFormText(field: string, text: Text, known: readonly string[]): WordFormIssue | undefined {
+export function validateFormText(field: WordFormField, text: Text, known: readonly string[]): WordFormIssue | undefined {
   if (text.formats === undefined) return undefined;
   for (const claimed of text.formats) {
     if (!known.includes(claimed)) {

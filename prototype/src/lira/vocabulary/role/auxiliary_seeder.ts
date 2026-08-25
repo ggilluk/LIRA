@@ -6,25 +6,24 @@ import { createAuxiliary, isAuxiliary } from "./processor/auxiliary_processor";
 import { createWordForm } from "./word_form_processor";
 import type { WordForms } from "../data/word_forms";
 import { identifier } from "../../value_objects";
+import { WordFormField } from "../data/enums/word_forms_enum";
 
-// The closed set of WordForm.field names this seeder ever authors --
-// kept as its own alias so AUXILIARY_LEMMAS below reads as plain data,
-// not a wall of string-literal unions repeated at every entry. Not
-// `keyof Auxiliary` any more (data/entities/auxiliary.ts's own
-// docstring on why Auxiliary itself declares no scalar fields at all
-// now) -- these are WordForm.field values, a loose string at the type
-// level, this union exists purely for authoring-time safety here.
+// The subset of WordFormField (data/enums/word_forms_enum.ts) this
+// seeder ever authors -- kept as its own alias so AUXILIARY_LEMMAS
+// below reads as plain data, not a wall of enum-member unions repeated
+// at every entry, and so a typo/wrong-POS member is caught here at
+// authoring time rather than only where the field is later read back.
 type AuxiliaryFormField =
-  | "bareInfinitiveForm"
-  | "presentTenseInstanceForm"
-  | "presentTenseForm"
-  | "thirdPersonSingularPresentForm"
-  | "pastTenseInstanceForm"
-  | "pastTenseForm"
-  | "presentParticipleForm"
-  | "pastParticipleForm"
-  | "modalForm"
-  | "secondaryModalForm";
+  | WordFormField.BARE_INFINITIVE_FORM
+  | WordFormField.PRESENT_TENSE_INSTANCE_FORM
+  | WordFormField.PRESENT_TENSE_FORM
+  | WordFormField.THIRD_PERSON_SINGULAR_PRESENT_FORM
+  | WordFormField.PAST_TENSE_INSTANCE_FORM
+  | WordFormField.PAST_TENSE_FORM
+  | WordFormField.PRESENT_PARTICIPLE_FORM
+  | WordFormField.PAST_PARTICIPLE_FORM
+  | WordFormField.MODAL_FORM
+  | WordFormField.SECONDARY_MODAL_FORM;
 
 interface AuxiliaryFormSeed {
   field: AuxiliaryFormField;
@@ -72,7 +71,7 @@ const AUXILIARY_LEMMAS: readonly AuxiliaryLemmaSeed[] = [
     definition: "The base form of the primary verb of existence or state, and the passive/progressive auxiliary",
     forms: [
       {
-        field: "bareInfinitiveForm",
+        field: WordFormField.BARE_INFINITIVE_FORM,
         text: "be",
         senses: [
           "Combines with a present participle to form the continuous/progressive aspect, marking an action or state as ongoing. Example: 'She will be running.'",
@@ -80,7 +79,7 @@ const AUXILIARY_LEMMAS: readonly AuxiliaryLemmaSeed[] = [
         ],
       },
       {
-        field: "presentTenseInstanceForm",
+        field: WordFormField.PRESENT_TENSE_INSTANCE_FORM,
         text: "am",
         senses: [
           "First person singular present form marking the continuous/progressive aspect. Example: 'I am running.'",
@@ -88,7 +87,7 @@ const AUXILIARY_LEMMAS: readonly AuxiliaryLemmaSeed[] = [
         ],
       },
       {
-        field: "presentTenseForm",
+        field: WordFormField.PRESENT_TENSE_FORM,
         text: "are",
         senses: [
           "Present form (we/you/they) marking the continuous/progressive aspect. Example: 'They are running.'",
@@ -96,7 +95,7 @@ const AUXILIARY_LEMMAS: readonly AuxiliaryLemmaSeed[] = [
         ],
       },
       {
-        field: "thirdPersonSingularPresentForm",
+        field: WordFormField.THIRD_PERSON_SINGULAR_PRESENT_FORM,
         text: "is",
         senses: [
           "Third person singular present form marking the continuous/progressive aspect. Example: 'She is running.'",
@@ -104,7 +103,7 @@ const AUXILIARY_LEMMAS: readonly AuxiliaryLemmaSeed[] = [
         ],
       },
       {
-        field: "pastTenseInstanceForm",
+        field: WordFormField.PAST_TENSE_INSTANCE_FORM,
         text: "was",
         senses: [
           "First/third person singular past form (I/he/she/it) marking the continuous/progressive aspect. Example: 'I was running.'",
@@ -112,7 +111,7 @@ const AUXILIARY_LEMMAS: readonly AuxiliaryLemmaSeed[] = [
         ],
       },
       {
-        field: "pastTenseForm",
+        field: WordFormField.PAST_TENSE_FORM,
         text: "were",
         senses: [
           "Past form (we/you/they), or subjunctive, marking the continuous/progressive aspect. Example: 'They were running.'",
@@ -120,14 +119,14 @@ const AUXILIARY_LEMMAS: readonly AuxiliaryLemmaSeed[] = [
         ],
       },
       {
-        field: "presentParticipleForm",
+        field: WordFormField.PRESENT_PARTICIPLE_FORM,
         text: "being",
         senses: [
           "The -ing form of 'be', used after another auxiliary to form the continuous passive, or the continuous aspect of 'be' itself. Example: 'He is being cautious.'",
         ],
       },
       {
-        field: "pastParticipleForm",
+        field: WordFormField.PAST_PARTICIPLE_FORM,
         text: "been",
         senses: ["Past participle of 'be', used after 'have' to form the perfect aspect of 'be'. Example: 'They have been here before.'"],
       },
@@ -139,31 +138,31 @@ const AUXILIARY_LEMMAS: readonly AuxiliaryLemmaSeed[] = [
     definition: "Auxiliary forming perfect tenses; also the base verb of possession",
     forms: [
       {
-        field: "bareInfinitiveForm",
+        field: WordFormField.BARE_INFINITIVE_FORM,
         text: "have",
         senses: [
           "Combines with a past participle to form the perfect aspect, marking an action or state as completed relative to a reference point. Example: 'I have finished.'",
         ],
       },
       {
-        field: "thirdPersonSingularPresentForm",
+        field: WordFormField.THIRD_PERSON_SINGULAR_PRESENT_FORM,
         text: "has",
         senses: ["Third person singular present form of the perfect-aspect auxiliary. Example: 'She has finished.'"],
       },
       {
-        field: "pastTenseForm",
+        field: WordFormField.PAST_TENSE_FORM,
         text: "had",
         senses: ["Past tense form of the perfect-aspect auxiliary, forming the past perfect. Example: 'They had finished before we arrived.'"],
       },
       {
-        field: "pastParticipleForm",
+        field: WordFormField.PAST_PARTICIPLE_FORM,
         text: "had",
         senses: [
           "Past participle of 'have', used after another 'have' to form the perfect of 'have' itself, or within a longer perfect/passive chain. Example: 'It would have had an effect.'",
         ],
       },
       {
-        field: "presentParticipleForm",
+        field: WordFormField.PRESENT_PARTICIPLE_FORM,
         text: "having",
         senses: ["The -ing form of 'have', forming the perfect participle/gerund of the perfect-aspect auxiliary. Example: 'Having finished, she left.'"],
       },
@@ -175,7 +174,7 @@ const AUXILIARY_LEMMAS: readonly AuxiliaryLemmaSeed[] = [
     definition: "Auxiliary used to form questions, negatives, and emphasis; also the base verb of performing an action",
     forms: [
       {
-        field: "bareInfinitiveForm",
+        field: WordFormField.BARE_INFINITIVE_FORM,
         text: "do",
         senses: [
           "Forms questions and negative statements for a main verb that has no auxiliary of its own (do-support). Example: 'Do you agree?' / 'I do not agree.'",
@@ -183,7 +182,7 @@ const AUXILIARY_LEMMAS: readonly AuxiliaryLemmaSeed[] = [
         ],
       },
       {
-        field: "thirdPersonSingularPresentForm",
+        field: WordFormField.THIRD_PERSON_SINGULAR_PRESENT_FORM,
         text: "does",
         senses: [
           "Third person singular present form of the do-support auxiliary. Example: 'Does she agree?' / 'She does not agree.'",
@@ -191,7 +190,7 @@ const AUXILIARY_LEMMAS: readonly AuxiliaryLemmaSeed[] = [
         ],
       },
       {
-        field: "pastTenseForm",
+        field: WordFormField.PAST_TENSE_FORM,
         text: "did",
         senses: [
           "Past tense form of the do-support auxiliary. Example: 'Did you agree?' / 'I did not agree.'",
@@ -207,14 +206,14 @@ const AUXILIARY_LEMMAS: readonly AuxiliaryLemmaSeed[] = [
       // non-auxiliary lexical use "having"/"been" already sit alongside
       // for "have"/"be" above, not a genuine do-support/emphatic sense.
       {
-        field: "presentParticipleForm",
+        field: WordFormField.PRESENT_PARTICIPLE_FORM,
         text: "doing",
         senses: [
           "The -ing form of 'do', used to form the continuous aspect when 'do' is the main verb of performing an action. Example: 'She was doing her best.'",
         ],
       },
       {
-        field: "pastParticipleForm",
+        field: WordFormField.PAST_PARTICIPLE_FORM,
         text: "done",
         senses: [
           "The past participle of 'do', used after 'have' to form the perfect aspect of 'do' as the main verb of performing an action, or as an adjective meaning finished/complete. Example: 'I have done what I could.' / 'The work is done.'",
@@ -228,7 +227,7 @@ const AUXILIARY_LEMMAS: readonly AuxiliaryLemmaSeed[] = [
     definition: "Modal auxiliary expressing ability or permission",
     forms: [
       {
-        field: "modalForm",
+        field: WordFormField.MODAL_FORM,
         text: "can",
         senses: [
           "Expresses present ability. Example: 'She can swim.'",
@@ -237,7 +236,7 @@ const AUXILIARY_LEMMAS: readonly AuxiliaryLemmaSeed[] = [
         ],
       },
       {
-        field: "secondaryModalForm",
+        field: WordFormField.SECONDARY_MODAL_FORM,
         text: "could",
         senses: [
           "Expresses past ability. Example: 'He could swim as a child.'",
@@ -254,7 +253,7 @@ const AUXILIARY_LEMMAS: readonly AuxiliaryLemmaSeed[] = [
     definition: "Modal auxiliary expressing permission or possibility",
     forms: [
       {
-        field: "modalForm",
+        field: WordFormField.MODAL_FORM,
         text: "may",
         senses: [
           "Expresses possibility. Example: 'It may rain.'",
@@ -263,7 +262,7 @@ const AUXILIARY_LEMMAS: readonly AuxiliaryLemmaSeed[] = [
         ],
       },
       {
-        field: "secondaryModalForm",
+        field: WordFormField.SECONDARY_MODAL_FORM,
         text: "might",
         senses: [
           "Expresses a weaker or more tentative possibility than 'may'. Example: 'It might rain.'",
@@ -279,7 +278,7 @@ const AUXILIARY_LEMMAS: readonly AuxiliaryLemmaSeed[] = [
     definition: "Modal auxiliary expressing future tense or formal obligation",
     forms: [
       {
-        field: "modalForm",
+        field: WordFormField.MODAL_FORM,
         text: "shall",
         senses: [
           "Expresses simple future, chiefly with 'I'/'we' in formal register. Example: 'I shall arrive at noon.'",
@@ -288,7 +287,7 @@ const AUXILIARY_LEMMAS: readonly AuxiliaryLemmaSeed[] = [
         ],
       },
       {
-        field: "secondaryModalForm",
+        field: WordFormField.SECONDARY_MODAL_FORM,
         text: "should",
         senses: [
           "Expresses advisability or recommendation. Example: 'You should rest.'",
@@ -305,7 +304,7 @@ const AUXILIARY_LEMMAS: readonly AuxiliaryLemmaSeed[] = [
     definition: "Modal auxiliary expressing future tense or intention",
     forms: [
       {
-        field: "modalForm",
+        field: WordFormField.MODAL_FORM,
         text: "will",
         senses: [
           "Expresses future prediction. Example: 'It will rain tomorrow.'",
@@ -314,7 +313,7 @@ const AUXILIARY_LEMMAS: readonly AuxiliaryLemmaSeed[] = [
         ],
       },
       {
-        field: "secondaryModalForm",
+        field: WordFormField.SECONDARY_MODAL_FORM,
         text: "would",
         senses: [
           "Expresses the result of a hypothetical condition. Example: 'If I had time, I would help.'",
@@ -332,7 +331,7 @@ const AUXILIARY_LEMMAS: readonly AuxiliaryLemmaSeed[] = [
     definition: "Modal auxiliary expressing necessity or strong obligation",
     forms: [
       {
-        field: "modalForm",
+        field: WordFormField.MODAL_FORM,
         text: "must",
         senses: [
           "Expresses strong necessity or obligation. Example: 'You must submit the form by Friday.'",
@@ -350,7 +349,7 @@ const AUXILIARY_LEMMAS: readonly AuxiliaryLemmaSeed[] = [
     definition: "Semi-modal auxiliary expressing obligation or advisability (used with 'to')",
     forms: [
       {
-        field: "modalForm",
+        field: WordFormField.MODAL_FORM,
         text: "ought",
         senses: [
           "Expresses moral duty or obligation, used with 'to'. Example: 'You ought to apologise.'",
@@ -377,7 +376,7 @@ const AUXILIARY_LEMMAS: readonly AuxiliaryLemmaSeed[] = [
       // separate past form) -- modalForm is the right field for that,
       // same shape as must/ought's own single invariant spelling.
       {
-        field: "modalForm",
+        field: WordFormField.MODAL_FORM,
         text: "need",
         senses: [
           "Used as an auxiliary, chiefly in negative and interrogative sentences, to express that something is or is not necessary. Example: 'You need not attend.' / 'Need I remind you?'",
@@ -396,7 +395,7 @@ const AUXILIARY_LEMMAS: readonly AuxiliaryLemmaSeed[] = [
       // out of scope here; this AUXILIARY Word covers only the invariant
       // NICE-property auxiliary use.
       {
-        field: "modalForm",
+        field: WordFormField.MODAL_FORM,
         text: "dare",
         senses: [
           "Used as an auxiliary, chiefly in negative and interrogative sentences, to express that someone has or does not have the courage or audacity to do something. Example: 'I dare not ask.' / 'Dare he object?'",

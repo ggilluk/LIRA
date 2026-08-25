@@ -5,6 +5,7 @@ import type { WordForm } from "./entities/word_form";
 import { copyWordFormWithFreshUuid, createWordForm, graphUuid, type WordFormAttributes } from "../role/word_form_processor";
 import { graphUuid as wordGraphUuid } from "../role/word_processor";
 import { graphUuid as senseGraphUuid } from "../role/sense_processor";
+import { WordFormField } from "./enums/word_forms_enum";
 
 /** WordForm storage: Senses's own exact counterpart one level down
  * (data/entities/word_form.ts's own docstring on why WordForm exists at all).
@@ -99,18 +100,19 @@ export class WordForms {
    * its own find-or-create on top of. Also how every reader resolves a
    * fact that moved off Word onto its base-lemma WordForm (`senseIds`/
    * `synsetId`/`contractionOf`, each field's own docstring, data/entities/word_form.ts):
-   * `wordForms.findNamedForm(word, "baseLemmaCanonicalForm")?.senseIds ?? []`,
+   * `wordForms.findNamedForm(word, WordFormField.BASE_LEMMA_CANONICAL_FORM)?.senseIds ?? []`,
    * baseLemmaFormOf() below's own shorthand for exactly that lookup. */
-  findNamedForm(word: Word, field: string): WordForm | undefined {
+  findNamedForm(word: Word, field: WordFormField): WordForm | undefined {
     return this.formsOf(word).find((form) => form.field === field);
   }
 
-  /** findNamedForm()'s own `"baseLemmaCanonicalForm"` shorthand --
-   * every Word's own base-lemma WordForm, when one has been registered
-   * (every real seeded Word has one; a bare `createWord()`/`createNoun()`
-   * result with no WordForms store involved at all does not). */
+  /** findNamedForm()'s own `WordFormField.BASE_LEMMA_CANONICAL_FORM`
+   * shorthand -- every Word's own base-lemma WordForm, when one has
+   * been registered (every real seeded Word has one; a bare
+   * `createWord()`/`createNoun()` result with no WordForms store
+   * involved at all does not). */
   baseLemmaFormOf(word: Word): WordForm | undefined {
-    return this.findNamedForm(word, "baseLemmaCanonicalForm");
+    return this.findNamedForm(word, WordFormField.BASE_LEMMA_CANONICAL_FORM);
   }
 
   /** Every Sense any of `word`'s own WordForms carries, unioned across
@@ -172,8 +174,8 @@ export class WordForms {
    * than creating a duplicate on a re-seed. The one primitive every
    * POS's own generateXForms()/hand-curated seeder call uses to store an
    * inflected spelling -- registerBaseLemmaForm() below is just this,
-   * specialised to `"baseLemmaCanonicalForm"`. */
-  registerNamedForm(word: Word, field: string, text: Text): WordForm {
+   * specialised to `WordFormField.BASE_LEMMA_CANONICAL_FORM`. */
+  registerNamedForm(word: Word, field: WordFormField, text: Text): WordForm {
     const existing = this.findNamedForm(word, field);
     if (existing !== undefined) return existing;
     const form = createWordForm({ field, text });
@@ -184,7 +186,7 @@ export class WordForms {
 
   /** Idempotent find-or-create: the WordForm standing for `word`'s own
    * base/canonical spelling -- registerNamedForm()'s own
-   * `"baseLemmaCanonicalForm"` special case. Reuses that name
+   * `WordFormField.BASE_LEMMA_CANONICAL_FORM` special case. Reuses that name
    * deliberately -- it's already the Word Form Matrix's own first row
    * name, so this converges onto that existing concept instead of
    * inventing a new one for the same idea.
@@ -212,7 +214,7 @@ export class WordForms {
    * simply reapplies the same values rather than needing its own
    * separate guard. */
   registerBaseLemmaForm(word: Word, text?: Text, extra?: WordFormAttributes): WordForm {
-    const form = this.registerNamedForm(word, "baseLemmaCanonicalForm", text ?? { value: word.text });
+    const form = this.registerNamedForm(word, WordFormField.BASE_LEMMA_CANONICAL_FORM, text ?? { value: word.text });
     if (extra !== undefined) Object.assign(form, extra);
     return form;
   }

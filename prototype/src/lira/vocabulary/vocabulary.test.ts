@@ -8,6 +8,7 @@ import { SemanticRelationshipSystemPropertyTensor } from "./data/semantic_relati
 import { SemanticRelationshipKind } from "./data/enums/semantic_relationship_kind";
 import { SemanticRelationshipProcessor } from "./role/semantic_relationship_processor";
 import { PartOfSpeech } from "./data/enums/part_of_speech";
+import { WordFormField } from "./data/enums/word_forms_enum";
 import type { Word } from "./data/entities/word";
 import { createWord, graphUuid as wordGraphUuid, validateFormText } from "./role/word_processor";
 import { stringPatternsFor } from "./data/matrices/pos_vs_wordform_matrice";
@@ -145,43 +146,43 @@ describe("classifyPhraseType", () => {
 
 describe("validateFormText (role/word_processor.ts) -- the mechanism every POS class's own validate<Class>() reuses", () => {
   it("treats an unset formats as always valid -- no claim made, nothing to check", () => {
-    expect(validateFormText("pluralNumberForm", { value: "dogs" }, stringPatternsFor("pluralNumberForm", PartOfSpeech.NOUN))).toBeUndefined();
+    expect(validateFormText(WordFormField.PLURAL_NUMBER_FORM, { value: "dogs" }, stringPatternsFor(WordFormField.PLURAL_NUMBER_FORM, PartOfSpeech.NOUN))).toBeUndefined();
   });
 
   it("accepts a recognised pattern that actually matches the value", () => {
     expect(
-      validateFormText("pluralNumberForm", { value: "dogs", formats: ["/s$/i"] }, stringPatternsFor("pluralNumberForm", PartOfSpeech.NOUN)),
+      validateFormText(WordFormField.PLURAL_NUMBER_FORM, { value: "dogs", formats: ["/s$/i"] }, stringPatternsFor(WordFormField.PLURAL_NUMBER_FORM, PartOfSpeech.NOUN)),
     ).toBeUndefined();
   });
 
   it("flags a recognised pattern that does not match the value", () => {
-    const issue = validateFormText("pluralNumberForm", { value: "dog", formats: ["/s$/i"] }, stringPatternsFor("pluralNumberForm", PartOfSpeech.NOUN));
+    const issue = validateFormText(WordFormField.PLURAL_NUMBER_FORM, { value: "dog", formats: ["/s$/i"] }, stringPatternsFor(WordFormField.PLURAL_NUMBER_FORM, PartOfSpeech.NOUN));
     expect(issue?.reason).toContain("does not match its own claimed format");
   });
 
   it("flags a format string that isn't a recognised String Pattern for that field", () => {
     // /ed$/i is a real pattern -- just not one of Noun.pluralNumberForm's own.
-    const issue = validateFormText("pluralNumberForm", { value: "walked", formats: ["/ed$/i"] }, stringPatternsFor("pluralNumberForm", PartOfSpeech.NOUN));
+    const issue = validateFormText(WordFormField.PLURAL_NUMBER_FORM, { value: "walked", formats: ["/ed$/i"] }, stringPatternsFor(WordFormField.PLURAL_NUMBER_FORM, PartOfSpeech.NOUN));
     expect(issue?.reason).toContain("is not a recognised String Pattern");
   });
 
   it("flags any claimed format on a field the matrix marks fully N/A (empty pattern array)", () => {
-    const issue = validateFormText("baseLemmaCanonicalForm", { value: "dog", formats: ["/s$/i"] }, []);
+    const issue = validateFormText(WordFormField.BASE_LEMMA_CANONICAL_FORM, { value: "dog", formats: ["/s$/i"] }, []);
     expect(issue?.reason).toContain("is not a recognised String Pattern");
   });
 
   it("scopes patterns per (class, field), not just per field name -- Noun's own apostrophe rule is not valid on Pronoun's identically-named field", () => {
     // Noun.possessiveCaseForm genuinely accepts this (the apostrophe rule).
     expect(
-      validateFormText("possessiveCaseForm", { value: "dog's", formats: ["/'s$/i"] }, stringPatternsFor("possessiveCaseForm", PartOfSpeech.NOUN)),
+      validateFormText(WordFormField.POSSESSIVE_CASE_FORM, { value: "dog's", formats: ["/'s$/i"] }, stringPatternsFor(WordFormField.POSSESSIVE_CASE_FORM, PartOfSpeech.NOUN)),
     ).toBeUndefined();
     // Pronoun.possessiveCaseForm only recognises the closed fixed-word
     // lookup (rule #3) -- the apostrophe rule is Noun's own case, not
     // Pronoun's (pronoun.ts's own docstring).
     const issue = validateFormText(
-      "possessiveCaseForm",
+      WordFormField.POSSESSIVE_CASE_FORM,
       { value: "dog's", formats: ["/'s$/i"] },
-      stringPatternsFor("possessiveCaseForm", PartOfSpeech.PRONOUN),
+      stringPatternsFor(WordFormField.POSSESSIVE_CASE_FORM, PartOfSpeech.PRONOUN),
     );
     expect(issue?.reason).toContain("is not a recognised String Pattern");
   });
@@ -189,9 +190,9 @@ describe("validateFormText (role/word_processor.ts) -- the mechanism every POS c
   it("recognises the doubled-final-consonant pattern (Past Tense Form rule #4)", () => {
     expect(
       validateFormText(
-        "pastTenseForm",
+        WordFormField.PAST_TENSE_FORM,
         { value: "stopped", formats: ["/([bcdfghjklmnpqrstvwxyz])\\1ed$/i"] },
-        stringPatternsFor("pastTenseForm", PartOfSpeech.VERB),
+        stringPatternsFor(WordFormField.PAST_TENSE_FORM, PartOfSpeech.VERB),
       ),
     ).toBeUndefined();
   });
@@ -205,70 +206,70 @@ describe("validate<Class>() -- each POS class's own attribute validation", () =>
   it("returns no issues when every populated field's formats are internally consistent", () => {
     const dog = createNoun({ text: "dog" });
     const wordForms = new WordForms();
-    wordForms.registerNamedForm(dog, "pluralNumberForm", { value: "dogs", formats: ["/s$/i"] });
-    wordForms.registerNamedForm(dog, "possessiveCaseForm", { value: "dog's", formats: ["/'s$/i"] });
+    wordForms.registerNamedForm(dog, WordFormField.PLURAL_NUMBER_FORM, { value: "dogs", formats: ["/s$/i"] });
+    wordForms.registerNamedForm(dog, WordFormField.POSSESSIVE_CASE_FORM, { value: "dog's", formats: ["/'s$/i"] });
     expect(validateNoun(dog, wordForms)).toEqual([]);
   });
 
   it("collects every issue found, not just the first", () => {
     const dog = createNoun({ text: "dog" });
     const wordForms = new WordForms();
-    wordForms.registerNamedForm(dog, "pluralNumberForm", { value: "dog", formats: ["/s$/i"] }); // value doesn't match
-    wordForms.registerNamedForm(dog, "possessiveCaseForm", { value: "dog's", formats: ["/self$/i"] }); // unrecognised pattern for this field
+    wordForms.registerNamedForm(dog, WordFormField.PLURAL_NUMBER_FORM, { value: "dog", formats: ["/s$/i"] }); // value doesn't match
+    wordForms.registerNamedForm(dog, WordFormField.POSSESSIVE_CASE_FORM, { value: "dog's", formats: ["/self$/i"] }); // unrecognised pattern for this field
     const issues = validateNoun(dog, wordForms);
     expect(issues).toHaveLength(2);
-    expect(issues.map((i) => i.field)).toEqual(["pluralNumberForm", "possessiveCaseForm"]);
+    expect(issues.map((i) => i.field)).toEqual([WordFormField.PLURAL_NUMBER_FORM, WordFormField.POSSESSIVE_CASE_FORM]);
   });
 
   it("checks a Verb's own fields, including the fully-regex-derivable Present Participle Form", () => {
     const run = createVerb({ text: "run" });
     const runWordForms = new WordForms();
-    runWordForms.registerNamedForm(run, "presentParticipleForm", { value: "running", formats: ["/([bcdfghjklmnpqrstvwxyz])\\1ing$/i"] });
+    runWordForms.registerNamedForm(run, WordFormField.PRESENT_PARTICIPLE_FORM, { value: "running", formats: ["/([bcdfghjklmnpqrstvwxyz])\\1ing$/i"] });
     expect(validateVerb(run, runWordForms)).toEqual([]);
 
     const badRun = createVerb({ text: "run" });
     const badRunWordForms = new WordForms();
-    badRunWordForms.registerNamedForm(badRun, "presentParticipleForm", { value: "runing", formats: ["/([bcdfghjklmnpqrstvwxyz])\\1ing$/i"] });
+    badRunWordForms.registerNamedForm(badRun, WordFormField.PRESENT_PARTICIPLE_FORM, { value: "runing", formats: ["/([bcdfghjklmnpqrstvwxyz])\\1ing$/i"] });
     expect(validateVerb(badRun, badRunWordForms)).toHaveLength(1);
   });
 
   it("checks an Adjective's degree forms", () => {
     const big = createAdjective({ text: "big" });
     const bigWordForms = new WordForms();
-    bigWordForms.registerNamedForm(big, "comparativeDegreeForm", { value: "bigger", formats: ["/([bcdfghjklmnpqrstvwxyz])\\1er$/i"] });
+    bigWordForms.registerNamedForm(big, WordFormField.COMPARATIVE_DEGREE_FORM, { value: "bigger", formats: ["/([bcdfghjklmnpqrstvwxyz])\\1er$/i"] });
     expect(validateAdjective(big, bigWordForms)).toEqual([]);
   });
 
   it("checks a Pronoun's own closed fixed-word-lookup fields", () => {
     const she = createPronoun({ text: "she" });
     const sheWordForms = new WordForms();
-    sheWordForms.registerNamedForm(she, "subjectiveCaseForm", { value: "she", formats: ["/^(I|we|you|he|she|it|they)$/i"] });
+    sheWordForms.registerNamedForm(she, WordFormField.SUBJECTIVE_CASE_FORM, { value: "she", formats: ["/^(I|we|you|he|she|it|they)$/i"] });
     expect(validatePronoun(she, sheWordForms)).toEqual([]);
 
     const badShe = createPronoun({ text: "she" });
     const badSheWordForms = new WordForms();
-    badSheWordForms.registerNamedForm(badShe, "subjectiveCaseForm", { value: "her", formats: ["/^(I|we|you|he|she|it|they)$/i"] });
+    badSheWordForms.registerNamedForm(badShe, WordFormField.SUBJECTIVE_CASE_FORM, { value: "her", formats: ["/^(I|we|you|he|she|it|they)$/i"] });
     expect(validatePronoun(badShe, badSheWordForms)).toHaveLength(1);
   });
 
   it("checks a Determiner's own possessive field, scoped to only the fixed-word rule", () => {
     const their = createDeterminer({ text: "their" });
     const theirWordForms = new WordForms();
-    theirWordForms.registerNamedForm(their, "possessiveCaseForm", { value: "their", formats: ["/^(my|mine|your|yours|his|her|hers|its|our|ours|their|theirs)$/i"] });
+    theirWordForms.registerNamedForm(their, WordFormField.POSSESSIVE_CASE_FORM, { value: "their", formats: ["/^(my|mine|your|yours|his|her|hers|its|our|ours|their|theirs)$/i"] });
     expect(validateDeterminer(their, theirWordForms)).toEqual([]);
   });
 
   it("checks baseLemmaCanonicalForm regardless of POS subtype, via the same per-form loop every validate<Class>() already runs (it's a real WordForm now, not a scalar Word field)", () => {
     const dog = createNoun({ text: "dog" });
     const dogWordForms = new WordForms();
-    dogWordForms.registerNamedForm(dog, "baseLemmaCanonicalForm", { value: "dog", formats: ["/s$/i"] });
+    dogWordForms.registerNamedForm(dog, WordFormField.BASE_LEMMA_CANONICAL_FORM, { value: "dog", formats: ["/s$/i"] });
     expect(validateNoun(dog, dogWordForms)).toHaveLength(1);
   });
 
   it("checks an Adverb's degree forms the same way as Adjective's", () => {
     const fast = createAdverb({ text: "fast" });
     const fastWordForms = new WordForms();
-    fastWordForms.registerNamedForm(fast, "superlativeDegreeForm", { value: "fastest", formats: ["/est$/i"] });
+    fastWordForms.registerNamedForm(fast, WordFormField.SUPERLATIVE_DEGREE_FORM, { value: "fastest", formats: ["/est$/i"] });
     expect(validateAdverb(fast, fastWordForms)).toEqual([]);
   });
 });
@@ -282,11 +283,11 @@ describe("generate<Class>Forms() -- deriving *_Form values from a base lemma", (
     generateNounForms(dog, wordForms);
     generateNounForms(box, wordForms);
     generateNounForms(city, wordForms);
-    expect(formTextOf(wordForms, dog, "pluralNumberForm")).toEqual({ value: "dogs", formats: ["/s$/i"] });
-    expect(formTextOf(wordForms, box, "pluralNumberForm")).toEqual({ value: "boxes", formats: ["/es$/i"] });
-    expect(formTextOf(wordForms, city, "pluralNumberForm")).toEqual({ value: "cities", formats: ["/ies$/i"] });
-    expect(formTextOf(wordForms, dog, "possessiveCaseForm")).toEqual({ value: "dog's", formats: ["/'s$/i"] });
-    expect(formTextOf(wordForms, dog, "singularNumberForm")).toEqual({ value: "dog" });
+    expect(formTextOf(wordForms, dog, WordFormField.PLURAL_NUMBER_FORM)).toEqual({ value: "dogs", formats: ["/s$/i"] });
+    expect(formTextOf(wordForms, box, WordFormField.PLURAL_NUMBER_FORM)).toEqual({ value: "boxes", formats: ["/es$/i"] });
+    expect(formTextOf(wordForms, city, WordFormField.PLURAL_NUMBER_FORM)).toEqual({ value: "cities", formats: ["/ies$/i"] });
+    expect(formTextOf(wordForms, dog, WordFormField.POSSESSIVE_CASE_FORM)).toEqual({ value: "dog's", formats: ["/'s$/i"] });
+    expect(formTextOf(wordForms, dog, WordFormField.SINGULAR_NUMBER_FORM)).toEqual({ value: "dog" });
   });
 
   it("Noun: abstains on pluralNumberForm for an f/fe-ending lemma -- roof/roofs vs. knife/knives can't be told apart from spelling alone", () => {
@@ -295,16 +296,16 @@ describe("generate<Class>Forms() -- deriving *_Form values from a base lemma", (
     const wordForms = new WordForms();
     generateNounForms(knife, wordForms);
     generateNounForms(roof, wordForms);
-    expect(formTextOf(wordForms, knife, "pluralNumberForm")).toBeUndefined();
-    expect(formTextOf(wordForms, roof, "pluralNumberForm")).toBeUndefined();
+    expect(formTextOf(wordForms, knife, WordFormField.PLURAL_NUMBER_FORM)).toBeUndefined();
+    expect(formTextOf(wordForms, roof, WordFormField.PLURAL_NUMBER_FORM)).toBeUndefined();
   });
 
   it("Noun: never overwrites a field already registered", () => {
     const child = createNoun({ text: "child" });
     const wordForms = new WordForms();
-    wordForms.registerNamedForm(child, "pluralNumberForm", { value: "children" });
+    wordForms.registerNamedForm(child, WordFormField.PLURAL_NUMBER_FORM, { value: "children" });
     generateNounForms(child, wordForms);
-    expect(formTextOf(wordForms, child, "pluralNumberForm")).toEqual({ value: "children" });
+    expect(formTextOf(wordForms, child, WordFormField.PLURAL_NUMBER_FORM)).toEqual({ value: "children" });
   });
 
   it("Noun: no-ops with no WordForms store -- produces a Noun with no inflected forms registered anywhere", () => {
@@ -316,31 +317,31 @@ describe("generate<Class>Forms() -- deriving *_Form values from a base lemma", (
     const walk = createVerb({ text: "walk" });
     const walkForms = new WordForms();
     generateVerbForms(walk, walkForms);
-    expect(formTextOf(walkForms, walk, "pastTenseForm")).toEqual({ value: "walked", formats: ["/ed$/i"] });
-    expect(formTextOf(walkForms, walk, "pastParticipleForm")).toEqual({ value: "walked", formats: ["/ed$/i"] });
-    expect(formTextOf(walkForms, walk, "thirdPersonSingularPresentForm")).toEqual({ value: "walks", formats: ["/s$/i"] });
-    expect(formTextOf(walkForms, walk, "presentParticipleForm")).toEqual({ value: "walking", formats: ["/ing$/i"] });
-    expect(formTextOf(walkForms, walk, "presentTenseForm")).toEqual({ value: "walk" });
-    expect(formTextOf(walkForms, walk, "bareInfinitiveForm")).toEqual({ value: "walk" });
+    expect(formTextOf(walkForms, walk, WordFormField.PAST_TENSE_FORM)).toEqual({ value: "walked", formats: ["/ed$/i"] });
+    expect(formTextOf(walkForms, walk, WordFormField.PAST_PARTICIPLE_FORM)).toEqual({ value: "walked", formats: ["/ed$/i"] });
+    expect(formTextOf(walkForms, walk, WordFormField.THIRD_PERSON_SINGULAR_PRESENT_FORM)).toEqual({ value: "walks", formats: ["/s$/i"] });
+    expect(formTextOf(walkForms, walk, WordFormField.PRESENT_PARTICIPLE_FORM)).toEqual({ value: "walking", formats: ["/ing$/i"] });
+    expect(formTextOf(walkForms, walk, WordFormField.PRESENT_TENSE_FORM)).toEqual({ value: "walk" });
+    expect(formTextOf(walkForms, walk, WordFormField.BARE_INFINITIVE_FORM)).toEqual({ value: "walk" });
 
     const love = createVerb({ text: "love" });
     const loveForms = new WordForms();
     generateVerbForms(love, loveForms);
-    expect(formTextOf(loveForms, love, "pastTenseForm")).toEqual({ value: "loved", formats: ["/ed$/i"] });
+    expect(formTextOf(loveForms, love, WordFormField.PAST_TENSE_FORM)).toEqual({ value: "loved", formats: ["/ed$/i"] });
 
     const try_ = createVerb({ text: "try" });
     const tryForms = new WordForms();
     generateVerbForms(try_, tryForms);
-    expect(formTextOf(tryForms, try_, "pastTenseForm")).toEqual({ value: "tried", formats: ["/ied$/i"] });
-    expect(formTextOf(tryForms, try_, "thirdPersonSingularPresentForm")).toEqual({ value: "tries", formats: ["/ies$/i"] });
+    expect(formTextOf(tryForms, try_, WordFormField.PAST_TENSE_FORM)).toEqual({ value: "tried", formats: ["/ied$/i"] });
+    expect(formTextOf(tryForms, try_, WordFormField.THIRD_PERSON_SINGULAR_PRESENT_FORM)).toEqual({ value: "tries", formats: ["/ies$/i"] });
   });
 
   it("Verb: doubles the final consonant for a monosyllabic CVC lemma, but abstains for a polysyllabic one that ends the same way", () => {
     const stop = createVerb({ text: "stop" });
     const stopForms = new WordForms();
     generateVerbForms(stop, stopForms);
-    expect(formTextOf(stopForms, stop, "pastTenseForm")).toEqual({ value: "stopped", formats: ["/([bcdfghjklmnpqrstvwxyz])\\1ed$/i"] });
-    expect(formTextOf(stopForms, stop, "presentParticipleForm")).toEqual({ value: "stopping", formats: ["/([bcdfghjklmnpqrstvwxyz])\\1ing$/i"] });
+    expect(formTextOf(stopForms, stop, WordFormField.PAST_TENSE_FORM)).toEqual({ value: "stopped", formats: ["/([bcdfghjklmnpqrstvwxyz])\\1ed$/i"] });
+    expect(formTextOf(stopForms, stop, WordFormField.PRESENT_PARTICIPLE_FORM)).toEqual({ value: "stopping", formats: ["/([bcdfghjklmnpqrstvwxyz])\\1ing$/i"] });
 
     // "differ"/"open" end the identical consonant-vowel-consonant shape
     // "stop" does, but are two syllables, not one -- real English
@@ -351,20 +352,20 @@ describe("generate<Class>Forms() -- deriving *_Form values from a base lemma", (
     const differ = createVerb({ text: "differ" });
     const differForms = new WordForms();
     generateVerbForms(differ, differForms);
-    expect(formTextOf(differForms, differ, "pastTenseForm")).toBeUndefined();
-    expect(formTextOf(differForms, differ, "presentParticipleForm")).toBeUndefined();
+    expect(formTextOf(differForms, differ, WordFormField.PAST_TENSE_FORM)).toBeUndefined();
+    expect(formTextOf(differForms, differ, WordFormField.PRESENT_PARTICIPLE_FORM)).toBeUndefined();
   });
 
   it("Verb: presentParticipleForm's ie -> ying rule, and abstains on the vowel-before-e silent-e ambiguity", () => {
     const lie = createVerb({ text: "lie" });
     const lieForms = new WordForms();
     generateVerbForms(lie, lieForms);
-    expect(formTextOf(lieForms, lie, "presentParticipleForm")).toEqual({ value: "lying", formats: ["/ying$/i"] });
+    expect(formTextOf(lieForms, lie, WordFormField.PRESENT_PARTICIPLE_FORM)).toEqual({ value: "lying", formats: ["/ying$/i"] });
 
     const tie = createVerb({ text: "tie" });
     const tieForms = new WordForms();
     generateVerbForms(tie, tieForms);
-    expect(formTextOf(tieForms, tie, "presentParticipleForm")).toEqual({ value: "tying", formats: ["/ying$/i"] });
+    expect(formTextOf(tieForms, tie, WordFormField.PRESENT_PARTICIPLE_FORM)).toEqual({ value: "tying", formats: ["/ying$/i"] });
 
     // "agree"/"argue" both end in a vowel immediately before the final
     // "e" -- English keeps the e for some ("agreeing") and drops it for
@@ -373,42 +374,42 @@ describe("generate<Class>Forms() -- deriving *_Form values from a base lemma", (
     const agree = createVerb({ text: "agree" });
     const agreeForms = new WordForms();
     generateVerbForms(agree, agreeForms);
-    expect(formTextOf(agreeForms, agree, "presentParticipleForm")).toBeUndefined();
+    expect(formTextOf(agreeForms, agree, WordFormField.PRESENT_PARTICIPLE_FORM)).toBeUndefined();
 
     const argue = createVerb({ text: "argue" });
     const argueForms = new WordForms();
     generateVerbForms(argue, argueForms);
-    expect(formTextOf(argueForms, argue, "presentParticipleForm")).toBeUndefined();
+    expect(formTextOf(argueForms, argue, WordFormField.PRESENT_PARTICIPLE_FORM)).toBeUndefined();
   });
 
   it("Verb: checks IRREGULAR_VERB_FORMS before ever falling through to the regular -ed rules", () => {
     const eat = createVerb({ text: "eat" });
     const eatForms = new WordForms();
     generateVerbForms(eat, eatForms);
-    expect(formTextOf(eatForms, eat, "pastTenseForm")).toEqual({ value: "ate" });
-    expect(formTextOf(eatForms, eat, "pastParticipleForm")).toEqual({ value: "eaten" });
+    expect(formTextOf(eatForms, eat, WordFormField.PAST_TENSE_FORM)).toEqual({ value: "ate" });
+    expect(formTextOf(eatForms, eat, WordFormField.PAST_PARTICIPLE_FORM)).toEqual({ value: "eaten" });
 
     const run = createVerb({ text: "run" });
     const runForms = new WordForms();
     generateVerbForms(run, runForms);
-    expect(formTextOf(runForms, run, "pastTenseForm")).toEqual({ value: "ran" });
-    expect(formTextOf(runForms, run, "pastParticipleForm")).toEqual({ value: "run" });
+    expect(formTextOf(runForms, run, WordFormField.PAST_TENSE_FORM)).toEqual({ value: "ran" });
+    expect(formTextOf(runForms, run, WordFormField.PAST_PARTICIPLE_FORM)).toEqual({ value: "run" });
   });
 
   it("Verb: \"have\" and \"be\" both get hand-written irregular values no general rule could produce", () => {
     const have = createVerb({ text: "have" });
     const haveForms = new WordForms();
     generateVerbForms(have, haveForms);
-    expect(formTextOf(haveForms, have, "pastTenseForm")).toEqual({ value: "had" });
-    expect(formTextOf(haveForms, have, "thirdPersonSingularPresentForm")).toEqual({ value: "has" });
+    expect(formTextOf(haveForms, have, WordFormField.PAST_TENSE_FORM)).toEqual({ value: "had" });
+    expect(formTextOf(haveForms, have, WordFormField.THIRD_PERSON_SINGULAR_PRESENT_FORM)).toEqual({ value: "has" });
 
     const be = createVerb({ text: "be" });
     const beForms = new WordForms();
     generateVerbForms(be, beForms);
-    expect(formTextOf(beForms, be, "pastTenseForm")).toBeUndefined();
-    expect(formTextOf(beForms, be, "pastParticipleForm")).toBeUndefined();
-    expect(formTextOf(beForms, be, "thirdPersonSingularPresentForm")).toBeUndefined();
-    expect(formTextOf(beForms, be, "presentParticipleForm")).toEqual({ value: "being", formats: ["/ing$/i"] });
+    expect(formTextOf(beForms, be, WordFormField.PAST_TENSE_FORM)).toBeUndefined();
+    expect(formTextOf(beForms, be, WordFormField.PAST_PARTICIPLE_FORM)).toBeUndefined();
+    expect(formTextOf(beForms, be, WordFormField.THIRD_PERSON_SINGULAR_PRESENT_FORM)).toBeUndefined();
+    expect(formTextOf(beForms, be, WordFormField.PRESENT_PARTICIPLE_FORM)).toEqual({ value: "being", formats: ["/ing$/i"] });
   });
 
   it("Verb: no-ops with no WordForms store -- produces a Verb with no inflected forms registered anywhere", () => {
@@ -424,34 +425,34 @@ describe("generate<Class>Forms() -- deriving *_Form values from a base lemma", (
     const big = createAdjective({ text: "big" });
     const bigForms = new WordForms();
     generateAdjectiveForms(big, true, bigForms);
-    expect(formTextOf(bigForms, big, "comparativeDegreeForm")).toEqual({ value: "bigger", formats: ["/([bcdfghjklmnpqrstvwxyz])\\1er$/i"] });
-    expect(formTextOf(bigForms, big, "superlativeDegreeForm")).toEqual({ value: "biggest", formats: ["/([bcdfghjklmnpqrstvwxyz])\\1est$/i"] });
+    expect(formTextOf(bigForms, big, WordFormField.COMPARATIVE_DEGREE_FORM)).toEqual({ value: "bigger", formats: ["/([bcdfghjklmnpqrstvwxyz])\\1er$/i"] });
+    expect(formTextOf(bigForms, big, WordFormField.SUPERLATIVE_DEGREE_FORM)).toEqual({ value: "biggest", formats: ["/([bcdfghjklmnpqrstvwxyz])\\1est$/i"] });
 
     const happy = createAdjective({ text: "happy" });
     const happyForms = new WordForms();
     generateAdjectiveForms(happy, true, happyForms);
-    expect(formTextOf(happyForms, happy, "comparativeDegreeForm")).toEqual({ value: "happier", formats: ["/ier$/i"] });
-    expect(formTextOf(happyForms, happy, "superlativeDegreeForm")).toEqual({ value: "happiest", formats: ["/iest$/i"] });
+    expect(formTextOf(happyForms, happy, WordFormField.COMPARATIVE_DEGREE_FORM)).toEqual({ value: "happier", formats: ["/ier$/i"] });
+    expect(formTextOf(happyForms, happy, WordFormField.SUPERLATIVE_DEGREE_FORM)).toEqual({ value: "happiest", formats: ["/iest$/i"] });
 
     const large = createAdjective({ text: "large" });
     const largeForms = new WordForms();
     generateAdjectiveForms(large, true, largeForms);
-    expect(formTextOf(largeForms, large, "comparativeDegreeForm")).toEqual({ value: "larger", formats: ["/er$/i"] });
+    expect(formTextOf(largeForms, large, WordFormField.COMPARATIVE_DEGREE_FORM)).toEqual({ value: "larger", formats: ["/er$/i"] });
 
     const fast = createAdverb({ text: "fast" });
     const fastForms = new WordForms();
     generateAdverbForms(fast, true, fastForms);
-    expect(formTextOf(fastForms, fast, "comparativeDegreeForm")).toEqual({ value: "faster", formats: ["/er$/i"] });
-    expect(formTextOf(fastForms, fast, "superlativeDegreeForm")).toEqual({ value: "fastest", formats: ["/est$/i"] });
+    expect(formTextOf(fastForms, fast, WordFormField.COMPARATIVE_DEGREE_FORM)).toEqual({ value: "faster", formats: ["/er$/i"] });
+    expect(formTextOf(fastForms, fast, WordFormField.SUPERLATIVE_DEGREE_FORM)).toEqual({ value: "fastest", formats: ["/est$/i"] });
   });
 
   it("Adjective: a non-gradable adjective only ever gets a Positive Degree Form -- no mechanically well-formed but invalid Comparative/Superlative", () => {
     const ablative = createAdjective({ text: "ablative" });
     const ablativeForms = new WordForms();
     generateAdjectiveForms(ablative, false, ablativeForms);
-    expect(formTextOf(ablativeForms, ablative, "positiveDegreeForm")).toEqual({ value: "ablative" });
-    expect(formTextOf(ablativeForms, ablative, "comparativeDegreeForm")).toBeUndefined();
-    expect(formTextOf(ablativeForms, ablative, "superlativeDegreeForm")).toBeUndefined();
+    expect(formTextOf(ablativeForms, ablative, WordFormField.POSITIVE_DEGREE_FORM)).toEqual({ value: "ablative" });
+    expect(formTextOf(ablativeForms, ablative, WordFormField.COMPARATIVE_DEGREE_FORM)).toBeUndefined();
+    expect(formTextOf(ablativeForms, ablative, WordFormField.SUPERLATIVE_DEGREE_FORM)).toBeUndefined();
     expect(validateAdjective(ablative, ablativeForms)).toEqual([]);
   });
 
@@ -460,23 +461,23 @@ describe("generate<Class>Forms() -- deriving *_Form values from a base lemma", (
     const tall = createAdjective({ text: "tall" });
     const tallForms = new WordForms();
     generateAdjectiveForms(tall, true, tallForms);
-    expect(formTextOf(tallForms, tall, "comparativeDegreeForm")).toEqual({ value: "taller", formats: ["/er$/i"] });
-    expect(formTextOf(tallForms, tall, "superlativeDegreeForm")).toEqual({ value: "tallest", formats: ["/est$/i"] });
+    expect(formTextOf(tallForms, tall, WordFormField.COMPARATIVE_DEGREE_FORM)).toEqual({ value: "taller", formats: ["/er$/i"] });
+    expect(formTextOf(tallForms, tall, WordFormField.SUPERLATIVE_DEGREE_FORM)).toEqual({ value: "tallest", formats: ["/est$/i"] });
 
     // 2 syllables ending in "ow" -- still synthetic, one of English's
     // own real exceptions to "long words use more/most".
     const narrow = createAdjective({ text: "narrow" });
     const narrowForms = new WordForms();
     generateAdjectiveForms(narrow, true, narrowForms);
-    expect(formTextOf(narrowForms, narrow, "comparativeDegreeForm")).toEqual({ value: "narrower", formats: ["/er$/i"] });
-    expect(formTextOf(narrowForms, narrow, "superlativeDegreeForm")).toEqual({ value: "narrowest", formats: ["/est$/i"] });
+    expect(formTextOf(narrowForms, narrow, WordFormField.COMPARATIVE_DEGREE_FORM)).toEqual({ value: "narrower", formats: ["/er$/i"] });
+    expect(formTextOf(narrowForms, narrow, WordFormField.SUPERLATIVE_DEGREE_FORM)).toEqual({ value: "narrowest", formats: ["/est$/i"] });
 
     // 3 syllables, no synthetic-eligible ending -- periphrastic.
     const accepting = createAdjective({ text: "accepting" });
     const acceptingForms = new WordForms();
     generateAdjectiveForms(accepting, true, acceptingForms);
-    expect(formTextOf(acceptingForms, accepting, "comparativeDegreeForm")).toEqual({ value: "more accepting", formats: ["/^more\\s+.+$/i"] });
-    expect(formTextOf(acceptingForms, accepting, "superlativeDegreeForm")).toEqual({ value: "most accepting", formats: ["/^most\\s+.+$/i"] });
+    expect(formTextOf(acceptingForms, accepting, WordFormField.COMPARATIVE_DEGREE_FORM)).toEqual({ value: "more accepting", formats: ["/^more\\s+.+$/i"] });
+    expect(formTextOf(acceptingForms, accepting, WordFormField.SUPERLATIVE_DEGREE_FORM)).toEqual({ value: "most accepting", formats: ["/^most\\s+.+$/i"] });
     expect(validateAdjective(accepting, acceptingForms)).toEqual([]);
   });
 
@@ -484,9 +485,9 @@ describe("generate<Class>Forms() -- deriving *_Form values from a base lemma", (
     const anisotropically = createAdverb({ text: "anisotropically" });
     const anisotropicallyForms = new WordForms();
     generateAdverbForms(anisotropically, false, anisotropicallyForms);
-    expect(formTextOf(anisotropicallyForms, anisotropically, "positiveDegreeForm")).toEqual({ value: "anisotropically" });
-    expect(formTextOf(anisotropicallyForms, anisotropically, "comparativeDegreeForm")).toBeUndefined();
-    expect(formTextOf(anisotropicallyForms, anisotropically, "superlativeDegreeForm")).toBeUndefined();
+    expect(formTextOf(anisotropicallyForms, anisotropically, WordFormField.POSITIVE_DEGREE_FORM)).toEqual({ value: "anisotropically" });
+    expect(formTextOf(anisotropicallyForms, anisotropically, WordFormField.COMPARATIVE_DEGREE_FORM)).toBeUndefined();
+    expect(formTextOf(anisotropicallyForms, anisotropically, WordFormField.SUPERLATIVE_DEGREE_FORM)).toBeUndefined();
     expect(validateAdverb(anisotropically, anisotropicallyForms)).toEqual([]);
   });
 
@@ -494,16 +495,16 @@ describe("generate<Class>Forms() -- deriving *_Form values from a base lemma", (
     const scarcely = createAdverb({ text: "scarcely" });
     const scarcelyForms = new WordForms();
     generateAdverbForms(scarcely, true, scarcelyForms);
-    expect(formTextOf(scarcelyForms, scarcely, "comparativeDegreeForm")).toEqual({ value: "more scarcely", formats: ["/^more\\s+.+$/i"] });
-    expect(formTextOf(scarcelyForms, scarcely, "superlativeDegreeForm")).toEqual({ value: "most scarcely", formats: ["/^most\\s+.+$/i"] });
+    expect(formTextOf(scarcelyForms, scarcely, WordFormField.COMPARATIVE_DEGREE_FORM)).toEqual({ value: "more scarcely", formats: ["/^more\\s+.+$/i"] });
+    expect(formTextOf(scarcelyForms, scarcely, WordFormField.SUPERLATIVE_DEGREE_FORM)).toEqual({ value: "most scarcely", formats: ["/^most\\s+.+$/i"] });
     expect(validateAdverb(scarcely, scarcelyForms)).toEqual([]);
 
     // A non-"-ly" adverb still goes through the ordinary synthetic path.
     const fast = createAdverb({ text: "fast" });
     const fastForms = new WordForms();
     generateAdverbForms(fast, true, fastForms);
-    expect(formTextOf(fastForms, fast, "comparativeDegreeForm")).toEqual({ value: "faster", formats: ["/er$/i"] });
-    expect(formTextOf(fastForms, fast, "superlativeDegreeForm")).toEqual({ value: "fastest", formats: ["/est$/i"] });
+    expect(formTextOf(fastForms, fast, WordFormField.COMPARATIVE_DEGREE_FORM)).toEqual({ value: "faster", formats: ["/er$/i"] });
+    expect(formTextOf(fastForms, fast, WordFormField.SUPERLATIVE_DEGREE_FORM)).toEqual({ value: "fastest", formats: ["/est$/i"] });
   });
 
   it("Adjective/Adverb: no-ops with no WordForms store -- produce a Word with no inflected forms registered anywhere", () => {
@@ -659,11 +660,11 @@ describe("generate<Class>Forms() -- deriving *_Form values from a base lemma", (
     });
 
     const dog = dictionary.lookupAll("dog").find(isNoun);
-    expect(dog && formTextOf(wordForms, dog, "pluralNumberForm")).toEqual({ value: "dogs", formats: ["/s$/i"] });
+    expect(dog && formTextOf(wordForms, dog, WordFormField.PLURAL_NUMBER_FORM)).toEqual({ value: "dogs", formats: ["/s$/i"] });
 
     const run = dictionary.lookupAll("run").find(isVerb);
-    expect(run && formTextOf(wordForms, run, "pastTenseForm")).toEqual({ value: "ran" });
-    expect(run && formTextOf(wordForms, run, "pastParticipleForm")).toEqual({ value: "run" });
+    expect(run && formTextOf(wordForms, run, WordFormField.PAST_TENSE_FORM)).toEqual({ value: "ran" });
+    expect(run && formTextOf(wordForms, run, WordFormField.PAST_PARTICIPLE_FORM)).toEqual({ value: "run" });
   }, 30000);
 
   it("populates each seeded Sense's own senseDomainTag from its synset's real WordNet lexicographer-file category", async () => {
@@ -940,7 +941,7 @@ describe("PartOfSpeechIdentifier / DictionaryProcessor: inflected-form fallback"
     expect(wordGraphUuid(candidates[0].word!)).toBe(wordGraphUuid(run));
     expect(candidates[0].source).toBe(IdentificationSource.INFLECTED_FORM);
     expect(candidates[0].confidence).toBeLessThan(1.0);
-    expect(candidates[0].reason).toContain("pastTenseForm");
+    expect(candidates[0].reason).toContain(WordFormField.PAST_TENSE_FORM);
   });
 
   it("finds a Verb by its own irregular past-tense form via the WordForms store, now that Verb no longer writes a scalar *_Form field", () => {
@@ -954,7 +955,7 @@ describe("PartOfSpeechIdentifier / DictionaryProcessor: inflected-form fallback"
     const matches = wordForms.lookupByText("ran");
     expect(matches).toHaveLength(1);
     expect(wordGraphUuid(matches[0].word)).toBe(wordGraphUuid(run));
-    expect(matches[0].form.field).toBe("pastTenseForm");
+    expect(matches[0].form.field).toBe(WordFormField.PAST_TENSE_FORM);
   });
 
   it("an exact match always wins outright over an inflected match, even when both exist for the same surface text", () => {
@@ -1015,7 +1016,7 @@ describe("PartOfSpeechIdentifier / DictionaryProcessor: inflected-form fallback"
     expect(candidates).toHaveLength(1);
     expect(wordGraphUuid(candidates[0].word!)).toBe(wordGraphUuid(dog));
     expect(candidates[0].source).toBe(IdentificationSource.INFLECTED_FORM);
-    expect(candidates[0].reason).toContain("pluralNumberForm");
+    expect(candidates[0].reason).toContain(WordFormField.PLURAL_NUMBER_FORM);
   });
 });
 
@@ -1532,9 +1533,9 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // (monosyllabic -> "-er"/"-est", isPeriphrasticComparison's own
     // docstring).
     expect(isAdjective(big)).toBe(true);
-    expect(formTextOf(wordForms, big, "positiveDegreeForm")).toEqual({ value: "big" });
-    expect(formTextOf(wordForms, big, "comparativeDegreeForm")).toEqual({ value: "bigger", formats: ["/([bcdfghjklmnpqrstvwxyz])\\1er$/i"] });
-    expect(formTextOf(wordForms, big, "superlativeDegreeForm")).toEqual({ value: "biggest", formats: ["/([bcdfghjklmnpqrstvwxyz])\\1est$/i"] });
+    expect(formTextOf(wordForms, big, WordFormField.POSITIVE_DEGREE_FORM)).toEqual({ value: "big" });
+    expect(formTextOf(wordForms, big, WordFormField.COMPARATIVE_DEGREE_FORM)).toEqual({ value: "bigger", formats: ["/([bcdfghjklmnpqrstvwxyz])\\1er$/i"] });
+    expect(formTextOf(wordForms, big, WordFormField.SUPERLATIVE_DEGREE_FORM)).toEqual({ value: "biggest", formats: ["/([bcdfghjklmnpqrstvwxyz])\\1est$/i"] });
 
     // "tall" (02393670-a) carries its own real Attribute pointer to
     // "stature, height" (05009517-n) -- this is this feature's own
@@ -1548,9 +1549,9 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // non-gradable.
     const tall = dictionary.lookupAll("tall").find((w) => isAdjective(w)) as Adjective;
     expect(tall).toBeDefined();
-    expect(formTextOf(wordForms, tall, "positiveDegreeForm")).toEqual({ value: "tall" });
-    expect(formTextOf(wordForms, tall, "comparativeDegreeForm")).toEqual({ value: "taller", formats: ["/er$/i"] });
-    expect(formTextOf(wordForms, tall, "superlativeDegreeForm")).toEqual({ value: "tallest", formats: ["/est$/i"] });
+    expect(formTextOf(wordForms, tall, WordFormField.POSITIVE_DEGREE_FORM)).toEqual({ value: "tall" });
+    expect(formTextOf(wordForms, tall, WordFormField.COMPARATIVE_DEGREE_FORM)).toEqual({ value: "taller", formats: ["/er$/i"] });
+    expect(formTextOf(wordForms, tall, WordFormField.SUPERLATIVE_DEGREE_FORM)).toEqual({ value: "tallest", formats: ["/est$/i"] });
 
     // "wooden" (both real WordNet senses, 01145111-a "lacking ease or
     // grace" and 02586927-a "made ... of wood") carries no Attribute
@@ -1560,9 +1561,9 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // invalid "woodener"/"woodenest" (the exact bug this Gradability
     // Update closes).
     const wooden = dictionary.lookup("wooden")! as Adjective;
-    expect(formTextOf(wordForms, wooden, "positiveDegreeForm")).toEqual({ value: "wooden" });
-    expect(formTextOf(wordForms, wooden, "comparativeDegreeForm")).toBeUndefined();
-    expect(formTextOf(wordForms, wooden, "superlativeDegreeForm")).toBeUndefined();
+    expect(formTextOf(wordForms, wooden, WordFormField.POSITIVE_DEGREE_FORM)).toEqual({ value: "wooden" });
+    expect(formTextOf(wordForms, wooden, WordFormField.COMPARATIVE_DEGREE_FORM)).toBeUndefined();
+    expect(formTextOf(wordForms, wooden, WordFormField.SUPERLATIVE_DEGREE_FORM)).toBeUndefined();
 
     // Adverb Gradability Update (role/processor/adverb_processor.ts): "scarcely" (00003317-r)
     // carries a real WordNet Pertainym fact to "scarce" (adjective) --
@@ -1577,17 +1578,17 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // "y" rule (there is no real "scarcelier").
     const scarcely = dictionary.lookup("scarcely")! as Adverb;
     expect(isAdverb(scarcely)).toBe(true);
-    expect(formTextOf(wordForms, scarcely, "comparativeDegreeForm")).toEqual({ value: "more scarcely", formats: ["/^more\\s+.+$/i"] });
-    expect(formTextOf(wordForms, scarcely, "superlativeDegreeForm")).toEqual({ value: "most scarcely", formats: ["/^most\\s+.+$/i"] });
+    expect(formTextOf(wordForms, scarcely, WordFormField.COMPARATIVE_DEGREE_FORM)).toEqual({ value: "more scarcely", formats: ["/^more\\s+.+$/i"] });
+    expect(formTextOf(wordForms, scarcely, WordFormField.SUPERLATIVE_DEGREE_FORM)).toEqual({ value: "most scarcely", formats: ["/^most\\s+.+$/i"] });
     expect(semanticRelated(scarcely, SemanticRelationshipKind.PERTAINYM, "outgoing").map((w) => w.text)).toContain("scarce");
 
     // "anisotropically" (00003675-r) carries a Pertainym fact to
     // "anisotropic", which carries no Attribute fact of its own --
     // non-gradable, correctly inherited through the Pertainym hop.
     const anisotropically = dictionary.lookup("anisotropically")! as Adverb;
-    expect(formTextOf(wordForms, anisotropically, "positiveDegreeForm")).toEqual({ value: "anisotropically" });
-    expect(formTextOf(wordForms, anisotropically, "comparativeDegreeForm")).toBeUndefined();
-    expect(formTextOf(wordForms, anisotropically, "superlativeDegreeForm")).toBeUndefined();
+    expect(formTextOf(wordForms, anisotropically, WordFormField.POSITIVE_DEGREE_FORM)).toEqual({ value: "anisotropically" });
+    expect(formTextOf(wordForms, anisotropically, WordFormField.COMPARATIVE_DEGREE_FORM)).toBeUndefined();
+    expect(formTextOf(wordForms, anisotropically, WordFormField.SUPERLATIVE_DEGREE_FORM)).toBeUndefined();
     expect(semanticRelated(anisotropically, SemanticRelationshipKind.PERTAINYM, "outgoing").map((w) => w.text)).toContain("anisotropic");
 
     // "wide" (00497722-r) is a flat adverb -- identical spelling to its
@@ -1599,8 +1600,8 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // Attribute pointer to "width") for exactly this case.
     const wideAdverb = dictionary.lookupAll("wide").find((w) => isAdverb(w)) as Adverb;
     expect(wideAdverb).toBeDefined();
-    expect(formTextOf(wordForms, wideAdverb, "comparativeDegreeForm")).toEqual({ value: "wider", formats: ["/er$/i"] });
-    expect(formTextOf(wordForms, wideAdverb, "superlativeDegreeForm")).toEqual({ value: "widest", formats: ["/est$/i"] });
+    expect(formTextOf(wordForms, wideAdverb, WordFormField.COMPARATIVE_DEGREE_FORM)).toEqual({ value: "wider", formats: ["/er$/i"] });
+    expect(formTextOf(wordForms, wideAdverb, WordFormField.SUPERLATIVE_DEGREE_FORM)).toEqual({ value: "widest", formats: ["/est$/i"] });
     expect(semanticRelated(wideAdverb, SemanticRelationshipKind.PERTAINYM, "outgoing")).toEqual([]);
 
     // Every new WordNet-sourced kind actually appears at least once --
@@ -2589,16 +2590,16 @@ describe("DictionaryView.searchWords", () => {
     const cat = createNoun({ text: "cat" });
     dictionary.append(dog);
     dictionary.append(cat);
-    wordForms.registerNamedForm(dog, "baseLemmaCanonicalForm", { value: "dog" });
-    wordForms.registerNamedForm(dog, "pluralNumberForm", { value: "dogs", formats: ["/s$/i"] });
-    wordForms.registerNamedForm(dog, "possessiveCaseForm", { value: "dog's", formats: ["/'s$/i"] });
+    wordForms.registerNamedForm(dog, WordFormField.BASE_LEMMA_CANONICAL_FORM, { value: "dog" });
+    wordForms.registerNamedForm(dog, WordFormField.PLURAL_NUMBER_FORM, { value: "dogs", formats: ["/s$/i"] });
+    wordForms.registerNamedForm(dog, WordFormField.POSSESSIVE_CASE_FORM, { value: "dog's", formats: ["/'s$/i"] });
     const view = new DictionaryView(dictionary, new SemanticRelationshipStore(), { domainName: "Common", wordForms });
 
     const dogRecord = view.searchWords({ wordId: wordGraphUuid(dog) }).words[0];
     expect(dogRecord.word_forms).toEqual([
-      { field: "baseLemmaCanonicalForm", label: "Base Lemma Canonical Form", value: "dog", senses: [] },
-      { field: "pluralNumberForm", label: "Plural Number Form", value: "dogs", senses: [] },
-      { field: "possessiveCaseForm", label: "Possessive Case Form", value: "dog's", senses: [] },
+      { field: WordFormField.BASE_LEMMA_CANONICAL_FORM, label: "Base Lemma Canonical Form", value: "dog", senses: [] },
+      { field: WordFormField.PLURAL_NUMBER_FORM, label: "Plural Number Form", value: "dogs", senses: [] },
+      { field: WordFormField.POSSESSIVE_CASE_FORM, label: "Possessive Case Form", value: "dog's", senses: [] },
     ]);
 
     const catRecord = view.searchWords({ wordId: wordGraphUuid(cat) }).words[0];

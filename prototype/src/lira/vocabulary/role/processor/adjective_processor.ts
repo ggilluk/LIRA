@@ -16,6 +16,7 @@ import {
 import type { Adjective } from "../../data/entities/adjective";
 import { AdjectivePosition } from "../../data/enums/adjective_position";
 import { stringPatternsFor } from "../../data/matrices/pos_vs_wordform_matrice";
+import { WordFormField } from "../../data/enums/word_forms_enum";
 
 export type AdjectiveInit = Pick<Adjective, "text"> & Partial<Omit<Adjective, "text" | "partOfSpeech">>;
 
@@ -159,19 +160,19 @@ export function determineGradability(relationships: SemanticRelationshipStore, a
 export function generateAdjectiveForms(adjective: Adjective, gradable: boolean, wordForms: WordForms | undefined): Adjective {
   if (wordForms === undefined) return adjective;
   const lemma = adjective.text;
-  const has = (field: string): boolean => wordForms.formsOf(adjective).some((form) => form.field === field);
+  const has = (field: WordFormField): boolean => wordForms.formsOf(adjective).some((form) => form.field === field);
 
-  if (!has("positiveDegreeForm")) wordForms.registerNamedForm(adjective, "positiveDegreeForm", { value: lemma });
+  if (!has(WordFormField.POSITIVE_DEGREE_FORM)) wordForms.registerNamedForm(adjective, WordFormField.POSITIVE_DEGREE_FORM, { value: lemma });
 
   if (gradable) {
     const periphrastic = isPeriphrasticComparison(lemma);
-    if (!has("comparativeDegreeForm")) {
+    if (!has(WordFormField.COMPARATIVE_DEGREE_FORM)) {
       const comparative = periphrastic ? periphrasticDegreeForm(lemma, true) : regularDegreeForm(lemma, true);
-      if (comparative !== undefined) wordForms.registerNamedForm(adjective, "comparativeDegreeForm", comparative);
+      if (comparative !== undefined) wordForms.registerNamedForm(adjective, WordFormField.COMPARATIVE_DEGREE_FORM, comparative);
     }
-    if (!has("superlativeDegreeForm")) {
+    if (!has(WordFormField.SUPERLATIVE_DEGREE_FORM)) {
       const superlative = periphrastic ? periphrasticDegreeForm(lemma, false) : regularDegreeForm(lemma, false);
-      if (superlative !== undefined) wordForms.registerNamedForm(adjective, "superlativeDegreeForm", superlative);
+      if (superlative !== undefined) wordForms.registerNamedForm(adjective, WordFormField.SUPERLATIVE_DEGREE_FORM, superlative);
     }
   }
 
