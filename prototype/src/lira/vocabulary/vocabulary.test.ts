@@ -25,7 +25,6 @@ import { createNoun, generateNounForms, isNoun, validateNoun } from "./role/proc
 import type { Noun } from "./data/entities/noun";
 import { WordForms } from "./data/word_forms";
 import { isNumeral } from "./role/processor/numeral_processor";
-import { isParticle } from "./role/processor/particle_processor";
 import { isPreposition } from "./role/processor/preposition_processor";
 import { createPronoun, isPronoun, validatePronoun } from "./role/processor/pronoun_processor";
 import { createVerb, framesForSense, generateVerbForms, isVerb, validateVerb } from "./role/processor/verb_processor";
@@ -1173,7 +1172,7 @@ describe("WordSeeder against the bundled Common Vocabulary Cache", () => {
     expect(unrestricted.lookupAll("measure").some((w) => w.partOfSpeech === PartOfSpeech.VERB)).toBe(true);
   });
 
-  it("seeds every closed class through its own Word Form to Part of Speech Matrix subtype (Pronoun, Determiner, Preposition, Conjunction, Interjection, Numeral, Particle)", () => {
+  it("seeds every closed class through its own Word Form to Part of Speech Matrix subtype (Pronoun, Determiner, Preposition, Conjunction, Interjection, Numeral)", () => {
     const dictionary = new Dictionary();
     new WordSeeder("en").seedClosedClassWords(dictionary, new Phrases());
 
@@ -1187,7 +1186,6 @@ describe("WordSeeder against the bundled Common Vocabulary Cache", () => {
     // (word_seeder.ts's own numerals.json comment), so the NUMERAL sense
     // has to be found via lookupAll(), not lookup().
     expect(isNumeral(dictionary.lookupAll("one").find((w) => w.partOfSpeech === PartOfSpeech.NUMERAL)!)).toBe(true);
-    expect(isParticle(dictionary.lookup("not")!)).toBe(true);
 
     // Pronoun's own Word Form Matrix fields (subjectiveCaseForm and the
     // rest), and even its own base-lemma WordForm, live as WordForm

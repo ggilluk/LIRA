@@ -16,7 +16,6 @@ export enum PartOfSpeech {
   CONJUNCTION = 7,
   INTERJECTION = 8,
   NUMERAL = 9,
-  PARTICLE = 10,
   AUXILIARY = 11,
   PROPER_NOUN = 12,
   SYMBOL = 13,

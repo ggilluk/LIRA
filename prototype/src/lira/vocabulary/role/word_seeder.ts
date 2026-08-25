@@ -42,7 +42,6 @@ import { createInterjection } from "./processor/interjection_processor";
 import { createNoun, generateNounForms, isNoun } from "./processor/noun_processor";
 import { createNumeral } from "./processor/numeral_processor";
 import { PartOfSpeech } from "../data/enums/part_of_speech";
-import { createParticle } from "./processor/particle_processor";
 import { createPreposition } from "./processor/preposition_processor";
 import { createPronoun } from "./processor/pronoun_processor";
 import { RegisterCode } from "../data/enums/register_code";
@@ -151,7 +150,6 @@ export const MANDATORY_FILES = [
   "prepositions.json",
   "coordinating_conjunctions.json",
   "subordinating_conjunctions.json",
-  "particles.json",
   "punctuation.json",
   // symbols.json and numerals.json are appended last, not
   // alphabetically or arbitrarily: numerals.json's "one" is a homograph
@@ -2848,8 +2846,6 @@ export class WordSeeder {
         return createInterjection(fields);
       case PartOfSpeech.NUMERAL:
         return createNumeral(fields);
-      case PartOfSpeech.PARTICLE:
-        return createParticle(fields);
       default:
         // PROPER_NOUN, SYMBOL, PUNCTUATION, OTHER -- none of these
         // appear in the Word Form to Part of Speech Matrix

@@ -4,10 +4,12 @@
 
 This cache provides the mandatory English closed-class lexical forms
 every LIRA Domain's Vocabulary must contain: determiners, pronouns,
-prepositions, coordinating and subordinating conjunctions, particles,
-punctuation, symbols, and numerals. Auxiliaries (be, have, do, can,
-may, shall, will, must, ought, need, dare) are mandatory too, but are
-no longer one of this cache's own asset files -- see `auxiliaries.json`
+prepositions, coordinating and subordinating conjunctions, punctuation,
+symbols, and numerals. Auxiliaries (be, have, do, can, may, shall,
+will, must, ought, need, dare) are mandatory too, but are no longer one
+of this cache's own asset files -- see `auxiliaries.json` below.
+`PartOfSpeech.PARTICLE` itself is removed as of `asset_version 1.27.0`
+(no cache category corresponds to it any more) -- see `particles.json`
 below.
 It also
 holds six `metalinguistic_*.json` files, one per part of speech, of
@@ -36,7 +38,7 @@ working vocabulary immediately, not to be a system of record.
 | `prepositions.json` | Simple and compound/complex prepositions, including multi-word units (because of, in spite of, according to, as well as, ...) | 94 |
 | `coordinating_conjunctions.json` | FANBOYS -- for, and, nor, but, or, yet, so | 7 |
 | `subordinating_conjunctions.json` | because, although, unless, while, ... | 36 |
-| `particles.json` | not, there, please, also, too, only, ..., plus verb-particle senses of up/off/out/away (see Phrasal-verb particles below) | 16 |
+| `particles.json` | **Removed in `asset_version 1.27.0`, no replacement.** `PartOfSpeech.PARTICLE` itself is retired -- unlike every other retired mandatory file, nothing re-seeds this file's own 16 entries under a different shape. `not`/`please`/`well` keep a Dictionary entry via their own existing secondary homograph (`VERB`/`INTERJECTION`/`INTERJECTION` respectively, still true default-sense caveats apply); `up`/`off`/`out` keep their own `PREPOSITION` entry, just without the verb-particle sense any more (see Phrasal-verb particles below, now historical). `there`/`also`/`too`/`only`/`just`/`even`/`quite`/`rather`/`n't`/`away` had no other homograph at all and are gone from the Dictionary entirely -- `n't` in particular drops its own `not`->`n't` `CONTRACTION` relationship too (`relationships/orthographic_relationships.json`, now empty). | 0 (removed) |
 | `punctuation.json` | `.`, `!`, `?`, `‽`, `,`, `;`, `:`, brackets, quotes, `…`, `¡`/`¿`, ... -- see Punctuation is a Word below | 28 |
 | `symbols.json` | `$`, `%`, `&`, `@`, `+`, `=`, dashes, `°`, `§`, `©`, `®`, `™`, list bullets, ... -- common typographic/mathematical symbols | 46 |
 | `numerals.json` | `zero` through `trillion` -- the base numeral words all other numbers are compositionally built from | 33 |
@@ -140,24 +142,34 @@ one Word avoids forcing a same-`part_of_speech` homograph split the way
 cache's own README, Symmetric and inverse edges, for why none of these
 edges (including the original `not` → `n't`) are reversed.
 
-## Phrasal-verb particles
+## Phrasal-verb particles (historical -- `PARTICLE` removed in `asset_version 1.27.0`)
 
-`asset_version 1.9.0` also added `PARTICLE` entries for the verb-
-particle sense of `up`, `off`, `out`, and `away` to the mandatory
+`asset_version 1.9.0` added `PARTICLE` entries for the verb-particle
+sense of `up`, `off`, `out`, and `away` to the mandatory
 `particles.json` -- the sense used in phrasal verbs like "give up",
 "turn off", "find out", "give away", distinct from each word's
 ordinary prepositional sense ("up the hill", "off the table", "out the
-door"). `up`, `off`, and `out` are genuine homographs of their existing
-`PREPOSITION` entries (`prepositions.json`); `away` had no existing
-entry at all (it doesn't function as a preposition in standard
-English), so it's seeded fresh, `PARTICLE` only. `prepositions.json`
-loads before `particles.json` within `MANDATORY_FILES`, so `up`/`off`/
-`out` correctly keep `PREPOSITION` as `Dictionary.lookup()`'s default;
-`Dictionary.lookup_all()` returns the `PARTICLE` sense too. No
-relationship links a homograph's two senses to each other anywhere in
-this cache (the same is true of `be`/`have`/`do`'s `AUXILIARY`/`VERB`
-pair and every other homograph here), so none was added for these
-either.
+door"). `up`, `off`, and `out` were genuine homographs of their
+existing `PREPOSITION` entries (`prepositions.json`); `away` had no
+existing entry at all (it doesn't function as a preposition in
+standard English), so it was seeded fresh, `PARTICLE` only.
+`prepositions.json` loading before `particles.json` within
+`MANDATORY_FILES` is what kept `up`/`off`/`out` on `PREPOSITION` as
+`Dictionary.lookup()`'s default throughout; `Dictionary.lookup_all()`
+returned the `PARTICLE` sense too. No relationship ever linked a
+homograph's two senses to each other in this cache (the same was true
+of `be`/`have`/`do`'s `AUXILIARY`/`VERB` pair and every other homograph
+here), so none existed for these either.
+
+`particles.json` itself, and `PartOfSpeech.PARTICLE` along with it,
+were removed outright in `asset_version 1.27.0` (the file table's own
+row above has the current-state detail: which of this file's 16 words
+still resolve, via which surviving homograph, and which are gone from
+the Dictionary entirely). `up`/`off`/`out` keep their own
+`PREPOSITION` sense from `prepositions.json`, untouched -- only the
+verb-particle sense this section describes is gone; `away` had no
+other sense to fall back to, so it disappeared from the Dictionary
+along with the rest of `particles.json`'s own entries.
 
 ## Supplementary files
 
@@ -275,22 +287,16 @@ mandatory files:
 | `past`, `opposite` | `PREPOSITION` (`prepositions.json`) | `ADJECTIVE` (`metalinguistic_adjectives.json`) |
 | `plus`, `minus` | `PREPOSITION` (`prepositions.json`) | `VERB` (`metalinguistic_verbs.json`, math operator sense) |
 | `and`, `or`, `nor` | `CONJUNCTION` (`coordinating_conjunctions.json`) | `VERB` (`metalinguistic_verbs.json`, logic operator sense) |
-| `not` | `PARTICLE` (`particles.json`) | `VERB` (`metalinguistic_verbs.json`, logic operator sense) |
 | `one` | `PRONOUN` (`pronouns.json`) | `NUMERAL` (`numerals.json`) |
-| `no` | `DETERMINER` (`determiners.json`) | `INTERJECTION` (`metalinguistic_interjections.json`) |
-| `please` | `PARTICLE` (`particles.json`) | `INTERJECTION` (`metalinguistic_interjections.json`) |
-| `up`, `off`, `out` | `PREPOSITION` (`prepositions.json`) | `PARTICLE` (`particles.json`, verb-particle sense) |
-| `well` | `PARTICLE` (`particles.json`) | `INTERJECTION` (`metalinguistic_interjections.json`) |
+| `no` | `DETERMINER` (`role/determiner_seeder.ts`) | `INTERJECTION` (`metalinguistic_interjections.json`) |
+
+`not`, `please`, `up`/`off`/`out`, and `well` were homograph pairs here too, each involving a `PARTICLE` sense -- removed along with `PartOfSpeech.PARTICLE` itself in `asset_version 1.27.0` (`particles.json`'s own row above has the current-state detail for each). Only one sense now remains for each of these words.
 
 In every case the original, closed-class-or-first-seeded sense stays
 the `Dictionary.lookup()` default: `be`/`have`/`do`/`past`/`opposite`/
-`plus`/`minus`/`and`/`or`/`nor`/`not`/`no`/`please`/`well` are safe
-because `MANDATORY_FILES` (containing their original sense) always
-loads in full before `SUPPLEMENTARY_FILES` regardless of ordering;
-`up`/`off`/`out` are a mandatory-to-mandatory homograph pair --
-`prepositions.json` precedes `particles.json` in `MANDATORY_FILES`'s
-own tuple order, so `PREPOSITION` stays default without requiring any
-reordering; `cause`/`result` and
+`plus`/`minus`/`and`/`or`/`nor`/`no` are safe because `MANDATORY_FILES`
+(containing their original sense) always loads in full before
+`SUPPLEMENTARY_FILES` regardless of ordering; `cause`/`result` and
 `one` specifically require their mandatory/original file
 (`metalinguistic_nouns.json`, `pronouns.json`) to load before the file
 carrying their new sense (`metalinguistic_verbs.json`, `numerals.json`)
@@ -605,7 +611,7 @@ carry a reduced-magnitude weight representing how they would modify a
 base `NOUN`/`VERB` value once the Linguistics layer aggregates them
 (no such aggregation pipeline exists yet -- this only seeds the
 per-word weight); every closed-class/structural part of speech
-(`DETERMINER`, `PRONOUN`, `PREPOSITION`, `CONJUNCTION`, `PARTICLE`,
+(`DETERMINER`, `PRONOUN`, `PREPOSITION`, `CONJUNCTION`,
 `PUNCTUATION`, `SYMBOL`, `NUMERAL`, `AUXILIARY`, `PROPER_NOUN`,
 `OTHER`) is always `0.0`/`0.0`/`0.0`, regardless of any lexicon match --
 these carry no affect of their own to modify or express. Values are

@@ -26,7 +26,6 @@ const EXTERNAL_POS_NAMES: Record<string, PartOfSpeech> = {
   conjunction: PartOfSpeech.CONJUNCTION,
   interjection: PartOfSpeech.INTERJECTION,
   numeral: PartOfSpeech.NUMERAL,
-  particle: PartOfSpeech.PARTICLE,
   auxiliary: PartOfSpeech.AUXILIARY,
   "proper noun": PartOfSpeech.PROPER_NOUN,
   symbol: PartOfSpeech.SYMBOL,

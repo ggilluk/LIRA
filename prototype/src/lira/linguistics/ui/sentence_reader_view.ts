@@ -66,7 +66,6 @@ const POS_COLORS: Record<string, string> = {
   [PartOfSpeech[PartOfSpeech.DETERMINER]]: "#6E7B8B",
   [PartOfSpeech[PartOfSpeech.PREPOSITION]]: "#7B6E5B",
   [PartOfSpeech[PartOfSpeech.CONJUNCTION]]: "#6B7280",
-  [PartOfSpeech[PartOfSpeech.PARTICLE]]: "#8A7B6E",
   [PartOfSpeech[PartOfSpeech.AUXILIARY]]: "#5B6E8B",
   [PartOfSpeech[PartOfSpeech.INTERJECTION]]: "#C2544B",
   [PartOfSpeech[PartOfSpeech.NUMERAL]]: "#4B8A7B",

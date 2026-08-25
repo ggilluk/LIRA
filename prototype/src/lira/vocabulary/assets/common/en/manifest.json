@@ -1,8 +1,8 @@
 {
   "schema_version": "2.0.0",
-  "asset_version": "1.26.0",
+  "asset_version": "1.27.0",
   "language_code": "en",
-  "total_lexical_forms": 362,
+  "total_lexical_forms": 346,
   "files": [
     {
       "file": "pronouns.json",
@@ -19,10 +19,6 @@
     {
       "file": "subordinating_conjunctions.json",
       "count": 36
-    },
-    {
-      "file": "particles.json",
-      "count": 16
     },
     {
       "file": "punctuation.json",

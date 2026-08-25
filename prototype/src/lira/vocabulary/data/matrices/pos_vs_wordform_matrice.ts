@@ -79,7 +79,7 @@ export const WORD_FORM_MATRIX: readonly WordFormRow[] = [
     purpose: "Identifies the standard dictionary form used to represent the word.",
     rules: [
       {
-        appliesTo: [P.NOUN, P.VERB, P.ADJECTIVE, P.ADVERB, P.PRONOUN, P.DETERMINER, P.PREPOSITION, P.CONJUNCTION, P.INTERJECTION, P.NUMERAL, P.PARTICLE],
+        appliesTo: [P.NOUN, P.VERB, P.ADJECTIVE, P.ADVERB, P.PRONOUN, P.DETERMINER, P.PREPOSITION, P.CONJUNCTION, P.INTERJECTION, P.NUMERAL],
         format: "Uses the canonical lexical spelling. Example: dog, run, small, quickly.",
         baseLemmaPreconditions: "The word must have an explicitly assigned canonical lemma.",
         generationTransform: "Return the canonical lemma text unchanged.",

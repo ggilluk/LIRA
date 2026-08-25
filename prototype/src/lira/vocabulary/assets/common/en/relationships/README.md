@@ -25,7 +25,7 @@ against a specific Domain's already-seeded `Word`s, not a store of
 |------|----------|----------------|-------|
 | `morphological_relationships.json` | Morphological (6.2.1) | Person, tense, participle, and plural forms (`be`/`have`/`do` conjugations, `this`/`that` plurals); comparative/superlative forms (`few`/`many`/`much`/`little`); pronoun paradigm forms (`PRONOUN_OBJECT_FORM`, `PRONOUN_SUBJECT_FORM`, `PRONOUN_POSSESSIVE_DETERMINER_FORM`, `PRONOUN_POSSESSIVE_FORM`, `PRONOUN_REFLEXIVE_FORM`); `LEMMA_FORM` (every edge's materialised reverse -- see Symmetric and inverse edges); 25 base/derived pairs among the promoted words added in `asset_version 1.5.0`; 36 `NOMINALISATION` pairs added in `asset_version 1.6.0`; 6 more `NOMINALISATION` pairs plus 1 `THIRD_PERSON_FORM` pair (`occur`/`occurs`) added in `asset_version 1.7.0`; 3 homograph-safe pairs (`cause`/`causing`, `cause`/`causation`, `state`/`statement`) added in `asset_version 1.8.0` using the new `source_part_of_speech`/`target_part_of_speech` disambiguator (see Version below); 391 pairs (782 edges with reciprocals) for the 1163-word Common definition-gap batch added in `asset_version 1.9.0`, every edge carrying an explicit source/target `part_of_speech`; rule-based VERB conjugation, NOUN pluralisation, ADJECTIVE/ADVERB degree forms, remaining PRONOUN paradigm gaps, and a 39-pair self-documenting back-edge fix added in `asset_version 1.10.0` (see Version below) | 3462 |
 | `semantic_relationships.json` | Lexical Semantic (6.2.2) | `ANTONYM` (spatial/temporal opposites: above/below, before/after, ...; discrete/continuous, high/low, push/pull, negative/positive among the promoted words) and `SYNONYM` (equivalent prepositions: beneath/under, amid/among, due to/owing to, ...; the discourse-marker pair however/nevertheless; idea/concept among the promoted words), each materialised in both directions; 1307 pairs (2599 edges with reciprocals) covering every open-class base word added in `asset_version 1.11.0` -- `SYNONYM`, `ANTONYM`, `HYPERNYM`/`HYPONYM`, `MERONYM`/`HOLONYM`, `TROPONYM`, `ENTAILMENT`, `CAUSE`, `RELATED` (see Version below) | 2633 |
-| `orthographic_relationships.json` | Orthographic and Naming (6.2.3) | `CONTRACTION` -- not/n't, plus each full contraction's component words (do/not -> don't, can/not -> can't, I/am -> I'm, it/is/has -> it's, is/not -> isn't, was/not -> wasn't, had/not -> hadn't) | 16 |
+| `orthographic_relationships.json` | Orthographic and Naming (6.2.3) | `CONTRACTION` -- was `not`/`n't`, plus each full contraction's component words (do/not -> don't, can/not -> can't, I/am -> I'm, it/is/has -> it's, is/not -> isn't, was/not -> wasn't, had/not -> hadn't). Empty as of `asset_version 1.22.0`: `PartOfSpeech.PARTICLE` was retired (`../README.md`, `particles.json`), and `n't` no longer has a Dictionary entry to relate `not` to | 0 |
 
 No `HYPERNYM`, `MERONYM`, or `TROPONYM` relationships are seeded for
 closed-class Words -- those hierarchy/part-whole/manner relationships
@@ -92,7 +92,8 @@ edge -- not left to be inferred at query time:
   `her` → `she` (`LEMMA_FORM`, the reverse of the possessive-determiner
   edge).
 - **No `orthographic_relationships.json` entry is reversed** -- `not` →
-  `n't` and every full-contraction edge added in `asset_version 1.4.0`
+  `n't` (removed in `asset_version 1.22.0`, see Relationship categories
+  above) and every full-contraction edge added in `asset_version 1.4.0`
   (e.g. `do` → `don't`, `not` → `don't`) point from full form to
   contracted form only. There's no defined inverse kind for "target is
   the expanded form", the way `LEMMA_FORM` covers every morphological
@@ -303,8 +304,9 @@ of these files entirely rather than seeded as dangling references:
 The word cache's `asset_version 1.2.0` added those seven words
 (`../README.md`, 300 -> 307), and this cache's `asset_version 1.1.0`
 adds these seven relationships -- all now present in
-`morphological_relationships.json`, `semantic_relationships.json`, and
-`orthographic_relationships.json` above.
+`morphological_relationships.json` and `semantic_relationships.json`
+above, except `not → n't`, removed from `orthographic_relationships.json`
+in `asset_version 1.22.0` alongside `PartOfSpeech.PARTICLE`'s retirement.
 
 ## Orthographic and Naming (group 2) coverage check
 

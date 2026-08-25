@@ -116,18 +116,17 @@ function buildPhraseGrammars(): Map<PhraseType, PhraseGrammar> {
     startStates: new Set([POS.AUXILIARY, POS.VERB, POS.ADVERB]),
     transitions: new Map<PartOfSpeech, ReadonlySet<PartOfSpeech>>([
       [POS.AUXILIARY, new Set([POS.AUXILIARY, POS.ADVERB, POS.VERB])],
-      [POS.ADVERB, new Set([POS.AUXILIARY, POS.ADVERB, POS.VERB, POS.PARTICLE])],
-      [POS.VERB, new Set([POS.ADVERB, POS.PARTICLE, POS.CONJUNCTION])],
-      [POS.PARTICLE, new Set([POS.CONJUNCTION])],
+      [POS.ADVERB, new Set([POS.AUXILIARY, POS.ADVERB, POS.VERB])],
+      [POS.VERB, new Set([POS.ADVERB, POS.CONJUNCTION])],
       [POS.CONJUNCTION, new Set([POS.AUXILIARY, POS.VERB, POS.ADVERB])],
     ]),
     // Deliberately excludes AUXILIARY -- a bare "is"/"have"/"been" never
     // completes a VERB_PHRASE on its own. This is what makes "is"
     // resolve to VERB (not AUXILIARY) in "A meaning is a
-    // representation.": AUXILIARY is a valid *start* but only VERB (or
-    // PARTICLE) is a valid *end*.
-    endStates: new Set([POS.VERB, POS.PARTICLE]),
-    headPreference: [POS.VERB, POS.PARTICLE],
+    // representation.": AUXILIARY is a valid *start* but only VERB is a
+    // valid *end*.
+    endStates: new Set([POS.VERB]),
+    headPreference: [POS.VERB],
     obligationsRaised: new Map([
       [POS.AUXILIARY, ObligationKind.AUXILIARY_REQUIRES_COMPATIBLE_VERB_FORM],
       [POS.CONJUNCTION, coordination],
@@ -254,7 +253,7 @@ function buildObligationDischarges(): Map<ObligationKind, ReadonlySet<PartOfSpee
   const POS = PartOfSpeech;
   const coordinable = new Set([
     POS.NOUN, POS.PROPER_NOUN, POS.PRONOUN, POS.NUMERAL, POS.DETERMINER,
-    POS.VERB, POS.AUXILIARY, POS.ADJECTIVE, POS.ADVERB, POS.PARTICLE,
+    POS.VERB, POS.AUXILIARY, POS.ADJECTIVE, POS.ADVERB,
   ]);
   return new Map([
     [ObligationKind.DETERMINER_REQUIRES_NOMINAL_HEAD, new Set([POS.NOUN, POS.PROPER_NOUN, POS.NUMERAL])],
