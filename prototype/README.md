@@ -139,9 +139,12 @@ checksum) needed to change to add this index.
 #### Phrase support (prototype-only reading-pipeline optimisation)
 
 The Common Vocabulary Cache has always contained closed-class
-multi-word entries -- `prepositions.json`'s "in spite of"/"according
-to", `subordinating_conjunctions.json`'s "as long as"/"even though",
-`pronouns.json`'s "each other"/"no one" -- each one already a single
+multi-word entries -- `subordinating_conjunctions.json`'s "as long
+as"/"even though", `pronouns.json`'s "each other"/"no one" (
+`prepositions.json` used to contribute its own, e.g. "in spite
+of"/"according to", until they were dropped entirely in `asset_version
+1.23.0` -- `vocabulary/assets/common/en/README.md`'s own Preposition
+senses section) -- each one already a single
 `Word` (Design Principle 1: "each lexical form must be stored as a
 separate `Word`" applies just as well to a multi-word lexical form as a
 single-word one; nothing about `Dictionary`'s data model needed to

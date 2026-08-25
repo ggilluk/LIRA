@@ -934,10 +934,17 @@ function applyDomainTag(target: { domainTag?: Text; relatedDomainTags: readonly 
 }
 
 /** Gives `entry` (a freshly-inserted Common Vocabulary Cache Word/Phrase
- * copy, seedClosedClassWords' own call sites) its own unique Sense --
- * one per entry, never shared with any other Word/Phrase, unlike
- * WordNet's own per-synset Sense (this cache has no synset/synonym-set
- * concept of its own to group entries by). A deliberate "for now"
+ * copy, seedClosedClassWords' own call sites) one more unique Sense of
+ * its own -- never shared with any other Word/Phrase, unlike WordNet's
+ * own per-synset Sense (this cache has no synset/synonym-set concept of
+ * its own to group entries by). One call creates exactly one Sense;
+ * seedClosedClassWords() calls this once per entry ordinarily, or once
+ * per string in `cacheSenses.get(entryId)` (WordFileEntry.senses's own
+ * docstring) for a hand-curated Word that genuinely has more than one
+ * meaning -- each call's Sense still appends onto the same base-lemma
+ * WordForm.senseIds in call order (WordForms.registerSense()'s own
+ * append-only shape), the same ordered-polysemy result a WordNet-seeded
+ * Word's own synset loop produces. A deliberate "for now"
  * stopgap so every seeded Word/Phrase has *a* Sense to resolve through
  * (DictionaryView's own domainTagsFor(), in particular -- without this,
  * a hand-curated entry's `senseId` stays undefined and every Sense-aware
@@ -1092,6 +1099,13 @@ export class WordSeeder {
   // move) so the Sense it creates still gets the entry's own real
   // definition text.
   private cacheDefinition = new Map<string, Text>();
+  // Every cached entry's own ordered `senses` list (WordFileEntry's own
+  // docstring on the field), keyed by entryId -- entryToWord()'s own
+  // sibling to cacheDefinition just above, but plural: present only for
+  // an entry that opted into more than one hand-curated Sense.
+  // seedClosedClassWords() prefers this over cacheDefinition whenever
+  // both a Word's entryId has an entry here.
+  private cacheSenses = new Map<string, Text[]>();
   private promotedOverlay: PromotedDoc | null = null;
 
   constructor(
@@ -1439,7 +1453,14 @@ export class WordSeeder {
       dictionary.append(copy);
       insertedByEntryId.set(word.entryId.value, copy);
       if (senseStore !== undefined) {
-        registerUniqueSense(senseStore, copy, this.cachePad.get(word.entryId.value), wordForms, this.cacheDefinition.get(word.entryId.value));
+        const senses = this.cacheSenses.get(word.entryId.value);
+        if (senses !== undefined) {
+          for (const senseText of senses) {
+            registerUniqueSense(senseStore, copy, this.cachePad.get(word.entryId.value), wordForms, senseText);
+          }
+        } else {
+          registerUniqueSense(senseStore, copy, this.cachePad.get(word.entryId.value), wordForms, this.cacheDefinition.get(word.entryId.value));
+        }
       }
       seeded += 1;
     }
@@ -2766,6 +2787,9 @@ export class WordSeeder {
     });
     const definition = optText(entry.definition);
     if (definition !== undefined) this.cacheDefinition.set(entry.entry_id, definition);
+    if (entry.senses !== undefined && entry.senses.length > 0) {
+      this.cacheSenses.set(entry.entry_id, entry.senses.map((value) => ({ value })));
+    }
 
     const sourceReferences = (entry.source_references ?? []).map((ref) => ({
       sourceName: { value: ref.source_name },

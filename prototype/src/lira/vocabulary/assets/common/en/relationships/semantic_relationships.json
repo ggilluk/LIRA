@@ -2,7 +2,7 @@
   "schema_version": "1.0.0",
   "language_code": "en",
   "relationship_category": "semantic",
-  "count": 2606,
+  "count": 2600,
   "relationships": [
     {
       "source_lexical_form": "above",
@@ -45,21 +45,6 @@
       "relationship_kind": "SYNONYM"
     },
     {
-      "source_lexical_form": "despite",
-      "target_lexical_form": "in spite of",
-      "relationship_kind": "SYNONYM"
-    },
-    {
-      "source_lexical_form": "beside",
-      "target_lexical_form": "next to",
-      "relationship_kind": "SYNONYM"
-    },
-    {
-      "source_lexical_form": "due to",
-      "target_lexical_form": "owing to",
-      "relationship_kind": "SYNONYM"
-    },
-    {
       "source_lexical_form": "below",
       "target_lexical_form": "above",
       "relationship_kind": "ANTONYM"
@@ -97,21 +82,6 @@
     {
       "source_lexical_form": "among",
       "target_lexical_form": "amid",
-      "relationship_kind": "SYNONYM"
-    },
-    {
-      "source_lexical_form": "in spite of",
-      "target_lexical_form": "despite",
-      "relationship_kind": "SYNONYM"
-    },
-    {
-      "source_lexical_form": "next to",
-      "target_lexical_form": "beside",
-      "relationship_kind": "SYNONYM"
-    },
-    {
-      "source_lexical_form": "owing to",
-      "target_lexical_form": "due to",
       "relationship_kind": "SYNONYM"
     },
     {

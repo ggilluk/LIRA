@@ -890,21 +890,21 @@ describe("DictionaryProcessor.identifyPhrase", () => {
     expect(result.candidates[0].word?.text).toBe("in spite of");
   });
 
-  it("resolves \"in spite of\" as one PREPOSITION span against the real bundled Common Vocabulary Cache -- now via Phrases, not a multi-word Word", () => {
+  it("resolves \"no one else\" as one PRONOUN span against the real bundled Common Vocabulary Cache -- now via Phrases, not a multi-word Word", () => {
     const dictionary = new Dictionary();
     const phraseBook = new Phrases();
     new WordSeeder("en").seedClosedClassWords(dictionary, phraseBook);
-    // "in spite of" is a Phrase now, not a Word (Phrase's own docstring,
+    // "no one else" is a Phrase now, not a Word (Phrase's own docstring,
     // data/phrase.ts) -- Dictionary itself never sees it.
-    expect(dictionary.lookupAll("in spite of")).toHaveLength(0);
-    expect(phraseBook.lookupAll("in spite of").some((p) => p.partOfSpeech === PartOfSpeech.PREPOSITION)).toBe(true);
+    expect(dictionary.lookupAll("no one else")).toHaveLength(0);
+    expect(phraseBook.lookupAll("no one else").some((p) => p.partOfSpeech === PartOfSpeech.PRONOUN)).toBe(true);
     const processor = new DictionaryProcessor(dictionary, phraseBook, new AsyncDictionaryHydrator(dictionary), "Common");
 
-    const rawTokens = ["he", "stood", "his", "ground", "in", "spite", "of", "the", "storm"];
-    const result = processor.identifyPhrase(rawTokens, 4);
+    const rawTokens = ["he", "wanted", "no", "one", "else", "to", "know"];
+    const result = processor.identifyPhrase(rawTokens, 2);
 
     expect(result.tokenSpan).toBe(3);
-    expect(result.candidates.some((c) => c.partOfSpeech === PartOfSpeech.PREPOSITION)).toBe(true);
+    expect(result.candidates.some((c) => c.partOfSpeech === PartOfSpeech.PRONOUN)).toBe(true);
   });
 });
 
@@ -1250,20 +1250,44 @@ describe("WordSeeder against the bundled Common Vocabulary Cache", () => {
     expect(eachOtherSense).toBeDefined();
     expect(eachOtherSense?.isRootWord).toBe(false);
 
-    // Every hand-curated Word/Phrase gets exactly one Sense of its own
-    // (registerUniqueSense's own docstring, checked directly above) --
-    // except AUXILIARY, seeded by a different path entirely
+    // "about" (prepositions.json) is a hand-curated Word with more than
+    // one Sense -- WordFileEntry.senses (asset_loader.ts's own docstring)
+    // makes registerUniqueSense() run once per string instead of once for
+    // the whole entry, each appending its own Sense onto "about"'s base-
+    // lemma WordForm.senseIds in the source array's own order.
+    const about = dictionary.lookup("about");
+    const aboutSenseIds = wordForms.senseIdsOf(about!);
+    expect(aboutSenseIds).toHaveLength(7);
+    const aboutSenses = aboutSenseIds.map((id) => senseStore.findByUuid(id.value));
+    expect(aboutSenses.every((sense) => sense !== undefined)).toBe(true);
+    expect(aboutSenses[0]?.definition?.value).toBe("Around/on all sides of");
+    expect(aboutSenses[6]?.definition?.value).toBe("Approximately in position/time");
+    // Every distinct Sense really is its own Sense object, not the same
+    // one registered 7 times -- registerMember() keeps their identities
+    // apart in the store the same way "she"/"entity" above stay apart.
+    expect(new Set(aboutSenseIds.map((id) => id.value)).size).toBe(7);
+
+    // A single-sense PREPOSITION entry (no `senses` list of its own in
+    // prepositions.json) still behaves exactly like every other ordinary
+    // hand-curated Word -- one Sense, same as "she" above.
+    const worth = dictionary.lookup("worth");
+    expect(wordForms.senseIdsOf(worth!)).toHaveLength(1);
+
+    // Most hand-curated Words get exactly one Sense of their own
+    // (registerUniqueSense's own docstring, checked directly above), but
+    // not every one -- AUXILIARY, seeded by a different path entirely
     // (AuxiliarySeeder, called from inside seedClosedClassWords() itself,
-    // WordSeeder.MANDATORY_FILES's own comment). Each AUXILIARY WordForm
-    // deliberately carries its own Sense per distinct meaning ("am"
-    // carries 2 -- role/auxiliary_seeder.ts's own docstring), so the
-    // plain 1:1 Word:Sense count only holds once AUXILIARY's own real
-    // total is substituted in for its own 1-per-word share.
+    // WordSeeder.MANDATORY_FILES's own comment), deliberately carries its
+    // own Sense per distinct meaning ("am" carries 2 -- role/
+    // auxiliary_seeder.ts's own docstring), and PREPOSITION now does too
+    // for any entry with a hand-curated WordFileEntry.senses list
+    // (asset_loader.ts's own docstring, prepositions.json). Summing each
+    // Word's own real wordForms.senseIdsOf().length handles every POS
+    // uniformly -- 1 for the ordinary case, more wherever the source data
+    // says so -- with no need to special-case which POS varies.
     const expectedSenseTotal = (): number => {
-      const auxiliaryWords = dictionary.all().filter((w) => w.partOfSpeech === PartOfSpeech.AUXILIARY);
-      const auxiliarySenseCount = auxiliaryWords.reduce((sum, w) => sum + wordForms.senseIdsOf(w).length, 0);
-      const nonAuxiliaryWordCount = dictionary.totalEntries() - auxiliaryWords.length;
-      return nonAuxiliaryWordCount + auxiliarySenseCount + phraseBook.totalEntries();
+      const wordSenseCount = dictionary.all().reduce((sum, w) => sum + wordForms.senseIdsOf(w).length, 0);
+      return wordSenseCount + phraseBook.totalEntries();
     };
     expect(senseStore.totalEntries()).toBe(expectedSenseTotal());
 
@@ -1281,15 +1305,17 @@ describe("WordSeeder against the bundled Common Vocabulary Cache", () => {
     const phraseBook = new Phrases();
     new WordSeeder("en").seedClosedClassWords(dictionary, phraseBook);
 
-    // "each other" (pronouns.json) and "in spite of" (prepositions.json)
-    // are both real multi-word Common Vocabulary Cache entries -- both
-    // should land in the Phrases, neither in the Dictionary.
+    // "each other" and "no one else" (both pronouns.json) are both real
+    // multi-word Common Vocabulary Cache entries -- both should land in
+    // the Phrases, neither in the Dictionary. (prepositions.json no
+    // longer seeds any multi-word entry of its own -- assets/common/en/
+    // README.md's own prepositions.json entry on why.)
     expect(dictionary.lookupAll("each other")).toHaveLength(0);
-    expect(dictionary.lookupAll("in spite of")).toHaveLength(0);
+    expect(dictionary.lookupAll("no one else")).toHaveLength(0);
     const eachOther = phraseBook.lookup("each other");
     expect(eachOther?.partOfSpeech).toBe(PartOfSpeech.PRONOUN);
-    const inSpiteOf = phraseBook.lookup("in spite of");
-    expect(inSpiteOf?.partOfSpeech).toBe(PartOfSpeech.PREPOSITION);
+    const noOneElse = phraseBook.lookup("no one else");
+    expect(noOneElse?.partOfSpeech).toBe(PartOfSpeech.PRONOUN);
 
     // Dictionary itself never saw a multi-word Word (seedClosedClassWords
     // alone is under test here, not seedWordNet -- a WordNet multi-word
@@ -1297,7 +1323,7 @@ describe("WordSeeder against the bundled Common Vocabulary Cache", () => {
     // seedWordNet), so its own phrase-span tracking stays at its
     // empty-Dictionary default.
     expect(dictionary.phraseSpanLimit).toBe(1);
-    expect(phraseBook.spanLimit).toBeGreaterThanOrEqual(3); // "in spite of"
+    expect(phraseBook.spanLimit).toBeGreaterThanOrEqual(3); // "no one else"
     expect(phraseBook.totalEntries()).toBeGreaterThan(0);
 
     // Idempotent, the same way seedClosedClassWords itself already is --

@@ -3,7 +3,7 @@
   "language_code": "en",
   "part_of_speech": "PREPOSITION",
   "closed_class_kind": "preposition",
-  "count": 96,
+  "count": 82,
   "words": [
     {
       "entry_id": "acb97262-5b68-449f-b9ea-080c6e497b53",
@@ -16,8 +16,8 @@
       "part_of_speech": "PREPOSITION",
       "closed_class": true,
       "closed_class_kind": "preposition",
-      "definition": "On or into a ship, aircraft, train, or other vehicle",
-      "gloss": "On or into a ship, aircraft, train, or other vehicle",
+      "definition": "On board/onto a vessel or vehicle",
+      "gloss": "On board/onto a vessel or vehicle",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -43,7 +43,12 @@
       ],
       "seeded_pleasure_displeasure_weight": 0.0,
       "seeded_arousal_non_arousal_weight": 0.0,
-      "seeded_dominance_submissive_weight": 0.0
+      "seeded_dominance_submissive_weight": 0.0,
+      "senses": [
+        "On board/onto a vessel or vehicle",
+        "Onto a horse",
+        "Across/alongside (obsolete)"
+      ]
     },
     {
       "entry_id": "237ac989-b007-43bf-8576-ebed81ec1444",
@@ -56,8 +61,8 @@
       "part_of_speech": "PREPOSITION",
       "closed_class": true,
       "closed_class_kind": "preposition",
-      "definition": "On the subject of; approximately; around",
-      "gloss": "On the subject of; approximately; around",
+      "definition": "Around/on all sides of",
+      "gloss": "Around/on all sides of",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -83,7 +88,16 @@
       ],
       "seeded_pleasure_displeasure_weight": 0.0,
       "seeded_arousal_non_arousal_weight": 0.0,
-      "seeded_dominance_submissive_weight": 0.0
+      "seeded_dominance_submissive_weight": 0.0,
+      "senses": [
+        "Around/on all sides of",
+        "Near",
+        "In various places within",
+        "Occupied or concerned with",
+        "Concerning/on the subject of",
+        "Associated with",
+        "Approximately in position/time"
+      ]
     },
     {
       "entry_id": "45d82fc1-3e32-40b4-b645-dca665f62467",
@@ -96,8 +110,8 @@
       "part_of_speech": "PREPOSITION",
       "closed_class": true,
       "closed_class_kind": "preposition",
-      "definition": "At a higher position than",
-      "gloss": "At a higher position than",
+      "definition": "Physically higher than",
+      "gloss": "Physically higher than",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -123,7 +137,13 @@
       ],
       "seeded_pleasure_displeasure_weight": 0.0,
       "seeded_arousal_non_arousal_weight": 0.0,
-      "seeded_dominance_submissive_weight": 0.0
+      "seeded_dominance_submissive_weight": 0.0,
+      "senses": [
+        "Physically higher than",
+        "Greater than a value/level",
+        "Superior in rank",
+        "Beyond or unaffected by"
+      ]
     },
     {
       "entry_id": "ce1fd3ea-c74a-4f58-bd57-33f1be644b64",
@@ -136,8 +156,8 @@
       "part_of_speech": "PREPOSITION",
       "closed_class": true,
       "closed_class_kind": "preposition",
-      "definition": "From one side to the other of",
-      "gloss": "From one side to the other of",
+      "definition": "From one side of to the other",
+      "gloss": "From one side of to the other",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -163,7 +183,12 @@
       ],
       "seeded_pleasure_displeasure_weight": 0.0,
       "seeded_arousal_non_arousal_weight": 0.0,
-      "seeded_dominance_submissive_weight": 0.0
+      "seeded_dominance_submissive_weight": 0.0,
+      "senses": [
+        "From one side of to the other",
+        "On the opposite side of",
+        "Extending over an area"
+      ]
     },
     {
       "entry_id": "abacf5c2-c166-4aa4-b495-4e67b5e567be",
@@ -176,8 +201,8 @@
       "part_of_speech": "PREPOSITION",
       "closed_class": true,
       "closed_class_kind": "preposition",
-      "definition": "Following in time or place",
-      "gloss": "Following in time or place",
+      "definition": "Later than in time",
+      "gloss": "Later than in time",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -203,7 +228,14 @@
       ],
       "seeded_pleasure_displeasure_weight": 0.0,
       "seeded_arousal_non_arousal_weight": 0.0,
-      "seeded_dominance_submissive_weight": 0.0
+      "seeded_dominance_submissive_weight": 0.0,
+      "senses": [
+        "Later than in time",
+        "Behind in position/order",
+        "In pursuit of",
+        "In imitation of/named for",
+        "Because of/despite"
+      ]
     },
     {
       "entry_id": "0a44fb14-ca5f-44c3-834f-a45a636725ae",
@@ -216,8 +248,8 @@
       "part_of_speech": "PREPOSITION",
       "closed_class": true,
       "closed_class_kind": "preposition",
-      "definition": "In opposition to, or in contact with",
-      "gloss": "In opposition to, or in contact with",
+      "definition": "In opposition to",
+      "gloss": "In opposition to",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -243,7 +275,15 @@
       ],
       "seeded_pleasure_displeasure_weight": 0.0,
       "seeded_arousal_non_arousal_weight": 0.0,
-      "seeded_dominance_submissive_weight": 0.0
+      "seeded_dominance_submissive_weight": 0.0,
+      "senses": [
+        "In opposition to",
+        "Contrary to",
+        "In contact with",
+        "In preparation/protection against",
+        "Set against for comparison/background",
+        "In exchange for"
+      ]
     },
     {
       "entry_id": "a4497590-c9ab-4eb4-a795-401ab495089d",
@@ -256,8 +296,8 @@
       "part_of_speech": "PREPOSITION",
       "closed_class": true,
       "closed_class_kind": "preposition",
-      "definition": "Following the length of",
-      "gloss": "Following the length of",
+      "definition": "Following the length/course of; through points on a route",
+      "gloss": "Following the length/course of; through points on a route",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -283,7 +323,10 @@
       ],
       "seeded_pleasure_displeasure_weight": 0.0,
       "seeded_arousal_non_arousal_weight": 0.0,
-      "seeded_dominance_submissive_weight": 0.0
+      "seeded_dominance_submissive_weight": 0.0,
+      "senses": [
+        "Following the length/course of; through points on a route"
+      ]
     },
     {
       "entry_id": "915e8e5f-8782-48c6-9e07-dec4b0f6a9ee",
@@ -296,8 +339,8 @@
       "part_of_speech": "PREPOSITION",
       "closed_class": true,
       "closed_class_kind": "preposition",
-      "definition": "Next to and parallel with",
-      "gloss": "Next to and parallel with",
+      "definition": "Beside or next to; together/in comparison with",
+      "gloss": "Beside or next to; together/in comparison with",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -323,7 +366,10 @@
       ],
       "seeded_pleasure_displeasure_weight": 0.0,
       "seeded_arousal_non_arousal_weight": 0.0,
-      "seeded_dominance_submissive_weight": 0.0
+      "seeded_dominance_submissive_weight": 0.0,
+      "senses": [
+        "Beside or next to; together/in comparison with"
+      ]
     },
     {
       "entry_id": "63e592c6-7852-43fc-9d86-7b2e4b8e6ac4",
@@ -336,8 +382,8 @@
       "part_of_speech": "PREPOSITION",
       "closed_class": true,
       "closed_class_kind": "preposition",
-      "definition": "In the middle of, surrounded by",
-      "gloss": "In the middle of, surrounded by",
+      "definition": "In the middle of; surrounded by; during circumstances/events",
+      "gloss": "In the middle of; surrounded by; during circumstances/events",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -363,7 +409,10 @@
       ],
       "seeded_pleasure_displeasure_weight": 0.0,
       "seeded_arousal_non_arousal_weight": 0.0,
-      "seeded_dominance_submissive_weight": 0.0
+      "seeded_dominance_submissive_weight": 0.0,
+      "senses": [
+        "In the middle of; surrounded by; during circumstances/events"
+      ]
     },
     {
       "entry_id": "4884ec90-9e09-47f0-a761-1a00852dc67d",
@@ -376,8 +425,8 @@
       "part_of_speech": "PREPOSITION",
       "closed_class": true,
       "closed_class_kind": "preposition",
-      "definition": "Variant of 'amid'",
-      "gloss": "Variant of 'amid'",
+      "definition": "In the midst/middle of; surrounded by",
+      "gloss": "In the midst/middle of; surrounded by",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -403,7 +452,10 @@
       ],
       "seeded_pleasure_displeasure_weight": 0.0,
       "seeded_arousal_non_arousal_weight": 0.0,
-      "seeded_dominance_submissive_weight": 0.0
+      "seeded_dominance_submissive_weight": 0.0,
+      "senses": [
+        "In the midst/middle of; surrounded by"
+      ]
     },
     {
       "entry_id": "cce623f2-1b70-4c51-818a-24fe67a72151",
@@ -416,8 +468,8 @@
       "part_of_speech": "PREPOSITION",
       "closed_class": true,
       "closed_class_kind": "preposition",
-      "definition": "Surrounded by, or as part of a group of more than two",
-      "gloss": "Surrounded by, or as part of a group of more than two",
+      "definition": "In the company/group of",
+      "gloss": "In the company/group of",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -443,7 +495,13 @@
       ],
       "seeded_pleasure_displeasure_weight": 0.0,
       "seeded_arousal_non_arousal_weight": 0.0,
-      "seeded_dominance_submissive_weight": 0.0
+      "seeded_dominance_submissive_weight": 0.0,
+      "senses": [
+        "In the company/group of",
+        "Surrounded by",
+        "Distributed between members of a group",
+        "With one another within a group"
+      ]
     },
     {
       "entry_id": "0d5e55e2-04f1-4ead-8cf6-7f5af3ff2543",
@@ -456,8 +514,8 @@
       "part_of_speech": "PREPOSITION",
       "closed_class": true,
       "closed_class_kind": "preposition",
-      "definition": "Variant of 'among'",
-      "gloss": "Variant of 'among'",
+      "definition": "Same principal relational senses as among",
+      "gloss": "Same principal relational senses as among",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -483,7 +541,10 @@
       ],
       "seeded_pleasure_displeasure_weight": 0.0,
       "seeded_arousal_non_arousal_weight": 0.0,
-      "seeded_dominance_submissive_weight": 0.0
+      "seeded_dominance_submissive_weight": 0.0,
+      "senses": [
+        "Same principal relational senses as among"
+      ]
     },
     {
       "entry_id": "313f72b9-4e12-4f67-8bd7-539fee5bd766",
@@ -496,8 +557,8 @@
       "part_of_speech": "PREPOSITION",
       "closed_class": true,
       "closed_class_kind": "preposition",
-      "definition": "On every side of, or approximately",
-      "gloss": "On every side of, or approximately",
+      "definition": "Surrounding",
+      "gloss": "Surrounding",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -523,7 +584,14 @@
       ],
       "seeded_pleasure_displeasure_weight": 0.0,
       "seeded_arousal_non_arousal_weight": 0.0,
-      "seeded_dominance_submissive_weight": 0.0
+      "seeded_dominance_submissive_weight": 0.0,
+      "senses": [
+        "Surrounding",
+        "On various sides of",
+        "Moving about/encircling",
+        "Near a place/time",
+        "Approximately"
+      ]
     },
     {
       "entry_id": "2ed08a24-fc0c-487a-8750-b24aa1ec66fe",
@@ -536,8 +604,8 @@
       "part_of_speech": "PREPOSITION",
       "closed_class": true,
       "closed_class_kind": "preposition",
-      "definition": "In the role or state of; while",
-      "gloss": "In the role or state of; while",
+      "definition": "In the role, capacity or character of",
+      "gloss": "In the role, capacity or character of",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -563,7 +631,10 @@
       ],
       "seeded_pleasure_displeasure_weight": 0.0,
       "seeded_arousal_non_arousal_weight": 0.0,
-      "seeded_dominance_submissive_weight": 0.0
+      "seeded_dominance_submissive_weight": 0.0,
+      "senses": [
+        "In the role, capacity or character of"
+      ]
     },
     {
       "entry_id": "b1fde9b8-ba83-47e7-ba06-a1e202723607",
@@ -576,8 +647,8 @@
       "part_of_speech": "PREPOSITION",
       "closed_class": true,
       "closed_class_kind": "preposition",
-      "definition": "Indicating a specific point, time, or place",
-      "gloss": "Indicating a specific point, time, or place",
+      "definition": "Location/position",
+      "gloss": "Location/position",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -603,7 +674,15 @@
       ],
       "seeded_pleasure_displeasure_weight": 0.0,
       "seeded_arousal_non_arousal_weight": 0.0,
-      "seeded_dominance_submissive_weight": 0.0
+      "seeded_dominance_submissive_weight": 0.0,
+      "senses": [
+        "Location/position",
+        "Particular point/time",
+        "State/activity",
+        "Direction/target",
+        "Rate/value",
+        "Because of/in response to"
+      ]
     },
     {
       "entry_id": "d9c728b2-d284-4e4f-98b4-a22089354e47",
@@ -616,8 +695,8 @@
       "part_of_speech": "PREPOSITION",
       "closed_class": true,
       "closed_class_kind": "preposition",
-      "definition": "On top of",
-      "gloss": "On top of",
+      "definition": "On top of; situated upon",
+      "gloss": "On top of; situated upon",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -643,7 +722,10 @@
       ],
       "seeded_pleasure_displeasure_weight": 0.0,
       "seeded_arousal_non_arousal_weight": 0.0,
-      "seeded_dominance_submissive_weight": 0.0
+      "seeded_dominance_submissive_weight": 0.0,
+      "senses": [
+        "On top of; situated upon"
+      ]
     },
     {
       "entry_id": "44428b13-1699-4572-8c67-dcc0dfa51209",
@@ -656,8 +738,8 @@
       "part_of_speech": "PREPOSITION",
       "closed_class": true,
       "closed_class_kind": "preposition",
-      "definition": "Earlier than, or in front of",
-      "gloss": "Earlier than, or in front of",
+      "definition": "Earlier than in time",
+      "gloss": "Earlier than in time",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -683,7 +765,13 @@
       ],
       "seeded_pleasure_displeasure_weight": 0.0,
       "seeded_arousal_non_arousal_weight": 0.0,
-      "seeded_dominance_submissive_weight": 0.0
+      "seeded_dominance_submissive_weight": 0.0,
+      "senses": [
+        "Earlier than in time",
+        "In front of spatially",
+        "In the presence of",
+        "Ahead of in preference/order"
+      ]
     },
     {
       "entry_id": "960e0209-1d28-4f40-890b-e979bc0443b8",
@@ -696,8 +784,8 @@
       "part_of_speech": "PREPOSITION",
       "closed_class": true,
       "closed_class_kind": "preposition",
-      "definition": "At or toward the back of",
-      "gloss": "At or toward the back of",
+      "definition": "At the back of",
+      "gloss": "At the back of",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -723,7 +811,13 @@
       ],
       "seeded_pleasure_displeasure_weight": 0.0,
       "seeded_arousal_non_arousal_weight": 0.0,
-      "seeded_dominance_submissive_weight": 0.0
+      "seeded_dominance_submissive_weight": 0.0,
+      "senses": [
+        "At the back of",
+        "Later/slower than",
+        "Supporting/responsible for",
+        "Concealed by"
+      ]
     },
     {
       "entry_id": "50673fa2-766b-4640-8694-4b5c3882b641",
@@ -763,7 +857,12 @@
       ],
       "seeded_pleasure_displeasure_weight": 0.0,
       "seeded_arousal_non_arousal_weight": 0.0,
-      "seeded_dominance_submissive_weight": 0.0
+      "seeded_dominance_submissive_weight": 0.0,
+      "senses": [
+        "At a lower position than",
+        "Less than a level/value/rank",
+        "Downstream/later in a document or hierarchy"
+      ]
     },
     {
       "entry_id": "732f56b3-a0f4-4b59-87b0-2ffd5ce299ef",
@@ -776,8 +875,8 @@
       "part_of_speech": "PREPOSITION",
       "closed_class": true,
       "closed_class_kind": "preposition",
-      "definition": "Directly under; below",
-      "gloss": "Directly under; below",
+      "definition": "Directly under",
+      "gloss": "Directly under",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -803,7 +902,13 @@
       ],
       "seeded_pleasure_displeasure_weight": 0.0,
       "seeded_arousal_non_arousal_weight": 0.0,
-      "seeded_dominance_submissive_weight": 0.0
+      "seeded_dominance_submissive_weight": 0.0,
+      "senses": [
+        "Directly under",
+        "Lower in rank/value",
+        "Unworthy of",
+        "Hidden underneath"
+      ]
     },
     {
       "entry_id": "d23124a4-7840-4b5a-a1c8-f424ba1203ed",
@@ -843,7 +948,12 @@
       ],
       "seeded_pleasure_displeasure_weight": 0.0,
       "seeded_arousal_non_arousal_weight": 0.0,
-      "seeded_dominance_submissive_weight": 0.0
+      "seeded_dominance_submissive_weight": 0.0,
+      "senses": [
+        "Next to",
+        "Compared with",
+        "Apart from/outside in expressions"
+      ]
     },
     {
       "entry_id": "b421438c-d2e8-44a5-a5de-84ac58442b3c",
@@ -856,8 +966,8 @@
       "part_of_speech": "PREPOSITION",
       "closed_class": true,
       "closed_class_kind": "preposition",
-      "definition": "In addition to; apart from",
-      "gloss": "In addition to; apart from",
+      "definition": "In addition to; apart from; other than",
+      "gloss": "In addition to; apart from; other than",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -883,7 +993,10 @@
       ],
       "seeded_pleasure_displeasure_weight": 0.0,
       "seeded_arousal_non_arousal_weight": 0.0,
-      "seeded_dominance_submissive_weight": 0.0
+      "seeded_dominance_submissive_weight": 0.0,
+      "senses": [
+        "In addition to; apart from; other than"
+      ]
     },
     {
       "entry_id": "3d4456e9-166a-4bbc-8260-b41b757640a3",
@@ -896,8 +1009,8 @@
       "part_of_speech": "PREPOSITION",
       "closed_class": true,
       "closed_class_kind": "preposition",
-      "definition": "In the space or interval separating two things",
-      "gloss": "In the space or interval separating two things",
+      "definition": "In the space separating two/more things",
+      "gloss": "In the space separating two/more things",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -923,7 +1036,14 @@
       ],
       "seeded_pleasure_displeasure_weight": 0.0,
       "seeded_arousal_non_arousal_weight": 0.0,
-      "seeded_dominance_submissive_weight": 0.0
+      "seeded_dominance_submissive_weight": 0.0,
+      "senses": [
+        "In the space separating two/more things",
+        "In the interval separating times",
+        "Shared/involving parties",
+        "Intermediate between limits",
+        "By combined action/resources"
+      ]
     },
     {
       "entry_id": "0df6b5ab-c0cf-4109-9cc8-645af6adb4d9",
@@ -936,8 +1056,8 @@
       "part_of_speech": "PREPOSITION",
       "closed_class": true,
       "closed_class_kind": "preposition",
-      "definition": "On or to the far side of",
-      "gloss": "On or to the far side of",
+      "definition": "On the farther side of",
+      "gloss": "On the farther side of",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -963,7 +1083,14 @@
       ],
       "seeded_pleasure_displeasure_weight": 0.0,
       "seeded_arousal_non_arousal_weight": 0.0,
-      "seeded_dominance_submissive_weight": 0.0
+      "seeded_dominance_submissive_weight": 0.0,
+      "senses": [
+        "On the farther side of",
+        "Later than",
+        "Outside a limit/range",
+        "Greater than",
+        "Except for/apart from"
+      ]
     },
     {
       "entry_id": "95e2f2d9-8666-4556-a5fb-58d715157a4e",
@@ -976,8 +1103,8 @@
       "part_of_speech": "PREPOSITION",
       "closed_class": true,
       "closed_class_kind": "preposition",
-      "definition": "Indicating an agent, method, proximity, or deadline",
-      "gloss": "Indicating an agent, method, proximity, or deadline",
+      "definition": "Beside/near",
+      "gloss": "Beside/near",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -1003,7 +1130,16 @@
       ],
       "seeded_pleasure_displeasure_weight": 0.0,
       "seeded_arousal_non_arousal_weight": 0.0,
-      "seeded_dominance_submissive_weight": 0.0
+      "seeded_dominance_submissive_weight": 0.0,
+      "senses": [
+        "Beside/near",
+        "Through the agency of",
+        "Using a means/method",
+        "Not later than a time",
+        "According to a measure",
+        "Via/past",
+        "By an amount/difference"
+      ]
     },
     {
       "entry_id": "a525b62a-98a1-4de9-a4a5-503d1f954b3b",
@@ -1016,8 +1152,8 @@
       "part_of_speech": "PREPOSITION",
       "closed_class": true,
       "closed_class_kind": "preposition",
-      "definition": "Approximately, used especially with dates",
-      "gloss": "Approximately, used especially with dates",
+      "definition": "Approximately, especially used with dates or quantities",
+      "gloss": "Approximately, especially used with dates or quantities",
       "usage_notes": [],
       "register_codes": [
         "FORMAL"
@@ -1035,6 +1171,95 @@
       "source_references": [
         {
           "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0,
+      "senses": [
+        "Approximately, especially used with dates or quantities"
+      ]
+    },
+    {
+      "entry_id": "73bc4ca0-d0c2-49d4-b912-8c5ec6e48c52",
+      "lexical_form": "concerning",
+      "normalised_form": "concerning",
+      "text": "concerning",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "PREPOSITION",
+      "closed_class": true,
+      "closed_class_kind": "preposition",
+      "definition": "Regarding; about; with reference to",
+      "gloss": "Regarding; about; with reference to",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 3,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Definition-Gap Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0,
+      "senses": [
+        "Regarding; about; with reference to"
+      ]
+    },
+    {
+      "entry_id": "2a1d2f2d-fd58-4856-9d8f-5352e354bc4b",
+      "lexical_form": "considering",
+      "normalised_form": "considering",
+      "text": "considering",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "PREPOSITION",
+      "closed_class": true,
+      "closed_class_kind": "preposition",
+      "definition": "Taking into consideration; in view of",
+      "gloss": "Taking into consideration; in view of",
+      "senses": [
+        "Taking into consideration; in view of"
+      ],
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 4,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Definition-Gap Vocabulary v1",
           "source_version": "1.0.0",
           "external_identifier": null,
           "reference_uri": null,
@@ -1056,8 +1281,8 @@
       "part_of_speech": "PREPOSITION",
       "closed_class": true,
       "closed_class_kind": "preposition",
-      "definition": "Without being affected by; in spite of",
-      "gloss": "Without being affected by; in spite of",
+      "definition": "In spite of; notwithstanding",
+      "gloss": "In spite of; notwithstanding",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -1083,7 +1308,10 @@
       ],
       "seeded_pleasure_displeasure_weight": 0.0,
       "seeded_arousal_non_arousal_weight": 0.0,
-      "seeded_dominance_submissive_weight": 0.0
+      "seeded_dominance_submissive_weight": 0.0,
+      "senses": [
+        "In spite of; notwithstanding"
+      ]
     },
     {
       "entry_id": "bed881df-dd24-45f0-bbee-92546346314a",
@@ -1096,8 +1324,8 @@
       "part_of_speech": "PREPOSITION",
       "closed_class": true,
       "closed_class_kind": "preposition",
-      "definition": "From a higher to a lower point of",
-      "gloss": "From a higher to a lower point of",
+      "definition": "From a higher point along/toward a lower part of; along a route away from a reference point",
+      "gloss": "From a higher point along/toward a lower part of; along a route away from a reference point",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -1123,7 +1351,10 @@
       ],
       "seeded_pleasure_displeasure_weight": 0.0,
       "seeded_arousal_non_arousal_weight": 0.0,
-      "seeded_dominance_submissive_weight": 0.0
+      "seeded_dominance_submissive_weight": 0.0,
+      "senses": [
+        "From a higher point along/toward a lower part of; along a route away from a reference point"
+      ]
     },
     {
       "entry_id": "7de962a6-91c5-4712-809c-c1ec73f48709",
@@ -1136,8 +1367,8 @@
       "part_of_speech": "PREPOSITION",
       "closed_class": true,
       "closed_class_kind": "preposition",
-      "definition": "Throughout, or at a point within, a period of time",
-      "gloss": "Throughout, or at a point within, a period of time",
+      "definition": "Throughout, within or at some point in a period/event",
+      "gloss": "Throughout, within or at some point in a period/event",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -1163,7 +1394,10 @@
       ],
       "seeded_pleasure_displeasure_weight": 0.0,
       "seeded_arousal_non_arousal_weight": 0.0,
-      "seeded_dominance_submissive_weight": 0.0
+      "seeded_dominance_submissive_weight": 0.0,
+      "senses": [
+        "Throughout, within or at some point in a period/event"
+      ]
     },
     {
       "entry_id": "a36bd291-47b3-4390-aa37-a35cde686c75",
@@ -1176,8 +1410,8 @@
       "part_of_speech": "PREPOSITION",
       "closed_class": true,
       "closed_class_kind": "preposition",
-      "definition": "Not including; other than",
-      "gloss": "Not including; other than",
+      "definition": "Excluding; other than; with the exception of",
+      "gloss": "Excluding; other than; with the exception of",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -1203,7 +1437,10 @@
       ],
       "seeded_pleasure_displeasure_weight": 0.0,
       "seeded_arousal_non_arousal_weight": 0.0,
-      "seeded_dominance_submissive_weight": 0.0
+      "seeded_dominance_submissive_weight": 0.0,
+      "senses": [
+        "Excluding; other than; with the exception of"
+      ]
     },
     {
       "entry_id": "28f167d2-487c-4262-889b-10ffdb621b3b",
@@ -1216,8 +1453,8 @@
       "part_of_speech": "PREPOSITION",
       "closed_class": true,
       "closed_class_kind": "preposition",
-      "definition": "Variant of 'except', used after 'not' or 'always'",
-      "gloss": "Variant of 'except', used after 'not' or 'always'",
+      "definition": "Except; excluding; with the exception of",
+      "gloss": "Except; excluding; with the exception of",
       "usage_notes": [],
       "register_codes": [
         "FORMAL"
@@ -1243,6 +1480,52 @@
       ],
       "seeded_pleasure_displeasure_weight": 0.0,
       "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0,
+      "senses": [
+        "Except; excluding; with the exception of"
+      ]
+    },
+    {
+      "entry_id": "110a9f00-0dca-4e03-a37f-a0e2f2b11aa5",
+      "lexical_form": "excluding",
+      "normalised_form": "excluding",
+      "text": "excluding",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "PREPOSITION",
+      "closed_class": true,
+      "closed_class_kind": "preposition",
+      "definition": "Leaving out; not including",
+      "gloss": "Leaving out; not including",
+      "senses": [
+        "Leaving out; not including"
+      ],
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 3,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Definition-Gap Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
       "seeded_dominance_submissive_weight": 0.0
     },
     {
@@ -1256,8 +1539,8 @@
       "part_of_speech": "PREPOSITION",
       "closed_class": true,
       "closed_class_kind": "preposition",
-      "definition": "Coming after in time or order",
-      "gloss": "Coming after in time or order",
+      "definition": "After; subsequent to",
+      "gloss": "After; subsequent to",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -1283,6 +1566,59 @@
       ],
       "seeded_pleasure_displeasure_weight": 0.0,
       "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0,
+      "senses": [
+        "After; subsequent to"
+      ]
+    },
+    {
+      "entry_id": "118b60d1-635e-480d-9630-69736121a0d7",
+      "lexical_form": "for",
+      "normalised_form": "for",
+      "text": "for",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "PREPOSITION",
+      "closed_class": true,
+      "closed_class_kind": "preposition",
+      "definition": "Intended for/benefiting",
+      "gloss": "Intended for/benefiting",
+      "senses": [
+        "Intended for/benefiting",
+        "In exchange for",
+        "Because of",
+        "Supporting",
+        "Representing",
+        "Toward a destination",
+        "Throughout a duration",
+        "In relation to/as regards"
+      ],
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Definition-Gap Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
       "seeded_dominance_submissive_weight": 0.0
     },
     {
@@ -1296,8 +1632,8 @@
       "part_of_speech": "PREPOSITION",
       "closed_class": true,
       "closed_class_kind": "preposition",
-      "definition": "Indicating a starting point, origin, or source",
-      "gloss": "Indicating a starting point, origin, or source",
+      "definition": "Source/origin",
+      "gloss": "Source/origin",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -1315,6 +1651,57 @@
       "source_references": [
         {
           "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0,
+      "senses": [
+        "Source/origin",
+        "Starting point in space/time",
+        "Separation/removal",
+        "Cause/basis",
+        "Distinction/difference",
+        "Material/source state"
+      ]
+    },
+    {
+      "entry_id": "1bd471c5-256e-4387-9892-8c0e8d9921fe",
+      "lexical_form": "given",
+      "normalised_form": "given",
+      "text": "given",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "PREPOSITION",
+      "closed_class": true,
+      "closed_class_kind": "preposition",
+      "definition": "Taking into account; considering; assuming",
+      "gloss": "Taking into account; considering; assuming",
+      "senses": [
+        "Taking into account; considering; assuming"
+      ],
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Definition-Gap Vocabulary v1",
           "source_version": "1.0.0",
           "external_identifier": null,
           "reference_uri": null,
@@ -1336,8 +1723,8 @@
       "part_of_speech": "PREPOSITION",
       "closed_class": true,
       "closed_class_kind": "preposition",
-      "definition": "Indicating enclosure, location within, or a period of time",
-      "gloss": "Indicating enclosure, location within, or a period of time",
+      "definition": "Inside/within",
+      "gloss": "Inside/within",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -1363,7 +1750,59 @@
       ],
       "seeded_pleasure_displeasure_weight": 0.0,
       "seeded_arousal_non_arousal_weight": 0.0,
-      "seeded_dominance_submissive_weight": 0.0
+      "seeded_dominance_submissive_weight": 0.0,
+      "senses": [
+        "Inside/within",
+        "During a period",
+        "In a state/condition",
+        "Wearing/using",
+        "As part/member of",
+        "Using a language/manner/medium",
+        "After a duration"
+      ]
+    },
+    {
+      "entry_id": "d7009872-30da-4cda-b409-a67bf1023b44",
+      "lexical_form": "including",
+      "normalised_form": "including",
+      "text": "including",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "PREPOSITION",
+      "closed_class": true,
+      "closed_class_kind": "preposition",
+      "definition": "Containing as part of the whole/set; with the inclusion of",
+      "gloss": "Containing as part of the whole/set; with the inclusion of",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 3,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Definition-Gap Vocabulary v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0,
+      "senses": [
+        "Containing as part of the whole/set; with the inclusion of"
+      ]
     },
     {
       "entry_id": "e1e82ea0-9a16-472a-8707-f4d53bda84dd",
@@ -1376,8 +1815,8 @@
       "part_of_speech": "PREPOSITION",
       "closed_class": true,
       "closed_class_kind": "preposition",
-      "definition": "Within the interior of",
-      "gloss": "Within the interior of",
+      "definition": "Within the interior/boundaries of; within a period",
+      "gloss": "Within the interior/boundaries of; within a period",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -1403,7 +1842,10 @@
       ],
       "seeded_pleasure_displeasure_weight": 0.0,
       "seeded_arousal_non_arousal_weight": 0.0,
-      "seeded_dominance_submissive_weight": 0.0
+      "seeded_dominance_submissive_weight": 0.0,
+      "senses": [
+        "Within the interior/boundaries of; within a period"
+      ]
     },
     {
       "entry_id": "b4e8f0ca-f0a3-400d-b7c4-b0b9e005abd0",
@@ -1416,8 +1858,8 @@
       "part_of_speech": "PREPOSITION",
       "closed_class": true,
       "closed_class_kind": "preposition",
-      "definition": "Indicating movement toward the interior of",
-      "gloss": "Indicating movement toward the interior of",
+      "definition": "Movement toward the interior",
+      "gloss": "Movement toward the interior",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -1443,7 +1885,14 @@
       ],
       "seeded_pleasure_displeasure_weight": 0.0,
       "seeded_arousal_non_arousal_weight": 0.0,
-      "seeded_dominance_submissive_weight": 0.0
+      "seeded_dominance_submissive_weight": 0.0,
+      "senses": [
+        "Movement toward the interior",
+        "Movement/contact with",
+        "Change/transformation to a state",
+        "Involvement/interest in",
+        "Division into"
+      ]
     },
     {
       "entry_id": "13e30520-4553-41bc-bda9-1298ba6d7114",
@@ -1456,8 +1905,8 @@
       "part_of_speech": "PREPOSITION",
       "closed_class": true,
       "closed_class_kind": "preposition",
-      "definition": "Similar to; in the manner of",
-      "gloss": "Similar to; in the manner of",
+      "definition": "Similar to",
+      "gloss": "Similar to",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -1483,7 +1932,13 @@
       ],
       "seeded_pleasure_displeasure_weight": 0.0,
       "seeded_arousal_non_arousal_weight": 0.0,
-      "seeded_dominance_submissive_weight": 0.0
+      "seeded_dominance_submissive_weight": 0.0,
+      "senses": [
+        "Similar to",
+        "In the manner of",
+        "Characteristic of",
+        "For example/such as"
+      ]
     },
     {
       "entry_id": "c681f65c-e118-4a46-8540-c0b678db4c12",
@@ -1496,8 +1951,8 @@
       "part_of_speech": "PREPOSITION",
       "closed_class": true,
       "closed_class_kind": "preposition",
-      "definition": "With the subtraction of",
-      "gloss": "With the subtraction of",
+      "definition": "With something removed/subtracted; excluding",
+      "gloss": "With something removed/subtracted; excluding",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -1523,7 +1978,10 @@
       ],
       "seeded_pleasure_displeasure_weight": 0.0,
       "seeded_arousal_non_arousal_weight": 0.0,
-      "seeded_dominance_submissive_weight": 0.0
+      "seeded_dominance_submissive_weight": 0.0,
+      "senses": [
+        "With something removed/subtracted; excluding"
+      ]
     },
     {
       "entry_id": "7031b3e2-ce3a-48c3-8133-b31b00a0a053",
@@ -1536,8 +1994,8 @@
       "part_of_speech": "PREPOSITION",
       "closed_class": true,
       "closed_class_kind": "preposition",
-      "definition": "At a short distance from",
-      "gloss": "At a short distance from",
+      "definition": "Close to in space, time, degree or relationship",
+      "gloss": "Close to in space, time, degree or relationship",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -1563,7 +2021,10 @@
       ],
       "seeded_pleasure_displeasure_weight": 0.0,
       "seeded_arousal_non_arousal_weight": 0.0,
-      "seeded_dominance_submissive_weight": 0.0
+      "seeded_dominance_submissive_weight": 0.0,
+      "senses": [
+        "Close to in space, time, degree or relationship"
+      ]
     },
     {
       "entry_id": "91304203-2c77-4c97-9bfa-dbb942a70a27",
@@ -1576,8 +2037,8 @@
       "part_of_speech": "PREPOSITION",
       "closed_class": true,
       "closed_class_kind": "preposition",
-      "definition": "In spite of; without being prevented by",
-      "gloss": "In spite of; without being prevented by",
+      "definition": "Despite; in spite of",
+      "gloss": "Despite; in spite of",
       "usage_notes": [],
       "register_codes": [
         "LITERARY",
@@ -1606,7 +2067,10 @@
       ],
       "seeded_pleasure_displeasure_weight": 0.0,
       "seeded_arousal_non_arousal_weight": 0.0,
-      "seeded_dominance_submissive_weight": 0.0
+      "seeded_dominance_submissive_weight": 0.0,
+      "senses": [
+        "Despite; in spite of"
+      ]
     },
     {
       "entry_id": "522fb36e-b369-4a96-b1f9-e9951d42e732",
@@ -1619,8 +2083,8 @@
       "part_of_speech": "PREPOSITION",
       "closed_class": true,
       "closed_class_kind": "preposition",
-      "definition": "Indicating belonging, origin, or a part-whole relationship",
-      "gloss": "Indicating belonging, origin, or a part-whole relationship",
+      "definition": "Belonging/association",
+      "gloss": "Belonging/association",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -1646,7 +2110,17 @@
       ],
       "seeded_pleasure_displeasure_weight": 0.0,
       "seeded_arousal_non_arousal_weight": 0.0,
-      "seeded_dominance_submissive_weight": 0.0
+      "seeded_dominance_submissive_weight": 0.0,
+      "senses": [
+        "Belonging/association",
+        "Origin/source",
+        "Composition/material",
+        "Part-whole relationship",
+        "Quantity/measure",
+        "Characteristic/property",
+        "Subject/object relationship",
+        "Cause"
+      ]
     },
     {
       "entry_id": "021afba5-58bf-4172-839f-114b50e220fb",
@@ -1659,8 +2133,8 @@
       "part_of_speech": "PREPOSITION",
       "closed_class": true,
       "closed_class_kind": "preposition",
-      "definition": "Away from, or no longer on, a place or surface",
-      "gloss": "Away from, or no longer on, a place or surface",
+      "definition": "Away from/from upon",
+      "gloss": "Away from/from upon",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -1686,7 +2160,13 @@
       ],
       "seeded_pleasure_displeasure_weight": 0.0,
       "seeded_arousal_non_arousal_weight": 0.0,
-      "seeded_dominance_submissive_weight": 0.0
+      "seeded_dominance_submissive_weight": 0.0,
+      "senses": [
+        "Away from/from upon",
+        "Removed/separated from",
+        "Situated away from",
+        "Derived/source from"
+      ]
     },
     {
       "entry_id": "69d6c405-4e79-4db5-9a1b-35feac1be36f",
@@ -1699,8 +2179,8 @@
       "part_of_speech": "PREPOSITION",
       "closed_class": true,
       "closed_class_kind": "preposition",
-      "definition": "Indicating position on a surface, or a point in time",
-      "gloss": "Indicating position on a surface, or a point in time",
+      "definition": "In contact with/supported by",
+      "gloss": "In contact with/supported by",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -1726,7 +2206,16 @@
       ],
       "seeded_pleasure_displeasure_weight": 0.0,
       "seeded_arousal_non_arousal_weight": 0.0,
-      "seeded_dominance_submissive_weight": 0.0
+      "seeded_dominance_submissive_weight": 0.0,
+      "senses": [
+        "In contact with/supported by",
+        "At a particular time",
+        "Concerning/about",
+        "Using/by means of",
+        "In a state/activity",
+        "Dependent upon",
+        "Directed toward/against"
+      ]
     },
     {
       "entry_id": "1b864eed-6351-423a-9901-d8836fe4e803",
@@ -1739,8 +2228,8 @@
       "part_of_speech": "PREPOSITION",
       "closed_class": true,
       "closed_class_kind": "preposition",
-      "definition": "Indicating movement to a position on top of",
-      "gloss": "Indicating movement to a position on top of",
+      "definition": "Movement to a position on; movement toward and into contact with a surface",
+      "gloss": "Movement to a position on; movement toward and into contact with a surface",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -1766,7 +2255,10 @@
       ],
       "seeded_pleasure_displeasure_weight": 0.0,
       "seeded_arousal_non_arousal_weight": 0.0,
-      "seeded_dominance_submissive_weight": 0.0
+      "seeded_dominance_submissive_weight": 0.0,
+      "senses": [
+        "Movement to a position on; movement toward and into contact with a surface"
+      ]
     },
     {
       "entry_id": "163d40de-7aea-43c9-8d95-fe9074b32d20",
@@ -1779,8 +2271,8 @@
       "part_of_speech": "PREPOSITION",
       "closed_class": true,
       "closed_class_kind": "preposition",
-      "definition": "Facing, or on the other side of",
-      "gloss": "Facing, or on the other side of",
+      "definition": "Facing; across from; on the other side of",
+      "gloss": "Facing; across from; on the other side of",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -1806,7 +2298,10 @@
       ],
       "seeded_pleasure_displeasure_weight": 0.0,
       "seeded_arousal_non_arousal_weight": 0.0,
-      "seeded_dominance_submissive_weight": 0.0
+      "seeded_dominance_submissive_weight": 0.0,
+      "senses": [
+        "Facing; across from; on the other side of"
+      ]
     },
     {
       "entry_id": "8f2518d4-6fec-41d0-9d3e-e6c2940dac29",
@@ -1819,8 +2314,8 @@
       "part_of_speech": "PREPOSITION",
       "closed_class": true,
       "closed_class_kind": "preposition",
-      "definition": "Away from the inside or interior of",
-      "gloss": "Away from the inside or interior of",
+      "definition": "Through and beyond an opening/path; away from the inside (limited prepositional uses)",
+      "gloss": "Through and beyond an opening/path; away from the inside (limited prepositional uses)",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -1846,7 +2341,10 @@
       ],
       "seeded_pleasure_displeasure_weight": 0.0,
       "seeded_arousal_non_arousal_weight": 0.0,
-      "seeded_dominance_submissive_weight": 0.0
+      "seeded_dominance_submissive_weight": 0.0,
+      "senses": [
+        "Through and beyond an opening/path; away from the inside (limited prepositional uses)"
+      ]
     },
     {
       "entry_id": "4f689f10-00ae-4055-a6be-e9959915e672",
@@ -1859,8 +2357,8 @@
       "part_of_speech": "PREPOSITION",
       "closed_class": true,
       "closed_class_kind": "preposition",
-      "definition": "Not within; on or to the exterior of",
-      "gloss": "Not within; on or to the exterior of",
+      "definition": "Beyond/not within the boundaries of; except/beyond the scope of",
+      "gloss": "Beyond/not within the boundaries of; except/beyond the scope of",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -1886,7 +2384,10 @@
       ],
       "seeded_pleasure_displeasure_weight": 0.0,
       "seeded_arousal_non_arousal_weight": 0.0,
-      "seeded_dominance_submissive_weight": 0.0
+      "seeded_dominance_submissive_weight": 0.0,
+      "senses": [
+        "Beyond/not within the boundaries of; except/beyond the scope of"
+      ]
     },
     {
       "entry_id": "a7652cdb-4128-4d71-8674-4903aeed912e",
@@ -1899,8 +2400,8 @@
       "part_of_speech": "PREPOSITION",
       "closed_class": true,
       "closed_class_kind": "preposition",
-      "definition": "Directly above, across, or in excess of",
-      "gloss": "Directly above, across, or in excess of",
+      "definition": "Above",
+      "gloss": "Above",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -1926,7 +2427,16 @@
       ],
       "seeded_pleasure_displeasure_weight": 0.0,
       "seeded_arousal_non_arousal_weight": 0.0,
-      "seeded_dominance_submissive_weight": 0.0
+      "seeded_dominance_submissive_weight": 0.0,
+      "senses": [
+        "Above",
+        "Across/from one side to another",
+        "Covering",
+        "More than",
+        "During",
+        "Concerning",
+        "Having authority/control over"
+      ]
     },
     {
       "entry_id": "75245378-0037-44d5-89d6-27f3a4c3ad76",
@@ -1939,8 +2449,8 @@
       "part_of_speech": "PREPOSITION",
       "closed_class": true,
       "closed_class_kind": "preposition",
-      "definition": "Beyond, or after in time",
-      "gloss": "Beyond, or after in time",
+      "definition": "Beyond a place",
+      "gloss": "Beyond a place",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -1966,7 +2476,13 @@
       ],
       "seeded_pleasure_displeasure_weight": 0.0,
       "seeded_arousal_non_arousal_weight": 0.0,
-      "seeded_dominance_submissive_weight": 0.0
+      "seeded_dominance_submissive_weight": 0.0,
+      "senses": [
+        "Beyond a place",
+        "Later than a time",
+        "Beyond a stage/limit",
+        "Beyond someone's ability/control"
+      ]
     },
     {
       "entry_id": "c69a8f20-e495-4e9a-b103-efa9c1c138ad",
@@ -1979,8 +2495,8 @@
       "part_of_speech": "PREPOSITION",
       "closed_class": true,
       "closed_class_kind": "preposition",
-      "definition": "While awaiting; until",
-      "gloss": "While awaiting; until",
+      "definition": "While awaiting; until the completion/decision of",
+      "gloss": "While awaiting; until the completion/decision of",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -2006,7 +2522,10 @@
       ],
       "seeded_pleasure_displeasure_weight": 0.0,
       "seeded_arousal_non_arousal_weight": 0.0,
-      "seeded_dominance_submissive_weight": 0.0
+      "seeded_dominance_submissive_weight": 0.0,
+      "senses": [
+        "While awaiting; until the completion/decision of"
+      ]
     },
     {
       "entry_id": "04850351-5d86-466f-929c-2566356a0c6b",
@@ -2019,8 +2538,8 @@
       "part_of_speech": "PREPOSITION",
       "closed_class": true,
       "closed_class_kind": "preposition",
-      "definition": "For each; in accordance with",
-      "gloss": "For each; in accordance with",
+      "definition": "For each",
+      "gloss": "For each",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -2046,7 +2565,12 @@
       ],
       "seeded_pleasure_displeasure_weight": 0.0,
       "seeded_arousal_non_arousal_weight": 0.0,
-      "seeded_dominance_submissive_weight": 0.0
+      "seeded_dominance_submissive_weight": 0.0,
+      "senses": [
+        "For each",
+        "According to/in accordance with",
+        "By means of"
+      ]
     },
     {
       "entry_id": "5059c21d-8a30-4187-8930-60d7324b814d",
@@ -2059,8 +2583,8 @@
       "part_of_speech": "PREPOSITION",
       "closed_class": true,
       "closed_class_kind": "preposition",
-      "definition": "With the addition of",
-      "gloss": "With the addition of",
+      "definition": "With the addition of; together with",
+      "gloss": "With the addition of; together with",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -2086,7 +2610,10 @@
       ],
       "seeded_pleasure_displeasure_weight": 0.0,
       "seeded_arousal_non_arousal_weight": 0.0,
-      "seeded_dominance_submissive_weight": 0.0
+      "seeded_dominance_submissive_weight": 0.0,
+      "senses": [
+        "With the addition of; together with"
+      ]
     },
     {
       "entry_id": "2ec79be6-2289-49b2-b70c-a7d9ed840e78",
@@ -2099,8 +2626,8 @@
       "part_of_speech": "PREPOSITION",
       "closed_class": true,
       "closed_class_kind": "preposition",
-      "definition": "On the subject of; concerning",
-      "gloss": "On the subject of; concerning",
+      "definition": "Concerning; with respect to",
+      "gloss": "Concerning; with respect to",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -2126,7 +2653,10 @@
       ],
       "seeded_pleasure_displeasure_weight": 0.0,
       "seeded_arousal_non_arousal_weight": 0.0,
-      "seeded_dominance_submissive_weight": 0.0
+      "seeded_dominance_submissive_weight": 0.0,
+      "senses": [
+        "Concerning; with respect to"
+      ]
     },
     {
       "entry_id": "065ea58b-bd9d-4460-bf50-6ab6cce81fa2",
@@ -2139,8 +2669,8 @@
       "part_of_speech": "PREPOSITION",
       "closed_class": true,
       "closed_class_kind": "preposition",
-      "definition": "Variant of 'around'; on every side of",
-      "gloss": "Variant of 'around'; on every side of",
+      "definition": "Around; surrounding; throughout/around an area",
+      "gloss": "Around; surrounding; throughout/around an area",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -2166,7 +2696,10 @@
       ],
       "seeded_pleasure_displeasure_weight": 0.0,
       "seeded_arousal_non_arousal_weight": 0.0,
-      "seeded_dominance_submissive_weight": 0.0
+      "seeded_dominance_submissive_weight": 0.0,
+      "senses": [
+        "Around; surrounding; throughout/around an area"
+      ]
     },
     {
       "entry_id": "f60f781f-9153-46c3-a6d2-30bc7b6e8f85",
@@ -2179,8 +2712,8 @@
       "part_of_speech": "PREPOSITION",
       "closed_class": true,
       "closed_class_kind": "preposition",
-      "definition": "Except for; other than (formal or archaic)",
-      "gloss": "Except for; other than (formal or archaic)",
+      "definition": "Except; other than",
+      "gloss": "Except; other than",
       "usage_notes": [],
       "register_codes": [
         "LITERARY"
@@ -2208,7 +2741,10 @@
       ],
       "seeded_pleasure_displeasure_weight": 0.0,
       "seeded_arousal_non_arousal_weight": 0.0,
-      "seeded_dominance_submissive_weight": 0.0
+      "seeded_dominance_submissive_weight": 0.0,
+      "senses": [
+        "Except; other than"
+      ]
     },
     {
       "entry_id": "c86c3896-34b8-4205-ac9a-45e13e16055d",
@@ -2221,8 +2757,8 @@
       "part_of_speech": "PREPOSITION",
       "closed_class": true,
       "closed_class_kind": "preposition",
-      "definition": "From a point in the past until now",
-      "gloss": "From a point in the past until now",
+      "definition": "From a specified past time/event up to another time",
+      "gloss": "From a specified past time/event up to another time",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -2248,7 +2784,10 @@
       ],
       "seeded_pleasure_displeasure_weight": 0.0,
       "seeded_arousal_non_arousal_weight": 0.0,
-      "seeded_dominance_submissive_weight": 0.0
+      "seeded_dominance_submissive_weight": 0.0,
+      "senses": [
+        "From a specified past time/event up to another time"
+      ]
     },
     {
       "entry_id": "39df6374-41f0-45a5-9426-6237125f9d71",
@@ -2261,8 +2800,8 @@
       "part_of_speech": "PREPOSITION",
       "closed_class": true,
       "closed_class_kind": "preposition",
-      "definition": "Introducing the second element of a comparison",
-      "gloss": "Introducing the second element of a comparison",
+      "definition": "Introduces the second element in a comparison",
+      "gloss": "Introduces the second element in a comparison",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -2288,7 +2827,10 @@
       ],
       "seeded_pleasure_displeasure_weight": 0.0,
       "seeded_arousal_non_arousal_weight": 0.0,
-      "seeded_dominance_submissive_weight": 0.0
+      "seeded_dominance_submissive_weight": 0.0,
+      "senses": [
+        "Introduces the second element in a comparison"
+      ]
     },
     {
       "entry_id": "8cf6542c-48d6-46e1-ab8f-b0a4241caaea",
@@ -2301,8 +2843,8 @@
       "part_of_speech": "PREPOSITION",
       "closed_class": true,
       "closed_class_kind": "preposition",
-      "definition": "From one end or side to the other of",
-      "gloss": "From one end or side to the other of",
+      "definition": "Entering and exiting",
+      "gloss": "Entering and exiting",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -2328,7 +2870,14 @@
       ],
       "seeded_pleasure_displeasure_weight": 0.0,
       "seeded_arousal_non_arousal_weight": 0.0,
-      "seeded_dominance_submissive_weight": 0.0
+      "seeded_dominance_submissive_weight": 0.0,
+      "senses": [
+        "Entering and exiting",
+        "From one side/end to another",
+        "Throughout a period",
+        "By means/agency of",
+        "Because of"
+      ]
     },
     {
       "entry_id": "d51ae3d6-d621-4015-9051-b94625c39b4c",
@@ -2341,8 +2890,8 @@
       "part_of_speech": "PREPOSITION",
       "closed_class": true,
       "closed_class_kind": "preposition",
-      "definition": "All the way through, in time or space",
-      "gloss": "All the way through, in time or space",
+      "definition": "In every part of; during the whole of",
+      "gloss": "In every part of; during the whole of",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -2368,7 +2917,10 @@
       ],
       "seeded_pleasure_displeasure_weight": 0.0,
       "seeded_arousal_non_arousal_weight": 0.0,
-      "seeded_dominance_submissive_weight": 0.0
+      "seeded_dominance_submissive_weight": 0.0,
+      "senses": [
+        "In every part of; during the whole of"
+      ]
     },
     {
       "entry_id": "55bfe4ae-d09b-4d36-bdca-d42502c59d2a",
@@ -2381,8 +2933,8 @@
       "part_of_speech": "PREPOSITION",
       "closed_class": true,
       "closed_class_kind": "preposition",
-      "definition": "Up to the time of; until",
-      "gloss": "Up to the time of; until",
+      "definition": "Up to a specified time/event; before/until",
+      "gloss": "Up to a specified time/event; before/until",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -2408,7 +2960,10 @@
       ],
       "seeded_pleasure_displeasure_weight": 0.0,
       "seeded_arousal_non_arousal_weight": 0.0,
-      "seeded_dominance_submissive_weight": 0.0
+      "seeded_dominance_submissive_weight": 0.0,
+      "senses": [
+        "Up to a specified time/event; before/until"
+      ]
     },
     {
       "entry_id": "51c43df2-ab4d-4e6c-9322-8b781c0d0d35",
@@ -2421,8 +2976,8 @@
       "part_of_speech": "PREPOSITION",
       "closed_class": true,
       "closed_class_kind": "preposition",
-      "definition": "Indicating direction, destination, or a recipient",
-      "gloss": "Indicating direction, destination, or a recipient",
+      "definition": "Toward a destination",
+      "gloss": "Toward a destination",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -2448,7 +3003,16 @@
       ],
       "seeded_pleasure_displeasure_weight": 0.0,
       "seeded_arousal_non_arousal_weight": 0.0,
-      "seeded_dominance_submissive_weight": 0.0
+      "seeded_dominance_submissive_weight": 0.0,
+      "senses": [
+        "Toward a destination",
+        "Reaching/up to",
+        "Recipient",
+        "Relationship/attachment",
+        "Comparison",
+        "Range/limit",
+        "Result/state"
+      ]
     },
     {
       "entry_id": "fe35bc21-5cf0-4fbb-9be1-3d16248c9cfa",
@@ -2488,7 +3052,13 @@
       ],
       "seeded_pleasure_displeasure_weight": 0.0,
       "seeded_arousal_non_arousal_weight": 0.0,
-      "seeded_dominance_submissive_weight": 0.0
+      "seeded_dominance_submissive_weight": 0.0,
+      "senses": [
+        "In the direction of",
+        "Approaching a time/state",
+        "In relation to",
+        "Contributing to a purpose/result"
+      ]
     },
     {
       "entry_id": "9e753ca4-c79e-4496-9b1b-bff3e0ca130f",
@@ -2501,8 +3071,8 @@
       "part_of_speech": "PREPOSITION",
       "closed_class": true,
       "closed_class_kind": "preposition",
-      "definition": "Variant of 'toward'",
-      "gloss": "Variant of 'toward'",
+      "definition": "Same central senses as toward: direction, approach, relation or contribution",
+      "gloss": "Same central senses as toward: direction, approach, relation or contribution",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -2528,7 +3098,10 @@
       ],
       "seeded_pleasure_displeasure_weight": 0.0,
       "seeded_arousal_non_arousal_weight": 0.0,
-      "seeded_dominance_submissive_weight": 0.0
+      "seeded_dominance_submissive_weight": 0.0,
+      "senses": [
+        "Same central senses as toward: direction, approach, relation or contribution"
+      ]
     },
     {
       "entry_id": "19087fac-03a7-43da-a482-41d3cd1da04e",
@@ -2541,8 +3114,8 @@
       "part_of_speech": "PREPOSITION",
       "closed_class": true,
       "closed_class_kind": "preposition",
-      "definition": "Below, or subject to",
-      "gloss": "Below, or subject to",
+      "definition": "Below/beneath",
+      "gloss": "Below/beneath",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -2568,7 +3141,15 @@
       ],
       "seeded_pleasure_displeasure_weight": 0.0,
       "seeded_arousal_non_arousal_weight": 0.0,
-      "seeded_dominance_submissive_weight": 0.0
+      "seeded_dominance_submissive_weight": 0.0,
+      "senses": [
+        "Below/beneath",
+        "Covered by",
+        "Subject to authority/control",
+        "During a condition/process",
+        "Less than a quantity/age",
+        "Classified by a heading/name"
+      ]
     },
     {
       "entry_id": "b54a0333-0d67-4138-8c3f-77aeba0936c7",
@@ -2581,8 +3162,8 @@
       "part_of_speech": "PREPOSITION",
       "closed_class": true,
       "closed_class_kind": "preposition",
-      "definition": "Directly below; beneath",
-      "gloss": "Directly below; beneath",
+      "definition": "Directly below; beneath; concealed by",
+      "gloss": "Directly below; beneath; concealed by",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -2608,7 +3189,10 @@
       ],
       "seeded_pleasure_displeasure_weight": 0.0,
       "seeded_arousal_non_arousal_weight": 0.0,
-      "seeded_dominance_submissive_weight": 0.0
+      "seeded_dominance_submissive_weight": 0.0,
+      "senses": [
+        "Directly below; beneath; concealed by"
+      ]
     },
     {
       "entry_id": "cbbb0276-ce33-4079-9f5a-4c9f56b74523",
@@ -2621,8 +3205,8 @@
       "part_of_speech": "PREPOSITION",
       "closed_class": true,
       "closed_class_kind": "preposition",
-      "definition": "Different from; not like",
-      "gloss": "Different from; not like",
+      "definition": "Different from; in contrast to",
+      "gloss": "Different from; in contrast to",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -2648,7 +3232,10 @@
       ],
       "seeded_pleasure_displeasure_weight": 0.0,
       "seeded_arousal_non_arousal_weight": 0.0,
-      "seeded_dominance_submissive_weight": 0.0
+      "seeded_dominance_submissive_weight": 0.0,
+      "senses": [
+        "Different from; in contrast to"
+      ]
     },
     {
       "entry_id": "61dc2264-84df-41a5-9040-e550b2a2fccd",
@@ -2661,8 +3248,8 @@
       "part_of_speech": "PREPOSITION",
       "closed_class": true,
       "closed_class_kind": "preposition",
-      "definition": "Up to the point in time that",
-      "gloss": "Up to the point in time that",
+      "definition": "Up to a specified time/event",
+      "gloss": "Up to a specified time/event",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -2688,7 +3275,10 @@
       ],
       "seeded_pleasure_displeasure_weight": 0.0,
       "seeded_arousal_non_arousal_weight": 0.0,
-      "seeded_dominance_submissive_weight": 0.0
+      "seeded_dominance_submissive_weight": 0.0,
+      "senses": [
+        "Up to a specified time/event"
+      ]
     },
     {
       "entry_id": "b16c5020-b659-440c-b5e3-9bfd2954bc96",
@@ -2701,8 +3291,8 @@
       "part_of_speech": "PREPOSITION",
       "closed_class": true,
       "closed_class_kind": "preposition",
-      "definition": "Archaic or formal variant of 'to'",
-      "gloss": "Archaic or formal variant of 'to'",
+      "definition": "To; toward; up to (now chiefly archaic/literary in many uses)",
+      "gloss": "To; toward; up to (now chiefly archaic/literary in many uses)",
       "usage_notes": [],
       "register_codes": [
         "LITERARY"
@@ -2730,7 +3320,10 @@
       ],
       "seeded_pleasure_displeasure_weight": 0.0,
       "seeded_arousal_non_arousal_weight": 0.0,
-      "seeded_dominance_submissive_weight": 0.0
+      "seeded_dominance_submissive_weight": 0.0,
+      "senses": [
+        "To; toward; up to (now chiefly archaic/literary in many uses)"
+      ]
     },
     {
       "entry_id": "eb1799fd-4b43-4d84-83ee-1d27c627a1c8",
@@ -2743,8 +3336,8 @@
       "part_of_speech": "PREPOSITION",
       "closed_class": true,
       "closed_class_kind": "preposition",
-      "definition": "Toward a higher point or position",
-      "gloss": "Toward a higher point or position",
+      "definition": "Toward a higher point along; along/toward a place or route",
+      "gloss": "Toward a higher point along; along/toward a place or route",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -2770,7 +3363,10 @@
       ],
       "seeded_pleasure_displeasure_weight": 0.0,
       "seeded_arousal_non_arousal_weight": 0.0,
-      "seeded_dominance_submissive_weight": 0.0
+      "seeded_dominance_submissive_weight": 0.0,
+      "senses": [
+        "Toward a higher point along; along/toward a place or route"
+      ]
     },
     {
       "entry_id": "f60a5531-2d68-45b5-9185-73249b381fe9",
@@ -2783,8 +3379,8 @@
       "part_of_speech": "PREPOSITION",
       "closed_class": true,
       "closed_class_kind": "preposition",
-      "definition": "Formal variant of 'on'",
-      "gloss": "Formal variant of 'on'",
+      "definition": "On",
+      "gloss": "On",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -2810,7 +3406,13 @@
       ],
       "seeded_pleasure_displeasure_weight": 0.0,
       "seeded_arousal_non_arousal_weight": 0.0,
-      "seeded_dominance_submissive_weight": 0.0
+      "seeded_dominance_submissive_weight": 0.0,
+      "senses": [
+        "On",
+        "Immediately after",
+        "On the occasion/condition of",
+        "Directed toward"
+      ]
     },
     {
       "entry_id": "147aac24-0549-4a07-ac57-b65656cfc827",
@@ -2823,8 +3425,8 @@
       "part_of_speech": "PREPOSITION",
       "closed_class": true,
       "closed_class_kind": "preposition",
-      "definition": "Against, as in a contest or comparison",
-      "gloss": "Against, as in a contest or comparison",
+      "definition": "Against, especially opponents",
+      "gloss": "Against, especially opponents",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -2850,7 +3452,12 @@
       ],
       "seeded_pleasure_displeasure_weight": 0.0,
       "seeded_arousal_non_arousal_weight": 0.0,
-      "seeded_dominance_submissive_weight": 0.0
+      "seeded_dominance_submissive_weight": 0.0,
+      "senses": [
+        "Against, especially opponents",
+        "In contrast/comparison with",
+        "As opposed to"
+      ]
     },
     {
       "entry_id": "3a0a4691-540e-4152-8a02-1892470cf438",
@@ -2863,8 +3470,8 @@
       "part_of_speech": "PREPOSITION",
       "closed_class": true,
       "closed_class_kind": "preposition",
-      "definition": "By way of; through",
-      "gloss": "By way of; through",
+      "definition": "By way of; through; using/by means of",
+      "gloss": "By way of; through; using/by means of",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -2890,7 +3497,10 @@
       ],
       "seeded_pleasure_displeasure_weight": 0.0,
       "seeded_arousal_non_arousal_weight": 0.0,
-      "seeded_dominance_submissive_weight": 0.0
+      "seeded_dominance_submissive_weight": 0.0,
+      "senses": [
+        "By way of; through; using/by means of"
+      ]
     },
     {
       "entry_id": "338cf415-bc55-4f2d-b305-ea6288f668eb",
@@ -2903,8 +3513,8 @@
       "part_of_speech": "PREPOSITION",
       "closed_class": true,
       "closed_class_kind": "preposition",
-      "definition": "Accompanied by, or by means of",
-      "gloss": "Accompanied by, or by means of",
+      "definition": "Accompanied by",
+      "gloss": "Accompanied by",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -2930,7 +3540,16 @@
       ],
       "seeded_pleasure_displeasure_weight": 0.0,
       "seeded_arousal_non_arousal_weight": 0.0,
-      "seeded_dominance_submissive_weight": 0.0
+      "seeded_dominance_submissive_weight": 0.0,
+      "senses": [
+        "Accompanied by",
+        "Possessing/having",
+        "Using/by means of",
+        "In relation/dealing with",
+        "Against",
+        "Because of",
+        "In the same direction as"
+      ]
     },
     {
       "entry_id": "a59d6621-3925-45ce-ac9d-da4b09e56a94",
@@ -2943,8 +3562,8 @@
       "part_of_speech": "PREPOSITION",
       "closed_class": true,
       "closed_class_kind": "preposition",
-      "definition": "Inside the limits or bounds of",
-      "gloss": "Inside the limits or bounds of",
+      "definition": "Inside the spatial, temporal, quantitative or conceptual limits of",
+      "gloss": "Inside the spatial, temporal, quantitative or conceptual limits of",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -2970,7 +3589,10 @@
       ],
       "seeded_pleasure_displeasure_weight": 0.0,
       "seeded_arousal_non_arousal_weight": 0.0,
-      "seeded_dominance_submissive_weight": 0.0
+      "seeded_dominance_submissive_weight": 0.0,
+      "senses": [
+        "Inside the spatial, temporal, quantitative or conceptual limits of"
+      ]
     },
     {
       "entry_id": "91b5ab7e-1311-4bbb-af4f-1550a13005ba",
@@ -2983,8 +3605,8 @@
       "part_of_speech": "PREPOSITION",
       "closed_class": true,
       "closed_class_kind": "preposition",
-      "definition": "Not accompanied by; lacking",
-      "gloss": "Not accompanied by; lacking",
+      "definition": "In the absence of/not having",
+      "gloss": "In the absence of/not having",
       "usage_notes": [],
       "register_codes": [
         "NEUTRAL"
@@ -3010,7 +3632,11 @@
       ],
       "seeded_pleasure_displeasure_weight": 0.0,
       "seeded_arousal_non_arousal_weight": 0.0,
-      "seeded_dominance_submissive_weight": 0.0
+      "seeded_dominance_submissive_weight": 0.0,
+      "senses": [
+        "In the absence of/not having",
+        "Outside (older/literary spatial use)"
+      ]
     },
     {
       "entry_id": "3159cafc-6a0a-4f89-9242-a0578a5e5dbf",
@@ -3042,806 +3668,6 @@
       "source_references": [
         {
           "source_name": "LIRA English Common Closed-Class Cache v1",
-          "source_version": "1.0.0",
-          "external_identifier": null,
-          "reference_uri": null,
-          "licence_identifier": null
-        }
-      ],
-      "seeded_pleasure_displeasure_weight": 0.0,
-      "seeded_arousal_non_arousal_weight": 0.0,
-      "seeded_dominance_submissive_weight": 0.0
-    },
-    {
-      "entry_id": "57b8942d-1174-4ddc-b862-42544a9a3171",
-      "lexical_form": "according to",
-      "normalised_form": "according to",
-      "text": "according to",
-      "version": "1.0",
-      "language_code": "en",
-      "script_code": "Latn",
-      "part_of_speech": "PREPOSITION",
-      "closed_class": true,
-      "closed_class_kind": "preposition",
-      "definition": "As stated by, or in a way consistent with",
-      "gloss": "As stated by, or in a way consistent with",
-      "usage_notes": [],
-      "register_codes": [
-        "NEUTRAL"
-      ],
-      "editorial_labels": [],
-      "dialect_codes": [],
-      "pronunciations": [],
-      "syllable_representation": null,
-      "syllable_count": null,
-      "stress_pattern": null,
-      "frequency_value": null,
-      "frequency_scale": null,
-      "etymology_text": null,
-      "first_recorded_use": null,
-      "source_references": [
-        {
-          "source_name": "LIRA English Common Closed-Class Cache v1",
-          "source_version": "1.0.0",
-          "external_identifier": null,
-          "reference_uri": null,
-          "licence_identifier": null
-        }
-      ],
-      "seeded_pleasure_displeasure_weight": 0.0,
-      "seeded_arousal_non_arousal_weight": 0.0,
-      "seeded_dominance_submissive_weight": 0.0
-    },
-    {
-      "entry_id": "610c3b93-546c-49dd-9136-eab38465ca60",
-      "lexical_form": "ahead of",
-      "normalised_form": "ahead of",
-      "text": "ahead of",
-      "version": "1.0",
-      "language_code": "en",
-      "script_code": "Latn",
-      "part_of_speech": "PREPOSITION",
-      "closed_class": true,
-      "closed_class_kind": "preposition",
-      "definition": "In front of, or earlier than",
-      "gloss": "In front of, or earlier than",
-      "usage_notes": [],
-      "register_codes": [
-        "NEUTRAL"
-      ],
-      "editorial_labels": [],
-      "dialect_codes": [],
-      "pronunciations": [],
-      "syllable_representation": null,
-      "syllable_count": null,
-      "stress_pattern": null,
-      "frequency_value": null,
-      "frequency_scale": null,
-      "etymology_text": null,
-      "first_recorded_use": null,
-      "source_references": [
-        {
-          "source_name": "LIRA English Common Closed-Class Cache v1",
-          "source_version": "1.0.0",
-          "external_identifier": null,
-          "reference_uri": null,
-          "licence_identifier": null
-        }
-      ],
-      "seeded_pleasure_displeasure_weight": 0.0,
-      "seeded_arousal_non_arousal_weight": 0.0,
-      "seeded_dominance_submissive_weight": 0.0
-    },
-    {
-      "entry_id": "2eae352b-6bad-4262-9baf-1b990411b9a8",
-      "lexical_form": "along with",
-      "normalised_form": "along with",
-      "text": "along with",
-      "version": "1.0",
-      "language_code": "en",
-      "script_code": "Latn",
-      "part_of_speech": "PREPOSITION",
-      "closed_class": true,
-      "closed_class_kind": "preposition",
-      "definition": "In addition to; together with",
-      "gloss": "In addition to; together with",
-      "usage_notes": [],
-      "register_codes": [
-        "NEUTRAL"
-      ],
-      "editorial_labels": [],
-      "dialect_codes": [],
-      "pronunciations": [],
-      "syllable_representation": null,
-      "syllable_count": null,
-      "stress_pattern": null,
-      "frequency_value": null,
-      "frequency_scale": null,
-      "etymology_text": null,
-      "first_recorded_use": null,
-      "source_references": [
-        {
-          "source_name": "LIRA English Common Closed-Class Cache v1",
-          "source_version": "1.0.0",
-          "external_identifier": null,
-          "reference_uri": null,
-          "licence_identifier": null
-        }
-      ],
-      "seeded_pleasure_displeasure_weight": 0.0,
-      "seeded_arousal_non_arousal_weight": 0.0,
-      "seeded_dominance_submissive_weight": 0.0
-    },
-    {
-      "entry_id": "28809af2-046f-442f-b070-0a6123a5be06",
-      "lexical_form": "apart from",
-      "normalised_form": "apart from",
-      "text": "apart from",
-      "version": "1.0",
-      "language_code": "en",
-      "script_code": "Latn",
-      "part_of_speech": "PREPOSITION",
-      "closed_class": true,
-      "closed_class_kind": "preposition",
-      "definition": "Except for; other than",
-      "gloss": "Except for; other than",
-      "usage_notes": [],
-      "register_codes": [
-        "NEUTRAL"
-      ],
-      "editorial_labels": [],
-      "dialect_codes": [],
-      "pronunciations": [],
-      "syllable_representation": null,
-      "syllable_count": null,
-      "stress_pattern": null,
-      "frequency_value": null,
-      "frequency_scale": null,
-      "etymology_text": null,
-      "first_recorded_use": null,
-      "source_references": [
-        {
-          "source_name": "LIRA English Common Closed-Class Cache v1",
-          "source_version": "1.0.0",
-          "external_identifier": null,
-          "reference_uri": null,
-          "licence_identifier": null
-        }
-      ],
-      "seeded_pleasure_displeasure_weight": 0.0,
-      "seeded_arousal_non_arousal_weight": 0.0,
-      "seeded_dominance_submissive_weight": 0.0
-    },
-    {
-      "entry_id": "86662fcf-24ac-445c-ad26-4232c751d89a",
-      "lexical_form": "as for",
-      "normalised_form": "as for",
-      "text": "as for",
-      "version": "1.0",
-      "language_code": "en",
-      "script_code": "Latn",
-      "part_of_speech": "PREPOSITION",
-      "closed_class": true,
-      "closed_class_kind": "preposition",
-      "definition": "With regard to; concerning",
-      "gloss": "With regard to; concerning",
-      "usage_notes": [],
-      "register_codes": [
-        "NEUTRAL"
-      ],
-      "editorial_labels": [],
-      "dialect_codes": [],
-      "pronunciations": [],
-      "syllable_representation": null,
-      "syllable_count": null,
-      "stress_pattern": null,
-      "frequency_value": null,
-      "frequency_scale": null,
-      "etymology_text": null,
-      "first_recorded_use": null,
-      "source_references": [
-        {
-          "source_name": "LIRA English Common Closed-Class Cache v1",
-          "source_version": "1.0.0",
-          "external_identifier": null,
-          "reference_uri": null,
-          "licence_identifier": null
-        }
-      ],
-      "seeded_pleasure_displeasure_weight": 0.0,
-      "seeded_arousal_non_arousal_weight": 0.0,
-      "seeded_dominance_submissive_weight": 0.0
-    },
-    {
-      "entry_id": "921919cc-5543-46f1-9e1d-44e6dfa4ac8f",
-      "lexical_form": "as of",
-      "normalised_form": "as of",
-      "text": "as of",
-      "version": "1.0",
-      "language_code": "en",
-      "script_code": "Latn",
-      "part_of_speech": "PREPOSITION",
-      "closed_class": true,
-      "closed_class_kind": "preposition",
-      "definition": "Starting from, or up to, a specified time",
-      "gloss": "Starting from, or up to, a specified time",
-      "usage_notes": [],
-      "register_codes": [
-        "NEUTRAL"
-      ],
-      "editorial_labels": [],
-      "dialect_codes": [],
-      "pronunciations": [],
-      "syllable_representation": null,
-      "syllable_count": null,
-      "stress_pattern": null,
-      "frequency_value": null,
-      "frequency_scale": null,
-      "etymology_text": null,
-      "first_recorded_use": null,
-      "source_references": [
-        {
-          "source_name": "LIRA English Common Closed-Class Cache v1",
-          "source_version": "1.0.0",
-          "external_identifier": null,
-          "reference_uri": null,
-          "licence_identifier": null
-        }
-      ],
-      "seeded_pleasure_displeasure_weight": 0.0,
-      "seeded_arousal_non_arousal_weight": 0.0,
-      "seeded_dominance_submissive_weight": 0.0
-    },
-    {
-      "entry_id": "3b0c09b3-5e10-419b-95ca-94f1337d2369",
-      "lexical_form": "as per",
-      "normalised_form": "as per",
-      "text": "as per",
-      "version": "1.0",
-      "language_code": "en",
-      "script_code": "Latn",
-      "part_of_speech": "PREPOSITION",
-      "closed_class": true,
-      "closed_class_kind": "preposition",
-      "definition": "In accordance with",
-      "gloss": "In accordance with",
-      "usage_notes": [],
-      "register_codes": [
-        "NEUTRAL"
-      ],
-      "editorial_labels": [],
-      "dialect_codes": [],
-      "pronunciations": [],
-      "syllable_representation": null,
-      "syllable_count": null,
-      "stress_pattern": null,
-      "frequency_value": null,
-      "frequency_scale": null,
-      "etymology_text": null,
-      "first_recorded_use": null,
-      "source_references": [
-        {
-          "source_name": "LIRA English Common Closed-Class Cache v1",
-          "source_version": "1.0.0",
-          "external_identifier": null,
-          "reference_uri": null,
-          "licence_identifier": null
-        }
-      ],
-      "seeded_pleasure_displeasure_weight": 0.0,
-      "seeded_arousal_non_arousal_weight": 0.0,
-      "seeded_dominance_submissive_weight": 0.0
-    },
-    {
-      "entry_id": "b3ea349c-a356-4f7a-9f52-9e338c22773e",
-      "lexical_form": "because of",
-      "normalised_form": "because of",
-      "text": "because of",
-      "version": "1.0",
-      "language_code": "en",
-      "script_code": "Latn",
-      "part_of_speech": "PREPOSITION",
-      "closed_class": true,
-      "closed_class_kind": "preposition",
-      "definition": "By reason of; owing to",
-      "gloss": "By reason of; owing to",
-      "usage_notes": [],
-      "register_codes": [
-        "NEUTRAL"
-      ],
-      "editorial_labels": [],
-      "dialect_codes": [],
-      "pronunciations": [],
-      "syllable_representation": null,
-      "syllable_count": null,
-      "stress_pattern": null,
-      "frequency_value": null,
-      "frequency_scale": null,
-      "etymology_text": null,
-      "first_recorded_use": null,
-      "source_references": [
-        {
-          "source_name": "LIRA English Common Closed-Class Cache v1",
-          "source_version": "1.0.0",
-          "external_identifier": null,
-          "reference_uri": null,
-          "licence_identifier": null
-        }
-      ],
-      "seeded_pleasure_displeasure_weight": 0.0,
-      "seeded_arousal_non_arousal_weight": 0.0,
-      "seeded_dominance_submissive_weight": 0.0
-    },
-    {
-      "entry_id": "afacf081-c0c8-4868-bd74-f0ee3906b965",
-      "lexical_form": "close to",
-      "normalised_form": "close to",
-      "text": "close to",
-      "version": "1.0",
-      "language_code": "en",
-      "script_code": "Latn",
-      "part_of_speech": "PREPOSITION",
-      "closed_class": true,
-      "closed_class_kind": "preposition",
-      "definition": "Near to, in distance or degree",
-      "gloss": "Near to, in distance or degree",
-      "usage_notes": [],
-      "register_codes": [
-        "NEUTRAL"
-      ],
-      "editorial_labels": [],
-      "dialect_codes": [],
-      "pronunciations": [],
-      "syllable_representation": null,
-      "syllable_count": null,
-      "stress_pattern": null,
-      "frequency_value": null,
-      "frequency_scale": null,
-      "etymology_text": null,
-      "first_recorded_use": null,
-      "source_references": [
-        {
-          "source_name": "LIRA English Common Closed-Class Cache v1",
-          "source_version": "1.0.0",
-          "external_identifier": null,
-          "reference_uri": null,
-          "licence_identifier": null
-        }
-      ],
-      "seeded_pleasure_displeasure_weight": 0.0,
-      "seeded_arousal_non_arousal_weight": 0.0,
-      "seeded_dominance_submissive_weight": 0.0
-    },
-    {
-      "entry_id": "aa52d662-ea5d-4bb7-82a8-76f843ef2c86",
-      "lexical_form": "due to",
-      "normalised_form": "due to",
-      "text": "due to",
-      "version": "1.0",
-      "language_code": "en",
-      "script_code": "Latn",
-      "part_of_speech": "PREPOSITION",
-      "closed_class": true,
-      "closed_class_kind": "preposition",
-      "definition": "Caused by; as a result of",
-      "gloss": "Caused by; as a result of",
-      "usage_notes": [],
-      "register_codes": [
-        "NEUTRAL"
-      ],
-      "editorial_labels": [],
-      "dialect_codes": [],
-      "pronunciations": [],
-      "syllable_representation": null,
-      "syllable_count": null,
-      "stress_pattern": null,
-      "frequency_value": null,
-      "frequency_scale": null,
-      "etymology_text": null,
-      "first_recorded_use": null,
-      "source_references": [
-        {
-          "source_name": "LIRA English Common Closed-Class Cache v1",
-          "source_version": "1.0.0",
-          "external_identifier": null,
-          "reference_uri": null,
-          "licence_identifier": null
-        }
-      ],
-      "seeded_pleasure_displeasure_weight": 0.0,
-      "seeded_arousal_non_arousal_weight": 0.0,
-      "seeded_dominance_submissive_weight": 0.0
-    },
-    {
-      "entry_id": "940e616d-1fd0-4dc3-9c54-4ea0b2b3d7c4",
-      "lexical_form": "in front of",
-      "normalised_form": "in front of",
-      "text": "in front of",
-      "version": "1.0",
-      "language_code": "en",
-      "script_code": "Latn",
-      "part_of_speech": "PREPOSITION",
-      "closed_class": true,
-      "closed_class_kind": "preposition",
-      "definition": "Ahead of, or facing the front side of",
-      "gloss": "Ahead of, or facing the front side of",
-      "usage_notes": [],
-      "register_codes": [
-        "NEUTRAL"
-      ],
-      "editorial_labels": [],
-      "dialect_codes": [],
-      "pronunciations": [],
-      "syllable_representation": null,
-      "syllable_count": null,
-      "stress_pattern": null,
-      "frequency_value": null,
-      "frequency_scale": null,
-      "etymology_text": null,
-      "first_recorded_use": null,
-      "source_references": [
-        {
-          "source_name": "LIRA English Common Closed-Class Cache v1",
-          "source_version": "1.0.0",
-          "external_identifier": null,
-          "reference_uri": null,
-          "licence_identifier": null
-        }
-      ],
-      "seeded_pleasure_displeasure_weight": 0.0,
-      "seeded_arousal_non_arousal_weight": 0.0,
-      "seeded_dominance_submissive_weight": 0.0
-    },
-    {
-      "entry_id": "1161427a-31dd-4b08-84a1-c069fea5a0fb",
-      "lexical_form": "in spite of",
-      "normalised_form": "in spite of",
-      "text": "in spite of",
-      "version": "1.0",
-      "language_code": "en",
-      "script_code": "Latn",
-      "part_of_speech": "PREPOSITION",
-      "closed_class": true,
-      "closed_class_kind": "preposition",
-      "definition": "Without being affected or prevented by",
-      "gloss": "Without being affected or prevented by",
-      "usage_notes": [],
-      "register_codes": [
-        "NEUTRAL"
-      ],
-      "editorial_labels": [],
-      "dialect_codes": [],
-      "pronunciations": [],
-      "syllable_representation": null,
-      "syllable_count": null,
-      "stress_pattern": null,
-      "frequency_value": null,
-      "frequency_scale": null,
-      "etymology_text": null,
-      "first_recorded_use": null,
-      "source_references": [
-        {
-          "source_name": "LIRA English Common Closed-Class Cache v1",
-          "source_version": "1.0.0",
-          "external_identifier": null,
-          "reference_uri": null,
-          "licence_identifier": null
-        }
-      ],
-      "seeded_pleasure_displeasure_weight": 0.0,
-      "seeded_arousal_non_arousal_weight": 0.0,
-      "seeded_dominance_submissive_weight": 0.0
-    },
-    {
-      "entry_id": "6e839d88-8bba-40c7-92d7-49c4540c9677",
-      "lexical_form": "instead of",
-      "normalised_form": "instead of",
-      "text": "instead of",
-      "version": "1.0",
-      "language_code": "en",
-      "script_code": "Latn",
-      "part_of_speech": "PREPOSITION",
-      "closed_class": true,
-      "closed_class_kind": "preposition",
-      "definition": "In place of; as an alternative to",
-      "gloss": "In place of; as an alternative to",
-      "usage_notes": [],
-      "register_codes": [
-        "NEUTRAL"
-      ],
-      "editorial_labels": [],
-      "dialect_codes": [],
-      "pronunciations": [],
-      "syllable_representation": null,
-      "syllable_count": null,
-      "stress_pattern": null,
-      "frequency_value": null,
-      "frequency_scale": null,
-      "etymology_text": null,
-      "first_recorded_use": null,
-      "source_references": [
-        {
-          "source_name": "LIRA English Common Closed-Class Cache v1",
-          "source_version": "1.0.0",
-          "external_identifier": null,
-          "reference_uri": null,
-          "licence_identifier": null
-        }
-      ],
-      "seeded_pleasure_displeasure_weight": 0.0,
-      "seeded_arousal_non_arousal_weight": 0.0,
-      "seeded_dominance_submissive_weight": 0.0
-    },
-    {
-      "entry_id": "91a7b841-87fc-4539-aa40-b46e7ff866c1",
-      "lexical_form": "next to",
-      "normalised_form": "next to",
-      "text": "next to",
-      "version": "1.0",
-      "language_code": "en",
-      "script_code": "Latn",
-      "part_of_speech": "PREPOSITION",
-      "closed_class": true,
-      "closed_class_kind": "preposition",
-      "definition": "Immediately beside",
-      "gloss": "Immediately beside",
-      "usage_notes": [],
-      "register_codes": [
-        "NEUTRAL"
-      ],
-      "editorial_labels": [],
-      "dialect_codes": [],
-      "pronunciations": [],
-      "syllable_representation": null,
-      "syllable_count": null,
-      "stress_pattern": null,
-      "frequency_value": null,
-      "frequency_scale": null,
-      "etymology_text": null,
-      "first_recorded_use": null,
-      "source_references": [
-        {
-          "source_name": "LIRA English Common Closed-Class Cache v1",
-          "source_version": "1.0.0",
-          "external_identifier": null,
-          "reference_uri": null,
-          "licence_identifier": null
-        }
-      ],
-      "seeded_pleasure_displeasure_weight": 0.0,
-      "seeded_arousal_non_arousal_weight": 0.0,
-      "seeded_dominance_submissive_weight": 0.0
-    },
-    {
-      "entry_id": "c79bbcb4-339b-49e2-a710-83e1c7269ff6",
-      "lexical_form": "on top of",
-      "normalised_form": "on top of",
-      "text": "on top of",
-      "version": "1.0",
-      "language_code": "en",
-      "script_code": "Latn",
-      "part_of_speech": "PREPOSITION",
-      "closed_class": true,
-      "closed_class_kind": "preposition",
-      "definition": "Resting on the upper surface of",
-      "gloss": "Resting on the upper surface of",
-      "usage_notes": [],
-      "register_codes": [
-        "NEUTRAL"
-      ],
-      "editorial_labels": [],
-      "dialect_codes": [],
-      "pronunciations": [],
-      "syllable_representation": null,
-      "syllable_count": null,
-      "stress_pattern": null,
-      "frequency_value": null,
-      "frequency_scale": null,
-      "etymology_text": null,
-      "first_recorded_use": null,
-      "source_references": [
-        {
-          "source_name": "LIRA English Common Closed-Class Cache v1",
-          "source_version": "1.0.0",
-          "external_identifier": null,
-          "reference_uri": null,
-          "licence_identifier": null
-        }
-      ],
-      "seeded_pleasure_displeasure_weight": 0.0,
-      "seeded_arousal_non_arousal_weight": 0.0,
-      "seeded_dominance_submissive_weight": 0.0
-    },
-    {
-      "entry_id": "083b845f-8249-4cb3-9758-e86e192041b8",
-      "lexical_form": "out of",
-      "normalised_form": "out of",
-      "text": "out of",
-      "version": "1.0",
-      "language_code": "en",
-      "script_code": "Latn",
-      "part_of_speech": "PREPOSITION",
-      "closed_class": true,
-      "closed_class_kind": "preposition",
-      "definition": "From within; from a supply of",
-      "gloss": "From within; from a supply of",
-      "usage_notes": [],
-      "register_codes": [
-        "NEUTRAL"
-      ],
-      "editorial_labels": [],
-      "dialect_codes": [],
-      "pronunciations": [],
-      "syllable_representation": null,
-      "syllable_count": null,
-      "stress_pattern": null,
-      "frequency_value": null,
-      "frequency_scale": null,
-      "etymology_text": null,
-      "first_recorded_use": null,
-      "source_references": [
-        {
-          "source_name": "LIRA English Common Closed-Class Cache v1",
-          "source_version": "1.0.0",
-          "external_identifier": null,
-          "reference_uri": null,
-          "licence_identifier": null
-        }
-      ],
-      "seeded_pleasure_displeasure_weight": 0.0,
-      "seeded_arousal_non_arousal_weight": 0.0,
-      "seeded_dominance_submissive_weight": 0.0
-    },
-    {
-      "entry_id": "d46e2f4e-f9ba-42a2-82c1-33c6572aab5d",
-      "lexical_form": "owing to",
-      "normalised_form": "owing to",
-      "text": "owing to",
-      "version": "1.0",
-      "language_code": "en",
-      "script_code": "Latn",
-      "part_of_speech": "PREPOSITION",
-      "closed_class": true,
-      "closed_class_kind": "preposition",
-      "definition": "Because of; as a result of (synonym of 'due to')",
-      "gloss": "Because of; as a result of (synonym of 'due to')",
-      "usage_notes": [],
-      "register_codes": [
-        "NEUTRAL"
-      ],
-      "editorial_labels": [],
-      "dialect_codes": [],
-      "pronunciations": [],
-      "syllable_representation": null,
-      "syllable_count": null,
-      "stress_pattern": null,
-      "frequency_value": null,
-      "frequency_scale": null,
-      "etymology_text": null,
-      "first_recorded_use": null,
-      "source_references": [
-        {
-          "source_name": "LIRA English Common Closed-Class Cache v1",
-          "source_version": "1.0.0",
-          "external_identifier": null,
-          "reference_uri": null,
-          "licence_identifier": null
-        }
-      ],
-      "seeded_pleasure_displeasure_weight": 0.0,
-      "seeded_arousal_non_arousal_weight": 0.0,
-      "seeded_dominance_submissive_weight": 0.0
-    },
-    {
-      "entry_id": "7f0a9d42-e734-437b-a3d6-9247210ef642",
-      "lexical_form": "as well as",
-      "normalised_form": "as well as",
-      "text": "as well as",
-      "version": "1.0",
-      "language_code": "en",
-      "script_code": "Latn",
-      "part_of_speech": "PREPOSITION",
-      "closed_class": true,
-      "closed_class_kind": "preposition",
-      "definition": "In addition to; besides",
-      "gloss": "In addition to; besides",
-      "usage_notes": [],
-      "register_codes": [
-        "NEUTRAL"
-      ],
-      "editorial_labels": [],
-      "dialect_codes": [],
-      "pronunciations": [],
-      "syllable_representation": null,
-      "syllable_count": null,
-      "stress_pattern": null,
-      "frequency_value": null,
-      "frequency_scale": null,
-      "etymology_text": null,
-      "first_recorded_use": null,
-      "source_references": [
-        {
-          "source_name": "LIRA English Common Closed-Class Cache v1",
-          "source_version": "1.0.0",
-          "external_identifier": null,
-          "reference_uri": null,
-          "licence_identifier": null
-        }
-      ],
-      "seeded_pleasure_displeasure_weight": 0.0,
-      "seeded_arousal_non_arousal_weight": 0.0,
-      "seeded_dominance_submissive_weight": 0.0
-    },
-    {
-      "entry_id": "73bc4ca0-d0c2-49d4-b912-8c5ec6e48c52",
-      "lexical_form": "concerning",
-      "normalised_form": "concerning",
-      "text": "concerning",
-      "version": "1.0",
-      "language_code": "en",
-      "script_code": "Latn",
-      "part_of_speech": "PREPOSITION",
-      "closed_class": true,
-      "closed_class_kind": "preposition",
-      "definition": "About; on the subject of.",
-      "gloss": "About; on the subject of.",
-      "usage_notes": [],
-      "register_codes": [
-        "NEUTRAL"
-      ],
-      "editorial_labels": [],
-      "dialect_codes": [],
-      "pronunciations": [],
-      "syllable_representation": null,
-      "syllable_count": 3,
-      "stress_pattern": null,
-      "frequency_value": null,
-      "frequency_scale": null,
-      "etymology_text": null,
-      "first_recorded_use": null,
-      "source_references": [
-        {
-          "source_name": "LIRA English Common Definition-Gap Vocabulary v1",
-          "source_version": "1.0.0",
-          "external_identifier": null,
-          "reference_uri": null,
-          "licence_identifier": null
-        }
-      ],
-      "seeded_pleasure_displeasure_weight": 0.0,
-      "seeded_arousal_non_arousal_weight": 0.0,
-      "seeded_dominance_submissive_weight": 0.0
-    },
-    {
-      "entry_id": "d7009872-30da-4cda-b409-a67bf1023b44",
-      "lexical_form": "including",
-      "normalised_form": "including",
-      "text": "including",
-      "version": "1.0",
-      "language_code": "en",
-      "script_code": "Latn",
-      "part_of_speech": "PREPOSITION",
-      "closed_class": true,
-      "closed_class_kind": "preposition",
-      "definition": "Present participle of include, used prepositionally; containing as a part of the whole, used to introduce an example or additional item forming part of a larger group.",
-      "gloss": "Present participle of include, used prepositionally; containing as a part of the whole, used to introduce an example or additional item forming part of a larger group.",
-      "usage_notes": [],
-      "register_codes": [
-        "NEUTRAL"
-      ],
-      "editorial_labels": [],
-      "dialect_codes": [],
-      "pronunciations": [],
-      "syllable_representation": null,
-      "syllable_count": 3,
-      "stress_pattern": null,
-      "frequency_value": null,
-      "frequency_scale": null,
-      "etymology_text": null,
-      "first_recorded_use": null,
-      "source_references": [
-        {
-          "source_name": "LIRA English Common Definition-Gap Vocabulary v1",
           "source_version": "1.0.0",
           "external_identifier": null,
           "reference_uri": null,

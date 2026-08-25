@@ -33,6 +33,19 @@ export interface WordFileEntry {
   closed_class?: boolean;
   definition?: string | null;
   gloss?: string | null;
+  /** Ordered list of distinct sense definitions for a hand-curated
+   * closed-class Word that genuinely carries more than one meaning --
+   * word_seeder.ts's own entryToWord()/seedClosedClassWords() call
+   * registerUniqueSense() once per string here instead of once for the
+   * whole entry, each call creating its own Sense and appending it (in
+   * this array's order) onto the Word's base-lemma WordForm.senseIds --
+   * the same ordered-polysemy shape a WordNet-seeded Word already gets
+   * from seedWordNet's own synset loop, just hand-curated instead of
+   * derived. Takes priority over `definition` when both are present on
+   * the same entry (entryToWord()'s own docstring); every other closed-
+   * class file leaves this unset and keeps using the single `definition`
+   * field, unaffected. */
+  senses?: string[];
   usage_notes?: string[];
   register_codes?: string[];
   editorial_labels?: string[];

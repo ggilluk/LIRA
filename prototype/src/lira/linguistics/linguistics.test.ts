@@ -230,30 +230,30 @@ describe("Document/Heading/Paragraph reading hierarchy (Document -> Heading | Pa
 });
 
 describe("Phrase support: multi-word Dictionary entries recognised while reading", () => {
-  it("TokenResolver.resolveSentence collapses \"in spite of\" into one TokenReading, not three", () => {
+  it("TokenResolver.resolveSentence collapses \"no one else\" into one TokenReading, not three", () => {
     const controller = seededController();
-    const readings = controller.readingContext.tokenResolver.resolveSentence("He stood his ground in spite of the storm.");
+    const readings = controller.readingContext.tokenResolver.resolveSentence("He wanted no one else to know the truth.");
 
-    const phraseReading = readings.find((reading) => reading.text === "in spite of");
+    const phraseReading = readings.find((reading) => reading.text === "no one else");
     expect(phraseReading).toBeDefined();
     expect(phraseReading?.tokenSpan).toBe(3);
-    expect(phraseReading?.candidates.some((c) => c.partOfSpeech === PartOfSpeech.PREPOSITION)).toBe(true);
+    expect(phraseReading?.candidates.some((c) => c.partOfSpeech === PartOfSpeech.PRONOUN)).toBe(true);
 
-    // 10 raw tokens (He/stood/his/ground/in/spite/of/the/storm/.) collapse
-    // to 8 readings once "in spite of" is read as the single closed-class
+    // 10 raw tokens (He/wanted/no/one/else/to/know/the/truth/.) collapse
+    // to 8 readings once "no one else" is read as the single closed-class
     // entry it's seeded as.
     expect(readings).toHaveLength(8);
-    expect(readings.some((reading) => reading.text === "in" || reading.text === "spite" || reading.text === "of")).toBe(false);
+    expect(readings.some((reading) => reading.text === "no" || reading.text === "one" || reading.text === "else")).toBe(false);
   });
 
   it("readSentence materialises the phrase as a single Word token in the clause", () => {
     const controller = seededController();
-    const sentence = controller.readSentence("He stood his ground in spite of the storm.");
+    const sentence = controller.readSentence("He wanted no one else to know the truth.");
 
     const clauseWords = sentence.clauses[0].tokens;
-    const phraseWord = clauseWords.find((word) => word.text === "in spite of");
+    const phraseWord = clauseWords.find((word) => word.text === "no one else");
     expect(phraseWord).toBeDefined();
-    expect(phraseWord?.partOfSpeech).toBe(PartOfSpeech.PREPOSITION);
+    expect(phraseWord?.partOfSpeech).toBe(PartOfSpeech.PRONOUN);
   });
 });
 

@@ -35,7 +35,7 @@ working vocabulary immediately, not to be a system of record.
 | `determiners.json` | **Retired in `asset_version 1.26.0`.** Its 37 flat one-Word-per-surface-form entries are now seeded directly by `role/determiner_seeder.ts` -- one Word per base lemma (44 lemmas: "a"/"an" collapse into one lemma, "this"/"these" and "that"/"those" collapse into one lemma apiece, "which"/"what" stay excluded -- see the file-placement note below -- and "whose"/"whichever" gain a first `DETERMINER` entry alongside their existing `PRONOUN` one), every inflected spelling living on its own `WordForm` record instead of its own flat entry (`data/entities/determiner.ts`'s own docstring). | 0 (retired) |
 | `pronouns.json` | Personal, possessive, reflexive, interrogative, relative, reciprocal, and indefinite pronouns, plus `which`/`what`'s secondary `DETERMINER` entries (see the file-placement note above) | 99 |
 | `auxiliaries.json` | **Retired in `asset_version 1.24.0`** (extended in `1.25.0`). Its 11 primary-auxiliary/modal/semi-modal lemmas (be, have, do, can, may, shall, will, must, ought, need, dare) are now seeded directly by `role/auxiliary_seeder.ts` -- one Word per lemma, every inflected spelling ("am", "was", "could", "doing", ...) living on a `*_Form` field instead of its own flat entry (`data/entities/auxiliary.ts`'s own docstring). Its remaining 7 entries (the full contractions -- see Contractions below) have no lemma-model equivalent yet; tracked as a GitHub issue, not silently dropped. | 0 (retired) |
-| `prepositions.json` | Simple and compound/complex prepositions, including multi-word units (because of, in spite of, according to, as well as, ...) | 94 |
+| `prepositions.json` | Simple prepositions, most now carrying more than one hand-curated Sense via `senses` (see Preposition senses below) -- no longer includes any multi-word unit | 82 |
 | `coordinating_conjunctions.json` | FANBOYS -- for, and, nor, but, or, yet, so | 7 |
 | `subordinating_conjunctions.json` | because, although, unless, while, ... | 36 |
 | `particles.json` | **Removed in `asset_version 1.27.0`, no replacement.** `PartOfSpeech.PARTICLE` itself is retired -- unlike every other retired mandatory file, nothing re-seeds this file's own 16 entries under a different shape. `not`/`please`/`well` keep a Dictionary entry via their own existing secondary homograph (`VERB`/`INTERJECTION`/`INTERJECTION` respectively, still true default-sense caveats apply); `up`/`off`/`out` keep their own `PREPOSITION` entry, just without the verb-particle sense any more (see Phrasal-verb particles below, now historical). `there`/`also`/`too`/`only`/`just`/`even`/`quite`/`rather`/`n't`/`away` had no other homograph at all and are gone from the Dictionary entirely -- `n't` in particular drops its own `not`->`n't` `CONTRACTION` relationship too (`relationships/orthographic_relationships.json`, now empty). | 0 (removed) |
@@ -170,6 +170,42 @@ the Dictionary entirely). `up`/`off`/`out` keep their own
 verb-particle sense this section describes is gone; `away` had no
 other sense to fall back to, so it disappeared from the Dictionary
 along with the rest of `particles.json`'s own entries.
+
+## Preposition senses
+
+`prepositions.json` entries can carry an ordered `senses` list instead
+of a single `definition` (`WordFileEntry.senses`, `role/asset_loader.ts`'s
+own docstring) -- each string becomes its own `Sense` record, appended
+in order onto the Word's base-lemma `WordForm.senseIds`
+(`role/word_seeder.ts`'s own `cacheSenses`/`registerUniqueSense`
+docstrings), the same ordered-polysemy shape a WordNet-seeded Word
+already gets from its synset loop, just hand-curated instead of derived.
+Most of `prepositions.json`'s 82 entries now use this -- `about` alone
+carries 7 (around/near/within/occupied-with/concerning/associated-with/
+approximately); a handful of single-clause words (`circa`, `since`,
+`than`, `via`, ...) still get exactly one, same as before. `worth` is
+the one entry left with no `senses` list at all, still using the plain
+`definition` field every other closed-class file uses.
+
+This same batch also dropped every multi-word entry `prepositions.json`
+used to carry -- `according to`, `ahead of`, `along with`, `apart from`,
+`as for`, `as of`, `as per`, `because of`, `close to`, `due to`, `in
+front of`, `in spite of`, `instead of`, `next to`, `on top of`, `out
+of`, `owing to`, `as well as` (18 entries) -- with no closed-class
+replacement; none of these span-tokenized to a Phrase any more once
+seeded (`data/phrase.ts`'s own docstring on the multi-word-entry-becomes-
+a-Phrase mechanism itself is untouched, just left with no PREPOSITION
+example of its own -- `pronouns.json`'s own `no one else`/`each other`
+and `subordinating_conjunctions.json`'s own `in order that` now carry
+that worked example in the test suite instead, `vocabulary.test.ts`/
+`linguistics.test.ts`). Three `SYNONYM` pairs in
+`relationships/semantic_relationships.json` named a removed multi-word
+form on one side (`despite`/`in spite of`, `beside`/`next to`, `due
+to`/`owing to`) and were removed along with it --
+`relationships/README.md`'s own entry has the detail. Four new single-
+word entries filled real gaps this same batch found: `considering`,
+`excluding`, `for`, `given` -- each seeded the ordinary way, `for`
+alone carrying 8 senses.
 
 ## Supplementary files
 
