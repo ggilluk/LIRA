@@ -24,7 +24,7 @@ against a specific Domain's already-seeded `Word`s, not a store of
 | File | Category | Kinds seeded | Count |
 |------|----------|----------------|-------|
 | `morphological_relationships.json` | Morphological (6.2.1) | Person, tense, participle, and plural forms (`be`/`have`/`do` conjugations, `this`/`that` plurals); comparative/superlative forms (`few`/`many`/`much`/`little`); pronoun paradigm forms (`PRONOUN_OBJECT_FORM`, `PRONOUN_SUBJECT_FORM`, `PRONOUN_POSSESSIVE_DETERMINER_FORM`, `PRONOUN_POSSESSIVE_FORM`, `PRONOUN_REFLEXIVE_FORM`); `LEMMA_FORM` (every edge's materialised reverse -- see Symmetric and inverse edges); 25 base/derived pairs among the promoted words added in `asset_version 1.5.0`; 36 `NOMINALISATION` pairs added in `asset_version 1.6.0`; 6 more `NOMINALISATION` pairs plus 1 `THIRD_PERSON_FORM` pair (`occur`/`occurs`) added in `asset_version 1.7.0`; 3 homograph-safe pairs (`cause`/`causing`, `cause`/`causation`, `state`/`statement`) added in `asset_version 1.8.0` using the new `source_part_of_speech`/`target_part_of_speech` disambiguator (see Version below); 391 pairs (782 edges with reciprocals) for the 1163-word Common definition-gap batch added in `asset_version 1.9.0`, every edge carrying an explicit source/target `part_of_speech`; rule-based VERB conjugation, NOUN pluralisation, ADJECTIVE/ADVERB degree forms, remaining PRONOUN paradigm gaps, and a 39-pair self-documenting back-edge fix added in `asset_version 1.10.0` (see Version below) | 3462 |
-| `semantic_relationships.json` | Lexical Semantic (6.2.2) | `ANTONYM` (spatial/temporal opposites: above/below, before/after, ...; discrete/continuous, high/low, push/pull, negative/positive among the promoted words) and `SYNONYM` (equivalent prepositions: beneath/under, amid/among, toward/towards, ...; the discourse-marker pair however/nevertheless; idea/concept among the promoted words), each materialised in both directions; 1307 pairs (2599 edges with reciprocals) covering every open-class base word added in `asset_version 1.11.0` -- `SYNONYM`, `ANTONYM`, `HYPERNYM`/`HYPONYM`, `MERONYM`/`HOLONYM`, `TROPONYM`, `ENTAILMENT`, `CAUSE`, `RELATED` (see Version below) | 2633 |
+| `semantic_relationships.json` | Lexical Semantic (6.2.2) | `ANTONYM` (spatial/temporal opposites: above/below, before/after, ...; discrete/continuous, high/low, push/pull, negative/positive among the promoted words) and `SYNONYM` (equivalent prepositions: beneath/under, amid/among, toward/towards, ...; the discourse-marker pair however/nevertheless; idea/concept among the promoted words), each materialised in both directions; 1307 pairs (2599 edges with reciprocals) covering every open-class base word added in `asset_version 1.11.0` -- `SYNONYM`, `ANTONYM`, `HYPERNYM`/`HYPONYM`, `MERONYM`/`HOLONYM`, `TROPONYM`, `ENTAILMENT`, `CAUSE`, `RELATED` (see Version below); `RELATED` -- 47 hand-curated PREPOSITION "closely-related, roughly-more-general preposition" pairs (e.g. `above`/`over`, `about`/`concerning`), 94 edges with reciprocals, added in `asset_version 1.24.0` (see Preposition sense grounding below on why `RELATED` rather than `HYPERNYM`/`HYPONYM`) | 2694 |
 | `orthographic_relationships.json` | Orthographic and Naming (6.2.3) | `CONTRACTION` -- was `not`/`n't`, plus each full contraction's component words (do/not -> don't, can/not -> can't, I/am -> I'm, it/is/has -> it's, is/not -> isn't, was/not -> wasn't, had/not -> hadn't). Empty as of `asset_version 1.22.0`: `PartOfSpeech.PARTICLE` was retired (`../README.md`, `particles.json`), and `n't` no longer has a Dictionary entry to relate `not` to | 0 |
 
 No `HYPERNYM`, `MERONYM`, or `TROPONYM` relationships are seeded for
@@ -37,6 +37,62 @@ pronoun paradigms, and near-synonymy do.
 currently seeded in either direction -- see Known gaps.
 
 Total relationships: **6111**.
+
+## Preposition sense grounding (Verb/Noun WordNet cross-references)
+
+`../prepositions.json`'s own "Hypernym Preposition" data (each hand-
+curated PREPOSITION paired with a closely-related, roughly-more-
+general preposition, e.g. `above`/`over`, `about`/`concerning`) turned
+out not to be a strict, acyclic hierarchy once checked directly against
+the real data -- 6 of the 53 source pairs are genuinely reciprocal
+(`above`<->`over`, `below`<->`under`, `beyond`<->`past`,
+`considering`<->`given`, `despite`<->`notwithstanding`,
+`in`<->`inside`), which a true `HYPERNYM`/`HYPONYM` broader/narrower
+pair can never be (`above` can't be both broader and narrower than
+`over`). `RELATED` -- the general catch-all this cache already reserves
+for a hand-picked cross-reference that doesn't fit a crisper kind
+(`LexicalRelationshipType`'s own `RELATED`/`ALSO_SEE` docstrings,
+`../../../data/enums/lexical_relationship_type.ts`) -- is the honest
+fit instead, materialised in both directions the same way `SYNONYM`/
+`ANTONYM` pairs already are above. This keeps the "no `HYPERNYM`/
+`MERONYM`/`TROPONYM` for closed-class Words" policy above intact --
+`RELATED` was already the documented exception route for exactly this
+kind of hand-curated, not-strictly-hierarchical fact.
+
+Each hand-curated PREPOSITION's own primary Sense also grounds its core
+meaning in a real WordNet Verb sense and a real WordNet Noun sense --
+e.g. `on`'s own primary Sense relates to the "lie" verb sense meaning
+"be positioned" (`02696550-v`) and the "position, spatial relation"
+noun sense (`05081943-n`). Source data:
+`preposition_verb_noun_senses.json` (81 entries, one per hand-curated
+PREPOSITION with a `senses` list -- `../README.md`'s own Preposition
+senses section), every verb/noun synset ID and lemma checked directly
+against the bundled Princeton WordNet 3.1 `dict/data.verb`/`data.noun`/
+`lexnames` files before being seeded, not merely assumed correct.
+
+**This file is deliberately not one of the three `CATEGORY_FILES` above
+and carries no `count`/`checksum` entry in `manifest.json`.** Every
+fact this cache otherwise seeds resolves purely against the mandatory
+closed-class Words `RelationshipSeeder.seedDomain()` already has by the
+time it runs (`role/web_worker/vocabulary_worker.ts`'s own
+`handleSeedCommonVocabulary()`, always ahead of any WordNet load) -- but
+a Verb/Noun synset target here only exists once
+`WordSeeder.seedWordNet()` has actually run against this Domain, which
+`RelationshipSeeder` (called exactly once, before WordNet ever loads)
+can never see. `role/preposition_sense_seeder.ts`'s own
+`PrepositionSenseSeeder` reads this file directly (`asset_loader.ts`'s
+own `readRelationshipDirJson()`) and runs a second time instead, right
+after `seedWordNet()` completes (`vocabulary_worker.ts`'s own
+`handleSeedWordNet()`) -- idempotent across repeated calls, and a
+silent no-op (not an error) if ever called before WordNet has loaded,
+the same `skipUnresolvable` treatment an ordinary relationship spec
+that can't resolve yet already gets. Every edge it creates is `RELATED`
+(a preposition's own core meaning "relates to" a verb/noun concept, not
+a synonym/derivation/hierarchy of one), one-directional (preposition
+Sense -> Verb/Noun Sense only -- unlike the Hypernym Preposition pairs
+above, reciprocating here would fan a common sense like "lie" or
+"relation" out to dozens of unrelated-looking incoming edges from every
+preposition that happens to share it).
 
 ## Symmetric and inverse edges
 

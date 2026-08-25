@@ -24,6 +24,7 @@
 import { DictionaryView } from "../../ui/server/dictionary_controller";
 import { VocabularyContext } from "../../data/vocabulary_context";
 import { NounCharacterFormSeeder } from "../noun_character_form_seeder";
+import { PrepositionSenseSeeder } from "../preposition_sense_seeder";
 import { RelationshipSeeder } from "../relationship_seeder";
 import { WordSeeder } from "../word_seeder";
 import type {
@@ -266,6 +267,14 @@ async function handleSeedWordNet(request: SeedWordNetRequest): Promise<void> {
     // Noun) is still included in wordsSeeded below like any other new
     // Word this run added to the Dictionary.
     new NounCharacterFormSeeder(domain.vocabulary.dictionary).seed();
+    // Verb/Noun WordNet-sense cross-references for every hand-curated
+    // PREPOSITION (preposition_sense_seeder.ts's own docstring on why
+    // this can only run now, after seedWordNet() above, rather than
+    // alongside the Common Vocabulary Relationship Cache in
+    // handleSeedCommonVocabulary()) -- doesn't affect wordsSeeded/
+    // phrasesSeeded below, since it only ever adds SemanticRelationship
+    // edges between Senses that already exist.
+    new PrepositionSenseSeeder("en").seed(domain);
 
     const wordsSeeded = domain.vocabulary.dictionary.totalEntries() - wordCountBefore;
     const phrasesSeeded = domain.vocabulary.phrases.totalEntries() - phraseCountBefore;

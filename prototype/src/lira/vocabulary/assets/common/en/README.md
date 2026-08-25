@@ -207,6 +207,21 @@ word entries filled real gaps this same batch found: `considering`,
 `excluding`, `for`, `given` -- each seeded the ordinary way, `for`
 alone carrying 8 senses.
 
+Each of these 81 hand-curated PREPOSITION entries is also paired with a
+real WordNet Verb sense and Noun sense that grounds its core meaning
+(`on` <-> the "lie" verb sense meaning "be positioned" and the
+"position, spatial relation" noun sense, ...), plus -- for 47 of them --
+a closely-related, roughly-more-general preposition (`above`/`over`,
+`about`/`concerning`, ...). Neither lives in this word cache itself:
+both are relationship facts, seeded from
+`relationships/preposition_verb_noun_senses.json` and
+`relationships/semantic_relationships.json` respectively --
+`relationships/README.md`'s own Preposition sense grounding section has
+the full detail, including why the Verb/Noun cross-references need
+their own second seeding pass after WordNet loads, and why `RELATED`
+rather than `HYPERNYM`/`HYPONYM` is the honest kind for the preposition-
+to-preposition pairs.
+
 ## Supplementary files
 
 The six `metalinguistic_*.json` files -- one per part of speech,

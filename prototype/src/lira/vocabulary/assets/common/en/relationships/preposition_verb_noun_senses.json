@@ -1,0 +1,574 @@
+{
+  "schema_version": "1.0.0",
+  "language_code": "en",
+  "count": 81,
+  "entries": [
+    {
+      "preposition": "aboard",
+      "verb": "lie",
+      "verb_synset_id": "02696550-v",
+      "noun": "position, spatial relation",
+      "noun_synset_id": "05081943-n"
+    },
+    {
+      "preposition": "about",
+      "verb": "relate",
+      "verb_synset_id": "02681865-v",
+      "noun": "relation",
+      "noun_synset_id": "00032220-n"
+    },
+    {
+      "preposition": "above",
+      "verb": "lie",
+      "verb_synset_id": "02696550-v",
+      "noun": "position, spatial relation",
+      "noun_synset_id": "05081943-n"
+    },
+    {
+      "preposition": "across",
+      "verb": "move",
+      "verb_synset_id": "01839438-v",
+      "noun": "motion, movement, move",
+      "noun_synset_id": "00332776-n"
+    },
+    {
+      "preposition": "after",
+      "verb": "precede",
+      "verb_synset_id": "02718318-v",
+      "noun": "precedence, anteriority",
+      "noun_synset_id": "05054430-n"
+    },
+    {
+      "preposition": "against",
+      "verb": "relate",
+      "verb_synset_id": "02730292-v",
+      "noun": "relation",
+      "noun_synset_id": "00032220-n"
+    },
+    {
+      "preposition": "along",
+      "verb": "move",
+      "verb_synset_id": "01839438-v",
+      "noun": "motion, movement, move",
+      "noun_synset_id": "00332776-n"
+    },
+    {
+      "preposition": "alongside",
+      "verb": "lie",
+      "verb_synset_id": "02696550-v",
+      "noun": "position, spatial relation",
+      "noun_synset_id": "05081943-n"
+    },
+    {
+      "preposition": "amid",
+      "verb": "lie",
+      "verb_synset_id": "02696550-v",
+      "noun": "position, spatial relation",
+      "noun_synset_id": "05081943-n"
+    },
+    {
+      "preposition": "amidst",
+      "verb": "lie",
+      "verb_synset_id": "02696550-v",
+      "noun": "position, spatial relation",
+      "noun_synset_id": "05081943-n"
+    },
+    {
+      "preposition": "among",
+      "verb": "relate",
+      "verb_synset_id": "02730292-v",
+      "noun": "relation",
+      "noun_synset_id": "00032220-n"
+    },
+    {
+      "preposition": "amongst",
+      "verb": "relate",
+      "verb_synset_id": "02730292-v",
+      "noun": "relation",
+      "noun_synset_id": "00032220-n"
+    },
+    {
+      "preposition": "around",
+      "verb": "lie",
+      "verb_synset_id": "02696550-v",
+      "noun": "position, spatial relation",
+      "noun_synset_id": "05081943-n"
+    },
+    {
+      "preposition": "as",
+      "verb": "relate",
+      "verb_synset_id": "02730292-v",
+      "noun": "relation",
+      "noun_synset_id": "00032220-n"
+    },
+    {
+      "preposition": "at",
+      "verb": "lie",
+      "verb_synset_id": "02696550-v",
+      "noun": "position, spatial relation",
+      "noun_synset_id": "05081943-n"
+    },
+    {
+      "preposition": "atop",
+      "verb": "lie",
+      "verb_synset_id": "02696550-v",
+      "noun": "position, spatial relation",
+      "noun_synset_id": "05081943-n"
+    },
+    {
+      "preposition": "before",
+      "verb": "precede",
+      "verb_synset_id": "02718318-v",
+      "noun": "precedence, anteriority",
+      "noun_synset_id": "05054430-n"
+    },
+    {
+      "preposition": "behind",
+      "verb": "lie",
+      "verb_synset_id": "02696550-v",
+      "noun": "position, spatial relation",
+      "noun_synset_id": "05081943-n"
+    },
+    {
+      "preposition": "below",
+      "verb": "lie",
+      "verb_synset_id": "02696550-v",
+      "noun": "position, spatial relation",
+      "noun_synset_id": "05081943-n"
+    },
+    {
+      "preposition": "beneath",
+      "verb": "underlie",
+      "verb_synset_id": "02698930-v",
+      "noun": "position, spatial relation",
+      "noun_synset_id": "05081943-n"
+    },
+    {
+      "preposition": "beside",
+      "verb": "lie",
+      "verb_synset_id": "02696550-v",
+      "noun": "position, spatial relation",
+      "noun_synset_id": "05081943-n"
+    },
+    {
+      "preposition": "besides",
+      "verb": "add",
+      "verb_synset_id": "00182551-v",
+      "noun": "relation",
+      "noun_synset_id": "00032220-n"
+    },
+    {
+      "preposition": "between",
+      "verb": "lie",
+      "verb_synset_id": "02696550-v",
+      "noun": "position, spatial relation",
+      "noun_synset_id": "05081943-n"
+    },
+    {
+      "preposition": "beyond",
+      "verb": "exceed",
+      "verb_synset_id": "02675266-v",
+      "noun": "relation",
+      "noun_synset_id": "00032220-n"
+    },
+    {
+      "preposition": "by",
+      "verb": "relate",
+      "verb_synset_id": "02730292-v",
+      "noun": "relation",
+      "noun_synset_id": "00032220-n"
+    },
+    {
+      "preposition": "circa",
+      "verb": "approximate",
+      "verb_synset_id": "02672137-v",
+      "noun": "relation",
+      "noun_synset_id": "00032220-n"
+    },
+    {
+      "preposition": "concerning",
+      "verb": "relate",
+      "verb_synset_id": "02681865-v",
+      "noun": "relation",
+      "noun_synset_id": "00032220-n"
+    },
+    {
+      "preposition": "considering",
+      "verb": "consider",
+      "verb_synset_id": "00692380-v",
+      "noun": "relation",
+      "noun_synset_id": "00032220-n"
+    },
+    {
+      "preposition": "despite",
+      "verb": "relate",
+      "verb_synset_id": "02730292-v",
+      "noun": "relation",
+      "noun_synset_id": "00032220-n"
+    },
+    {
+      "preposition": "down",
+      "verb": "move",
+      "verb_synset_id": "01839438-v",
+      "noun": "motion, movement, move",
+      "noun_synset_id": "00332776-n"
+    },
+    {
+      "preposition": "during",
+      "verb": "occur",
+      "verb_synset_id": "00340744-v",
+      "noun": "relation",
+      "noun_synset_id": "00032220-n"
+    },
+    {
+      "preposition": "except",
+      "verb": "exclude",
+      "verb_synset_id": "00617464-v",
+      "noun": "relation",
+      "noun_synset_id": "00032220-n"
+    },
+    {
+      "preposition": "excepting",
+      "verb": "exclude",
+      "verb_synset_id": "00617464-v",
+      "noun": "relation",
+      "noun_synset_id": "00032220-n"
+    },
+    {
+      "preposition": "excluding",
+      "verb": "exclude",
+      "verb_synset_id": "00617464-v",
+      "noun": "relation",
+      "noun_synset_id": "00032220-n"
+    },
+    {
+      "preposition": "following",
+      "verb": "follow",
+      "verb_synset_id": "02718647-v",
+      "noun": "precedence, anteriority",
+      "noun_synset_id": "05054430-n"
+    },
+    {
+      "preposition": "for",
+      "verb": "relate",
+      "verb_synset_id": "02681865-v",
+      "noun": "relation",
+      "noun_synset_id": "00032220-n"
+    },
+    {
+      "preposition": "from",
+      "verb": "originate in",
+      "verb_synset_id": "02633747-v",
+      "noun": "relation",
+      "noun_synset_id": "00032220-n"
+    },
+    {
+      "preposition": "given",
+      "verb": "consider",
+      "verb_synset_id": "00692380-v",
+      "noun": "relation",
+      "noun_synset_id": "00032220-n"
+    },
+    {
+      "preposition": "in",
+      "verb": "lie",
+      "verb_synset_id": "02696550-v",
+      "noun": "position, spatial relation",
+      "noun_synset_id": "05081943-n"
+    },
+    {
+      "preposition": "including",
+      "verb": "include",
+      "verb_synset_id": "02639021-v",
+      "noun": "relation",
+      "noun_synset_id": "00032220-n"
+    },
+    {
+      "preposition": "inside",
+      "verb": "lie",
+      "verb_synset_id": "02696550-v",
+      "noun": "position, spatial relation",
+      "noun_synset_id": "05081943-n"
+    },
+    {
+      "preposition": "into",
+      "verb": "move",
+      "verb_synset_id": "01839438-v",
+      "noun": "motion, movement, move",
+      "noun_synset_id": "00332776-n"
+    },
+    {
+      "preposition": "like",
+      "verb": "resemble",
+      "verb_synset_id": "02671359-v",
+      "noun": "relation",
+      "noun_synset_id": "00032220-n"
+    },
+    {
+      "preposition": "minus",
+      "verb": "subtract",
+      "verb_synset_id": "00642914-v",
+      "noun": "relation",
+      "noun_synset_id": "00032220-n"
+    },
+    {
+      "preposition": "near",
+      "verb": "lie",
+      "verb_synset_id": "02696550-v",
+      "noun": "position, spatial relation",
+      "noun_synset_id": "05081943-n"
+    },
+    {
+      "preposition": "notwithstanding",
+      "verb": "relate",
+      "verb_synset_id": "02730292-v",
+      "noun": "relation",
+      "noun_synset_id": "00032220-n"
+    },
+    {
+      "preposition": "of",
+      "verb": "relate",
+      "verb_synset_id": "02730292-v",
+      "noun": "relation",
+      "noun_synset_id": "00032220-n"
+    },
+    {
+      "preposition": "off",
+      "verb": "move",
+      "verb_synset_id": "01839438-v",
+      "noun": "motion, movement, move",
+      "noun_synset_id": "00332776-n"
+    },
+    {
+      "preposition": "on",
+      "verb": "lie",
+      "verb_synset_id": "02696550-v",
+      "noun": "position, spatial relation",
+      "noun_synset_id": "05081943-n"
+    },
+    {
+      "preposition": "onto",
+      "verb": "move",
+      "verb_synset_id": "01839438-v",
+      "noun": "motion, movement, move",
+      "noun_synset_id": "00332776-n"
+    },
+    {
+      "preposition": "opposite",
+      "verb": "lie",
+      "verb_synset_id": "02696550-v",
+      "noun": "position, spatial relation",
+      "noun_synset_id": "05081943-n"
+    },
+    {
+      "preposition": "out",
+      "verb": "move",
+      "verb_synset_id": "01839438-v",
+      "noun": "motion, movement, move",
+      "noun_synset_id": "00332776-n"
+    },
+    {
+      "preposition": "outside",
+      "verb": "lie",
+      "verb_synset_id": "02696550-v",
+      "noun": "position, spatial relation",
+      "noun_synset_id": "05081943-n"
+    },
+    {
+      "preposition": "over",
+      "verb": "lie",
+      "verb_synset_id": "02696550-v",
+      "noun": "position, spatial relation",
+      "noun_synset_id": "05081943-n"
+    },
+    {
+      "preposition": "past",
+      "verb": "pass",
+      "verb_synset_id": "02055618-v",
+      "noun": "motion, movement, move",
+      "noun_synset_id": "00332776-n"
+    },
+    {
+      "preposition": "pending",
+      "verb": "wait",
+      "verb_synset_id": "02644022-v",
+      "noun": "relation",
+      "noun_synset_id": "00032220-n"
+    },
+    {
+      "preposition": "per",
+      "verb": "divide",
+      "verb_synset_id": "02473085-v",
+      "noun": "relation",
+      "noun_synset_id": "00032220-n"
+    },
+    {
+      "preposition": "plus",
+      "verb": "add",
+      "verb_synset_id": "00182551-v",
+      "noun": "relation",
+      "noun_synset_id": "00032220-n"
+    },
+    {
+      "preposition": "regarding",
+      "verb": "relate",
+      "verb_synset_id": "02681865-v",
+      "noun": "relation",
+      "noun_synset_id": "00032220-n"
+    },
+    {
+      "preposition": "round",
+      "verb": "lie",
+      "verb_synset_id": "02696550-v",
+      "noun": "position, spatial relation",
+      "noun_synset_id": "05081943-n"
+    },
+    {
+      "preposition": "save",
+      "verb": "exclude",
+      "verb_synset_id": "00617464-v",
+      "noun": "relation",
+      "noun_synset_id": "00032220-n"
+    },
+    {
+      "preposition": "since",
+      "verb": "follow",
+      "verb_synset_id": "02718647-v",
+      "noun": "precedence, anteriority",
+      "noun_synset_id": "05054430-n"
+    },
+    {
+      "preposition": "than",
+      "verb": "compare",
+      "verb_synset_id": "00654571-v",
+      "noun": "relation",
+      "noun_synset_id": "00032220-n"
+    },
+    {
+      "preposition": "through",
+      "verb": "move",
+      "verb_synset_id": "01839438-v",
+      "noun": "motion, movement, move",
+      "noun_synset_id": "00332776-n"
+    },
+    {
+      "preposition": "throughout",
+      "verb": "extend",
+      "verb_synset_id": "02691775-v",
+      "noun": "relation",
+      "noun_synset_id": "00032220-n"
+    },
+    {
+      "preposition": "till",
+      "verb": "precede",
+      "verb_synset_id": "02718318-v",
+      "noun": "precedence, anteriority",
+      "noun_synset_id": "05054430-n"
+    },
+    {
+      "preposition": "to",
+      "verb": "move",
+      "verb_synset_id": "01839438-v",
+      "noun": "motion, movement, move",
+      "noun_synset_id": "00332776-n"
+    },
+    {
+      "preposition": "toward",
+      "verb": "move",
+      "verb_synset_id": "01839438-v",
+      "noun": "motion, movement, move",
+      "noun_synset_id": "00332776-n"
+    },
+    {
+      "preposition": "towards",
+      "verb": "move",
+      "verb_synset_id": "01839438-v",
+      "noun": "motion, movement, move",
+      "noun_synset_id": "00332776-n"
+    },
+    {
+      "preposition": "under",
+      "verb": "lie",
+      "verb_synset_id": "02696550-v",
+      "noun": "position, spatial relation",
+      "noun_synset_id": "05081943-n"
+    },
+    {
+      "preposition": "underneath",
+      "verb": "underlie",
+      "verb_synset_id": "02698930-v",
+      "noun": "position, spatial relation",
+      "noun_synset_id": "05081943-n"
+    },
+    {
+      "preposition": "unlike",
+      "verb": "differ",
+      "verb_synset_id": "02672316-v",
+      "noun": "relation",
+      "noun_synset_id": "00032220-n"
+    },
+    {
+      "preposition": "until",
+      "verb": "precede",
+      "verb_synset_id": "02718318-v",
+      "noun": "precedence, anteriority",
+      "noun_synset_id": "05054430-n"
+    },
+    {
+      "preposition": "unto",
+      "verb": "move",
+      "verb_synset_id": "01839438-v",
+      "noun": "motion, movement, move",
+      "noun_synset_id": "00332776-n"
+    },
+    {
+      "preposition": "up",
+      "verb": "move",
+      "verb_synset_id": "01839438-v",
+      "noun": "motion, movement, move",
+      "noun_synset_id": "00332776-n"
+    },
+    {
+      "preposition": "upon",
+      "verb": "lie",
+      "verb_synset_id": "02696550-v",
+      "noun": "position, spatial relation",
+      "noun_synset_id": "05081943-n"
+    },
+    {
+      "preposition": "versus",
+      "verb": "compare",
+      "verb_synset_id": "00654571-v",
+      "noun": "relation",
+      "noun_synset_id": "00032220-n"
+    },
+    {
+      "preposition": "via",
+      "verb": "move",
+      "verb_synset_id": "01839438-v",
+      "noun": "motion, movement, move",
+      "noun_synset_id": "00332776-n"
+    },
+    {
+      "preposition": "with",
+      "verb": "relate",
+      "verb_synset_id": "02730292-v",
+      "noun": "relation",
+      "noun_synset_id": "00032220-n"
+    },
+    {
+      "preposition": "within",
+      "verb": "lie",
+      "verb_synset_id": "02696550-v",
+      "noun": "position, spatial relation",
+      "noun_synset_id": "05081943-n"
+    },
+    {
+      "preposition": "without",
+      "verb": "lack",
+      "verb_synset_id": "02638434-v",
+      "noun": "relation",
+      "noun_synset_id": "00032220-n"
+    }
+  ]
+}

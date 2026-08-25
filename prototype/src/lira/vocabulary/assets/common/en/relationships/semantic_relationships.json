@@ -2,7 +2,7 @@
   "schema_version": "1.0.0",
   "language_code": "en",
   "relationship_category": "semantic",
-  "count": 2600,
+  "count": 2694,
   "relationships": [
     {
       "source_lexical_form": "above",
@@ -18239,6 +18239,476 @@
       "relationship_kind": "CAUSE",
       "source_part_of_speech": "VERB",
       "target_part_of_speech": "VERB"
+    },
+    {
+      "source_lexical_form": "aboard",
+      "target_lexical_form": "on",
+      "relationship_kind": "RELATED"
+    },
+    {
+      "source_lexical_form": "about",
+      "target_lexical_form": "around",
+      "relationship_kind": "RELATED"
+    },
+    {
+      "source_lexical_form": "about",
+      "target_lexical_form": "circa",
+      "relationship_kind": "RELATED"
+    },
+    {
+      "source_lexical_form": "about",
+      "target_lexical_form": "concerning",
+      "relationship_kind": "RELATED"
+    },
+    {
+      "source_lexical_form": "above",
+      "target_lexical_form": "over",
+      "relationship_kind": "RELATED"
+    },
+    {
+      "source_lexical_form": "across",
+      "target_lexical_form": "opposite",
+      "relationship_kind": "RELATED"
+    },
+    {
+      "source_lexical_form": "across",
+      "target_lexical_form": "through",
+      "relationship_kind": "RELATED"
+    },
+    {
+      "source_lexical_form": "after",
+      "target_lexical_form": "before",
+      "relationship_kind": "RELATED"
+    },
+    {
+      "source_lexical_form": "after",
+      "target_lexical_form": "following",
+      "relationship_kind": "RELATED"
+    },
+    {
+      "source_lexical_form": "against",
+      "target_lexical_form": "versus",
+      "relationship_kind": "RELATED"
+    },
+    {
+      "source_lexical_form": "along",
+      "target_lexical_form": "through",
+      "relationship_kind": "RELATED"
+    },
+    {
+      "source_lexical_form": "alongside",
+      "target_lexical_form": "beside",
+      "relationship_kind": "RELATED"
+    },
+    {
+      "source_lexical_form": "amid",
+      "target_lexical_form": "among",
+      "relationship_kind": "RELATED"
+    },
+    {
+      "source_lexical_form": "amidst",
+      "target_lexical_form": "among",
+      "relationship_kind": "RELATED"
+    },
+    {
+      "source_lexical_form": "among",
+      "target_lexical_form": "amid",
+      "relationship_kind": "RELATED"
+    },
+    {
+      "source_lexical_form": "among",
+      "target_lexical_form": "amidst",
+      "relationship_kind": "RELATED"
+    },
+    {
+      "source_lexical_form": "among",
+      "target_lexical_form": "amongst",
+      "relationship_kind": "RELATED"
+    },
+    {
+      "source_lexical_form": "among",
+      "target_lexical_form": "between",
+      "relationship_kind": "RELATED"
+    },
+    {
+      "source_lexical_form": "amongst",
+      "target_lexical_form": "among",
+      "relationship_kind": "RELATED"
+    },
+    {
+      "source_lexical_form": "around",
+      "target_lexical_form": "about",
+      "relationship_kind": "RELATED"
+    },
+    {
+      "source_lexical_form": "around",
+      "target_lexical_form": "round",
+      "relationship_kind": "RELATED"
+    },
+    {
+      "source_lexical_form": "atop",
+      "target_lexical_form": "on",
+      "relationship_kind": "RELATED"
+    },
+    {
+      "source_lexical_form": "before",
+      "target_lexical_form": "after",
+      "relationship_kind": "RELATED"
+    },
+    {
+      "source_lexical_form": "below",
+      "target_lexical_form": "under",
+      "relationship_kind": "RELATED"
+    },
+    {
+      "source_lexical_form": "beneath",
+      "target_lexical_form": "under",
+      "relationship_kind": "RELATED"
+    },
+    {
+      "source_lexical_form": "beside",
+      "target_lexical_form": "alongside",
+      "relationship_kind": "RELATED"
+    },
+    {
+      "source_lexical_form": "beside",
+      "target_lexical_form": "near",
+      "relationship_kind": "RELATED"
+    },
+    {
+      "source_lexical_form": "besides",
+      "target_lexical_form": "plus",
+      "relationship_kind": "RELATED"
+    },
+    {
+      "source_lexical_form": "between",
+      "target_lexical_form": "among",
+      "relationship_kind": "RELATED"
+    },
+    {
+      "source_lexical_form": "beyond",
+      "target_lexical_form": "past",
+      "relationship_kind": "RELATED"
+    },
+    {
+      "source_lexical_form": "by",
+      "target_lexical_form": "per",
+      "relationship_kind": "RELATED"
+    },
+    {
+      "source_lexical_form": "circa",
+      "target_lexical_form": "about",
+      "relationship_kind": "RELATED"
+    },
+    {
+      "source_lexical_form": "concerning",
+      "target_lexical_form": "about",
+      "relationship_kind": "RELATED"
+    },
+    {
+      "source_lexical_form": "concerning",
+      "target_lexical_form": "regarding",
+      "relationship_kind": "RELATED"
+    },
+    {
+      "source_lexical_form": "considering",
+      "target_lexical_form": "given",
+      "relationship_kind": "RELATED"
+    },
+    {
+      "source_lexical_form": "despite",
+      "target_lexical_form": "notwithstanding",
+      "relationship_kind": "RELATED"
+    },
+    {
+      "source_lexical_form": "except",
+      "target_lexical_form": "excepting",
+      "relationship_kind": "RELATED"
+    },
+    {
+      "source_lexical_form": "except",
+      "target_lexical_form": "excluding",
+      "relationship_kind": "RELATED"
+    },
+    {
+      "source_lexical_form": "except",
+      "target_lexical_form": "save",
+      "relationship_kind": "RELATED"
+    },
+    {
+      "source_lexical_form": "excepting",
+      "target_lexical_form": "except",
+      "relationship_kind": "RELATED"
+    },
+    {
+      "source_lexical_form": "excluding",
+      "target_lexical_form": "except",
+      "relationship_kind": "RELATED"
+    },
+    {
+      "source_lexical_form": "following",
+      "target_lexical_form": "after",
+      "relationship_kind": "RELATED"
+    },
+    {
+      "source_lexical_form": "from",
+      "target_lexical_form": "off",
+      "relationship_kind": "RELATED"
+    },
+    {
+      "source_lexical_form": "from",
+      "target_lexical_form": "out",
+      "relationship_kind": "RELATED"
+    },
+    {
+      "source_lexical_form": "from",
+      "target_lexical_form": "since",
+      "relationship_kind": "RELATED"
+    },
+    {
+      "source_lexical_form": "given",
+      "target_lexical_form": "considering",
+      "relationship_kind": "RELATED"
+    },
+    {
+      "source_lexical_form": "in",
+      "target_lexical_form": "inside",
+      "relationship_kind": "RELATED"
+    },
+    {
+      "source_lexical_form": "in",
+      "target_lexical_form": "into",
+      "relationship_kind": "RELATED"
+    },
+    {
+      "source_lexical_form": "in",
+      "target_lexical_form": "within",
+      "relationship_kind": "RELATED"
+    },
+    {
+      "source_lexical_form": "inside",
+      "target_lexical_form": "in",
+      "relationship_kind": "RELATED"
+    },
+    {
+      "source_lexical_form": "into",
+      "target_lexical_form": "in",
+      "relationship_kind": "RELATED"
+    },
+    {
+      "source_lexical_form": "near",
+      "target_lexical_form": "beside",
+      "relationship_kind": "RELATED"
+    },
+    {
+      "source_lexical_form": "notwithstanding",
+      "target_lexical_form": "despite",
+      "relationship_kind": "RELATED"
+    },
+    {
+      "source_lexical_form": "off",
+      "target_lexical_form": "from",
+      "relationship_kind": "RELATED"
+    },
+    {
+      "source_lexical_form": "on",
+      "target_lexical_form": "aboard",
+      "relationship_kind": "RELATED"
+    },
+    {
+      "source_lexical_form": "on",
+      "target_lexical_form": "atop",
+      "relationship_kind": "RELATED"
+    },
+    {
+      "source_lexical_form": "on",
+      "target_lexical_form": "onto",
+      "relationship_kind": "RELATED"
+    },
+    {
+      "source_lexical_form": "on",
+      "target_lexical_form": "upon",
+      "relationship_kind": "RELATED"
+    },
+    {
+      "source_lexical_form": "onto",
+      "target_lexical_form": "on",
+      "relationship_kind": "RELATED"
+    },
+    {
+      "source_lexical_form": "opposite",
+      "target_lexical_form": "across",
+      "relationship_kind": "RELATED"
+    },
+    {
+      "source_lexical_form": "out",
+      "target_lexical_form": "from",
+      "relationship_kind": "RELATED"
+    },
+    {
+      "source_lexical_form": "over",
+      "target_lexical_form": "above",
+      "relationship_kind": "RELATED"
+    },
+    {
+      "source_lexical_form": "past",
+      "target_lexical_form": "beyond",
+      "relationship_kind": "RELATED"
+    },
+    {
+      "source_lexical_form": "pending",
+      "target_lexical_form": "until",
+      "relationship_kind": "RELATED"
+    },
+    {
+      "source_lexical_form": "per",
+      "target_lexical_form": "by",
+      "relationship_kind": "RELATED"
+    },
+    {
+      "source_lexical_form": "plus",
+      "target_lexical_form": "besides",
+      "relationship_kind": "RELATED"
+    },
+    {
+      "source_lexical_form": "plus",
+      "target_lexical_form": "with",
+      "relationship_kind": "RELATED"
+    },
+    {
+      "source_lexical_form": "regarding",
+      "target_lexical_form": "concerning",
+      "relationship_kind": "RELATED"
+    },
+    {
+      "source_lexical_form": "round",
+      "target_lexical_form": "around",
+      "relationship_kind": "RELATED"
+    },
+    {
+      "source_lexical_form": "save",
+      "target_lexical_form": "except",
+      "relationship_kind": "RELATED"
+    },
+    {
+      "source_lexical_form": "since",
+      "target_lexical_form": "from",
+      "relationship_kind": "RELATED"
+    },
+    {
+      "source_lexical_form": "through",
+      "target_lexical_form": "across",
+      "relationship_kind": "RELATED"
+    },
+    {
+      "source_lexical_form": "through",
+      "target_lexical_form": "along",
+      "relationship_kind": "RELATED"
+    },
+    {
+      "source_lexical_form": "through",
+      "target_lexical_form": "throughout",
+      "relationship_kind": "RELATED"
+    },
+    {
+      "source_lexical_form": "through",
+      "target_lexical_form": "via",
+      "relationship_kind": "RELATED"
+    },
+    {
+      "source_lexical_form": "throughout",
+      "target_lexical_form": "through",
+      "relationship_kind": "RELATED"
+    },
+    {
+      "source_lexical_form": "till",
+      "target_lexical_form": "until",
+      "relationship_kind": "RELATED"
+    },
+    {
+      "source_lexical_form": "to",
+      "target_lexical_form": "toward",
+      "relationship_kind": "RELATED"
+    },
+    {
+      "source_lexical_form": "to",
+      "target_lexical_form": "unto",
+      "relationship_kind": "RELATED"
+    },
+    {
+      "source_lexical_form": "toward",
+      "target_lexical_form": "to",
+      "relationship_kind": "RELATED"
+    },
+    {
+      "source_lexical_form": "toward",
+      "target_lexical_form": "towards",
+      "relationship_kind": "RELATED"
+    },
+    {
+      "source_lexical_form": "towards",
+      "target_lexical_form": "toward",
+      "relationship_kind": "RELATED"
+    },
+    {
+      "source_lexical_form": "under",
+      "target_lexical_form": "below",
+      "relationship_kind": "RELATED"
+    },
+    {
+      "source_lexical_form": "under",
+      "target_lexical_form": "beneath",
+      "relationship_kind": "RELATED"
+    },
+    {
+      "source_lexical_form": "under",
+      "target_lexical_form": "underneath",
+      "relationship_kind": "RELATED"
+    },
+    {
+      "source_lexical_form": "underneath",
+      "target_lexical_form": "under",
+      "relationship_kind": "RELATED"
+    },
+    {
+      "source_lexical_form": "until",
+      "target_lexical_form": "pending",
+      "relationship_kind": "RELATED"
+    },
+    {
+      "source_lexical_form": "until",
+      "target_lexical_form": "till",
+      "relationship_kind": "RELATED"
+    },
+    {
+      "source_lexical_form": "unto",
+      "target_lexical_form": "to",
+      "relationship_kind": "RELATED"
+    },
+    {
+      "source_lexical_form": "upon",
+      "target_lexical_form": "on",
+      "relationship_kind": "RELATED"
+    },
+    {
+      "source_lexical_form": "versus",
+      "target_lexical_form": "against",
+      "relationship_kind": "RELATED"
+    },
+    {
+      "source_lexical_form": "via",
+      "target_lexical_form": "through",
+      "relationship_kind": "RELATED"
+    },
+    {
+      "source_lexical_form": "with",
+      "target_lexical_form": "plus",
+      "relationship_kind": "RELATED"
+    },
+    {
+      "source_lexical_form": "within",
+      "target_lexical_form": "in",
+      "relationship_kind": "RELATED"
     }
   ]
 }

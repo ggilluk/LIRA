@@ -47,6 +47,7 @@ import { MorphologicalPointerRelationshipProcessor } from "./role/morphological_
 import { RelationshipSeeder } from "./role/relationship_seeder";
 import { classifyPhraseRoles, classifyPhraseType, WordSeeder } from "./role/word_seeder";
 import { NounCharacterFormSeeder } from "./role/noun_character_form_seeder";
+import { PrepositionSenseSeeder } from "./role/preposition_sense_seeder";
 import { IdentificationSource } from "./role/word_identifier";
 import { loadWordNetSynsets } from "./role/wordnet_loader";
 import { DictionaryView } from "./ui/server/dictionary_controller";
@@ -2462,6 +2463,71 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     expect(record.senses[0].frequency).toBe(25);
     expect(record.senses[1].frequency).toBe(20);
   }, 60000);
+
+  it("PrepositionSenseSeeder links each hand-curated PREPOSITION's own primary Sense to its real WordNet Verb/Noun sense once WordNet has loaded, and is a no-op beforehand", async () => {
+    const dictionary = new Dictionary();
+    const phraseBook = new Phrases();
+    const senseStore = new Senses();
+    const wordForms = new WordForms();
+    const morphologicalPointerRelationships = new MorphologicalPointerRelationshipStore();
+    const semanticRelationships = new SemanticRelationshipStore();
+    const morphologicalPointerRelationshipProcessor = new MorphologicalPointerRelationshipProcessor(
+      morphologicalPointerRelationships,
+      new MorphologicalPointerRelationshipSystemPropertyTensor(),
+    );
+    const semanticRelationshipProcessor = new SemanticRelationshipProcessor(
+      semanticRelationships,
+      new SemanticRelationshipSystemPropertyTensor(),
+    );
+    const domain = {
+      vocabulary: {
+        dictionary,
+        phrases: phraseBook,
+        senses: senseStore,
+        wordForms,
+        morphologicalPointerRelationships,
+        morphologicalPointerRelationshipProcessor,
+        semanticRelationships,
+        semanticRelationshipProcessor,
+      },
+    };
+
+    // Called before WordNet has loaded (the real app's own order --
+    // vocabulary_worker.ts's own handleSeedCommonVocabulary/
+    // handleSeedWordNet split) -- nothing resolves yet, so nothing is
+    // created, the same "skipped, not an error" outcome
+    // skipUnresolvable already gives an ordinary relationship spec.
+    expect(new PrepositionSenseSeeder("en").seed(domain)).toBe(0);
+
+    new WordSeeder("en").seedClosedClassWords(dictionary, phraseBook, { excludeOpenClasses: true }, senseStore, wordForms);
+    await new WordSeeder("en").seedWordNet(domain);
+
+    // 81 hand-curated PREPOSITION entries, 2 edges apiece (Verb sense +
+    // Noun sense) -- assets/common/en/relationships/preposition_verb_noun_senses.json's
+    // own 81 entries.
+    const seeded = new PrepositionSenseSeeder("en").seed(domain);
+    expect(seeded).toBe(81 * 2);
+
+    const on = dictionary.lookupAll("on").find((w) => w.partOfSpeech === PartOfSpeech.PREPOSITION)!;
+    const onSenseId = wordForms.senseIdsOf(on)[0].value;
+    const lieSense = senseStore.findBySynsetId("02696550-v")!;
+    const positionSense = senseStore.findBySynsetId("05081943-n")!;
+    const outgoing = semanticRelationships.outgoing(onSenseId);
+    expect(
+      outgoing.some(
+        (r) => r.targetSenseId.value === senseGraphUuid(lieSense) && r.relationshipType === SemanticRelationshipKind.RELATED,
+      ),
+    ).toBe(true);
+    expect(
+      outgoing.some(
+        (r) => r.targetSenseId.value === senseGraphUuid(positionSense) && r.relationshipType === SemanticRelationshipKind.RELATED,
+      ),
+    ).toBe(true);
+
+    // Idempotent -- a second call against the same, already-seeded
+    // Domain creates nothing new.
+    expect(new PrepositionSenseSeeder("en").seed(domain)).toBe(0);
+  }, 60000);
 });
 
 describe("RelationshipSeeder against the bundled Common Relationship Cache", () => {
@@ -2532,6 +2598,58 @@ describe("RelationshipSeeder against the bundled Common Relationship Cache", () 
     const seeded = await relationshipSeeder.seedDomain({ name: "Common", vocabulary }, { skipUnresolvable: true });
     expect(seeded).toBeGreaterThan(0);
     expect(vocabulary.morphologicalPointerRelationships.totalRelationships()).toBe(seeded);
+  });
+
+  it("hand-curated PREPOSITION 'Hypernym Preposition' pairs (e.g. \"above\"/\"over\") seed as RELATED SemanticRelationship edges, both directions", async () => {
+    const wordSeeder = new WordSeeder("en");
+    const dictionary = new Dictionary();
+    const phrases = new Phrases();
+    const senseStore = new Senses();
+    const wordForms = new WordForms();
+    wordSeeder.seedDomain({ vocabulary: { dictionary, phrases, senses: senseStore, wordForms } }, { excludeOpenClasses: true });
+
+    const morphologicalPointerRelationships = new MorphologicalPointerRelationshipStore();
+    const semanticRelationships = new SemanticRelationshipStore();
+    const vocabulary = {
+      dictionary,
+      phrases,
+      senses: senseStore,
+      wordForms,
+      morphologicalPointerRelationships,
+      morphologicalPointerRelationshipProcessor: new MorphologicalPointerRelationshipProcessor(
+        morphologicalPointerRelationships,
+        new MorphologicalPointerRelationshipSystemPropertyTensor(),
+      ),
+      semanticRelationships,
+      semanticRelationshipProcessor: new SemanticRelationshipProcessor(
+        semanticRelationships,
+        new SemanticRelationshipSystemPropertyTensor(),
+      ),
+    };
+
+    const relationshipSeeder = new RelationshipSeeder("en");
+    await relationshipSeeder.seedDomain({ name: "Common", vocabulary }, { skipUnresolvable: true });
+
+    const above = dictionary.lookupAll("above").find((w) => w.partOfSpeech === PartOfSpeech.PREPOSITION)!;
+    const over = dictionary.lookupAll("over").find((w) => w.partOfSpeech === PartOfSpeech.PREPOSITION)!;
+    const aboveSenseId = wordForms.senseIdsOf(above)[0].value;
+    const overSenseId = wordForms.senseIdsOf(over)[0].value;
+
+    // "above" and "over" name each other as their own "Hypernym
+    // Preposition" (a genuine reciprocal pair in the source data, not a
+    // strict one-way hierarchy -- assets/common/en/relationships/README.md's
+    // own entry on why RELATED, not HYPERNYM/HYPONYM, is the right kind
+    // here), so both directions must resolve as real edges.
+    expect(
+      semanticRelationships
+        .outgoing(aboveSenseId)
+        .some((r) => r.targetSenseId.value === overSenseId && r.relationshipType === SemanticRelationshipKind.RELATED),
+    ).toBe(true);
+    expect(
+      semanticRelationships
+        .outgoing(overSenseId)
+        .some((r) => r.targetSenseId.value === aboveSenseId && r.relationshipType === SemanticRelationshipKind.RELATED),
+    ).toBe(true);
   });
 });
 

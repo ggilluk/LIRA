@@ -209,6 +209,20 @@ export function readRelationshipFile(languageCode: string, filename: string): Re
   return key === undefined ? undefined : (relationshipFileModules[key].default as RelationshipFileDocument);
 }
 
+/** Generic read for a relationships-directory JSON asset whose shape
+ * isn't RelationshipFileDocument -- readWordDirJson()'s own sibling for
+ * this directory (its own docstring on the identical reasoning). Not
+ * part of CATEGORY_FILES/relationship_seeder.ts's own checksum
+ * validation -- that only ever reads the three named category files,
+ * so a file read only through this function (e.g.
+ * role/preposition_sense_seeder.ts's own preposition_verb_noun_senses.json)
+ * can freely exist alongside them without affecting the checksum at all. */
+export function readRelationshipDirJson<T>(languageCode: string, filename: string): T | undefined {
+  const suffix = `/assets/common/${languageCode}/relationships/${filename}`;
+  const key = Object.keys(relationshipFileModules).find((path) => path.endsWith(suffix));
+  return key === undefined ? undefined : (relationshipFileModules[key].default as T);
+}
+
 export function relationshipDirectoryExists(languageCode: string): boolean {
   const suffix = `/assets/common/${languageCode}/relationships/`;
   return Object.keys(relationshipFileModules).some((path) => path.includes(suffix));
