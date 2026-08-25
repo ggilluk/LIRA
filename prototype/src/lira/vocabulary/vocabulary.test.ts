@@ -1251,13 +1251,28 @@ describe("WordSeeder against the bundled Common Vocabulary Cache", () => {
     expect(eachOtherSense).toBeDefined();
     expect(eachOtherSense?.isRootWord).toBe(false);
 
-    expect(senseStore.totalEntries()).toBe(dictionary.totalEntries() + phraseBook.totalEntries());
+    // Every hand-curated Word/Phrase gets exactly one Sense of its own
+    // (registerUniqueSense's own docstring, checked directly above) --
+    // except AUXILIARY, seeded by a different path entirely
+    // (AuxiliarySeeder, called from inside seedClosedClassWords() itself,
+    // WordSeeder.MANDATORY_FILES's own comment). Each AUXILIARY WordForm
+    // deliberately carries its own Sense per distinct meaning ("am"
+    // carries 2 -- role/auxiliary_seeder.ts's own docstring), so the
+    // plain 1:1 Word:Sense count only holds once AUXILIARY's own real
+    // total is substituted in for its own 1-per-word share.
+    const expectedSenseTotal = (): number => {
+      const auxiliaryWords = dictionary.all().filter((w) => w.partOfSpeech === PartOfSpeech.AUXILIARY);
+      const auxiliarySenseCount = auxiliaryWords.reduce((sum, w) => sum + wordForms.senseIdsOf(w).length, 0);
+      const nonAuxiliaryWordCount = dictionary.totalEntries() - auxiliaryWords.length;
+      return nonAuxiliaryWordCount + auxiliarySenseCount + phraseBook.totalEntries();
+    };
+    expect(senseStore.totalEntries()).toBe(expectedSenseTotal());
 
     // Idempotent: re-seeding neither duplicates Senses nor reassigns
     // already-registered ones.
     const second = seeder.seedDomain(domain, { excludeOpenClasses: true });
     expect(second).toBe(0);
-    expect(senseStore.totalEntries()).toBe(dictionary.totalEntries() + phraseBook.totalEntries());
+    expect(senseStore.totalEntries()).toBe(expectedSenseTotal());
     const reseededEntity = dictionary.lookupAll("entity").find((w) => w.partOfSpeech === PartOfSpeech.NOUN);
     expect(wordForms.senseIdsOf(reseededEntity!)[0].value).toBe(wordForms.senseIdsOf(entity!)[0].value);
   });

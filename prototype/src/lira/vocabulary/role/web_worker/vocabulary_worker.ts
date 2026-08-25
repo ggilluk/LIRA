@@ -23,7 +23,6 @@
 
 import { DictionaryView } from "../../ui/server/dictionary_controller";
 import { VocabularyContext } from "../../data/vocabulary_context";
-import { AuxiliarySeeder } from "../auxiliary_seeder";
 import { NounCharacterFormSeeder } from "../noun_character_form_seeder";
 import { RelationshipSeeder } from "../relationship_seeder";
 import { WordSeeder } from "../word_seeder";
@@ -157,19 +156,14 @@ async function handleSeedCommonVocabulary(request: SeedCommonVocabularyRequest):
     // assertions on it, in particular).
     const wordCountBefore = domain.vocabulary.dictionary.totalEntries();
     const phraseCountBefore = domain.vocabulary.phrases.totalEntries();
-    // Deliberately BEFORE seedDomain() below, not after -- "be"/"have"/
-    // "do" are homographs with a VERB sense metalinguistic_verbs.json
-    // (a seedDomain()-loaded SUPPLEMENTARY_FILES entry) also seeds, and
-    // Dictionary.lookup()'s "first entry wins" default is what makes
-    // AUXILIARY their default sense (AuxiliarySeeder's own docstring on
-    // why this ordering matters, role/auxiliary_seeder.ts).
-    new AuxiliarySeeder(domain.vocabulary.dictionary, domain.vocabulary.senses, domain.vocabulary.wordForms).seed();
-    // No separate DeterminerSeeder call needed here, unlike AuxiliarySeeder
-    // immediately above -- WordSeeder.seedClosedClassWords() (called by
-    // seedDomain() below) already runs it internally, before its own
-    // loadCache() loop, for every caller (role/word_seeder.ts's own
-    // docstring on why DETERMINER, unlike AUXILIARY, isn't left as a
-    // caller-remembered step).
+    // No separate AuxiliarySeeder/DeterminerSeeder call needed here --
+    // WordSeeder.seedClosedClassWords() (called by seedDomain() below)
+    // already runs both internally, before its own loadCache() loop,
+    // for every caller (role/word_seeder.ts's own docstring on that
+    // method, and on MANDATORY_FILES above it, for the full ordering
+    // rationale -- in particular why AuxiliarySeeder has to run first,
+    // ahead of "be"/"have"/"do"'s own VERB homograph in
+    // metalinguistic_verbs.json).
     // excludeOpenClasses: "Load WordNet" is this prototype's actual
     // source of truth for NOUN/VERB/ADJECTIVE/ADVERB coverage now
     // (word_seeder.ts's own seedClosedClassWords docstring) -- paired

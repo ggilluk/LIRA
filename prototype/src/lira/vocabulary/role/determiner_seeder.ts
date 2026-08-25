@@ -577,17 +577,17 @@ const DETERMINER_LEMMAS: readonly DeterminerLemmaSeed[] = [
  * own base spelling under both fields, the same way an invariant
  * Auxiliary spelling can appear under more than one field name at once.
  *
- * Call this *before* WordSeeder.seedDomain(), not after --
- * vocabulary_worker.ts's own handleSeedCommonVocabulary ordering,
- * AuxiliarySeeder's own precedent: this seeder now owns DETERMINER
- * coverage for every lemma below, so it must run before
- * determiners.json's own former place in WordSeeder.MANDATORY_FILES
- * would have loaded (that entry is removed, not merely reordered).
- * "this"/"that" still have their own real ordering dependency on
- * pronouns.json, exactly as they did under the old file -- this
- * seeder must keep running before pronouns.json loads so DETERMINER
- * stays their Dictionary.lookup() default over their own separate
- * PRONOUN entry there (assets/common/en/README.md's own
+ * Called from inside `WordSeeder.seedClosedClassWords()` itself
+ * (alongside `AuxiliarySeeder`, that method's own docstring), not by
+ * each caller individually -- this seeder now owns DETERMINER
+ * coverage for every lemma below, so it has to run before that
+ * method's own `loadCache()` loop, where determiners.json's former
+ * place in `MANDATORY_FILES` would have loaded (that entry is
+ * removed, not merely reordered). "this"/"that" still have their own
+ * real ordering dependency on `pronouns.json`, exactly as they did
+ * under the old file -- running before `pronouns.json` loads is what
+ * keeps DETERMINER their Dictionary.lookup() default over their own
+ * separate PRONOUN entry there (assets/common/en/README.md's own
  * "asset_version 1.3.0" note has the full history). */
 export class DeterminerSeeder {
   constructor(

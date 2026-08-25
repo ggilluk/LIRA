@@ -432,16 +432,19 @@ const AUXILIARY_LEMMAS: readonly AuxiliaryLemmaSeed[] = [
  * WordNet synonym Sense already has across every Word that lexicalizes
  * it.
  *
- * Call this *before* WordSeeder.seedDomain(), not after -- vocabulary_worker.ts's
- * own handleSeedCommonVocabulary ordering. "be"/"have"/"do" are
- * deliberate homographs with a VERB sense seeded by
- * metalinguistic_verbs.json (assets/common/en/README.md's own
- * homograph table), and Dictionary.lookup()'s "first entry wins"
- * default is what decided AUXILIARY as their default sense under the
- * old auxiliaries.json (a MANDATORY_FILES entry, loaded before every
- * SUPPLEMENTARY_FILES entry including metalinguistic_verbs.json) --
- * this seeder has to run first for that same default to survive the
- * move off auxiliaries.json. */
+ * Called from inside `WordSeeder.seedClosedClassWords()` itself, ahead
+ * of `DeterminerSeeder` and that method's own `loadCache()` loop
+ * (that method's own docstring) -- not left for each caller to invoke
+ * separately any more, `WordSeeder.MANDATORY_FILES`'s own comment has
+ * the history of why that changed. "be"/"have"/"do" are deliberate
+ * homographs with a VERB sense seeded by metalinguistic_verbs.json
+ * (assets/common/en/README.md's own homograph table), and
+ * Dictionary.lookup()'s "first entry wins" default is what decided
+ * AUXILIARY as their default sense under the old auxiliaries.json (a
+ * MANDATORY_FILES entry, loaded before every SUPPLEMENTARY_FILES entry
+ * including metalinguistic_verbs.json) -- this seeder has to keep
+ * running first for that same default to survive the move off
+ * auxiliaries.json. */
 export class AuxiliarySeeder {
   constructor(
     private readonly dictionary: Dictionary,

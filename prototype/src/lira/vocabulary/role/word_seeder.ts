@@ -36,6 +36,7 @@ import { createNounPhrase } from "../data/noun_phrase";
 import { createPrepositionalPhrase } from "../data/prepositional_phrase";
 import { createVerbPhrase } from "../data/verb_phrase";
 import { createDeterminer } from "./processor/determiner_processor";
+import { AuxiliarySeeder } from "./auxiliary_seeder";
 import { DeterminerSeeder } from "./determiner_seeder";
 import { createInterjection } from "./processor/interjection_processor";
 import { createNoun, generateNounForms, isNoun } from "./processor/noun_processor";
@@ -125,22 +126,22 @@ interface FormLink {
 // shall, will, must, ought, need, dare) -- a one-Word-per-lemma model
 // with the old file's own flat one-Word-per-surface-form entries folded
 // into WordForm records instead (data/entities/auxiliary.ts's own
-// docstring). AuxiliarySeeder runs before this list is loaded
-// (vocabulary_worker.ts's own handleSeedCommonVocabulary), preserving
-// this list's own "loads before every SUPPLEMENTARY_FILES entry"
-// ordering guarantee for be/have/do's AUXILIARY-vs-VERB homograph
-// default. Not every one of the old file's 36 entries has a
+// docstring). AuxiliarySeeder is called from seedClosedClassWords()
+// itself, before this list is loaded (that method's own docstring),
+// preserving this list's own "loads before every SUPPLEMENTARY_FILES
+// entry" ordering guarantee for be/have/do's AUXILIARY-vs-VERB
+// homograph default. Not every one of the old file's 36 entries has a
 // lemma-model equivalent yet (the 7 full contractions) -- tracked as a
 // follow-up, not silently dropped (see the GitHub issue this retirement
 // filed, and assets/common/en/README.md's own note on it).
 //
 // determiners.json was retired the same way once role/determiner_seeder.ts
 // started seeding DETERMINER's own 44 base lemmas directly (its own
-// docstring has the full list and rationale) -- also run before this
-// list is loaded, from the exact same call site as AuxiliarySeeder.
-// Unlike Auxiliary, nothing here still shares this list with
-// determiners.json's old entries: every lemma either moved to
-// DeterminerSeeder or (which/what) already lived in pronouns.json,
+// docstring has the full list and rationale) -- also called from
+// seedClosedClassWords() itself, from the exact same place as
+// AuxiliarySeeder. Unlike Auxiliary, nothing here still shares this
+// list with determiners.json's old entries: every lemma either moved
+// to DeterminerSeeder or (which/what) already lived in pronouns.json,
 // which now loads first below purely because determiners.json's own
 // slot is gone, not because anything about its own internal PRONOUN-
 // before-DETERMINER ordering changed.
@@ -1375,18 +1376,23 @@ export class WordSeeder {
    * nothing for this cache's own closed-class entries to compete with
    * there.
    *
-   * DETERMINER is the one closed class seeded from a *different* place
-   * -- `DeterminerSeeder` (role/determiner_seeder.ts), called right
-   * below, before this cache's own loop -- rather than from a
+   * AUXILIARY and DETERMINER are the two closed classes seeded from a
+   * *different* place -- `AuxiliarySeeder`/`DeterminerSeeder`
+   * (role/auxiliary_seeder.ts, role/determiner_seeder.ts), both called
+   * right below, before this cache's own loop -- rather than from a
    * `loadCache()` entry the way every other closed class still is
-   * (determiners.json itself is retired). Folded in here, unlike
-   * `AuxiliarySeeder`'s own deliberately-separate, caller-invoked
-   * shape, because every one of this method's own callers (this
-   * codebase's tests included, not just vocabulary_worker.ts's own
-   * production call site) already expects a real DETERMINER Word for
-   * "the"/"a"/... the moment this method returns -- there is no
-   * equivalent "caller may reasonably skip this" case for DETERMINER
-   * the way there already was, and stays, for AUXILIARY. */
+   * (auxiliaries.json/determiners.json are both retired). Called from
+   * here, not left for each caller to remember separately: every one
+   * of this method's own callers (this codebase's tests included, not
+   * just vocabulary_worker.ts's own production call site) already
+   * expects a real AUXILIARY/DETERMINER Word for "be"/"the"/"a"/... the
+   * moment this method returns. AuxiliarySeeder runs first, both here
+   * and in the two seeders' own combined docstrings' own reasoning --
+   * "be"/"have"/"do" are homographs with a VERB sense
+   * metalinguistic_verbs.json (a SUPPLEMENTARY_FILES entry loaded
+   * inside this cache's own loop below) also seeds, and
+   * Dictionary.lookup()'s "first entry wins" default is what makes
+   * AUXILIARY their default sense. */
   seedClosedClassWords(
     dictionary: Dictionary,
     phraseBook: Phrases,
@@ -1395,6 +1401,7 @@ export class WordSeeder {
     wordForms?: WordForms,
   ): number {
     const excludeOpenClasses = options?.excludeOpenClasses ?? false;
+    new AuxiliarySeeder(dictionary, senseStore, wordForms).seed();
     new DeterminerSeeder(dictionary, senseStore, wordForms).seed();
     let seeded = 0;
     const insertedByEntryId = new Map<string, Word>();
