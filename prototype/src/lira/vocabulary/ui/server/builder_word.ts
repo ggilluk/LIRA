@@ -138,6 +138,12 @@ export interface WordRecord {
   // closed-class Phrase, in particular).
   pre_modifiers?: DefinitionSegment[];
   post_modifiers?: DefinitionSegment[];
+  // phrase.wordRoles' own DETERMINER-role tokens (data/enums/phrase_role.ts's
+  // own docstring on that role -- valid regardless of PhraseType or
+  // position, so unlike pre_modifiers/post_modifiers above this is never
+  // split), same phraseModifierSegments()-recomputed shape and same
+  // presence rule as those two.
+  determiners?: DefinitionSegment[];
   // Every real WordForm record `WordForms` holds for this Word
   // (`wordForms.formsOf(word)`, wordFormsFor()'s own docstring on how
   // this is built), in registration order -- always includes
@@ -517,6 +523,7 @@ export function searchWords(
             head_word: phraseHeadWordSegment(phrase, dictionary, senses, domainName, wordForms),
             pre_modifiers: modifiers.pre,
             post_modifiers: modifiers.post,
+            determiners: modifiers.determiners,
           },
         ],
         totalMatches: 1,
@@ -547,6 +554,7 @@ export function searchWords(
               head_word: phraseHeadWordSegment(representative, dictionary, senses, domainName, wordForms),
               pre_modifiers: modifiers.pre,
               post_modifiers: modifiers.post,
+              determiners: modifiers.determiners,
             },
           ],
           totalMatches: 1,

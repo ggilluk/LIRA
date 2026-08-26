@@ -230,20 +230,21 @@ function headwordHTML(word) {
   return \`<span class="def-text">\${word.phrase_word_segments.map(definitionSegmentHTML).join(' ')}</span>\`;
 }
 
-// word.pre_modifiers/word.post_modifiers's own render (that field's own
-// docstring, builder_word.ts) -- one row per MODIFIER-role token
-// before/after the Head, each numbered by its own array position (the
-// simplest, and only, notion of "position" these carry -- pre-Modifier
-// #1, #2, ... and post-Modifier #1, #2, ... are counted separately, not
-// as one combined sequence across the Head). Reuses
-// definitionSegmentHTML() as-is, same as headwordHTML() above, so each
-// entry gets the identical hover tooltip -- part of speech, domain, and
-// now (that function's own recent addition) linked WordForm, when one
-// of that Word's own registered spellings matches this occurrence's
-// surface text exactly. \`label\` is "Pre-Modifiers"/"Post-Modifiers";
-// returns '' for an empty list rather than an empty, label-only row --
-// most Phrases have no MODIFIER-role token at all (every Common
-// Vocabulary Cache closed-class Phrase, in particular).
+// word.pre_modifiers/word.post_modifiers/word.determiners's own shared
+// render (those fields' own docstrings, builder_word.ts) -- one row per
+// MODIFIER- or DETERMINER-role token, each numbered by its own array
+// position (the simplest, and only, notion of "position" these carry --
+// pre-Modifier #1, #2, ... and post-Modifier #1, #2, ... are counted
+// separately, not as one combined sequence across the Head; Determiners
+// get their own separate count too). Reuses definitionSegmentHTML() as-is,
+// same as headwordHTML() above, so each entry gets the identical hover
+// tooltip -- part of speech, domain, and now (that function's own recent
+// addition) linked WordForm, when one of that Word's own registered
+// spellings matches this occurrence's surface text exactly. \`label\` is
+// "Determiners"/"Pre-Modifiers"/"Post-Modifiers"; returns '' for an empty
+// list rather than an empty, label-only row -- most Phrases have no
+// MODIFIER- or DETERMINER-role token at all (every Common Vocabulary
+// Cache closed-class Phrase, in particular).
 function modifierListHTML(segments, label) {
   if (!segments || !segments.length) return '';
   const entries = segments.map((seg, i) => \`<span class="modifier-entry" style="margin-right:10px">#\${i + 1} \${definitionSegmentHTML(seg)}</span>\`).join('');
@@ -295,6 +296,7 @@ function phraseDetailHTML(phrase, rels, lexicalRels) {
     \${phrase.related_domains && phrase.related_domains.length ? \`<div class="detail-related-domains" style="margin-top:4px"><span style="opacity:.6">Also:</span> \${phrase.related_domains.map(domainPill).join(' ')}</div>\` : ''}
     <div class="detail-entry-id" title="Persistent Qualified Word Identity (domain + part of speech + word) -- stable across regenerations, unlike this phrase's transient graph id">Entry ID <code>\${phrase.entry_id}</code></div>
     \${phrase.head_word ? \`<div class="detail-head-word" style="margin-top:4px" title="The one word whose own lexical class determines this Phrase's phraseType (Head Identification Rule, data/phrase_type_patterns_and_word_roles.md) -- text shown here is its Head Word Form, the phrase-local spelling; the link resolves its own Head Word entity"><span style="opacity:.6">Head Word:</span> \${definitionSegmentHTML(phrase.head_word)}</div>\` : ''}
+    \${modifierListHTML(phrase.determiners, 'Determiners')}
     \${modifierListHTML(phrase.pre_modifiers, 'Pre-Modifiers')}
     \${modifierListHTML(phrase.post_modifiers, 'Post-Modifiers')}
     <div class="detail-definition">\${renderDefinition(phrase)}</div>

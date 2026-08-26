@@ -143,13 +143,19 @@ export function phraseHeadWordSegment(
 
 /** `phrase`'s own pre-Head and post-Head MODIFIER-role tokens
  * (data/phrase_type_patterns_and_word_roles.md's own "Phrase Role
- * Allowed Types" table, MODIFIER row), as ordered DefinitionSegment
- * lists -- the client-facing counterpart of `phrase.preModifiers`/
- * `phrase.postModifiers` (data/phrase.ts's own docstring on each), but
- * built the same way phraseWordSegments()/phraseHeadWordSegment() above
- * already are: re-derived from `phrase.text`/`phrase.wordRoles`/
- * `phrase.words` directly, not read off `preModifiers`/`postModifiers`
- * themselves. Those two fields store only the resolved Word objects
+ * Allowed Types" table, MODIFIER row) and its DETERMINER-role tokens
+ * (that document's own Common Rules table -- valid regardless of
+ * PhraseType or position, phrase_processor.ts's own classifyPhraseRoles()
+ * docstring), each as an ordered DefinitionSegment list -- the
+ * client-facing counterpart of `phrase.preModifiers`/`phrase.postModifiers`
+ * (data/phrase.ts's own docstring on each) for the first two, and of
+ * `phrase.wordRoles`' own DETERMINER entries (no dedicated resolved-Word
+ * field of its own exists for those, unlike headWord/preModifiers/
+ * postModifiers) for the third. Built the same way
+ * phraseWordSegments()/phraseHeadWordSegment() above already are:
+ * re-derived from `phrase.text`/`phrase.wordRoles`/`phrase.words`
+ * directly, not read off `preModifiers`/`postModifiers` themselves.
+ * Those two fields store only the resolved Word objects
  * (linkPhraseWords()'s own docstring, role/processor/phrase_processor.ts)
  * -- once a MODIFIER token is resolved to a Word, its own original
  * phrase-local position and exact surface spelling are gone, and both
@@ -162,28 +168,34 @@ export function phraseHeadWordSegment(
  * functions already use keeps all three in exact agreement, and works
  * even for a Phrase seeded before headWord/preModifiers/postModifiers
  * existed (every field read here -- text/wordRoles/words -- predates
- * them). Empty on both sides for a Phrase with no identified Head or no
- * MODIFIER-role token at all (every Common Vocabulary Cache closed-class
- * Phrase, in particular, whose own `wordRoles` stays `[]`). */
+ * them). Determiners aren't split pre/post (unlike Modifiers) -- the
+ * Word Patterns table has no PhraseType whose own Determiner ever
+ * follows the Head, so one flat, position-ordered list covers every
+ * real case. Every list is empty for a Phrase with no identified Head or
+ * no token carrying that role at all (every Common Vocabulary Cache
+ * closed-class Phrase, in particular, whose own `wordRoles` stays `[]`). */
 export function phraseModifierSegments(
   phrase: Phrase,
   dictionary: Dictionary,
   senses: Senses,
   domainName: string,
   wordForms: WordForms,
-): { pre: DefinitionSegment[]; post: DefinitionSegment[] } {
+): { pre: DefinitionSegment[]; post: DefinitionSegment[]; determiners: DefinitionSegment[] } {
   const tokens = phrase.text.trim().split(/\s+/).filter((token) => token.length > 0);
   const headIndex = phrase.wordRoles.indexOf(PhraseRole.HEAD);
   const pre: DefinitionSegment[] = [];
   const post: DefinitionSegment[] = [];
+  const determiners: DefinitionSegment[] = [];
   tokens.forEach((token, index) => {
-    if (phrase.wordRoles[index] !== PhraseRole.MODIFIER) return;
+    const role = phrase.wordRoles[index];
+    if (role !== PhraseRole.MODIFIER && role !== PhraseRole.DETERMINER) return;
     const ref = phrase.words[index];
     const resolved = ref !== undefined ? dictionary.findByUuid(ref.value) : undefined;
     const segment = definitionWordSegment(token, resolved, senses, domainName, wordForms);
-    (headIndex !== -1 && index < headIndex ? pre : post).push(segment);
+    if (role === PhraseRole.DETERMINER) determiners.push(segment);
+    else (headIndex !== -1 && index < headIndex ? pre : post).push(segment);
   });
-  return { pre, post };
+  return { pre, post, determiners };
 }
 
 /** searchWords()'s own counterpart for the Phrases tab, over

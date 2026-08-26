@@ -329,24 +329,35 @@ tbody tr:hover { background: color-mix(in srgb, var(--accent) 6%, transparent); 
 tbody tr[data-word-id] { cursor: pointer; }
 tbody tr[data-word-id].selected { background: color-mix(in srgb, var(--accent) 14%, transparent); }
 .detail-panel {
-  position: sticky;
-  top: 16px;
-  z-index: 2;
+  /* Was position: sticky -- deliberately reverted. .words-layout
+     stacks this panel directly above .table-wrap in one column (no
+     side-by-side desktop layout exists anywhere in this stylesheet), so
+     a sticky panel taller than the gap it scrolls past visually
+     overlaps the table rows beneath it once stuck, at whatever width
+     this cap (below) actually lets it reach -- and, carrying its own
+     z-index to stay above that table, it also intercepts every click
+     aimed at an overlapped row: tr[data-word-id]'s own click listener
+     (client_bootstrap_controller.ts's own selectWord() call sites)
+     never fires, so clicking a different Word/Phrase/Sense while a tall
+     panel is open silently does nothing -- the exact bug a "several
+     errors ... no heads/modifiers/determiners visible when clicking on
+     many phrases" report traced back to here, confirmed directly (a
+     real click, not a forced one, landing on an overlapped row
+     reproduces Chromium's own aside.detail-panel intercepts pointer
+     events failure). position: static is what the max-width: 860px
+     media query below already gave every narrow viewport, for the same
+     reason -- now the universal default instead of a width-gated one.
+     Loses the "panel stays in view while you scroll the list"
+     convenience; keeps every row clickable, which matters more. */
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
   padding: 18px;
-  /* Each Sense now stacks Sense.Semantic.Relationships alongside its own
-     sibling Sense.Lexical.Relationships (plus PAD/Verb-Frame details) --
-     real content, not a scroll-length regression -- so the old 52vh/520px
-     cap regularly hid the Lexical section below this box's own internal
-     scroll fold before a reader ever saw it, reading as if it had been
-     swallowed by the Semantic section right above it rather than sitting
-     beside it. Still capped, not unbounded (a Sense with a large
-     Semantic list, e.g. "big"'s own 96-row primary sense, would
-     otherwise push this sticky panel far past the viewport), just with
-     real headroom instead of a little over half the screen. */
+  /* Still capped, not unbounded (a Sense with a large Semantic list,
+     e.g. "big"'s own 96-row primary sense, would otherwise push this
+     panel -- and everything below it -- far down the page), with its
+     own internal scroll once content exceeds it. */
   max-height: min(85vh, 900px);
   overflow-y: auto;
 }
@@ -810,7 +821,7 @@ svg.cyclic-graph { display: block; }
 .cyclic-node-selected text { fill: var(--accent); font-weight: 700; }
 .cyclic-node-selected circle { stroke: var(--accent); stroke-width: 3; }
 @media (max-width: 860px) {
-  .detail-panel { position: static; max-height: none; }
+  .detail-panel { max-height: none; }
 }
 footer {
   margin-top: 28px;
