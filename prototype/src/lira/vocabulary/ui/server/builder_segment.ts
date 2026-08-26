@@ -20,7 +20,39 @@ export const DEFINITION_TOKEN_PATTERN = /[^\W_]+/g;
 export type DefinitionSegment =
   | { text: string }
   | { text: string; word: true; resolved: false }
-  | { text: string; word: true; resolved: true; word_id: string; lexical_form: string; pos: string; domain: string | null; gloss: string };
+  | {
+      text: string;
+      word: true;
+      resolved: true;
+      word_id: string;
+      lexical_form: string;
+      pos: string;
+      domain: string | null;
+      gloss: string;
+      // The one WordForm (data/entities/word_form.ts) on `resolved` whose
+      // own spelling case-insensitively matches `surfaceText` -- e.g. a
+      // Phrase modifier token that happens to appear in its own plural or
+      // comparative spelling, not just the resolved Word's base lemma.
+      // `undefined` when no registered WordForm matches `surfaceText`
+      // exactly (WordForms.formsOf() came back empty, or every one of its
+      // entries spells the word differently than this particular
+      // occurrence does).
+      word_form?: { field: string; label: string; value: string };
+    };
+
+/** "pluralNumberForm" -> "Plural Number Form" -- every *_Form field name
+ * this codebase defines is camelCase built from Title Case words (each
+ * one already capitalized after the first, camelCase's own convention),
+ * so splitting on an uppercase letter and capitalizing the first
+ * character recovers exactly the Word Form to Part of Speech Matrix's
+ * own row names (data/matrices/word_form_part_of_speech_matrix.md) without
+ * needing a second, hand-maintained label table. Shared with
+ * builder_word.ts's own WordRecord.word_forms (WordFormEntry.label),
+ * which used to keep a private copy of this exact function. */
+export function formFieldLabel(field: string): string {
+  const spaced = field.replace(/([A-Z])/g, " $1");
+  return spaced.charAt(0).toUpperCase() + spaced.slice(1);
+}
 
 export function definitionWordSegment(
   surfaceText: string,
@@ -31,6 +63,7 @@ export function definitionWordSegment(
 ): DefinitionSegment {
   if (resolved === undefined) return { text: surfaceText, word: true, resolved: false };
   const fields = senseFieldsFor(senses, resolved, wordForms);
+  const matchingForm = wordForms.formsOf(resolved).find((form) => form.text.value.toLowerCase() === surfaceText.toLowerCase());
   return {
     text: surfaceText,
     word: true,
@@ -40,6 +73,7 @@ export function definitionWordSegment(
     pos: PartOfSpeech[resolved.partOfSpeech],
     domain: domainLabel(senses, domainName, resolved, wordForms),
     gloss: resolved.gloss?.value ?? fields.definition?.value ?? "",
+    word_form: matchingForm && { field: matchingForm.field, label: formFieldLabel(matchingForm.field), value: matchingForm.text.value },
   };
 }
 

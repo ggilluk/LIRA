@@ -302,6 +302,7 @@ function definitionSegmentHTML(seg) {
   }
   const meta = [titleCase(seg.pos)];
   if (seg.domain) meta.push(seg.domain);
+  if (seg.word_form) meta.push(\`\${seg.word_form.label}: \${seg.word_form.value}\`);
   return \`<span class="def-word" tabindex="0" data-word-id="\${seg.word_id}">\${seg.text}\`
     + \`<span class="def-tooltip"><span class="tt-title">\${seg.lexical_form}</span>\`
     + \`<span class="tt-meta">\${meta.join(" &middot; ")}</span>\${truncate(seg.gloss, 110)}</span></span>\`;

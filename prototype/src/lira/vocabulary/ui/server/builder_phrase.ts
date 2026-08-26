@@ -6,6 +6,7 @@
 import type { Dictionary } from "../../data/dictionary";
 import { EditorialLabel } from "../../data/enums/editorial_label";
 import { PartOfSpeech } from "../../data/enums/part_of_speech";
+import { PhraseRole } from "../../data/enums/phrase_role";
 import { PhraseType } from "../../data/enums/phrase_type";
 import { RegisterCode } from "../../data/enums/register_code";
 import type { Phrase } from "../../data/phrase";
@@ -138,6 +139,51 @@ export function phraseHeadWordSegment(
   if (phrase.headWordForm === undefined) return undefined;
   const resolved = phrase.unresolvedHeadWord !== undefined ? dictionary.findByUuid(phrase.unresolvedHeadWord.value) : undefined;
   return definitionWordSegment(phrase.headWordForm.value, resolved, senses, domainName, wordForms);
+}
+
+/** `phrase`'s own pre-Head and post-Head MODIFIER-role tokens
+ * (data/phrase_type_patterns_and_word_roles.md's own "Phrase Role
+ * Allowed Types" table, MODIFIER row), as ordered DefinitionSegment
+ * lists -- the client-facing counterpart of `phrase.preModifiers`/
+ * `phrase.postModifiers` (data/phrase.ts's own docstring on each), but
+ * built the same way phraseWordSegments()/phraseHeadWordSegment() above
+ * already are: re-derived from `phrase.text`/`phrase.wordRoles`/
+ * `phrase.words` directly, not read off `preModifiers`/`postModifiers`
+ * themselves. Those two fields store only the resolved Word objects
+ * (linkPhraseWords()'s own docstring, role/processor/phrase_processor.ts)
+ * -- once a MODIFIER token is resolved to a Word, its own original
+ * phrase-local position and exact surface spelling are gone, and both
+ * matter here: position is what tells a pre-Head Modifier from a
+ * post-Head one and gives each entry its own display order, and the
+ * surface spelling is what `definitionWordSegment()`'s own WordForm
+ * matching (builder_segment.ts) needs to find which registered
+ * inflected form (if any) this particular occurrence actually spells.
+ * Recomputing from the same three source fields those two sibling
+ * functions already use keeps all three in exact agreement, and works
+ * even for a Phrase seeded before headWord/preModifiers/postModifiers
+ * existed (every field read here -- text/wordRoles/words -- predates
+ * them). Empty on both sides for a Phrase with no identified Head or no
+ * MODIFIER-role token at all (every Common Vocabulary Cache closed-class
+ * Phrase, in particular, whose own `wordRoles` stays `[]`). */
+export function phraseModifierSegments(
+  phrase: Phrase,
+  dictionary: Dictionary,
+  senses: Senses,
+  domainName: string,
+  wordForms: WordForms,
+): { pre: DefinitionSegment[]; post: DefinitionSegment[] } {
+  const tokens = phrase.text.trim().split(/\s+/).filter((token) => token.length > 0);
+  const headIndex = phrase.wordRoles.indexOf(PhraseRole.HEAD);
+  const pre: DefinitionSegment[] = [];
+  const post: DefinitionSegment[] = [];
+  tokens.forEach((token, index) => {
+    if (phrase.wordRoles[index] !== PhraseRole.MODIFIER) return;
+    const ref = phrase.words[index];
+    const resolved = ref !== undefined ? dictionary.findByUuid(ref.value) : undefined;
+    const segment = definitionWordSegment(token, resolved, senses, domainName, wordForms);
+    (headIndex !== -1 && index < headIndex ? pre : post).push(segment);
+  });
+  return { pre, post };
 }
 
 /** searchWords()'s own counterpart for the Phrases tab, over

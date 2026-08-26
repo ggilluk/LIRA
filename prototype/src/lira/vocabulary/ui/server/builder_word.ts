@@ -20,8 +20,8 @@ import type { Word } from "../../data/entities/word";
 import type { WordForms } from "../../data/word_forms";
 import { graphUuid as wordGraphUuid } from "../../role/word_processor";
 import { graphUuid as senseGraphUuid } from "../../role/sense_processor";
-import { phraseHeadWordSegment, phraseTypeLabel, phraseWordSegments } from "./builder_phrase";
-import { definitionSegments, type DefinitionSegment } from "./builder_segment";
+import { phraseHeadWordSegment, phraseModifierSegments, phraseTypeLabel, phraseWordSegments } from "./builder_phrase";
+import { definitionSegments, formFieldLabel, type DefinitionSegment } from "./builder_segment";
 import { domainLabel, isRootWordFor, senseFieldsFor } from "./resolver_domain";
 
 /** `member`'s own per-Domain graph identity -- Phrase still keeps its
@@ -124,6 +124,20 @@ export interface WordRecord {
   // Word, and for a Phrase with no identified Head (every Common
   // Vocabulary Cache closed-class Phrase, in particular).
   head_word?: DefinitionSegment;
+  // phrase.preModifiers/phrase.postModifiers's own client-facing shape
+  // (data/phrase.ts's own docstring on each), one DefinitionSegment per
+  // MODIFIER-role token before/after the Head, in phrase-text order --
+  // phraseModifierSegments()'s own docstring (builder_phrase.ts) on why
+  // this is recomputed from the same text/wordRoles/words fields
+  // phrase_word_segments/head_word above already use, not read directly
+  // off preModifiers/postModifiers. Each entry's own array position IS
+  // its display position (1st pre-Modifier, 2nd, ...) -- no separate
+  // index field. Present only when this record was resolved from a
+  // Phrase; both empty for an ordinary Word and for a Phrase with no
+  // MODIFIER-role token at all (every Common Vocabulary Cache
+  // closed-class Phrase, in particular).
+  pre_modifiers?: DefinitionSegment[];
+  post_modifiers?: DefinitionSegment[];
   // Every real WordForm record `WordForms` holds for this Word
   // (`wordForms.formsOf(word)`, wordFormsFor()'s own docstring on how
   // this is built), in registration order -- always includes
@@ -226,17 +240,6 @@ export interface WordSenseSummary {
   frames?: string[];
 }
 
-/** "pluralNumberForm" -> "Plural Number Form" -- every *_Form field name
- * this codebase defines is camelCase built from Title Case words (each
- * one already capitalized after the first, camelCase's own convention),
- * so splitting on an uppercase letter and capitalizing the first
- * character recovers exactly the Word Form to Part of Speech Matrix's
- * own row names (data/matrices/word_form_part_of_speech_matrix.md) without
- * needing a second, hand-maintained label table. */
-function formFieldLabel(field: string): string {
-  const spaced = field.replace(/([A-Z])/g, " $1");
-  return spaced.charAt(0).toUpperCase() + spaced.slice(1);
-}
 
 /** WordRecord.derivations (that field's own docstring above) -- every
  * morphological-derivation pointer field `word`'s own concrete POS
@@ -504,6 +507,7 @@ export function searchWords(
     const phrase = phrases.findByUuid(options.wordId);
     if (phrase !== undefined) {
       const record = wordRecordFor(phraseAsWord(phrase, wordForms), dictionary, relationships, senses, domainName, wordForms);
+      const modifiers = phraseModifierSegments(phrase, dictionary, senses, domainName, wordForms);
       return {
         words: [
           {
@@ -511,6 +515,8 @@ export function searchWords(
             phrase_word_segments: phraseWordSegments(phrase, dictionary, senses, domainName, wordForms),
             phrase_type: phraseTypeLabel(phrase),
             head_word: phraseHeadWordSegment(phrase, dictionary, senses, domainName, wordForms),
+            pre_modifiers: modifiers.pre,
+            post_modifiers: modifiers.post,
           },
         ],
         totalMatches: 1,
@@ -531,6 +537,7 @@ export function searchWords(
     if (representative !== undefined) {
       if ("words" in representative) {
         const record = wordRecordFor(phraseAsWord(representative, wordForms), dictionary, relationships, senses, domainName, wordForms);
+        const modifiers = phraseModifierSegments(representative, dictionary, senses, domainName, wordForms);
         return {
           words: [
             {
@@ -538,6 +545,8 @@ export function searchWords(
               phrase_word_segments: phraseWordSegments(representative, dictionary, senses, domainName, wordForms),
               phrase_type: phraseTypeLabel(representative),
               head_word: phraseHeadWordSegment(representative, dictionary, senses, domainName, wordForms),
+              pre_modifiers: modifiers.pre,
+              post_modifiers: modifiers.post,
             },
           ],
           totalMatches: 1,
