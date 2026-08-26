@@ -1,3 +1,5 @@
+import { PhraseRole } from "./phrase_role";
+
 /** The grammatical category a Phrase belongs to -- which single word
  * class (noun, verb, adjective, adverb, preposition, or an infinitive
  * verb form) the phrase as a whole functions as within a larger
@@ -53,36 +55,77 @@ export enum PhraseType {
  * above) so a caller can look this up programmatically, e.g. to render
  * it in DictionaryView without hand-duplicating the same three strings
  * there. Keyed by the enum's own numeric value, not its name, so a
- * `PHRASE_TYPE_DETAILS[phrase.phraseType]` lookup works directly. */
-export const PHRASE_TYPE_DETAILS: Record<PhraseType, { definition: string; structure: string; example: string }> = {
+ * `PHRASE_TYPE_DETAILS[phrase.phraseType]` lookup works directly.
+ *
+ * `allowedTypes` is the same constituent-level compatibility matrix
+ * `data/phrase_type_patterns_and_word_roles.md`'s own "Phrase Role
+ * Allowed Types" table specifies, made machine-readable -- for each
+ * `PhraseRole` a PhraseType actually uses, which LIRA type (a Word
+ * subtype, a Phrase subtype, or Clause, named by its own type name)
+ * may fill that role. Plain data, not a new rule system, classifier,
+ * or validation mechanism -- nothing in this codebase reads or
+ * enforces this yet, the same "declared ahead of any real consumer"
+ * status `PhraseRole.COMPLEMENT` itself has (enums/phrase_role.ts's
+ * own docstring). `INFINITIVE_PHRASE` carries no entries here, the
+ * same reason it carries no row in that document's own table. */
+export const PHRASE_TYPE_DETAILS: Record<
+  PhraseType,
+  { definition: string; structure: string; example: string; allowedTypes: Partial<Record<PhraseRole, readonly string[]>> }
+> = {
   [PhraseType.NOUN_PHRASE]: {
     definition: "A phrase centred on a noun or pronoun that functions as an entity, subject, object, or complement.",
     structure: "(Determiner) + (Modifiers) + Noun/Pronoun + (Complements)",
     example: "the intelligent system",
+    allowedTypes: {
+      [PhraseRole.HEAD]: ["Noun", "Pronoun"],
+      [PhraseRole.DETERMINER]: ["Determiner"],
+      [PhraseRole.MODIFIER]: ["Adjective", "AdjectivePhrase", "Noun", "NounPhrase", "AdverbPhrase", "PrepositionalPhrase", "Clause"],
+      [PhraseRole.COMPLEMENT]: ["PrepositionalPhrase", "Clause"],
+    },
   },
   [PhraseType.VERB_PHRASE]: {
     definition: "A phrase centred on a main verb that expresses an action, process, event, or state.",
     structure: "(Auxiliary verbs) + Main verb + (Particles) + (Complements) + (Modifiers)",
     example: "has learned the pattern",
+    allowedTypes: {
+      [PhraseRole.HEAD]: ["Verb"],
+      [PhraseRole.MODIFIER]: ["Adverb", "AdverbPhrase"],
+      [PhraseRole.PARTICLE]: ["Adverb"],
+    },
   },
   [PhraseType.ADJECTIVE_PHRASE]: {
     definition: "A phrase centred on an adjective that describes or qualifies a noun, pronoun, or subject complement.",
     structure: "(Degree modifiers) + Adjective + (Complements)",
     example: "highly reliable",
+    allowedTypes: {
+      [PhraseRole.HEAD]: ["Adjective"],
+      [PhraseRole.MODIFIER]: ["Adverb", "AdverbPhrase"],
+      [PhraseRole.COMPLEMENT]: ["PrepositionalPhrase", "Clause"],
+    },
   },
   [PhraseType.ADVERB_PHRASE]: {
     definition: "A phrase centred on an adverb that modifies a verb, adjective, another adverb, or clause.",
     structure: "(Degree modifiers) + Adverb + (Complements)",
     example: "very quickly",
+    allowedTypes: {
+      [PhraseRole.HEAD]: ["Adverb"],
+      [PhraseRole.MODIFIER]: ["Adverb", "AdverbPhrase"],
+    },
   },
   [PhraseType.PREPOSITIONAL_PHRASE]: {
     definition: "A phrase beginning with a preposition and containing its complement.",
     structure: "Preposition + Noun phrase/complement + (Modifiers)",
     example: "within the framework",
+    allowedTypes: {
+      [PhraseRole.HEAD]: ["Preposition"],
+      [PhraseRole.MODIFIER]: ["Adverb", "AdverbPhrase"],
+      [PhraseRole.COMPLEMENT]: ["NounPhrase", "Pronoun", "Adverb", "AdverbPhrase", "PrepositionalPhrase", "Clause"],
+    },
   },
   [PhraseType.INFINITIVE_PHRASE]: {
     definition: "A phrase centred on an infinitive verb and functioning nominally, adjectivally, or adverbially.",
     structure: "to + Base-form verb + (Complements) + (Modifiers)",
     example: "to identify the cause",
+    allowedTypes: {},
   },
 };

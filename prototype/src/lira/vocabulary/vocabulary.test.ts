@@ -88,6 +88,38 @@ describe("PhraseType", () => {
     }
   });
 
+  it("PHRASE_TYPE_DETAILS.allowedTypes matches data/phrase_type_patterns_and_word_roles.md's own Phrase Role Allowed Types table, PhraseType by PhraseType", () => {
+    expect(PHRASE_TYPE_DETAILS[PhraseType.NOUN_PHRASE].allowedTypes).toEqual({
+      [PhraseRole.HEAD]: ["Noun", "Pronoun"],
+      [PhraseRole.DETERMINER]: ["Determiner"],
+      [PhraseRole.MODIFIER]: ["Adjective", "AdjectivePhrase", "Noun", "NounPhrase", "AdverbPhrase", "PrepositionalPhrase", "Clause"],
+      [PhraseRole.COMPLEMENT]: ["PrepositionalPhrase", "Clause"],
+    });
+    expect(PHRASE_TYPE_DETAILS[PhraseType.VERB_PHRASE].allowedTypes).toEqual({
+      [PhraseRole.HEAD]: ["Verb"],
+      [PhraseRole.MODIFIER]: ["Adverb", "AdverbPhrase"],
+      [PhraseRole.PARTICLE]: ["Adverb"],
+    });
+    expect(PHRASE_TYPE_DETAILS[PhraseType.ADJECTIVE_PHRASE].allowedTypes).toEqual({
+      [PhraseRole.HEAD]: ["Adjective"],
+      [PhraseRole.MODIFIER]: ["Adverb", "AdverbPhrase"],
+      [PhraseRole.COMPLEMENT]: ["PrepositionalPhrase", "Clause"],
+    });
+    expect(PHRASE_TYPE_DETAILS[PhraseType.ADVERB_PHRASE].allowedTypes).toEqual({
+      [PhraseRole.HEAD]: ["Adverb"],
+      [PhraseRole.MODIFIER]: ["Adverb", "AdverbPhrase"],
+    });
+    expect(PHRASE_TYPE_DETAILS[PhraseType.PREPOSITIONAL_PHRASE].allowedTypes).toEqual({
+      [PhraseRole.HEAD]: ["Preposition"],
+      [PhraseRole.MODIFIER]: ["Adverb", "AdverbPhrase"],
+      [PhraseRole.COMPLEMENT]: ["NounPhrase", "Pronoun", "Adverb", "AdverbPhrase", "PrepositionalPhrase", "Clause"],
+    });
+    // INFINITIVE_PHRASE carries no Phrase Role Allowed Types row in that
+    // document, the same reason it carries no Phrase Type Classes row --
+    // PHRASE_TYPE_DETAILS's own docstring on why.
+    expect(PHRASE_TYPE_DETAILS[PhraseType.INFINITIVE_PHRASE].allowedTypes).toEqual({});
+  });
+
   it("a Phrase can carry a phraseType, defaulting to undefined when not classified", () => {
     const unclassified = createPhrase({ text: "in spite of", partOfSpeech: PartOfSpeech.PREPOSITION });
     expect(unclassified.phraseType).toBeUndefined();
