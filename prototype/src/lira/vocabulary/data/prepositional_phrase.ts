@@ -29,16 +29,31 @@
  * modifier + head nouns, not prepositional in structure -- verified
  * against the bundled dict/data.noun, not guessed, classifyPhraseType's
  * own docstring). Never set for a Common Vocabulary Cache closed-class
- * Phrase, which has no constituency-parsing pass of its own. */
+ * Phrase, which has no constituency-parsing pass of its own.
+ *
+ * `headWord` narrows Phrase's own same-named field (data/phrase.ts's
+ * own docstring on it, and on `unresolvedHeadWord`, the graph-reference
+ * pointer this is distinct from) down to `Preposition` --
+ * PREPOSITIONAL_PHRASE's own Head Identification Rule never resolves to
+ * any other Word subtype (data/phrase_type_patterns_and_word_roles.md's
+ * own "Phrase Role Allowed Types" table, PrepositionalPhrase/HEAD row).
+ * A compile-time restriction only: nothing seeds `headWord` yet
+ * (Phrase.headWord's own docstring), so this narrowing has no real
+ * value to check against today -- it exists so a future caller that
+ * does populate it can never assign a Noun/Verb/Adjective/Adverb there
+ * by mistake. */
 
 import { PhraseType } from "./enums/phrase_type";
 import { createPhrase, type Phrase } from "./phrase";
+import type { Preposition } from "./entities/preposition";
 
 export interface PrepositionalPhrase extends Phrase {
   phraseType: PhraseType.PREPOSITIONAL_PHRASE;
+  headWord: Preposition;
 }
 
-export type PrepositionalPhraseInit = Pick<Phrase, "text" | "partOfSpeech"> & Partial<Omit<Phrase, "text" | "partOfSpeech" | "phraseType">>;
+export type PrepositionalPhraseInit = Pick<Phrase, "text" | "partOfSpeech"> &
+  Partial<Omit<Phrase, "text" | "partOfSpeech" | "phraseType" | "headWord">> & { headWord?: Preposition };
 
 export function createPrepositionalPhrase(init: PrepositionalPhraseInit): PrepositionalPhrase {
   return createPhrase({ ...init, phraseType: PhraseType.PREPOSITIONAL_PHRASE }) as PrepositionalPhrase;

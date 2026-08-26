@@ -20,16 +20,30 @@
  * VERB-tagged lemmas exist in the bundled data), so there's no
  * INFINITIVE_PHRASE ambiguity to resolve here the way ADJECTIVE/ADVERB
  * need. Never set for a Common Vocabulary Cache closed-class Phrase,
- * which has no constituency-parsing pass of its own. */
+ * which has no constituency-parsing pass of its own.
+ *
+ * `headWord` narrows Phrase's own same-named field (data/phrase.ts's
+ * own docstring on it, and on `unresolvedHeadWord`, the graph-reference
+ * pointer this is distinct from) down to `Verb` -- VERB_PHRASE's own
+ * Head Identification Rule never resolves to any other Word subtype
+ * (data/phrase_type_patterns_and_word_roles.md's own "Phrase Role
+ * Allowed Types" table, VerbPhrase/HEAD row). A compile-time
+ * restriction only: nothing seeds `headWord` yet (Phrase.headWord's own
+ * docstring), so this narrowing has no real value to check against
+ * today -- it exists so a future caller that does populate it can never
+ * assign a Noun/Adjective/Adverb/Preposition there by mistake. */
 
 import { PhraseType } from "../enums/phrase_type";
 import { createPhrase, type Phrase } from "../phrase";
+import type { Verb } from "./verb";
 
 export interface VerbPhrase extends Phrase {
   phraseType: PhraseType.VERB_PHRASE;
+  headWord: Verb;
 }
 
-export type VerbPhraseInit = Pick<Phrase, "text" | "partOfSpeech"> & Partial<Omit<Phrase, "text" | "partOfSpeech" | "phraseType">>;
+export type VerbPhraseInit = Pick<Phrase, "text" | "partOfSpeech"> &
+  Partial<Omit<Phrase, "text" | "partOfSpeech" | "phraseType" | "headWord">> & { headWord?: Verb };
 
 export function createVerbPhrase(init: VerbPhraseInit): VerbPhrase {
   return createPhrase({ ...init, phraseType: PhraseType.VERB_PHRASE }) as VerbPhrase;

@@ -24,16 +24,30 @@
  * for the rest (that function's own docstring, including its own
  * three-entry denylist of "to date"/"to boot"/"to advantage" false
  * positives). Never set for a Common Vocabulary Cache closed-class
- * Phrase, which has no constituency-parsing pass of its own. */
+ * Phrase, which has no constituency-parsing pass of its own.
+ *
+ * `headWord` narrows Phrase's own same-named field (data/phrase.ts's
+ * own docstring on it, and on `unresolvedHeadWord`, the graph-reference
+ * pointer this is distinct from) down to `Adverb` -- ADVERB_PHRASE's
+ * own Head Identification Rule never resolves to any other Word
+ * subtype (data/phrase_type_patterns_and_word_roles.md's own "Phrase
+ * Role Allowed Types" table, AdverbPhrase/HEAD row). A compile-time
+ * restriction only: nothing seeds `headWord` yet (Phrase.headWord's own
+ * docstring), so this narrowing has no real value to check against
+ * today -- it exists so a future caller that does populate it can never
+ * assign a Noun/Verb/Adjective/Preposition there by mistake. */
 
 import { PhraseType } from "../enums/phrase_type";
 import { createPhrase, type Phrase } from "../phrase";
+import type { Adverb } from "./adverb";
 
 export interface AdverbPhrase extends Phrase {
   phraseType: PhraseType.ADVERB_PHRASE;
+  headWord: Adverb;
 }
 
-export type AdverbPhraseInit = Pick<Phrase, "text" | "partOfSpeech"> & Partial<Omit<Phrase, "text" | "partOfSpeech" | "phraseType">>;
+export type AdverbPhraseInit = Pick<Phrase, "text" | "partOfSpeech"> &
+  Partial<Omit<Phrase, "text" | "partOfSpeech" | "phraseType" | "headWord">> & { headWord?: Adverb };
 
 export function createAdverbPhrase(init: AdverbPhraseInit): AdverbPhrase {
   return createPhrase({ ...init, phraseType: PhraseType.ADVERB_PHRASE }) as AdverbPhrase;
