@@ -196,25 +196,22 @@ export interface Phrase extends LinguisticUnit {
   // exact same conditions unresolvedHeadWord is.
   headWordForm?: Text;
 
-  // The Head's own resolved Word entity -- never set by anything in
-  // this codebase today; declared ahead of any real seeder that
-  // populates it, the same "named ahead of the field(s) that will
-  // eventually carry it" status PhraseRole.COMPLEMENT itself has
-  // (enums/phrase_role.ts's own docstring). Every `*_phrase.ts` subtype
+  // The Head's own resolved Word entity. Every `*_phrase.ts` subtype
   // narrows this down to the specific Word subtype(s) its own Head
   // Identification Rule allows -- NounPhrase to `Noun | Pronoun`
   // (data/entities/noun_phrase.ts), for instance -- the same way each
   // subtype already narrows `phraseType` to one literal PhraseType
   // member. Distinct from `unresolvedHeadWord` above: that field is the
-  // graph-reference pointer a caller resolves via
-  // `Dictionary.findByUuid()` today; this field is reserved for the
-  // resolved Word itself, once something populates it.
+  // graph-reference pointer this one resolves from, via
+  // `Dictionary.findByUuid()` -- genuinely populated today, for every
+  // real multi-word WordNet Phrase, by linkPhraseWords()
+  // (role/processor/phrase_processor.ts), right alongside
+  // `unresolvedHeadWord` itself. Still undefined for a Common Vocabulary
+  // Cache closed-class Phrase, which never runs that pass at all
+  // (`words`'s own docstring on why).
   headWord?: Word;
 
-  // This Phrase's own pre-Head modifying constituents -- never set by
-  // anything in this codebase today; declared ahead of any real seeder
-  // that populates it, `headWord`'s own "named ahead of the field(s)
-  // that will eventually carry it" status just above. `Word | Phrase |
+  // This Phrase's own pre-Head modifying constituents. `Word | Phrase |
   // Clause` here is deliberately the broadest constituent union any
   // PhraseType's own MODIFIER row ever needs (data/
   // phrase_type_patterns_and_word_roles.md's own "Phrase Role Allowed
@@ -229,7 +226,15 @@ export interface Phrase extends LinguisticUnit {
   // "Preposition + Noun phrase/complement + (Modifiers)" too) -- this
   // field names the constituent's *role*, not its *position* within
   // `text`, the same distinction `PhraseRole.MODIFIER` itself already
-  // draws from raw word order.
+  // draws from raw word order. Genuinely populated today by
+  // linkPhraseWords() (role/processor/phrase_processor.ts), for every
+  // MODIFIER-role position before the Head that resolves to a real
+  // single Word -- deliberately Word-only: nothing in this codebase
+  // parses a phrase's own text into nested sub-phrase/Clause spans, so a
+  // MODIFIER that would actually be one of those (the Allowed Types
+  // table also permits AdjectivePhrase/NounPhrase/AdverbPhrase/
+  // PrepositionalPhrase/Clause here) is simply left out rather than
+  // guessed at (linkPhraseWords()'s own docstring).
   preModifiers?: readonly (Word | Phrase | Clause)[];
 
   // This Phrase's own post-Head modifying constituents -- `preModifiers`'
@@ -242,10 +247,11 @@ export interface Phrase extends LinguisticUnit {
   // own "... + Noun phrase/complement + (Modifiers)") -- this field lets
   // a future populator place a MODIFIER constituent on the side that
   // matches real word order, without overloading `preModifiers` to mean
-  // "any-position modifier." Same broad `Word | Phrase | Clause` union
-  // and same compile-time-only, unpopulated-by-anything-today status as
-  // `preModifiers` above; each `*_phrase.ts` subtype narrows this down
-  // to its own MODIFIER row exactly the same way.
+  // "any-position modifier." Same broad `Word | Phrase | Clause` union,
+  // same Word-only population by linkPhraseWords() for every MODIFIER-
+  // role position *after* the Head, and each `*_phrase.ts` subtype
+  // narrows this down to its own MODIFIER row exactly the same way as
+  // `preModifiers`.
   postModifiers?: readonly (Word | Phrase | Clause)[];
 }
 

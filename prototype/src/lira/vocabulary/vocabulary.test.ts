@@ -45,7 +45,8 @@ import { AsyncDictionaryHydrator } from "./role/dictionary_hydrator";
 import { DictionaryProcessor } from "./role/dictionary_processor";
 import { MorphologicalPointerRelationshipProcessor } from "./role/morphological_pointer_relationship_processor";
 import { RelationshipSeeder } from "./role/relationship_seeder";
-import { classifyPhraseRoles, classifyPhraseType, WordSeeder } from "./role/word_seeder";
+import { WordSeeder } from "./role/word_seeder";
+import { classifyPhraseRoles, classifyPhraseType } from "./role/processor/phrase_processor";
 import { NounCharacterFormSeeder } from "./role/noun_character_form_seeder";
 import { PrepositionSenseSeeder } from "./role/preposition_sense_seeder";
 import { IdentificationSource } from "./role/word_identifier";
@@ -1922,6 +1923,17 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // exactly.
     expect(toyPoodle!.unresolvedHeadWord?.value).toBe(toyPoodle!.words[1]?.value);
     expect(toyPoodle!.headWordForm?.value).toBe("poodle");
+    // Phrase.headWord -- linkPhraseWords()'s own resolution of
+    // unresolvedHeadWord above via Dictionary.findByUuid(), so it names
+    // the same real "poodle" Word (NOUN), not just its Identifier.
+    // Phrase.preModifiers -- the one Modifier position ("toy") resolved
+    // to a real Word the same way; nothing sits after the Head, so
+    // postModifiers stays empty.
+    expect(toyPoodle!.headWord?.text).toBe("poodle");
+    expect(toyPoodle!.headWord?.partOfSpeech).toBe(PartOfSpeech.NOUN);
+    expect(toyPoodle!.preModifiers).toHaveLength(1);
+    expect(toyPoodle!.preModifiers?.[0]).toMatchObject({ text: "toy" });
+    expect(toyPoodle!.postModifiers).toEqual([]);
 
     // classifyPhraseType()'s own PREPOSITIONAL_PHRASE/INFINITIVE_PHRASE
     // rules, spot-checked against real seeded Phrases rather than just
@@ -1954,6 +1966,14 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     expect(atFault!.unresolvedHeadWord?.value).toBe(atFault!.words[0]?.value);
     expect(atFault!.unresolvedHeadWord).toBeDefined();
     expect(atFault!.headWordForm?.value).toBe("at");
+    // headWord resolves to that same obscure "at" NOUN homograph
+    // unresolvedHeadWord already pointed at. No MODIFIER-role position
+    // exists in this phrase's own wordRoles above, so both modifier
+    // arrays stay empty.
+    expect(atFault!.headWord?.text).toBe("at");
+    expect(atFault!.headWord?.partOfSpeech).toBe(PartOfSpeech.NOUN);
+    expect(atFault!.preModifiers).toEqual([]);
+    expect(atFault!.postModifiers).toEqual([]);
 
     const toBeSure = phraseBook.lookupAll("to be sure").find((phrase) => phrase.synsetId?.value === "00151192-r");
     expect(toBeSure?.partOfSpeech).toBe(PartOfSpeech.ADVERB);
@@ -1968,6 +1988,16 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     expect(toBeSure!.wordRoles).toEqual([PhraseRole.PARTICLE, PhraseRole.HEAD, undefined]);
     expect(toBeSure!.unresolvedHeadWord?.value).toBe(toBeSure!.words[1]?.value);
     expect(toBeSure!.headWordForm?.value).toBe("be");
+    // dictionary.lookup("be")'s own arbitrary-but-deterministic
+    // first-seeded homograph resolves to the chemical-element NOUN "Be"
+    // here, not the verb sense a reader might expect -- the same
+    // structural-not-semantic pick "toy poodle"'s own "toy" already
+    // exercises above. No MODIFIER role exists in this phrase's own
+    // wordRoles, so both modifier arrays stay empty.
+    expect(toBeSure!.headWord?.text).toBe("Be");
+    expect(toBeSure!.headWord?.partOfSpeech).toBe(PartOfSpeech.NOUN);
+    expect(toBeSure!.preModifiers).toEqual([]);
+    expect(toBeSure!.postModifiers).toEqual([]);
     expect(dictionary.lookupAll("toy poodle")).toEqual([]);
 
     const poodle = dictionary.lookupAll("poodle").find((w) => wordForms.synsetIdOf(w)?.value === "02115987-n");
@@ -2108,6 +2138,15 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     expect(giveUp!.wordRoles).toEqual([PhraseRole.HEAD, PhraseRole.MODIFIER]);
     expect(giveUp!.unresolvedHeadWord?.value).toBe(giveUp!.words[0]?.value);
     expect(giveUp!.headWordForm?.value).toBe("give");
+    // headWord resolves to that same rare NOUN "give" homograph
+    // unresolvedHeadWord already pointed at (this test's own comment
+    // above on why). "up" sits after the Head with a MODIFIER role, so
+    // it lands in postModifiers, not preModifiers.
+    expect(giveUp!.headWord?.text).toBe("give");
+    expect(giveUp!.headWord?.partOfSpeech).toBe(PartOfSpeech.NOUN);
+    expect(giveUp!.preModifiers).toEqual([]);
+    expect(giveUp!.postModifiers).toHaveLength(1);
+    expect(giveUp!.postModifiers?.[0]).toMatchObject({ text: "up" });
 
     // "look up to" (01831800-v, dict/data.verb) -- same Head rule as
     // "give up", but here "up" *is* immediately followed by a token
@@ -2121,6 +2160,13 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     expect(lookUpTo!.wordRoles).toEqual([PhraseRole.HEAD, PhraseRole.PARTICLE, undefined]);
     expect(lookUpTo!.unresolvedHeadWord?.value).toBe(lookUpTo!.words[0]?.value);
     expect(lookUpTo!.headWordForm?.value).toBe("look");
+    // "up" here is a Particle, not a Modifier (this test's own comment
+    // above), so it's excluded from both modifier arrays -- "to" gets
+    // no role at all, same reason. Both stay empty.
+    expect(lookUpTo!.headWord?.text).toBe("look");
+    expect(lookUpTo!.headWord?.partOfSpeech).toBe(PartOfSpeech.NOUN);
+    expect(lookUpTo!.preModifiers).toEqual([]);
+    expect(lookUpTo!.postModifiers).toEqual([]);
 
     // "long ago" (00022855-r, dict/data.adv) -- AdverbPhrase's own
     // premodifying case: "ago" is the Head (the later of two Adverb-
@@ -2132,6 +2178,17 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     expect(longAgo!.wordRoles).toEqual([PhraseRole.MODIFIER, PhraseRole.HEAD]);
     expect(longAgo!.unresolvedHeadWord?.value).toBe(longAgo!.words[1]?.value);
     expect(longAgo!.headWordForm?.value).toBe("ago");
+    // dictionary.lookup("ago")'s own arbitrary-but-deterministic
+    // first-seeded homograph happens to be an ADJECTIVE sense here, not
+    // the ADVERB one the phrase's own AdverbPhrase structure suggests --
+    // the same structural-not-semantic pick every headWord resolution
+    // above already exercises. "long" is the one premodifying Modifier,
+    // so it's the sole preModifiers entry; nothing sits after the Head.
+    expect(longAgo!.headWord?.text).toBe("ago");
+    expect(longAgo!.headWord?.partOfSpeech).toBe(PartOfSpeech.ADJECTIVE);
+    expect(longAgo!.preModifiers).toHaveLength(1);
+    expect(longAgo!.preModifiers?.[0]).toMatchObject({ text: "long" });
+    expect(longAgo!.postModifiers).toEqual([]);
 
     // "in the meantime" (00065346-r, dict/data.adv) -- PrepositionalPhrase
     // with a genuine Determiner in the middle: "in" heads it (via the
@@ -2145,6 +2202,16 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     expect(inTheMeantime!.wordRoles).toEqual([PhraseRole.HEAD, PhraseRole.DETERMINER, undefined]);
     expect(inTheMeantime!.unresolvedHeadWord?.value).toBe(inTheMeantime!.words[0]?.value);
     expect(inTheMeantime!.headWordForm?.value).toBe("in");
+    // dictionary.lookup("in")'s own arbitrary-but-deterministic
+    // first-seeded homograph resolves to the abbreviation NOUN "IN"
+    // here (Indiana's own postal code, a real WordNet noun sense), the
+    // same structural-not-semantic pick every headWord resolution above
+    // already exercises. "the" carries DETERMINER, not MODIFIER, so
+    // neither modifier array picks it up.
+    expect(inTheMeantime!.headWord?.text).toBe("IN");
+    expect(inTheMeantime!.headWord?.partOfSpeech).toBe(PartOfSpeech.NOUN);
+    expect(inTheMeantime!.preModifiers).toEqual([]);
+    expect(inTheMeantime!.postModifiers).toEqual([]);
 
     // classifyPhraseRoles() itself, called directly (not just through
     // the full seeding pipeline above), for the one documented ambiguity
@@ -2166,6 +2233,13 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     expect(handCrafted.wordRoles).toEqual([]);
     expect(handCrafted.unresolvedHeadWord).toBeUndefined();
     expect(handCrafted.headWordForm).toBeUndefined();
+    // headWord/preModifiers/postModifiers are exactly as unpopulated --
+    // createPhrase() never defaults them (unlike words/wordRoles' own
+    // `[]` default above), and nothing else ever touches a closed-class
+    // Phrase's own fields after creation.
+    expect(handCrafted.headWord).toBeUndefined();
+    expect(handCrafted.preModifiers).toBeUndefined();
+    expect(handCrafted.postModifiers).toBeUndefined();
   }, 60000);
 
   it("seeds a Noun/Verb/Adjective/Adverb subtype per Word, populating per-sense frames/syntacticPosition from real WordNet data previously discarded", async () => {

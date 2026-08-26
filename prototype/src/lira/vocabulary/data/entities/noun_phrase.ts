@@ -48,25 +48,28 @@
  * pointer this is distinct from) down to `Noun | Pronoun` -- this
  * subtype's own Head Identification Rule never resolves to any other
  * Word subtype (the "PhraseRole values valid within a NounPhrase" note
- * above, HEAD row). A compile-time restriction only: nothing seeds
- * `headWord` yet (Phrase.headWord's own docstring), so this narrowing
- * has no real value to check against today -- it exists so a future
- * caller that does populate it can never assign a Verb/Adjective/
- * Adverb/Preposition there by mistake.
+ * above, HEAD row). Genuinely populated today, for every real seeded
+ * multi-word WordNet NounPhrase, by linkPhraseWords()
+ * (role/processor/phrase_processor.ts) resolving `unresolvedHeadWord`
+ * via `Dictionary.findByUuid()`; this narrowing exists so that
+ * resolution can never assign a Verb/Adjective/Adverb/Preposition here
+ * by mistake, whether populated by that pass or a future caller.
  *
  * `preModifiers` narrows Phrase's own same-named field (data/phrase.ts's
  * own docstring on it) down to the exact constituent set
  * data/phrase_type_patterns_and_word_roles.md's own "Phrase Role
  * Allowed Types" table gives NounPhrase's own MODIFIER row: `Adjective
  * | AdjectivePhrase | Noun | NounPhrase | AdverbPhrase |
- * PrepositionalPhrase | Clause`. Same compile-time-only status as
- * `headWord` above -- nothing seeds this yet either.
+ * PrepositionalPhrase | Clause`. Same real-population status as
+ * `headWord` above, for the single-Word-constituent case only --
+ * linkPhraseWords()'s own docstring on why a sub-phrase/Clause modifier
+ * is left out rather than guessed at.
  *
  * `postModifiers` narrows Phrase's own same-named field (data/phrase.ts's
  * own docstring on it) down to that exact same constituent set --
  * `preModifiers`' own MODIFIER row makes no pre/post distinction, so
  * NounPhrase's post-Head modifier set is identical to its pre-Head one.
- * Same compile-time-only status as `preModifiers` above. */
+ * Same real-population status as `preModifiers` above. */
 
 import { PhraseType } from "../enums/phrase_type";
 import { createPhrase, type Phrase } from "../phrase";

@@ -37,27 +37,30 @@
  * PREPOSITIONAL_PHRASE's own Head Identification Rule never resolves to
  * any other Word subtype (data/phrase_type_patterns_and_word_roles.md's
  * own "Phrase Role Allowed Types" table, PrepositionalPhrase/HEAD row).
- * A compile-time restriction only: nothing seeds `headWord` yet
- * (Phrase.headWord's own docstring), so this narrowing has no real
- * value to check against today -- it exists so a future caller that
- * does populate it can never assign a Noun/Verb/Adjective/Adverb there
- * by mistake.
+ * Genuinely populated today, for every real seeded multi-word WordNet
+ * PrepositionalPhrase, by linkPhraseWords()
+ * (role/processor/phrase_processor.ts) resolving `unresolvedHeadWord`
+ * via `Dictionary.findByUuid()`; this narrowing exists so that
+ * resolution can never assign a Noun/Verb/Adjective/Adverb here by
+ * mistake.
  *
  * `preModifiers` narrows Phrase's own same-named field (data/phrase.ts's
  * own docstring on it) down to the exact constituent set
  * data/phrase_type_patterns_and_word_roles.md's own "Phrase Role
  * Allowed Types" table gives PrepositionalPhrase's own MODIFIER row:
- * `Adverb | AdverbPhrase`. Same compile-time-only status as `headWord`
- * above -- nothing seeds this yet either.
+ * `Adverb | AdverbPhrase`. Same real-population status as `headWord`
+ * above, for the single-Word-constituent case only -- linkPhraseWords()'s
+ * own docstring on why a sub-phrase/Clause modifier is left out rather
+ * than guessed at.
  *
  * `postModifiers` narrows Phrase's own same-named field (data/phrase.ts's
  * own docstring on it) down to that exact same `Adverb | AdverbPhrase`
  * set -- PrepositionalPhrase's own structure ("Preposition + Noun
  * phrase/complement + (Modifiers)") in fact places its real Modifiers
- * after the Head, so this field is the one a future populator would
- * actually use for PrepositionalPhrase, with `preModifiers` staying
- * available for the rarer pre-Head case. Same compile-time-only status
- * as `preModifiers` above. */
+ * after the Head, so this is the field linkPhraseWords() actually
+ * populates in practice for a real PrepositionalPhrase, with
+ * `preModifiers` staying available (and populated the same way, should a
+ * Modifier ever precede the Head) for the rarer pre-Head case. */
 
 import { PhraseType } from "./enums/phrase_type";
 import { createPhrase, type Phrase } from "./phrase";
