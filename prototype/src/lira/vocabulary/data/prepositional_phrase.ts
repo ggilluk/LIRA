@@ -48,7 +48,16 @@
  * data/phrase_type_patterns_and_word_roles.md's own "Phrase Role
  * Allowed Types" table gives PrepositionalPhrase's own MODIFIER row:
  * `Adverb | AdverbPhrase`. Same compile-time-only status as `headWord`
- * above -- nothing seeds this yet either. */
+ * above -- nothing seeds this yet either.
+ *
+ * `postModifiers` narrows Phrase's own same-named field (data/phrase.ts's
+ * own docstring on it) down to that exact same `Adverb | AdverbPhrase`
+ * set -- PrepositionalPhrase's own structure ("Preposition + Noun
+ * phrase/complement + (Modifiers)") in fact places its real Modifiers
+ * after the Head, so this field is the one a future populator would
+ * actually use for PrepositionalPhrase, with `preModifiers` staying
+ * available for the rarer pre-Head case. Same compile-time-only status
+ * as `preModifiers` above. */
 
 import { PhraseType } from "./enums/phrase_type";
 import { createPhrase, type Phrase } from "./phrase";
@@ -62,12 +71,14 @@ export interface PrepositionalPhrase extends Phrase {
   phraseType: PhraseType.PREPOSITIONAL_PHRASE;
   headWord: Preposition;
   preModifiers: readonly PrepositionalPhraseModifier[];
+  postModifiers: readonly PrepositionalPhraseModifier[];
 }
 
 export type PrepositionalPhraseInit = Pick<Phrase, "text" | "partOfSpeech"> &
-  Partial<Omit<Phrase, "text" | "partOfSpeech" | "phraseType" | "headWord" | "preModifiers">> & {
+  Partial<Omit<Phrase, "text" | "partOfSpeech" | "phraseType" | "headWord" | "preModifiers" | "postModifiers">> & {
     headWord?: Preposition;
     preModifiers?: readonly PrepositionalPhraseModifier[];
+    postModifiers?: readonly PrepositionalPhraseModifier[];
   };
 
 export function createPrepositionalPhrase(init: PrepositionalPhraseInit): PrepositionalPhrase {

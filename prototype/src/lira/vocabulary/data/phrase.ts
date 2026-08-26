@@ -231,6 +231,22 @@ export interface Phrase extends LinguisticUnit {
   // `text`, the same distinction `PhraseRole.MODIFIER` itself already
   // draws from raw word order.
   preModifiers?: readonly (Word | Phrase | Clause)[];
+
+  // This Phrase's own post-Head modifying constituents -- `preModifiers`'
+  // own counterpart, not a distinct PhraseRole (PhraseRole.MODIFIER
+  // covers both; `phrase_type_patterns_and_word_roles.md`'s own
+  // MODIFIER row makes no pre/post distinction either). Exists because
+  // `preModifiers`' own docstring already notes some PhraseTypes place
+  // their real modifiers after the Head in practice (VerbPhrase's own
+  // "... + (Complements) + (Modifiers)" structure, PrepositionalPhrase's
+  // own "... + Noun phrase/complement + (Modifiers)") -- this field lets
+  // a future populator place a MODIFIER constituent on the side that
+  // matches real word order, without overloading `preModifiers` to mean
+  // "any-position modifier." Same broad `Word | Phrase | Clause` union
+  // and same compile-time-only, unpopulated-by-anything-today status as
+  // `preModifiers` above; each `*_phrase.ts` subtype narrows this down
+  // to its own MODIFIER row exactly the same way.
+  postModifiers?: readonly (Word | Phrase | Clause)[];
 }
 
 export type PhraseInit = Pick<Phrase, "text" | "partOfSpeech"> & Partial<Omit<Phrase, "text" | "partOfSpeech">>;

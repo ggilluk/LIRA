@@ -43,7 +43,14 @@
  * Allowed Types" table gives AdverbPhrase's own MODIFIER row: `Adverb |
  * AdverbPhrase` -- self-referential, since an AdverbPhrase can itself
  * modify another AdverbPhrase's own Head. Same compile-time-only status
- * as `headWord` above -- nothing seeds this yet either. */
+ * as `headWord` above -- nothing seeds this yet either.
+ *
+ * `postModifiers` narrows Phrase's own same-named field (data/phrase.ts's
+ * own docstring on it) down to that exact same self-referential
+ * `Adverb | AdverbPhrase` set -- `preModifiers`' own MODIFIER row makes
+ * no pre/post distinction, so AdverbPhrase's post-Head modifier set is
+ * identical to its pre-Head one. Same compile-time-only status as
+ * `preModifiers` above. */
 
 import { PhraseType } from "../enums/phrase_type";
 import { createPhrase, type Phrase } from "../phrase";
@@ -55,12 +62,14 @@ export interface AdverbPhrase extends Phrase {
   phraseType: PhraseType.ADVERB_PHRASE;
   headWord: Adverb;
   preModifiers: readonly AdverbPhraseModifier[];
+  postModifiers: readonly AdverbPhraseModifier[];
 }
 
 export type AdverbPhraseInit = Pick<Phrase, "text" | "partOfSpeech"> &
-  Partial<Omit<Phrase, "text" | "partOfSpeech" | "phraseType" | "headWord" | "preModifiers">> & {
+  Partial<Omit<Phrase, "text" | "partOfSpeech" | "phraseType" | "headWord" | "preModifiers" | "postModifiers">> & {
     headWord?: Adverb;
     preModifiers?: readonly AdverbPhraseModifier[];
+    postModifiers?: readonly AdverbPhraseModifier[];
   };
 
 export function createAdverbPhrase(init: AdverbPhraseInit): AdverbPhrase {

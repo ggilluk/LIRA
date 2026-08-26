@@ -60,7 +60,13 @@
  * Allowed Types" table gives NounPhrase's own MODIFIER row: `Adjective
  * | AdjectivePhrase | Noun | NounPhrase | AdverbPhrase |
  * PrepositionalPhrase | Clause`. Same compile-time-only status as
- * `headWord` above -- nothing seeds this yet either. */
+ * `headWord` above -- nothing seeds this yet either.
+ *
+ * `postModifiers` narrows Phrase's own same-named field (data/phrase.ts's
+ * own docstring on it) down to that exact same constituent set --
+ * `preModifiers`' own MODIFIER row makes no pre/post distinction, so
+ * NounPhrase's post-Head modifier set is identical to its pre-Head one.
+ * Same compile-time-only status as `preModifiers` above. */
 
 import { PhraseType } from "../enums/phrase_type";
 import { createPhrase, type Phrase } from "../phrase";
@@ -78,12 +84,14 @@ export interface NounPhrase extends Phrase {
   phraseType: PhraseType.NOUN_PHRASE;
   headWord: Noun | Pronoun;
   preModifiers: readonly NounPhraseModifier[];
+  postModifiers: readonly NounPhraseModifier[];
 }
 
 export type NounPhraseInit = Pick<Phrase, "text" | "partOfSpeech"> &
-  Partial<Omit<Phrase, "text" | "partOfSpeech" | "phraseType" | "headWord" | "preModifiers">> & {
+  Partial<Omit<Phrase, "text" | "partOfSpeech" | "phraseType" | "headWord" | "preModifiers" | "postModifiers">> & {
     headWord?: Noun | Pronoun;
     preModifiers?: readonly NounPhraseModifier[];
+    postModifiers?: readonly NounPhraseModifier[];
   };
 
 export function createNounPhrase(init: NounPhraseInit): NounPhrase {

@@ -38,7 +38,15 @@
  * data/phrase_type_patterns_and_word_roles.md's own "Phrase Role
  * Allowed Types" table gives VerbPhrase's own MODIFIER row: `Adverb |
  * AdverbPhrase`. Same compile-time-only status as `headWord` above --
- * nothing seeds this yet either. */
+ * nothing seeds this yet either.
+ *
+ * `postModifiers` narrows Phrase's own same-named field (data/phrase.ts's
+ * own docstring on it) down to that exact same `Adverb | AdverbPhrase`
+ * set -- VerbPhrase's own structure ("... + (Complements) +
+ * (Modifiers)") in fact places its real Modifiers after the Head, so
+ * this field is the one a future populator would actually use for
+ * VerbPhrase, with `preModifiers` staying available for the rarer
+ * pre-Head case. Same compile-time-only status as `preModifiers` above. */
 
 import { PhraseType } from "../enums/phrase_type";
 import { createPhrase, type Phrase } from "../phrase";
@@ -52,12 +60,14 @@ export interface VerbPhrase extends Phrase {
   phraseType: PhraseType.VERB_PHRASE;
   headWord: Verb;
   preModifiers: readonly VerbPhraseModifier[];
+  postModifiers: readonly VerbPhraseModifier[];
 }
 
 export type VerbPhraseInit = Pick<Phrase, "text" | "partOfSpeech"> &
-  Partial<Omit<Phrase, "text" | "partOfSpeech" | "phraseType" | "headWord" | "preModifiers">> & {
+  Partial<Omit<Phrase, "text" | "partOfSpeech" | "phraseType" | "headWord" | "preModifiers" | "postModifiers">> & {
     headWord?: Verb;
     preModifiers?: readonly VerbPhraseModifier[];
+    postModifiers?: readonly VerbPhraseModifier[];
   };
 
 export function createVerbPhrase(init: VerbPhraseInit): VerbPhrase {
