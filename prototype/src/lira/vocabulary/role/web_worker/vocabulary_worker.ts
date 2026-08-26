@@ -362,17 +362,35 @@ function handleSearchWords(request: SearchWordsRequest): void {
     wordForms: domain.vocabulary.wordForms,
     lexicalRelationships: domain.vocabulary.lexicalRelationships,
   });
-  const { words, totalMatches } = view.searchWords({
-    wordId: request.wordId,
-    word: request.word,
-    gloss: request.gloss,
-    definition: request.definition,
-    pos: request.pos,
-    domain: request.domainLabel,
-    rootWordsOnly: request.rootWordsOnly,
-    limit: request.limit,
-  });
-  post({ type: "search-words-result", requestId: request.requestId, words, totalMatches });
+  try {
+    const { words, totalMatches } = view.searchWords({
+      wordId: request.wordId,
+      word: request.word,
+      gloss: request.gloss,
+      definition: request.definition,
+      pos: request.pos,
+      domain: request.domainLabel,
+      rootWordsOnly: request.rootWordsOnly,
+      limit: request.limit,
+    });
+    post({ type: "search-words-result", requestId: request.requestId, words, totalMatches });
+  } catch (error) {
+    // Without this, an exception here (this handler's own docstring has
+    // no try/catch of its own to fall back on, unlike handleRender()
+    // just above) would propagate out of this Worker's own "message"
+    // listener uncaught -- silently dropped by the browser (no
+    // window.onerror on the main thread ever fires for it, since
+    // vocabulary_worker_client.ts never registers a Worker.onerror
+    // handler either), leaving wordLookupInFlight permanently stuck for
+    // this id (lookupWordForDetailPanel()'s own docstring) and the
+    // requesting detail panel frozen on whatever it last showed,
+    // forever, with no visible error anywhere. Posting a real result
+    // (even an empty one) here is what lets renderDetailPanel() show
+    // "This word could not be found." instead.
+    const message = error instanceof Error ? error.message : String(error);
+    post({ type: "error", message: `Vocabulary Service: failed to resolve wordId '${request.wordId}': ${message}` });
+    post({ type: "search-words-result", requestId: request.requestId, words: [], totalMatches: 0 });
+  }
 }
 
 /** handleSearchWords()'s own exact counterpart for the Phrases tab --
