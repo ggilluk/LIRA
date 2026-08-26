@@ -1,4 +1,4 @@
-import type { AdjectivePhrase } from "../adjective_phrase";
+import type { AdjectivePhrase } from "./adjective_phrase";
 import type { Coordination } from "./coordination";
 
 /**

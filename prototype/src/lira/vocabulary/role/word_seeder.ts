@@ -27,7 +27,7 @@
  * inserted. */
 
 import { createAdjective, determineGradability, generateAdjectiveForms, isAdjective } from "./processor/adjective_processor";
-import { createAdjectivePhrase } from "../data/adjective_phrase";
+import { createAdjectivePhrase } from "../data/entities/adjective_phrase";
 import { createAdverb, determineGradability as determineAdverbGradability, generateAdverbForms, isAdverb } from "./processor/adverb_processor";
 import { createAdverbPhrase } from "../data/adverb_phrase";
 import { createConjunction } from "./processor/conjunction_processor";

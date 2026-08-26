@@ -1,12 +1,13 @@
 /** AdjectivePhrase: Phrase's own ADJECTIVE_PHRASE-specific subtype --
- * one of PhraseType's own six grammatical shapes (enums/phrase_type.ts's
- * own docstring), narrowing a Phrase by `phraseType` the same way
- * Adjective narrows a Word by `partOfSpeech` (data/entities/adjective.ts).
- * Structure: "(Degree modifiers) + Adjective + (Complements)"
+ * one of PhraseType's own six grammatical shapes
+ * (data/enums/phrase_type.ts's own docstring), narrowing a Phrase by
+ * `phraseType` the same way Adjective narrows a Word by `partOfSpeech`
+ * (this same entities/ directory's own adjective.ts). Structure:
+ * "(Degree modifiers) + Adjective + (Complements)"
  * (PHRASE_TYPE_DETAILS[PhraseType.ADJECTIVE_PHRASE],
- * enums/phrase_type.ts) -- example: "highly reliable". Distinct from
- * Phrase.partOfSpeech (PhraseType's own docstring on why the two are
- * kept apart), so this subtype narrows `phraseType` only, never
+ * data/enums/phrase_type.ts) -- example: "highly reliable". Distinct
+ * from Phrase.partOfSpeech (PhraseType's own docstring on why the two
+ * are kept apart), so this subtype narrows `phraseType` only, never
  * `partOfSpeech`.
  *
  * Genuinely seeded today, not "declared before it's populated":
@@ -22,8 +23,8 @@
  * Common Vocabulary Cache closed-class Phrase, which has no
  * constituency-parsing pass of its own. */
 
-import { PhraseType } from "./enums/phrase_type";
-import { createPhrase, type Phrase } from "./phrase";
+import { PhraseType } from "../enums/phrase_type";
+import { createPhrase, type Phrase } from "../phrase";
 
 export interface AdjectivePhrase extends Phrase {
   phraseType: PhraseType.ADJECTIVE_PHRASE;
