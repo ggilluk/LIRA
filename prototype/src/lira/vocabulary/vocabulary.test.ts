@@ -36,7 +36,7 @@ import { PhraseRole } from "./data/enums/phrase_role";
 import { isNounPhrase } from "./data/entities/noun_phrase";
 import { isVerbPhrase } from "./data/entities/verb_phrase";
 import { isAdjectivePhrase } from "./data/entities/adjective_phrase";
-import { isAdverbPhrase } from "./data/adverb_phrase";
+import { isAdverbPhrase } from "./data/entities/adverb_phrase";
 import { isPrepositionalPhrase } from "./data/prepositional_phrase";
 import { isInfinitivePhrase } from "./data/infinitive_phrase";
 import { createSense, graphUuid as senseGraphUuid } from "./role/sense_processor";

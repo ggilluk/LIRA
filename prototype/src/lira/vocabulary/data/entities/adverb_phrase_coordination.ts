@@ -1,4 +1,4 @@
-import type { AdverbPhrase } from "../adverb_phrase";
+import type { AdverbPhrase } from "./adverb_phrase";
 import type { Coordination } from "./coordination";
 
 /**

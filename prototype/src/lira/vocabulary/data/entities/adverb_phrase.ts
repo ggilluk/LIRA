@@ -1,10 +1,11 @@
 /** AdverbPhrase: Phrase's own ADVERB_PHRASE-specific subtype -- one of
- * PhraseType's own six grammatical shapes (enums/phrase_type.ts's own
- * docstring), narrowing a Phrase by `phraseType` the same way Adverb
- * narrows a Word by `partOfSpeech` (data/entities/adverb.ts). Structure:
- * "(Degree modifiers) + Adverb + (Complements)"
- * (PHRASE_TYPE_DETAILS[PhraseType.ADVERB_PHRASE], enums/phrase_type.ts)
- * -- example: "very quickly". Distinct from Phrase.partOfSpeech
+ * PhraseType's own six grammatical shapes (data/enums/phrase_type.ts's
+ * own docstring), narrowing a Phrase by `phraseType` the same way
+ * Adverb narrows a Word by `partOfSpeech` (this same entities/
+ * directory's own adverb.ts). Structure: "(Degree modifiers) + Adverb +
+ * (Complements)" (PHRASE_TYPE_DETAILS[PhraseType.ADVERB_PHRASE],
+ * data/enums/phrase_type.ts) -- example: "very quickly". Distinct from
+ * Phrase.partOfSpeech
  * (PhraseType's own docstring on why the two are kept apart), so this
  * subtype narrows `phraseType` only, never `partOfSpeech`.
  *
@@ -25,8 +26,8 @@
  * positives). Never set for a Common Vocabulary Cache closed-class
  * Phrase, which has no constituency-parsing pass of its own. */
 
-import { PhraseType } from "./enums/phrase_type";
-import { createPhrase, type Phrase } from "./phrase";
+import { PhraseType } from "../enums/phrase_type";
+import { createPhrase, type Phrase } from "../phrase";
 
 export interface AdverbPhrase extends Phrase {
   phraseType: PhraseType.ADVERB_PHRASE;
