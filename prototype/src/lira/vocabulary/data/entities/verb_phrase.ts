@@ -31,19 +31,34 @@
  * restriction only: nothing seeds `headWord` yet (Phrase.headWord's own
  * docstring), so this narrowing has no real value to check against
  * today -- it exists so a future caller that does populate it can never
- * assign a Noun/Adjective/Adverb/Preposition there by mistake. */
+ * assign a Noun/Adjective/Adverb/Preposition there by mistake.
+ *
+ * `preModifiers` narrows Phrase's own same-named field (data/phrase.ts's
+ * own docstring on it) down to the exact constituent set
+ * data/phrase_type_patterns_and_word_roles.md's own "Phrase Role
+ * Allowed Types" table gives VerbPhrase's own MODIFIER row: `Adverb |
+ * AdverbPhrase`. Same compile-time-only status as `headWord` above --
+ * nothing seeds this yet either. */
 
 import { PhraseType } from "../enums/phrase_type";
 import { createPhrase, type Phrase } from "../phrase";
 import type { Verb } from "./verb";
+import type { Adverb } from "./adverb";
+import type { AdverbPhrase } from "./adverb_phrase";
+
+type VerbPhraseModifier = Adverb | AdverbPhrase;
 
 export interface VerbPhrase extends Phrase {
   phraseType: PhraseType.VERB_PHRASE;
   headWord: Verb;
+  preModifiers: readonly VerbPhraseModifier[];
 }
 
 export type VerbPhraseInit = Pick<Phrase, "text" | "partOfSpeech"> &
-  Partial<Omit<Phrase, "text" | "partOfSpeech" | "phraseType" | "headWord">> & { headWord?: Verb };
+  Partial<Omit<Phrase, "text" | "partOfSpeech" | "phraseType" | "headWord" | "preModifiers">> & {
+    headWord?: Verb;
+    preModifiers?: readonly VerbPhraseModifier[];
+  };
 
 export function createVerbPhrase(init: VerbPhraseInit): VerbPhrase {
   return createPhrase({ ...init, phraseType: PhraseType.VERB_PHRASE }) as VerbPhrase;

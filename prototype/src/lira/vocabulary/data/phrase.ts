@@ -32,6 +32,7 @@
  * (TokenReading.tokenSpan, linguistics/data/token_reading.ts). */
 
 import type { Code, Identifier, Text } from "../../value_objects";
+import type { Clause } from "../../linguistics/data/clause";
 import type { LinguisticUnit } from "../../linguistics/data/linguistic_unit";
 import type { EditorialLabel } from "./enums/editorial_label";
 import type { PartOfSpeech } from "./enums/part_of_speech";
@@ -209,6 +210,27 @@ export interface Phrase extends LinguisticUnit {
   // `Dictionary.findByUuid()` today; this field is reserved for the
   // resolved Word itself, once something populates it.
   headWord?: Word;
+
+  // This Phrase's own pre-Head modifying constituents -- never set by
+  // anything in this codebase today; declared ahead of any real seeder
+  // that populates it, `headWord`'s own "named ahead of the field(s)
+  // that will eventually carry it" status just above. `Word | Phrase |
+  // Clause` here is deliberately the broadest constituent union any
+  // PhraseType's own MODIFIER row ever needs (data/
+  // phrase_type_patterns_and_word_roles.md's own "Phrase Role Allowed
+  // Types" table) -- every `*_phrase.ts` subtype narrows this down to
+  // the specific constituent type(s) its own MODIFIER row actually
+  // allows, the same way each subtype already narrows `headWord` to its
+  // own HEAD row. Named `preModifiers`, not `modifiers`, matching that
+  // table's own structural convention even though not every PhraseType
+  // actually places its modifiers before the Head in practice (VerbPhrase's
+  // own "(Auxiliary verbs) + Main verb + (Particles) + (Complements) +
+  // (Modifiers)" structure puts them last, PrepositionalPhrase's own
+  // "Preposition + Noun phrase/complement + (Modifiers)" too) -- this
+  // field names the constituent's *role*, not its *position* within
+  // `text`, the same distinction `PhraseRole.MODIFIER` itself already
+  // draws from raw word order.
+  preModifiers?: readonly (Word | Phrase | Clause)[];
 }
 
 export type PhraseInit = Pick<Phrase, "text" | "partOfSpeech"> & Partial<Omit<Phrase, "text" | "partOfSpeech">>;

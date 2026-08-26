@@ -52,20 +52,39 @@
  * `headWord` yet (Phrase.headWord's own docstring), so this narrowing
  * has no real value to check against today -- it exists so a future
  * caller that does populate it can never assign a Verb/Adjective/
- * Adverb/Preposition there by mistake. */
+ * Adverb/Preposition there by mistake.
+ *
+ * `preModifiers` narrows Phrase's own same-named field (data/phrase.ts's
+ * own docstring on it) down to the exact constituent set
+ * data/phrase_type_patterns_and_word_roles.md's own "Phrase Role
+ * Allowed Types" table gives NounPhrase's own MODIFIER row: `Adjective
+ * | AdjectivePhrase | Noun | NounPhrase | AdverbPhrase |
+ * PrepositionalPhrase | Clause`. Same compile-time-only status as
+ * `headWord` above -- nothing seeds this yet either. */
 
 import { PhraseType } from "../enums/phrase_type";
 import { createPhrase, type Phrase } from "../phrase";
 import type { Noun } from "./noun";
 import type { Pronoun } from "./pronoun";
+import type { Adjective } from "./adjective";
+import type { AdjectivePhrase } from "./adjective_phrase";
+import type { AdverbPhrase } from "./adverb_phrase";
+import type { PrepositionalPhrase } from "../prepositional_phrase";
+import type { Clause } from "../../../linguistics/data/clause";
+
+type NounPhraseModifier = Adjective | AdjectivePhrase | Noun | NounPhrase | AdverbPhrase | PrepositionalPhrase | Clause;
 
 export interface NounPhrase extends Phrase {
   phraseType: PhraseType.NOUN_PHRASE;
   headWord: Noun | Pronoun;
+  preModifiers: readonly NounPhraseModifier[];
 }
 
 export type NounPhraseInit = Pick<Phrase, "text" | "partOfSpeech"> &
-  Partial<Omit<Phrase, "text" | "partOfSpeech" | "phraseType" | "headWord">> & { headWord?: Noun | Pronoun };
+  Partial<Omit<Phrase, "text" | "partOfSpeech" | "phraseType" | "headWord" | "preModifiers">> & {
+    headWord?: Noun | Pronoun;
+    preModifiers?: readonly NounPhraseModifier[];
+  };
 
 export function createNounPhrase(init: NounPhraseInit): NounPhrase {
   return createPhrase({ ...init, phraseType: PhraseType.NOUN_PHRASE }) as NounPhrase;

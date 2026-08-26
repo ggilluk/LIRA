@@ -41,19 +41,34 @@
  * (Phrase.headWord's own docstring), so this narrowing has no real
  * value to check against today -- it exists so a future caller that
  * does populate it can never assign a Noun/Verb/Adjective/Adverb there
- * by mistake. */
+ * by mistake.
+ *
+ * `preModifiers` narrows Phrase's own same-named field (data/phrase.ts's
+ * own docstring on it) down to the exact constituent set
+ * data/phrase_type_patterns_and_word_roles.md's own "Phrase Role
+ * Allowed Types" table gives PrepositionalPhrase's own MODIFIER row:
+ * `Adverb | AdverbPhrase`. Same compile-time-only status as `headWord`
+ * above -- nothing seeds this yet either. */
 
 import { PhraseType } from "./enums/phrase_type";
 import { createPhrase, type Phrase } from "./phrase";
 import type { Preposition } from "./entities/preposition";
+import type { Adverb } from "./entities/adverb";
+import type { AdverbPhrase } from "./entities/adverb_phrase";
+
+type PrepositionalPhraseModifier = Adverb | AdverbPhrase;
 
 export interface PrepositionalPhrase extends Phrase {
   phraseType: PhraseType.PREPOSITIONAL_PHRASE;
   headWord: Preposition;
+  preModifiers: readonly PrepositionalPhraseModifier[];
 }
 
 export type PrepositionalPhraseInit = Pick<Phrase, "text" | "partOfSpeech"> &
-  Partial<Omit<Phrase, "text" | "partOfSpeech" | "phraseType" | "headWord">> & { headWord?: Preposition };
+  Partial<Omit<Phrase, "text" | "partOfSpeech" | "phraseType" | "headWord" | "preModifiers">> & {
+    headWord?: Preposition;
+    preModifiers?: readonly PrepositionalPhraseModifier[];
+  };
 
 export function createPrepositionalPhrase(init: PrepositionalPhraseInit): PrepositionalPhrase {
   return createPhrase({ ...init, phraseType: PhraseType.PREPOSITIONAL_PHRASE }) as PrepositionalPhrase;
