@@ -174,19 +174,41 @@ export interface Phrase extends LinguisticUnit {
   // has no matching Dictionary sense either) -- or when that one Head
   // position's own `words` entry itself never resolved (undefined, same
   // as any other unresolved token, `words`'s own docstring).
-  headWord?: Identifier;
+  //
+  // Named `unresolvedHeadWord`, not `headWord` -- an `Identifier` is a
+  // graph-reference pointer a caller still has to resolve against a
+  // Dictionary (builder_phrase.ts's own `phraseHeadWordSegment()`, in
+  // particular), never the resolved Word entity itself. `headWord`
+  // below is reserved for that resolved value.
+  unresolvedHeadWord?: Identifier;
 
-  // headWord's own literal spelling as it actually appears in this
-  // Phrase's own `text` -- the token classifyPhraseRoles() identified as
-  // the Head, before Dictionary resolution ("at" in "at fault", never
-  // resolved to any Word at all -- headWord itself is undefined there,
-  // but headWordForm still names which token filled that role). Distinct
-  // from headWord's own resolved Word.lexicalForm on purpose: this is
-  // the phrase-local surface form (matters for a token whose casing or
-  // inflection in this exact phrase might differ from that Word's own
-  // canonical spelling elsewhere), not a second copy of the same fact.
-  // Undefined under the exact same conditions headWord is.
+  // unresolvedHeadWord's own literal spelling as it actually appears in
+  // this Phrase's own `text` -- the token classifyPhraseRoles()
+  // identified as the Head, before Dictionary resolution ("at" in "at
+  // fault", never resolved to any Word at all -- unresolvedHeadWord
+  // itself is undefined there, but headWordForm still names which token
+  // filled that role). Distinct from headWord's own resolved
+  // Word.lexicalForm on purpose: this is the phrase-local surface form
+  // (matters for a token whose casing or inflection in this exact
+  // phrase might differ from that Word's own canonical spelling
+  // elsewhere), not a second copy of the same fact. Undefined under the
+  // exact same conditions unresolvedHeadWord is.
   headWordForm?: Text;
+
+  // The Head's own resolved Word entity -- never set by anything in
+  // this codebase today; declared ahead of any real seeder that
+  // populates it, the same "named ahead of the field(s) that will
+  // eventually carry it" status PhraseRole.COMPLEMENT itself has
+  // (enums/phrase_role.ts's own docstring). Every `*_phrase.ts` subtype
+  // narrows this down to the specific Word subtype(s) its own Head
+  // Identification Rule allows -- NounPhrase to `Noun | Pronoun`
+  // (data/entities/noun_phrase.ts), for instance -- the same way each
+  // subtype already narrows `phraseType` to one literal PhraseType
+  // member. Distinct from `unresolvedHeadWord` above: that field is the
+  // graph-reference pointer a caller resolves via
+  // `Dictionary.findByUuid()` today; this field is reserved for the
+  // resolved Word itself, once something populates it.
+  headWord?: Word;
 }
 
 export type PhraseInit = Pick<Phrase, "text" | "partOfSpeech"> & Partial<Omit<Phrase, "text" | "partOfSpeech">>;

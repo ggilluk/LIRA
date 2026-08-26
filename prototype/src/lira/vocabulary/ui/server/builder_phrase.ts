@@ -136,7 +136,7 @@ export function phraseHeadWordSegment(
   wordForms: WordForms,
 ): DefinitionSegment | undefined {
   if (phrase.headWordForm === undefined) return undefined;
-  const resolved = phrase.headWord !== undefined ? dictionary.findByUuid(phrase.headWord.value) : undefined;
+  const resolved = phrase.unresolvedHeadWord !== undefined ? dictionary.findByUuid(phrase.unresolvedHeadWord.value) : undefined;
   return definitionWordSegment(phrase.headWordForm.value, resolved, senses, domainName, wordForms);
 }
 

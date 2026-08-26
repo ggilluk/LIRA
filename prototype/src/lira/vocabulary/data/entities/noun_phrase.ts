@@ -41,16 +41,31 @@
  * a later change may add one once constituent/role validation is
  * designed); documented here ahead of that enforcement, the same way
  * PhraseRole.COMPLEMENT itself is named ahead of any seeder that
- * assigns it. */
+ * assigns it.
+ *
+ * `headWord` narrows Phrase's own same-named field (data/phrase.ts's
+ * own docstring on it, and on `unresolvedHeadWord`, the graph-reference
+ * pointer this is distinct from) down to `Noun | Pronoun` -- this
+ * subtype's own Head Identification Rule never resolves to any other
+ * Word subtype (the "PhraseRole values valid within a NounPhrase" note
+ * above, HEAD row). A compile-time restriction only: nothing seeds
+ * `headWord` yet (Phrase.headWord's own docstring), so this narrowing
+ * has no real value to check against today -- it exists so a future
+ * caller that does populate it can never assign a Verb/Adjective/
+ * Adverb/Preposition there by mistake. */
 
 import { PhraseType } from "../enums/phrase_type";
 import { createPhrase, type Phrase } from "../phrase";
+import type { Noun } from "./noun";
+import type { Pronoun } from "./pronoun";
 
 export interface NounPhrase extends Phrase {
   phraseType: PhraseType.NOUN_PHRASE;
+  headWord: Noun | Pronoun;
 }
 
-export type NounPhraseInit = Pick<Phrase, "text" | "partOfSpeech"> & Partial<Omit<Phrase, "text" | "partOfSpeech" | "phraseType">>;
+export type NounPhraseInit = Pick<Phrase, "text" | "partOfSpeech"> &
+  Partial<Omit<Phrase, "text" | "partOfSpeech" | "phraseType" | "headWord">> & { headWord?: Noun | Pronoun };
 
 export function createNounPhrase(init: NounPhraseInit): NounPhrase {
   return createPhrase({ ...init, phraseType: PhraseType.NOUN_PHRASE }) as NounPhrase;
