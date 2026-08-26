@@ -34,7 +34,7 @@ import { Phrases } from "./data/phrases";
 import { PHRASE_TYPE_DETAILS, PhraseType } from "./data/enums/phrase_type";
 import { PhraseRole } from "./data/enums/phrase_role";
 import { isNounPhrase } from "./data/noun_phrase";
-import { isVerbPhrase } from "./data/verb_phrase";
+import { isVerbPhrase } from "./data/entities/verb_phrase";
 import { isAdjectivePhrase } from "./data/adjective_phrase";
 import { isAdverbPhrase } from "./data/adverb_phrase";
 import { isPrepositionalPhrase } from "./data/prepositional_phrase";

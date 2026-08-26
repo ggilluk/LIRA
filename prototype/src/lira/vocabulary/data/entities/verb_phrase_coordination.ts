@@ -1,4 +1,4 @@
-import type { VerbPhrase } from "../verb_phrase";
+import type { VerbPhrase } from "./verb_phrase";
 import type { Coordination } from "./coordination";
 
 /**

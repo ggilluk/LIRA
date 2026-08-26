@@ -34,7 +34,7 @@ import { createConjunction } from "./processor/conjunction_processor";
 import { createInfinitivePhrase } from "../data/infinitive_phrase";
 import { createNounPhrase } from "../data/noun_phrase";
 import { createPrepositionalPhrase } from "../data/prepositional_phrase";
-import { createVerbPhrase } from "../data/verb_phrase";
+import { createVerbPhrase } from "../data/entities/verb_phrase";
 import { createDeterminer } from "./processor/determiner_processor";
 import { AuxiliarySeeder } from "./auxiliary_seeder";
 import { DeterminerSeeder } from "./determiner_seeder";

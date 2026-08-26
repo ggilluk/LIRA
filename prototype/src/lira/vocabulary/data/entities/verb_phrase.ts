@@ -1,10 +1,10 @@
 /** VerbPhrase: Phrase's own VERB_PHRASE-specific subtype -- one of
- * PhraseType's own six grammatical shapes (enums/phrase_type.ts's own
- * docstring), narrowing a Phrase by `phraseType` the same way Verb
- * narrows a Word by `partOfSpeech` (data/entities/verb.ts). Structure:
- * "(Auxiliary verbs) + Main verb + (Particles) + (Complements) +
- * (Modifiers)" (PHRASE_TYPE_DETAILS[PhraseType.VERB_PHRASE],
- * enums/phrase_type.ts) -- example: "has learned the pattern". Distinct
+ * PhraseType's own six grammatical shapes (data/enums/phrase_type.ts's
+ * own docstring), narrowing a Phrase by `phraseType` the same way Verb
+ * narrows a Word by `partOfSpeech` (this same entities/ directory's own
+ * verb.ts). Structure: "(Auxiliary verbs) + Main verb + (Particles) +
+ * (Complements) + (Modifiers)" (PHRASE_TYPE_DETAILS[PhraseType.VERB_PHRASE],
+ * data/enums/phrase_type.ts) -- example: "has learned the pattern". Distinct
  * from Phrase.partOfSpeech (PhraseType's own docstring on why the two
  * are kept apart), so this subtype narrows `phraseType` only, never
  * `partOfSpeech`.
@@ -22,8 +22,8 @@
  * need. Never set for a Common Vocabulary Cache closed-class Phrase,
  * which has no constituency-parsing pass of its own. */
 
-import { PhraseType } from "./enums/phrase_type";
-import { createPhrase, type Phrase } from "./phrase";
+import { PhraseType } from "../enums/phrase_type";
+import { createPhrase, type Phrase } from "../phrase";
 
 export interface VerbPhrase extends Phrase {
   phraseType: PhraseType.VERB_PHRASE;
