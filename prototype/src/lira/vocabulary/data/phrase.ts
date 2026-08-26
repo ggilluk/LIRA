@@ -36,7 +36,7 @@ import type { Clause } from "../../linguistics/data/clause";
 import type { LinguisticUnit } from "../../linguistics/data/linguistic_unit";
 import type { EditorialLabel } from "./enums/editorial_label";
 import type { PartOfSpeech } from "./enums/part_of_speech";
-import type { PhraseRole } from "./enums/phrase_role";
+import type { ModifierRole } from "./enums/modifier_role";
 import type { PhraseType } from "./enums/phrase_type";
 import type { RegisterCode } from "./enums/register_code";
 import type { SourceReference } from "./source_reference";
@@ -138,7 +138,7 @@ export interface Phrase extends LinguisticUnit {
   // per-token composition need of its own.
   words: readonly (Identifier | undefined)[];
 
-  // The PhraseRole (enums/phrase_role.ts) each position in `words` plays
+  // The ModifierRole (enums/modifier_role.ts) each position in `words` plays
   // within this Phrase's own structure -- same length and index
   // alignment as `words` itself, one entry per whitespace-separated
   // token. `undefined` at a position means that word retains only its
@@ -148,21 +148,21 @@ export interface Phrase extends LinguisticUnit {
   // Identification Rule/Word Role Assignment for this Phrase's own
   // `phraseType` genuinely doesn't assign that position a role (a
   // post-head Noun in a Prepositional Phrase, for instance). Exactly one
-  // position holds PhraseRole.HEAD when `phraseType` is defined and at
+  // position holds ModifierRole.HEAD when `phraseType` is defined and at
   // least one word resolves to that type's own Head part of speech --
   // never more than one, per that document's own "Head" Common Rule.
-  // Populated by WordSeeder.seedWordNet's own classifyPhraseRoles()
+  // Populated by WordSeeder.seedWordNet's own classifyModifierRoles()
   // (role/word_seeder.ts, that function's own docstring for the full
   // per-PhraseType Head/Modifier/Particle/Determiner rules), right after
   // `words` itself is resolved -- always empty for a Common Vocabulary
   // Cache closed-class Phrase, `words`'s own exact counterpart there.
-  wordRoles: readonly (PhraseRole | undefined)[];
+  wordRoles: readonly (ModifierRole | undefined)[];
 
   // The one entry of `words` whose matching `wordRoles` position holds
-  // PhraseRole.HEAD -- "poodle" for "toy poodle", "at" for "at fault"
-  // (that PhraseRole's own docstring, and classifyPhraseRoles()'s, on
+  // ModifierRole.HEAD -- "poodle" for "toy poodle", "at" for "at fault"
+  // (that ModifierRole's own docstring, and classifyModifierRoles()'s, on
   // exactly which position that is per PhraseType). Simply
-  // `words[wordRoles.indexOf(PhraseRole.HEAD)]`, kept as its own field
+  // `words[wordRoles.indexOf(ModifierRole.HEAD)]`, kept as its own field
   // rather than left for every caller to re-derive by scanning
   // `wordRoles` -- linkPhraseWords() (role/word_seeder.ts) already knows
   // the Head's own index the moment it computes `wordRoles`, so it sets
@@ -170,7 +170,7 @@ export interface Phrase extends LinguisticUnit {
   // holds no HEAD position at all
   // -- `phraseType` itself undefined (every Common Vocabulary Cache
   // closed-class Phrase), or a `phraseType` whose own Head Identification
-  // Rule found no matching token (classifyPhraseRoles()'s own docstring,
+  // Rule found no matching token (classifyModifierRoles()'s own docstring,
   // e.g. a Preposition Head that isn't in PHRASE_TYPE_PREPOSITIONS and
   // has no matching Dictionary sense either) -- or when that one Head
   // position's own `words` entry itself never resolved (undefined, same
@@ -184,7 +184,7 @@ export interface Phrase extends LinguisticUnit {
   unresolvedHeadWord?: Identifier;
 
   // unresolvedHeadWord's own literal spelling as it actually appears in
-  // this Phrase's own `text` -- the token classifyPhraseRoles()
+  // this Phrase's own `text` -- the token classifyModifierRoles()
   // identified as the Head, before Dictionary resolution ("at" in "at
   // fault", never resolved to any Word at all -- unresolvedHeadWord
   // itself is undefined there, but headWordForm still names which token
@@ -225,7 +225,7 @@ export interface Phrase extends LinguisticUnit {
   // (Modifiers)" structure puts them last, PrepositionalPhrase's own
   // "Preposition + Noun phrase/complement + (Modifiers)" too) -- this
   // field names the constituent's *role*, not its *position* within
-  // `text`, the same distinction `PhraseRole.MODIFIER` itself already
+  // `text`, the same distinction `ModifierRole.MODIFIER` itself already
   // draws from raw word order. Genuinely populated today by
   // linkPhraseWords() (role/processor/phrase_processor.ts), for every
   // MODIFIER-role position before the Head that resolves to a real
@@ -238,7 +238,7 @@ export interface Phrase extends LinguisticUnit {
   preModifiers?: readonly (Word | Phrase | Clause)[];
 
   // This Phrase's own post-Head modifying constituents -- `preModifiers`'
-  // own counterpart, not a distinct PhraseRole (PhraseRole.MODIFIER
+  // own counterpart, not a distinct ModifierRole (ModifierRole.MODIFIER
   // covers both; `phrase_type_patterns_and_word_roles.md`'s own
   // MODIFIER row makes no pre/post distinction either). Exists because
   // `preModifiers`' own docstring already notes some PhraseTypes place

@@ -16,7 +16,7 @@ Premodifiers/Complements/Postmodifiers may be.
 
 Today's real `Phrase` interface (`data/phrase.ts`) stores this
 differently -- one flat `words` array plus an index-aligned
-`wordRoles` array (`PhraseRole`, `enums/phrase_role.ts`: Head,
+`wordRoles` array (`ModifierRole`, `enums/modifier_role.ts`: Head,
 Modifier, Particle, Determiner, ...) and a resolved `headWord`/
 `headWordForm` pointer, rather than distinct Premodifier/Complement/
 Postmodifier collections -- so this table documents the conceptual

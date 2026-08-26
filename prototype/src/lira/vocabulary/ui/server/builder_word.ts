@@ -138,7 +138,7 @@ export interface WordRecord {
   // closed-class Phrase, in particular).
   pre_modifiers?: DefinitionSegment[];
   post_modifiers?: DefinitionSegment[];
-  // phrase.wordRoles' own DETERMINER-role tokens (data/enums/phrase_role.ts's
+  // phrase.wordRoles' own DETERMINER-role tokens (data/enums/modifier_role.ts's
   // own docstring on that role -- valid regardless of PhraseType or
   // position, so unlike pre_modifiers/post_modifiers above this is never
   // split), same phraseModifierSegments()-recomputed shape and same

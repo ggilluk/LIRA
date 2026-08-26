@@ -1,4 +1,4 @@
-import { PhraseRole } from "./phrase_role";
+import { ModifierRole } from "./modifier_role";
 
 /** The grammatical category a Phrase belongs to -- which single word
  * class (noun, verb, adjective, adverb, preposition, or an infinitive
@@ -60,27 +60,27 @@ export enum PhraseType {
  * `allowedTypes` is the same constituent-level compatibility matrix
  * `data/phrase_type_patterns_and_word_roles.md`'s own "Phrase Role
  * Allowed Types" table specifies, made machine-readable -- for each
- * `PhraseRole` a PhraseType actually uses, which LIRA type (a Word
+ * `ModifierRole` a PhraseType actually uses, which LIRA type (a Word
  * subtype, a Phrase subtype, or Clause, named by its own type name)
  * may fill that role. Plain data, not a new rule system, classifier,
  * or validation mechanism -- nothing in this codebase reads or
  * enforces this yet, the same "declared ahead of any real consumer"
- * status `PhraseRole.COMPLEMENT` itself has (enums/phrase_role.ts's
+ * status `ModifierRole.COMPLEMENT` itself has (enums/modifier_role.ts's
  * own docstring). `INFINITIVE_PHRASE` carries no entries here, the
  * same reason it carries no row in that document's own table. */
 export const PHRASE_TYPE_DETAILS: Record<
   PhraseType,
-  { definition: string; structure: string; example: string; allowedTypes: Partial<Record<PhraseRole, readonly string[]>> }
+  { definition: string; structure: string; example: string; allowedTypes: Partial<Record<ModifierRole, readonly string[]>> }
 > = {
   [PhraseType.NOUN_PHRASE]: {
     definition: "A phrase centred on a noun or pronoun that functions as an entity, subject, object, or complement.",
     structure: "(Determiner) + (Modifiers) + Noun/Pronoun + (Complements)",
     example: "the intelligent system",
     allowedTypes: {
-      [PhraseRole.HEAD]: ["Noun", "Pronoun"],
-      [PhraseRole.DETERMINER]: ["Determiner"],
-      [PhraseRole.MODIFIER]: ["Adjective", "AdjectivePhrase", "Noun", "NounPhrase", "AdverbPhrase", "PrepositionalPhrase", "Clause"],
-      [PhraseRole.COMPLEMENT]: ["PrepositionalPhrase", "Clause"],
+      [ModifierRole.HEAD]: ["Noun", "Pronoun"],
+      [ModifierRole.DETERMINER]: ["Determiner"],
+      [ModifierRole.MODIFIER]: ["Adjective", "AdjectivePhrase", "Noun", "NounPhrase", "AdverbPhrase", "PrepositionalPhrase", "Clause"],
+      [ModifierRole.COMPLEMENT]: ["PrepositionalPhrase", "Clause"],
     },
   },
   [PhraseType.VERB_PHRASE]: {
@@ -88,9 +88,9 @@ export const PHRASE_TYPE_DETAILS: Record<
     structure: "(Auxiliary verbs) + Main verb + (Particles) + (Complements) + (Modifiers)",
     example: "has learned the pattern",
     allowedTypes: {
-      [PhraseRole.HEAD]: ["Verb"],
-      [PhraseRole.MODIFIER]: ["Adverb", "AdverbPhrase"],
-      [PhraseRole.PARTICLE]: ["Adverb"],
+      [ModifierRole.HEAD]: ["Verb"],
+      [ModifierRole.MODIFIER]: ["Adverb", "AdverbPhrase"],
+      [ModifierRole.PARTICLE]: ["Adverb"],
     },
   },
   [PhraseType.ADJECTIVE_PHRASE]: {
@@ -98,9 +98,9 @@ export const PHRASE_TYPE_DETAILS: Record<
     structure: "(Degree modifiers) + Adjective + (Complements)",
     example: "highly reliable",
     allowedTypes: {
-      [PhraseRole.HEAD]: ["Adjective"],
-      [PhraseRole.MODIFIER]: ["Adverb", "AdverbPhrase"],
-      [PhraseRole.COMPLEMENT]: ["PrepositionalPhrase", "Clause"],
+      [ModifierRole.HEAD]: ["Adjective"],
+      [ModifierRole.MODIFIER]: ["Adverb", "AdverbPhrase"],
+      [ModifierRole.COMPLEMENT]: ["PrepositionalPhrase", "Clause"],
     },
   },
   [PhraseType.ADVERB_PHRASE]: {
@@ -108,8 +108,8 @@ export const PHRASE_TYPE_DETAILS: Record<
     structure: "(Degree modifiers) + Adverb + (Complements)",
     example: "very quickly",
     allowedTypes: {
-      [PhraseRole.HEAD]: ["Adverb"],
-      [PhraseRole.MODIFIER]: ["Adverb", "AdverbPhrase"],
+      [ModifierRole.HEAD]: ["Adverb"],
+      [ModifierRole.MODIFIER]: ["Adverb", "AdverbPhrase"],
     },
   },
   [PhraseType.PREPOSITIONAL_PHRASE]: {
@@ -117,9 +117,9 @@ export const PHRASE_TYPE_DETAILS: Record<
     structure: "Preposition + Noun phrase/complement + (Modifiers)",
     example: "within the framework",
     allowedTypes: {
-      [PhraseRole.HEAD]: ["Preposition"],
-      [PhraseRole.MODIFIER]: ["Adverb", "AdverbPhrase"],
-      [PhraseRole.COMPLEMENT]: ["NounPhrase", "Pronoun", "Adverb", "AdverbPhrase", "PrepositionalPhrase", "Clause"],
+      [ModifierRole.HEAD]: ["Preposition"],
+      [ModifierRole.MODIFIER]: ["Adverb", "AdverbPhrase"],
+      [ModifierRole.COMPLEMENT]: ["NounPhrase", "Pronoun", "Adverb", "AdverbPhrase", "PrepositionalPhrase", "Clause"],
     },
   },
   [PhraseType.INFINITIVE_PHRASE]: {

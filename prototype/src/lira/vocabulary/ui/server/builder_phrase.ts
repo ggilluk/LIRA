@@ -6,7 +6,7 @@
 import type { Dictionary } from "../../data/dictionary";
 import { EditorialLabel } from "../../data/enums/editorial_label";
 import { PartOfSpeech } from "../../data/enums/part_of_speech";
-import { PhraseRole } from "../../data/enums/phrase_role";
+import { ModifierRole } from "../../data/enums/modifier_role";
 import { PhraseType } from "../../data/enums/phrase_type";
 import { RegisterCode } from "../../data/enums/register_code";
 import type { Phrase } from "../../data/phrase";
@@ -145,7 +145,7 @@ export function phraseHeadWordSegment(
  * (data/phrase_type_patterns_and_word_roles.md's own "Phrase Role
  * Allowed Types" table, MODIFIER row) and its DETERMINER-role tokens
  * (that document's own Common Rules table -- valid regardless of
- * PhraseType or position, phrase_processor.ts's own classifyPhraseRoles()
+ * PhraseType or position, phrase_processor.ts's own classifyModifierRoles()
  * docstring), each as an ordered DefinitionSegment list -- the
  * client-facing counterpart of `phrase.preModifiers`/`phrase.postModifiers`
  * (data/phrase.ts's own docstring on each) for the first two, and of
@@ -182,17 +182,17 @@ export function phraseModifierSegments(
   wordForms: WordForms,
 ): { pre: DefinitionSegment[]; post: DefinitionSegment[]; determiners: DefinitionSegment[] } {
   const tokens = phrase.text.trim().split(/\s+/).filter((token) => token.length > 0);
-  const headIndex = phrase.wordRoles.indexOf(PhraseRole.HEAD);
+  const headIndex = phrase.wordRoles.indexOf(ModifierRole.HEAD);
   const pre: DefinitionSegment[] = [];
   const post: DefinitionSegment[] = [];
   const determiners: DefinitionSegment[] = [];
   tokens.forEach((token, index) => {
     const role = phrase.wordRoles[index];
-    if (role !== PhraseRole.MODIFIER && role !== PhraseRole.DETERMINER) return;
+    if (role !== ModifierRole.MODIFIER && role !== ModifierRole.DETERMINER) return;
     const ref = phrase.words[index];
     const resolved = ref !== undefined ? dictionary.findByUuid(ref.value) : undefined;
     const segment = definitionWordSegment(token, resolved, senses, domainName, wordForms);
-    if (role === PhraseRole.DETERMINER) determiners.push(segment);
+    if (role === ModifierRole.DETERMINER) determiners.push(segment);
     else (headIndex !== -1 && index < headIndex ? pre : post).push(segment);
   });
   return { pre, post, determiners };

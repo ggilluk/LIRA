@@ -1,5 +1,5 @@
 import { PartOfSpeech } from "../../data/enums/part_of_speech";
-import { PhraseRole } from "../../data/enums/phrase_role";
+import { ModifierRole } from "../../data/enums/modifier_role";
 import { PhraseType } from "../../data/enums/phrase_type";
 import type { Phrase } from "../../data/phrase";
 import type { Dictionary } from "../../data/dictionary";
@@ -118,7 +118,7 @@ export function classifyPhraseType(lemma: string, partOfSpeech: PartOfSpeech, ve
   }
 }
 
-// classifyPhraseRoles()'s own closed set of core English determiners --
+// classifyModifierRoles()'s own closed set of core English determiners --
 // PHRASE_TYPE_PREPOSITIONS's own counterpart, and needed for the exact
 // same structural reason: WordNet lexicalizes none of these as a
 // standalone sense either (there's no dict/data.* entry for "the" or
@@ -141,7 +141,7 @@ const PHRASE_TYPE_DETERMINERS: ReadonlySet<string> = new Set([
   "which", "what", "whose",
 ]);
 
-// classifyPhraseRoles()'s own closed set of English adverbs that
+// classifyModifierRoles()'s own closed set of English adverbs that
 // postmodify (follow) rather than premodify (precede) the Adverb they
 // qualify -- "quickly enough", "well enough" -- the one well-established
 // exception (Quirk et al.'s own postmodification pattern) to the
@@ -154,7 +154,7 @@ const PHRASE_TYPE_DETERMINERS: ReadonlySet<string> = new Set([
 const ADVERB_PHRASE_POSTMODIFIERS: ReadonlySet<string> = new Set(["enough"]);
 
 /** Every Part of Speech `token` could plausibly be read as, for the
- * purposes of classifyPhraseRoles() below -- deliberately a *set*, not
+ * purposes of classifyModifierRoles() below -- deliberately a *set*, not
  * the single arbitrary homograph `dictionary.lookup` alone would pick
  * (linkPhraseWords()'s own docstring on why that single pick is
  * "structural, not semantic"): a real WordNet lemma is very often
@@ -236,7 +236,7 @@ function adverbPhraseHeadIndex(possiblePos: readonly ReadonlySet<PartOfSpeech>[]
   return lastTargetPosBeforeFirstPreposition(possiblePos, PartOfSpeech.ADVERB);
 }
 
-/** Assigns a PhraseRole (enums/phrase_role.ts) to every one of `tokens`
+/** Assigns a ModifierRole (enums/modifier_role.ts) to every one of `tokens`
  * -- `phrase.wordRoles`'s own producer, called from linkPhraseWords()
  * below for the same Phrase whose `words` it resolves, so both arrays
  * end up index-aligned. Implements
@@ -287,13 +287,13 @@ function adverbPhraseHeadIndex(possiblePos: readonly ReadonlySet<PartOfSpeech>[]
  *   rows at all (that table's own note on why).
  *
  * Independent of every rule above: any token capable of reading as
- * DETERMINER always gets PhraseRole.DETERMINER, regardless of position
+ * DETERMINER always gets ModifierRole.DETERMINER, regardless of position
  * or PhraseType -- the Common Rules table's own "Determiner" row
  * ("Preserve Determiner from the seeded vocabulary"). A token with an
  * empty possible-POS set (`dictionary` has no Word for it and it's in
  * neither closed set) never gets a role. */
-export function classifyPhraseRoles(phraseType: PhraseType | undefined, tokens: readonly string[], dictionary: Dictionary): readonly (PhraseRole | undefined)[] {
-  const roles: (PhraseRole | undefined)[] = tokens.map(() => undefined);
+export function classifyModifierRoles(phraseType: PhraseType | undefined, tokens: readonly string[], dictionary: Dictionary): readonly (ModifierRole | undefined)[] {
+  const roles: (ModifierRole | undefined)[] = tokens.map(() => undefined);
   if (phraseType === undefined || tokens.length === 0) return roles;
   const possiblePos = tokens.map((token) => possiblePartsOfSpeech(token, dictionary));
 
@@ -315,61 +315,61 @@ export function classifyPhraseRoles(phraseType: PhraseType | undefined, tokens: 
       headIndex = firstIndexWithPos(possiblePos, PartOfSpeech.PREPOSITION, 0);
       break;
     case PhraseType.INFINITIVE_PHRASE:
-      roles[0] = PhraseRole.PARTICLE;
+      roles[0] = ModifierRole.PARTICLE;
       headIndex = firstIndexWithPos(possiblePos, PartOfSpeech.VERB, 1);
       break;
   }
-  if (headIndex !== undefined) roles[headIndex] = PhraseRole.HEAD;
+  if (headIndex !== undefined) roles[headIndex] = ModifierRole.HEAD;
 
   for (let i = 0; i < tokens.length; i++) {
     if (i === headIndex || (phraseType === PhraseType.INFINITIVE_PHRASE && i === 0)) continue;
     if (possiblePos[i].has(PartOfSpeech.DETERMINER)) {
-      roles[i] = PhraseRole.DETERMINER;
+      roles[i] = ModifierRole.DETERMINER;
       continue;
     }
-    roles[i] = nonHeadPhraseRole(phraseType, possiblePos, i, headIndex);
+    roles[i] = nonHeadModifierRole(phraseType, possiblePos, i, headIndex);
   }
   return roles;
 }
 
-/** The non-Head, non-Determiner PhraseRole for position `i` within a
+/** The non-Head, non-Determiner ModifierRole for position `i` within a
  * Phrase of type `phraseType` whose own Head sits at `headIndex`, given
  * every token's own possible parts of speech `possiblePos` --
- * classifyPhraseRoles()'s own per-PhraseType Word Role Assignment
+ * classifyModifierRoles()'s own per-PhraseType Word Role Assignment
  * switch, see that function's docstring for the full table-by-table
  * justification of each branch below. Returns `undefined` (retain only
  * the word's own Part of Speech, no separate Phrase Role) for every
  * case the matching document's Word Patterns table itself never assigns
  * a role to. */
-function nonHeadPhraseRole(
+function nonHeadModifierRole(
   phraseType: PhraseType | undefined,
   possiblePos: readonly ReadonlySet<PartOfSpeech>[],
   i: number,
   headIndex: number | undefined,
-): PhraseRole | undefined {
+): ModifierRole | undefined {
   const pos = possiblePos[i];
   switch (phraseType) {
     case PhraseType.NOUN_PHRASE:
       if (headIndex !== undefined && i < headIndex && (pos.has(PartOfSpeech.NOUN) || pos.has(PartOfSpeech.ADJECTIVE) || pos.has(PartOfSpeech.ADVERB))) {
-        return PhraseRole.MODIFIER;
+        return ModifierRole.MODIFIER;
       }
       return undefined;
     case PhraseType.VERB_PHRASE:
       if (pos.has(PartOfSpeech.ADVERB)) {
-        return possiblePos[i + 1]?.has(PartOfSpeech.PREPOSITION) ? PhraseRole.PARTICLE : PhraseRole.MODIFIER;
+        return possiblePos[i + 1]?.has(PartOfSpeech.PREPOSITION) ? ModifierRole.PARTICLE : ModifierRole.MODIFIER;
       }
       return undefined;
     case PhraseType.ADJECTIVE_PHRASE:
       if (headIndex !== undefined && i < headIndex && (pos.has(PartOfSpeech.ADVERB) || pos.has(PartOfSpeech.ADJECTIVE))) {
-        return PhraseRole.MODIFIER;
+        return ModifierRole.MODIFIER;
       }
       return undefined;
     case PhraseType.ADVERB_PHRASE:
-      return pos.has(PartOfSpeech.ADVERB) ? PhraseRole.MODIFIER : undefined;
+      return pos.has(PartOfSpeech.ADVERB) ? ModifierRole.MODIFIER : undefined;
     case PhraseType.PREPOSITIONAL_PHRASE:
       if (headIndex === undefined) return undefined;
-      if (i < headIndex && pos.has(PartOfSpeech.ADVERB)) return PhraseRole.MODIFIER;
-      if (i > headIndex && pos.has(PartOfSpeech.ADJECTIVE)) return PhraseRole.MODIFIER;
+      if (i < headIndex && pos.has(PartOfSpeech.ADVERB)) return ModifierRole.MODIFIER;
+      if (i > headIndex && pos.has(PartOfSpeech.ADJECTIVE)) return ModifierRole.MODIFIER;
       return undefined;
     default:
       return undefined;
@@ -390,10 +390,10 @@ function nonHeadPhraseRole(
  * Word for it at all (WordNet itself never lexicalizes some closed-class
  * function words -- "rule of thumb"'s own "of" -- as a standalone
  * sense). Also populates `phrase.wordRoles` from the same token list,
- * via classifyPhraseRoles() above (this module's own docstring on its
+ * via classifyModifierRoles() above (this module's own docstring on its
  * per-PhraseType rules) -- done here, not as a separate pass, so both
  * `words`-derived fields are always computed together.
- * classifyPhraseRoles() deliberately doesn't reuse this function's own
+ * classifyModifierRoles() deliberately doesn't reuse this function's own
  * single arbitrary-homograph `phrase.words` resolution, though -- it
  * resolves every token's own full *set* of possible parts of speech
  * instead (possiblePartsOfSpeech(), this module), since relying on one
@@ -402,7 +402,7 @@ function nonHeadPhraseRole(
  * docstring has the "give up" example). Derives
  * `phrase.unresolvedHeadWord`/`phrase.headWordForm` (data/phrase.ts's
  * own docstring on each) directly from the just-computed `wordRoles` --
- * whichever position (if any) holds PhraseRole.HEAD -- rather than
+ * whichever position (if any) holds ModifierRole.HEAD -- rather than
  * leaving every later caller to re-scan `wordRoles` for it themselves.
  *
  * Also resolves `phrase.headWord` (data/phrase.ts's own docstring on why
@@ -412,14 +412,14 @@ function nonHeadPhraseRole(
  * intended path. And `phrase.preModifiers`/`phrase.postModifiers`
  * (data/phrase.ts's own docstring on each, and every `*_phrase.ts`
  * subtype's own narrowing of them): every position holding
- * PhraseRole.MODIFIER that resolves to a real Word (`dictionary.
+ * ModifierRole.MODIFIER that resolves to a real Word (`dictionary.
  * findByUuid()` again) goes into `preModifiers` when it sits before the
  * Head, `postModifiers` when after. Deliberately Word-only: the Phrase
  * Role Allowed Types table (data/phrase_type_patterns_and_word_roles.md)
  * also permits a MODIFIER to be a sub-phrase (AdjectivePhrase,
  * NounPhrase, AdverbPhrase, PrepositionalPhrase) or a Clause, but
  * nothing in this codebase performs constituency parsing *within* a
- * phrase's own text -- classifyPhraseRoles() above only ever reasons
+ * phrase's own text -- classifyModifierRoles() above only ever reasons
  * about flat whitespace tokens, never nested spans -- so a MODIFIER
  * token that resolves to a Phrase/Clause span rather than a single Word
  * is left out of both arrays rather than guessed at. */
@@ -429,8 +429,8 @@ export function linkPhraseWords(phrase: Phrase, dictionary: Dictionary): void {
     const word = dictionary.lookup(token);
     return word === undefined ? undefined : { value: wordGraphUuid(word) };
   });
-  phrase.wordRoles = classifyPhraseRoles(phrase.phraseType, tokens, dictionary);
-  const headIndex = phrase.wordRoles.indexOf(PhraseRole.HEAD);
+  phrase.wordRoles = classifyModifierRoles(phrase.phraseType, tokens, dictionary);
+  const headIndex = phrase.wordRoles.indexOf(ModifierRole.HEAD);
   phrase.unresolvedHeadWord = headIndex === -1 ? undefined : phrase.words[headIndex];
   phrase.headWordForm = headIndex === -1 ? undefined : { value: tokens[headIndex] };
   phrase.headWord = phrase.unresolvedHeadWord === undefined ? undefined : dictionary.findByUuid(phrase.unresolvedHeadWord.value);
@@ -438,7 +438,7 @@ export function linkPhraseWords(phrase: Phrase, dictionary: Dictionary): void {
   const preModifiers: Word[] = [];
   const postModifiers: Word[] = [];
   for (let i = 0; i < tokens.length; i++) {
-    if (phrase.wordRoles[i] !== PhraseRole.MODIFIER) continue;
+    if (phrase.wordRoles[i] !== ModifierRole.MODIFIER) continue;
     const wordId = phrase.words[i];
     const word = wordId === undefined ? undefined : dictionary.findByUuid(wordId.value);
     if (word === undefined) continue;

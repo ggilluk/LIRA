@@ -32,7 +32,7 @@ import type { Verb } from "./data/entities/verb";
 import { createPhrase, type Phrase } from "./data/phrase";
 import { Phrases } from "./data/phrases";
 import { PHRASE_TYPE_DETAILS, PhraseType } from "./data/enums/phrase_type";
-import { PhraseRole } from "./data/enums/phrase_role";
+import { ModifierRole } from "./data/enums/modifier_role";
 import { isNounPhrase } from "./data/entities/noun_phrase";
 import { isVerbPhrase } from "./data/entities/verb_phrase";
 import { isAdjectivePhrase } from "./data/entities/adjective_phrase";
@@ -46,7 +46,7 @@ import { DictionaryProcessor } from "./role/dictionary_processor";
 import { MorphologicalPointerRelationshipProcessor } from "./role/morphological_pointer_relationship_processor";
 import { RelationshipSeeder } from "./role/relationship_seeder";
 import { WordSeeder } from "./role/word_seeder";
-import { classifyPhraseRoles, classifyPhraseType } from "./role/processor/phrase_processor";
+import { classifyModifierRoles, classifyPhraseType } from "./role/processor/phrase_processor";
 import { NounCharacterFormSeeder } from "./role/noun_character_form_seeder";
 import { PrepositionSenseSeeder } from "./role/preposition_sense_seeder";
 import { IdentificationSource } from "./role/word_identifier";
@@ -91,29 +91,29 @@ describe("PhraseType", () => {
 
   it("PHRASE_TYPE_DETAILS.allowedTypes matches data/phrase_type_patterns_and_word_roles.md's own Phrase Role Allowed Types table, PhraseType by PhraseType", () => {
     expect(PHRASE_TYPE_DETAILS[PhraseType.NOUN_PHRASE].allowedTypes).toEqual({
-      [PhraseRole.HEAD]: ["Noun", "Pronoun"],
-      [PhraseRole.DETERMINER]: ["Determiner"],
-      [PhraseRole.MODIFIER]: ["Adjective", "AdjectivePhrase", "Noun", "NounPhrase", "AdverbPhrase", "PrepositionalPhrase", "Clause"],
-      [PhraseRole.COMPLEMENT]: ["PrepositionalPhrase", "Clause"],
+      [ModifierRole.HEAD]: ["Noun", "Pronoun"],
+      [ModifierRole.DETERMINER]: ["Determiner"],
+      [ModifierRole.MODIFIER]: ["Adjective", "AdjectivePhrase", "Noun", "NounPhrase", "AdverbPhrase", "PrepositionalPhrase", "Clause"],
+      [ModifierRole.COMPLEMENT]: ["PrepositionalPhrase", "Clause"],
     });
     expect(PHRASE_TYPE_DETAILS[PhraseType.VERB_PHRASE].allowedTypes).toEqual({
-      [PhraseRole.HEAD]: ["Verb"],
-      [PhraseRole.MODIFIER]: ["Adverb", "AdverbPhrase"],
-      [PhraseRole.PARTICLE]: ["Adverb"],
+      [ModifierRole.HEAD]: ["Verb"],
+      [ModifierRole.MODIFIER]: ["Adverb", "AdverbPhrase"],
+      [ModifierRole.PARTICLE]: ["Adverb"],
     });
     expect(PHRASE_TYPE_DETAILS[PhraseType.ADJECTIVE_PHRASE].allowedTypes).toEqual({
-      [PhraseRole.HEAD]: ["Adjective"],
-      [PhraseRole.MODIFIER]: ["Adverb", "AdverbPhrase"],
-      [PhraseRole.COMPLEMENT]: ["PrepositionalPhrase", "Clause"],
+      [ModifierRole.HEAD]: ["Adjective"],
+      [ModifierRole.MODIFIER]: ["Adverb", "AdverbPhrase"],
+      [ModifierRole.COMPLEMENT]: ["PrepositionalPhrase", "Clause"],
     });
     expect(PHRASE_TYPE_DETAILS[PhraseType.ADVERB_PHRASE].allowedTypes).toEqual({
-      [PhraseRole.HEAD]: ["Adverb"],
-      [PhraseRole.MODIFIER]: ["Adverb", "AdverbPhrase"],
+      [ModifierRole.HEAD]: ["Adverb"],
+      [ModifierRole.MODIFIER]: ["Adverb", "AdverbPhrase"],
     });
     expect(PHRASE_TYPE_DETAILS[PhraseType.PREPOSITIONAL_PHRASE].allowedTypes).toEqual({
-      [PhraseRole.HEAD]: ["Preposition"],
-      [PhraseRole.MODIFIER]: ["Adverb", "AdverbPhrase"],
-      [PhraseRole.COMPLEMENT]: ["NounPhrase", "Pronoun", "Adverb", "AdverbPhrase", "PrepositionalPhrase", "Clause"],
+      [ModifierRole.HEAD]: ["Preposition"],
+      [ModifierRole.MODIFIER]: ["Adverb", "AdverbPhrase"],
+      [ModifierRole.COMPLEMENT]: ["NounPhrase", "Pronoun", "Adverb", "AdverbPhrase", "PrepositionalPhrase", "Clause"],
     });
     // INFINITIVE_PHRASE carries no Phrase Role Allowed Types row in that
     // document, the same reason it carries no Phrase Type Classes row --
@@ -1909,14 +1909,14 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // already give Word.
     expect(isNounPhrase(toyPoodle!)).toBe(true);
     expect(isVerbPhrase(toyPoodle!)).toBe(false);
-    // classifyPhraseRoles()'s own NounPhrase Head rule -- "poodle" (the
+    // classifyModifierRoles()'s own NounPhrase Head rule -- "poodle" (the
     // last Noun-capable token, no Preposition present) is the Head;
     // "toy" precedes it, so it's a Modifier (data/entities/noun_phrase.ts's own
-    // "toy" is genuinely a Noun/Verb homograph, but classifyPhraseRoles
+    // "toy" is genuinely a Noun/Verb homograph, but classifyModifierRoles
     // checks every possible part of speech, not just dictionary.lookup's
     // own arbitrary single pick, so this holds regardless of which one
     // that pick happened to land on).
-    expect(toyPoodle!.wordRoles).toEqual([PhraseRole.MODIFIER, PhraseRole.HEAD]);
+    expect(toyPoodle!.wordRoles).toEqual([ModifierRole.MODIFIER, ModifierRole.HEAD]);
     // Phrase.unresolvedHeadWord/headWordForm -- derived straight from
     // wordRoles' own HEAD position (linkPhraseWords()'s own docstring),
     // so this must always agree with words[wordRoles.indexOf(HEAD)]
@@ -1950,7 +1950,7 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // AdjectivePhrase, precisely because its own internal structure is
     // Preposition + NP, not (Degree modifiers) + Adjective.
     expect(isAdjectivePhrase(atFault!)).toBe(false);
-    // "at" resolves to Head via classifyPhraseRoles()'s own
+    // "at" resolves to Head via classifyModifierRoles()'s own
     // PHRASE_TYPE_PREPOSITIONS closed set regardless of whether the
     // Dictionary itself has an "at" sense -- it happens to have one here
     // too (index.noun lists a real, obscure "at" noun homograph), but
@@ -1958,7 +1958,7 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // retains its own POS (a post-head Noun gets no PrepositionalPhrase
     // role, that Word Role Assignment column's own "remaining words
     // retain their POS" rule).
-    expect(atFault!.wordRoles).toEqual([PhraseRole.HEAD, undefined]);
+    expect(atFault!.wordRoles).toEqual([ModifierRole.HEAD, undefined]);
     // unresolvedHeadWord still resolves here since "at" happens to have
     // its own (obscure) Dictionary entry -- headWordForm names the
     // token either way, independent of whether unresolvedHeadWord
@@ -1985,7 +1985,7 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // Head is the first Verb-capable token after it ("be"). "sure"
     // retains its own POS -- not covered by this codebase's own Word
     // Patterns table, which has no InfinitivePhrase rows.
-    expect(toBeSure!.wordRoles).toEqual([PhraseRole.PARTICLE, PhraseRole.HEAD, undefined]);
+    expect(toBeSure!.wordRoles).toEqual([ModifierRole.PARTICLE, ModifierRole.HEAD, undefined]);
     expect(toBeSure!.unresolvedHeadWord?.value).toBe(toBeSure!.words[1]?.value);
     expect(toBeSure!.headWordForm?.value).toBe("be");
     // dictionary.lookup("be")'s own arbitrary-but-deterministic
@@ -2107,7 +2107,7 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     expect(view.searchWords({ wordId: wordGraphUuid(poodle!) }).words[0].head_word).toBeUndefined();
   }, 60000);
 
-  it("classifyPhraseRoles() assigns Head/Modifier/Particle/Determiner per data/phrase_type_patterns_and_word_roles.md's own per-PhraseType rules, against real seeded WordNet Phrases", async () => {
+  it("classifyModifierRoles() assigns Head/Modifier/Particle/Determiner per data/phrase_type_patterns_and_word_roles.md's own per-PhraseType rules, against real seeded WordNet Phrases", async () => {
     const dictionary = new Dictionary();
     const phraseBook = new Phrases();
     const senseStore = new Senses();
@@ -2130,12 +2130,12 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // fire here (nothing follows "up"), so it's a Modifier instead;
     // "give" is the Head even though dictionary.lookup("give") alone
     // would arbitrarily resolve to give's own rare NOUN sense ("there's
-    // a lot of give in the rope") -- classifyPhraseRoles() checks every
+    // a lot of give in the rope") -- classifyModifierRoles() checks every
     // possible part of speech per token, not that one arbitrary pick,
     // so it still finds "give"'s VERB sense and heads it correctly.
     const giveUp = phraseBook.lookupAll("give up").find((phrase) => phrase.synsetId?.value === "02686624-v");
     expect(giveUp?.phraseType).toBe(PhraseType.VERB_PHRASE);
-    expect(giveUp!.wordRoles).toEqual([PhraseRole.HEAD, PhraseRole.MODIFIER]);
+    expect(giveUp!.wordRoles).toEqual([ModifierRole.HEAD, ModifierRole.MODIFIER]);
     expect(giveUp!.unresolvedHeadWord?.value).toBe(giveUp!.words[0]?.value);
     expect(giveUp!.headWordForm?.value).toBe("give");
     // headWord resolves to that same rare NOUN "give" homograph
@@ -2157,7 +2157,7 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // atFault's own trailing "fault" above.
     const lookUpTo = phraseBook.lookupAll("look up to").find((phrase) => phrase.synsetId?.value === "01831800-v");
     expect(lookUpTo?.phraseType).toBe(PhraseType.VERB_PHRASE);
-    expect(lookUpTo!.wordRoles).toEqual([PhraseRole.HEAD, PhraseRole.PARTICLE, undefined]);
+    expect(lookUpTo!.wordRoles).toEqual([ModifierRole.HEAD, ModifierRole.PARTICLE, undefined]);
     expect(lookUpTo!.unresolvedHeadWord?.value).toBe(lookUpTo!.words[0]?.value);
     expect(lookUpTo!.headWordForm?.value).toBe("look");
     // "up" here is a Particle, not a Modifier (this test's own comment
@@ -2175,7 +2175,7 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // Adverb-capability does here -- is a Modifier.
     const longAgo = phraseBook.lookupAll("long ago").find((phrase) => phrase.synsetId?.value === "00022855-r");
     expect(longAgo?.phraseType).toBe(PhraseType.ADVERB_PHRASE);
-    expect(longAgo!.wordRoles).toEqual([PhraseRole.MODIFIER, PhraseRole.HEAD]);
+    expect(longAgo!.wordRoles).toEqual([ModifierRole.MODIFIER, ModifierRole.HEAD]);
     expect(longAgo!.unresolvedHeadWord?.value).toBe(longAgo!.words[1]?.value);
     expect(longAgo!.headWordForm?.value).toBe("ago");
     // dictionary.lookup("ago")'s own arbitrary-but-deterministic
@@ -2199,7 +2199,7 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // own POS.
     const inTheMeantime = phraseBook.lookupAll("in the meantime").find((phrase) => phrase.synsetId?.value === "00065346-r");
     expect(inTheMeantime?.phraseType).toBe(PhraseType.PREPOSITIONAL_PHRASE);
-    expect(inTheMeantime!.wordRoles).toEqual([PhraseRole.HEAD, PhraseRole.DETERMINER, undefined]);
+    expect(inTheMeantime!.wordRoles).toEqual([ModifierRole.HEAD, ModifierRole.DETERMINER, undefined]);
     expect(inTheMeantime!.unresolvedHeadWord?.value).toBe(inTheMeantime!.words[0]?.value);
     expect(inTheMeantime!.headWordForm?.value).toBe("in");
     // dictionary.lookup("in")'s own arbitrary-but-deterministic
@@ -2213,7 +2213,7 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     expect(inTheMeantime!.preModifiers).toEqual([]);
     expect(inTheMeantime!.postModifiers).toEqual([]);
 
-    // classifyPhraseRoles() itself, called directly (not just through
+    // classifyModifierRoles() itself, called directly (not just through
     // the full seeding pipeline above), for the one documented ambiguity
     // its own docstring names: two adjacent Adverb-capable tokens with
     // no Preposition are structurally identical whether premodifying
@@ -2222,11 +2222,11 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // premodifying (later token is Head) otherwise. Exercised as a pure
     // function here since no real bundled WordNet lemma happens to be
     // "X enough" as its own multi-word entry.
-    expect(classifyPhraseRoles(PhraseType.ADVERB_PHRASE, ["quickly", "enough"], dictionary)).toEqual([PhraseRole.HEAD, PhraseRole.MODIFIER]);
-    expect(classifyPhraseRoles(PhraseType.ADVERB_PHRASE, ["very", "quickly"], dictionary)).toEqual([PhraseRole.MODIFIER, PhraseRole.HEAD]);
+    expect(classifyModifierRoles(PhraseType.ADVERB_PHRASE, ["quickly", "enough"], dictionary)).toEqual([ModifierRole.HEAD, ModifierRole.MODIFIER]);
+    expect(classifyModifierRoles(PhraseType.ADVERB_PHRASE, ["very", "quickly"], dictionary)).toEqual([ModifierRole.MODIFIER, ModifierRole.HEAD]);
 
     // A Common Vocabulary Cache closed-class Phrase never goes through
-    // linkPhraseWords()/classifyPhraseRoles() at all (no constituency-
+    // linkPhraseWords()/classifyModifierRoles() at all (no constituency-
     // parsing pass of its own, `words`'s own docstring) -- wordRoles
     // stays empty, `words`'s own exact counterpart.
     const handCrafted = createPhrase({ text: "in spite of", partOfSpeech: PartOfSpeech.PREPOSITION, phraseType: PhraseType.PREPOSITIONAL_PHRASE });

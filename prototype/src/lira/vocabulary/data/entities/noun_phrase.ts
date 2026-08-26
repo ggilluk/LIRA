@@ -25,29 +25,29 @@
  * closed-class Phrase, which has no constituency-parsing pass of its
  * own.
  *
- * PhraseRole values valid within a NounPhrase (data/enums/phrase_role.ts),
+ * ModifierRole values valid within a NounPhrase (data/enums/modifier_role.ts),
  * matching the structure above one-for-one -- Determiner, Modifier,
  * Head (the Noun/Pronoun itself), and Complement:
- * - PhraseRole.HEAD
- * - PhraseRole.MODIFIER
- * - PhraseRole.DETERMINER
- * - PhraseRole.COMPLEMENT
+ * - ModifierRole.HEAD
+ * - ModifierRole.MODIFIER
+ * - ModifierRole.DETERMINER
+ * - ModifierRole.COMPLEMENT
  *
- * PhraseRole.PARTICLE is not valid within a NounPhrase -- a particle is
- * a multiword verb's own non-head component (PhraseRole's own
+ * ModifierRole.PARTICLE is not valid within a NounPhrase -- a particle is
+ * a multiword verb's own non-head component (ModifierRole's own
  * docstring), which has no place in a phrase headed by a Noun or
  * Pronoun. Not yet enforced anywhere (no runtime or TypeScript
- * validation mechanism exists for PhraseRole-per-PhraseType today --
+ * validation mechanism exists for ModifierRole-per-PhraseType today --
  * a later change may add one once constituent/role validation is
  * designed); documented here ahead of that enforcement, the same way
- * PhraseRole.COMPLEMENT itself is named ahead of any seeder that
+ * ModifierRole.COMPLEMENT itself is named ahead of any seeder that
  * assigns it.
  *
  * `headWord` narrows Phrase's own same-named field (data/phrase.ts's
  * own docstring on it, and on `unresolvedHeadWord`, the graph-reference
  * pointer this is distinct from) down to `Noun | Pronoun` -- this
  * subtype's own Head Identification Rule never resolves to any other
- * Word subtype (the "PhraseRole values valid within a NounPhrase" note
+ * Word subtype (the "ModifierRole values valid within a NounPhrase" note
  * above, HEAD row). Genuinely populated today, for every real seeded
  * multi-word WordNet NounPhrase, by linkPhraseWords()
  * (role/processor/phrase_processor.ts) resolving `unresolvedHeadWord`

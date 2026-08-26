@@ -9,22 +9,22 @@ Fully implemented, not just specified: `classifyPhraseType()`
 (role/word_seeder.ts) assigns a Phrase's own `phraseType` from real
 WordNet data (that function's own docstring, and each `*_phrase.ts`
 subtype class's own docstring, one per row below), and
-`classifyPhraseRoles()` (role/word_seeder.ts, called from
+`classifyModifierRoles()` (role/word_seeder.ts, called from
 `linkPhraseWords()` right after `phrase.words` itself is resolved)
-assigns every constituent word its own `PhraseRole`
-(`enums/phrase_role.ts`), stored index-aligned with `words` on
+assigns every constituent word its own `ModifierRole`
+(`enums/modifier_role.ts`), stored index-aligned with `words` on
 `phrase.wordRoles` (`data/phrase.ts`). `Phrase.headWord`/
 `Phrase.headWordForm` (`data/phrase.ts`) then single that Head position
 out explicitly -- `headWord` the resolved Word it points to (when it
 resolved against the Dictionary at all), `headWordForm` its own
 phrase-local spelling regardless -- derived directly from `wordRoles`
 in that same `linkPhraseWords()` pass rather than left for every caller
-to re-scan for the one `PhraseRole.HEAD` position themselves. Only for a
+to re-scan for the one `ModifierRole.HEAD` position themselves. Only for a
 Phrase seeded by `WordSeeder.seedWordNet`, the same scope
 `phraseType`/`words` themselves are already limited to -- a Common
 Vocabulary Cache closed-class Phrase has no constituency-parsing pass of
 its own and so has empty `wordRoles`, `words`'s own exact counterpart
-there. `classifyPhraseRoles()`'s own docstring documents the one
+there. `classifyModifierRoles()`'s own docstring documents the one
 genuine ambiguity this table's rules alone can't resolve (two adjacent
 Adverb-capable tokens with no Preposition, AdverbPhrase's own Word
 Patterns rows 1 and 2) and how it's broken.
@@ -47,14 +47,14 @@ one-for-one.
 
 ## Phrase Role Allowed Types
 
-Defines which LIRA linguistic-unit types may fill each `PhraseRole` for
+Defines which LIRA linguistic-unit types may fill each `ModifierRole` for
 each Phrase Type Class above -- a constituent-level compatibility
 matrix, not a token-order matrix, and a distinct concept from the
 Phrase Type Classes table's own "Other Word Types" column: that column
 names which word-level Part of Speech values may occur as individual
 tokens inside a Phrase; "Allowed Types" below names which LIRA type --
 a Word subtype, a Phrase subtype, or Clause -- may actually fill one of
-that Phrase's own `PhraseRole` slots (Common Rules' own "Word Type vs
+that Phrase's own `ModifierRole` slots (Common Rules' own "Word Type vs
 Constituent Type" row, below).
 
 | Phrase Type | Phrase Role | Allowed Types |
@@ -78,11 +78,11 @@ Constituent Type" row, below).
 `VerbPhrase`'s own PARTICLE row allows Adverb, not a dedicated
 "AdverbParticle" class -- LIRA already separates the lexical type
 (Adverb, `PartOfSpeech.ADVERB`) from the phrase function
-(`PhraseRole.PARTICLE`) the same way every other role/type pair here
+(`ModifierRole.PARTICLE`) the same way every other role/type pair here
 does; a phrasal-verb particle is an Adverb filling the PARTICLE role,
 not a fourth word class of its own. `VerbPhrase` gets no COMPLEMENT row
-in this table yet, matching `phrase_role.ts`'s own note that no
-seeder or classifier assigns `PhraseRole.COMPLEMENT` anywhere yet.
+in this table yet, matching `modifier_role.ts`'s own note that no
+seeder or classifier assigns `ModifierRole.COMPLEMENT` anywhere yet.
 
 `AdjectivePhrase`/`PrepositionalPhrase`'s own COMPLEMENT rows use
 Clause for every complement shape Cambridge/Oxford grammar sources
@@ -108,7 +108,7 @@ Coordination types (`NounCoordination`, `VerbCoordination`,
 `ClauseCoordination`, `data/entities/coordination.ts` and its
 specialisations) are deliberately absent from this table -- the
 coordination model was only just introduced, with no consumers wired
-up and no PhraseRole-compatibility integration designed yet. A real
+up and no ModifierRole-compatibility integration designed yet. A real
 coordinate ("the car and the van") can plausibly fill several of the
 roles above, but that mapping is its own future change, not assumed
 here.
@@ -198,8 +198,8 @@ as a fixed particle, not a Head candidate.
 | No Role | Do not invent a Phrase Role where one is unnecessary. |
 | Definition | Do not derive Phrase Type from words contained in the entry's definition. |
 | Pattern Notation | Represent a constituent as PartOfSpeech[Role] and enclose the Head in parentheses: (Noun[Head]). |
-| Allowed Types | PhraseRole compatibility is defined against the linguistic unit filling that role, not merely the Part of Speech of the individual words contained inside that unit. |
-| Word Type vs Constituent Type | "Other Word Types" describes token-level POS membership inside a Phrase; "Allowed Types" describes the Word, Phrase, Coordination, or Clause type permitted to fill a PhraseRole. |
+| Allowed Types | ModifierRole compatibility is defined against the linguistic unit filling that role, not merely the Part of Speech of the individual words contained inside that unit. |
+| Word Type vs Constituent Type | "Other Word Types" describes token-level POS membership inside a Phrase; "Allowed Types" describes the Word, Phrase, Coordination, or Clause type permitted to fill a ModifierRole. |
 
 The last rule (Definition) matches how `classifyPhraseType()` already
 works today: it classifies from the *lemma's own tokens* and WordNet's

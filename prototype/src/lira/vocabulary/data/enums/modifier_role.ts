@@ -4,11 +4,11 @@
  * own Common Rules table, "Role" and "POS" rows). A word keeps its own
  * Part of Speech no matter which Phrase it appears in ("fast" stays an
  * Adjective whether it's a phrase's Head or absent from one entirely);
- * PhraseRole instead names what that word is *doing* inside one
+ * ModifierRole instead names what that word is *doing* inside one
  * specific Phrase's own Head Identification Rule
  * (phrase_type_patterns_and_word_roles.md's own per-PhraseType table).
  *
- * Not every word in a Phrase gets a PhraseRole at all -- the same
+ * Not every word in a Phrase gets a ModifierRole at all -- the same
  * document's "No Role" Common Rule: assign a role only where a word
  * genuinely qualifies another element (Modifier), is the one word whose
  * own lexical class determines the Phrase's own `phraseType` (Head), is
@@ -20,8 +20,8 @@
  *
  * COMPLEMENT: a grammatical complement of the Phrase Head. Added ahead
  * of any identification/assignment logic of its own -- no seeder or
- * classifier in this codebase assigns PhraseRole.COMPLEMENT yet. Which
- * PhraseRole values a given PhraseType actually allows is documented
+ * classifier in this codebase assigns ModifierRole.COMPLEMENT yet. Which
+ * ModifierRole values a given PhraseType actually allows is documented
  * per subtype, not here -- see e.g. data/entities/noun_phrase.ts's own
  * docstring for NOUN_PHRASE's own allowed set (Head/Modifier/
  * Determiner/Complement) and its one explicit exclusion (Particle).
@@ -30,12 +30,12 @@
  * same convention as PartOfSpeech/PhraseType/RegisterCode/EditorialLabel.
  *
  * Not yet an implemented data model -- no Phrase or its member words
- * carry a PhraseRole field anywhere in this codebase yet
+ * carry a ModifierRole field anywhere in this codebase yet
  * (phrase_type_patterns_and_word_roles.md's own opening note). This
  * enum exists to name the values that document's own tables already
  * specify (Head/Modifier/Particle/Determiner), plus Complement, ahead
  * of the field(s) that will eventually carry them. */
-export enum PhraseRole {
+export enum ModifierRole {
   HEAD = 0,
   MODIFIER = 1,
   PARTICLE = 2,

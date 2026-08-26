@@ -13,7 +13,7 @@ distinction).
 Conceptual, not yet implemented: unlike
 `data/phrase_type_patterns_and_word_roles.md` (whose own Word Pattern
 table is real, flat POS[Role] sequences that `classifyPhraseType()`/
-`classifyPhraseRoles()`, `role/word_seeder.ts`, actually produce
+`classifyModifierRoles()`, `role/word_seeder.ts`, actually produce
 today), nothing in this codebase currently builds the recursive,
 phrase-nested-inside-phrase structure this table describes --
 `Phrase.words` (`data/phrase.ts`) is a flat array of Word references
