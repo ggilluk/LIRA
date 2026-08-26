@@ -22,7 +22,7 @@
  * of any identification/assignment logic of its own -- no seeder or
  * classifier in this codebase assigns PhraseRole.COMPLEMENT yet. Which
  * PhraseRole values a given PhraseType actually allows is documented
- * per subtype, not here -- see e.g. data/noun_phrase.ts's own
+ * per subtype, not here -- see e.g. data/entities/noun_phrase.ts's own
  * docstring for NOUN_PHRASE's own allowed set (Head/Modifier/
  * Determiner/Complement) and its one explicit exclusion (Particle).
  *

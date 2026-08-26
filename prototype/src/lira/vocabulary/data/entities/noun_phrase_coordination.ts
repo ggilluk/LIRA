@@ -1,4 +1,4 @@
-import type { NounPhrase } from "../noun_phrase";
+import type { NounPhrase } from "./noun_phrase";
 import type { Coordination } from "./coordination";
 
 /**

@@ -1,10 +1,11 @@
 /** NounPhrase: Phrase's own NOUN_PHRASE-specific subtype -- one of
- * PhraseType's own six grammatical shapes (enums/phrase_type.ts's own
- * docstring), narrowing a Phrase by `phraseType` the same way Noun
- * narrows a Word by `partOfSpeech` (data/entities/noun.ts). Structure:
- * "(Determiner) + (Modifiers) + Noun/Pronoun + (Complements)"
- * (PHRASE_TYPE_DETAILS[PhraseType.NOUN_PHRASE], enums/phrase_type.ts) --
- * example: "the intelligent system". Distinct from Phrase.partOfSpeech,
+ * PhraseType's own six grammatical shapes (data/enums/phrase_type.ts's
+ * own docstring), narrowing a Phrase by `phraseType` the same way Noun
+ * narrows a Word by `partOfSpeech` (this same entities/ directory's own
+ * noun.ts). Structure: "(Determiner) + (Modifiers) + Noun/Pronoun +
+ * (Complements)" (PHRASE_TYPE_DETAILS[PhraseType.NOUN_PHRASE],
+ * data/enums/phrase_type.ts) -- example: "the intelligent system".
+ * Distinct from Phrase.partOfSpeech,
  * which still names the lexical category of the phrase's own headword
  * (a NOUN_PHRASE's own head can be a Noun or a Pronoun) -- PhraseType
  * classifies internal *structure*, not the headword's own part of
@@ -24,7 +25,7 @@
  * closed-class Phrase, which has no constituency-parsing pass of its
  * own.
  *
- * PhraseRole values valid within a NounPhrase (enums/phrase_role.ts),
+ * PhraseRole values valid within a NounPhrase (data/enums/phrase_role.ts),
  * matching the structure above one-for-one -- Determiner, Modifier,
  * Head (the Noun/Pronoun itself), and Complement:
  * - PhraseRole.HEAD
@@ -42,8 +43,8 @@
  * PhraseRole.COMPLEMENT itself is named ahead of any seeder that
  * assigns it. */
 
-import { PhraseType } from "./enums/phrase_type";
-import { createPhrase, type Phrase } from "./phrase";
+import { PhraseType } from "../enums/phrase_type";
+import { createPhrase, type Phrase } from "../phrase";
 
 export interface NounPhrase extends Phrase {
   phraseType: PhraseType.NOUN_PHRASE;

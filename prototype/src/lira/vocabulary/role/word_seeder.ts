@@ -32,7 +32,7 @@ import { createAdverb, determineGradability as determineAdverbGradability, gener
 import { createAdverbPhrase } from "../data/adverb_phrase";
 import { createConjunction } from "./processor/conjunction_processor";
 import { createInfinitivePhrase } from "../data/infinitive_phrase";
-import { createNounPhrase } from "../data/noun_phrase";
+import { createNounPhrase } from "../data/entities/noun_phrase";
 import { createPrepositionalPhrase } from "../data/prepositional_phrase";
 import { createVerbPhrase } from "../data/entities/verb_phrase";
 import { createDeterminer } from "./processor/determiner_processor";

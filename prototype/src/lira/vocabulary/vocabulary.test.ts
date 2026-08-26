@@ -33,7 +33,7 @@ import { createPhrase, type Phrase } from "./data/phrase";
 import { Phrases } from "./data/phrases";
 import { PHRASE_TYPE_DETAILS, PhraseType } from "./data/enums/phrase_type";
 import { PhraseRole } from "./data/enums/phrase_role";
-import { isNounPhrase } from "./data/noun_phrase";
+import { isNounPhrase } from "./data/entities/noun_phrase";
 import { isVerbPhrase } from "./data/entities/verb_phrase";
 import { isAdjectivePhrase } from "./data/adjective_phrase";
 import { isAdverbPhrase } from "./data/adverb_phrase";
@@ -1902,7 +1902,7 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     expect(toyPoodle?.isCommon).toBe(true);
     expect(toyPoodle?.phraseType).toBe(PhraseType.NOUN_PHRASE);
     // synsetMemberToPhrase()'s own dispatch actually instantiated this
-    // one real seeded Phrase via createNounPhrase() (data/noun_phrase.ts),
+    // one real seeded Phrase via createNounPhrase() (data/entities/noun_phrase.ts),
     // not plain createPhrase() -- isNounPhrase() narrows it back, the
     // same PhraseType-mirrors-PartOfSpeech pattern isNoun()/isVerb()/...
     // already give Word.
@@ -1910,7 +1910,7 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     expect(isVerbPhrase(toyPoodle!)).toBe(false);
     // classifyPhraseRoles()'s own NounPhrase Head rule -- "poodle" (the
     // last Noun-capable token, no Preposition present) is the Head;
-    // "toy" precedes it, so it's a Modifier (data/noun_phrase.ts's own
+    // "toy" precedes it, so it's a Modifier (data/entities/noun_phrase.ts's own
     // "toy" is genuinely a Noun/Verb homograph, but classifyPhraseRoles
     // checks every possible part of speech, not just dictionary.lookup's
     // own arbitrary single pick, so this holds regardless of which one

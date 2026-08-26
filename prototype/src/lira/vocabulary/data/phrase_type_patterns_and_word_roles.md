@@ -7,9 +7,9 @@ assigned a Phrase Role distinct from its own stored Part of Speech.
 
 Fully implemented, not just specified: `classifyPhraseType()`
 (role/word_seeder.ts) assigns a Phrase's own `phraseType` from real
-WordNet data (that function's own docstring, and `data/noun_phrase.ts`
-through `data/infinitive_phrase.ts`, one subtype class per row below),
-and `classifyPhraseRoles()` (role/word_seeder.ts, called from
+WordNet data (that function's own docstring, and each `*_phrase.ts`
+subtype class's own docstring, one per row below), and
+`classifyPhraseRoles()` (role/word_seeder.ts, called from
 `linkPhraseWords()` right after `phrase.words` itself is resolved)
 assigns every constituent word its own `PhraseRole`
 (`enums/phrase_role.ts`), stored index-aligned with `words` on
