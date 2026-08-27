@@ -9,7 +9,7 @@ import { PartOfSpeech } from "../../data/enums/part_of_speech";
 import { ModifierRole } from "../../data/enums/modifier_role";
 import { PhraseType } from "../../data/enums/phrase_type";
 import { RegisterCode } from "../../data/enums/register_code";
-import type { Phrase } from "../../data/phrase";
+import { graphUuid, type Phrase } from "../../data/phrase";
 import type { Phrases } from "../../data/phrases";
 import type { Senses } from "../../data/senses";
 import type { WordForms } from "../../data/word_forms";
@@ -61,7 +61,7 @@ export function phraseTypeLabel(phrase: Phrase): string | undefined {
 export function phraseRecordFor(phrase: Phrase, senses: Senses, wordForms: WordForms): PhraseRecord {
   const senseFields = senseFieldsFor(senses, phrase, wordForms);
   return {
-    id: phrase.uuid.value,
+    id: graphUuid(phrase),
     entry_id: phrase.entryId.value,
     lexical_form: phrase.lexicalForm?.value ?? phrase.text,
     text: phrase.text,

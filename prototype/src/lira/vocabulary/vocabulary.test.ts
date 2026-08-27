@@ -29,7 +29,7 @@ import { isPreposition } from "./role/processor/preposition_processor";
 import { createPronoun, isPronoun, validatePronoun } from "./role/processor/pronoun_processor";
 import { createVerb, framesForSense, generateVerbForms, isVerb, validateVerb } from "./role/processor/verb_processor";
 import type { Verb } from "./data/entities/verb";
-import { createPhrase, type Phrase } from "./data/phrase";
+import { createPhrase, graphUuid as phraseGraphUuid, type Phrase } from "./data/phrase";
 import { Phrases } from "./data/phrases";
 import { PHRASE_TYPE_DETAILS, PhraseType } from "./data/enums/phrase_type";
 import { ModifierRole } from "./data/enums/modifier_role";
@@ -2050,27 +2050,27 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // docstring -- "panel === 'phrases' always falls through to
     // wordLookupCache"), so phrase_type has to survive this exact
     // round trip, not just the raw Phrase object checked above.
-    const atFaultSearch = view.searchWords({ wordId: atFault!.uuid.value });
+    const atFaultSearch = view.searchWords({ wordId: phraseGraphUuid(atFault!) });
     expect(atFaultSearch.words).toHaveLength(1);
     expect(atFaultSearch.words[0].phrase_type).toBe("PREPOSITIONAL_PHRASE");
 
-    const toyPoodleSearch = view.searchWords({ wordId: toyPoodle!.uuid.value });
+    const toyPoodleSearch = view.searchWords({ wordId: phraseGraphUuid(toyPoodle!) });
     expect(toyPoodleSearch.words[0].phrase_type).toBe("NOUN_PHRASE");
 
     // The Phrases tab's own row list (searchPhrases(), the over-capacity
     // counterpart to phraseRecords()' embedded array) carries phrase_type
     // too, not just the detail-panel's own wordId path above.
-    const atFaultRow = view.searchPhrases({ word: "at fault" }).phrases.find((p) => p.id === atFault!.uuid.value);
+    const atFaultRow = view.searchPhrases({ word: "at fault" }).phrases.find((p) => p.id === phraseGraphUuid(atFault!));
     expect(atFaultRow?.phrase_type).toBe("PREPOSITIONAL_PHRASE");
 
-    const forToyPoodle = view.searchRelationships({ wordId: toyPoodle!.uuid.value });
+    const forToyPoodle = view.searchRelationships({ wordId: phraseGraphUuid(toyPoodle!) });
     expect(forToyPoodle.totalMatches).toBeGreaterThan(0);
     const hypernymRow = forToyPoodle.relationships.find((r) => r.kind === "HYPERNYM");
     expect(hypernymRow).toBeDefined();
     expect(hypernymRow?.source_text).toBe("toy poodle");
     expect(hypernymRow?.target_text).toBe("poodle");
 
-    const hierarchy = view.resolveHierarchy({ kind: "HYPERNYM", wordId: toyPoodle!.uuid.value, limit: 50 });
+    const hierarchy = view.resolveHierarchy({ kind: "HYPERNYM", wordId: phraseGraphUuid(toyPoodle!), limit: 50 });
     expect(hierarchy.fellBack).toBe(false);
     // This kind's own graph is keyed by Sense uuid for a synset-wide
     // fact (WordSeeder.seedPointerRelationship's own docstring) -- "toy
@@ -2091,7 +2091,7 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // resolved record came from a Phrase, built from that Phrase's own
     // already-stored `words` references (phraseWordSegments()'s own
     // docstring), not re-derived on the spot.
-    const detail = view.searchWords({ wordId: toyPoodle!.uuid.value }).words[0];
+    const detail = view.searchWords({ wordId: phraseGraphUuid(toyPoodle!) }).words[0];
     expect(detail.phrase_word_segments).toHaveLength(2);
     expect(detail.phrase_word_segments![0]).toMatchObject({ text: "toy", word: true, resolved: true, word_id: wordGraphUuid(toy!) });
     expect(detail.phrase_word_segments![1]).toMatchObject({ text: "poodle", word: true, resolved: true, word_id: wordGraphUuid(poodle!), lexical_form: "poodle" });
@@ -3076,7 +3076,7 @@ describe("DictionaryView.searchWords", () => {
     senseStore.registerMember(sense, toyPoodle);
 
     const view = new DictionaryView(dictionary, new SemanticRelationshipStore(), { domainName: "Common", phrases: phraseBook, senses: senseStore });
-    const record = view.searchWords({ wordId: toyPoodle.uuid.value }).words[0];
+    const record = view.searchWords({ wordId: phraseGraphUuid(toyPoodle) }).words[0];
     expect(record.senses).toEqual([expect.objectContaining({ is_primary: true, definition: "a small breed of poodle" })]);
   });
 });

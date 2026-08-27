@@ -60,7 +60,7 @@ import { MorphologicalPointerRelationshipStore } from "../data/morphological_poi
 import type { LexicalRelationshipStore } from "../data/lexical_relationship_store";
 import { LexicalRelationshipType, MERONYM_KIND_QUALIFIER, relationshipGroup, type MeronymKind } from "../data/enums/lexical_relationship_type";
 import { SemanticRelationshipKind } from "../data/enums/semantic_relationship_kind";
-import { copyPhraseWithFreshUuid, createPhrase, type Phrase } from "../data/phrase";
+import { copyPhraseWithFreshUuid, createPhrase, graphUuid as phraseGraphUuid, type Phrase } from "../data/phrase";
 import { PhraseType } from "../data/enums/phrase_type";
 import type { Phrases } from "../data/phrases";
 import { createSense, graphUuid as senseGraphUuid } from "./sense_processor";
@@ -97,15 +97,13 @@ import { loadWordNetSynsets, type WordNetPointer, type WordNetSynset } from "./w
 type RelationshipEndpoint = Word | Phrase | Sense;
 
 /** `endpoint`'s own per-Domain graph identity, whichever of the three
- * RelationshipEndpoint shapes it actually is -- Phrase keeps its own
- * separate top-level `uuid` field (out of scope for the
- * Word/Sense/WordForm fold), narrowed first via `"words" in endpoint`
- * the same way every other Phrase-vs-Word check in this codebase
- * does; `isRootWord` is Sense-only (never a Word field, even after
- * root-word status moved onto Noun specifically) so it's what
- * distinguishes the remaining two. */
+ * RelationshipEndpoint shapes it actually is -- narrowed first via
+ * `"words" in endpoint` the same way every other Phrase-vs-Word check
+ * in this codebase does; `isRootWord` is Sense-only (never a Word
+ * field, even after root-word status moved onto Noun specifically) so
+ * it's what distinguishes the remaining two. */
 function endpointUuid(endpoint: RelationshipEndpoint): string {
-  if ("words" in endpoint) return endpoint.uuid.value;
+  if ("words" in endpoint) return phraseGraphUuid(endpoint);
   if ("isRootWord" in endpoint) return senseGraphUuid(endpoint);
   return wordGraphUuid(endpoint);
 }
@@ -538,13 +536,13 @@ function indexedWord(members: readonly (Word | Phrase)[], oneBasedIndex: number)
   return word === undefined ? [] : [word];
 }
 
-/** `member`'s own per-Domain graph identity -- Phrase still keeps its
- * own separate top-level `uuid` field (out of scope for the
- * Word/Sense/WordForm fold, `data/entities/word.ts`'s own docstring),
- * so only the Word side needs `wordGraphUuid()`'s own `entryId.uuid`
- * read. `data/senses.ts`'s own identical `memberUuid()`. */
+/** `member`'s own per-Domain graph identity -- Phrase's own entryId
+ * now carries the identical two-role shape Word's own does (both
+ * folded from Identifier.uuid, `data/entities/word.ts`'s own
+ * docstring), so this just picks which of the two matching graphUuid()
+ * functions to call. `data/senses.ts`'s own identical `memberUuid()`. */
 function memberUuid(member: Word | Phrase): string {
-  return "words" in member ? member.uuid.value : wordGraphUuid(member);
+  return "words" in member ? phraseGraphUuid(member) : wordGraphUuid(member);
 }
 
 /** Applies one topic-domain tag to `target` -- shared by tagTopicDomain's

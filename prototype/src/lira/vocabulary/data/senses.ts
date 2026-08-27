@@ -1,15 +1,16 @@
-import type { Phrase } from "./phrase";
+import { graphUuid as phraseGraphUuid, type Phrase } from "./phrase";
 import { copySenseWithFreshUuid, graphUuid } from "../role/sense_processor";
 import { graphUuid as wordGraphUuid } from "../role/word_processor";
 import type { Sense } from "./entities/sense";
 import type { Word } from "./entities/word";
 
-/** `member`'s own per-Domain graph identity -- Phrase still keeps its
- * own separate top-level `uuid` field (out of scope for the
- * Word/Sense/WordForm fold, `data/entities/word.ts`'s own docstring),
- * so only the Word side needs `graphUuid()`'s own `entryId.uuid` read. */
+/** `member`'s own per-Domain graph identity -- Phrase's own entryId
+ * now carries the identical two-role shape Word's own does (both
+ * folded from Identifier.uuid, `data/entities/word.ts`'s own
+ * docstring), so this just picks which of the two matching graphUuid()
+ * functions to call. */
 export function memberUuid(member: Word | Phrase): string {
-  return "words" in member ? member.uuid.value : wordGraphUuid(member);
+  return "words" in member ? phraseGraphUuid(member) : wordGraphUuid(member);
 }
 
 /** Sense storage: Phrases's own counterpart for Sense (data/entities/sense.ts's

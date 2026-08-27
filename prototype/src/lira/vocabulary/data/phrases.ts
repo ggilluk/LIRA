@@ -1,4 +1,4 @@
-import { copyPhraseWithFreshUuid, type Phrase } from "./phrase";
+import { copyPhraseWithFreshUuid, graphUuid, type Phrase } from "./phrase";
 
 /** Multi-word lexicon storage: Phrases is Dictionary's own counterpart
  * for Phrase (phrase.ts's own docstring on why the two are kept apart
@@ -58,7 +58,7 @@ export class Phrases {
     const bucket = this.byText.get(key);
     if (bucket) bucket.push(phrase);
     else this.byText.set(key, [phrase]);
-    this.byUuid.set(phrase.uuid.value, phrase);
+    this.byUuid.set(graphUuid(phrase), phrase);
 
     const wordCount = key.trim().split(/\s+/).filter(Boolean).length;
     if (wordCount > this.maxSpan) this.maxSpan = wordCount;

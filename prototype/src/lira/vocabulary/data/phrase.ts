@@ -31,7 +31,7 @@
  * many raw source tokens that one reading actually consumed
  * (TokenReading.tokenSpan, linguistics/data/token_reading.ts). */
 
-import type { Code, Identifier, Text } from "../../value_objects";
+import { identifier, type Code, type Identifier, type Text } from "../../value_objects";
 import type { Clause } from "../../linguistics/data/clause";
 import type { LinguisticUnit } from "../../linguistics/data/linguistic_unit";
 import type { EditorialLabel } from "./enums/editorial_label";
@@ -69,17 +69,18 @@ export interface Phrase extends LinguisticUnit {
   // siblings narrow a Word down by partOfSpeech.
   phraseType?: PhraseType;
 
-  uuid: Identifier;
-
-  // Same persistent-vs-per-Domain-copy distinction Word's own entryId
-  // now folds into one Identifier (`entryId.value`/`entryId.uuid`,
-  // data/entities/word.ts's own docstring) -- Phrase deliberately keeps
-  // the two as separate top-level fields, out of scope for that fold
-  // (data/entities/word_form.ts's own decision-log entry on why it applies
-  // to WordForm/Word/Sense specifically, not to Phrase). entryId is
-  // assigned once, when a Phrase is first authored in the Common
-  // Vocabulary Cache, and stays untouched by every later per-Domain
-  // copy; uuid (below) is fresh every time.
+  // Identifier of the underlying multi-word lexicon entry this Phrase
+  // represents -- Word's own exact identity shape (data/entities/word.ts's
+  // own docstring on this same fold), not a Phrase-specific one: no
+  // separate top-level `uuid` field exists alongside this, since
+  // Identifier already carries a `uuid` of its own (value_objects/data/identifier.ts).
+  //
+  // `entryId.value` is stable across every Domain that holds a copy of
+  // this Phrase -- assigned once, when a Phrase is first authored in the
+  // Common Vocabulary Cache, and untouched by every later per-Domain
+  // copy. `entryId.uuid` is this Phrase's own unique identifier within
+  // its own Domain, freshly regenerated every time this Phrase is
+  // copied into another Domain (copyPhraseWithFreshUuid() below).
   entryId: Identifier;
 
   // The Princeton WordNet 3.1 synset this Phrase corresponds to, when
@@ -269,8 +270,7 @@ export function createPhrase(init: PhraseInit): Phrase {
     wordRoles: [],
     senseIds: [],
     isCommon: false,
-    uuid: init.uuid ?? { value: newUuid() },
-    entryId: init.entryId ?? { value: newUuid() },
+    entryId: init.entryId ?? identifier(newUuid()),
     version: init.version ?? { value: "1.0" },
     languageCode: init.languageCode ?? { value: "en" },
     ...init,
@@ -280,14 +280,28 @@ export function createPhrase(init: PhraseInit): Phrase {
   return phrase;
 }
 
-/** A shallow copy of `phrase`, sharing every field's own object
- * identity except `uuid`, which becomes a fresh Identifier -- the
- * Phrase counterpart of copyWordWithFreshUuid (role/word_processor.ts), used by
- * Phrases.seedFrom/WordSeeder.seedClosedClassWords for exactly the
- * same reason: two Domains' independent copies of "in spite of" must
- * never be confused as the same graph node. */
+/** A shallow copy of `phrase`, sharing every field's own object identity
+ * except `entryId.uuid`, which becomes a fresh uuid -- `entryId.value`
+ * (and every other field) stays the same, so this copy is still
+ * recognisably the same underlying Phrase, just a distinct graph node.
+ * The Phrase counterpart of copyWordWithFreshUuid (role/word_processor.ts),
+ * used by Phrases.seedFrom/WordSeeder.seedClosedClassWords for exactly
+ * the same reason: two Domains' independent copies of "in spite of"
+ * must never be confused as the same graph node. */
 export function copyPhraseWithFreshUuid(phrase: Phrase): Phrase {
-  return { ...phrase, uuid: { value: newUuid() } };
+  return { ...phrase, entryId: { ...phrase.entryId, uuid: newUuid() } };
+}
+
+/** `phrase`'s own per-Domain graph identity -- `phrase.entryId.uuid`,
+ * always set for a real Phrase (createPhrase()/copyPhraseWithFreshUuid()
+ * above are its only two constructors, and both always assign it);
+ * the assertion here just names that guarantee once instead of
+ * repeating it at every call site that needs a Phrase's own identity as
+ * a plain string (Phrases' own byUuid map key, ...). `entryId.value` is
+ * the stable, cross-Domain identity -- deliberately not what this
+ * reads. Word's own identical graphUuid() (role/word_processor.ts). */
+export function graphUuid(phrase: Phrase): string {
+  return phrase.entryId.uuid!;
 }
 
 /** Materialises `phrase` as a synthetic, one-off Word -- never
@@ -336,7 +350,7 @@ export function toSyntheticWord(phrase: Phrase): Word {
  * has already failed.
  *
  * `wordForms`, when supplied, registers a matching base-lemma WordForm
- * under this same `phrase.uuid` (idempotent, WordForms.registerBaseLemmaForm()'s
+ * under this same `phrase.entryId` (idempotent, WordForms.registerBaseLemmaForm()'s
  * own find-or-create), carrying `phrase.senseIds`/`phrase.synsetId` --
  * senseIds/synsetId are Word-only fields no longer, they live on a
  * Word's own base-lemma WordForm now (WordForm's own docstring on why),
@@ -349,13 +363,12 @@ export function toSyntheticWord(phrase: Phrase): Word {
 export function phraseAsWord(phrase: Phrase, wordForms?: WordForms): Word {
   const word = createWord({
     text: phrase.text,
-    // Word's own entryId now carries both roles Phrase still keeps
-    // separate (`data/entities/word.ts`'s own docstring on the fold) --
-    // entryId.value from phrase.entryId (the stable identity) and
-    // entryId.uuid from phrase.uuid.value (the per-Domain graph
-    // identity), so this synthetic Word resolves under the identical
-    // identity the Phrase itself is known by.
-    entryId: { ...phrase.entryId, uuid: phrase.uuid.value },
+    // Word's own entryId already has the identical two-role shape
+    // Phrase's own entryId now carries too (both folded from the same
+    // Identifier.uuid, data/entities/word.ts's own docstring) -- passed
+    // straight through, so this synthetic Word resolves under the
+    // identical identity the Phrase itself is known by.
+    entryId: phrase.entryId,
     partOfSpeech: phrase.partOfSpeech,
     gloss: phrase.gloss,
     usageNotes: phrase.usageNotes,

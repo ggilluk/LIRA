@@ -12,20 +12,20 @@ import type { Senses } from "../../data/senses";
 import type { Sense } from "../../data/entities/sense";
 import type { SemanticRelationship } from "../../data/semantic_relationship";
 import type { SemanticRelationshipStore } from "../../data/semantic_relationship_store";
-import type { Phrase } from "../../data/phrase";
+import { graphUuid as phraseGraphUuid, type Phrase } from "../../data/phrase";
 import type { Word } from "../../data/entities/word";
 import type { WordForms } from "../../data/word_forms";
 import { graphUuid as wordGraphUuid } from "../../role/word_processor";
 import { resolveEntry } from "./resolver_entity";
 import { domainLabel } from "./resolver_domain";
 
-/** `member`'s own per-Domain graph identity -- Phrase still keeps its
- * own separate top-level `uuid` field (out of scope for the
- * Word/Sense/WordForm fold), so only the Word side needs
- * `wordGraphUuid()`'s own `entryId.uuid` read. `data/senses.ts`'s own
- * identical `memberUuid()`. */
+/** `member`'s own per-Domain graph identity -- Phrase's own entryId
+ * now carries the identical two-role shape Word's own does (both
+ * folded from Identifier.uuid, data/entities/word.ts's own docstring),
+ * so this just picks which of the two matching graphUuid() functions
+ * to call. `data/senses.ts`'s own identical `memberUuid()`. */
 function memberUuid(member: Word | Phrase): string {
-  return "words" in member ? member.uuid.value : wordGraphUuid(member);
+  return "words" in member ? phraseGraphUuid(member) : wordGraphUuid(member);
 }
 
 export interface RelationshipRecord {
