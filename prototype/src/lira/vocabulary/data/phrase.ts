@@ -1,35 +1,15 @@
-/** Phrase: one multi-word lexical item -- a closed-class grammatical
- * span ("in spite of", "each other", "according to") or a multi-word
- * WordNet lemma ("toy poodle", "ice cream") -- previously modelled as
- * an ordinary `Word` whose `text` happened to contain whitespace
- * (Design Principle 1's own original rationale,
- * vocabulary/documentation/README.md). A Phrase is a genuinely
- * separate lexical category from a single-word Word: it names a fixed
- * multi-token span that functions as one grammatical unit, the same
- * role a Word plays for a single token, but kept in its own store
- * (Phrases, phrases.ts) rather than Dictionary so a caller can
- * tell "this Domain's single-word lexicon" and "this Domain's
- * multi-word lexicon" apart without inspecting `text` for a space.
+/**
+ * Represents a Phrase -- a fixed multi-word lexical item ("in spite of",
+ * "toy poodle") that functions as one grammatical unit, the same role a
+ * single-word Word plays for one token.
  *
- * A WordNet-facing concept too, not just the Common Vocabulary Cache's
- * own closed-class multi-word entries: WordSeeder.seedWordNet routes
- * any multi-word synset lemma here exactly the same way
- * seedClosedClassWords already does for the cache (word_seeder.ts's
- * own isMultiWord() check, shared by both paths), and wires it into
- * the SYNONYM/pointer-relationship graph exactly like a single-word
- * synset member -- `domainTag`/`relatedDomainTags`/`synsetId` below
- * exist for that path specifically, mirroring the identically-named
- * Word fields (see each one's own docstring on data/entities/word.ts).
+ * Still shaped like Linguistics's LinguisticUnit, the same dual use Word
+ * already has: a Vocabulary *type* (a lexical entry) and, via
+ * `toSyntheticWord` below, a materialisable Linguistics *token*.
  *
- * Still shaped like Linguistics's LinguisticUnit, the same deliberate
- * dual-use Word already has (data/entities/word.ts's own docstring): a Phrase is
- * both a Vocabulary *type* (a lexical entry, owned by this layer) and,
- * via `toSyntheticWord` below, materialisable as a Linguistics *token*
- * (one occurrence of that type in a sentence) without Linguistics ever
- * needing its own notion of a multi-word Vocabulary entry -- it already
- * reads every token as a Word-shaped LinguisticUnit regardless of how
- * many raw source tokens that one reading actually consumed
- * (TokenReading.tokenSpan, linguistics/data/token_reading.ts). */
+ * See `documentation/architecture/data_entity_design_decisions_log.md`
+ * for the design history behind this shape.
+ */
 
 import { identifier, type Code, type Identifier, type Text } from "../../value_objects";
 import type { Clause } from "../../linguistics/data/clause";
@@ -50,209 +30,175 @@ import { createWord } from "../role/word_processor";
 import { newUuid } from "./uuid";
 
 export interface Phrase extends LinguisticUnit {
-  partOfSpeech: PartOfSpeech;
 
-  // The grammatical shape this Phrase's own words take -- noun phrase,
-  // verb phrase, etc. (PhraseType's own docstring on how this differs
-  // from partOfSpeech above). Populated by WordSeeder.seedWordNet's own
-  // classifyPhraseType() (role/word_seeder.ts) for every multi-word
-  // WordNet synset lemma -- structurally derived from the lemma's own
-  // tokens and part of speech, not guessed (that function's own
-  // docstring on the real dict/ distribution this was built from).
-  // Undefined for a Common Vocabulary Cache closed-class Phrase, which
-  // has no constituency-parsing pass of its own, and for the handful of
-  // WordNet parts of speech classifyPhraseType() itself never maps
-  // (dead code against real WordNet data today -- every real multi-word
-  // lemma is NOUN/VERB/ADJECTIVE/ADVERB). data/entities/noun_phrase.ts
-  // and its five siblings (one per PhraseType member) narrow a Phrase
-  // down by this field the same way data/entities/noun.ts and its own
-  // siblings narrow a Word down by partOfSpeech.
-  phraseType?: PhraseType;
+  // ── Identity ─────────────────────────────────────────────
 
-  // Identifier of the underlying multi-word lexicon entry this Phrase
-  // represents -- Word's own exact identity shape (data/entities/word.ts's
-  // own docstring on this same fold), not a Phrase-specific one: no
-  // separate top-level `uuid` field exists alongside this, since
-  // Identifier already carries a `uuid` of its own (value_objects/data/identifier.ts).
-  //
-  // `entryId.value` is stable across every Domain that holds a copy of
-  // this Phrase -- assigned once, when a Phrase is first authored in the
-  // Common Vocabulary Cache, and untouched by every later per-Domain
-  // copy. `entryId.uuid` is this Phrase's own unique identifier within
-  // its own Domain, freshly regenerated every time this Phrase is
-  // copied into another Domain (copyPhraseWithFreshUuid() below).
+  /**
+   * Identifier of the underlying multi-word lexicon entry this Phrase
+   * represents.
+   *
+   * `entryId.value` is stable across every Domain that holds a copy of
+   * this Phrase; `entryId.uuid` is this Phrase's own unique identifier
+   * within its own Domain, freshly regenerated every time this Phrase
+   * is copied into another Domain.
+   */
   entryId: Identifier;
 
-  // The Princeton WordNet 3.1 synset this Phrase corresponds to, when
-  // known -- Word.synsetId's own exact counterpart, undefined for a
-  // Phrase that didn't come from WordSeeder.seedWordNet (every
-  // Common Vocabulary Cache closed-class Phrase, in particular).
-  synsetId?: Identifier;
 
-  // Word.senseIds's own exact counterpart -- every Sense (data/entities/sense.ts)
-  // this Phrase lexicalizes, distinct from synsetId above (data/entities/sense.ts's
-  // own docstring on the distinction). Empty for a Phrase that didn't
-  // come from WordSeeder.seedWordNet.
-  senseIds: readonly Identifier[];
+  // ── Classification ───────────────────────────────────────
 
+  /** Grammatical part of speech under which this Phrase is defined. */
+  partOfSpeech: PartOfSpeech;
+
+  /**
+   * The grammatical shape this Phrase's own words take -- noun phrase,
+   * verb phrase, etc.
+   *
+   * Undefined for a Common Vocabulary Cache closed-class Phrase.
+   */
+  phraseType?: PhraseType;
+
+
+  // ── Data Attributes ──────────────────────────────────────
+
+  /** Version of this Phrase's own record. */
   version: Text;
+
+  /** Language this Phrase is defined in. */
   languageCode: Code;
+
+  /** This Phrase's own canonical written form. */
   lexicalForm?: Text;
+
+  /** This Phrase's own normalised (lower-cased) written form. */
   normalisedForm?: Text;
+
+  /** Short gloss summarising this Phrase's own primary sense. */
   gloss?: Text;
+
+  /** Definition of this Phrase's own primary sense. */
   definition?: Text;
+
+  /** Usage notes for this Phrase. */
   usageNotes: readonly Text[];
+
+  /** Registers of use this Phrase is associated with. */
   registerCodes: readonly RegisterCode[];
+
+  /** Dialects this Phrase is associated with. */
   dialectCodes: readonly Code[];
+
+  /** Editorial labels applying to this Phrase. */
   editorialLabels: readonly EditorialLabel[];
+
+  /** Sources this Phrase's own record was compiled from. */
   sourceReferences: readonly SourceReference[];
 
-  // True only for a Phrase loaded from the English Common Vocabulary
-  // Cache (or another language's equivalent) by WordSeeder -- never
-  // set true by hand. Mirrors Word.isCommon exactly.
+  /** Indicates whether this Phrase belongs to the Common Vocabulary. */
   isCommon: boolean;
 
-  // Word.domainTag/Word.relatedDomainTags's own exact counterparts,
-  // populated the same way by WordSeeder.seedWordNet's topic-domain
-  // tagging pass for a multi-word synset member -- always empty/
-  // undefined for a Common Vocabulary Cache closed-class Phrase.
+  /**
+   * Subdomain distinguishing this Phrase's own sense from another
+   * sense sharing the same lexical form and part of speech.
+   *
+   * Undefined when this Phrase's own sense needs no such distinction.
+   */
   domainTag?: Text;
+
+  /**
+   * Every additional topic domain this Phrase's own sense belongs to,
+   * beyond the one named by `domainTag`.
+   *
+   * Empty when this Phrase's own sense belongs to at most one topic
+   * domain.
+   */
   relatedDomainTags: readonly Text[];
 
-  // This Phrase's own `text` broken down into its constituent Words,
-  // one entry per whitespace-separated token, in the same left-to-right
-  // order they appear in `text` -- e.g. "toy poodle" -> [toy's own
-  // uuid, poodle's own uuid]. Stored *by reference* (an Identifier,
-  // the same "point at a uuid, don't embed a copy of the Word itself"
-  // convention LexicalRelationship's own sourceWordId/targetWordId
-  // already use -- resolved the same way, via Dictionary.findByUuid),
-  // not a duplicated Word snapshot that could drift out of sync with
-  // the Dictionary's own copy. A given position is undefined when no
-  // Word for that token exists in the seeding Dictionary (WordNet
-  // itself never lexicalizes some closed-class function words on their
-  // own) -- reported, not guessed, the same convention
-  // DefinitionWordReference already uses for an unresolved definition
-  // token (data/definition_word_reference.ts). Populated by
-  // WordSeeder.seedWordNet only, after its own pass 1 has finished
-  // seeding every single-word synset member -- always empty for a
-  // Common Vocabulary Cache closed-class Phrase, which has no
-  // per-token composition need of its own.
+
+  // ── References ───────────────────────────────────────────
+
+  /**
+   * Identifier of the Princeton WordNet 3.1 synset this Phrase
+   * corresponds to.
+   *
+   * Undefined for a Phrase that didn't come from WordSeeder.seedWordNet.
+   */
+  synsetId?: Identifier;
+
+  /**
+   * Identifiers of every Sense (data/entities/sense.ts) this Phrase
+   * lexicalizes.
+   *
+   * Empty for a Phrase that didn't come from WordSeeder.seedWordNet.
+   */
+  senseIds: readonly Identifier[];
+
+
+  // ── Structure ────────────────────────────────────────────
+
+  /**
+   * This Phrase's own `text` broken down into its constituent Words,
+   * one entry per whitespace-separated token, left to right, stored by
+   * reference.
+   *
+   * A given position is undefined when no Word for that token exists
+   * in the seeding Dictionary. Always empty for a Common Vocabulary
+   * Cache closed-class Phrase.
+   */
   words: readonly (Identifier | undefined)[];
 
-  // The ModifierRole (enums/modifier_role.ts) each position in `words` plays
-  // within this Phrase's own structure -- same length and index
-  // alignment as `words` itself, one entry per whitespace-separated
-  // token. `undefined` at a position means that word retains only its
-  // own Part of Speech, no separate Phrase Role (the "No Role" Common
-  // Rule, data/phrase_type_patterns_and_word_roles.md) -- either because
-  // it's a token `words` itself couldn't resolve, or because the Head
-  // Identification Rule/Word Role Assignment for this Phrase's own
-  // `phraseType` genuinely doesn't assign that position a role (a
-  // post-head Noun in a Prepositional Phrase, for instance). Exactly one
-  // position holds ModifierRole.HEAD when `phraseType` is defined and at
-  // least one word resolves to that type's own Head part of speech --
-  // never more than one, per that document's own "Head" Common Rule.
-  // Populated by WordSeeder.seedWordNet's own classifyModifierRoles()
-  // (role/word_seeder.ts, that function's own docstring for the full
-  // per-PhraseType Head/Modifier/Particle/Determiner rules), right after
-  // `words` itself is resolved -- always empty for a Common Vocabulary
-  // Cache closed-class Phrase, `words`'s own exact counterpart there.
+  /**
+   * The ModifierRole each position in `words` plays within this
+   * Phrase's own structure -- same length and index alignment as
+   * `words` itself.
+   *
+   * A position is undefined when that word carries no role of its own
+   * within this Phrase. Always empty for a Common Vocabulary Cache
+   * closed-class Phrase.
+   */
   wordRoles: readonly (ModifierRole | undefined)[];
 
-  // The one entry of `words` whose matching `wordRoles` position holds
-  // ModifierRole.HEAD -- "poodle" for "toy poodle", "at" for "at fault"
-  // (that ModifierRole's own docstring, and classifyModifierRoles()'s, on
-  // exactly which position that is per PhraseType). Simply
-  // `words[wordRoles.indexOf(ModifierRole.HEAD)]`, kept as its own field
-  // rather than left for every caller to re-derive by scanning
-  // `wordRoles` -- linkPhraseWords() (role/word_seeder.ts) already knows
-  // the Head's own index the moment it computes `wordRoles`, so it sets
-  // this alongside it in the same pass. Undefined whenever `wordRoles`
-  // holds no HEAD position at all
-  // -- `phraseType` itself undefined (every Common Vocabulary Cache
-  // closed-class Phrase), or a `phraseType` whose own Head Identification
-  // Rule found no matching token (classifyModifierRoles()'s own docstring,
-  // e.g. a Preposition Head that isn't in PHRASE_TYPE_PREPOSITIONS and
-  // has no matching Dictionary sense either) -- or when that one Head
-  // position's own `words` entry itself never resolved (undefined, same
-  // as any other unresolved token, `words`'s own docstring).
-  //
-  // Named `unresolvedHeadWord`, not `headWord` -- an `Identifier` is a
-  // graph-reference pointer a caller still has to resolve against a
-  // Dictionary (builder_phrase.ts's own `phraseHeadWordSegment()`, in
-  // particular), never the resolved Word entity itself. `headWord`
-  // below is reserved for that resolved value.
+  /**
+   * The one entry of `words` whose matching `wordRoles` position holds
+   * ModifierRole.HEAD -- an unresolved graph-reference pointer, not
+   * the resolved Word entity itself (`headWord` below is that).
+   *
+   * Undefined whenever `wordRoles` holds no HEAD position at all.
+   */
   unresolvedHeadWord?: Identifier;
 
-  // unresolvedHeadWord's own literal spelling as it actually appears in
-  // this Phrase's own `text` -- the token classifyModifierRoles()
-  // identified as the Head, before Dictionary resolution ("at" in "at
-  // fault", never resolved to any Word at all -- unresolvedHeadWord
-  // itself is undefined there, but headWordForm still names which token
-  // filled that role). Distinct from headWord's own resolved
-  // Word.lexicalForm on purpose: this is the phrase-local surface form
-  // (matters for a token whose casing or inflection in this exact
-  // phrase might differ from that Word's own canonical spelling
-  // elsewhere), not a second copy of the same fact. Undefined under the
-  // exact same conditions unresolvedHeadWord is.
+  /**
+   * `unresolvedHeadWord`'s own literal spelling as it actually appears
+   * in this Phrase's own `text`.
+   *
+   * Undefined under the exact same conditions `unresolvedHeadWord` is.
+   */
   headWordForm?: Text;
 
-  // The Head's own resolved Word entity. Every `*_phrase.ts` subtype
-  // narrows this down to the specific Word subtype(s) its own Head
-  // Identification Rule allows -- NounPhrase to `Noun | Pronoun`
-  // (data/entities/noun_phrase.ts), for instance -- the same way each
-  // subtype already narrows `phraseType` to one literal PhraseType
-  // member. Distinct from `unresolvedHeadWord` above: that field is the
-  // graph-reference pointer this one resolves from, via
-  // `Dictionary.findByUuid()` -- genuinely populated today, for every
-  // real multi-word WordNet Phrase, by linkPhraseWords()
-  // (role/processor/phrase_processor.ts), right alongside
-  // `unresolvedHeadWord` itself. Still undefined for a Common Vocabulary
-  // Cache closed-class Phrase, which never runs that pass at all
-  // (`words`'s own docstring on why).
+  /**
+   * The Head's own resolved Word entity. Every `*_phrase.ts` subtype
+   * narrows this down to the specific Word subtype(s) its own Head
+   * Identification Rule allows.
+   *
+   * Undefined for a Common Vocabulary Cache closed-class Phrase.
+   */
   headWord?: Word;
 
-  // This Phrase's own pre-Head modifying constituents. `Word | Phrase |
-  // Clause` here is deliberately the broadest constituent union any
-  // PhraseType's own MODIFIER row ever needs (data/
-  // phrase_type_patterns_and_word_roles.md's own "Phrase Role Allowed
-  // Types" table) -- every `*_phrase.ts` subtype narrows this down to
-  // the specific constituent type(s) its own MODIFIER row actually
-  // allows, the same way each subtype already narrows `headWord` to its
-  // own HEAD row. Named `preModifiers`, not `modifiers`, matching that
-  // table's own structural convention even though not every PhraseType
-  // actually places its modifiers before the Head in practice (VerbPhrase's
-  // own "(Auxiliary verbs) + Main verb + (Particles) + (Complements) +
-  // (Modifiers)" structure puts them last, PrepositionalPhrase's own
-  // "Preposition + Noun phrase/complement + (Modifiers)" too) -- this
-  // field names the constituent's *role*, not its *position* within
-  // `text`, the same distinction `ModifierRole.MODIFIER` itself already
-  // draws from raw word order. Genuinely populated today by
-  // linkPhraseWords() (role/processor/phrase_processor.ts), for every
-  // MODIFIER-role position before the Head that resolves to a real
-  // single Word -- deliberately Word-only: nothing in this codebase
-  // parses a phrase's own text into nested sub-phrase/Clause spans, so a
-  // MODIFIER that would actually be one of those (the Allowed Types
-  // table also permits AdjectivePhrase/NounPhrase/AdverbPhrase/
-  // PrepositionalPhrase/Clause here) is simply left out rather than
-  // guessed at (linkPhraseWords()'s own docstring).
+  /**
+   * This Phrase's own pre-Head modifying constituents. Every
+   * `*_phrase.ts` subtype narrows this down to the specific
+   * constituent type(s) its own MODIFIER row allows.
+   *
+   * Undefined for a Common Vocabulary Cache closed-class Phrase.
+   */
   preModifiers?: readonly (Word | Phrase | Clause)[];
 
-  // This Phrase's own post-Head modifying constituents -- `preModifiers`'
-  // own counterpart, not a distinct ModifierRole (ModifierRole.MODIFIER
-  // covers both; `phrase_type_patterns_and_word_roles.md`'s own
-  // MODIFIER row makes no pre/post distinction either). Exists because
-  // `preModifiers`' own docstring already notes some PhraseTypes place
-  // their real modifiers after the Head in practice (VerbPhrase's own
-  // "... + (Complements) + (Modifiers)" structure, PrepositionalPhrase's
-  // own "... + Noun phrase/complement + (Modifiers)") -- this field lets
-  // a future populator place a MODIFIER constituent on the side that
-  // matches real word order, without overloading `preModifiers` to mean
-  // "any-position modifier." Same broad `Word | Phrase | Clause` union,
-  // same Word-only population by linkPhraseWords() for every MODIFIER-
-  // role position *after* the Head, and each `*_phrase.ts` subtype
-  // narrows this down to its own MODIFIER row exactly the same way as
-  // `preModifiers`.
+  /**
+   * This Phrase's own post-Head modifying constituents --
+   * `preModifiers`'s own counterpart.
+   *
+   * Undefined for a Common Vocabulary Cache closed-class Phrase.
+   */
   postModifiers?: readonly (Word | Phrase | Clause)[];
 }
 
@@ -281,42 +227,23 @@ export function createPhrase(init: PhraseInit): Phrase {
 }
 
 /** A shallow copy of `phrase`, sharing every field's own object identity
- * except `entryId.uuid`, which becomes a fresh uuid -- `entryId.value`
- * (and every other field) stays the same, so this copy is still
- * recognisably the same underlying Phrase, just a distinct graph node.
- * The Phrase counterpart of copyWordWithFreshUuid (role/word_processor.ts),
- * used by Phrases.seedFrom/WordSeeder.seedClosedClassWords for exactly
- * the same reason: two Domains' independent copies of "in spite of"
- * must never be confused as the same graph node. */
+ * except `entryId.uuid`, which becomes a fresh uuid. The Phrase
+ * counterpart of copyWordWithFreshUuid (role/word_processor.ts). */
 export function copyPhraseWithFreshUuid(phrase: Phrase): Phrase {
   return { ...phrase, entryId: { ...phrase.entryId, uuid: newUuid() } };
 }
 
-/** `phrase`'s own per-Domain graph identity -- `phrase.entryId.uuid`,
- * always set for a real Phrase (createPhrase()/copyPhraseWithFreshUuid()
- * above are its only two constructors, and both always assign it);
- * the assertion here just names that guarantee once instead of
- * repeating it at every call site that needs a Phrase's own identity as
- * a plain string (Phrases' own byUuid map key, ...). `entryId.value` is
- * the stable, cross-Domain identity -- deliberately not what this
- * reads. Word's own identical graphUuid() (role/word_processor.ts). */
+/** `phrase`'s own per-Domain graph identity. Word's own identical
+ * graphUuid() (role/word_processor.ts). */
 export function graphUuid(phrase: Phrase): string {
   return phrase.entryId.uuid!;
 }
 
-/** Materialises `phrase` as a synthetic, one-off Word -- never
- * inserted into any Dictionary, only ever handed to a Linguistics-
- * facing caller (DictionaryProcessor.identifyPhrase()) that expects a
- * WordIdentifier's own `.word: Word` field. This is the token side
- * of the dual use this file's own docstring describes: Vocabulary's
- * durable, authoritative record of "in spite of" is the Phrase this
- * was built from (Phrases, not Dictionary), but Linguistics' own
- * reading tree has no separate notion of a multi-word Vocabulary entry
- * -- it materialises every resolved span, one word or several raw
- * tokens wide, as one Word-shaped LinguisticUnit either way. A fresh
- * uuid each call is correct, not a bug: this Word is a token (one
- * occurrence in one reading), never persisted or looked up again by
- * identity, the same as any other Word materialised for a sentence. */
+/** Materialises `phrase` as a synthetic, one-off Word -- never inserted
+ * into any Dictionary, only ever handed to a Linguistics-facing caller
+ * that expects a WordIdentifier's own `.word: Word` field. A fresh
+ * `entryId.uuid` on every call is correct, not a bug: this Word is a
+ * token, never persisted or looked up again by identity. */
 export function toSyntheticWord(phrase: Phrase): Word {
   return createWord({
     text: phrase.text,
@@ -332,42 +259,14 @@ export function toSyntheticWord(phrase: Phrase): Word {
   });
 }
 
-/** Materialises `phrase` as a Word-shaped view *preserving its own
- * uuid* -- unlike toSyntheticWord above, this is not a fresh token:
- * it is the identity-preserving projection used wherever a Phrase
- * needs to be resolved and displayed exactly like a Word, because a
- * LexicalRelationship's sourceWordId/targetWordId is an opaque uuid
- * string that doesn't record which store (Dictionary or Phrases)
- * it came from (LexicalRelationshipStore's own docstring). A WordNet-
- * seeded multi-word Phrase participates in the same SYNONYM/pointer
- * relationship graph a single-word synset member does
- * (WordSeeder.seedWordNet), so every place that resolves a
- * relationship endpoint -- role/word_processor.ts's own relatedWords() family,
- * DictionaryView's relationship/Hierarchy rendering -- needs to be
- * able to turn that endpoint back into something displayable
- * regardless of which store actually holds it; this is that
- * conversion, called only after a Dictionary lookup by the same uuid
- * has already failed.
- *
- * `wordForms`, when supplied, registers a matching base-lemma WordForm
- * under this same `phrase.entryId` (idempotent, WordForms.registerBaseLemmaForm()'s
- * own find-or-create), carrying `phrase.senseIds`/`phrase.synsetId` --
- * senseIds/synsetId are Word-only fields no longer, they live on a
- * Word's own base-lemma WordForm now (WordForm's own docstring on why),
- * and a bare `createWord()` result has no WordForm of its own unless
- * something registers one. Without `wordForms`, the returned Word
- * carries no senses at all -- correct for a caller that only needs
- * `.text`/`.partOfSpeech`, wrong for one that also needs to resolve
- * this Phrase's own meaning (builder_word.ts's own wordRecordFor(),
- * in particular, which is why its own two call sites always pass one). */
+/** Materialises `phrase` as a Word-shaped view preserving its own
+ * identity -- unlike toSyntheticWord above, this is not a fresh token:
+ * the returned Word resolves under the identical identity the Phrase
+ * itself is known by. `wordForms`, when supplied, registers a matching
+ * base-lemma WordForm carrying this Phrase's own senseIds/synsetId. */
 export function phraseAsWord(phrase: Phrase, wordForms?: WordForms): Word {
   const word = createWord({
     text: phrase.text,
-    // Word's own entryId already has the identical two-role shape
-    // Phrase's own entryId now carries too (both folded from the same
-    // Identifier.uuid, data/entities/word.ts's own docstring) -- passed
-    // straight through, so this synthetic Word resolves under the
-    // identical identity the Phrase itself is known by.
     entryId: phrase.entryId,
     partOfSpeech: phrase.partOfSpeech,
     gloss: phrase.gloss,
