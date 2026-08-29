@@ -39,10 +39,10 @@ export function resolveEntry(dictionary: Dictionary, phrases: Phrases, senses: S
   const word = dictionary.findByUuid(id);
   if (word !== undefined) return word;
   const phrase = phrases.findByUuid(id);
-  if (phrase !== undefined) return phraseAsWord(phrase, wordForms);
+  if (phrase !== undefined) return phraseAsWord(phrase, phrases, wordForms);
   const sense = senses.findByUuid(id);
   if (sense === undefined) return undefined;
   const representative = senses.membersOf(graphUuid(sense))[0];
   if (representative === undefined) return undefined;
-  return "words" in representative ? phraseAsWord(representative, wordForms) : representative;
+  return "words" in representative ? phraseAsWord(representative, phrases, wordForms) : representative;
 }

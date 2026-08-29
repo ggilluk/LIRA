@@ -3,11 +3,13 @@ import { ModifierRole } from "./modifier_role";
 /** The grammatical category a Phrase belongs to -- which single word
  * class (noun, verb, adjective, adverb, preposition, or an infinitive
  * verb form) the phrase as a whole functions as within a larger
- * construction. Distinct from Phrase.partOfSpeech, which still names the
- * lexical category of the phrase's own headword the same way it would
- * for an ordinary single-word Word; PhraseType instead classifies the
- * phrase's own internal shape -- how its (optional) modifiers,
- * complements, and auxiliaries arrange themselves around that head.
+ * construction. Distinct from the WordNet-tagged part of speech
+ * Phrases.partOfSpeechOf() reports for this Phrase (data/phrases.ts),
+ * which still names the lexical category of the phrase's own headword
+ * the same way it would for an ordinary single-word Word; PhraseType
+ * instead classifies the phrase's own internal shape -- how its
+ * (optional) modifiers, complements, and auxiliaries arrange themselves
+ * around that head.
  * Undefined on a Phrase whose grammatical structure hasn't been
  * classified (Phrase.phraseType's own docstring).
  *

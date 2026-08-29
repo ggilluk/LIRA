@@ -545,6 +545,13 @@ function memberUuid(member: Word | Phrase): string {
   return "words" in member ? phraseGraphUuid(member) : wordGraphUuid(member);
 }
 
+/** `member`'s own WordNet-tagged part of speech, whichever of Word's own
+ * `partOfSpeech` field or Phrases.partOfSpeechOf() actually holds it --
+ * memberUuid()'s own identical Word-vs-Phrase dispatch. */
+function memberPartOfSpeech(member: Word | Phrase, phraseBook: Phrases): PartOfSpeech {
+  return "words" in member ? phraseBook.partOfSpeechOf(member)! : member.partOfSpeech;
+}
+
 /** Applies one topic-domain tag to `target` -- shared by tagTopicDomain's
  * own Sense-level (synset-wide `;c`/`-c` pointer) and Word/Phrase-level
  * (word-specific pointer) paths, since Sense/Word/Phrase all share the
@@ -685,6 +692,12 @@ export class WordSeeder {
   // Phrase's own docstring (data/phrase.ts) on why a closed-class
   // multi-word item is now its own lexical category.
   private cachePhrases: Phrase[] = [];
+  // Every cached Phrase's own WordNet-tagged part of speech, keyed by
+  // entryId -- entryToPhrase() populates this in lockstep with
+  // `cachePhrases` itself, since Phrase carries no partOfSpeech field
+  // of its own any more (Phrases.partOfSpeechOf's own docstring,
+  // data/phrases.ts, on where that fact lives instead).
+  private cachePhrasePartOfSpeech = new Map<string, PartOfSpeech>();
   private cacheFormLinks: FormLink[] = [];
   // Every cached entry's own raw PAD (Pleasure-Arousal-Dominance) triple,
   // keyed by entryId -- entryToWord()/entryToPhrase() populate this in
@@ -1104,13 +1117,14 @@ export class WordSeeder {
     // domainTag to further disambiguate with, since none of today's
     // real multi-word entries are ever true dictionary polysemes.
     for (const phrase of this.loadPhrases()) {
-      if (excludeOpenClasses && OPEN_CLASSES.includes(phrase.partOfSpeech)) continue;
+      const partOfSpeech = this.cachePhrasePartOfSpeech.get(phrase.entryId.value)!;
+      if (excludeOpenClasses && OPEN_CLASSES.includes(partOfSpeech)) continue;
       const alreadyPresent = phraseBook
         .lookupAll(phrase.text)
-        .some((existing) => existing.partOfSpeech === phrase.partOfSpeech);
+        .some((existing) => phraseBook.partOfSpeechOf(existing) === partOfSpeech);
       if (alreadyPresent) continue;
       const phraseCopy = copyPhraseWithFreshUuid(phrase);
-      phraseBook.append(phraseCopy);
+      phraseBook.append(phraseCopy, partOfSpeech);
       // wordForms omitted here -- registerUniqueSense()'s own "Word,
       // not Phrase" guard would skip it anyway, but a Phrase has no
       // base-lemma WordForm concept to register in the first place.
@@ -1331,13 +1345,13 @@ export class WordSeeder {
           // just below: WordNet's "hegira"/"Hegira" are two distinct
           // lemmas -- offsets 00061234-n and 00061368-n -- that
           // lookupAll("Hegira") alone cannot tell apart).
-          const existingPhrase = phraseBook.lookupAll(lemma).find((phrase) => phrase.partOfSpeech === synset.partOfSpeech && phrase.text === lemma);
+          const existingPhrase = phraseBook.lookupAll(lemma).find((phrase) => phraseBook.partOfSpeechOf(phrase) === synset.partOfSpeech && phrase.text === lemma);
           let phrase: Phrase;
           if (existingPhrase !== undefined) {
             phrase = existingPhrase;
           } else {
             phrase = this.synsetMemberToPhrase(synset, lemma, verbLemmas);
-            phraseBook.append(phrase);
+            phraseBook.append(phrase, synset.partOfSpeech);
             newPhrases.push(phrase);
             wordsSeeded += 1;
           }
@@ -1441,6 +1455,7 @@ export class WordSeeder {
             sourceMembers,
             pointer,
             synsetMembersById,
+            phraseBook,
             senseStore,
             semanticProcessor,
             semanticExistingEdges,
@@ -1552,6 +1567,7 @@ export class WordSeeder {
     sourceMembers: readonly (Word | Phrase)[],
     pointer: WordNetPointer,
     synsetMembersById: ReadonlyMap<string, Array<Word | Phrase>>,
+    phraseBook: Phrases,
     senseStore: Senses,
     semanticProcessor: SemanticRelationshipProcessor,
     semanticExistingEdges: Set<string>,
@@ -1567,7 +1583,7 @@ export class WordSeeder {
       return 0;
     }
 
-    const resolved = relationshipKindForPointer(pointer.symbol, synset.partOfSpeech, targetMembers[0].partOfSpeech);
+    const resolved = relationshipKindForPointer(pointer.symbol, synset.partOfSpeech, memberPartOfSpeech(targetMembers[0], phraseBook));
     if (resolved === undefined) return 0;
 
     const qualifiers: readonly AttributeValue[] | undefined =
@@ -1602,7 +1618,7 @@ export class WordSeeder {
         pointer,
         resolved,
         synset.partOfSpeech,
-        targetMembers[0].partOfSpeech,
+        memberPartOfSpeech(targetMembers[0], phraseBook),
         senseStore,
         wordForms,
         pairs,
@@ -2225,7 +2241,6 @@ export class WordSeeder {
   private synsetMemberToPhrase(synset: WordNetSynset, lemma: string, verbLemmas: ReadonlySet<string>): Phrase {
     const shared = {
       text: lemma,
-      partOfSpeech: synset.partOfSpeech,
       languageCode: { value: this.languageCode },
       definition: synset.definition ? { value: synset.definition } : undefined,
       usageNotes: synset.examples.map((example) => ({ value: example })),
@@ -2492,6 +2507,7 @@ export class WordSeeder {
   private entryToPhrase(entry: WordFileEntry): Phrase {
     const optText = (value: string | null | undefined) => (value ? { value } : undefined);
     this.recordPad(entry);
+    this.cachePhrasePartOfSpeech.set(entry.entry_id, PartOfSpeech[entry.part_of_speech as keyof typeof PartOfSpeech]);
 
     const sourceReferences = (entry.source_references ?? []).map((ref) => ({
       sourceName: { value: ref.source_name },
@@ -2504,7 +2520,6 @@ export class WordSeeder {
     return createPhrase({
       text: entry.text ?? entry.lexical_form,
       entryId: { value: entry.entry_id },
-      partOfSpeech: PartOfSpeech[entry.part_of_speech as keyof typeof PartOfSpeech],
       version: optText(entry.version) ?? { value: "1.0" },
       languageCode: { value: entry.language_code },
       lexicalForm: { value: entry.lexical_form },

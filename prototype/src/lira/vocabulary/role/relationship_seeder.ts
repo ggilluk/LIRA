@@ -401,7 +401,7 @@ export class RelationshipSeeder {
    * endpoint on purpose. */
   private isPhraseOnly(phraseBook: Phrases, lexicalForm: string, partOfSpeech?: PartOfSpeech): boolean {
     const candidates = phraseBook.lookupAll(lexicalForm);
-    return partOfSpeech === undefined ? candidates.length > 0 : candidates.some((phrase) => phrase.partOfSpeech === partOfSpeech);
+    return partOfSpeech === undefined ? candidates.length > 0 : candidates.some((phrase) => phraseBook.partOfSpeechOf(phrase) === partOfSpeech);
   }
 
   private relationshipExists(

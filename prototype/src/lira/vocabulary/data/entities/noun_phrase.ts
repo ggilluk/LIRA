@@ -5,12 +5,13 @@
  * noun.ts). Structure: "(Determiner) + (Modifiers) + Noun/Pronoun +
  * (Complements)" (PHRASE_TYPE_DETAILS[PhraseType.NOUN_PHRASE],
  * data/enums/phrase_type.ts) -- example: "the intelligent system".
- * Distinct from Phrase.partOfSpeech,
- * which still names the lexical category of the phrase's own headword
- * (a NOUN_PHRASE's own head can be a Noun or a Pronoun) -- PhraseType
- * classifies internal *structure*, not the headword's own part of
- * speech (PhraseType's own docstring), so this subtype narrows
- * `phraseType` only, never `partOfSpeech`.
+ * Distinct from the WordNet-tagged part of speech Phrases.partOfSpeechOf()
+ * reports for this Phrase (data/phrases.ts), which still names the lexical
+ * category of the phrase's own headword (a NOUN_PHRASE's own head can be
+ * a Noun or a Pronoun) -- PhraseType classifies internal *structure*, not
+ * the headword's own part of speech (PhraseType's own docstring), so this
+ * subtype narrows `phraseType` only, never that WordNet-tagged part of
+ * speech.
  *
  * Genuinely seeded today, not "declared before it's populated" the way
  * most POS-subtype-only fields on Word still are: WordSeeder.seedWordNet's
@@ -90,8 +91,8 @@ export interface NounPhrase extends Phrase {
   postModifiers: readonly NounPhraseModifier[];
 }
 
-export type NounPhraseInit = Pick<Phrase, "text" | "partOfSpeech"> &
-  Partial<Omit<Phrase, "text" | "partOfSpeech" | "phraseType" | "headWord" | "preModifiers" | "postModifiers">> & {
+export type NounPhraseInit = Pick<Phrase, "text"> &
+  Partial<Omit<Phrase, "text" | "phraseType" | "headWord" | "preModifiers" | "postModifiers">> & {
     headWord?: Noun | Pronoun;
     preModifiers?: readonly NounPhraseModifier[];
     postModifiers?: readonly NounPhraseModifier[];

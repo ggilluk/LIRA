@@ -512,7 +512,7 @@ export function searchWords(
     // the original Phrase, not just its Word-shaped view.
     const phrase = phrases.findByUuid(options.wordId);
     if (phrase !== undefined) {
-      const record = wordRecordFor(phraseAsWord(phrase, wordForms), dictionary, relationships, senses, domainName, wordForms);
+      const record = wordRecordFor(phraseAsWord(phrase, phrases, wordForms), dictionary, relationships, senses, domainName, wordForms);
       const modifiers = phraseModifierSegments(phrase, dictionary, senses, domainName, wordForms);
       return {
         words: [
@@ -543,7 +543,7 @@ export function searchWords(
     const representative = sense !== undefined ? senses.membersOf(senseGraphUuid(sense))[0] : undefined;
     if (representative !== undefined) {
       if ("words" in representative) {
-        const record = wordRecordFor(phraseAsWord(representative, wordForms), dictionary, relationships, senses, domainName, wordForms);
+        const record = wordRecordFor(phraseAsWord(representative, phrases, wordForms), dictionary, relationships, senses, domainName, wordForms);
         const modifiers = phraseModifierSegments(representative, dictionary, senses, domainName, wordForms);
         return {
           words: [

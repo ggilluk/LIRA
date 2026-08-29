@@ -58,14 +58,14 @@ export function phraseTypeLabel(phrase: Phrase): string | undefined {
   return phrase.phraseType !== undefined ? PhraseType[phrase.phraseType] : undefined;
 }
 
-export function phraseRecordFor(phrase: Phrase, senses: Senses, wordForms: WordForms): PhraseRecord {
+export function phraseRecordFor(phrase: Phrase, phrases: Phrases, senses: Senses, wordForms: WordForms): PhraseRecord {
   const senseFields = senseFieldsFor(senses, phrase, wordForms);
   return {
     id: graphUuid(phrase),
     entry_id: phrase.entryId.value,
     lexical_form: phrase.lexicalForm?.value ?? phrase.text,
     text: phrase.text,
-    pos: PartOfSpeech[phrase.partOfSpeech],
+    pos: PartOfSpeech[phrases.partOfSpeechOf(phrase)!],
     phrase_type: phraseTypeLabel(phrase),
     definition: senseFields.definition?.value ?? "",
     gloss: senseFields.gloss?.value ?? "",
@@ -88,7 +88,7 @@ export function phraseRecordFor(phrase: Phrase, senses: Senses, wordForms: WordF
  * Phrase count never approaches that range" assumption an earlier
  * version of this function made before WordNet-seeded Phrases existed. */
 export function phraseRecords(phrases: Phrases, senses: Senses, wordForms: WordForms): PhraseRecord[] {
-  const records = phrases.all().map((phrase) => phraseRecordFor(phrase, senses, wordForms));
+  const records = phrases.all().map((phrase) => phraseRecordFor(phrase, phrases, senses, wordForms));
   records.sort((a, b) => a.lexical_form.toLowerCase().localeCompare(b.lexical_form.toLowerCase()));
   return records;
 }
@@ -226,14 +226,14 @@ export function searchPhrases(
   const matches: PhraseRecord[] = [];
   let totalMatches = 0;
   for (const phrase of phrases.all()) {
-    if (options.pos && PartOfSpeech[phrase.partOfSpeech] !== options.pos) continue;
+    if (options.pos && PartOfSpeech[phrases.partOfSpeechOf(phrase)!] !== options.pos) continue;
     const lexicalForm = (phrase.lexicalForm?.value ?? phrase.text).toLowerCase();
     if (wordQuery && !lexicalForm.includes(wordQuery)) continue;
     if (glossQuery && !(phrase.gloss?.value ?? "").toLowerCase().includes(glossQuery)) continue;
     if (definitionQuery && !(phrase.definition?.value ?? "").toLowerCase().includes(definitionQuery)) continue;
 
     totalMatches += 1;
-    if (matches.length < limit) matches.push(phraseRecordFor(phrase, senses, wordForms));
+    if (matches.length < limit) matches.push(phraseRecordFor(phrase, phrases, senses, wordForms));
   }
   matches.sort((a, b) => a.lexical_form.toLowerCase().localeCompare(b.lexical_form.toLowerCase()));
   return { phrases: matches, totalMatches };

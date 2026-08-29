@@ -67,6 +67,45 @@ NOUN/VERB/ADJECTIVE/ADVERB).
 member) narrow a Phrase down by this field the same way `data/entities/noun.ts`
 and its own siblings narrow a Word down by `partOfSpeech`.
 
+### The WordNet-tagged part of speech: `Phrases`'s own side index, not a Phrase field
+
+Phrase originally carried its own `partOfSpeech` field, mirroring Word's --
+the WordNet-tagged lexical category `classifyPhraseType()` takes as *input*
+to derive `phraseType` as *output* (the section above). The two were never
+independent facts, so once `phraseType` existed there was no remaining
+reason for a Phrase to carry both a structural classification and the raw
+tag it was derived from.
+
+The naive fix -- drop the field, let `phraseType` stand in for it wherever
+the seeder needed to tell two same-spelled Phrases apart -- doesn't work:
+`classifyPhraseType()`'s own PHRASE_TYPE_PREPOSITIONS rule sends *both*
+`PartOfSpeech.ADJECTIVE` and `PartOfSpeech.ADVERB` to the identical
+`PhraseType.PREPOSITIONAL_PHRASE` for a lemma opening with a preposition
+("at fault" ADJECTIVE, "by hand" ADVERB, both PREPOSITIONAL_PHRASE) -- so
+`phraseType` alone can't recover which WordNet tag a given Phrase carries.
+Verified directly against the real bundled WordNet 3.1 dict/ files: 21 real
+multi-word lemmas ("in line", "on time", "out of place", ... ) have both an
+ADJECTIVE-tagged and an ADVERB-tagged sense that both classify to
+PREPOSITIONAL_PHRASE, so a dedup/lookup key built from `(text, phraseType)`
+alone would conflate them.
+
+The fact still has to live somewhere WordSeeder.seedWordNet's own polysemy-
+merging dedup can reach it (`existing.partOfSpeech === synset.partOfSpeech`,
+mirroring Word's own identical `(lemma, partOfSpeech)` reuse-across-synsets
+pattern) -- so it moved to a private side index inside `Phrases` itself
+(`data/phrases.ts`), keyed by each Phrase's own `graphUuid()`, populated by
+the seeder at `Phrases.append()` time (a now-required second parameter) and
+read back via `Phrases.partOfSpeechOf(phrase)`. This keeps the fact a
+property of "this Phrase, in this Phrases store" rather than a field every
+copy of a Phrase carries around regardless of whether anything still reads
+it -- the seeder is the only real producer of this fact, so the seeder is
+where the instruction "remember this" belongs, not the Phrase type itself.
+
+`toSyntheticWord()`/`phraseAsWord()` (their own section below) both need a
+`PartOfSpeech` to populate the synthetic Word they materialise -- they take
+a `Phrases` reference now and call `phrases.partOfSpeechOf(phrase)`
+internally, rather than reading a field Phrase no longer has.
+
 ### `words`: stored by reference, resolved structurally
 
 `words` breaks a Phrase's own `text` down into its constituent Words, one

@@ -8,13 +8,14 @@
  * (Modifiers)" (PHRASE_TYPE_DETAILS[PhraseType.INFINITIVE_PHRASE],
  * enums/phrase_type.ts) -- example: "to identify the cause", functioning
  * nominally, adjectivally, or adverbially depending on context.
- * Distinct from Phrase.partOfSpeech, and pointedly so here: WordNet
+ * Distinct from the WordNet-tagged part of speech Phrases.partOfSpeechOf()
+ * reports for this Phrase (data/phrases.ts), and pointedly so here: WordNet
  * itself has no "infinitive" ss_type of its own at all, so every real
  * InfinitivePhrase in the bundled data is WordNet-tagged ADVERB instead
  * (the closest of its own four open classes to how an infinitive
  * usually functions) -- PhraseType classifies internal *structure*, not
  * the WordNet-assigned functional category, so this subtype narrows
- * `phraseType` only, never `partOfSpeech`.
+ * `phraseType` only, never that WordNet-tagged part of speech.
  *
  * Genuinely seeded today, not "declared before it's populated":
  * WordSeeder.seedWordNet's own classifyPhraseType() (role/word_seeder.ts)
@@ -38,7 +39,7 @@ export interface InfinitivePhrase extends Phrase {
   phraseType: PhraseType.INFINITIVE_PHRASE;
 }
 
-export type InfinitivePhraseInit = Pick<Phrase, "text" | "partOfSpeech"> & Partial<Omit<Phrase, "text" | "partOfSpeech" | "phraseType">>;
+export type InfinitivePhraseInit = Pick<Phrase, "text"> & Partial<Omit<Phrase, "text" | "phraseType">>;
 
 export function createInfinitivePhrase(init: InfinitivePhraseInit): InfinitivePhrase {
   return createPhrase({ ...init, phraseType: PhraseType.INFINITIVE_PHRASE }) as InfinitivePhrase;

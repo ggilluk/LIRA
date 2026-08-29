@@ -5,9 +5,10 @@
  * directory's own adverb.ts). Structure: "(Degree modifiers) + Adverb +
  * (Complements)" (PHRASE_TYPE_DETAILS[PhraseType.ADVERB_PHRASE],
  * data/enums/phrase_type.ts) -- example: "very quickly". Distinct from
- * Phrase.partOfSpeech
- * (PhraseType's own docstring on why the two are kept apart), so this
- * subtype narrows `phraseType` only, never `partOfSpeech`.
+ * the WordNet-tagged part of speech Phrases.partOfSpeechOf() reports for
+ * this Phrase (data/phrases.ts) (PhraseType's own docstring on why the
+ * two are kept apart), so this subtype narrows `phraseType` only, never
+ * that WordNet-tagged part of speech.
  *
  * Genuinely seeded today, not "declared before it's populated":
  * WordSeeder.seedWordNet's own classifyPhraseType() (role/word_seeder.ts)
@@ -68,8 +69,8 @@ export interface AdverbPhrase extends Phrase {
   postModifiers: readonly AdverbPhraseModifier[];
 }
 
-export type AdverbPhraseInit = Pick<Phrase, "text" | "partOfSpeech"> &
-  Partial<Omit<Phrase, "text" | "partOfSpeech" | "phraseType" | "headWord" | "preModifiers" | "postModifiers">> & {
+export type AdverbPhraseInit = Pick<Phrase, "text"> &
+  Partial<Omit<Phrase, "text" | "phraseType" | "headWord" | "preModifiers" | "postModifiers">> & {
     headWord?: Adverb;
     preModifiers?: readonly AdverbPhraseModifier[];
     postModifiers?: readonly AdverbPhraseModifier[];

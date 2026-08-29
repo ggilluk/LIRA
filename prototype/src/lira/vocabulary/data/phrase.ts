@@ -15,12 +15,12 @@ import { identifier, type Code, type Identifier, type Text } from "../../value_o
 import type { Clause } from "../../linguistics/data/clause";
 import type { LinguisticUnit } from "../../linguistics/data/linguistic_unit";
 import type { EditorialLabel } from "./enums/editorial_label";
-import type { PartOfSpeech } from "./enums/part_of_speech";
 import type { ModifierRole } from "./enums/modifier_role";
 import type { PhraseType } from "./enums/phrase_type";
 import type { RegisterCode } from "./enums/register_code";
 import type { SourceReference } from "./source_reference";
 import type { Word } from "./entities/word";
+import type { Phrases } from "./phrases";
 import type { WordForms } from "./word_forms";
 // Known, approved exception to data/ never importing role/ -- see
 // role/word_processor.ts's own docstring: createWord() is Word's own
@@ -47,14 +47,17 @@ export interface Phrase extends LinguisticUnit {
 
   // ── Classification ───────────────────────────────────────
 
-  /** Grammatical part of speech under which this Phrase is defined. */
-  partOfSpeech: PartOfSpeech;
-
   /**
    * The grammatical shape this Phrase's own words take -- noun phrase,
    * verb phrase, etc.
    *
    * Undefined for a Common Vocabulary Cache closed-class Phrase.
+   *
+   * Unlike Word, a Phrase carries no `partOfSpeech` field of its own --
+   * that WordNet-tagged fact (`phraseType`'s own input, not an
+   * independent one) lives in a private side index inside `Phrases`
+   * instead, read back via `Phrases.partOfSpeechOf(phrase)`
+   * (data/phrases.ts, data_entity_design_decisions_log.md).
    */
   phraseType?: PhraseType;
 
@@ -202,7 +205,7 @@ export interface Phrase extends LinguisticUnit {
   postModifiers?: readonly (Word | Phrase | Clause)[];
 }
 
-export type PhraseInit = Pick<Phrase, "text" | "partOfSpeech"> & Partial<Omit<Phrase, "text" | "partOfSpeech">>;
+export type PhraseInit = Pick<Phrase, "text"> & Partial<Omit<Phrase, "text">>;
 
 export function createPhrase(init: PhraseInit): Phrase {
   const phrase: Phrase = {
@@ -243,12 +246,15 @@ export function graphUuid(phrase: Phrase): string {
  * into any Dictionary, only ever handed to a Linguistics-facing caller
  * that expects a WordIdentifier's own `.word: Word` field. A fresh
  * `entryId.uuid` on every call is correct, not a bug: this Word is a
- * token, never persisted or looked up again by identity. */
-export function toSyntheticWord(phrase: Phrase): Word {
+ * token, never persisted or looked up again by identity. `phrases` is
+ * the store `phrase` itself came from -- its own `partOfSpeechOf()` is
+ * where `phrase`'s WordNet-tagged part of speech actually lives now,
+ * Phrase itself carries no such field (data_entity_design_decisions_log.md). */
+export function toSyntheticWord(phrase: Phrase, phrases: Phrases): Word {
   return createWord({
     text: phrase.text,
     entryId: { ...phrase.entryId, uuid: newUuid() },
-    partOfSpeech: phrase.partOfSpeech,
+    partOfSpeech: phrases.partOfSpeechOf(phrase)!,
     gloss: phrase.gloss,
     usageNotes: phrase.usageNotes,
     registerCodes: phrase.registerCodes,
@@ -262,13 +268,15 @@ export function toSyntheticWord(phrase: Phrase): Word {
 /** Materialises `phrase` as a Word-shaped view preserving its own
  * identity -- unlike toSyntheticWord above, this is not a fresh token:
  * the returned Word resolves under the identical identity the Phrase
- * itself is known by. `wordForms`, when supplied, registers a matching
- * base-lemma WordForm carrying this Phrase's own senseIds/synsetId. */
-export function phraseAsWord(phrase: Phrase, wordForms?: WordForms): Word {
+ * itself is known by. `phrases` is the store `phrase` itself came from,
+ * the same way toSyntheticWord above needs it. `wordForms`, when
+ * supplied, registers a matching base-lemma WordForm carrying this
+ * Phrase's own senseIds/synsetId. */
+export function phraseAsWord(phrase: Phrase, phrases: Phrases, wordForms?: WordForms): Word {
   const word = createWord({
     text: phrase.text,
     entryId: phrase.entryId,
-    partOfSpeech: phrase.partOfSpeech,
+    partOfSpeech: phrases.partOfSpeechOf(phrase)!,
     gloss: phrase.gloss,
     usageNotes: phrase.usageNotes,
     registerCodes: phrase.registerCodes,

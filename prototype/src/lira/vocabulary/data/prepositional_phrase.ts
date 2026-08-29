@@ -6,15 +6,16 @@
  * phrase/complement + (Modifiers)"
  * (PHRASE_TYPE_DETAILS[PhraseType.PREPOSITIONAL_PHRASE],
  * enums/phrase_type.ts) -- example: "within the framework". Distinct
- * from Phrase.partOfSpeech, and pointedly so here: WordNet itself never
- * tags a multi-word lemma's own `partOfSpeech` as PREPOSITION at all --
+ * from the WordNet-tagged part of speech Phrases.partOfSpeechOf() reports
+ * for this Phrase (data/phrases.ts), and pointedly so here: WordNet itself
+ * never tags a multi-word lemma's own part of speech as PREPOSITION at all --
  * every real PrepositionalPhrase in the bundled data is WordNet-tagged
  * ADJECTIVE or ADVERB instead, because that's the *function* the whole
  * span serves ("at fault" modifies like an adjective, "by hand" like an
  * adverb) even though its own internal *structure* is a preposition
  * leading its complement (PhraseType's own docstring on exactly this
  * function-vs-structure distinction). This subtype narrows `phraseType`
- * only, never `partOfSpeech`.
+ * only, never that WordNet-tagged part of speech.
  *
  * Genuinely seeded today, not "declared before it's populated":
  * WordSeeder.seedWordNet's own classifyPhraseType() (role/word_seeder.ts)
@@ -77,8 +78,8 @@ export interface PrepositionalPhrase extends Phrase {
   postModifiers: readonly PrepositionalPhraseModifier[];
 }
 
-export type PrepositionalPhraseInit = Pick<Phrase, "text" | "partOfSpeech"> &
-  Partial<Omit<Phrase, "text" | "partOfSpeech" | "phraseType" | "headWord" | "preModifiers" | "postModifiers">> & {
+export type PrepositionalPhraseInit = Pick<Phrase, "text"> &
+  Partial<Omit<Phrase, "text" | "phraseType" | "headWord" | "preModifiers" | "postModifiers">> & {
     headWord?: Preposition;
     preModifiers?: readonly PrepositionalPhraseModifier[];
     postModifiers?: readonly PrepositionalPhraseModifier[];

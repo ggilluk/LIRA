@@ -1,4 +1,5 @@
 import { copyPhraseWithFreshUuid, graphUuid, type Phrase } from "./phrase";
+import type { PartOfSpeech } from "./enums/part_of_speech";
 
 /** Multi-word lexicon storage: Phrases is Dictionary's own counterpart
  * for Phrase (phrase.ts's own docstring on why the two are kept apart
@@ -21,6 +22,13 @@ export class Phrases {
   private phrases: Phrase[] = [];
   private readonly byText = new Map<string, Phrase[]>();
   private readonly byUuid = new Map<string, Phrase>();
+  /** WordNet-tagged part of speech for each Phrase, keyed by graphUuid.
+   * Not a field on Phrase itself -- classifyPhraseType() already derives
+   * `phraseType` from this same value at seeding time, and phraseType
+   * cannot substitute for it as a dedup/lookup key: the PREPOSITIONAL_PHRASE
+   * shape is reachable from both PartOfSpeech.ADJECTIVE and
+   * PartOfSpeech.ADVERB, so only the original tag can tell those apart. */
+  private readonly partOfSpeechByUuid = new Map<string, PartOfSpeech>();
   private maxSpan = 0;
 
   all(): readonly Phrase[] {
@@ -52,13 +60,20 @@ export class Phrases {
     return this.byUuid.get(phraseId);
   }
 
-  append(phrase: Phrase): void {
+  /** `phrase`'s own WordNet-tagged part of speech, as supplied to
+   * `append()` -- undefined for a Phrase this store never appended. */
+  partOfSpeechOf(phrase: Phrase): PartOfSpeech | undefined {
+    return this.partOfSpeechByUuid.get(graphUuid(phrase));
+  }
+
+  append(phrase: Phrase, partOfSpeech: PartOfSpeech): void {
     this.phrases.push(phrase);
     const key = phrase.text.toLowerCase();
     const bucket = this.byText.get(key);
     if (bucket) bucket.push(phrase);
     else this.byText.set(key, [phrase]);
     this.byUuid.set(graphUuid(phrase), phrase);
+    this.partOfSpeechByUuid.set(graphUuid(phrase), partOfSpeech);
 
     const wordCount = key.trim().split(/\s+/).filter(Boolean).length;
     if (wordCount > this.maxSpan) this.maxSpan = wordCount;
@@ -72,6 +87,9 @@ export class Phrases {
    * -- the Phrase counterpart of Dictionary.seedFrom, used the same
    * way (VocabularyContext's own Physics-from-Common snapshot). */
   seedFrom(other: Phrases): void {
-    for (const phrase of other.phrases) this.append(copyPhraseWithFreshUuid(phrase));
+    for (const phrase of other.phrases) {
+      const partOfSpeech = other.partOfSpeechOf(phrase)!;
+      this.append(copyPhraseWithFreshUuid(phrase), partOfSpeech);
+    }
   }
 }

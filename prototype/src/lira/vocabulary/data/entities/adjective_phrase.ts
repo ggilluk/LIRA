@@ -6,9 +6,10 @@
  * "(Degree modifiers) + Adjective + (Complements)"
  * (PHRASE_TYPE_DETAILS[PhraseType.ADJECTIVE_PHRASE],
  * data/enums/phrase_type.ts) -- example: "highly reliable". Distinct
- * from Phrase.partOfSpeech (PhraseType's own docstring on why the two
- * are kept apart), so this subtype narrows `phraseType` only, never
- * `partOfSpeech`.
+ * from the WordNet-tagged part of speech Phrases.partOfSpeechOf() reports
+ * for this Phrase (data/phrases.ts) (PhraseType's own docstring on why
+ * the two are kept apart), so this subtype narrows `phraseType` only,
+ * never that WordNet-tagged part of speech.
  *
  * Genuinely seeded today, not "declared before it's populated":
  * WordSeeder.seedWordNet's own classifyPhraseType() (role/word_seeder.ts)
@@ -67,8 +68,8 @@ export interface AdjectivePhrase extends Phrase {
   postModifiers: readonly AdjectivePhraseModifier[];
 }
 
-export type AdjectivePhraseInit = Pick<Phrase, "text" | "partOfSpeech"> &
-  Partial<Omit<Phrase, "text" | "partOfSpeech" | "phraseType" | "headWord" | "preModifiers" | "postModifiers">> & {
+export type AdjectivePhraseInit = Pick<Phrase, "text"> &
+  Partial<Omit<Phrase, "text" | "phraseType" | "headWord" | "preModifiers" | "postModifiers">> & {
     headWord?: Adjective;
     preModifiers?: readonly AdjectivePhraseModifier[];
     postModifiers?: readonly AdjectivePhraseModifier[];

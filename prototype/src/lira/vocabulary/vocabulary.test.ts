@@ -122,12 +122,11 @@ describe("PhraseType", () => {
   });
 
   it("a Phrase can carry a phraseType, defaulting to undefined when not classified", () => {
-    const unclassified = createPhrase({ text: "in spite of", partOfSpeech: PartOfSpeech.PREPOSITION });
+    const unclassified = createPhrase({ text: "in spite of" });
     expect(unclassified.phraseType).toBeUndefined();
 
     const classified = createPhrase({
       text: "the intelligent system",
-      partOfSpeech: PartOfSpeech.NOUN,
       phraseType: PhraseType.NOUN_PHRASE,
     });
     expect(classified.phraseType).toBe(PhraseType.NOUN_PHRASE);
@@ -931,7 +930,7 @@ describe("DictionaryProcessor.identifyPhrase", () => {
     // "no one else" is a Phrase now, not a Word (Phrase's own docstring,
     // data/phrase.ts) -- Dictionary itself never sees it.
     expect(dictionary.lookupAll("no one else")).toHaveLength(0);
-    expect(phraseBook.lookupAll("no one else").some((p) => p.partOfSpeech === PartOfSpeech.PRONOUN)).toBe(true);
+    expect(phraseBook.lookupAll("no one else").some((p) => phraseBook.partOfSpeechOf(p) === PartOfSpeech.PRONOUN)).toBe(true);
     const processor = new DictionaryProcessor(dictionary, phraseBook, new AsyncDictionaryHydrator(dictionary), "Common");
 
     const rawTokens = ["he", "wanted", "no", "one", "else", "to", "know"];
@@ -1347,9 +1346,9 @@ describe("WordSeeder against the bundled Common Vocabulary Cache", () => {
     expect(dictionary.lookupAll("each other")).toHaveLength(0);
     expect(dictionary.lookupAll("no one else")).toHaveLength(0);
     const eachOther = phraseBook.lookup("each other");
-    expect(eachOther?.partOfSpeech).toBe(PartOfSpeech.PRONOUN);
+    expect(phraseBook.partOfSpeechOf(eachOther!)).toBe(PartOfSpeech.PRONOUN);
     const noOneElse = phraseBook.lookup("no one else");
-    expect(noOneElse?.partOfSpeech).toBe(PartOfSpeech.PRONOUN);
+    expect(phraseBook.partOfSpeechOf(noOneElse!)).toBe(PartOfSpeech.PRONOUN);
 
     // Dictionary itself never saw a multi-word Word (seedClosedClassWords
     // alone is under test here, not seedWordNet -- a WordNet multi-word
@@ -1942,7 +1941,7 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // Preposition + NP; "to be sure" (00151192-r, dict/data.adv) is
     // WordNet-tagged ADVERB but structurally an infinitive.
     const atFault = phraseBook.lookupAll("at fault").find((phrase) => phrase.synsetId?.value === "01324381-s");
-    expect(atFault?.partOfSpeech).toBe(PartOfSpeech.ADJECTIVE);
+    expect(phraseBook.partOfSpeechOf(atFault!)).toBe(PartOfSpeech.ADJECTIVE);
     expect(atFault?.phraseType).toBe(PhraseType.PREPOSITIONAL_PHRASE);
     expect(isPrepositionalPhrase(atFault!)).toBe(true);
     // Narrowing is by phraseType, never by partOfSpeech -- "at fault"
@@ -1976,7 +1975,7 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     expect(atFault!.postModifiers).toEqual([]);
 
     const toBeSure = phraseBook.lookupAll("to be sure").find((phrase) => phrase.synsetId?.value === "00151192-r");
-    expect(toBeSure?.partOfSpeech).toBe(PartOfSpeech.ADVERB);
+    expect(phraseBook.partOfSpeechOf(toBeSure!)).toBe(PartOfSpeech.ADVERB);
     expect(toBeSure?.phraseType).toBe(PhraseType.INFINITIVE_PHRASE);
     expect(isInfinitivePhrase(toBeSure!)).toBe(true);
     expect(isAdverbPhrase(toBeSure!)).toBe(false);
@@ -2229,7 +2228,7 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // linkPhraseWords()/classifyModifierRoles() at all (no constituency-
     // parsing pass of its own, `words`'s own docstring) -- wordRoles
     // stays empty, `words`'s own exact counterpart.
-    const handCrafted = createPhrase({ text: "in spite of", partOfSpeech: PartOfSpeech.PREPOSITION, phraseType: PhraseType.PREPOSITIONAL_PHRASE });
+    const handCrafted = createPhrase({ text: "in spite of", phraseType: PhraseType.PREPOSITIONAL_PHRASE });
     expect(handCrafted.wordRoles).toEqual([]);
     expect(handCrafted.unresolvedHeadWord).toBeUndefined();
     expect(handCrafted.headWordForm).toBeUndefined();
@@ -3069,8 +3068,8 @@ describe("DictionaryView.searchWords", () => {
     const dictionary = new Dictionary();
     const phraseBook = new Phrases();
     const senseStore = new Senses();
-    const toyPoodle = createPhrase({ text: "toy poodle", partOfSpeech: PartOfSpeech.NOUN });
-    phraseBook.append(toyPoodle);
+    const toyPoodle = createPhrase({ text: "toy poodle" });
+    phraseBook.append(toyPoodle, PartOfSpeech.NOUN);
     const sense = createSense({ definition: { value: "a small breed of poodle" }, isCommon: true });
     senseStore.append(sense);
     senseStore.registerMember(sense, toyPoodle);
@@ -3115,7 +3114,7 @@ describe("DictionaryView.searchPhrases", () => {
     // capacity gate directly, without paying the cost of a real WordNet
     // seed just to get a Phrases this large.
     for (let i = 0; i < 20001; i++) {
-      phraseBook.append(createPhrase({ text: `phrase number ${i}`, partOfSpeech: PartOfSpeech.NOUN }));
+      phraseBook.append(createPhrase({ text: `phrase number ${i}` }), PartOfSpeech.NOUN);
     }
     const view = new DictionaryView(dictionary, new SemanticRelationshipStore(), { domainName: "Common", phrases: phraseBook });
 

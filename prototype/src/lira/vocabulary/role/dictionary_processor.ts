@@ -146,8 +146,8 @@ export class DictionaryProcessor {
    * casing to support. */
   private phraseIdentifications(normalisedText: string): readonly WordIdentifier[] {
     return this.phraseBook.lookupAll(normalisedText).map((phrase) => ({
-      word: toSyntheticWord(phrase),
-      partOfSpeech: phrase.partOfSpeech,
+      word: toSyntheticWord(phrase, this.phraseBook),
+      partOfSpeech: this.phraseBook.partOfSpeechOf(phrase)!,
       source: IdentificationSource.SEEDED_VOCABULARY,
       confidence: 1.0,
       reason: "Exact lexical-form and grammatical-category match in the seeded Phrase Book.",

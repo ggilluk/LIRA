@@ -5,9 +5,10 @@
  * verb.ts). Structure: "(Auxiliary verbs) + Main verb + (Particles) +
  * (Complements) + (Modifiers)" (PHRASE_TYPE_DETAILS[PhraseType.VERB_PHRASE],
  * data/enums/phrase_type.ts) -- example: "has learned the pattern". Distinct
- * from Phrase.partOfSpeech (PhraseType's own docstring on why the two
- * are kept apart), so this subtype narrows `phraseType` only, never
- * `partOfSpeech`.
+ * from the WordNet-tagged part of speech Phrases.partOfSpeechOf() reports
+ * for this Phrase (data/phrases.ts) (PhraseType's own docstring on why
+ * the two are kept apart), so this subtype narrows `phraseType` only,
+ * never that WordNet-tagged part of speech.
  *
  * Genuinely seeded today, not "declared before it's populated":
  * WordSeeder.seedWordNet's own classifyPhraseType() (role/word_seeder.ts)
@@ -67,8 +68,8 @@ export interface VerbPhrase extends Phrase {
   postModifiers: readonly VerbPhraseModifier[];
 }
 
-export type VerbPhraseInit = Pick<Phrase, "text" | "partOfSpeech"> &
-  Partial<Omit<Phrase, "text" | "partOfSpeech" | "phraseType" | "headWord" | "preModifiers" | "postModifiers">> & {
+export type VerbPhraseInit = Pick<Phrase, "text"> &
+  Partial<Omit<Phrase, "text" | "phraseType" | "headWord" | "preModifiers" | "postModifiers">> & {
     headWord?: Verb;
     preModifiers?: readonly VerbPhraseModifier[];
     postModifiers?: readonly VerbPhraseModifier[];

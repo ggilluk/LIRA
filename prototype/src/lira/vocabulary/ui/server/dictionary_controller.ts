@@ -238,7 +238,7 @@ export class DictionaryView {
         ? []
         : lexicalRelationshipRecords(this.lexicalRelationships, this.wordForms, this.dictionary, this.phrases, this.senses, this.domainName);
     const phrases = overCapacityPhrases ? [] : phraseRecords(this.phrases, this.senses, this.wordForms);
-    const senses = overCapacitySenses ? [] : senseRecords(this.senses, this.domainName);
+    const senses = overCapacitySenses ? [] : senseRecords(this.senses, this.phrases, this.domainName);
     const commonCount = allWords.filter((w) => w.isCommon).length;
     const posCounts = new Set(allWords.map((w) => w.partOfSpeech));
     // The Words tab's own pos-filter/domain-filter <select> options --
@@ -403,7 +403,7 @@ export class DictionaryView {
     senses: SenseRecord[];
     totalMatches: number;
   } {
-    return searchSenses(this.senses, this.domainName, options);
+    return searchSenses(this.senses, this.phrases, this.domainName, options);
   }
 
   searchRelationships(options: { wordId?: string; query?: string; limit?: number }): { relationships: RelationshipRecord[]; totalMatches: number } {
