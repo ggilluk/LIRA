@@ -4,19 +4,24 @@ import type { Code } from "./code";
  * (CCTS) Core Component Type catalogue (Layer Summary: Value Objects
  * Layer). Ported from value_objects/data/text.py.
  *
- * `languageCode`, `scriptCode`, `version`, and `formats` are this
- * prototype's own additions (no Python/spec equivalent) -- each one a
- * fact about this one specific text value (which language it's
- * written in, which script it's rendered in, which revision of it
- * this is, which spelling pattern it's expected to satisfy), not a
- * fact about whatever entity happens to hold it, so they live on the
- * value itself rather than on that entity -- one shared, reusable
- * shape any Text-typed field anywhere can opt into. `languageCode`
- * replaces the CCTS spec's own plain `languageID` supplementary
+ * `languageCode`, `scriptCode`, `dialectCode`, `version`, and `formats`
+ * are this prototype's own additions (no Python/spec equivalent) --
+ * each one a fact about this one specific text value (which language
+ * it's written in, which script it's rendered in, which regional/
+ * social variety it belongs to, which revision of it this is, which
+ * spelling pattern it's expected to satisfy), not a fact about
+ * whatever entity happens to hold it, so they live on the value
+ * itself rather than on that entity -- one shared, reusable shape any
+ * Text-typed field anywhere can opt into. `languageCode`/`dialectCode`
+ * replace the CCTS spec's own plain `languageID` supplementary
  * component with a full `Code` -- the same value object every other
- * language/script/list-scoped fact in this codebase already uses,
- * richer than a bare string when a caller needs it (a code list
- * identifier, a version of that list, ...).
+ * language/script/dialect/list-scoped fact in this codebase already
+ * uses (Pronunciation.dialectCode, vocabulary/data/pronunciation.ts,
+ * is this exact pattern one level down: a specific pronunciation
+ * variant's own dialect, distinct from a whole Word/Phrase's
+ * aggregate `dialectCodes` list), richer than a bare string when a
+ * caller needs it (a code list identifier, a version of that list,
+ * ...).
  *
  * `formats`: the regex pattern(s) this specific Text value's own
  * `value` is expected to satisfy (a Vocabulary Layer word-form Text,
@@ -33,6 +38,7 @@ export interface Text {
   value: string;
   languageCode?: Code;
   scriptCode?: Code;
+  dialectCode?: Code;
   version?: string;
   formats?: readonly string[];
 }
