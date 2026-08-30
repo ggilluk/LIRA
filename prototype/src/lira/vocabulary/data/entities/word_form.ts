@@ -12,7 +12,6 @@
  */
 
 import type { Code, Identifier, Number_, Text } from "../../../value_objects";
-import type { Pronunciation } from "../pronunciation";
 import type { WordFormField } from "../enums/word_forms_enum";
 
 export interface WordForm {
@@ -45,9 +44,6 @@ export interface WordForm {
 
   /** Spelling of this WordForm as it is conventionally written. */
   text: Text;
-
-  /** Every recorded pronunciation of this spelling. */
-  pronunciations: readonly Pronunciation[];
 
   /**
    * This spelling's own syllable breakdown.

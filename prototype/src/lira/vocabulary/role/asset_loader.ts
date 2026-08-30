@@ -50,7 +50,6 @@ export interface WordFileEntry {
   register_codes?: string[];
   editorial_labels?: string[];
   dialect_codes?: string[];
-  pronunciations?: unknown[];
   syllable_representation?: string | null;
   syllable_count?: number | null;
   stress_pattern?: string | null;

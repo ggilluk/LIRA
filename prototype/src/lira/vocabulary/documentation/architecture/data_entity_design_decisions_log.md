@@ -317,3 +317,38 @@ identifier to match the new `senseIds[0]` in the same pass (that method's
 own docstring on why this invariant matters and how it stays correct --
 the same reasoning applied before this change, just against a side index
 now instead of a field write).
+
+### `WordForm.pronunciations`: removed outright, not migrated
+
+`WordForm` originally carried `pronunciations: readonly Pronunciation[]`
+(`Pronunciation { notation: Text; value: Text; dialectCode?: Code }`,
+data/pronunciation.ts). Once `Text` itself grew `dialectCode` (the section
+above, and `Text`'s own docstring), `Pronunciation.dialectCode` became the
+same redundancy `version`/`languageCode`/`dialectCodes` already were on
+Word/Phrase -- a fact about one specific value (`Pronunciation.value`)
+duplicated as a sibling field instead of living on that value's own `Text`.
+
+Unlike that earlier migration, this one didn't fold `dialectCode` onto
+`Pronunciation.value` and keep the rest -- it deleted `Pronunciation`
+outright, along with `WordForm.pronunciations`, `WordFormAttributes`'s own
+`"pronunciations"` entry, and `WordFileEntry.pronunciations` (the wire
+schema field). The difference from the `version`/`languageCode`/
+`dialectCodes` case: those had real producers and consumers (the Common
+Vocabulary Cache, WordNet, the UI's own `dialect_codes` column) that
+needed their data preserved somewhere. `Pronunciation` had none, anywhere
+in this codebase -- confirmed directly: every real `pronunciations` array
+was always the hardcoded `[]` `createWordForm()` itself defaults to;
+nothing in `WordSeeder` ever read `WordFileEntry.pronunciations` into it
+(the wire field existed in the bundled JSON, unused, and everywhere
+`Pronunciation`'s own fields were reachable, the reachable value was
+always empty). Migrating a type nothing produces or consumes would just
+relocate dead code, not fix a redundancy with live data behind it, so it
+was removed instead. The bundled JSON assets still carry a `"pronunciations": []`
+key per entry -- left as-is; an unread key in a data file costs nothing,
+and touching every asset file for a key the loader was already ignoring
+would be a needless, higher-risk change for the same zero-behavior-change
+result. Re-adding real pronunciation data in the future should model it
+directly as one more `Text`-typed field/array on `WordForm` (carrying its
+own `languageCode`/`dialectCode` the same way `text` itself now can),
+rather than reintroducing a bespoke value object to hold what `Text`
+already expresses.

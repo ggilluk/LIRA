@@ -12,16 +12,16 @@ import type { Code } from "./code";
  * spelling pattern it's expected to satisfy), not a fact about
  * whatever entity happens to hold it, so they live on the value
  * itself rather than on that entity -- one shared, reusable shape any
- * Text-typed field anywhere can opt into. `languageCode`/`dialectCode`
- * replace the CCTS spec's own plain `languageID` supplementary
- * component with a full `Code` -- the same value object every other
- * language/script/dialect/list-scoped fact in this codebase already
- * uses (Pronunciation.dialectCode, vocabulary/data/pronunciation.ts,
- * is this exact pattern one level down: a specific pronunciation
- * variant's own dialect, distinct from a whole Word/Phrase's
- * aggregate `dialectCodes` list), richer than a bare string when a
- * caller needs it (a code list identifier, a version of that list,
- * ...).
+ * Text-typed field anywhere can opt into (Word/Phrase's own former
+ * top-level `version`/`languageCode`/`dialectCodes` fields, vocabulary/
+ * documentation/architecture/data_entity_design_decisions_log.md,
+ * folded onto their own `lexicalForm`/base-lemma-WordForm `Text` for
+ * exactly this reason). `languageCode`/`dialectCode` replace the CCTS
+ * spec's own plain `languageID` supplementary component with a full
+ * `Code` -- the same value object every other language/script/
+ * dialect/list-scoped fact in this codebase already uses, richer than
+ * a bare string when a caller needs it (a code list identifier, a
+ * version of that list, ...).
  *
  * `formats`: the regex pattern(s) this specific Text value's own
  * `value` is expected to satisfy (a Vocabulary Layer word-form Text,

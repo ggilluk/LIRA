@@ -2598,15 +2598,14 @@ export class WordSeeder {
       // practice for the identical reason (promoteWord() has no caller
       // anywhere in this codebase yet).
       dialect_codes: [],
-      pronunciations: [],
-      // Pronunciation/syllable/frequency attributes live on the base-
-      // lemma WordForm now (WordForm's own docstring, data/entities/word_form.ts),
-      // not on Word -- same "only ever receives a bare Word, with no
-      // store to resolve through" situation as the PAD fields just
-      // below, and just as moot in practice for the same reason
-      // (promoteWord() has no caller anywhere in this codebase yet).
-      // If that changes, whoever wires it up will need to thread a
-      // WordForms store through here too.
+      // syllable/frequency attributes live on the base-lemma WordForm
+      // now (WordForm's own docstring, data/entities/word_form.ts), not
+      // on Word -- same "only ever receives a bare Word, with no store
+      // to resolve through" situation as the PAD fields just below, and
+      // just as moot in practice for the same reason (promoteWord() has
+      // no caller anywhere in this codebase yet). If that changes,
+      // whoever wires it up will need to thread a WordForms store
+      // through here too.
       syllable_representation: null,
       syllable_count: null,
       stress_pattern: null,

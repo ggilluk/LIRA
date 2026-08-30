@@ -32,7 +32,6 @@ export type WordFormInit = Pick<WordForm, "field" | "text"> & Partial<Omit<WordF
 export type WordFormAttributes = Partial<
   Pick<
     WordForm,
-    | "pronunciations"
     | "syllableRepresentation"
     | "syllableCount"
     | "stressPattern"
@@ -45,7 +44,6 @@ export function createWordForm(init: WordFormInit): WordForm {
   return {
     senseIds: [],
     contractionOf: [],
-    pronunciations: [],
     // identifier()'s own auto-assigned `uuid` (value_objects/data/identifier.ts)
     // is this WordForm's own per-Domain identity -- Word/Sense's own
     // separate top-level `uuid` field, folded into `entryId` itself now
