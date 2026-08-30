@@ -12,6 +12,12 @@
 export { ValueObjectAgent } from "./agents";
 export { ValueObjectsLayer } from "./data/layer";
 export { type Code, code } from "./data/code";
+export {
+  IPA_CODE_LIST,
+  IPACategory,
+  type IPACode,
+  ipaCode,
+} from "./data/ipa_code_list";
 export { type Identifier, identifier } from "./data/identifier";
 export { type Number_, number } from "./data/number";
 export { type Text, text } from "./data/text";
