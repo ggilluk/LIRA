@@ -1,5 +1,5 @@
 /** Major sections of the official International Phonetic Alphabet chart. */
-export enum IPACategoryCodelist {
+export enum PronounciationCategoryCodelist {
   CONSONANT_PULMONIC = 0,
   CONSONANT_NON_PULMONIC = 1,
   OTHER_SYMBOL = 2,
