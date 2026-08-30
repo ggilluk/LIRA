@@ -12,9 +12,10 @@
 export { ValueObjectAgent } from "./agents";
 export { ValueObjectsLayer } from "./data/layer";
 export { type Code, code } from "./data/code";
+export { PronounciationCode } from "./data/code/pronounciationCode";
+export { PronounciationCategoryCode } from "./data/code/pronounciationCategoryCode";
 export {
   IPA_CODE_LIST,
-  IPACategory,
   type IPACode,
   ipaCode,
 } from "./data/ipa_code_list";
