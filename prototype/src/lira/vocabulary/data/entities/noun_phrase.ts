@@ -44,17 +44,15 @@
  * ModifierRole.COMPLEMENT itself is named ahead of any seeder that
  * assigns it.
  *
- * `headWord` narrows Phrase's own same-named field (data/phrase.ts's
- * own docstring on it, and on `unresolvedHeadWord`, the graph-reference
- * pointer this is distinct from) down to `Noun | Pronoun` -- this
- * subtype's own Head Identification Rule never resolves to any other
- * Word subtype (the "ModifierRole values valid within a NounPhrase" note
- * above, HEAD row). Genuinely populated today, for every real seeded
- * multi-word WordNet NounPhrase, by linkPhraseWords()
- * (role/processor/phrase_processor.ts) resolving `unresolvedHeadWord`
- * via `Dictionary.findByUuid()`; this narrowing exists so that
- * resolution can never assign a Verb/Adjective/Adverb/Preposition here
- * by mistake, whether populated by that pass or a future caller.
+ * `headWord` (data/phrase.ts's own docstring on it) is a graph-reference
+ * pointer, not narrowed to any Word subtype here the way `preModifiers`/
+ * `postModifiers` below are -- an `Identifier` carries no type of its
+ * own to narrow. For a real seeded NounPhrase it always resolves
+ * (`Dictionary.findByUuid()`) to a `Noun | Pronoun`: this subtype's own
+ * Head Identification Rule never resolves to any other Word subtype
+ * (the "ModifierRole values valid within a NounPhrase" note above, HEAD
+ * row). Genuinely populated today, for every real seeded multi-word
+ * WordNet NounPhrase, by linkPhraseWords() (role/processor/phrase_processor.ts).
  *
  * `preModifiers` narrows Phrase's own same-named field (data/phrase.ts's
  * own docstring on it) down to the exact constituent set
@@ -75,7 +73,6 @@
 import { PhraseType } from "../enums/phrase_type";
 import { createPhrase, type Phrase } from "../phrase";
 import type { Noun } from "./noun";
-import type { Pronoun } from "./pronoun";
 import type { Adjective } from "./adjective";
 import type { AdjectivePhrase } from "./adjective_phrase";
 import type { AdverbPhrase } from "./adverb_phrase";
@@ -86,14 +83,12 @@ type NounPhraseModifier = Adjective | AdjectivePhrase | Noun | NounPhrase | Adve
 
 export interface NounPhrase extends Phrase {
   phraseType: PhraseType.NOUN_PHRASE;
-  headWord: Noun | Pronoun;
   preModifiers: readonly NounPhraseModifier[];
   postModifiers: readonly NounPhraseModifier[];
 }
 
 export type NounPhraseInit = Pick<Phrase, "text"> &
-  Partial<Omit<Phrase, "text" | "phraseType" | "headWord" | "preModifiers" | "postModifiers">> & {
-    headWord?: Noun | Pronoun;
+  Partial<Omit<Phrase, "text" | "phraseType" | "preModifiers" | "postModifiers">> & {
     preModifiers?: readonly NounPhraseModifier[];
     postModifiers?: readonly NounPhraseModifier[];
   };

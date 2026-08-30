@@ -163,29 +163,27 @@ export interface Phrase extends LinguisticUnit {
 
   /**
    * The one entry of `words` whose matching `wordRoles` position holds
-   * ModifierRole.HEAD -- an unresolved graph-reference pointer, not
-   * the resolved Word entity itself (`headWord` below is that).
+   * ModifierRole.HEAD -- a graph-reference pointer, resolved against a
+   * Dictionary (`Dictionary.findByUuid()`) the same way any other entry
+   * of `words` is, not an embedded copy of the Word itself.
    *
-   * Undefined whenever `wordRoles` holds no HEAD position at all.
+   * Undefined whenever `wordRoles` holds no HEAD position at all, or
+   * for a Common Vocabulary Cache closed-class Phrase.
    */
-  unresolvedHeadWord?: Identifier;
+  headWord?: Identifier;
 
   /**
-   * `unresolvedHeadWord`'s own literal spelling as it actually appears
-   * in this Phrase's own `text`.
+   * The one WordForm (data/entities/word_form.ts), owned by `headWord`'s
+   * own resolved Word, whose own spelling exactly matches `headWord`'s
+   * literal occurrence in this Phrase's own `text` -- a graph-reference
+   * pointer, resolved against a WordForms store (`WordForms.findByUuid()`),
+   * not an embedded `Text` copy of the spelling itself.
    *
-   * Undefined under the exact same conditions `unresolvedHeadWord` is.
+   * Undefined whenever `headWord` is, and also whenever `headWord`'s own
+   * resolved Word carries no registered WordForm spelled exactly the way
+   * it appears here.
    */
-  headWordForm?: Text;
-
-  /**
-   * The Head's own resolved Word entity. Every `*_phrase.ts` subtype
-   * narrows this down to the specific Word subtype(s) its own Head
-   * Identification Rule allows.
-   *
-   * Undefined for a Common Vocabulary Cache closed-class Phrase.
-   */
-  headWord?: Word;
+  headWordForm?: Identifier;
 
   /**
    * This Phrase's own pre-Head modifying constituents. Every

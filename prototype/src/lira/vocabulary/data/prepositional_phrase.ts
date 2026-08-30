@@ -32,18 +32,17 @@
  * own docstring). Never set for a Common Vocabulary Cache closed-class
  * Phrase, which has no constituency-parsing pass of its own.
  *
- * `headWord` narrows Phrase's own same-named field (data/phrase.ts's
- * own docstring on it, and on `unresolvedHeadWord`, the graph-reference
- * pointer this is distinct from) down to `Preposition` --
+ * `headWord` (data/phrase.ts's own docstring on it) is a graph-reference
+ * pointer, not narrowed to any Word subtype here the way `preModifiers`/
+ * `postModifiers` below are -- an `Identifier` carries no type of its
+ * own to narrow. For a real seeded PrepositionalPhrase it always
+ * resolves (`Dictionary.findByUuid()`) to a `Preposition`:
  * PREPOSITIONAL_PHRASE's own Head Identification Rule never resolves to
  * any other Word subtype (data/phrase_type_patterns_and_word_roles.md's
  * own "Phrase Role Allowed Types" table, PrepositionalPhrase/HEAD row).
  * Genuinely populated today, for every real seeded multi-word WordNet
  * PrepositionalPhrase, by linkPhraseWords()
- * (role/processor/phrase_processor.ts) resolving `unresolvedHeadWord`
- * via `Dictionary.findByUuid()`; this narrowing exists so that
- * resolution can never assign a Noun/Verb/Adjective/Adverb here by
- * mistake.
+ * (role/processor/phrase_processor.ts).
  *
  * `preModifiers` narrows Phrase's own same-named field (data/phrase.ts's
  * own docstring on it) down to the exact constituent set
@@ -65,7 +64,6 @@
 
 import { PhraseType } from "./enums/phrase_type";
 import { createPhrase, type Phrase } from "./phrase";
-import type { Preposition } from "./entities/preposition";
 import type { Adverb } from "./entities/adverb";
 import type { AdverbPhrase } from "./entities/adverb_phrase";
 
@@ -73,14 +71,12 @@ type PrepositionalPhraseModifier = Adverb | AdverbPhrase;
 
 export interface PrepositionalPhrase extends Phrase {
   phraseType: PhraseType.PREPOSITIONAL_PHRASE;
-  headWord: Preposition;
   preModifiers: readonly PrepositionalPhraseModifier[];
   postModifiers: readonly PrepositionalPhraseModifier[];
 }
 
 export type PrepositionalPhraseInit = Pick<Phrase, "text"> &
-  Partial<Omit<Phrase, "text" | "phraseType" | "headWord" | "preModifiers" | "postModifiers">> & {
-    headWord?: Preposition;
+  Partial<Omit<Phrase, "text" | "phraseType" | "preModifiers" | "postModifiers">> & {
     preModifiers?: readonly PrepositionalPhraseModifier[];
     postModifiers?: readonly PrepositionalPhraseModifier[];
   };

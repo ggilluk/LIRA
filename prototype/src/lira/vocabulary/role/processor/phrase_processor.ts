@@ -4,7 +4,9 @@ import { PhraseType } from "../../data/enums/phrase_type";
 import type { Phrase } from "../../data/phrase";
 import type { Dictionary } from "../../data/dictionary";
 import type { Word } from "../../data/entities/word";
+import type { WordForms } from "../../data/word_forms";
 import { graphUuid as wordGraphUuid } from "../word_processor";
+import { graphUuid as wordFormGraphUuid } from "../word_form_processor";
 
 // classifyPhraseType()'s own closed class of single-word prepositions --
 // deliberately its own small, self-contained list rather than a read of
@@ -399,31 +401,36 @@ function nonHeadModifierRole(
  * instead (possiblePartsOfSpeech(), this module), since relying on one
  * arbitrary pick here would misidentify a phrase's own Head whenever
  * that pick happens to land on the wrong homograph (that function's own
- * docstring has the "give up" example). Derives
- * `phrase.unresolvedHeadWord`/`phrase.headWordForm` (data/phrase.ts's
- * own docstring on each) directly from the just-computed `wordRoles` --
- * whichever position (if any) holds ModifierRole.HEAD -- rather than
- * leaving every later caller to re-scan `wordRoles` for it themselves.
+ * docstring has the "give up" example). Derives `phrase.headWord`
+ * (data/phrase.ts's own docstring on it) directly from the
+ * just-computed `wordRoles` -- whichever position (if any) holds
+ * ModifierRole.HEAD -- rather than leaving every later caller to
+ * re-scan `wordRoles` for it themselves.
  *
- * Also resolves `phrase.headWord` (data/phrase.ts's own docstring on why
- * it's distinct from `unresolvedHeadWord`, the graph-reference pointer):
- * `dictionary.findByUuid()` against `unresolvedHeadWord`'s own value,
- * exactly the resolution that field's docstring already names as the
- * intended path. And `phrase.preModifiers`/`phrase.postModifiers`
- * (data/phrase.ts's own docstring on each, and every `*_phrase.ts`
- * subtype's own narrowing of them): every position holding
- * ModifierRole.MODIFIER that resolves to a real Word (`dictionary.
- * findByUuid()` again) goes into `preModifiers` when it sits before the
- * Head, `postModifiers` when after. Deliberately Word-only: the Phrase
- * Role Allowed Types table (data/phrase_type_patterns_and_word_roles.md)
- * also permits a MODIFIER to be a sub-phrase (AdjectivePhrase,
- * NounPhrase, AdverbPhrase, PrepositionalPhrase) or a Clause, but
- * nothing in this codebase performs constituency parsing *within* a
- * phrase's own text -- classifyModifierRoles() above only ever reasons
- * about flat whitespace tokens, never nested spans -- so a MODIFIER
- * token that resolves to a Phrase/Clause span rather than a single Word
- * is left out of both arrays rather than guessed at. */
-export function linkPhraseWords(phrase: Phrase, dictionary: Dictionary): void {
+ * Also resolves `phrase.headWordForm` (data/phrase.ts's own docstring
+ * on it): `headWord`'s own resolved Word (`dictionary.findByUuid()`)
+ * is looked up against `wordForms`, finding the one registered
+ * WordForm (if any) whose own spelling case-insensitively matches this
+ * Head's literal occurrence in `phrase.text` -- the same match
+ * `definitionWordSegment()` performs (ui/server/builder_segment.ts).
+ * `wordForms` is optional, matching every other seeding pass's own
+ * `Senses`/`WordForms` convention -- omitted, `headWordForm` stays
+ * undefined even when a Head was identified. And `phrase.preModifiers`/
+ * `phrase.postModifiers` (data/phrase.ts's own docstring on each, and
+ * every `*_phrase.ts` subtype's own narrowing of them): every position
+ * holding ModifierRole.MODIFIER that resolves to a real Word
+ * (`dictionary.findByUuid()` again) goes into `preModifiers` when it
+ * sits before the Head, `postModifiers` when after. Deliberately
+ * Word-only: the Phrase Role Allowed Types table
+ * (data/phrase_type_patterns_and_word_roles.md) also permits a
+ * MODIFIER to be a sub-phrase (AdjectivePhrase, NounPhrase,
+ * AdverbPhrase, PrepositionalPhrase) or a Clause, but nothing in this
+ * codebase performs constituency parsing *within* a phrase's own text
+ * -- classifyModifierRoles() above only ever reasons about flat
+ * whitespace tokens, never nested spans -- so a MODIFIER token that
+ * resolves to a Phrase/Clause span rather than a single Word is left
+ * out of both arrays rather than guessed at. */
+export function linkPhraseWords(phrase: Phrase, dictionary: Dictionary, wordForms?: WordForms): void {
   const tokens = phrase.text.trim().split(/\s+/).filter((token) => token.length > 0);
   phrase.words = tokens.map((token) => {
     const word = dictionary.lookup(token);
@@ -431,9 +438,12 @@ export function linkPhraseWords(phrase: Phrase, dictionary: Dictionary): void {
   });
   phrase.wordRoles = classifyModifierRoles(phrase.phraseType, tokens, dictionary);
   const headIndex = phrase.wordRoles.indexOf(ModifierRole.HEAD);
-  phrase.unresolvedHeadWord = headIndex === -1 ? undefined : phrase.words[headIndex];
-  phrase.headWordForm = headIndex === -1 ? undefined : { value: tokens[headIndex] };
-  phrase.headWord = phrase.unresolvedHeadWord === undefined ? undefined : dictionary.findByUuid(phrase.unresolvedHeadWord.value);
+  phrase.headWord = headIndex === -1 ? undefined : phrase.words[headIndex];
+  const headWordEntity = phrase.headWord === undefined ? undefined : dictionary.findByUuid(phrase.headWord.value);
+  const matchingForm = headWordEntity === undefined || wordForms === undefined
+    ? undefined
+    : wordForms.formsOf(headWordEntity).find((form) => form.text.value.toLowerCase() === tokens[headIndex].toLowerCase());
+  phrase.headWordForm = matchingForm === undefined ? undefined : { value: wordFormGraphUuid(matchingForm) };
 
   const preModifiers: Word[] = [];
   const postModifiers: Word[] = [];

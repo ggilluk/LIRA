@@ -120,15 +120,18 @@ export function phraseWordSegments(
 }
 
 /** `phrase.headWordForm`/`phrase.headWord` (data/phrase.ts's own
- * docstring on each), combined into one DefinitionSegment the same
- * way an individual entry of phraseWordSegments() above already is --
- * `undefined` when `phrase.headWordForm` itself is undefined (no Head
- * position was ever identified for this Phrase, phrase.ts's own
- * docstring on when that happens). Deliberately reuses
- * definitionWordSegment() rather than re-deriving the same word_id/
- * lexical_form/pos/domain/gloss shape by hand -- a Head Word is
- * exactly one more definition-style word reference, just singled out
- * instead of iterated in sequence. */
+ * docstring on each -- both graph-reference pointers now, resolved here
+ * against `wordForms`/`dictionary` respectively), combined into one
+ * DefinitionSegment the same way an individual entry of
+ * phraseWordSegments() above already is -- `undefined` when
+ * `phrase.headWordForm` itself is undefined, or when it fails to
+ * resolve against `wordForms` (no Head position was ever identified for
+ * this Phrase, or its Head's own resolved Word carries no WordForm
+ * spelled the way it appears here -- phrase.ts's own docstring on when
+ * each happens). Deliberately reuses definitionWordSegment() rather
+ * than re-deriving the same word_id/lexical_form/pos/domain/gloss shape
+ * by hand -- a Head Word is exactly one more definition-style word
+ * reference, just singled out instead of iterated in sequence. */
 export function phraseHeadWordSegment(
   phrase: Phrase,
   dictionary: Dictionary,
@@ -137,8 +140,10 @@ export function phraseHeadWordSegment(
   wordForms: WordForms,
 ): DefinitionSegment | undefined {
   if (phrase.headWordForm === undefined) return undefined;
-  const resolved = phrase.unresolvedHeadWord !== undefined ? dictionary.findByUuid(phrase.unresolvedHeadWord.value) : undefined;
-  return definitionWordSegment(phrase.headWordForm.value, resolved, senses, domainName, wordForms);
+  const form = wordForms.findByUuid(phrase.headWordForm.value);
+  if (form === undefined) return undefined;
+  const resolved = phrase.headWord !== undefined ? dictionary.findByUuid(phrase.headWord.value) : undefined;
+  return definitionWordSegment(form.text.value, resolved, senses, domainName, wordForms);
 }
 
 /** `phrase`'s own pre-Head and post-Head MODIFIER-role tokens

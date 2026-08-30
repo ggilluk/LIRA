@@ -1424,7 +1424,7 @@ export class WordSeeder {
     // constituent Words can be resolved with full Dictionary coverage --
     // linkPhraseWords()'s own docstring on why this can't happen
     // inline, above.
-    for (const phrase of newPhrases) linkPhraseWords(phrase, dictionary);
+    for (const phrase of newPhrases) linkPhraseWords(phrase, dictionary, wordForms);
 
     // senseIds accumulates in whatever order pass 1's own synset loop
     // above happened to visit each one -- byte-offset order within a

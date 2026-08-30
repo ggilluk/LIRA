@@ -276,6 +276,70 @@ today (nothing in the real cache or WordNet path ever populates more than
 zero), documented here as a deliberate, not accidental, narrowing should a
 future asset ever need more than one.
 
+### `headWord`/`headWordForm`: by-reference, not an embedded copy or a raw spelling
+
+Phrase originally carried two separate Head-related fields alongside the
+already-by-reference `unresolvedHeadWord?: Identifier`: `headWord?: Word`
+(the Head's own resolved Word, embedded directly on the Phrase -- a real
+object copy stored per-Domain, unlike every other structural field on
+Phrase, all of which already reference by uuid) and `headWordForm?: Text`
+(the Head's own literal spelling as it appears in this Phrase's own
+`text` -- a bare string value, never linked to any real `WordForm`
+entity). Both are now by-reference instead: `headWord?: Identifier`
+absorbs `unresolvedHeadWord`'s own former role outright (the two held the
+exact same value -- `unresolvedHeadWord` was always `words[wordRoles.indexOf(HEAD)]`,
+and `headWord` was always that same Identifier resolved via
+`Dictionary.findByUuid()` -- so keeping both was pure duplication once
+`headWord` itself became a reference), and `headWordForm?: Identifier` now
+points at the one real `WordForm` (data/entities/word_form.ts), owned by
+`headWord`'s own resolved Word, whose own spelling case-insensitively
+matches this Head's literal occurrence in `phrase.text` -- resolved via
+`WordForms.findByUuid()`, the same `WordForms`-store pattern
+`wordFormIds`/`baseLemmaFormOf()` already use elsewhere.
+
+`linkPhraseWords()` (role/processor/phrase_processor.ts) now takes an
+optional `wordForms: WordForms` parameter (matching every other seeding
+pass's own `Senses`/`WordForms` convention) to perform this match --
+`wordForms.formsOf(headWordEntity).find(form => form.text.value.toLowerCase()
+=== token.toLowerCase())`, exactly the match `definitionWordSegment()`
+(ui/server/builder_segment.ts) already performs when rendering any other
+word reference inside a definition, so a Head Word's own case-insensitive
+spelling match behaves identically to every other resolved word reference
+in the UI. `headWordForm` stays undefined whenever `wordForms` is omitted,
+or whenever the Head's own resolved Word carries no WordForm spelled
+exactly the way it appears in this Phrase (an inflected/irregular spelling
+this Phrase happens to use that was never separately registered) -- unlike
+the old field, which always held *some* raw text whenever a Head was
+identified at all, regardless of whether any WordForm existed to back it.
+This is a real, deliberate behavior narrowing (a reference can fail to
+resolve; a raw string copy never could), accepted because a `headWordForm`
+that resolves to nothing meaningful is no more useful to a caller than one
+that's simply absent.
+
+Every `*_phrase.ts` subtype (`noun_phrase.ts`, `verb_phrase.ts`,
+`adjective_phrase.ts`, `adverb_phrase.ts`, `prepositional_phrase.ts`) used
+to narrow `headWord` down to its own specific resolved Word subtype (e.g.
+`NounPhrase.headWord: Noun | Pronoun`) -- with `headWord` now an
+`Identifier`, an `Identifier` carries no type of its own to narrow, so
+each subtype's own field-level narrowing is gone; the same fact (which
+Word subtype(s) a real seeded Phrase of that PhraseType's Head always
+resolves to) is now documented in prose on each subtype's own docstring
+instead, unchanged in substance. `InfinitivePhrase` never narrowed
+`headWord` to begin with (an infinitive has no single Word POS subtype
+it mirrors), so it needed no change.
+
+`ui/server/builder_phrase.ts`'s `phraseHeadWordSegment()` -- the one real
+consumer -- now resolves both references before handing them to
+`definitionWordSegment()`: `wordForms.findByUuid(phrase.headWordForm.value)`
+for the WordForm's own spelling (`form.text.value`, the exact surface text
+`definitionWordSegment()` needs), `dictionary.findByUuid(phrase.headWord.value)`
+for the resolved Word. Verified end-to-end against real seeded WordNet
+data (Playwright, Phrases tab, "toy poodle"): the detail panel's own "Head
+Word" row renders "poodle" with a working tooltip (Noun · Common · Base
+Lemma Canonical Form: poodle), the identical rendering the old embedded-copy
+shape produced, confirming the by-reference resolution is behaviorally
+transparent to this UI.
+
 ## Sense
 
 ### `synsetId`: a side index, not a field, everywhere it appeared

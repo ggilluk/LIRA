@@ -24,18 +24,16 @@
  * Common Vocabulary Cache closed-class Phrase, which has no
  * constituency-parsing pass of its own.
  *
- * `headWord` narrows Phrase's own same-named field (data/phrase.ts's
- * own docstring on it, and on `unresolvedHeadWord`, the graph-reference
- * pointer this is distinct from) down to `Adjective` -- ADJECTIVE_PHRASE's
- * own Head Identification Rule never resolves to any other Word
- * subtype (data/phrase_type_patterns_and_word_roles.md's own "Phrase
- * Role Allowed Types" table, AdjectivePhrase/HEAD row). Genuinely
- * populated today, for every real seeded multi-word WordNet
- * AdjectivePhrase, by linkPhraseWords()
- * (role/processor/phrase_processor.ts) resolving `unresolvedHeadWord`
- * via `Dictionary.findByUuid()`; this narrowing exists so that
- * resolution can never assign a Noun/Verb/Adverb/Preposition here by
- * mistake.
+ * `headWord` (data/phrase.ts's own docstring on it) is a graph-reference
+ * pointer, not narrowed to any Word subtype here the way `preModifiers`/
+ * `postModifiers` below are -- an `Identifier` carries no type of its
+ * own to narrow. For a real seeded AdjectivePhrase it always resolves
+ * (`Dictionary.findByUuid()`) to an `Adjective`: ADJECTIVE_PHRASE's own
+ * Head Identification Rule never resolves to any other Word subtype
+ * (data/phrase_type_patterns_and_word_roles.md's own "Phrase Role
+ * Allowed Types" table, AdjectivePhrase/HEAD row). Genuinely populated
+ * today, for every real seeded multi-word WordNet AdjectivePhrase, by
+ * linkPhraseWords() (role/processor/phrase_processor.ts).
  *
  * `preModifiers` narrows Phrase's own same-named field (data/phrase.ts's
  * own docstring on it) down to the exact constituent set
@@ -55,7 +53,6 @@
 
 import { PhraseType } from "../enums/phrase_type";
 import { createPhrase, type Phrase } from "../phrase";
-import type { Adjective } from "./adjective";
 import type { Adverb } from "./adverb";
 import type { AdverbPhrase } from "./adverb_phrase";
 
@@ -63,14 +60,12 @@ type AdjectivePhraseModifier = Adverb | AdverbPhrase;
 
 export interface AdjectivePhrase extends Phrase {
   phraseType: PhraseType.ADJECTIVE_PHRASE;
-  headWord: Adjective;
   preModifiers: readonly AdjectivePhraseModifier[];
   postModifiers: readonly AdjectivePhraseModifier[];
 }
 
 export type AdjectivePhraseInit = Pick<Phrase, "text"> &
-  Partial<Omit<Phrase, "text" | "phraseType" | "headWord" | "preModifiers" | "postModifiers">> & {
-    headWord?: Adjective;
+  Partial<Omit<Phrase, "text" | "phraseType" | "preModifiers" | "postModifiers">> & {
     preModifiers?: readonly AdjectivePhraseModifier[];
     postModifiers?: readonly AdjectivePhraseModifier[];
   };

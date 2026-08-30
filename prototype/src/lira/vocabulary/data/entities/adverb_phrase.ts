@@ -27,17 +27,16 @@
  * positives). Never set for a Common Vocabulary Cache closed-class
  * Phrase, which has no constituency-parsing pass of its own.
  *
- * `headWord` narrows Phrase's own same-named field (data/phrase.ts's
- * own docstring on it, and on `unresolvedHeadWord`, the graph-reference
- * pointer this is distinct from) down to `Adverb` -- ADVERB_PHRASE's
- * own Head Identification Rule never resolves to any other Word
- * subtype (data/phrase_type_patterns_and_word_roles.md's own "Phrase
- * Role Allowed Types" table, AdverbPhrase/HEAD row). Genuinely
- * populated today, for every real seeded multi-word WordNet
- * AdverbPhrase, by linkPhraseWords() (role/processor/phrase_processor.ts)
- * resolving `unresolvedHeadWord` via `Dictionary.findByUuid()`; this
- * narrowing exists so that resolution can never assign a Noun/Verb/
- * Adjective/Preposition here by mistake.
+ * `headWord` (data/phrase.ts's own docstring on it) is a graph-reference
+ * pointer, not narrowed to any Word subtype here the way `preModifiers`/
+ * `postModifiers` below are -- an `Identifier` carries no type of its
+ * own to narrow. For a real seeded AdverbPhrase it always resolves
+ * (`Dictionary.findByUuid()`) to an `Adverb`: ADVERB_PHRASE's own Head
+ * Identification Rule never resolves to any other Word subtype
+ * (data/phrase_type_patterns_and_word_roles.md's own "Phrase Role
+ * Allowed Types" table, AdverbPhrase/HEAD row). Genuinely populated
+ * today, for every real seeded multi-word WordNet AdverbPhrase, by
+ * linkPhraseWords() (role/processor/phrase_processor.ts).
  *
  * `preModifiers` narrows Phrase's own same-named field (data/phrase.ts's
  * own docstring on it) down to the exact constituent set
@@ -64,14 +63,12 @@ type AdverbPhraseModifier = Adverb | AdverbPhrase;
 
 export interface AdverbPhrase extends Phrase {
   phraseType: PhraseType.ADVERB_PHRASE;
-  headWord: Adverb;
   preModifiers: readonly AdverbPhraseModifier[];
   postModifiers: readonly AdverbPhraseModifier[];
 }
 
 export type AdverbPhraseInit = Pick<Phrase, "text"> &
-  Partial<Omit<Phrase, "text" | "phraseType" | "headWord" | "preModifiers" | "postModifiers">> & {
-    headWord?: Adverb;
+  Partial<Omit<Phrase, "text" | "phraseType" | "preModifiers" | "postModifiers">> & {
     preModifiers?: readonly AdverbPhraseModifier[];
     postModifiers?: readonly AdverbPhraseModifier[];
   };
