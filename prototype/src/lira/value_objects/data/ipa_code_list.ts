@@ -1,4 +1,6 @@
 import type { Code } from "./code";
+import { PronounciationCode } from "./code/pronounciationCode";
+import { PronounciationCategoryCode } from "./code/pronounciationCategoryCode";
 
 /** Official International Phonetic Alphabet code-list metadata and entries.
  *
@@ -13,35 +15,19 @@ export const IPA_CODE_LIST = {
   listAgencyName: "International Phonetic Association",
 } as const;
 
-/** Major sections of the official IPA chart. */
-export enum IPACategory {
-  CONSONANT_PULMONIC = 0,
-  CONSONANT_NON_PULMONIC = 1,
-  OTHER_SYMBOL = 2,
-  VOWEL = 3,
-  DIACRITIC = 4,
-  SUPRASEGMENTAL = 5,
-  TONE_AND_WORD_ACCENT = 6,
-}
-
-/** One member of the International Phonetic Alphabet code list.
- *
- * `value` is the IPA symbol itself. `ipaNumber`, where the Association
- * assigns one, preserves the official IPA number rather than replacing it
- * with a LIRA-local identifier.
- */
+/** One member of the International Phonetic Alphabet code list. */
 export interface IPACode extends Code {
-  value: string;
+  value: PronounciationCode;
   ipaNumber?: string;
-  category: IPACategory;
+  category: PronounciationCategoryCode;
   unicodeCodePoints: string[];
   unicodeNames: string[];
 }
 
 /** Builds an IPA code-list member with the fixed code-list metadata. */
 export function ipaCode(
-  value: string,
-  category: IPACategory,
+  value: PronounciationCode,
+  category: PronounciationCategoryCode,
   unicodeCodePoints: string[],
   unicodeNames: string[],
   extra: Omit<IPACode, "value" | "category" | "unicodeCodePoints" | "unicodeNames" | "listId" | "listAgencyId" | "listAgencyName" | "listName"> = {},
