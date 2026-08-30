@@ -135,44 +135,92 @@ describe("PhraseType", () => {
 
 describe("classifyPhraseType", () => {
   const verbLemmas = new Set(["be", "begin", "boot", "date", "advantage"]);
+  // Every single-word NOUN-tagged lemma classifyDeterminerPhrase()'s own
+  // tests below need real Noun coverage for -- verbLemmas' own exact
+  // counterpart, built the identical way word_seeder.ts's own
+  // seedWordNet() builds it (from the synset list, not a live
+  // Dictionary -- classifyDeterminerPhrase()'s own docstring on why).
+  const nounLemmas = new Set(["bit", "few", "lot", "little", "deal", "trifle", "times", "couple", "capella", "carte", "mode"]);
 
   it("maps NOUN/VERB straight to NOUN_PHRASE/VERB_PHRASE, even when the lemma opens with a preposition-lookalike word", () => {
     // "down payment"/"near miss" are compound nouns (down/near modify
     // the head noun), not prepositional phrases -- the real reason
     // classifyPhraseType never applies the preposition check to NOUN.
-    expect(classifyPhraseType("down payment", PartOfSpeech.NOUN, verbLemmas)).toBe(PhraseType.NOUN_PHRASE);
-    expect(classifyPhraseType("toy poodle", PartOfSpeech.NOUN, verbLemmas)).toBe(PhraseType.NOUN_PHRASE);
+    expect(classifyPhraseType("down payment", PartOfSpeech.NOUN, verbLemmas, nounLemmas)).toBe(PhraseType.NOUN_PHRASE);
+    expect(classifyPhraseType("toy poodle", PartOfSpeech.NOUN, verbLemmas, nounLemmas)).toBe(PhraseType.NOUN_PHRASE);
     // "abide by"/"out in" are phrasal verbs -- still verb-headed.
-    expect(classifyPhraseType("abide by", PartOfSpeech.VERB, verbLemmas)).toBe(PhraseType.VERB_PHRASE);
-    expect(classifyPhraseType("out in", PartOfSpeech.VERB, verbLemmas)).toBe(PhraseType.VERB_PHRASE);
+    expect(classifyPhraseType("abide by", PartOfSpeech.VERB, verbLemmas, nounLemmas)).toBe(PhraseType.VERB_PHRASE);
+    expect(classifyPhraseType("out in", PartOfSpeech.VERB, verbLemmas, nounLemmas)).toBe(PhraseType.VERB_PHRASE);
   });
 
   it("reclassifies an ADJECTIVE/ADVERB lemma opening with a preposition as PREPOSITIONAL_PHRASE", () => {
-    expect(classifyPhraseType("at fault", PartOfSpeech.ADJECTIVE, verbLemmas)).toBe(PhraseType.PREPOSITIONAL_PHRASE);
-    expect(classifyPhraseType("out of print", PartOfSpeech.ADJECTIVE, verbLemmas)).toBe(PhraseType.PREPOSITIONAL_PHRASE);
-    expect(classifyPhraseType("by hand", PartOfSpeech.ADVERB, verbLemmas)).toBe(PhraseType.PREPOSITIONAL_PHRASE);
-    expect(classifyPhraseType("in the meantime", PartOfSpeech.ADVERB, verbLemmas)).toBe(PhraseType.PREPOSITIONAL_PHRASE);
+    expect(classifyPhraseType("at fault", PartOfSpeech.ADJECTIVE, verbLemmas, nounLemmas)).toBe(PhraseType.PREPOSITIONAL_PHRASE);
+    expect(classifyPhraseType("out of print", PartOfSpeech.ADJECTIVE, verbLemmas, nounLemmas)).toBe(PhraseType.PREPOSITIONAL_PHRASE);
+    expect(classifyPhraseType("by hand", PartOfSpeech.ADVERB, verbLemmas, nounLemmas)).toBe(PhraseType.PREPOSITIONAL_PHRASE);
+    expect(classifyPhraseType("in the meantime", PartOfSpeech.ADVERB, verbLemmas, nounLemmas)).toBe(PhraseType.PREPOSITIONAL_PHRASE);
   });
 
-  it("falls back to the plain POS-based mapping for ADJECTIVE/ADVERB lemmas that don't open with a preposition", () => {
-    expect(classifyPhraseType("Central American", PartOfSpeech.ADJECTIVE, verbLemmas)).toBe(PhraseType.ADJECTIVE_PHRASE);
-    expect(classifyPhraseType("a lot", PartOfSpeech.ADVERB, verbLemmas)).toBe(PhraseType.ADVERB_PHRASE);
+  it("falls back to the plain POS-based mapping for ADJECTIVE/ADVERB lemmas that don't open with a preposition or the indefinite article", () => {
+    expect(classifyPhraseType("Central American", PartOfSpeech.ADJECTIVE, verbLemmas, nounLemmas)).toBe(PhraseType.ADJECTIVE_PHRASE);
+    // "any longer" opens with a Determiner ("any"), just not the
+    // indefinite article classifyDeterminerPhrase() is deliberately
+    // scoped to (that function's own docstring on why) -- stays
+    // ADVERB_PHRASE regardless of nounLemmas' own contents.
+    expect(classifyPhraseType("any longer", PartOfSpeech.ADVERB, verbLemmas, nounLemmas)).toBe(PhraseType.ADVERB_PHRASE);
   });
 
   it("recognises a genuine infinitive (\"to\" + a real verb lemma) as INFINITIVE_PHRASE, ahead of the preposition check", () => {
-    expect(classifyPhraseType("to be sure", PartOfSpeech.ADVERB, verbLemmas)).toBe(PhraseType.INFINITIVE_PHRASE);
-    expect(classifyPhraseType("to begin with", PartOfSpeech.ADVERB, verbLemmas)).toBe(PhraseType.INFINITIVE_PHRASE);
+    expect(classifyPhraseType("to be sure", PartOfSpeech.ADVERB, verbLemmas, nounLemmas)).toBe(PhraseType.INFINITIVE_PHRASE);
+    expect(classifyPhraseType("to begin with", PartOfSpeech.ADVERB, verbLemmas, nounLemmas)).toBe(PhraseType.INFINITIVE_PHRASE);
   });
 
   it("does not mistake 'to' + a non-verb, or a denylisted to-lookalike, for an infinitive -- both fall through to PREPOSITIONAL_PHRASE", () => {
     // "a" isn't a verb -- "to a fault"/"to a T" are prepositional, not infinitival.
-    expect(classifyPhraseType("to a fault", PartOfSpeech.ADVERB, verbLemmas)).toBe(PhraseType.PREPOSITIONAL_PHRASE);
+    expect(classifyPhraseType("to a fault", PartOfSpeech.ADVERB, verbLemmas, nounLemmas)).toBe(PhraseType.PREPOSITIONAL_PHRASE);
     // "date"/"boot"/"advantage" ARE real WordNet verbs, but these three
     // specific lemmas are denylisted -- "to date"/"to boot"/"to
     // advantage" use "to" as a preposition, not an infinitive marker.
-    expect(classifyPhraseType("to date", PartOfSpeech.ADVERB, verbLemmas)).toBe(PhraseType.PREPOSITIONAL_PHRASE);
-    expect(classifyPhraseType("to boot", PartOfSpeech.ADVERB, verbLemmas)).toBe(PhraseType.PREPOSITIONAL_PHRASE);
-    expect(classifyPhraseType("to advantage", PartOfSpeech.ADVERB, verbLemmas)).toBe(PhraseType.PREPOSITIONAL_PHRASE);
+    expect(classifyPhraseType("to date", PartOfSpeech.ADVERB, verbLemmas, nounLemmas)).toBe(PhraseType.PREPOSITIONAL_PHRASE);
+    expect(classifyPhraseType("to boot", PartOfSpeech.ADVERB, verbLemmas, nounLemmas)).toBe(PhraseType.PREPOSITIONAL_PHRASE);
+    expect(classifyPhraseType("to advantage", PartOfSpeech.ADVERB, verbLemmas, nounLemmas)).toBe(PhraseType.PREPOSITIONAL_PHRASE);
+  });
+
+  it("reclassifies a WordNet-tagged ADJECTIVE/ADVERB lemma as NOUN_PHRASE when it's structurally a Determiner + Noun-quantifier (\"a bit\", \"a few\"), ahead of both the preposition and plain POS-based checks", () => {
+    // The reported bug: WordNet tags "a bit" ADVERB (its idiomatic
+    // function, "to a small degree") and "a few" ADJECTIVE ("a_few(a)")
+    // -- neither is headed by an Adverb/Adjective at all, so without
+    // this override "a bit" resolved no Head whatsoever (adverbPhraseHeadIndex
+    // -- linkPhraseWords()'s own docstring) and "a few" resolved the
+    // wrong PhraseType even though it did get a Head ("few" itself is
+    // also independently WordNet-tagged ADJECTIVE).
+    expect(classifyPhraseType("a bit", PartOfSpeech.ADVERB, verbLemmas, nounLemmas)).toBe(PhraseType.NOUN_PHRASE);
+    expect(classifyPhraseType("a few", PartOfSpeech.ADJECTIVE, verbLemmas, nounLemmas)).toBe(PhraseType.NOUN_PHRASE);
+    // Every other real bundled-data hit, verified by hand
+    // (classifyDeterminerPhrase()'s own docstring).
+    expect(classifyPhraseType("a lot", PartOfSpeech.ADVERB, verbLemmas, nounLemmas)).toBe(PhraseType.NOUN_PHRASE);
+    expect(classifyPhraseType("a little", PartOfSpeech.ADVERB, verbLemmas, nounLemmas)).toBe(PhraseType.NOUN_PHRASE);
+    expect(classifyPhraseType("a trifle", PartOfSpeech.ADVERB, verbLemmas, nounLemmas)).toBe(PhraseType.NOUN_PHRASE);
+    expect(classifyPhraseType("a good deal", PartOfSpeech.ADVERB, verbLemmas, nounLemmas)).toBe(PhraseType.NOUN_PHRASE);
+    expect(classifyPhraseType("a hundred times", PartOfSpeech.ADVERB, verbLemmas, nounLemmas)).toBe(PhraseType.NOUN_PHRASE);
+    expect(classifyPhraseType("a couple of", PartOfSpeech.ADJECTIVE, verbLemmas, nounLemmas)).toBe(PhraseType.NOUN_PHRASE);
+  });
+
+  it("does not mistake a Latin/French loan phrase for a Determiner Phrase merely because a later token happens to also be an unrelated Noun homograph", () => {
+    // "capella"/"carte"/"mode" are all real, independent WordNet Nouns
+    // (a star; a menu; a fashion) -- coincidentally, not because "a
+    // capella"/"a la carte"/"a la mode" are genuinely Determiner
+    // Phrases (classifyDeterminerPhrase()'s own docstring on why these
+    // three, specifically, are denylisted by hand). Each falls through
+    // to the plain POS-based mapping instead.
+    expect(classifyPhraseType("a capella", PartOfSpeech.ADJECTIVE, verbLemmas, nounLemmas)).toBe(PhraseType.ADJECTIVE_PHRASE);
+    expect(classifyPhraseType("a capella", PartOfSpeech.ADVERB, verbLemmas, nounLemmas)).toBe(PhraseType.ADVERB_PHRASE);
+    expect(classifyPhraseType("a la carte", PartOfSpeech.ADJECTIVE, verbLemmas, nounLemmas)).toBe(PhraseType.ADJECTIVE_PHRASE);
+    expect(classifyPhraseType("a la mode", PartOfSpeech.ADVERB, verbLemmas, nounLemmas)).toBe(PhraseType.ADVERB_PHRASE);
+    // "a cappella" (double-p spelling) and "a fortiori"/"a posteriori"/
+    // "a priori" need no denylist entry at all -- none of their own
+    // remaining tokens resolves a real Noun in the first place.
+    expect(classifyPhraseType("a cappella", PartOfSpeech.ADVERB, verbLemmas, nounLemmas)).toBe(PhraseType.ADVERB_PHRASE);
+    expect(classifyPhraseType("a priori", PartOfSpeech.ADJECTIVE, verbLemmas, nounLemmas)).toBe(PhraseType.ADJECTIVE_PHRASE);
   });
 });
 

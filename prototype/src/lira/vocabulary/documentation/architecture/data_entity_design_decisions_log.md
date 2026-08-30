@@ -340,7 +340,79 @@ Lemma Canonical Form: poodle), the identical rendering the old embedded-copy
 shape produced, confirming the by-reference resolution is behaviorally
 transparent to this UI.
 
-## Sense
+### `classifyDeterminerPhrase()`: "a bit"/"a few" as NOUN_PHRASE, not their WordNet-tagged function
+
+Reported bug: "a bit" and "a few" weren't recognised as NounPhrases.
+`classifyPhraseType()` (role/processor/phrase_processor.ts) trusted
+WordNet's own synset tag for the *whole* multi-word lemma with only two
+structural overrides ahead of it (PREPOSITIONAL_PHRASE, INFINITIVE_PHRASE)
+-- neither applied here, so each fell straight through to the POS-based
+switch keyed on the idiomatic *function* WordNet tagged it by, not its
+actual *structure*. WordNet tags "a bit" ADVERB ("to a small degree"), so
+it became ADVERB_PHRASE -- and since neither "a" nor "bit" is
+Adverb-capable, `adverbPhraseHeadIndex` found no Head at all (confirmed
+directly: `wordRoles = [DETERMINER, undefined]`, `headWord`/`headWordForm`
+both stayed undefined). WordNet tags "a few" ADJECTIVE (`a_few(a)`'s own
+satellite synset), so it became ADJECTIVE_PHRASE -- and did resolve a Head
+("few" is independently WordNet-tagged ADJECTIVE too), just the wrong
+PhraseType. Both are structurally `Determiner + Noun-quantifier` --
+literally NOUN_PHRASE's own documented shape, `"(Determiner) +
+(Modifiers) + Noun/Pronoun + (Complements)"`.
+
+Fixed with a new `classifyDeterminerPhrase(tokens, lemma, nounLemmas)`
+check in the identical "structural override ahead of the POS-based
+switch" slot the PREPOSITIONAL_PHRASE/INFINITIVE_PHRASE checks already
+occupy: `tokens[0]` is the indefinite article ("a"/"an") and a real Noun
+resolves among the remaining tokens -- routes to NOUN_PHRASE. No new
+PhraseType was added for this (a "Determiner Phrase" enum value) -- the
+enum is fixed at six categories, numerically mirrored by Linguistics' own
+PhraseType (enums/phrase_type.ts's own docstring), and this fits
+NOUN_PHRASE's existing shape exactly.
+
+`nounLemmas` is `verbLemmas`'s own exact counterpart (the pre-existing set
+INFINITIVE_PHRASE's own check already builds) -- every single-word
+NOUN-tagged lemma across the whole synset list, built once up front by
+`seedWordNet()` before pass 1 runs, *not* a live `Dictionary` lookup:
+exactly the same reason `verbLemmas` isn't a `dictionary.lookup()` check
+either (that field's own pre-existing docstring) -- a Phrase like "a bit"
+can be processed before the standalone "bit" synset, in whatever order
+`loadWordNetSynsets()` itself returns, so a live Dictionary lookup would
+give a different, seeding-order-dependent answer. `classifyPhraseType()`
+itself gained a fourth `nounLemmas: ReadonlySet<string>` parameter for
+this; `synsetMemberToPhrase()` (word_seeder.ts, its own one real call
+site) threads it through the same way it already threads `verbLemmas`.
+
+Deliberately scoped to the indefinite article ("a"/"an") alone, not the
+full `PHRASE_TYPE_DETERMINERS` set `classifyModifierRoles()` uses --
+verified directly against every real bundled ADJECTIVE/ADVERB multi-word
+lemma opening with any of those determiners (not guessed): broadening to
+"all"/"every"/"each"/"the"/"many"/"that"/"what" would pull in over a
+dozen further idioms ("all right", "all over", "that is to say", "every
+last", "many a") whose own remaining tokens likewise happen to resolve an
+unrelated, obscure Noun homograph purely by coincidence -- "right"'s
+civil-rights sense, "over"'s cricket-innings sense, "in"'s Indiana-postal-
+abbreviation sense, "say"'s "have your say" sense, even "a"/"an"
+themselves (a unit-symbol/letter-name sense) -- not because the idiom is
+genuinely headed by a noun. Correctly separating those false positives
+from the genuine hits among the same broader set ("every week", "each
+year", "this evening", "all the time") would need real per-idiom
+judgement this fix doesn't attempt; "a"/"an" alone stays a small, clean,
+real closed set instead, where every hit enumerated against the bundled
+data is a genuine Determiner + Noun-quantifier construction: "a bit", "a
+little", "a lot", "a trifle", "a good/great deal", "a hundred/million
+times", "a couple of", "a few".
+
+Within that "a"/"an" scope, three lookalikes needed a hand-verified
+denylist (`DETERMINER_PHRASE_LOOKALIKE_DENYLIST`, the identical shape
+`INFINITIVE_LOOKALIKE_DENYLIST` already has): "a capella"/"a la
+carte"/"a la mode" are Latin/French loans where "a" isn't the English
+article at all, but each happens to contain a token with an unrelated,
+independently-real WordNet Noun -- "Capella" the star, "carte"/"mode" the
+common nouns (verified directly: `index.noun` lists all three). "a
+cappella" (double-p) and "a fortiori"/"a posteriori"/"a priori" need no
+denylist entry -- none of their own remaining tokens resolves a real Noun
+in the first place, so `classifyDeterminerPhrase()` already excludes them
+on its own.
 
 ### `synsetId`: a side index, not a field, everywhere it appeared
 

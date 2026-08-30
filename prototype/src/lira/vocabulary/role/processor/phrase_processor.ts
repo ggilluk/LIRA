@@ -53,6 +53,56 @@ const PHRASE_TYPE_PREPOSITIONS: ReadonlySet<string> = new Set([
 // cases: "to" + NP is exactly what these are structurally).
 const INFINITIVE_LOOKALIKE_DENYLIST: ReadonlySet<string> = new Set(["to advantage", "to boot", "to date"]);
 
+// classifyDeterminerPhrase()'s own small denylist of "a "-led lemmas
+// whose second token happens to also be a real single-word WordNet Noun
+// lemma (Capella the star; carte/mode inside the three-token "a la "
+// idioms), but which are genuinely NOT Determiner Phrases -- "a
+// capella"/"a la carte"/"a la mode" are Latin/French loans where "a"
+// isn't the English indefinite article at all, unlike the genuine
+// Determiner Phrases they'd otherwise be indistinguishable from by the
+// nounLemmas check alone ("a bit", "a lot"). Found by enumerating every
+// "a "-led multi-word ADJECTIVE/ADVERB lemma in the bundled dict/ files
+// and checking each by hand -- 3 false positives out of 10 candidates
+// whose own tail resolves a real Noun ("a cappella"/"a fortiori"/
+// "a posteriori"/"a priori" have no Noun-lexicalized token at all, so
+// they're already excluded without needing a denylist entry). A lemma
+// denylisted here still gets classified, just via classifyPhraseType's
+// own plain POS-based default instead (correctly, in all three cases --
+// none is genuinely headed by a noun).
+const DETERMINER_PHRASE_LOOKALIKE_DENYLIST: ReadonlySet<string> = new Set(["a capella", "a la carte", "a la mode"]);
+
+/** True when `lemma` is structurally a Determiner Phrase -- the English
+ * indefinite article ("a"/"an") followed by a real Noun-quantifier Head
+ * ("a bit", "a few", "a lot") -- even though WordNet tags the phrase as
+ * a whole by the idiomatic *function* it serves (a degree adverb, a
+ * plain adjective), not by this internal *structure*, the identical
+ * mismatch the PREPOSITIONAL_PHRASE check in classifyPhraseType() below
+ * already corrects for. `nounLemmas` is `verbLemmas`'s own exact
+ * counterpart (classifyPhraseType()'s own docstring on why a Dictionary
+ * lookup can't be used here) -- every single-word NOUN-tagged lemma
+ * across the whole synset list, built once up front by the same caller.
+ *
+ * Deliberately scoped to "a"/"an" alone, not the full
+ * PHRASE_TYPE_DETERMINERS set classifyModifierRoles() below uses --
+ * verified directly against the bundled dict/ files: broadening to
+ * "all"/"every"/"each"/"the"/"many"/"that"/"what" pulls in over a dozen
+ * further idioms ("all right", "all over", "that is to say", "every
+ * last", "many a") whose own remaining tokens likewise happen to resolve
+ * an unrelated, obscure Noun homograph ("right"'s civil-rights sense,
+ * "over"'s cricket-innings sense, "say"'s "have your say" sense) purely
+ * by coincidence, not because the idiom is genuinely headed by a noun --
+ * correctly separating those from the genuine hits among them ("every
+ * week", "each year", "this evening") would need real per-idiom
+ * judgement this function doesn't attempt. "a"/"an" alone stays a clean,
+ * small, real closed set instead: every hit is a genuine Determiner +
+ * Noun-quantifier construction, and DETERMINER_PHRASE_LOOKALIKE_DENYLIST
+ * above hand-covers its own three lookalikes exhaustively. */
+function classifyDeterminerPhrase(tokens: readonly string[], lemma: string, nounLemmas: ReadonlySet<string>): boolean {
+  if (tokens.length < 2 || (tokens[0] !== "a" && tokens[0] !== "an")) return false;
+  if (DETERMINER_PHRASE_LOOKALIKE_DENYLIST.has(lemma.toLowerCase())) return false;
+  return tokens.slice(1).some((token) => nounLemmas.has(token));
+}
+
 /** Chooses this multi-word `lemma`'s PhraseType from its own words and
  * `partOfSpeech` (already WordNet's own ss_type-derived classification,
  * synsetMemberToPhrase's own caller, role/word_seeder.ts) -- devised by
@@ -78,10 +128,15 @@ const INFINITIVE_LOOKALIKE_DENYLIST: ReadonlySet<string> = new Set(["to advantag
  *   ADJECTIVE because that's the *function* they serve (predicate/
  *   attributive), but their internal *structure* is Preposition + NP,
  *   exactly PhraseType's own PREPOSITIONAL_PHRASE shape, checked ahead
- *   of the POS-based default.
- * - ADVERB (~695 unique): the same pattern, more pronounced -- over half
- *   open with a preposition ("above all", "by hand", "in the meantime"),
- *   checked the same way before falling back to ADVERB_PHRASE.
+ *   of the POS-based default. A handful more ("a few", "a couple of")
+ *   are Determiner Phrases instead, checked the same structural way --
+ *   classifyDeterminerPhrase()'s own docstring.
+ * - ADVERB (~695 unique): the same PREPOSITIONAL_PHRASE pattern, more
+ *   pronounced -- over half open with a preposition ("above all", "by
+ *   hand", "in the meantime"). A further handful ("a bit", "a lot", "a
+ *   little", "a trifle", "a good/great deal", "a hundred/million times")
+ *   are Determiner Phrases WordNet tagged by their idiomatic function as
+ *   degree adverbs -- classifyDeterminerPhrase() below.
  * - INFINITIVE_PHRASE has no WordNet ss_type of its own to key off at
  *   all (there's no "infinitive" synset category) -- every genuine case
  *   found ("to be sure", "to begin with") is WordNet-tagged ADVERB, so
@@ -95,10 +150,18 @@ const INFINITIVE_LOOKALIKE_DENYLIST: ReadonlySet<string> = new Set(["to advantag
  * assigns to a multi-word lemma (PRONOUN, DETERMINER, ...) -- dead code
  * against real WordNet data today, kept only so this function has a
  * total, rather than partial, mapping over PartOfSpeech. */
-export function classifyPhraseType(lemma: string, partOfSpeech: PartOfSpeech, verbLemmas: ReadonlySet<string>): PhraseType | undefined {
+export function classifyPhraseType(
+  lemma: string,
+  partOfSpeech: PartOfSpeech,
+  verbLemmas: ReadonlySet<string>,
+  nounLemmas: ReadonlySet<string>,
+): PhraseType | undefined {
   const tokens = lemma.trim().toLowerCase().split(/\s+/);
   if (tokens[0] === "to" && tokens.length > 1 && verbLemmas.has(tokens[1]) && !INFINITIVE_LOOKALIKE_DENYLIST.has(lemma.toLowerCase())) {
     return PhraseType.INFINITIVE_PHRASE;
+  }
+  if (classifyDeterminerPhrase(tokens, lemma, nounLemmas)) {
+    return PhraseType.NOUN_PHRASE;
   }
   if (
     (partOfSpeech === PartOfSpeech.ADJECTIVE || partOfSpeech === PartOfSpeech.ADVERB) &&

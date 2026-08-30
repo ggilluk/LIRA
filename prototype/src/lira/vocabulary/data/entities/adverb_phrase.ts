@@ -21,9 +21,13 @@
  * first, and for the "to " + real-verb-lemma INFINITIVE_PHRASE shape
  * before that (every genuine WordNet infinitive -- "to be sure", "to
  * begin with" -- happens to be tagged ADVERB, since there's no
- * "infinitive" ss_type of its own), before falling back to this class
- * for the rest (that function's own docstring, including its own
- * three-entry denylist of "to date"/"to boot"/"to advantage" false
+ * "infinitive" ss_type of its own), and for the Determiner + Noun-
+ * quantifier DETERMINER_PHRASE shape too ("a bit", "a lot", "a little",
+ * "a trifle", "a good/great deal", "a hundred/million times" --
+ * classifyDeterminerPhrase(), role/processor/phrase_processor.ts --
+ * reclassified as NOUN_PHRASE, not this class), before falling back to
+ * this class for the rest (that function's own docstring, including its
+ * own three-entry denylist of "to date"/"to boot"/"to advantage" false
  * positives). Never set for a Common Vocabulary Cache closed-class
  * Phrase, which has no constituency-parsing pass of its own.
  *

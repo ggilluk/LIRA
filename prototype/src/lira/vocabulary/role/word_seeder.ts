@@ -1272,18 +1272,24 @@ export class WordSeeder {
     let relationshipsSeeded = 0;
 
     const synsets = await loadWordNetSynsets();
-    // classifyPhraseType()'s own INFINITIVE_PHRASE check -- every
-    // single-word VERB-tagged lemma across the whole dataset, lower-
-    // cased, built once up front rather than per-Phrase: this is the
-    // exact same synset list pass 1 is about to walk, so there's no
-    // Dictionary-population-order dependency to worry about (unlike a
-    // `dictionary.lookup()` check, which would give a different answer
-    // depending on whether "begin" happened to be seeded yet).
+    // classifyPhraseType()'s own INFINITIVE_PHRASE/Determiner Phrase
+    // checks -- every single-word VERB-tagged/NOUN-tagged lemma across
+    // the whole dataset, lower-cased, built once up front rather than
+    // per-Phrase: this is the exact same synset list pass 1 is about to
+    // walk, so there's no Dictionary-population-order dependency to
+    // worry about (unlike a `dictionary.lookup()` check, which would
+    // give a different answer depending on whether "begin"/"bit"
+    // happened to be seeded yet -- a Phrase like "a bit" can be
+    // processed before the standalone "bit" synset, in whatever order
+    // loadWordNetSynsets() itself returns, `newPhrases`'s own docstring
+    // below on the identical hazard for linkPhraseWords()).
     const verbLemmas = new Set<string>();
+    const nounLemmas = new Set<string>();
     for (const synset of synsets) {
-      if (synset.partOfSpeech !== PartOfSpeech.VERB) continue;
+      if (synset.partOfSpeech !== PartOfSpeech.VERB && synset.partOfSpeech !== PartOfSpeech.NOUN) continue;
+      const target = synset.partOfSpeech === PartOfSpeech.VERB ? verbLemmas : nounLemmas;
       for (const lemma of synset.lemmas) {
-        if (!isMultiWordLemma(lemma)) verbLemmas.add(lemma.toLowerCase());
+        if (!isMultiWordLemma(lemma)) target.add(lemma.toLowerCase());
       }
     }
     const synsetMembersById = new Map<string, Array<Word | Phrase>>();
@@ -1349,7 +1355,7 @@ export class WordSeeder {
           if (existingPhrase !== undefined) {
             phrase = existingPhrase;
           } else {
-            phrase = this.synsetMemberToPhrase(synset, lemma, verbLemmas);
+            phrase = this.synsetMemberToPhrase(synset, lemma, verbLemmas, nounLemmas);
             phraseBook.append(phrase, synset.partOfSpeech, { value: synset.synsetId, ...WORDNET_SYNSET_ID_SCHEME });
             newPhrases.push(phrase);
             wordsSeeded += 1;
@@ -2245,7 +2251,7 @@ export class WordSeeder {
    * matching data/*_phrase.ts constructor, the same "every PhraseType
    * gets its own narrowed subtype" mirror data/entities/noun.ts and its four
    * siblings already are for Word. */
-  private synsetMemberToPhrase(synset: WordNetSynset, lemma: string, verbLemmas: ReadonlySet<string>): Phrase {
+  private synsetMemberToPhrase(synset: WordNetSynset, lemma: string, verbLemmas: ReadonlySet<string>, nounLemmas: ReadonlySet<string>): Phrase {
     const shared = {
       text: lemma,
       // languageCode lives on lexicalForm now (Phrase.lexicalForm's own
@@ -2257,7 +2263,7 @@ export class WordSeeder {
       isCommon: true,
       sourceReferences: [WORDNET_SOURCE_REFERENCE],
     };
-    switch (classifyPhraseType(lemma, synset.partOfSpeech, verbLemmas)) {
+    switch (classifyPhraseType(lemma, synset.partOfSpeech, verbLemmas, nounLemmas)) {
       case PhraseType.NOUN_PHRASE:
         return createNounPhrase(shared);
       case PhraseType.VERB_PHRASE:

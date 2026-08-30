@@ -22,9 +22,14 @@
  * poodle"), including the ~50 that happen to share a leading word with
  * classifyPhraseType's own preposition set ("down payment", "near
  * miss") without actually being prepositional in structure (that
- * function's own docstring). Never set for a Common Vocabulary Cache
- * closed-class Phrase, which has no constituency-parsing pass of its
- * own.
+ * function's own docstring). A further handful of WordNet-tagged
+ * ADJECTIVE/ADVERB lemmas also land here -- genuine Determiner +
+ * Noun-quantifier constructions WordNet tags by the idiomatic function
+ * they serve rather than their own internal structure ("a bit", "a
+ * few", "a lot"), reclassified the same structural-override way
+ * classifyDeterminerPhrase() (role/processor/phrase_processor.ts)
+ * corrects for. Never set for a Common Vocabulary Cache closed-class
+ * Phrase, which has no constituency-parsing pass of its own.
  *
  * ModifierRole values valid within a NounPhrase (data/enums/modifier_role.ts),
  * matching the structure above one-for-one -- Determiner, Modifier,

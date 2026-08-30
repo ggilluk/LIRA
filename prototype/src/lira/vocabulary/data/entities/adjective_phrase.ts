@@ -20,9 +20,13 @@
  * ADJECTIVE because that's the function they serve, but their internal
  * structure is Preposition + NP, so classifyPhraseType() checks for
  * that PREPOSITIONAL_PHRASE shape first and only falls back to this
- * class for the rest (that function's own docstring). Never set for a
- * Common Vocabulary Cache closed-class Phrase, which has no
- * constituency-parsing pass of its own.
+ * class for the rest (that function's own docstring). A couple more
+ * ("a few", "a couple of") are Determiner + Noun-quantifier
+ * constructions instead, checked the same structural way
+ * (classifyDeterminerPhrase(), role/processor/phrase_processor.ts) and
+ * reclassified as NOUN_PHRASE, not this class. Never set for a Common
+ * Vocabulary Cache closed-class Phrase, which has no constituency-parsing
+ * pass of its own.
  *
  * `headWord` (data/phrase.ts's own docstring on it) is a graph-reference
  * pointer, not narrowed to any Word subtype here the way `preModifiers`/
