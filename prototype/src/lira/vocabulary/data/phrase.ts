@@ -11,7 +11,7 @@
  * for the design history behind this shape.
  */
 
-import { identifier, type Code, type Identifier, type Text } from "../../value_objects";
+import { identifier, type Identifier, type Text } from "../../value_objects";
 import type { Clause } from "../../linguistics/data/clause";
 import type { LinguisticUnit } from "../../linguistics/data/linguistic_unit";
 import type { EditorialLabel } from "./enums/editorial_label";
@@ -64,13 +64,16 @@ export interface Phrase extends LinguisticUnit {
 
   // ── Data Attributes ──────────────────────────────────────
 
-  /** Version of this Phrase's own record. */
-  version: Text;
-
-  /** Language this Phrase is defined in. */
-  languageCode: Code;
-
-  /** This Phrase's own canonical written form. */
+  /**
+   * This Phrase's own canonical written form.
+   *
+   * Carries this Phrase's own version/language/dialect, on `Text`'s own
+   * `version`/`languageCode`/`dialectCode` supplementary components
+   * (value_objects/data/text.ts's own docstring) -- a Phrase has no
+   * top-level `version`/`languageCode`/`dialectCodes` fields of its own
+   * for those to duplicate: each is a fact about one specific wording,
+   * not about the Phrase as a whole (data_entity_design_decisions_log.md).
+   */
   lexicalForm?: Text;
 
   /** This Phrase's own normalised (lower-cased) written form. */
@@ -87,9 +90,6 @@ export interface Phrase extends LinguisticUnit {
 
   /** Registers of use this Phrase is associated with. */
   registerCodes: readonly RegisterCode[];
-
-  /** Dialects this Phrase is associated with. */
-  dialectCodes: readonly Code[];
 
   /** Editorial labels applying to this Phrase. */
   editorialLabels: readonly EditorialLabel[];
@@ -211,7 +211,6 @@ export function createPhrase(init: PhraseInit): Phrase {
   const phrase: Phrase = {
     usageNotes: [],
     registerCodes: [],
-    dialectCodes: [],
     editorialLabels: [],
     sourceReferences: [],
     relatedDomainTags: [],
@@ -220,8 +219,6 @@ export function createPhrase(init: PhraseInit): Phrase {
     senseIds: [],
     isCommon: false,
     entryId: init.entryId ?? identifier(newUuid()),
-    version: init.version ?? { value: "1.0" },
-    languageCode: init.languageCode ?? { value: "en" },
     ...init,
   };
   if (phrase.lexicalForm === undefined) phrase.lexicalForm = { value: phrase.text };
@@ -258,7 +255,6 @@ export function toSyntheticWord(phrase: Phrase, phrases: Phrases): Word {
     gloss: phrase.gloss,
     usageNotes: phrase.usageNotes,
     registerCodes: phrase.registerCodes,
-    dialectCodes: phrase.dialectCodes,
     editorialLabels: phrase.editorialLabels,
     sourceReferences: phrase.sourceReferences,
     isCommon: phrase.isCommon,
@@ -280,14 +276,17 @@ export function phraseAsWord(phrase: Phrase, phrases: Phrases, wordForms?: WordF
     gloss: phrase.gloss,
     usageNotes: phrase.usageNotes,
     registerCodes: phrase.registerCodes,
-    dialectCodes: phrase.dialectCodes,
     editorialLabels: phrase.editorialLabels,
     sourceReferences: phrase.sourceReferences,
     isCommon: phrase.isCommon,
     domainTag: phrase.domainTag,
     relatedDomainTags: phrase.relatedDomainTags,
   });
-  const form = wordForms?.registerBaseLemmaForm(word, undefined, { synsetId: phrase.synsetId });
+  // Passes phrase.lexicalForm straight through as this synthetic Word's
+  // own base-lemma WordForm text -- the same rich Text (language/
+  // dialect/version) the Phrase itself carries, not a bare `{value:
+  // word.text}` default that would silently drop it.
+  const form = wordForms?.registerBaseLemmaForm(word, phrase.lexicalForm, { synsetId: phrase.synsetId });
   if (form !== undefined) form.senseIds = phrase.senseIds;
   return word;
 }

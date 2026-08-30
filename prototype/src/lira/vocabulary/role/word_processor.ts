@@ -44,7 +44,6 @@ export function createWord(init: WordInit): Word {
   const word: Word = {
     usageNotes: [],
     registerCodes: [],
-    dialectCodes: [],
     editorialLabels: [],
     relatedDomainTags: [],
     sourceReferences: [],

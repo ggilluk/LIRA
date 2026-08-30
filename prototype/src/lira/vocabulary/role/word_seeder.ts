@@ -2241,7 +2241,10 @@ export class WordSeeder {
   private synsetMemberToPhrase(synset: WordNetSynset, lemma: string, verbLemmas: ReadonlySet<string>): Phrase {
     const shared = {
       text: lemma,
-      languageCode: { value: this.languageCode },
+      // languageCode lives on lexicalForm now (Phrase.lexicalForm's own
+      // docstring) -- synsetMemberToWord()'s own identical `lexicalForm`
+      // construction, this method's exact counterpart.
+      lexicalForm: { value: lemma, languageCode: { value: this.languageCode } },
       definition: synset.definition ? { value: synset.definition } : undefined,
       usageNotes: synset.examples.map((example) => ({ value: example })),
       synsetId: { value: synset.synsetId, ...WORDNET_SYNSET_ID_SCHEME },
@@ -2382,11 +2385,13 @@ export class WordSeeder {
     // is the one of the three genuinely optional in WordFileEntry's own
     // schema, so it's the only one omitted rather than defaulted.
     const scriptCode = optCode(entry.script_code);
+    const dialectCode = entry.dialect_codes?.[0];
     this.cacheLexicalForm.set(entry.entry_id, {
       value: entry.lexical_form,
       languageCode: { value: entry.language_code },
       version: entry.version ?? "1.0",
       ...(scriptCode !== undefined ? { scriptCode } : {}),
+      ...(dialectCode !== undefined ? { dialectCode: { value: dialectCode } } : {}),
     });
     const definition = optText(entry.definition);
     if (definition !== undefined) this.cacheDefinition.set(entry.entry_id, definition);
@@ -2410,7 +2415,6 @@ export class WordSeeder {
       gloss: optText(entry.gloss),
       usageNotes: (entry.usage_notes ?? []).map((note) => ({ value: note })),
       registerCodes: (entry.register_codes ?? []).map((code) => RegisterCode[code as keyof typeof RegisterCode]),
-      dialectCodes: (entry.dialect_codes ?? []).map((code) => ({ value: code })),
       editorialLabels: (entry.editorial_labels ?? []).map((label) => EditorialLabel[label as keyof typeof EditorialLabel]),
       etymologyText: optText(entry.etymology_text),
       firstRecordedUse: optText(entry.first_recorded_use),
@@ -2517,18 +2521,25 @@ export class WordSeeder {
       licenceIdentifier: ref.licence_identifier ? { value: ref.licence_identifier } : undefined,
     }));
 
+    // version/languageCode/dialectCode all live on lexicalForm now
+    // (Phrase.lexicalForm's own docstring) -- entryToWord()'s own
+    // cacheLexicalForm construction, this method's exact counterpart.
+    const dialectCode = entry.dialect_codes?.[0];
+    const lexicalForm: Text = {
+      value: entry.lexical_form,
+      languageCode: { value: entry.language_code },
+      version: entry.version ?? "1.0",
+      ...(dialectCode !== undefined ? { dialectCode: { value: dialectCode } } : {}),
+    };
     return createPhrase({
       text: entry.text ?? entry.lexical_form,
       entryId: { value: entry.entry_id },
-      version: optText(entry.version) ?? { value: "1.0" },
-      languageCode: { value: entry.language_code },
-      lexicalForm: { value: entry.lexical_form },
+      lexicalForm,
       normalisedForm: { value: entry.normalised_form },
       gloss: optText(entry.gloss),
       definition: optText(entry.definition),
       usageNotes: (entry.usage_notes ?? []).map((note) => ({ value: note })),
       registerCodes: (entry.register_codes ?? []).map((code) => RegisterCode[code as keyof typeof RegisterCode]),
-      dialectCodes: (entry.dialect_codes ?? []).map((code) => ({ value: code })),
       editorialLabels: (entry.editorial_labels ?? []).map((label) => EditorialLabel[label as keyof typeof EditorialLabel]),
       sourceReferences,
       isCommon: true,
@@ -2574,7 +2585,13 @@ export class WordSeeder {
       usage_notes: word.usageNotes.map((note) => note.value),
       register_codes: word.registerCodes.map((code) => RegisterCode[code]),
       editorial_labels: word.editorialLabels.map((label) => EditorialLabel[label]),
-      dialect_codes: word.dialectCodes.map((code) => code.value),
+      // dialectCode lives on the base-lemma WordForm's own Text now
+      // (Word.wordFormIds's own docstring), not on Word -- same "only
+      // ever receives a bare Word, with no store to resolve through"
+      // situation as lexicalForm/version/language_code above, moot in
+      // practice for the identical reason (promoteWord() has no caller
+      // anywhere in this codebase yet).
+      dialect_codes: [],
       pronunciations: [],
       // Pronunciation/syllable/frequency attributes live on the base-
       // lemma WordForm now (WordForm's own docstring, data/entities/word_form.ts),

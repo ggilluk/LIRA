@@ -18,7 +18,7 @@
  * for the design history behind this shape.
  */
 
-import type { Code, Identifier, Text } from "../../../value_objects";
+import type { Identifier, Text } from "../../../value_objects";
 import type { LinguisticUnit } from "../../../linguistics/data/linguistic_unit";
 import type { EditorialLabel } from "../enums/editorial_label";
 import { PartOfSpeech } from "../enums/part_of_speech";
@@ -57,9 +57,6 @@ export interface Word extends LinguisticUnit {
 
   /** Registers of use this Word is associated with. */
   registerCodes: readonly RegisterCode[];
-
-  /** Dialects this Word is associated with. */
-  dialectCodes: readonly Code[];
 
   /** Etymology of this Word. */
   etymologyText?: Text;
@@ -104,7 +101,12 @@ export interface Word extends LinguisticUnit {
    * attributes live there now, not as separate fields here (`WordForm`'s
    * own docstring, data/entities/word_form.ts). So do `synsetId`/`senseIds`/
    * `contractionOf` -- WordForms.baseLemmaFormOf(word) is the read side
-   * for all three now, not a scalar field on Word.
+   * for all three now, not a scalar field on Word. A Word carries no
+   * `dialectCodes` of its own either, for the identical reason: a
+   * dialect is a fact about one specific spelling, so it lives on that
+   * spelling's own `Text.dialectCode` (`WordForms.baseLemmaFormOf(word)?.text.dialectCode`),
+   * value_objects/data/text.ts's own docstring on why Text itself
+   * carries this.
    */
   wordFormIds: readonly Identifier[];
 

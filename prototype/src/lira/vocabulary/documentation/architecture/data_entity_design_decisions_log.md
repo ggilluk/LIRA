@@ -224,4 +224,54 @@ registers a matching base-lemma `WordForm` under this same `phrase.entryId`
 (idempotent find-or-create), carrying `phrase.senseIds`/`phrase.synsetId`
 across -- `builder_word.ts`'s own `wordRecordFor()` is why its own two call
 sites always pass one; without it, the returned Word carries no senses at
-all.
+all. It now passes `phrase.lexicalForm` straight through as the WordForm's
+own `text` too (rather than leaving it to `registerBaseLemmaForm()`'s own
+bare `{value: word.text}` default), so the synthetic Word's base-lemma
+WordForm carries the same language/dialect/version facts the Phrase's own
+`lexicalForm` does -- the section right below explains why those facts live
+there and not on Phrase itself.
+
+### `version`/`languageCode`/`dialectCodes`: moved onto `lexicalForm`'s own `Text`
+
+Phrase originally carried these as three of its own top-level fields,
+mirroring the Vocabulary Layer's ported Python specification (`documentation/README.md`
+4.2's `version`/`language_code`/`dialect_codes` Word fields, Phrase's own
+equivalents). Each one is really a fact about *one specific wording* --
+which language it's written in, which regional/social variety it belongs
+to, which revision of it this is -- not a fact about the Phrase record as a
+whole, so once `Text` itself grew `languageCode`/`dialectCode`/`version` as
+its own supplementary components (`value_objects/data/text.ts`'s own
+docstring on why: the identical reasoning already justified `Text.scriptCode`)
+there was no remaining reason for Phrase to carry a second, entity-level
+copy of the same three facts alongside its own `lexicalForm: Text`.
+
+This mirrors a migration Word already went through: Word lost its own
+`lexicalForm`/`normalisedForm`/`version`/`languageCode` fields entirely when
+`WordForm` was introduced (`WordForm`'s own docstring, data/entities/word_form.ts)
+-- a Word's canonical spelling, and every fact about that one spelling,
+moved onto its base-lemma `WordForm.text`. Phrase never went through that
+migration (there is no `PhraseForm` -- a Phrase's `lexicalForm`/`normalisedForm`
+already live directly on Phrase itself, `words`'s own docstring on why a
+Phrase has no per-token composition store the way Word now has WordForms),
+so `version`/`languageCode`/`dialectCodes` had nowhere to land except back
+onto that same already-present `lexicalForm` field -- no new indirection
+needed, unlike Word's case.
+
+`dialectCodes` stayed a genuine gap in Word's own earlier WordForm migration
+-- it was never carried across at the time, so Word still had its own
+top-level `dialectCodes: Code[]` until this decision, read only by
+`builder_word.ts`'s own `dialect_codes` column and the (uncalled)
+`WordSeeder.promoteWord()`/`wordToEntry()` promotion path. It now resolves
+via `WordForms.baseLemmaFormOf(word)?.text.dialectCode` instead, closing
+that gap the same way Phrase's own `lexicalForm.dialectCode` does.
+
+Verified directly against the real bundled Common Vocabulary Cache before
+this change: every entry's own `version`/`language_code` is a uniform
+`"1.0"`/`"en"` and every `dialect_codes` array is empty (`[]`) -- none of
+the three ever varied in practice, so this move loses no real data, only
+relocates where the (currently uniform) fact is read from. `Text.dialectCode`
+is singular, unlike the old `dialectCodes: Code[]` array it replaces -- a
+narrowing from "any number of dialects" to "at most one" that's lossless
+today (nothing in the real cache or WordNet path ever populates more than
+zero), documented here as a deliberate, not accidental, narrowing should a
+future asset ever need more than one.

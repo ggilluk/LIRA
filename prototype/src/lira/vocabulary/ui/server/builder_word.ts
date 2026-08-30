@@ -419,6 +419,9 @@ export function wordRecordFor(
   );
   const senseFields = senseFieldsFor(senses, word, wordForms);
   const wordSenses = sensesFor(word, senses, domainName, wordForms);
+  // dialectCode lives on the base-lemma WordForm's own Text now
+  // (Word.wordFormIds's own docstring), not on Word.
+  const dialectCode = wordForms.baseLemmaFormOf(word)?.text.dialectCode;
   return {
     id: wordId,
     entry_id: word.entryId.value,
@@ -429,7 +432,7 @@ export function wordRecordFor(
     definition: senseFields.definition?.value ?? "",
     gloss: senseFields.gloss?.value ?? "",
     register_codes: word.registerCodes.map((code) => RegisterCode[code]),
-    dialect_codes: word.dialectCodes.map((code) => code.value),
+    dialect_codes: dialectCode !== undefined ? [dialectCode.value] : [],
     editorial_labels: word.editorialLabels.map((label) => EditorialLabel[label]),
     is_common: word.isCommon,
     is_root_word: isRootWordFor(senses, word, wordForms),

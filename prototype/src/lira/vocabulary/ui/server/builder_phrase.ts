@@ -70,7 +70,7 @@ export function phraseRecordFor(phrase: Phrase, phrases: Phrases, senses: Senses
     definition: senseFields.definition?.value ?? "",
     gloss: senseFields.gloss?.value ?? "",
     register_codes: phrase.registerCodes.map((code) => RegisterCode[code]),
-    dialect_codes: phrase.dialectCodes.map((code) => code.value),
+    dialect_codes: phrase.lexicalForm?.dialectCode !== undefined ? [phrase.lexicalForm.dialectCode.value] : [],
     editorial_labels: phrase.editorialLabels.map((label) => EditorialLabel[label]),
     is_common: phrase.isCommon,
     sources: phrase.sourceReferences.map((ref) => ref.sourceName.value),
