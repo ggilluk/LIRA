@@ -71,7 +71,7 @@ import { graphUuid, type WordFormAttributes } from "./word_form_processor";
 import type { SourceReference } from "../data/source_reference";
 import { createVerb, generateVerbForms, isVerb } from "./processor/verb_processor";
 import type { Word } from "../data/entities/word";
-import { copyWordWithFreshUuid, createWord, graphUuid as wordGraphUuid } from "./word_processor";
+import { copyWordWithFreshUuid, createWord, dialectCodeFor, graphUuid as wordGraphUuid, languageCodeFor, scriptCodeFor } from "./word_processor";
 import type { SemanticRelationshipStore } from "../data/semantic_relationship_store";
 import {
   languageHasCommonCache,
@@ -2140,7 +2140,7 @@ export class WordSeeder {
     // WordNet-seeded lemma, so this always takes createWordForm()'s own
     // "1.0" default -- matching createWord()'s former identical default
     // for the same case.
-    const lexicalForm: Text = { value: lemma, languageCode: { value: this.languageCode } };
+    const lexicalForm: Text = { value: lemma, languageCode: languageCodeFor(this.languageCode) };
     // synsetId moved off Word onto its own base-lemma WordForm (WordForm's
     // own docstring on why) -- passed as registerBaseLemmaForm()'s own
     // `extra` alongside `lexicalForm` below, the same way this method
@@ -2251,7 +2251,7 @@ export class WordSeeder {
       // languageCode lives on lexicalForm now (Phrase.lexicalForm's own
       // docstring) -- synsetMemberToWord()'s own identical `lexicalForm`
       // construction, this method's exact counterpart.
-      lexicalForm: { value: lemma, languageCode: { value: this.languageCode } },
+      lexicalForm: { value: lemma, languageCode: languageCodeFor(this.languageCode) },
       definition: synset.definition ? { value: synset.definition } : undefined,
       usageNotes: synset.examples.map((example) => ({ value: example })),
       isCommon: true,
@@ -2382,7 +2382,6 @@ export class WordSeeder {
    * narrowing), just with those fields left undefined. */
   private entryToWord(entry: WordFileEntry): Word {
     const optText = (value: string | null | undefined) => (value ? { value } : undefined);
-    const optCode = (value: string | null | undefined) => (value ? { value } : undefined);
     this.recordPad(entry);
     this.recordWordFormAttributes(entry);
     // The base-lemma WordForm's own rich Text -- cached by entryId
@@ -2390,14 +2389,15 @@ export class WordSeeder {
     // `lexicalForm` of its own for this to land on directly). `scriptCode`
     // is the one of the three genuinely optional in WordFileEntry's own
     // schema, so it's the only one omitted rather than defaulted.
-    const scriptCode = optCode(entry.script_code);
+    const scriptCode = entry.script_code ? scriptCodeFor(entry.script_code) : undefined;
     const dialectCode = entry.dialect_codes?.[0];
+    const resolvedDialectCode = dialectCode !== undefined ? dialectCodeFor(dialectCode) : undefined;
     this.cacheLexicalForm.set(entry.entry_id, {
       value: entry.lexical_form,
-      languageCode: { value: entry.language_code },
+      languageCode: languageCodeFor(entry.language_code),
       version: entry.version ?? "1.0",
       ...(scriptCode !== undefined ? { scriptCode } : {}),
-      ...(dialectCode !== undefined ? { dialectCode: { value: dialectCode } } : {}),
+      ...(resolvedDialectCode !== undefined ? { dialectCode: resolvedDialectCode } : {}),
     });
     const definition = optText(entry.definition);
     if (definition !== undefined) this.cacheDefinition.set(entry.entry_id, definition);
@@ -2531,11 +2531,12 @@ export class WordSeeder {
     // (Phrase.lexicalForm's own docstring) -- entryToWord()'s own
     // cacheLexicalForm construction, this method's exact counterpart.
     const dialectCode = entry.dialect_codes?.[0];
+    const resolvedDialectCode = dialectCode !== undefined ? dialectCodeFor(dialectCode) : undefined;
     const lexicalForm: Text = {
       value: entry.lexical_form,
-      languageCode: { value: entry.language_code },
+      languageCode: languageCodeFor(entry.language_code),
       version: entry.version ?? "1.0",
-      ...(dialectCode !== undefined ? { dialectCode: { value: dialectCode } } : {}),
+      ...(resolvedDialectCode !== undefined ? { dialectCode: resolvedDialectCode } : {}),
     };
     return createPhrase({
       text: entry.text ?? entry.lexical_form,

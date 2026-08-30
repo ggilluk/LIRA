@@ -188,3 +188,13 @@ export function scriptCodelistCode(value: ScriptCodelist): string {
   const key = ScriptCodelist[value];
   return key.slice(0, 4)[0] + key.slice(1, 4).toLowerCase();
 }
+
+/** `scriptCodelistCode()`'s own reverse: the `ScriptCodelist` member
+ * whose ISO 15924 alpha-4 code matches `code` (case-insensitive), or
+ * `undefined` when `code` names no known ISO 15924 script. */
+export function scriptCodelistFromCode(code: string): ScriptCodelist | undefined {
+  const target = code.toLowerCase();
+  return Object.values(ScriptCodelist).find(
+    (value): value is ScriptCodelist => typeof value === "number" && scriptCodelistCode(value) === target,
+  );
+}

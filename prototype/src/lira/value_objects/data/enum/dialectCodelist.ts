@@ -148,3 +148,13 @@ export function dialectCodelistCode(value: DialectCodelist): string {
   const key = DialectCodelist[value];
   return key.startsWith("V_") ? key.slice(2).toLowerCase() : key.toLowerCase();
 }
+
+/** `dialectCodelistCode()`'s own reverse: the `DialectCodelist` member
+ * whose IANA variant subtag matches `code` (case-insensitive), or
+ * `undefined` when `code` names no known variant subtag. */
+export function dialectCodelistFromCode(code: string): DialectCodelist | undefined {
+  const target = code.toLowerCase();
+  return Object.values(DialectCodelist).find(
+    (value): value is DialectCodelist => typeof value === "number" && dialectCodelistCode(value) === target,
+  );
+}

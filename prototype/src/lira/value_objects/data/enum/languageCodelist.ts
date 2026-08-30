@@ -190,3 +190,13 @@ export enum LanguageCodelist {
 export function languageCodelistCode(value: LanguageCodelist): string {
   return LanguageCodelist[value].slice(0, 2).toLowerCase();
 }
+
+/** `languageCodelistCode()`'s own reverse: the `LanguageCodelist` member
+ * whose ISO 639-1 code matches `code` (case-insensitive), or `undefined`
+ * when `code` names no known ISO 639-1 language. */
+export function languageCodelistFromCode(code: string): LanguageCodelist | undefined {
+  const target = code.toLowerCase();
+  return Object.values(LanguageCodelist).find(
+    (value): value is LanguageCodelist => typeof value === "number" && languageCodelistCode(value) === target,
+  );
+}

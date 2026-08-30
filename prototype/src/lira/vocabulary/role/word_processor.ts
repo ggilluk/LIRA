@@ -19,7 +19,16 @@
  * duplicates Word-shaped values, the exact same reason every one of the
  * 11 POS processors already needs them too. */
 
-import { identifier, type Text } from "../../value_objects";
+import {
+  DialectCode,
+  LanguageCode,
+  ScriptCode,
+  dialectCodelistFromCode,
+  identifier,
+  languageCodelistFromCode,
+  scriptCodelistFromCode,
+  type Text,
+} from "../../value_objects";
 import type { Dictionary } from "../data/dictionary";
 import type { DefinitionWordReference } from "../data/definition_word_reference";
 import type { Word } from "../data/entities/word";
@@ -84,6 +93,44 @@ export function copyWordWithFreshUuid(word: Word): Word {
  * graphUuid() (role/word_form_processor.ts). */
 export function graphUuid(word: Word): string {
   return word.entryId.uuid!;
+}
+
+/** `code`'s own ISO 639-1 `LanguageCode` (value_objects/data/code/languageCode.ts)
+ * -- every real caller here passes a WordSeeder's own configured
+ * language code, always "en" today, but this resolves whatever ISO
+ * 639-1 code is actually configured, not just English. Throws for an
+ * unrecognised code rather than guessing -- this codebase's own
+ * established discipline (shouldDoubleFinalConsonant()'s own docstring
+ * below, on abstaining instead of guessing wrong) applied to a case
+ * where a wrong guess would be a silently mislabelled language, not
+ * just a missing WordForm. */
+export function languageCodeFor(code: string): LanguageCode {
+  const codelist = languageCodelistFromCode(code);
+  if (codelist === undefined) throw new Error(`no ISO 639-1 LanguageCodelist member for language code '${code}'`);
+  return new LanguageCode(codelist);
+}
+
+/** `code`'s own IANA variant-subtag `DialectCode`
+ * (value_objects/data/code/dialectCode.ts) -- unlike languageCodeFor()
+ * above, undefined for a `code` that names no known variant subtag,
+ * rather than throwing: dialect data is curated, optional, sourced from
+ * the Common Vocabulary Cache's own free-text `dialect_codes` entries,
+ * not a closed set every value is guaranteed to belong to the way a
+ * WordSeeder's own configured language always is. */
+export function dialectCodeFor(code: string): DialectCode | undefined {
+  const codelist = dialectCodelistFromCode(code);
+  return codelist !== undefined ? new DialectCode(codelist) : undefined;
+}
+
+/** `code`'s own ISO 15924 `ScriptCode` (value_objects/data/code/scriptCode.ts)
+ * -- every real caller here passes `entry.script_code`, always "Latn"
+ * today, but this resolves whatever ISO 15924 alpha-4 code is actually
+ * present. Undefined for an unrecognised code, matching dialectCodeFor()'s
+ * own "asset-sourced, don't throw" treatment above -- unlike
+ * languageCodeFor()'s own configured-and-guaranteed code. */
+export function scriptCodeFor(code: string): ScriptCode | undefined {
+  const codelist = scriptCodelistFromCode(code);
+  return codelist !== undefined ? new ScriptCode(codelist) : undefined;
 }
 
 // -- Derived properties (4.3) --------------------------------------
