@@ -29,16 +29,7 @@ export type WordFormInit = Pick<WordForm, "field" | "text"> & Partial<Omit<WordF
 // every WordForm attribute that isn't required at creation time the way
 // `field`/`text` are, applied onto an already-registered WordForm
 // instead.
-export type WordFormAttributes = Partial<
-  Pick<
-    WordForm,
-    | "syllableRepresentation"
-    | "syllableCount"
-    | "stressPattern"
-    | "frequencyValue"
-    | "frequencyScale"
-  >
->;
+export type WordFormAttributes = Partial<Pick<WordForm, "frequencyValue" | "frequencyScale">>;
 
 export function createWordForm(init: WordFormInit): WordForm {
   return {

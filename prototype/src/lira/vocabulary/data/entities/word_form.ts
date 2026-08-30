@@ -46,30 +46,6 @@ export interface WordForm {
   text: Text;
 
   /**
-   * This spelling's own syllable breakdown.
-   *
-   * Undefined when a syllable breakdown has not been curated for this
-   * spelling.
-   */
-  syllableRepresentation?: Text;
-
-  /**
-   * This spelling's own syllable count.
-   *
-   * Undefined when a syllable count has not been curated for this
-   * spelling.
-   */
-  syllableCount?: Number_;
-
-  /**
-   * This spelling's own stress pattern.
-   *
-   * Undefined when a stress pattern has not been curated for this
-   * spelling.
-   */
-  stressPattern?: Text;
-
-  /**
    * This spelling's own usage frequency value.
    *
    * Undefined when a frequency value has not been curated for this

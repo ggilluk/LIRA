@@ -708,17 +708,17 @@ export class WordSeeder {
   // reads this back to pass into registerUniqueSense, the one place a
   // hand-curated entry's PAD actually reaches its own Sense.
   private cachePad = new Map<string, { pleasure?: number; arousal?: number; dominance?: number }>();
-  // Every cached entry's own raw normalised-spelling/pronunciation/
-  // syllable/frequency attributes, keyed by entryId -- entryToWord()
-  // populates this in lockstep with `cache` itself (cachePad's own
-  // docstring, same reasoning), since Word no longer carries any of
-  // these as its own field (WordForm's own docstring, data/entities/word_form.ts,
-  // on why they moved) -- seedClosedClassWords() reads this back to pass
-  // into WordForms.registerBaseLemmaForm(), the one place a hand-curated
-  // entry's own values actually reach a WordForm. Phrase has no
-  // equivalent: WordForm is a Word-only concept, so a Phrase entry's
-  // own syllable_count etc. (WordFileEntry's schema is shared) simply
-  // has nowhere to go, the same as before this migration.
+  // Every cached entry's own raw frequency attributes, keyed by entryId
+  // -- entryToWord() populates this in lockstep with `cache` itself
+  // (cachePad's own docstring, same reasoning), since Word no longer
+  // carries any of these as its own field (WordForm's own docstring,
+  // data/entities/word_form.ts, on why they moved) -- seedClosedClassWords()
+  // reads this back to pass into WordForms.registerBaseLemmaForm(), the
+  // one place a hand-curated entry's own values actually reach a
+  // WordForm. Phrase has no equivalent: WordForm is a Word-only
+  // concept, so a Phrase entry's own frequency_value/frequency_scale
+  // (WordFileEntry's schema is shared) simply has nowhere to go, the
+  // same as before this migration.
   private cacheWordFormAttributes = new Map<string, WordFormAttributes>();
   // Every cached entry's own rich lexical-form Text (value, language,
   // script, version) -- entryToWord() populates this the same way it
@@ -2347,9 +2347,8 @@ export class WordSeeder {
     });
   }
 
-  /** Reads `entry`'s own raw syllable_representation/syllable_count/
-   * stress_pattern/frequency_value/frequency_scale straight off the
-   * WordFileEntry JSON into `cacheWordFormAttributes`, keyed by
+  /** Reads `entry`'s own raw frequency_value/frequency_scale straight off
+   * the WordFileEntry JSON into `cacheWordFormAttributes`, keyed by
    * entryId -- recordPad()'s own shape and reasoning, mirrored for the
    * WordForm attributes that moved off Word the same way PAD moved off
    * Word onto Sense (WordForm's own docstring, data/entities/word_form.ts,
@@ -2357,13 +2356,9 @@ export class WordSeeder {
    * one of these is genuinely optional in WordFileEntry, so (unlike
    * recordPad()) there's no field here guaranteed to be set. */
   private recordWordFormAttributes(entry: WordFileEntry): void {
-    const optText = (value: string | null | undefined) => (value ? { value } : undefined);
     const optCode = (value: string | null | undefined) => (value ? { value } : undefined);
     const optNumber = (value: number | null | undefined) => (value === null || value === undefined ? undefined : { value });
     this.cacheWordFormAttributes.set(entry.entry_id, {
-      syllableRepresentation: optText(entry.syllable_representation),
-      syllableCount: optNumber(entry.syllable_count),
-      stressPattern: optText(entry.stress_pattern),
       frequencyValue: optNumber(entry.frequency_value),
       frequencyScale: optCode(entry.frequency_scale),
     });
@@ -2599,17 +2594,25 @@ export class WordSeeder {
       // practice for the identical reason (promoteWord() has no caller
       // anywhere in this codebase yet).
       dialect_codes: [],
-      // syllable/frequency attributes live on the base-lemma WordForm
-      // now (WordForm's own docstring, data/entities/word_form.ts), not
-      // on Word -- same "only ever receives a bare Word, with no store
-      // to resolve through" situation as the PAD fields just below, and
-      // just as moot in practice for the same reason (promoteWord() has
-      // no caller anywhere in this codebase yet). If that changes,
-      // whoever wires it up will need to thread a WordForms store
-      // through here too.
+      // syllable_representation/syllable_count/stress_pattern have
+      // nowhere to go any more -- WordForm carries none of the three
+      // (that entity's own docstring, data/entities/word_form.ts, on why
+      // they were removed outright rather than migrated: real curated
+      // data existed for syllable_count, but nothing anywhere read any
+      // of the three back off WordForm, so there was no consumer left to
+      // preserve). This wire schema field stays -- WordFileEntry's own
+      // shape, validated by validateAssets() independently of whether
+      // anything stores the parsed value.
       syllable_representation: null,
       syllable_count: null,
       stress_pattern: null,
+      // frequency attributes live on the base-lemma WordForm now
+      // (WordForm's own docstring), not on Word -- same "only ever
+      // receives a bare Word, with no store to resolve through"
+      // situation as the PAD fields just below, and just as moot in
+      // practice for the same reason (promoteWord() has no caller
+      // anywhere in this codebase yet). If that changes, whoever wires
+      // it up will need to thread a WordForms store through here too.
       frequency_value: null,
       frequency_scale: null,
       etymology_text: word.etymologyText?.value ?? null,

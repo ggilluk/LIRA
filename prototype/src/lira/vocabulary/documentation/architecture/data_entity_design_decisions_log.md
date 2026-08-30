@@ -352,3 +352,41 @@ directly as one more `Text`-typed field/array on `WordForm` (carrying its
 own `languageCode`/`dialectCode` the same way `text` itself now can),
 rather than reintroducing a bespoke value object to hold what `Text`
 already expresses.
+
+### `syllableRepresentation`/`syllableCount`/`stressPattern`: removed, unlike `frequencyValue`/`frequencyScale`
+
+`WordForm` originally carried five curated-attribute fields side by side:
+`syllableRepresentation`/`syllableCount`/`stressPattern` and
+`frequencyValue`/`frequencyScale`. The first three are gone; the frequency
+pair stays. The difference isn't producer/consumer symmetry the way
+`Pronunciation`'s removal above was (every producer/consumer pair there
+was equally dead) -- here the three removed fields and the two kept ones
+have genuinely different data profiles, verified directly against the
+real bundled Common Vocabulary Cache before removing anything:
+`syllable_representation`/`stress_pattern` are null on every real entry
+(the same "always empty" profile `version`/`language_code`/`dialect_codes`
+had before their own migration), but `syllable_count` is genuinely
+populated -- real, curated integer values on thousands of entries.
+
+What all three removed fields share, and what actually decided this,
+isn't their own data: it's that **nothing anywhere in this codebase ever
+read any of the three back off a `WordForm`** -- no builder, no client
+view, no test, confirmed by a repo-wide search before removing. Real
+`syllable_count` data existed, but it was already fully invisible to
+every caller; removing it changes nothing any user could observe, the
+same standard `Pronunciation`'s removal applied, just with a real (if
+unconsumed) dataset behind one of the three fields this time instead of
+none. `frequencyValue`/`frequencyScale` stayed for the opposite reason:
+`ui/server/builder_word.ts`'s own Word Forms section genuinely reads them
+through `wordFormsFor()`.
+
+The wire schema (`WordFileEntry.syllable_representation`/`syllable_count`/
+`stress_pattern`, `role/asset_loader.ts`) and `WordSeeder.validateAssets()`'s
+own `syllable_count` integer-range check both stay, deliberately, unlike
+`Pronunciation`'s wire field (which was dropped since nothing ever
+validated or read it either). Validating the shape of the *source* asset
+file is a different concern from storing the parsed result on a `WordForm`
+-- catching a malformed `syllable_count` in the JSON is still worth doing
+regardless of whether anything downstream keeps that value once parsed,
+so `recordWordFormAttributes()` stopped storing it, but nothing about the
+asset validation pass changed.
