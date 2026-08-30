@@ -1,8 +1,8 @@
-import type { Code } from "./code";
+import type { LanguageCode } from "./code/languageCode";
+import type { DialectCode } from "./code/dialectCode";
+import type { ScriptCode } from "./code/scriptCode";
 
-/** Text. Type, per the UN/CEFACT Core Components Technical Specification
- * (CCTS) Core Component Type catalogue (Layer Summary: Value Objects
- * Layer). Ported from value_objects/data/text.py.
+/** Text. Type, per the UN/CEFACT Core Components Technical Specification.
  *
  * `languageCode`, `scriptCode`, `dialectCode`, `version`, and `formats`
  * are this prototype's own additions (no Python/spec equivalent) --
@@ -16,12 +16,15 @@ import type { Code } from "./code";
  * top-level `version`/`languageCode`/`dialectCodes` fields, vocabulary/
  * documentation/architecture/data_entity_design_decisions_log.md,
  * folded onto their own `lexicalForm`/base-lemma-WordForm `Text` for
- * exactly this reason). `languageCode`/`dialectCode` replace the CCTS
- * spec's own plain `languageID` supplementary component with a full
- * `Code` -- the same value object every other language/script/
- * dialect/list-scoped fact in this codebase already uses, richer than
- * a bare string when a caller needs it (a code list identifier, a
- * version of that list, ...).
+ * exactly this reason).
+ *
+ * `languageCode` specialises the CCTS language identifier using ISO 639-1.
+ * `dialectCode` is LIRA's language-variety specialisation using IANA BCP 47
+ * variant subtags because UN/CEFACT does not publish a separate dialect list.
+ * `scriptCode` uses ISO 15924. Each specialised Code retains the external
+ * standards code as CCTS Code content, plus a numeric Codelist identity for
+ * later tensor/graph operations (`LanguageCode`/`DialectCode`/`ScriptCode`,
+ * data/code/*.ts).
  *
  * `formats`: the regex pattern(s) this specific Text value's own
  * `value` is expected to satisfy (a Vocabulary Layer word-form Text,
@@ -36,9 +39,9 @@ import type { Code } from "./code";
  * satisfy. */
 export interface Text {
   value: string;
-  languageCode?: Code;
-  scriptCode?: Code;
-  dialectCode?: Code;
+  languageCode?: LanguageCode;
+  scriptCode?: ScriptCode;
+  dialectCode?: DialectCode;
   version?: string;
   formats?: readonly string[];
 }
