@@ -40,9 +40,9 @@ export interface WordRecord {
   text: string;
   pos: string;
   // The Princeton WordNet 3.1 synset this Word corresponds to
-  // (word.synsetId's own docstring), or null for a Word that didn't
-  // come from WordSeeder.seedWordNet -- every Common Vocabulary Cache
-  // entry, in particular.
+  // (WordForms.synsetIdOf()'s own docstring), or null for a Word that
+  // didn't come from WordSeeder.seedWordNet -- every Common Vocabulary
+  // Cache entry, in particular.
   sense_id: string | null;
   definition: string;
   gloss: string;

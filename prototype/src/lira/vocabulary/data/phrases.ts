@@ -1,3 +1,4 @@
+import type { Identifier } from "../../value_objects";
 import { copyPhraseWithFreshUuid, graphUuid, type Phrase } from "./phrase";
 import type { PartOfSpeech } from "./enums/part_of_speech";
 
@@ -29,6 +30,12 @@ export class Phrases {
    * shape is reachable from both PartOfSpeech.ADJECTIVE and
    * PartOfSpeech.ADVERB, so only the original tag can tell those apart. */
   private readonly partOfSpeechByUuid = new Map<string, PartOfSpeech>();
+  // WordNet's own synset identifier for each Phrase that has one, keyed
+  // by graphUuid -- synsetIdOf()'s own backing store. Not a field on
+  // Phrase itself (Phrase's own docstring on why): it's an externally-
+  // defined WordNet attribute, mapped onto senseIds[0] rather than
+  // duplicated as a scalar field.
+  private readonly synsetIdByUuid = new Map<string, Identifier>();
   private maxSpan = 0;
 
   all(): readonly Phrase[] {
@@ -66,7 +73,25 @@ export class Phrases {
     return this.partOfSpeechByUuid.get(graphUuid(phrase));
   }
 
-  append(phrase: Phrase, partOfSpeech: PartOfSpeech): void {
+  /** `phrase`'s own WordNet synset identifier, as supplied to `append()`
+   * or a later `setSynsetId()` call -- undefined for a Phrase that
+   * didn't come from WordNet, or that this store never appended. */
+  synsetIdOf(phrase: Phrase): Identifier | undefined {
+    return this.synsetIdByUuid.get(graphUuid(phrase));
+  }
+
+  /** Reassigns `phrase`'s own synset identifier -- `append()`'s own
+   * `synsetId` parameter is this method's usual caller, but
+   * WordSeeder.orderSensesByFrequency() also calls this directly once a
+   * Phrase's own senses are reordered by real frequency, to keep this
+   * value in sync with the new `senseIds[0]` (that method's own
+   * docstring). Passing `undefined` clears any previously-set value. */
+  setSynsetId(phrase: Phrase, synsetId: Identifier | undefined): void {
+    if (synsetId !== undefined) this.synsetIdByUuid.set(graphUuid(phrase), synsetId);
+    else this.synsetIdByUuid.delete(graphUuid(phrase));
+  }
+
+  append(phrase: Phrase, partOfSpeech: PartOfSpeech, synsetId?: Identifier): void {
     this.phrases.push(phrase);
     const key = phrase.text.toLowerCase();
     const bucket = this.byText.get(key);
@@ -74,6 +99,7 @@ export class Phrases {
     else this.byText.set(key, [phrase]);
     this.byUuid.set(graphUuid(phrase), phrase);
     this.partOfSpeechByUuid.set(graphUuid(phrase), partOfSpeech);
+    if (synsetId !== undefined) this.synsetIdByUuid.set(graphUuid(phrase), synsetId);
 
     const wordCount = key.trim().split(/\s+/).filter(Boolean).length;
     if (wordCount > this.maxSpan) this.maxSpan = wordCount;
@@ -89,7 +115,8 @@ export class Phrases {
   seedFrom(other: Phrases): void {
     for (const phrase of other.phrases) {
       const partOfSpeech = other.partOfSpeechOf(phrase)!;
-      this.append(copyPhraseWithFreshUuid(phrase), partOfSpeech);
+      const synsetId = other.synsetIdOf(phrase);
+      this.append(copyPhraseWithFreshUuid(phrase), partOfSpeech, synsetId);
     }
   }
 }

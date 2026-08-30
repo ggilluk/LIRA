@@ -4,7 +4,7 @@
  * member lemmas, gloss, and pointer records. A WordNet synset -- "a set
  * of one or more synonyms" -- is what WordSeeder.seedWordNet
  * (word_seeder.ts) turns into a group of LIRA Words joined by SYNONYM
- * LexicalRelationships (Word.synsetId's own docstring), the same shape
+ * LexicalRelationships (WordForms.synsetIdOf()'s own docstring), the same shape
  * entryToWord already turns Common Vocabulary Cache JSON into, one file
  * format earlier in the pipeline; each pointer record is that same
  * seeder's own source for every *other* LexicalRelationship kind
@@ -73,8 +73,8 @@ export interface WordNetFrame {
 }
 
 export interface WordNetSynset {
-  // WordNet's own offset-pos key, e.g. "00001740-n" -- see Word.synsetId's
-  // own docstring for the full format.
+  // WordNet's own offset-pos key, e.g. "00001740-n" -- see
+  // WordForms.synsetIdOf()'s own docstring for the full format.
   synsetId: string;
   partOfSpeech: PartOfSpeech;
   // How often this synset's own meaning was tagged in Princeton

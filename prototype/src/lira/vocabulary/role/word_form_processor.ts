@@ -32,7 +32,6 @@ export type WordFormInit = Pick<WordForm, "field" | "text"> & Partial<Omit<WordF
 export type WordFormAttributes = Partial<
   Pick<
     WordForm,
-    | "synsetId"
     | "pronunciations"
     | "syllableRepresentation"
     | "syllableCount"

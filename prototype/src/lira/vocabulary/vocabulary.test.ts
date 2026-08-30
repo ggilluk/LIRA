@@ -1546,7 +1546,7 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     expect(senseStore.membersOf(bigSenseId).map((m) => m.text)).toEqual(expect.arrayContaining(["big", "large"]));
     const bigSense = senseStore.findByUuid(bigSenseId);
     expect(bigSense).toBeDefined();
-    expect(bigSense?.synsetId?.value).toBe("01385012-a");
+    expect(senseStore.synsetIdOf(bigSense!)?.value).toBe("01385012-a");
     expect(bigSense?.definition?.value).toContain("above average in size");
     expect(bigSense?.isCommon).toBe(true);
 
@@ -1897,7 +1897,7 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     });
 
     // 02116276-n "toy poodle" -- HYPERNYM -> 02115987-n "poodle" (dict/data.noun).
-    const toyPoodle = phraseBook.lookupAll("toy poodle").find((phrase) => phrase.synsetId?.value === "02116276-n");
+    const toyPoodle = phraseBook.lookupAll("toy poodle").find((phrase) => phraseBook.synsetIdOf(phrase)?.value === "02116276-n");
     expect(toyPoodle).toBeDefined();
     expect(toyPoodle?.isCommon).toBe(true);
     expect(toyPoodle?.phraseType).toBe(PhraseType.NOUN_PHRASE);
@@ -1940,7 +1940,7 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // dict/data.adj) is WordNet-tagged ADJECTIVE but structurally a
     // Preposition + NP; "to be sure" (00151192-r, dict/data.adv) is
     // WordNet-tagged ADVERB but structurally an infinitive.
-    const atFault = phraseBook.lookupAll("at fault").find((phrase) => phrase.synsetId?.value === "01324381-s");
+    const atFault = phraseBook.lookupAll("at fault").find((phrase) => phraseBook.synsetIdOf(phrase)?.value === "01324381-s");
     expect(phraseBook.partOfSpeechOf(atFault!)).toBe(PartOfSpeech.ADJECTIVE);
     expect(atFault?.phraseType).toBe(PhraseType.PREPOSITIONAL_PHRASE);
     expect(isPrepositionalPhrase(atFault!)).toBe(true);
@@ -1974,7 +1974,7 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     expect(atFault!.preModifiers).toEqual([]);
     expect(atFault!.postModifiers).toEqual([]);
 
-    const toBeSure = phraseBook.lookupAll("to be sure").find((phrase) => phrase.synsetId?.value === "00151192-r");
+    const toBeSure = phraseBook.lookupAll("to be sure").find((phrase) => phraseBook.synsetIdOf(phrase)?.value === "00151192-r");
     expect(phraseBook.partOfSpeechOf(toBeSure!)).toBe(PartOfSpeech.ADVERB);
     expect(toBeSure?.phraseType).toBe(PhraseType.INFINITIVE_PHRASE);
     expect(isInfinitivePhrase(toBeSure!)).toBe(true);
@@ -2132,7 +2132,7 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // a lot of give in the rope") -- classifyModifierRoles() checks every
     // possible part of speech per token, not that one arbitrary pick,
     // so it still finds "give"'s VERB sense and heads it correctly.
-    const giveUp = phraseBook.lookupAll("give up").find((phrase) => phrase.synsetId?.value === "02686624-v");
+    const giveUp = phraseBook.lookupAll("give up").find((phrase) => phraseBook.synsetIdOf(phrase)?.value === "02686624-v");
     expect(giveUp?.phraseType).toBe(PhraseType.VERB_PHRASE);
     expect(giveUp!.wordRoles).toEqual([ModifierRole.HEAD, ModifierRole.MODIFIER]);
     expect(giveUp!.unresolvedHeadWord?.value).toBe(giveUp!.words[0]?.value);
@@ -2154,7 +2154,7 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // Modifier. "to" itself retains its own POS -- a post-Head
     // Preposition in a VerbPhrase gets no role of its own, the same as
     // atFault's own trailing "fault" above.
-    const lookUpTo = phraseBook.lookupAll("look up to").find((phrase) => phrase.synsetId?.value === "01831800-v");
+    const lookUpTo = phraseBook.lookupAll("look up to").find((phrase) => phraseBook.synsetIdOf(phrase)?.value === "01831800-v");
     expect(lookUpTo?.phraseType).toBe(PhraseType.VERB_PHRASE);
     expect(lookUpTo!.wordRoles).toEqual([ModifierRole.HEAD, ModifierRole.PARTICLE, undefined]);
     expect(lookUpTo!.unresolvedHeadWord?.value).toBe(lookUpTo!.words[0]?.value);
@@ -2172,7 +2172,7 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // capable tokens, no Preposition present), "long" -- itself also
     // Noun/Verb/Adjective-capable, but that doesn't matter, only its
     // Adverb-capability does here -- is a Modifier.
-    const longAgo = phraseBook.lookupAll("long ago").find((phrase) => phrase.synsetId?.value === "00022855-r");
+    const longAgo = phraseBook.lookupAll("long ago").find((phrase) => phraseBook.synsetIdOf(phrase)?.value === "00022855-r");
     expect(longAgo?.phraseType).toBe(PhraseType.ADVERB_PHRASE);
     expect(longAgo!.wordRoles).toEqual([ModifierRole.MODIFIER, ModifierRole.HEAD]);
     expect(longAgo!.unresolvedHeadWord?.value).toBe(longAgo!.words[1]?.value);
@@ -2196,7 +2196,7 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // WordNet doesn't lexicalize determiners as standalone senses any
     // more than it does most prepositions), and "meantime" retains its
     // own POS.
-    const inTheMeantime = phraseBook.lookupAll("in the meantime").find((phrase) => phrase.synsetId?.value === "00065346-r");
+    const inTheMeantime = phraseBook.lookupAll("in the meantime").find((phrase) => phraseBook.synsetIdOf(phrase)?.value === "00065346-r");
     expect(inTheMeantime?.phraseType).toBe(PhraseType.PREPOSITIONAL_PHRASE);
     expect(inTheMeantime!.wordRoles).toEqual([ModifierRole.HEAD, ModifierRole.DETERMINER, undefined]);
     expect(inTheMeantime!.unresolvedHeadWord?.value).toBe(inTheMeantime!.words[0]?.value);
@@ -2514,7 +2514,8 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // seeding order (WordSeeder.seedWordNet's own orderSensesByFrequency).
     // synsetId's own "primary sense snapshot" reading (WordForms.synsetIdOf()'s
     // own docstring) matches senseIds[0] as a result.
-    expect(wordForms.synsetIdOf(big)?.value).toBe(senseStore.findByUuid(wordForms.senseIdsOf(big)[0].value)?.synsetId?.value);
+    const bigPrimarySense = senseStore.findByUuid(wordForms.senseIdsOf(big)[0].value);
+    expect(wordForms.synsetIdOf(big)?.value).toBe(bigPrimarySense !== undefined ? senseStore.synsetIdOf(bigPrimarySense)?.value : undefined);
   }, 60000);
 
   it("orders a polysemous Word's own senseIds by real usage centrality (Sense.senseFrequency), not by seeding order", async () => {
@@ -2549,7 +2550,10 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     const bank = dictionary.lookupAll("bank").find((w) => w.partOfSpeech === PartOfSpeech.NOUN)!;
     expect(bank).toBeDefined();
     expect(wordForms.senseIdsOf(bank).length).toBeGreaterThanOrEqual(4);
-    const orderedSynsetIds = wordForms.senseIdsOf(bank).map((id) => senseStore.findByUuid(id.value)?.synsetId?.value);
+    const orderedSynsetIds = wordForms.senseIdsOf(bank).map((id) => {
+      const sense = senseStore.findByUuid(id.value);
+      return sense !== undefined ? senseStore.synsetIdOf(sense)?.value : undefined;
+    });
     expect(orderedSynsetIds.slice(0, 4)).toEqual(["09236472-n", "08437235-n", "09236341-n", "08479077-n"]);
 
     const riverbankSense = senseStore.findBySynsetId("09236472-n")!;
@@ -2876,8 +2880,8 @@ describe("DictionaryView.searchWords", () => {
     expect(result.words.length).toBeLessThanOrEqual(50);
     expect(result.words.every((w) => w.lexical_form.toLowerCase().includes("large"))).toBe(true);
     // Every WordNet-seeded Word carries its synset id as sense_id
-    // (word.synsetId's own docstring) -- the vocabulary UI shows this
-    // to the right of the word.
+    // (WordForms.synsetIdOf()'s own docstring) -- the vocabulary UI shows
+    // this to the right of the word.
     expect(result.words.every((w) => typeof w.sense_id === "string" && w.sense_id.length > 0)).toBe(true);
   }, 30000);
 

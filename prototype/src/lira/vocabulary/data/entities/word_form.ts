@@ -96,17 +96,13 @@ export interface WordForm {
    *
    * More than one entry means this one spelling carries more than one
    * distinct meaning.
+   *
+   * Carries no `synsetId` of its own for the same reason Sense doesn't
+   * (Sense's own docstring): WordNet's own synset identifier is an
+   * externally-defined attribute, mapped onto `senseIds[0]` via
+   * `WordForms.synsetIdOf(word)` instead (data/word_forms.ts).
    */
   senseIds: readonly Identifier[];
-
-  /**
-   * Identifier of the Princeton WordNet synset naming this WordForm's
-   * own primary (`senseIds[0]`) Sense.
-   *
-   * Undefined when this WordForm has no Princeton WordNet synset of
-   * its own.
-   */
-  synsetId?: Identifier;
 
   /**
    * Identifiers of the closed-class Words this contracted spelling

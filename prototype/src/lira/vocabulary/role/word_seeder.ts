@@ -1154,8 +1154,8 @@ export class WordSeeder {
    * must be called on its own. Two passes over the same synset list:
    *
    * Pass 1 (`onProgress("words", ...)`) -- A WordNet synset IS a LIRA
-   * Domain+Word (Word.synsetId's own docstring): both name one sense,
-   * not one spelling. So each synset's member lemmas become one Word
+   * Domain+Word (WordForms.synsetIdOf()'s own docstring): both name one
+   * sense, not one spelling. So each synset's member lemmas become one Word
    * apiece (isCommon=true, synsetId set to this synset's own --
    * synsetMemberToWord's own docstring on why that, not domainTag, is
    * what disambiguates true WordNet polysemy: the same lemma in more
@@ -1310,7 +1310,6 @@ export class WordSeeder {
       let sense = senseStore.findBySynsetId(synset.synsetId);
       if (sense === undefined) {
         sense = createSense({
-          synsetId: { value: synset.synsetId, ...WORDNET_SYNSET_ID_SCHEME },
           definition: synset.definition ? { value: synset.definition } : undefined,
           usageNotes: synset.examples.map((example) => ({ value: example })),
           isCommon: true,
@@ -1318,7 +1317,7 @@ export class WordSeeder {
           senseFrequency: synset.senseFrequency,
           senseDomainTag: { value: synset.senseCategory },
         });
-        senseStore.append(sense);
+        senseStore.append(sense, { value: synset.synsetId, ...WORDNET_SYNSET_ID_SCHEME });
         sensesSeeded += 1;
       }
 
@@ -1351,7 +1350,7 @@ export class WordSeeder {
             phrase = existingPhrase;
           } else {
             phrase = this.synsetMemberToPhrase(synset, lemma, verbLemmas);
-            phraseBook.append(phrase, synset.partOfSpeech);
+            phraseBook.append(phrase, synset.partOfSpeech, { value: synset.synsetId, ...WORDNET_SYNSET_ID_SCHEME });
             newPhrases.push(phrase);
             wordsSeeded += 1;
           }
@@ -1435,13 +1434,13 @@ export class WordSeeder {
     // list is final, this reorders each one by real usage centrality --
     // Sense.senseFrequency, highest first (that field's own docstring) --
     // and keeps synsetId in sync with the new senseIds[0] so both still
-    // name the same "primary sense" (Word.synsetId's own documented
-    // invariant). Unlike the Adjective/Adverb Gradability Update's own
+    // name the same "primary sense" (orderSensesByFrequency()'s own
+    // documented invariant, below). Unlike the Adjective/Adverb Gradability Update's own
     // post-relationships pass, this needs nothing from pass 2 below --
     // senseFrequency is already known once a Sense exists at all -- so
     // it runs here, right after pass 1, not after relationships too.
-    for (const word of dictionary.all()) this.orderSensesByFrequency(word, senseStore, wordForms);
-    for (const phrase of phraseBook.all()) this.orderSensesByFrequency(phrase, senseStore, wordForms);
+    for (const word of dictionary.all()) this.orderSensesByFrequency(word, phraseBook, senseStore, wordForms);
+    for (const phrase of phraseBook.all()) this.orderSensesByFrequency(phrase, phraseBook, senseStore, wordForms);
 
     processed = 0;
     for (const synset of synsets) {
@@ -1935,13 +1934,15 @@ export class WordSeeder {
    * own read side is, ui/dictionary_view.ts) sorts as frequency 0, same
    * as a real Sense WordNet never tagged.
    *
-   * Also reassigns the same target's own `synsetId` to the now-primary
-   * Sense's own synsetId, keeping it in sync with the new `senseIds[0]`
-   * -- both fields are documented (WordForm's own docstring) as always
-   * naming the same "primary sense", and reordering senseIds without
-   * this would silently break that invariant for every entry this pass
-   * actually reorders (anything monosemous is unaffected either way --
-   * a single senseId's own "order" is a no-op). A no-op for a Phrase/
+   * Also reassigns the same target's own synset identifier (Phrases.setSynsetId()/
+   * WordForms.setSynsetId(), neither a field any more -- Sense's own
+   * docstring on why) to the now-primary Sense's own synset identifier,
+   * keeping it in sync with the new `senseIds[0]` -- both are documented
+   * as always naming the same "primary sense", and reordering senseIds
+   * without this would silently break that invariant for every entry
+   * this pass actually reorders (anything monosemous is unaffected
+   * either way -- a single senseId's own "order" is a no-op). A no-op
+   * for a Phrase/
    * WordForm with fewer than two senseIds (the ordinary case for every
    * non-polysemous entry), and for a Word with no base-lemma WordForm
    * registered at all -- AUXILIARY, in particular, whose own senses
@@ -1949,20 +1950,26 @@ export class WordSeeder {
    * (WordForms.senseIdsOf()'s own docstring) and whose Senses are hand-
    * authored, never WordNet-frequency-tagged, so this pass has nothing
    * meaningful to do for it either way. */
-  private orderSensesByFrequency(entry: Word | Phrase, senseStore: Senses, wordForms: WordForms | undefined): void {
+  private orderSensesByFrequency(entry: Word | Phrase, phraseBook: Phrases, senseStore: Senses, wordForms: WordForms | undefined): void {
     const frequencyOf = (senseId: Identifier): number => senseStore.findByUuid(senseId.value)?.senseFrequency ?? 0;
+    const newSynsetId = (primarySenseId: Identifier): Identifier | undefined => {
+      const primarySense = senseStore.findByUuid(primarySenseId.value);
+      return primarySense !== undefined ? senseStore.synsetIdOf(primarySense) : undefined;
+    };
     if ("words" in entry) {
       if (entry.senseIds.length < 2) return;
       const sorted = [...entry.senseIds].sort((a, b) => frequencyOf(b) - frequencyOf(a));
       entry.senseIds = sorted;
-      entry.synsetId = senseStore.findByUuid(sorted[0].value)?.synsetId ?? entry.synsetId;
+      const synsetId = newSynsetId(sorted[0]);
+      if (synsetId !== undefined) phraseBook.setSynsetId(entry, synsetId);
       return;
     }
     const form = wordForms?.baseLemmaFormOf(entry);
     if (form === undefined || form.senseIds.length < 2) return;
     const sorted = [...form.senseIds].sort((a, b) => frequencyOf(b) - frequencyOf(a));
     form.senseIds = sorted;
-    form.synsetId = senseStore.findByUuid(sorted[0].value)?.synsetId ?? form.synsetId;
+    const synsetId = newSynsetId(sorted[0]);
+    if (synsetId !== undefined) wordForms?.setSynsetId(form, synsetId);
   }
 
   /** Finds the first `kind`-typed edge incident to `word` -- checked in
@@ -2093,7 +2100,7 @@ export class WordSeeder {
   // ~117,800 synsets its own domainTag would turn the Domain column/
   // filter into ~117,800 one-off values instead of the plain "Common"
   // every other Common Vocabulary Cache word gets -- synsetId
-  // (Word.synsetId's own docstring) already carries the synset-level
+  // (WordForms.synsetIdOf()'s own docstring) already carries the synset-level
   // identity this class needs for its own dedup, without repurposing
   // domainTag to also carry it. Only pass 2's tagTopicDomain sets
   // domainTag afterward, and only for the minority of senses (~6,690 of
@@ -2149,12 +2156,12 @@ export class WordSeeder {
         // Noun's own case just below, same "keep base lemma the *first*
         // WordForm on record" reasoning.
         const verb = createVerb(shared);
-        wordForms?.registerBaseLemmaForm(verb, lexicalForm, { synsetId });
+        wordForms?.registerBaseLemmaForm(verb, lexicalForm, undefined, synsetId);
         return generateVerbForms(verb, wordForms);
       }
       case PartOfSpeech.ADJECTIVE: {
         const adjective = createAdjective(shared);
-        wordForms?.registerBaseLemmaForm(adjective, lexicalForm, { synsetId });
+        wordForms?.registerBaseLemmaForm(adjective, lexicalForm, undefined, synsetId);
         return generateAdjectiveForms(adjective, false, wordForms);
       }
       case PartOfSpeech.ADVERB: {
@@ -2165,7 +2172,7 @@ export class WordSeeder {
         // (this method's own final loop) revisits every seeded Adverb
         // too, once relationships are fully wired.
         const adverb = createAdverb(shared);
-        wordForms?.registerBaseLemmaForm(adverb, lexicalForm, { synsetId });
+        wordForms?.registerBaseLemmaForm(adverb, lexicalForm, undefined, synsetId);
         return generateAdverbForms(adverb, false, wordForms);
       }
       case PartOfSpeech.NOUN: {
@@ -2177,7 +2184,7 @@ export class WordSeeder {
         // whichever POS-specific field generateNounForms() adds land
         // ahead of it and reorder the Word Forms section for no reason.
         const noun = createNoun(shared);
-        wordForms?.registerBaseLemmaForm(noun, lexicalForm, { synsetId });
+        wordForms?.registerBaseLemmaForm(noun, lexicalForm, undefined, synsetId);
         return generateNounForms(noun, wordForms);
       }
       default: {
@@ -2187,7 +2194,7 @@ export class WordSeeder {
         // so this switch has a total, not partial, mapping over
         // PartOfSpeech's other 12 values.
         const noun = createNoun(shared);
-        wordForms?.registerBaseLemmaForm(noun, lexicalForm, { synsetId });
+        wordForms?.registerBaseLemmaForm(noun, lexicalForm, undefined, synsetId);
         return generateNounForms(noun, wordForms);
       }
     }
@@ -2247,7 +2254,6 @@ export class WordSeeder {
       lexicalForm: { value: lemma, languageCode: { value: this.languageCode } },
       definition: synset.definition ? { value: synset.definition } : undefined,
       usageNotes: synset.examples.map((example) => ({ value: example })),
-      synsetId: { value: synset.synsetId, ...WORDNET_SYNSET_ID_SCHEME },
       isCommon: true,
       sourceReferences: [WORDNET_SOURCE_REFERENCE],
     };

@@ -121,18 +121,16 @@ export interface Phrase extends LinguisticUnit {
   // ── References ───────────────────────────────────────────
 
   /**
-   * Identifier of the Princeton WordNet 3.1 synset this Phrase
-   * corresponds to.
-   *
-   * Undefined for a Phrase that didn't come from WordSeeder.seedWordNet.
-   */
-  synsetId?: Identifier;
-
-  /**
    * Identifiers of every Sense (data/entities/sense.ts) this Phrase
    * lexicalizes.
    *
    * Empty for a Phrase that didn't come from WordSeeder.seedWordNet.
+   *
+   * Carries no `synsetId` of its own: WordNet's own synset identifier
+   * is an externally-defined attribute, not a fact intrinsic to a
+   * Phrase's own shape (Sense's own docstring, the identical reasoning)
+   * -- mapped onto `senseIds[0]` via `Phrases.synsetIdOf(phrase)`
+   * instead (data/phrases.ts).
    */
   senseIds: readonly Identifier[];
 
@@ -286,7 +284,7 @@ export function phraseAsWord(phrase: Phrase, phrases: Phrases, wordForms?: WordF
   // own base-lemma WordForm text -- the same rich Text (language/
   // dialect/version) the Phrase itself carries, not a bare `{value:
   // word.text}` default that would silently drop it.
-  const form = wordForms?.registerBaseLemmaForm(word, phrase.lexicalForm, { synsetId: phrase.synsetId });
+  const form = wordForms?.registerBaseLemmaForm(word, phrase.lexicalForm, undefined, phrases.synsetIdOf(phrase));
   if (form !== undefined) form.senseIds = phrase.senseIds;
   return word;
 }

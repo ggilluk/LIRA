@@ -6,6 +6,12 @@
  * A Word or Phrase that lexicalizes this Sense references it by
  * identifier rather than duplicating its data.
  *
+ * Carries no `synsetId` field of its own: WordNet's own synset
+ * identifier is an externally-defined attribute, not a fact intrinsic
+ * to this Sense's own shape, so it lives in a private side index
+ * inside `Senses` instead, read back via `Senses.synsetIdOf(sense)`
+ * (data/senses.ts, data_entity_design_decisions_log.md).
+ *
  * See `documentation/architecture/data_entity_design_decisions_log.md`
  * for the design history behind this shape.
  */
@@ -149,13 +155,4 @@ export interface Sense {
   seededDominanceSubmissiveWeight?: Number_;
 
 
-  // ── References ───────────────────────────────────────────
-
-  /**
-   * Identifier of the Princeton WordNet synset this Sense
-   * corresponds to.
-   *
-   * Undefined when this Sense did not come from WordNet.
-   */
-  synsetId?: Identifier;
 }

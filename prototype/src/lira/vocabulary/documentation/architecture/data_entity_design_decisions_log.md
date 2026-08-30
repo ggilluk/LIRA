@@ -275,3 +275,45 @@ narrowing from "any number of dialects" to "at most one" that's lossless
 today (nothing in the real cache or WordNet path ever populates more than
 zero), documented here as a deliberate, not accidental, narrowing should a
 future asset ever need more than one.
+
+## Sense
+
+### `synsetId`: a side index, not a field, everywhere it appeared
+
+`Sense`, `WordForm`, and `Phrase` each originally carried their own
+`synsetId?: Identifier` field, naming the Princeton WordNet synset the
+entity corresponds to. All three lost it: WordNet's own synset identifier
+is an *externally* defined attribute (WordNet's own, not a fact this
+codebase's own data model needs to assert about itself) -- `senseIds` is
+already the correct, internal way every Word/Phrase names which Sense(s) it
+lexicalizes, and `Sense` is already this codebase's own first-class
+counterpart to a WordNet synset (Sense's own docstring above `## Sense`).
+A second, WordNet-specific identifier duplicated onto three different
+entity types, alongside the `senseIds` reference that already reaches the
+one place (`Sense`) that fact belongs, was the thing to remove -- not
+`senseIds` itself, which stays exactly as it was.
+
+Each of the three now keeps this fact in a private side index instead,
+mirroring the identical `Phrases.partOfSpeechByUuid` pattern this same log
+already documents for `Phrase`'s own WordNet-tagged part of speech:
+- `Senses.synsetIdByUuid` (paired with the pre-existing `bySynsetId`
+  reverse index `WordSeeder.seedWordNet`'s own per-synset dedup needs),
+  read via `Senses.synsetIdOf(sense)`, written via `Senses.append(sense, synsetId?)`.
+- `WordForms.synsetIdByUuid`, read via `WordForms.synsetIdOf(word)`
+  (unchanged signature -- only its own backing store moved), written via
+  `WordForms.registerBaseLemmaForm(word, text, extra, synsetId?)`'s new
+  fourth parameter (previously folded into `extra`, but `synsetId` was
+  never really a `WordForm` attribute to begin with) or directly via the
+  new `WordForms.setSynsetId(form, synsetId)`.
+- `Phrases.synsetIdByUuid`, read via `Phrases.synsetIdOf(phrase)`, written
+  via `Phrases.append(phrase, partOfSpeech, synsetId?)`'s new third
+  parameter, or directly via the new `Phrases.setSynsetId(phrase, synsetId)`.
+
+`WordSeeder.orderSensesByFrequency()` is the one place that needs the
+setter form directly, not just the constructor-time parameter: it reorders
+a polysemous Word/Phrase's own `senseIds` by real usage frequency after
+every synset has been seeded, and re-syncs the denormalized synset
+identifier to match the new `senseIds[0]` in the same pass (that method's
+own docstring on why this invariant matters and how it stays correct --
+the same reasoning applied before this change, just against a side index
+now instead of a field write).

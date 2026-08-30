@@ -37,6 +37,12 @@ export class WordForms {
   // later-known fields are ready, the same idempotent find-or-create
   // this index already relies on throughout.
   private readonly textIndex = new Map<string, Array<{ form: WordForm; word: Word }>>();
+  // WordNet's own synset identifier for each WordForm that has one,
+  // keyed by graphUuid -- synsetIdOf()'s own backing store. Not a field
+  // on WordForm itself (WordForm's own docstring on why): it's an
+  // externally-defined WordNet attribute, mapped onto the base-lemma
+  // form's own senseIds[0] rather than duplicated as a scalar field.
+  private readonly synsetIdByUuid = new Map<string, Identifier>();
 
   all(): readonly WordForm[] {
     return this.forms.slice();
@@ -145,14 +151,29 @@ export class WordForms {
     return result;
   }
 
-  /** `word`'s own base-lemma WordForm's own `synsetId` -- Word's former
-   * `synsetId` field's own exact replacement. Unlike `senseIdsOf()`
-   * above, no cross-form union is needed: synsetId is only ever set on
-   * the base-lemma form (WordSeeder.synsetMemberToWord()'s own `extra`
-   * parameter, the WordNet path's only writer), never on any other
-   * WordForm, AUXILIARY's own included. */
+  /** `word`'s own base-lemma WordForm's own synset identifier -- Word's
+   * former `synsetId` field's own exact replacement, and not a field on
+   * `WordForm` either (that entity's own docstring on why: WordNet's
+   * own synset identifier is externally defined, not intrinsic to a
+   * WordForm's own shape). Unlike `senseIdsOf()` above, no cross-form
+   * union is needed: a synset identifier is only ever set on the
+   * base-lemma form (WordSeeder.synsetMemberToWord()'s own
+   * `registerBaseLemmaForm()` call, the WordNet path's only writer),
+   * never on any other WordForm, AUXILIARY's own included. */
   synsetIdOf(word: Word): Identifier | undefined {
-    return this.baseLemmaFormOf(word)?.synsetId;
+    const form = this.baseLemmaFormOf(word);
+    return form !== undefined ? this.synsetIdByUuid.get(graphUuid(form)) : undefined;
+  }
+
+  /** Reassigns `form`'s own synset identifier -- `registerBaseLemmaForm()`'s
+   * own `synsetId` parameter is this method's usual caller, but
+   * WordSeeder.orderSensesByFrequency() also calls this directly once a
+   * Word's own senses are reordered by real frequency, to keep this
+   * value in sync with the new `senseIds[0]` (that method's own
+   * docstring). Passing `undefined` clears any previously-set value. */
+  setSynsetId(form: WordForm, synsetId: Identifier | undefined): void {
+    if (synsetId !== undefined) this.synsetIdByUuid.set(graphUuid(form), synsetId);
+    else this.synsetIdByUuid.delete(graphUuid(form));
   }
 
   /** `word`'s own base-lemma WordForm's own `contractionOf` -- Word's
@@ -212,10 +233,17 @@ export class WordForms {
    * own callers already do. Applied every call, not just the first --
    * idempotent the same way the rest of this method is, so a re-seed
    * simply reapplies the same values rather than needing its own
-   * separate guard. */
-  registerBaseLemmaForm(word: Word, text?: Text, extra?: WordFormAttributes): WordForm {
+   * separate guard.
+   *
+   * `synsetId`, when supplied, sets this WordForm's own synset
+   * identifier via `setSynsetId()` above -- kept as its own parameter,
+   * not folded into `extra`, since it isn't a `WordForm` field at all
+   * (`synsetIdOf()`'s own docstring on why); only
+   * WordSeeder.synsetMemberToWord() ever passes it. */
+  registerBaseLemmaForm(word: Word, text?: Text, extra?: WordFormAttributes, synsetId?: Identifier): WordForm {
     const form = this.registerNamedForm(word, WordFormField.BASE_LEMMA_CANONICAL_FORM, text ?? { value: word.text });
     if (extra !== undefined) Object.assign(form, extra);
+    if (synsetId !== undefined) this.setSynsetId(form, synsetId);
     return form;
   }
 
@@ -241,6 +269,11 @@ export class WordForms {
    * same accepted gap rather than solving it unilaterally one layer
    * down while Senses still has it. */
   seedFrom(other: WordForms): void {
-    for (const form of other.forms) this.append(copyWordFormWithFreshUuid(form));
+    for (const form of other.forms) {
+      const synsetId = other.synsetIdByUuid.get(graphUuid(form));
+      const copy = copyWordFormWithFreshUuid(form);
+      this.append(copy);
+      if (synsetId !== undefined) this.setSynsetId(copy, synsetId);
+    }
   }
 }

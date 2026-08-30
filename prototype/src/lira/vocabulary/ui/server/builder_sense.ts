@@ -56,7 +56,7 @@ export function senseRecordFor(sense: Sense, senses: Senses, phrases: Phrases, d
   return {
     id: senseUuid,
     entry_id: sense.entryId.value,
-    synset_id: sense.synsetId?.value ?? null,
+    synset_id: senses.synsetIdOf(sense)?.value ?? null,
     lexical_form: members.map((member) => member.text).join(", "),
     pos: firstMemberPos !== undefined ? PartOfSpeech[firstMemberPos] : null,
     gloss: sense.gloss?.value ?? "",

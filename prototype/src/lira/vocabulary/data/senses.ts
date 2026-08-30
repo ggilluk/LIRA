@@ -1,3 +1,4 @@
+import type { Identifier } from "../../value_objects";
 import { graphUuid as phraseGraphUuid, type Phrase } from "./phrase";
 import { copySenseWithFreshUuid, graphUuid } from "../role/sense_processor";
 import { graphUuid as wordGraphUuid } from "../role/word_processor";
@@ -34,6 +35,12 @@ export class Senses {
   private senses: Sense[] = [];
   private readonly byUuid = new Map<string, Sense>();
   private readonly bySynsetId = new Map<string, Sense>();
+  // WordNet's own synset identifier for each Sense, keyed by graphUuid --
+  // synsetIdOf()'s own backing store. Not a field on Sense itself
+  // (Sense's own docstring on why): this is `bySynsetId`'s own reverse
+  // index, letting a caller go uuid -> synsetId as easily as
+  // findBySynsetId() already goes synsetId -> Sense.
+  private readonly synsetIdByUuid = new Map<string, Identifier>();
   private readonly membersBySenseId = new Map<string, Array<Word | Phrase>>();
   private readonly memberMetadata = new Map<string, Readonly<Record<string, unknown>>>();
 
@@ -49,10 +56,20 @@ export class Senses {
     return this.bySynsetId.get(synsetId);
   }
 
-  append(sense: Sense): void {
+  /** `sense`'s own WordNet synset identifier, as supplied to `append()`
+   * -- undefined for a Sense that didn't come from WordNet, or that
+   * this store never appended. */
+  synsetIdOf(sense: Sense): Identifier | undefined {
+    return this.synsetIdByUuid.get(graphUuid(sense));
+  }
+
+  append(sense: Sense, synsetId?: Identifier): void {
     this.senses.push(sense);
     this.byUuid.set(graphUuid(sense), sense);
-    if (sense.synsetId !== undefined) this.bySynsetId.set(sense.synsetId.value, sense);
+    if (synsetId !== undefined) {
+      this.bySynsetId.set(synsetId.value, sense);
+      this.synsetIdByUuid.set(graphUuid(sense), synsetId);
+    }
   }
 
   totalEntries(): number {
@@ -125,6 +142,6 @@ export class Senses {
    * used the same way (VocabularyContext's own Physics-from-Common
    * snapshot). */
   seedFrom(other: Senses): void {
-    for (const sense of other.senses) this.append(copySenseWithFreshUuid(sense));
+    for (const sense of other.senses) this.append(copySenseWithFreshUuid(sense), other.synsetIdOf(sense));
   }
 }
