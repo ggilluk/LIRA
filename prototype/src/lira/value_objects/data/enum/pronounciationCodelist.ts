@@ -1,5 +1,5 @@
 /** International Phonetic Alphabet pronunciation symbol code list. */
-export enum IPACodelist {
+export enum PronounciationCodelist {
   P = "p", B = "b", T = "t", D = "d", RETROFLEX_T = "ʈ", RETROFLEX_D = "ɖ", C = "c", PALATAL_J = "ɟ", K = "k", G = "ɡ", Q = "q", SMALL_CAPITAL_G = "ɢ", GLOTTAL_STOP = "ʔ",
   M = "m", LABIODENTAL_NASAL = "ɱ", N = "n", RETROFLEX_N = "ɳ", PALATAL_N = "ɲ", VELAR_N = "ŋ", UVULAR_N = "ɴ", BILABIAL_TRILL = "ʙ", R = "r", UVULAR_TRILL = "ʀ", LABIODENTAL_FLAP = "ⱱ", ALVEOLAR_TAP = "ɾ", RETROFLEX_FLAP = "ɽ",
   PHI = "ɸ", BETA = "β", F = "f", V = "v", THETA = "θ", ETH = "ð", S = "s", Z = "z", ESH = "ʃ", EZH = "ʒ", RETROFLEX_S = "ʂ", RETROFLEX_Z = "ʐ", PALATAL_C_FRICATIVE = "ç", PALATAL_J_FRICATIVE = "ʝ", X = "x", GAMMA = "ɣ", CHI = "χ", INVERTED_SMALL_CAPITAL_R = "ʁ", H_BAR = "ħ", AYN = "ʕ", H = "h", HOOKTOP_H = "ɦ", LATERAL_FRICATIVE_VOICELESS = "ɬ", LATERAL_FRICATIVE_VOICED = "ɮ",
