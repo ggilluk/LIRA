@@ -390,3 +390,26 @@ file is a different concern from storing the parsed result on a `WordForm`
 regardless of whether anything downstream keeps that value once parsed,
 so `recordWordFormAttributes()` stopped storing it, but nothing about the
 asset validation pass changed.
+
+### `normalisedForm`: derivable on demand, not a second stored `Text`
+
+Phrase originally carried `normalisedForm?: Text` alongside `lexicalForm`
+-- `lexicalForm`'s own lower-cased value, defaulted by `createPhrase()` to
+`{value: phrase.text.toLowerCase()}` whenever a caller didn't supply one,
+and read back from `entryToPhrase()`'s own `entry.normalised_form` for a
+real Common Vocabulary Cache entry. Removed outright: `textToLowerCase()`
+(value_objects/data/text.ts) now derives the identical value from
+`phrase.lexicalForm` on demand, so `normalisedForm` was never an
+independent fact -- purely `lexicalForm.value.toLowerCase()`, kept in
+sync by convention (`createPhrase()`'s own default) rather than by
+construction. `Phrases`'s own `byText` lookup index already normalises
+this way internally (`text.toLowerCase()` at both `append()` and
+`lookupAll()` time) and never read the stored field either, so nothing
+outside `createPhrase()`/`entryToPhrase()` themselves ever touched it.
+
+The wire schema field (`WordFileEntry.normalised_form`) and
+`WordSeeder.validateAssets()`'s own consistency check on it (`entry.normalised_form`
+must equal `entry.lexical_form.toLowerCase()`) both stay, the same
+`syllable_count` precedent immediately above: validating the source
+asset's own internal consistency is a different concern from storing the
+already-derivable value on a `Phrase`.

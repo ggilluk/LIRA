@@ -2537,7 +2537,6 @@ export class WordSeeder {
       text: entry.text ?? entry.lexical_form,
       entryId: { value: entry.entry_id },
       lexicalForm,
-      normalisedForm: { value: entry.normalised_form },
       gloss: optText(entry.gloss),
       definition: optText(entry.definition),
       usageNotes: (entry.usage_notes ?? []).map((note) => ({ value: note })),

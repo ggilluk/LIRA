@@ -73,11 +73,13 @@ export interface Phrase extends LinguisticUnit {
    * top-level `version`/`languageCode`/`dialectCodes` fields of its own
    * for those to duplicate: each is a fact about one specific wording,
    * not about the Phrase as a whole (data_entity_design_decisions_log.md).
+   *
+   * No separate `normalisedForm` field either: a caller wanting this
+   * Phrase's own lower-cased form reads it on demand via
+   * `textToLowerCase(phrase.lexicalForm)` (value_objects/data/text.ts)
+   * instead of a second, always-derivable `Text` kept in sync by hand.
    */
   lexicalForm?: Text;
-
-  /** This Phrase's own normalised (lower-cased) written form. */
-  normalisedForm?: Text;
 
   /** Short gloss summarising this Phrase's own primary sense. */
   gloss?: Text;
@@ -220,7 +222,6 @@ export function createPhrase(init: PhraseInit): Phrase {
     ...init,
   };
   if (phrase.lexicalForm === undefined) phrase.lexicalForm = { value: phrase.text };
-  if (phrase.normalisedForm === undefined) phrase.normalisedForm = { value: phrase.text.toLowerCase() };
   return phrase;
 }
 
