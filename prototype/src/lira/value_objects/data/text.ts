@@ -49,3 +49,14 @@ export interface Text {
 export function text(value: string, extra: Omit<Text, "value"> = {}): Text {
   return { value, ...extra };
 }
+
+/** `text`'s own `value`, lower-cased. */
+export function textToLowerCase(text: Text): string {
+  return text.value.toLowerCase();
+}
+
+/** `textToLowerCase()`'s own exact counterpart, upper-casing `value`
+ * instead. */
+export function textToUpperCase(text: Text): string {
+  return text.value.toUpperCase();
+}

@@ -14,4 +14,4 @@ export { DialectCodelist, dialectCodelistFromCode } from "./data/enum/dialectCod
 export { ScriptCodelist, scriptCodelistFromCode } from "./data/enum/scriptCodelist";
 export { type Identifier, identifier } from "./data/identifier";
 export { type Number_, number } from "./data/number";
-export { type Text, text } from "./data/text";
+export { type Text, text, textToLowerCase, textToUpperCase } from "./data/text";

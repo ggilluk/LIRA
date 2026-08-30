@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { text } from "./text";
+import { text, textToLowerCase, textToUpperCase } from "./text";
 import { LanguageCode } from "./code/languageCode";
 import { LanguageCodelist } from "./enum/languageCodelist";
 import { ScriptCode } from "./code/scriptCode";
@@ -41,5 +41,35 @@ describe("text", () => {
   it("carries every applicable format when a word form has more than one rule", () => {
     // Noun.pluralNumberForm's own #1/#2/#3 rules (word_form_part_of_speech_matrix.md).
     expect(text("boxes", { formats: ["/s$/i", "/es$/i"] })).toEqual({ value: "boxes", formats: ["/s$/i", "/es$/i"] });
+  });
+});
+
+describe("textToLowerCase", () => {
+  it("returns value lower-cased, as a plain string", () => {
+    expect(textToLowerCase(text("DOGS"))).toBe("dogs");
+  });
+
+  it("ignores every other attribute -- only value is read", () => {
+    const languageCode = new LanguageCode(LanguageCodelist.EN_ENGLISH);
+    expect(textToLowerCase(text("BAIRN", { languageCode, version: "1.0" }))).toBe("bairn");
+  });
+
+  it("leaves an already-lower-case value unchanged", () => {
+    expect(textToLowerCase(text("dogs"))).toBe("dogs");
+  });
+});
+
+describe("textToUpperCase", () => {
+  it("returns value upper-cased, as a plain string", () => {
+    expect(textToUpperCase(text("dogs"))).toBe("DOGS");
+  });
+
+  it("ignores every other attribute -- only value is read", () => {
+    const languageCode = new LanguageCode(LanguageCodelist.EN_ENGLISH);
+    expect(textToUpperCase(text("bairn", { languageCode, version: "1.0" }))).toBe("BAIRN");
+  });
+
+  it("leaves an already-upper-case value unchanged", () => {
+    expect(textToUpperCase(text("DOGS"))).toBe("DOGS");
   });
 });
