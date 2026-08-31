@@ -43,6 +43,7 @@ import { createInterjection } from "./processor/interjection_processor";
 import { createNoun, generateNounForms, isNoun } from "./processor/noun_processor";
 import { createNumeral } from "./processor/numeral_processor";
 import { PartOfSpeech } from "../data/enums/part_of_speech";
+import { ConjunctionType } from "../data/enums/conjunction_type";
 import { createPreposition } from "./processor/preposition_processor";
 import { createPronoun } from "./processor/pronoun_processor";
 import { WordFormField } from "../data/enums/word_forms_enum";
@@ -673,6 +674,27 @@ function registerUniqueSense(
 // to share code.
 function isMultiWordLemma(lemma: string): boolean {
   return /\s/.test(lemma.trim());
+}
+
+// Maps a CONJUNCTION WordFileEntry's own `closed_class_kind`
+// ("coordinating_conjunction"/"subordinating_conjunction" -- every
+// entry in coordinating_conjunctions.json/subordinating_conjunctions.json
+// carries one, confirmed against the bundled files) onto
+// Conjunction.conjunctionType (data/entities/conjunction.ts). Throws
+// on anything else reaching PartOfSpeech.CONJUNCTION with no
+// recognised closed_class_kind -- every real bundled CONJUNCTION entry
+// has one, so this is a defensive check against a future closed-class
+// file adding a CONJUNCTION entry without it, not a real, expected
+// case today.
+function conjunctionTypeFor(entry: WordFileEntry): ConjunctionType {
+  switch (entry.closed_class_kind) {
+    case "coordinating_conjunction":
+      return ConjunctionType.COORDINATING;
+    case "subordinating_conjunction":
+      return ConjunctionType.SUBORDINATING;
+    default:
+      throw new Error(`CONJUNCTION entry '${entry.entry_id}' has no recognised closed_class_kind ('${entry.closed_class_kind}')`);
+  }
 }
 
 interface PromotedDocEntry extends WordFileEntry {
@@ -2505,7 +2527,11 @@ export class WordSeeder {
       case PartOfSpeech.PREPOSITION:
         return createPreposition(fields);
       case PartOfSpeech.CONJUNCTION:
-        return createConjunction(fields);
+        // conjunctionTypeFor()'s own docstring on why this is read from
+        // `entry` rather than `fields` -- Conjunction.conjunctionType
+        // has no counterpart in the shared `fields` object above, since
+        // every other POS branch has no use for it.
+        return createConjunction({ ...fields, conjunctionType: conjunctionTypeFor(entry) });
       case PartOfSpeech.INTERJECTION:
         return createInterjection(fields);
       case PartOfSpeech.NUMERAL:

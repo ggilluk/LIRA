@@ -3,7 +3,7 @@ import type { Word } from "../../data/entities/word";
 import { createWord } from "../word_processor";
 import type { Conjunction } from "../../data/entities/conjunction";
 
-export type ConjunctionInit = Pick<Conjunction, "text"> & Partial<Omit<Conjunction, "text" | "partOfSpeech">>;
+export type ConjunctionInit = Pick<Conjunction, "text" | "conjunctionType"> & Partial<Omit<Conjunction, "text" | "partOfSpeech" | "conjunctionType">>;
 
 export function createConjunction(init: ConjunctionInit): Conjunction {
   return createWord({ ...init, partOfSpeech: PartOfSpeech.CONJUNCTION }) as Conjunction;

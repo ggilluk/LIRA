@@ -31,6 +31,14 @@ export interface WordFileEntry {
   script_code?: string | null;
   part_of_speech: string;
   closed_class?: boolean;
+  /** Which closed-class file this entry came from ("pronoun",
+   * "coordinating_conjunction", "subordinating_conjunction", ...) --
+   * mirrors the file-level `WordFileDocument.closed_class_kind` on
+   * each individual entry too. Read today only for a CONJUNCTION entry
+   * (WordSeeder.entryToWord()'s own Conjunction.conjunctionType
+   * mapping); every other file carries this per-entry but nothing yet
+   * needs the value at that granularity. */
+  closed_class_kind?: string;
   definition?: string | null;
   /** Ordered list of distinct sense definitions for a hand-curated
    * closed-class Word that genuinely carries more than one meaning --

@@ -1127,3 +1127,113 @@ WordNet (Playwright): "a few"'s own detail panel now renders "Head Word:
 few" (tagged Pronoun, underlined, linking to the new standalone PRONOUN
 Word), alongside its own correct "Determiners: #1 a" row -- "few" no
 longer appears in the Determiners list at all, only "a" does.
+
+## Coordination
+
+### `coordinates`/`coordinator`: a flat n-ary array replaces the binary `left`/`conjunction`/`right` shape
+
+`data/entities/coordination.ts` and its 12 specialisations (`WordCoordination`,
+`NounCoordination`, `VerbCoordination`, `AdjectiveCoordination`,
+`AdverbCoordination`, `PhraseCoordination`, `NounPhraseCoordination`,
+`VerbPhraseCoordination`, `AdjectivePhraseCoordination`,
+`AdverbPhraseCoordination`, `PrepositionalPhraseCoordination`,
+`ClauseCoordination`) were added as pure type scaffolding, no consumers
+wired up (commit `2e1f979`) -- `left: T | Coordination<T>`, `right: T |
+Coordination<T>`, and a required, embedded `conjunction: Conjunction`.
+Three or more coordinates nested ("A and B and C" ->
+`Coordination(A, and, Coordination(B, and, C))`), which only works when
+every join genuinely repeats the conjunction word. It can't represent
+the far more common English list shape, where only the last join gets a
+conjunction and every earlier one is just a comma ("red, white, and
+blue") -- there's no real `Conjunction` Word standing in for the comma
+between "red" and "white", and `conjunction` was required on every
+`Coordination`, inner ones included. Filed as
+[ggilluk/LIRA#3](https://github.com/ggilluk/LIRA/issues/3) at the time,
+with three candidate directions, none chosen yet.
+
+Fixed by taking that issue's own third suggested direction (flatten the
+shape rather than force it through nesting), refined further: `left`/
+`right` became a single `coordinates: readonly (T | Coordination<T>)[]`
+-- two or more elements in order, so "red, white, and blue" is one
+three-element array on one `Coordination`, not a nested tree at all.
+Layered coordination ("A and B and C" read as two real, separate
+conjunctions) remains representable too -- a `coordinates` entry can
+still itself be a nested `Coordination<T>`, unchanged from what `left`/
+`right` already allowed. The "at least two" invariant isn't enforced at
+the type level -- no runtime or TypeScript validation mechanism exists
+for this anywhere in this codebase yet, the same "documented ahead of
+enforcement" status `data/entities/noun_phrase.ts`'s own ModifierRole
+note already carries.
+
+`conjunction: Conjunction` (an embedded Word copy) became `coordinator?:
+Identifier` (an optional graph-reference pointer to a WordForm,
+resolved against a `WordForms` store) -- `Phrase.headWord`'s own
+by-reference pattern (`data/entities/phrase.ts`), not a copy. Optional
+because the fix above already covers the case that motivated it: an
+asyndetic list join ("red, white, blue" with no "and" at all, or the
+non-final joins of "red, white, and blue") now has an honest
+representation with `coordinator` simply left `undefined`, rather than
+needing a fake value or a second discriminant field (the issue's own
+first two suggested directions, not taken).
+
+`Coordination<T>` also gained a `T extends LinguisticUnit` constraint --
+every real instantiation (`Adjective`, `Verb`, `Noun`, `Adverb`, `Word`
+via Word; `NounPhrase`, `AdjectivePhrase`, `AdverbPhrase`, `VerbPhrase`,
+`PrepositionalPhrase`, `Phrase` via Phrase; `Clause` directly) already
+satisfied it structurally, so this changes no call site, only makes
+explicit what was already true: every coordinate is some kind of
+Linguistic Unit, `Coordinates: LinguisticUnit [2..*]`'s own general
+shape, narrowed per specialisation the same way `left`/`right` already
+were.
+
+Still no consumers wired up -- this remains pure type scaffolding, the
+same status the original addition had. Closes
+[ggilluk/LIRA#3](https://github.com/ggilluk/LIRA/issues/3).
+
+### `Conjunction.conjunctionType`: coordinating vs. subordinating, now on the Word itself
+
+A `Coordination`'s own `coordinator` (above) is only ever meaningful
+when it names a *coordinating* Conjunction ("and"/"or"/"but") -- never a
+*subordinating* one ("although"/"because"), which introduces a
+dependent clause rather than joining equal constituents (Huddleston,
+Pullum & Reynolds, Chapter 15). The Common Vocabulary Cache already
+keeps the two apart at the file level
+(`coordinating_conjunctions.json`/`subordinating_conjunctions.json`,
+each entry's own `closed_class_kind`), but `Conjunction`
+(`data/entities/conjunction.ts`) carried no field of its own recording
+which one a given seeded Word came from -- the distinction existed only
+implicitly, in which file happened to seed it.
+
+Added `ConjunctionType` (`data/enums/conjunction_type.ts`,
+`COORDINATING = 0`/`SUBORDINATING = 1`, the same numeric-code convention
+as `PartOfSpeech`/`PhraseType`/`ModifierRole`) and a new required
+`conjunctionType: ConjunctionType` field on `Conjunction`. Wired at seed
+time: `WordFileEntry` (`role/asset_loader.ts`) gained a
+`closed_class_kind?: string` field -- the per-entry copy of this fact
+already present in the bundled JSON (verified against both files: every
+entry in each carries its own matching `closed_class_kind`, redundant
+with but identical to the file-level one) was simply never part of the
+parsed schema before now. `word_seeder.ts`'s new
+`conjunctionTypeFor(entry)` maps `"coordinating_conjunction"` ->
+`COORDINATING`, `"subordinating_conjunction"` -> `SUBORDINATING`,
+throwing on anything else (defensive -- every real bundled CONJUNCTION
+entry has one of the two, confirmed directly). `entryToWord()`'s own
+`PartOfSpeech.CONJUNCTION` branch passes it into `createConjunction()`
+explicitly, rather than through the shared `fields` object every other
+branch reads from -- no other POS has a use for it, so it stays a
+CONJUNCTION-only override at that one call site, the same shape
+`ConjunctionInit` (`role/processor/conjunction_processor.ts`) now
+requires (`Pick<Conjunction, "text" | "conjunctionType">`, not merely
+`Partial`, so a future call site that forgets it fails to compile
+rather than silently seeding an unset value).
+
+Multi-word CONJUNCTION entries (`subordinating_conjunctions.json`'s own
+19, e.g. "in order that") seed as Phrases via `entryToPhrase()`, not
+`entryToWord()` -- `conjunctionTypeFor()` never runs against them,
+unaffected: Phrase carries no `Conjunction` subtype of its own for a
+`conjunctionType` to live on.
+
+Verified against real seeded data: "and"/"but"/"or"
+(`coordinating_conjunctions.json`) seed with `conjunctionType:
+COORDINATING`; "although"/"because" (`subordinating_conjunctions.json`)
+seed with `SUBORDINATING`.

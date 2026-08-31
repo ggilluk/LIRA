@@ -9,6 +9,7 @@ import { SemanticRelationshipSystemPropertyTensor } from "./data/semantic_relati
 import { SemanticRelationshipKind } from "./data/enums/semantic_relationship_kind";
 import { SemanticRelationshipProcessor } from "./role/semantic_relationship_processor";
 import { PartOfSpeech } from "./data/enums/part_of_speech";
+import { ConjunctionType } from "./data/enums/conjunction_type";
 import { WordFormField } from "./data/enums/word_forms_enum";
 import type { Word } from "./data/entities/word";
 import { createWord, graphUuid as wordGraphUuid, validateFormText } from "./role/word_processor";
@@ -19,6 +20,7 @@ import type { Adjective } from "./data/entities/adjective";
 import { createAdverb, determineGradability as determineAdverbGradability, generateAdverbForms, isAdverb, validateAdverb } from "./role/processor/adverb_processor";
 import type { Adverb } from "./data/entities/adverb";
 import { isConjunction } from "./role/processor/conjunction_processor";
+import type { Conjunction } from "./data/entities/conjunction";
 import { createDeterminer, isDeterminer, validateDeterminer } from "./role/processor/determiner_processor";
 import { HypernymRootWord } from "./data/enums/hypernym_root_word";
 import { isInterjection } from "./role/processor/interjection_processor";
@@ -1274,7 +1276,15 @@ describe("WordSeeder against the bundled Common Vocabulary Cache", () => {
     expect(isPronoun(dictionary.lookup("she")!)).toBe(true);
     expect(isDeterminer(dictionary.lookup("the")!)).toBe(true);
     expect(isPreposition(dictionary.lookup("in")!)).toBe(true);
-    expect(isConjunction(dictionary.lookup("and")!)).toBe(true);
+    const and = dictionary.lookup("and")!;
+    expect(isConjunction(and)).toBe(true);
+    // Conjunction.conjunctionType -- word_seeder.ts's own
+    // conjunctionTypeFor() reads coordinating_conjunctions.json's own
+    // per-entry closed_class_kind ("coordinating_conjunction") to set
+    // this, distinct from the merely-structural isConjunction() check
+    // above (which only narrows on partOfSpeech).
+    if (!isConjunction(and)) throw new Error("unreachable");
+    expect(and.conjunctionType).toBe(ConjunctionType.COORDINATING);
     expect(isInterjection(dictionary.lookup("yes")!)).toBe(true);
     // "one" is a deliberate homograph -- pronouns.json's own indefinite
     // PRONOUN sense loads first and stays Dictionary.lookup()'s default
@@ -1290,6 +1300,30 @@ describe("WordSeeder against the bundled Common Vocabulary Cache", () => {
     const she = dictionary.lookup("she");
     if (!isPronoun(she!)) throw new Error("unreachable");
     expect(she.wordFormIds).toEqual([]);
+  });
+
+  it("Conjunction.conjunctionType distinguishes coordinating_conjunctions.json from subordinating_conjunctions.json, per real bundled closed_class_kind data", () => {
+    const dictionary = new Dictionary();
+    new WordSeeder("en").seedClosedClassWords(dictionary, new Phrases());
+
+    const coordinating = (text: string): Conjunction => {
+      const word = dictionary.lookup(text)!;
+      if (!isConjunction(word)) throw new Error("unreachable");
+      return word;
+    };
+    // coordinating_conjunctions.json's own 7 entries -- word_seeder.ts's
+    // own conjunctionTypeFor() maps every one of them to COORDINATING
+    // via their shared closed_class_kind, regardless of which one is
+    // looked up.
+    expect(coordinating("and").conjunctionType).toBe(ConjunctionType.COORDINATING);
+    expect(coordinating("but").conjunctionType).toBe(ConjunctionType.COORDINATING);
+    expect(coordinating("or").conjunctionType).toBe(ConjunctionType.COORDINATING);
+    // subordinating_conjunctions.json's own single-word entries (the
+    // file's other 19 entries are multi-word, seeded as Phrases instead
+    // -- entryToPhrase(), not entryToWord(), so conjunctionTypeFor()
+    // never runs against them) -- mapped to SUBORDINATING instead.
+    expect(coordinating("although").conjunctionType).toBe(ConjunctionType.SUBORDINATING);
+    expect(coordinating("because").conjunctionType).toBe(ConjunctionType.SUBORDINATING);
   });
 
   it("gives every hand-curated Word/Phrase its own unique Sense, carrying its domainTag/relatedDomainTags, when a Senses is supplied", () => {
