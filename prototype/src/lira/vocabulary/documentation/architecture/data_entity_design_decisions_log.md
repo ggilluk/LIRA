@@ -1293,12 +1293,13 @@ into the Physics domain snapshot inside `vocabulary_worker.ts`
 `coordinations` simply joins the stores that snapshot has never
 covered, not a new omission of its own.
 
-Still no seeder populates a real `Coordinations` store with a real
-seeded `Coordination` -- detecting coordinate structure in real
+At this point no seeder yet populates a real `Coordinations` store with
+a real seeded `Coordination` -- detecting coordinate structure in real
 Common Vocabulary Cache or WordNet data (or real Linguistics Layer
 text) is a separate, much larger undertaking than giving the type
-family a store and processor, and out of scope here. Verified via
-direct construction instead (`vocabulary.test.ts`'s own new
+family a store and processor, and was out of scope here (a small,
+closed-set seeder follows in the section below). Verified via direct
+construction instead (`vocabulary.test.ts`'s own new
 `describe("Coordinations", ...)` block): `createCoordination()`/
 `copyCoordinationWithFreshUuid()`/`graphUuid()` against a synthetic
 `Coordination<Adjective>`, the `Coordinations` store's own CRUD/seedFrom
@@ -1309,3 +1310,84 @@ Words) with `coordinator` resolving, via a real `WordForms` store, to
 "and"'s own base-lemma `WordForm`, whose owning Word is a Conjunction
 with `conjunctionType: ConjunctionType.COORDINATING` -- exactly the
 shape `Coordination.coordinator`'s own docstring describes.
+
+### `WordCoordinationSeeder`: a small, closed-set seeder, the first real Coordination producer
+
+`Coordinations`/`coordination_processor.ts` (above) gave the type
+family a real store and processor, but still no seeder -- every real
+`Coordination` in this codebase existed only inside a test. Detecting
+coordinate structure in arbitrary real text (or inferring it from
+WordNet, which encodes no coordination facts of its own at all) is a
+genuinely large, separate undertaking; what's added here instead is
+much narrower: a small, closed, hand-curated set of fixed, idiomatic
+coordinate expressions that are themselves a real, if minor, part of
+English's own closed-class inventory -- "salt and pepper", "trial and
+error", "cause and effect", "law and order", "bread and butter" (`NOUN`),
+"back and forth", "here and there", "now and then" (`ADVERB`) -- the
+same "closed set, hand-curated, real linguistic fact" spirit
+`coordinating_conjunctions.json`/`DETERMINER_LEMMAS`/every other
+closed-class source already has, just for coordinate pairs instead of
+single lemmas.
+
+Source data: `assets/common/en/word_coordinations.json`, one entry per
+expression naming its own `coordinates` (two or more lexical forms) and
+`coordinator` (a coordinating conjunction's own lexical form, "and" for
+every entry today) -- `assets/common/en/README.md`'s own new "Word
+coordinations" section has the full schema and rationale, including why
+this file carries no `WordFileEntry`-shaped schema and sits outside
+`validateAssets()`'s own count/manifest checks entirely
+(`preposition_verb_noun_senses.json`'s own identical status, read via
+`readWordDirJson()` rather than the strict `readWordFile()`/
+`WordFileDocument` path, `role/word_coordination_seeder.ts`'s own
+docstring on why).
+
+Every `coordinates` word here is open-class (`NOUN`/`ADVERB`), which
+only exists in a Domain's own Dictionary once `WordSeeder.seedWordNet()`
+has actually run -- unlike `PrepositionSenseSeeder`'s own targets, every
+hand-curated `PREPOSITION` already existing before WordNet ever loads.
+`WordCoordinationSeeder` is meant to run only after `seedWordNet()`
+completes, `PrepositionSenseSeeder`'s own identical timing
+(`role/web_worker/vocabulary_worker.ts`'s own `handleSeedWordNet()`
+calls both, back to back); called any earlier, every `coordinates` word
+fails to resolve and the whole entry is skipped, the same "skipped, not
+an error" outcome `skipUnresolvable` already gives an ordinary
+unresolvable relationship spec.
+
+Resolution deliberately does NOT reuse `phrase_processor.ts`'s own
+`resolvedWordFor()` -- that function always returns *some* Word (a Head
+position always has a real token to resolve, best-effort, falling back
+to the first-seeded homograph when no exact match exists). A
+coordinate here needs the opposite contract: `wordWithPartOfSpeech()`
+(`role/word_coordination_seeder.ts`) returns `undefined`, skipping the
+whole entry, rather than ever silently coordinating the wrong
+homograph -- this session's own "a few" fix (this log's own "Second
+follow-up" section above) is exactly the failure mode a silent fallback
+here would risk repeating, just for a Coordination's own `coordinates`
+instead of a Phrase's own `headWord`. `coordinator` resolution is
+similarly strict: `dictionary.lookupAll(text)`, filtered to Conjunction
+homographs, further filtered to `conjunctionType: COORDINATING` --
+`Coordination.coordinator`'s own docstring requirement, checked here
+rather than assumed.
+
+Idempotent across repeated calls (an existing `entryId.value`, read
+back from the Domain's own `Coordinations.all()`, is never seeded
+twice) -- `PrepositionSenseSeeder`'s own identical guard shape.
+`entryId` itself is built via `identifier(entry.entry_id)` (not the
+`{ value: entry.entry_id }` object literal `entryToWord()`/
+`entryToPhrase()` use) -- those two deliberately leave `entryId.uuid`
+unset, fixed up later by `copyWordWithFreshUuid()`/
+`copyPhraseWithFreshUuid()` once `seedClosedClassWords()`'s own per-
+Domain loop has a real `copy` to mint a fresh uuid for (word_seeder.ts's
+own cached, domain-agnostic prototype pattern) -- `WordCoordinationSeeder`
+has no such two-phase cache, it constructs one real per-Domain
+`Coordination` directly, so `identifier()`'s own default behaviour (a
+real `uuid` alongside the given `value`, in one call) is what's needed
+here instead.
+
+Verified against real seeded data (`vocabulary.test.ts`): a no-op
+before `seedWordNet()` runs, exactly 8 `WordCoordination`s (one per
+`word_coordinations.json` entry) after, "salt and pepper" resolving to
+two real `NOUN` Words plus a `coordinator` naming "and"'s own real
+base-lemma `WordForm`, "back and forth" resolving the identical shape
+with `ADVERB` instead, and a second `seed()` call against the same
+Domain creating nothing new.

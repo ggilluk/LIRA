@@ -23,6 +23,8 @@ import { createConjunction, isConjunction } from "./role/processor/conjunction_p
 import type { Conjunction } from "./data/entities/conjunction";
 import { Coordinations } from "./data/coordinations";
 import { createCoordination, copyCoordinationWithFreshUuid, graphUuid as coordinationGraphUuid } from "./role/coordination_processor";
+import { WordCoordinationSeeder } from "./role/word_coordination_seeder";
+import type { LinguisticUnit } from "../linguistics/data/linguistic_unit";
 import { createDeterminer, isDeterminer, validateDeterminer } from "./role/processor/determiner_processor";
 import { HypernymRootWord } from "./data/enums/hypernym_root_word";
 import { isInterjection } from "./role/processor/interjection_processor";
@@ -2995,6 +2997,75 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // Idempotent -- a second call against the same, already-seeded
     // Domain creates nothing new.
     expect(new PrepositionSenseSeeder("en").seed(domain)).toBe(0);
+  }, 60000);
+
+  it("WordCoordinationSeeder seeds real WordCoordinations for a small, closed set of lexicalized coordinate expressions, once WordNet has loaded, and is a no-op beforehand", async () => {
+    const dictionary = new Dictionary();
+    const phraseBook = new Phrases();
+    const senseStore = new Senses();
+    const wordForms = new WordForms();
+    const coordinations = new Coordinations<LinguisticUnit>();
+    const morphologicalPointerRelationships = new MorphologicalPointerRelationshipStore();
+    const semanticRelationships = new SemanticRelationshipStore();
+    const morphologicalPointerRelationshipProcessor = new MorphologicalPointerRelationshipProcessor(
+      morphologicalPointerRelationships,
+      new MorphologicalPointerRelationshipSystemPropertyTensor(),
+    );
+    const semanticRelationshipProcessor = new SemanticRelationshipProcessor(
+      semanticRelationships,
+      new SemanticRelationshipSystemPropertyTensor(),
+    );
+    const domain = {
+      vocabulary: {
+        dictionary,
+        phrases: phraseBook,
+        senses: senseStore,
+        wordForms,
+        coordinations,
+        morphologicalPointerRelationships,
+        morphologicalPointerRelationshipProcessor,
+        semanticRelationships,
+        semanticRelationshipProcessor,
+      },
+    };
+
+    // Called before WordNet has loaded -- every `coordinates` word here
+    // is open-class, so nothing resolves yet, the same "skipped, not an
+    // error" outcome PrepositionSenseSeeder's own identically-shaped
+    // test above already exercises.
+    expect(new WordCoordinationSeeder("en").seed(domain)).toBe(0);
+    expect(coordinations.totalEntries()).toBe(0);
+
+    new WordSeeder("en").seedClosedClassWords(dictionary, phraseBook, { excludeOpenClasses: true }, senseStore, wordForms);
+    await new WordSeeder("en").seedWordNet(domain);
+
+    // word_coordinations.json's own 8 entries.
+    const seeded = new WordCoordinationSeeder("en").seed(domain);
+    expect(seeded).toBe(8);
+    expect(coordinations.totalEntries()).toBe(8);
+
+    const saltAndPepper = coordinations.all().find((c) => (c.coordinates[0] as Word).text === "salt");
+    expect(saltAndPepper).toBeDefined();
+    expect(saltAndPepper!.coordinates).toHaveLength(2);
+    expect((saltAndPepper!.coordinates[0] as Word).partOfSpeech).toBe(PartOfSpeech.NOUN);
+    expect((saltAndPepper!.coordinates[1] as Word).text).toBe("pepper");
+    // coordinator resolves via WordForms.findByUuid(), Coordination's own
+    // by-reference pattern (data/entities/coordination.ts) -- not an
+    // embedded copy.
+    const coordinatorForm = wordForms.findByUuid(saltAndPepper!.coordinator!.value);
+    expect(coordinatorForm?.text.value).toBe("and");
+
+    // "back and forth" -- same shape, ADVERB instead of NOUN, confirming
+    // the seeder resolves each entry's own `part_of_speech` rather than
+    // one hardcoded target.
+    const backAndForth = coordinations.all().find((c) => (c.coordinates[0] as Word).text === "back");
+    expect((backAndForth!.coordinates[0] as Word).partOfSpeech).toBe(PartOfSpeech.ADVERB);
+    expect((backAndForth!.coordinates[1] as Word).text).toBe("forth");
+
+    // Idempotent -- a second call against the same, already-seeded
+    // Domain creates nothing new.
+    expect(new WordCoordinationSeeder("en").seed(domain)).toBe(0);
+    expect(coordinations.totalEntries()).toBe(8);
   }, 60000);
 });
 

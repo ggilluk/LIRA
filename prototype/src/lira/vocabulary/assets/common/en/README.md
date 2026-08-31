@@ -222,6 +222,36 @@ their own second seeding pass after WordNet loads, and why `RELATED`
 rather than `HYPERNYM`/`HYPONYM` is the honest kind for the preposition-
 to-preposition pairs.
 
+## Word coordinations
+
+`word_coordinations.json` -- 8 entries, a small, closed set of fixed,
+lexicalized coordinate expressions: "salt and pepper", "trial and
+error", "cause and effect", "law and order", "bread and butter" (all
+`NOUN`), "back and forth", "here and there", "now and then" (all
+`ADVERB`) -- each seeded as one real `WordCoordination`
+(`data/entities/word_coordination.ts`) into `VocabularyContext.coordinations`
+by `role/word_coordination_seeder.ts`'s own `WordCoordinationSeeder`.
+
+Not counted toward the mandatory/supplementary/promoted totals above,
+and not part of `validateAssets()`'s own count/manifest checks --
+`preposition_verb_noun_senses.json`'s own identical status (Preposition
+senses above): a Coordination lexicalizes no new Word of its own, it
+only references Words some other seeding pass already created, so
+`word_coordinations.json` carries no `WordFileEntry`-shaped schema for
+that validation to apply to. Each entry names its own `coordinates`
+(two or more lexical forms, all one shared part of speech) and
+`coordinator` (a coordinating conjunction's own lexical form, "and" for
+every entry today).
+
+Every `coordinates` word here is open-class (`NOUN`/`ADVERB`), so this
+seeder -- like `PrepositionSenseSeeder` just above -- can only run once
+`WordSeeder.seedWordNet()` has actually populated the Domain's own
+Dictionary; `role/web_worker/vocabulary_worker.ts`'s own
+`handleSeedWordNet()` calls both, back to back. `coordinator` always
+resolves against a closed-class `CONJUNCTION` instead (`and`, from
+`coordinating_conjunctions.json` above), so it's always available
+first, `seedClosedClassWords()`'s own earlier pass.
+
 ## Supplementary files
 
 The six `metalinguistic_*.json` files -- one per part of speech,

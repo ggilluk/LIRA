@@ -1,0 +1,55 @@
+{
+  "schema_version": "1.0.0",
+  "language_code": "en",
+  "count": 8,
+  "coordinations": [
+    {
+      "entry_id": "66fdc3f1-7369-4e97-9352-36501aebc007",
+      "part_of_speech": "NOUN",
+      "coordinates": ["salt", "pepper"],
+      "coordinator": "and"
+    },
+    {
+      "entry_id": "677c2a2e-418d-4e97-be50-d3cc1c61c744",
+      "part_of_speech": "NOUN",
+      "coordinates": ["trial", "error"],
+      "coordinator": "and"
+    },
+    {
+      "entry_id": "084b4a51-97c3-4ca5-89e7-52ea5d02fe59",
+      "part_of_speech": "NOUN",
+      "coordinates": ["cause", "effect"],
+      "coordinator": "and"
+    },
+    {
+      "entry_id": "f63e6eb2-8764-4e59-bfe8-cb83aacd1fa0",
+      "part_of_speech": "NOUN",
+      "coordinates": ["law", "order"],
+      "coordinator": "and"
+    },
+    {
+      "entry_id": "082a670e-a456-4859-a06f-7c0ffbb748d2",
+      "part_of_speech": "NOUN",
+      "coordinates": ["bread", "butter"],
+      "coordinator": "and"
+    },
+    {
+      "entry_id": "8e890c47-db14-47f4-93e7-2caf3d019c29",
+      "part_of_speech": "ADVERB",
+      "coordinates": ["back", "forth"],
+      "coordinator": "and"
+    },
+    {
+      "entry_id": "4c05f58c-75c2-443b-b917-722ef209711d",
+      "part_of_speech": "ADVERB",
+      "coordinates": ["here", "there"],
+      "coordinator": "and"
+    },
+    {
+      "entry_id": "2f12a78c-275f-47bd-8a63-3db38ebed68c",
+      "part_of_speech": "ADVERB",
+      "coordinates": ["now", "then"],
+      "coordinator": "and"
+    }
+  ]
+}

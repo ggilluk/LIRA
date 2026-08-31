@@ -26,6 +26,7 @@ import { VocabularyContext } from "../../data/vocabulary_context";
 import { NounCharacterFormSeeder } from "../noun_character_form_seeder";
 import { PrepositionSenseSeeder } from "../preposition_sense_seeder";
 import { RelationshipSeeder } from "../relationship_seeder";
+import { WordCoordinationSeeder } from "../word_coordination_seeder";
 import { WordSeeder } from "../word_seeder";
 import type {
   RenderedFragment,
@@ -275,6 +276,14 @@ async function handleSeedWordNet(request: SeedWordNetRequest): Promise<void> {
     // phrasesSeeded below, since it only ever adds SemanticRelationship
     // edges between Senses that already exist.
     new PrepositionSenseSeeder("en").seed(domain);
+    // WordCoordination for a small, closed set of fixed coordinate
+    // expressions ("salt and pepper", "back and forth", ...) --
+    // word_coordination_seeder.ts's own docstring on why this can only
+    // run now too (every `coordinates` word here is open-class,
+    // WordNet-seeded). Doesn't affect wordsSeeded/phrasesSeeded below,
+    // the same reason PrepositionSenseSeeder above doesn't: it only
+    // ever adds Coordinations, never a new Word/Phrase.
+    new WordCoordinationSeeder("en").seed(domain);
 
     const wordsSeeded = domain.vocabulary.dictionary.totalEntries() - wordCountBefore;
     const phrasesSeeded = domain.vocabulary.phrases.totalEntries() - phraseCountBefore;
