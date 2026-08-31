@@ -72,15 +72,16 @@ export function definitionWordSegment(
     lexical_form: resolved.text,
     pos: PartOfSpeech[resolved.partOfSpeech],
     domain: domainLabel(senses, domainName, resolved, wordForms),
-    gloss: resolved.gloss?.value ?? fields.definition?.value ?? "",
+    gloss: fields.gloss?.value ?? fields.definition?.value ?? "",
     word_form: matchingForm && { field: matchingForm.field, label: formFieldLabel(matchingForm.field), value: matchingForm.text.value },
   };
 }
 
 /** Reconstructs `word`'s own effective definition text (resolved
  * through its primary Sense, senseFieldsFor()'s own docstring on why --
- * Word carries no `definition` of its own any more, Sense's own
- * docstring on why) as an ordered list of segments -- plain text
+ * preferring the Sense's own copy, falling back to `word`'s own
+ * `definition` when its Sense doesn't resolve in this Domain) as an
+ * ordered list of segments -- plain text
  * (punctuation, whitespace) interleaved with word-token segments
  * carrying each token's own resolution from definitionWords() -- so the
  * detail panel can render the definition with each word individually

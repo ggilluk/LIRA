@@ -5,7 +5,7 @@ import type { SourceReference } from "./source_reference";
 /** One externally-sourced grammatical-category candidate for a lexical
  * form, parsed from an external dictionary API response
  * (ExternalDictionaryAdapter) before it becomes a Word. Field set
- * mirrors what Word already supports (definition, gloss, usageNotes,
+ * mirrors what Word already supports (definition, usageNotes,
  * sourceReferences, ...) rather than introducing an unrelated schema.
  *
  * Ported from vocabulary/data/external_word_candidate.py. */
@@ -17,7 +17,6 @@ export interface ExternalWordCandidate {
   partOfSpeech: PartOfSpeech;
 
   definition?: Text;
-  gloss?: Text;
   usageNotes: readonly Text[];
 
   domainConcept?: Text;

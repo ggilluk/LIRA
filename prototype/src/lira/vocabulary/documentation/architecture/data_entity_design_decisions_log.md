@@ -650,3 +650,126 @@ Determiners row still shows "the" as unresolved plain text exactly as
 before -- the by-reference `preModifiers`/`postModifiers`/`determiners`
 fields and the live-recomputing UI path coexist without conflict, each
 serving the purpose the other can't.
+
+### `gloss` retired on both Word and Phrase: `definition` alone survives
+
+Verified directly against every bundled `assets/common/en/*.json` file
+(top-level entries and each `forms` array) before touching any code: of
+the 3958 entries carrying both a `gloss` and a `definition`, all 3958 are
+byte-for-byte identical -- and no entry anywhere has one without the
+other. `gloss` was never an independent fact for Word or Phrase, only a
+second name for the same hand-curated text `definition` already carried
+(a WordNet-seeded Word/Phrase never populated `gloss` at all, only
+`definition` -- the same asymmetry `Sense.gloss`/`Sense.definition` still
+carry today, deliberately left untouched: a Sense's own `gloss` genuinely
+does serve a distinct short-summary role there, this decision doesn't
+extend to it). `Word.gloss`/`Phrase.gloss` are gone; `Word.definition` is
+new (`Word` had none of its own before this -- Sense's own docstring on
+why that used to be an accepted gap, mirroring the identical PAD gap) and
+`Phrase.definition` is unchanged in shape, just now the only field of its
+kind on either entity.
+
+The wire schema followed suit: `WordFileEntry.gloss` (`role/asset_loader.ts`)
+had zero `validateAssets()` consistency check of its own -- unlike, say,
+`syllable_count`, which stays as a wire field with no stored counterpart
+specifically because it still has one -- so it was removed outright,
+matching the `Pronunciation` precedent from earlier in this same log
+(a wire field with no validator and no consumer once the stored field is
+gone is dead weight, not a compatibility shim worth keeping). The bundled
+JSON asset files themselves were left untouched: an unread `gloss` key
+sitting in a real `.json` file is harmless, the same reasoning that
+applied when `Pronunciation` was dropped.
+
+`role/word_seeder.ts`'s `cacheDefinition` side-channel Map -- which
+existed *purely* because "Word carries no `definition` of its own" was
+true at the time -- is now provably redundant and was deleted outright:
+its one real read site (`seedClosedClassWords()`'s call into
+`registerUniqueSense()`) now reads `copy.definition` directly off the
+already-in-scope per-Domain Word, the same way a Phrase call site already
+read `entry.definition` directly. `registerUniqueSense()`'s own
+`wordDefinition?: Text` parameter survives, though its purpose narrowed:
+it's no longer covering for Word's missing `definition`, only for the
+one case a Word's own singular `definition` genuinely can't serve --
+`cacheSenses`/`entry.senses[]`, the ordered multi-sense hand-curated
+case, where each call passes a distinct per-Sense text rather than the
+Word's own one value.
+
+`ui/server/resolver_domain.ts`'s `senseFieldsFor()` had carried two
+structurally different fallback branches -- one for `Word` (no
+`definition` to fall back to), one for `Phrase` (its own `definition`
+field) -- ever since the Word/Phrase split first happened. Once Word
+regained `definition`, the two branches became byte-for-byte identical,
+so they collapsed into one shared return; `gloss` was dropped from that
+fallback shape entirely; the primary, Sense-resolved branch (`sense.gloss`)
+is untouched, since `Sense.gloss` still exists and still resolves first
+whenever a matching Sense is found in this Domain. The one behavior
+change this produces: an un-resolvable Word (its own Sense not found in
+the current Domain -- the same cross-Domain-copy accepted gap
+`SemanticRelationshipStore` already has) now falls back to its own
+`definition` exactly the way an un-resolvable Phrase always has, instead
+of showing a blank definition -- closing the asymmetry, not just
+preserving it under a new name. `vocabulary.test.ts`'s own regression
+test for this path was rewritten to assert the new, closed-gap behavior
+rather than the old accepted-gap one.
+
+Two server-side search filters were quietly inconsistent with each other
+before this change, discovered while auditing every remaining `gloss`
+reference: `searchWords()`/`searchPhrases()` (`ui/server/builder_word.ts`/
+`builder_phrase.ts`) each read `definitionQuery` correctly through
+`senseFieldsFor()` already, but `glossQuery` read the raw entity field
+(`word.gloss?.value`/`phrase.gloss?.value`) directly, bypassing Sense
+entirely -- out of step with the client-side small-Domain path
+(`client_words_tab_view.ts`/`client_phrases_tab_view.ts`), which has
+always filtered on the Sense-derived `WordRecord.gloss`/`PhraseRecord.gloss`.
+Since the raw entity field no longer exists at all, fixing `glossQuery`
+to route through `senseFieldsFor()` was required, not optional -- and it
+happens to close that pre-existing inconsistency for free. The gloss
+search box itself (`#search-gloss`, `ui/client/client_shell_html.ts`) was
+kept exactly as-is: it's one shared toolbar reused by the Words, Phrases,
+*and* Senses tab panels alike, so removing it would have broken Senses'
+own still-genuine gloss search too -- only the two server-side filters'
+data source changed, not the UI surface.
+
+`ui/server/builder_segment.ts`'s `definitionWordSegment()` -- the
+tooltip-preview builder behind every underlined word link inside a
+rendered definition -- read `resolved.gloss?.value` directly off the raw
+Word as its first-choice preview text, falling back to the Sense-derived
+`fields.definition`. With `Word.gloss` gone, this became
+`fields.gloss?.value ?? fields.definition?.value ?? ""` -- the identical
+short-gloss-over-long-definition preference, just sourced entirely
+through `senseFieldsFor()` (Sense's own `gloss` when a matching Sense
+resolves, otherwise straight to `definition`) instead of half raw-entity,
+half Sense.
+
+Two smaller call sites outside the Word/Phrase entities themselves also
+needed the rename, found via `tsc -b --force` after the entity fields
+changed (not anticipated up front): `role/auxiliary_seeder.ts` and
+`role/determiner_seeder.ts` each construct their own hand-curated Word
+with `gloss: { value: lemmaSeed.definition }` -- both became
+`definition: { value: lemmaSeed.definition }`; their own sibling
+`createSense()` calls a few lines below (which do set `Sense.gloss`
+deliberately) were left untouched, since Sense's own `gloss` isn't in
+scope here. `linguistics/role/graph_processor.ts`'s `materialiseToken()`
+also builds a transient, never-persisted `Word` with a placeholder
+"Pending external hydration..." message on `gloss` -- moved to
+`definition` the same way. `data/external_word_candidate.ts`'s own
+`gloss?: Text` field (mirroring what Word used to support, per its own
+docstring) turned out to have zero production write sites populating it
+at all (confirmed by grep on `role/external_dictionary_adapter.ts`) --
+always `undefined` in practice -- so it was dropped outright rather than
+renamed, and `role/dictionary_hydrator.ts`'s own `gloss: candidate.gloss`
+(itself therefore always `undefined` before this change) became
+`definition: candidate.definition`, the field that adapter actually
+populates.
+
+Verified end-to-end against the real bundled WordNet 3.1 dataset
+(Playwright, ~92,705 Words / ~64,463 Phrases seeded): a Word's detail
+panel (e.g. "abdicate") still renders its definition with working,
+underlined word-link tooltips; a Phrase's detail panel (e.g. "toy
+poodle") still renders its definition, Head Word, and Pre-Modifiers
+correctly; gloss search still finds a hand-curated closed-class entry
+(e.g. searching "already referred" finds the Pronoun "ones") via its
+Sense-derived `gloss`, while searching a WordNet-only term's `gloss`
+correctly returns no matches -- WordNet-seeded Senses never populated
+`gloss` before this change either, so that emptiness is pre-existing
+behavior, not a regression.

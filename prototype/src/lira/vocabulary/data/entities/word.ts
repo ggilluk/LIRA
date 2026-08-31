@@ -49,8 +49,8 @@ export interface Word extends LinguisticUnit {
 
   // ── Data Attributes ──────────────────────────────────────
 
-  /** Short gloss summarising this Word's own primary sense. */
-  gloss?: Text;
+  /** Definition of this Word's own primary sense. */
+  definition?: Text;
 
   /** Usage notes for this Word. */
   usageNotes: readonly Text[];

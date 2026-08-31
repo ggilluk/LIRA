@@ -226,7 +226,7 @@ export function searchPhrases(
     if (options.pos && PartOfSpeech[phrases.partOfSpeechOf(phrase)!] !== options.pos) continue;
     const lexicalForm = (phrase.lexicalForm?.value ?? phrase.text).toLowerCase();
     if (wordQuery && !lexicalForm.includes(wordQuery)) continue;
-    if (glossQuery && !(phrase.gloss?.value ?? "").toLowerCase().includes(glossQuery)) continue;
+    if (glossQuery && !(senseFieldsFor(senses, phrase, wordForms).gloss?.value ?? "").toLowerCase().includes(glossQuery)) continue;
     if (definitionQuery && !(phrase.definition?.value ?? "").toLowerCase().includes(definitionQuery)) continue;
 
     totalMatches += 1;

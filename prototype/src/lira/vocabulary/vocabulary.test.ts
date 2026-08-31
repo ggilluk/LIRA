@@ -2997,7 +2997,7 @@ describe("DictionaryView.searchWords", () => {
     expect(new Set([record.domain, ...record.related_domains])).toEqual(new Set(["soccer", "field hockey", "rugby", "football"]));
   }, 30000);
 
-  it("a WordRecord's own is_root_word and rootWordsOnly filter read through the shared Sense, falling back to isRootWord directly when the Senses has no matching Sense at all; definition (Sense-only now, Sense's own docstring on the accepted gap) simply goes blank in that same case, the same as PAD already does", () => {
+  it("a WordRecord's own is_root_word and rootWordsOnly filter read through the shared Sense, falling back to isRootWord directly when the Senses has no matching Sense at all; definition falls back to the Word's own copy in that same case, unlike PAD (which has no such fallback field)", () => {
     const dictionary = new Dictionary();
     const phraseBook = new Phrases();
     const senseStore = new Senses();
@@ -3027,10 +3027,11 @@ describe("DictionaryView.searchWords", () => {
     // Without a matching Senses at all (a fresh, empty one -- the same
     // shape a cross-Domain copy's own Senses has today) -- is_root_word
     // still resolves correctly, falling back to Noun.isRootWord directly
-    // (never stripped for hand-curated data), but definition now goes
-    // blank rather than surviving: Word carries no `definition` of its
-    // own any more for a fallback to read (Sense's own docstring on why
-    // this is an accepted gap, the identical one PAD already has).
+    // (never stripped for hand-curated data), and definition survives
+    // too, falling back to the Word's own `definition` (Word carries one
+    // of its own now, matching Phrase's own long-standing fallback
+    // shape) -- unlike PAD, which has no Word-owned fallback field at
+    // all and genuinely goes blank in this case.
     const withoutSenses = new DictionaryView(dictionary, new SemanticRelationshipStore(), {
       domainName: "Common",
       phrases: phraseBook,
@@ -3039,7 +3040,7 @@ describe("DictionaryView.searchWords", () => {
     });
     const recordWithoutSenses = withoutSenses.searchWords({ wordId: wordGraphUuid(entity!) }).words[0];
     expect(recordWithoutSenses.is_root_word).toBe(true);
-    expect(recordWithoutSenses.definition).toBe("");
+    expect(recordWithoutSenses.definition).toBe(entityDefinition);
     expect(withoutSenses.searchWords({ rootWordsOnly: true }).words.map((w) => w.lexical_form)).toContain("entity");
   });
 

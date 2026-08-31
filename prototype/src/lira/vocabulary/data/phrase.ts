@@ -80,9 +80,6 @@ export interface Phrase extends LinguisticUnit {
    */
   lexicalForm?: Text;
 
-  /** Short gloss summarising this Phrase's own primary sense. */
-  gloss?: Text;
-
   /** Definition of this Phrase's own primary sense. */
   definition?: Text;
 
@@ -260,7 +257,7 @@ export function toSyntheticWord(phrase: Phrase, phrases: Phrases): Word {
     text: phrase.text,
     entryId: { ...phrase.entryId, uuid: newUuid() },
     partOfSpeech: phrases.partOfSpeechOf(phrase)!,
-    gloss: phrase.gloss,
+    definition: phrase.definition,
     usageNotes: phrase.usageNotes,
     registerCodes: phrase.registerCodes,
     editorialLabels: phrase.editorialLabels,
@@ -281,7 +278,7 @@ export function phraseAsWord(phrase: Phrase, phrases: Phrases, wordForms?: WordF
     text: phrase.text,
     entryId: phrase.entryId,
     partOfSpeech: phrases.partOfSpeechOf(phrase)!,
-    gloss: phrase.gloss,
+    definition: phrase.definition,
     usageNotes: phrase.usageNotes,
     registerCodes: phrase.registerCodes,
     editorialLabels: phrase.editorialLabels,

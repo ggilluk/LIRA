@@ -32,7 +32,6 @@ export interface WordFileEntry {
   part_of_speech: string;
   closed_class?: boolean;
   definition?: string | null;
-  gloss?: string | null;
   /** Ordered list of distinct sense definitions for a hand-curated
    * closed-class Word that genuinely carries more than one meaning --
    * word_seeder.ts's own entryToWord()/seedClosedClassWords() call

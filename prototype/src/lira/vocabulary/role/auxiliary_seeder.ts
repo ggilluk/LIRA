@@ -477,7 +477,7 @@ export class AuxiliarySeeder {
         // one `undefined` `entryId.uuid`, silently colliding in
         // Dictionary.byUuid and WordForms.formsByWordId alike.
         entryId: identifier(lemmaSeed.entryId),
-        gloss: { value: lemmaSeed.definition },
+        definition: { value: lemmaSeed.definition },
         isCommon: true,
         registerCodes: [RegisterCode.NEUTRAL],
       });

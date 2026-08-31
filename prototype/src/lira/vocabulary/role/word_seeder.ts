@@ -588,28 +588,33 @@ function applyDomainTag(target: { domainTag?: Text; relatedDomainTags: readonly 
  * now share one Sense the way WordNet synonyms do -- that grouping still
  * lives entirely in RelationshipSeeder's own SYNONYM edges, untouched by
  * this. Carries over every Sense-owned field the entry already holds
- * (domainTag, relatedDomainTags, gloss, usageNotes, sourceReferences,
- * isCommon) so a Sense-aware reader sees the identical picture it would
- * have read from the Word/Phrase directly -- both copies exist side by
- * side afterwards for a Phrase (the entry's own fields are left exactly
- * as they were), the same accepted duplication WordNet's own Sense/
- * Phrase split still carries for definition/usageNotes today.
+ * (domainTag, relatedDomainTags, usageNotes, sourceReferences, isCommon)
+ * so a Sense-aware reader sees the identical picture it would have read
+ * from the Word/Phrase directly -- both copies exist side by side
+ * afterwards for a Phrase (the entry's own fields are left exactly as
+ * they were), the same accepted duplication WordNet's own Sense/Phrase
+ * split still carries for definition/usageNotes today. `entry` itself
+ * carries no `gloss` of its own any more (Word/Phrase's own docstrings)
+ * -- Sense.gloss is set from `entry.definition` instead, below.
  *
- * `pad`/`wordDefinition`, unlike every other field this copies, don't
- * come from `entry` itself at all -- neither Word nor Phrase carries PAD
- * any more (Sense.seededPleasureDispleasureWeight's own docstring,
- * data/entities/sense.ts), and Word carries no `definition` of its own any more
- * either (same docstring, the identical accepted-gap reasoning) -- so
- * the caller (seedClosedClassWords) passes both separately, read from
- * WordSeeder's own cachePad/cacheDefinition side-channels (recordPad()'s/
- * cacheDefinition's own docstrings) by entryId. `wordDefinition` is
- * ignored entirely when `entry` is a Phrase (its own `entry.definition`
- * is used instead, just below) -- only a Word needs the side-channel.
- * This is the one place a hand-curated Word's raw PAD/definition values
- * actually reach a Sense; both undefined (the every-call-site default)
- * leaves the Sense's own fields undefined too, same as a WordNet-seeded
- * Sense always has for PAD, and same as a Phrase call site's own
- * `entry.definition` being itself undefined already would.
+ * `pad`, unlike every other field this copies, doesn't come from `entry`
+ * itself at all -- neither Word nor Phrase carries PAD any more
+ * (Sense.seededPleasureDispleasureWeight's own docstring,
+ * data/entities/sense.ts) -- so the caller (seedClosedClassWords) passes
+ * it separately, read from WordSeeder's own cachePad side-channel
+ * (recordPad()'s own docstring) by entryId. Undefined (the every-call-
+ * site default) leaves the Sense's own PAD fields undefined too, same as
+ * a WordNet-seeded Sense always has.
+ *
+ * `wordDefinition`, when supplied, overrides `entry.definition` as the
+ * Sense's own `definition`/`gloss` source for a Word specifically --
+ * needed only for the multi-sense hand-curated case (cacheSenses/
+ * `entry.senses[]`), where each call passes a distinct per-Sense text
+ * rather than the Word's own singular `definition`. The single-sense
+ * call site instead passes the Word's own `definition` directly, making
+ * `wordDefinition` a no-op override in that case. Ignored entirely when
+ * `entry` is a Phrase (its own `entry.definition` is used instead, just
+ * below) -- a Phrase has no multi-sense cache-entry shape of its own.
  *
  * `wordForms`, when supplied, also registers this same Sense onto
  * `entry`'s own base-lemma WordForm (WordForms.registerBaseLemmaForm()/
@@ -641,7 +646,7 @@ function registerUniqueSense(
     domainTag: entry.domainTag,
     relatedDomainTags: entry.relatedDomainTags,
     definition: isWord ? wordDefinition : entry.definition,
-    gloss: entry.gloss,
+    gloss: isWord ? wordDefinition : entry.definition,
     usageNotes: entry.usageNotes,
     sourceReferences: entry.sourceReferences,
     isCommon: entry.isCommon,
@@ -730,22 +735,11 @@ export class WordSeeder {
   // `WordForms` store to register it against
   // (WordForms.registerBaseLemmaForm()'s own `text` parameter).
   private cacheLexicalForm = new Map<string, Text>();
-  // Every cached entry's own raw `definition`, keyed by entryId --
-  // entryToWord() populates this the same way it populates
-  // cacheLexicalForm above, for the identical reason: Word carries no
-  // `definition` of its own any more (Sense's own docstring on why --
-  // the accepted gap PAD already has) -- registerUniqueSense() reads
-  // this back for a Word entry specifically (a Phrase entry still
-  // carries its own `definition` field directly, untouched by this
-  // move) so the Sense it creates still gets the entry's own real
-  // definition text.
-  private cacheDefinition = new Map<string, Text>();
   // Every cached entry's own ordered `senses` list (WordFileEntry's own
-  // docstring on the field), keyed by entryId -- entryToWord()'s own
-  // sibling to cacheDefinition just above, but plural: present only for
-  // an entry that opted into more than one hand-curated Sense.
-  // seedClosedClassWords() prefers this over cacheDefinition whenever
-  // both a Word's entryId has an entry here.
+  // docstring on the field), keyed by entryId -- present only for an
+  // entry that opted into more than one hand-curated Sense.
+  // seedClosedClassWords() prefers this over the Word's own `definition`
+  // whenever a Word's entryId has an entry here.
   private cacheSenses = new Map<string, Text[]>();
   private promotedOverlay: PromotedDoc | null = null;
 
@@ -1100,7 +1094,7 @@ export class WordSeeder {
             registerUniqueSense(senseStore, copy, this.cachePad.get(word.entryId.value), wordForms, senseText);
           }
         } else {
-          registerUniqueSense(senseStore, copy, this.cachePad.get(word.entryId.value), wordForms, this.cacheDefinition.get(word.entryId.value));
+          registerUniqueSense(senseStore, copy, this.cachePad.get(word.entryId.value), wordForms, copy.definition);
         }
       }
       seeded += 1;
@@ -2400,8 +2394,6 @@ export class WordSeeder {
       ...(scriptCode !== undefined ? { scriptCode } : {}),
       ...(resolvedDialectCode !== undefined ? { dialectCode: resolvedDialectCode } : {}),
     });
-    const definition = optText(entry.definition);
-    if (definition !== undefined) this.cacheDefinition.set(entry.entry_id, definition);
     if (entry.senses !== undefined && entry.senses.length > 0) {
       this.cacheSenses.set(entry.entry_id, entry.senses.map((value) => ({ value })));
     }
@@ -2419,7 +2411,7 @@ export class WordSeeder {
       text: entry.text ?? entry.lexical_form,
       entryId: { value: entry.entry_id },
       partOfSpeech,
-      gloss: optText(entry.gloss),
+      definition: optText(entry.definition),
       usageNotes: (entry.usage_notes ?? []).map((note) => ({ value: note })),
       registerCodes: (entry.register_codes ?? []).map((code) => RegisterCode[code as keyof typeof RegisterCode]),
       editorialLabels: (entry.editorial_labels ?? []).map((label) => EditorialLabel[label as keyof typeof EditorialLabel]),
@@ -2504,7 +2496,7 @@ export class WordSeeder {
    * loadCache()'s own isMultiWord() check is what decides which of the
    * two this becomes), mapped onto Phrase's own leaner field set:
    * every field a closed-class multi-word item plausibly needs
-   * (text/lexicalForm/definition/gloss/usageNotes/register+dialect
+   * (text/lexicalForm/definition/usageNotes/register+dialect
    * codes/editorialLabels/sourceReferences/isCommon), but none of
    * Word's own root-word/derivable-noun/pronunciation fields -- none of
    * those are ever populated for a real multi-word Common Vocabulary
@@ -2543,7 +2535,6 @@ export class WordSeeder {
       text: entry.text ?? entry.lexical_form,
       entryId: { value: entry.entry_id },
       lexicalForm,
-      gloss: optText(entry.gloss),
       definition: optText(entry.definition),
       usageNotes: (entry.usage_notes ?? []).map((note) => ({ value: note })),
       registerCodes: (entry.register_codes ?? []).map((code) => RegisterCode[code as keyof typeof RegisterCode]),
@@ -2580,15 +2571,7 @@ export class WordSeeder {
       script_code: null,
       part_of_speech: PartOfSpeech[word.partOfSpeech],
       closed_class: false,
-      // definition lives on Sense now (Sense's own docstring, the
-      // accepted gap PAD already has), not on Word -- same "only ever
-      // receives a bare Word, with no Senses/WordForms store to resolve
-      // a primary Sense through" situation as PAD/the WordForm
-      // attributes above, and just as moot in practice for the same
-      // reason (promoteWord() has no caller anywhere in this codebase
-      // yet).
-      definition: null,
-      gloss: word.gloss?.value ?? null,
+      definition: word.definition?.value ?? null,
       usage_notes: word.usageNotes.map((note) => note.value),
       register_codes: word.registerCodes.map((code) => RegisterCode[code]),
       editorial_labels: word.editorialLabels.map((label) => EditorialLabel[label]),

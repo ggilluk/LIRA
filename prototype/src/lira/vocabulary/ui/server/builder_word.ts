@@ -581,7 +581,7 @@ export function searchWords(
     if (options.domain && domainLabel(senses, domainName, word, wordForms) !== options.domain) continue;
     const lexicalForm = word.text.toLowerCase();
     if (wordQuery && !lexicalForm.includes(wordQuery)) continue;
-    if (glossQuery && !(word.gloss?.value ?? "").toLowerCase().includes(glossQuery)) continue;
+    if (glossQuery && !(senseFieldsFor(senses, word, wordForms).gloss?.value ?? "").toLowerCase().includes(glossQuery)) continue;
     if (definitionQuery && !(senseFieldsFor(senses, word, wordForms).definition?.value ?? "").toLowerCase().includes(definitionQuery)) continue;
 
     totalMatches += 1;

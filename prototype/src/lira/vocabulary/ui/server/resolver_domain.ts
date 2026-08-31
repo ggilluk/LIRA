@@ -21,25 +21,28 @@ function primarySenseId(entry: Word | Phrase, wordForms: WordForms): Identifier 
 }
 
 /** The Sense-owned fields that actually apply to `entry` (a Word or a
- * Phrase) -- domainTag/relatedDomainTags, definition/gloss/usageNotes --
- * preferring its own Sense (WordSeeder's own tagTopicDomain, seedWordNet's
- * own createSense call, and registerUniqueSense all populate a Sense with
- * the identical values `entry`'s own fields already carry, WordNet-sourced
- * and hand-curated alike -- data/entities/sense.ts's own docstring) and falling back to
- * `entry`'s own fields only when its senseId doesn't resolve in this
- * Domain's own Senses. That fallback isn't just defensive: a Phrase copied
- * into a different Domain (VocabularyContext's own Physics-from-Common
- * bootstrap, in particular) doesn't yet carry a matching Sense copy across
- * into that Domain's own Senses -- a known, accepted gap, the same one
+ * Phrase) -- domainTag/relatedDomainTags/definition/usageNotes, plus
+ * `gloss` (Sense-only: neither Word nor Phrase carries a `gloss` of its
+ * own any more, Word/Phrase's own docstrings) -- preferring its own
+ * Sense (WordSeeder's own tagTopicDomain, seedWordNet's own createSense
+ * call, and registerUniqueSense all populate a Sense with the identical
+ * values `entry`'s own fields already carry, WordNet-sourced and
+ * hand-curated alike -- data/entities/sense.ts's own docstring) and
+ * falling back to `entry`'s own fields only when its senseId doesn't
+ * resolve in this Domain's own Senses (`gloss` reads undefined in that
+ * fallback case, since neither Word nor Phrase has one to fall back to).
+ * That fallback isn't just defensive: a Phrase copied into a different
+ * Domain (VocabularyContext's own Physics-from-Common bootstrap, in
+ * particular) doesn't yet carry a matching Sense copy across into that
+ * Domain's own Senses -- a known, accepted gap, the same one
  * SemanticRelationshipStore already has for a cross-domain copy -- so a
  * Phrase's own fields (never stripped, unlike WordNet's own domainTag/
- * relatedDomainTags) are what keeps a Physics-side phrase's own definition/
- * domain/etc. correct regardless. A Word has no such fallback fields any
- * more (`definition`/`domainTag`/`relatedDomainTags`/`gloss`/`usageNotes`
- * are all still there except `definition`, Sense's own docstring on the
- * accepted gap this specific field now shares with PAD) -- an
- * un-resolvable Word simply shows no definition until that gap closes,
- * same as PAD already does. */
+ * relatedDomainTags) are what keeps a Physics-side phrase's own
+ * definition/domain/etc. correct regardless. A Word shares that same
+ * fallback shape now too (`definition`/`domainTag`/`relatedDomainTags`/
+ * `usageNotes` are all still there, matching Phrase's own shape exactly)
+ * -- an un-resolvable Word simply falls back to its own `definition`
+ * the same way an un-resolvable Phrase already does. */
 export function senseFieldsFor(
   senses: Senses,
   entry: Word | Phrase,
@@ -62,16 +65,12 @@ export function senseFieldsFor(
       usageNotes: sense.usageNotes,
     };
   }
-  if ("senseIds" in entry) {
-    return {
-      domainTag: entry.domainTag,
-      relatedDomainTags: entry.relatedDomainTags,
-      definition: entry.definition,
-      gloss: entry.gloss,
-      usageNotes: entry.usageNotes,
-    };
-  }
-  return { domainTag: entry.domainTag, relatedDomainTags: entry.relatedDomainTags, gloss: entry.gloss, usageNotes: entry.usageNotes };
+  return {
+    domainTag: entry.domainTag,
+    relatedDomainTags: entry.relatedDomainTags,
+    definition: entry.definition,
+    usageNotes: entry.usageNotes,
+  };
 }
 
 /** isRootWord's own exact counterpart to senseFieldsFor() -- kept
