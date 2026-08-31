@@ -1505,7 +1505,7 @@ function renderWords() {
 }`,vo=`
 // Phrases reuse the same free-text search fields (search-word/-gloss/
 // -definition) and the shared pos-filter Words already has -- both are
-// meaningful for a Phrase (Phrase's own docstring, data/phrase.ts, on
+// meaningful for a Phrase (Phrase's own docstring, data/entities/phrase.ts, on
 // why it's still a real part-of-speech-tagged lexical entry) -- but not
 // domain-filter or the root-word toggle, neither of which a Phrase has
 // a field for. Same MAX_INTERACTIVE_WORDS-style capacity split Words
