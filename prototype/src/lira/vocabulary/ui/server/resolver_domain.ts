@@ -6,7 +6,7 @@
  * parameters. */
 
 import type { Identifier, Text } from "../../../value_objects";
-import type { Phrase } from "../../data/phrase";
+import type { Phrase } from "../../data/entities/phrase";
 import { isNoun } from "../../role/processor/noun_processor";
 import type { Senses } from "../../data/senses";
 import type { Word } from "../../data/entities/word";

@@ -10,7 +10,7 @@
  * docstring for the precedent this follows): data/senses.ts's own
  * `Senses` store calls copySenseWithFreshUuid() directly, so that
  * data/ file ends up importing from here -- the same reason
- * data/phrase.ts and data/dictionary.ts already import
+ * data/entities/phrase.ts and data/dictionary.ts already import
  * createWord()/copyWordWithFreshUuid() from role/word_processor.ts. */
 
 import { identifier } from "../../value_objects";

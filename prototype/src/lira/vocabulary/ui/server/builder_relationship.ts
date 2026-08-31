@@ -12,7 +12,7 @@ import type { Senses } from "../../data/senses";
 import type { Sense } from "../../data/entities/sense";
 import type { SemanticRelationship } from "../../data/semantic_relationship";
 import type { SemanticRelationshipStore } from "../../data/semantic_relationship_store";
-import { graphUuid as phraseGraphUuid, type Phrase } from "../../data/phrase";
+import { graphUuid as phraseGraphUuid, type Phrase } from "../../data/entities/phrase";
 import type { Word } from "../../data/entities/word";
 import type { WordForms } from "../../data/word_forms";
 import { graphUuid as wordGraphUuid } from "../../role/word_processor";

@@ -193,7 +193,7 @@ used to carry -- `according to`, `ahead of`, `along with`, `apart from`,
 front of`, `in spite of`, `instead of`, `next to`, `on top of`, `out
 of`, `owing to`, `as well as` (18 entries) -- with no closed-class
 replacement; none of these span-tokenized to a Phrase any more once
-seeded (`data/phrase.ts`'s own docstring on the multi-word-entry-becomes-
+seeded (`data/entities/phrase.ts`'s own docstring on the multi-word-entry-becomes-
 a-Phrase mechanism itself is untouched, just left with no PREPOSITION
 example of its own -- `pronouns.json`'s own `no one else`/`each other`
 and `subordinating_conjunctions.json`'s own `in order that` now carry

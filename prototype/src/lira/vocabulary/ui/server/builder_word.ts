@@ -10,7 +10,7 @@ import type { Dictionary } from "../../data/dictionary";
 import { EditorialLabel } from "../../data/enums/editorial_label";
 import { PartOfSpeech } from "../../data/enums/part_of_speech";
 import { isNoun } from "../../role/processor/noun_processor";
-import { graphUuid as phraseGraphUuid, phraseAsWord, type Phrase } from "../../data/phrase";
+import { graphUuid as phraseGraphUuid, phraseAsWord, type Phrase } from "../../data/entities/phrase";
 import type { Phrases } from "../../data/phrases";
 import type { Senses } from "../../data/senses";
 import type { SemanticRelationshipStore } from "../../data/semantic_relationship_store";
@@ -112,7 +112,7 @@ export interface WordRecord {
   // either way).
   phrase_type?: string;
   // Phrase.headWord/Phrase.headWordForm's own combined client-facing
-  // shape (data/phrase.ts's own docstring on each) -- reuses
+  // shape (data/entities/phrase.ts's own docstring on each) -- reuses
   // DefinitionSegment, the same shape phrase_word_segments above already
   // uses per token, since a Head Word is exactly one of those segments
   // (`text` carries headWordForm's own phrase-local spelling; `word_id`/
@@ -124,7 +124,7 @@ export interface WordRecord {
   // Vocabulary Cache closed-class Phrase, in particular).
   head_word?: DefinitionSegment;
   // phrase.preModifiers/phrase.postModifiers's own client-facing shape
-  // (data/phrase.ts's own docstring on each), one DefinitionSegment per
+  // (data/entities/phrase.ts's own docstring on each), one DefinitionSegment per
   // MODIFIER-role token before/after the Head, in phrase-text order --
   // phraseModifierSegments()'s own docstring (builder_phrase.ts) on why
   // this is recomputed from the same text/wordRoles/words fields
@@ -376,7 +376,7 @@ function wordFormsFor(word: Word, wordForms: WordForms, wordSenses: readonly Wor
   // sharing an identical label. `?? []` guards a real gap: isNoun()
   // narrows on partOfSpeech alone, so a NOUN-tagged Word built via
   // phraseAsWord() (a Phrase's own createWord()-based projection,
-  // data/phrase.ts) type-narrows to Noun here too despite never having
+  // data/entities/phrase.ts) type-narrows to Noun here too despite never having
   // gone through createNoun() -- wordCharacterForms is undefined on
   // that object at runtime even though Noun declares it non-optional.
   const characterForms = isNoun(word) ? (word.wordCharacterForms ?? []) : [];

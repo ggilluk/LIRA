@@ -1,5 +1,5 @@
 import type { Identifier } from "../../value_objects";
-import { graphUuid as phraseGraphUuid, type Phrase } from "./phrase";
+import { graphUuid as phraseGraphUuid, type Phrase } from "./entities/phrase";
 import { copySenseWithFreshUuid, graphUuid } from "../role/sense_processor";
 import { graphUuid as wordGraphUuid } from "../role/word_processor";
 import type { Sense } from "./entities/sense";
@@ -77,7 +77,7 @@ export class Senses {
   }
 
   /** Records that `member` lexicalizes `sense` -- for a Phrase, appends
-   * `sense`'s own per-Domain graph uuid onto `member.senseIds` (the field itself, data/phrase.ts's
+   * `sense`'s own per-Domain graph uuid onto `member.senseIds` (the field itself, data/entities/phrase.ts's
    * own docstring); a Word carries no `senseIds` of its own any more
    * (moved onto its base-lemma WordForm, data/entities/word_form.ts's own
    * docstring on why) -- WordForms.registerSense() is that field's own

@@ -11,21 +11,21 @@
  * for the design history behind this shape.
  */
 
-import { identifier, type Identifier, type Text } from "../../value_objects";
-import type { Clause } from "../../linguistics/data/clause";
-import type { LinguisticUnit } from "../../linguistics/data/linguistic_unit";
-import type { EditorialLabel } from "./enums/editorial_label";
-import type { PhraseType } from "./enums/phrase_type";
-import type { SourceReference } from "./source_reference";
-import type { Word } from "./entities/word";
-import type { Phrases } from "./phrases";
-import type { WordForms } from "./word_forms";
+import { identifier, type Identifier, type Text } from "../../../value_objects";
+import type { Clause } from "../../../linguistics/data/clause";
+import type { LinguisticUnit } from "../../../linguistics/data/linguistic_unit";
+import type { EditorialLabel } from "../enums/editorial_label";
+import type { PhraseType } from "../enums/phrase_type";
+import type { SourceReference } from "../source_reference";
+import type { Word } from "./word";
+import type { Phrases } from "../phrases";
+import type { WordForms } from "../word_forms";
 // Known, approved exception to data/ never importing role/ -- see
 // role/word_processor.ts's own docstring: createWord() is Word's own
 // base-entity constructor, needed here (toSyntheticWord/phraseAsWord
 // below) the same way every POS processor already needs it.
-import { createWord } from "../role/word_processor";
-import { newUuid } from "./uuid";
+import { createWord } from "../../role/word_processor";
+import { newUuid } from "../uuid";
 
 export interface Phrase extends LinguisticUnit {
 

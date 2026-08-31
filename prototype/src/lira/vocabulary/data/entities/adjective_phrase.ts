@@ -28,7 +28,7 @@
  * Vocabulary Cache closed-class Phrase, which has no constituency-parsing
  * pass of its own.
  *
- * `headWord` (data/phrase.ts's own docstring on it) is a graph-reference
+ * `headWord` (data/entities/phrase.ts's own docstring on it) is a graph-reference
  * pointer, not narrowed to any Word subtype here the way `preModifiers`/
  * `postModifiers` below are -- an `Identifier` carries no type of its
  * own to narrow. For a real seeded AdjectivePhrase it always resolves
@@ -39,7 +39,7 @@
  * today, for every real seeded multi-word WordNet AdjectivePhrase, by
  * linkPhraseWords() (role/processor/phrase_processor.ts).
  *
- * `preModifiers` narrows Phrase's own same-named field (data/phrase.ts's
+ * `preModifiers` narrows Phrase's own same-named field (data/entities/phrase.ts's
  * own docstring on it) down to the exact constituent set
  * data/phrase_type_patterns_and_word_roles.md's own "Phrase Role
  * Allowed Types" table gives AdjectivePhrase's own MODIFIER row: an
@@ -51,14 +51,14 @@
  * docstring on why a sub-phrase modifier is left out rather than
  * guessed at, and on why a WordForm that fails to resolve is too.
  *
- * `postModifiers` narrows Phrase's own same-named field (data/phrase.ts's
+ * `postModifiers` narrows Phrase's own same-named field (data/entities/phrase.ts's
  * own docstring on it) down to that exact same constituent set --
  * `preModifiers`' own MODIFIER row makes no pre/post distinction, so
  * AdjectivePhrase's post-Head modifier set is identical to its pre-Head
  * one. Same real-population status as `preModifiers` above. */
 
 import { PhraseType } from "../enums/phrase_type";
-import { createPhrase, type Phrase } from "../phrase";
+import { createPhrase, type Phrase } from "./phrase";
 import type { Identifier } from "../../../value_objects";
 import type { AdverbPhrase } from "./adverb_phrase";
 

@@ -8,7 +8,7 @@ import { EditorialLabel } from "../../data/enums/editorial_label";
 import { PartOfSpeech } from "../../data/enums/part_of_speech";
 import { ModifierRole } from "../../data/enums/modifier_role";
 import { PhraseType } from "../../data/enums/phrase_type";
-import { graphUuid, type Phrase } from "../../data/phrase";
+import { graphUuid, type Phrase } from "../../data/entities/phrase";
 import type { Phrases } from "../../data/phrases";
 import type { Senses } from "../../data/senses";
 import type { WordForms } from "../../data/word_forms";
@@ -118,7 +118,7 @@ export function phraseWordSegments(
   return tokens.map((token) => definitionWordSegment(token, dictionary.lookup(token), senses, domainName, wordForms));
 }
 
-/** `phrase.headWordForm`/`phrase.headWord` (data/phrase.ts's own
+/** `phrase.headWordForm`/`phrase.headWord` (data/entities/phrase.ts's own
  * docstring on each -- both graph-reference pointers now, resolved here
  * against `wordForms`/`dictionary` respectively), combined into one
  * DefinitionSegment the same way an individual entry of
@@ -151,7 +151,7 @@ export function phraseHeadWordSegment(
  * (that document's own Common Rules table -- valid regardless of
  * PhraseType or position), each as an ordered DefinitionSegment list --
  * the client-facing counterpart of `phrase.preModifiers`/
- * `phrase.postModifiers`/`phrase.determiners` (data/phrase.ts's own
+ * `phrase.postModifiers`/`phrase.determiners` (data/entities/phrase.ts's own
  * docstring on each). Built by calling classifyModifierRoles()
  * (role/processor/phrase_processor.ts) fresh over `phrase.text`'s own
  * tokens, the identical computation linkPhraseWords() itself runs at

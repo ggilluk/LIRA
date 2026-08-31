@@ -30,7 +30,7 @@ import { isPreposition } from "./role/processor/preposition_processor";
 import { createPronoun, isPronoun, validatePronoun } from "./role/processor/pronoun_processor";
 import { createVerb, framesForSense, generateVerbForms, isVerb, validateVerb } from "./role/processor/verb_processor";
 import type { Verb } from "./data/entities/verb";
-import { createPhrase, graphUuid as phraseGraphUuid, type Phrase } from "./data/phrase";
+import { createPhrase, graphUuid as phraseGraphUuid, type Phrase } from "./data/entities/phrase";
 import { Phrases } from "./data/phrases";
 import { PHRASE_TYPE_DETAILS, PhraseType } from "./data/enums/phrase_type";
 import { ModifierRole } from "./data/enums/modifier_role";
@@ -990,7 +990,7 @@ describe("DictionaryProcessor.identifyPhrase", () => {
     const phraseBook = new Phrases();
     new WordSeeder("en").seedClosedClassWords(dictionary, phraseBook);
     // "no one else" is a Phrase now, not a Word (Phrase's own docstring,
-    // data/phrase.ts) -- Dictionary itself never sees it.
+    // data/entities/phrase.ts) -- Dictionary itself never sees it.
     expect(dictionary.lookupAll("no one else")).toHaveLength(0);
     expect(phraseBook.lookupAll("no one else").some((p) => phraseBook.partOfSpeechOf(p) === PartOfSpeech.PRONOUN)).toBe(true);
     const processor = new DictionaryProcessor(dictionary, phraseBook, new AsyncDictionaryHydrator(dictionary), "Common");
@@ -2097,7 +2097,7 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // own arbitrary single pick, so this holds regardless of which one
     // that pick happened to land on).
     // classifyModifierRoles() is called fresh here (not read off a
-    // stored Phrase field -- data/phrase.ts's own docstring on why
+    // stored Phrase field -- data/entities/phrase.ts's own docstring on why
     // `words`/`wordRoles` don't exist on Phrase any more), over the
     // same tokenization linkPhraseWords() itself used at seed time.
     expect(classifyModifierRoles(toyPoodle!.phraseType, toyPoodle!.text.trim().split(/\s+/), dictionary)).toEqual([

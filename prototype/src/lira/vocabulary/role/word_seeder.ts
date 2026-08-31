@@ -59,7 +59,7 @@ import { MorphologicalPointerRelationshipStore } from "../data/morphological_poi
 import type { LexicalRelationshipStore } from "../data/lexical_relationship_store";
 import { LexicalRelationshipType, MERONYM_KIND_QUALIFIER, relationshipGroup, type MeronymKind } from "../data/enums/lexical_relationship_type";
 import { SemanticRelationshipKind } from "../data/enums/semantic_relationship_kind";
-import { copyPhraseWithFreshUuid, createPhrase, graphUuid as phraseGraphUuid, type Phrase } from "../data/phrase";
+import { copyPhraseWithFreshUuid, createPhrase, graphUuid as phraseGraphUuid, type Phrase } from "../data/entities/phrase";
 import { PhraseType } from "../data/enums/phrase_type";
 import type { Phrases } from "../data/phrases";
 import { createSense, graphUuid as senseGraphUuid } from "./sense_processor";
@@ -693,7 +693,7 @@ export class WordSeeder {
   // Every cached entry whose text spans more than one whitespace-
   // separated token -- split out of `cache` at load time (loadCache()'s
   // own docstring) rather than kept as ordinary multi-word Words, per
-  // Phrase's own docstring (data/phrase.ts) on why a closed-class
+  // Phrase's own docstring (data/entities/phrase.ts) on why a closed-class
   // multi-word item is now its own lexical category.
   private cachePhrases: Phrase[] = [];
   // Every cached Phrase's own WordNet-tagged part of speech, keyed by

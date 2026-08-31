@@ -16,7 +16,7 @@ table is real, flat POS[Role] sequences that `classifyPhraseType()`/
 `classifyModifierRoles()`, `role/word_seeder.ts`, actually produce
 today), nothing in this codebase currently builds the recursive,
 phrase-nested-inside-phrase structure this table describes --
-`Phrase.words` (`data/phrase.ts`) is a flat array of Word references
+`Phrase.words` (`data/entities/phrase.ts`) is a flat array of Word references
 only, never a Phrase reference. `data/phrase.md`'s own
 Premodifiers/Complements/Postmodifiers property table is this same
 conceptual model at the single-Phrase level; this table is its

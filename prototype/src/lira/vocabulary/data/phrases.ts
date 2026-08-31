@@ -1,5 +1,5 @@
 import type { Identifier } from "../../value_objects";
-import { copyPhraseWithFreshUuid, graphUuid, type Phrase } from "./phrase";
+import { copyPhraseWithFreshUuid, graphUuid, type Phrase } from "./entities/phrase";
 import type { PartOfSpeech } from "./enums/part_of_speech";
 
 /** Multi-word lexicon storage: Phrases is Dictionary's own counterpart

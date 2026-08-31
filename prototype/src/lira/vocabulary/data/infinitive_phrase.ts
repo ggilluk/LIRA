@@ -33,7 +33,7 @@
  * its own. */
 
 import { PhraseType } from "./enums/phrase_type";
-import { createPhrase, type Phrase } from "./phrase";
+import { createPhrase, type Phrase } from "./entities/phrase";
 
 export interface InfinitivePhrase extends Phrase {
   phraseType: PhraseType.INFINITIVE_PHRASE;

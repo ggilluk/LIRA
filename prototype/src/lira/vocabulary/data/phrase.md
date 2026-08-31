@@ -14,7 +14,7 @@ Premodifiers/Complements/Postmodifiers may be.
 | Complements | 0..* | Phrase | Phrases selected or licensed by the head that complete its syntactic or semantic relationship. |
 | Postmodifiers | 0..* | Word \| Phrase | Optional constituents occurring after the head that modify or further qualify it. |
 
-Today's real `Phrase` interface (`data/phrase.ts`) stores this
+Today's real `Phrase` interface (`data/entities/phrase.ts`) stores this
 differently -- one flat `words` array plus an index-aligned
 `wordRoles` array (`ModifierRole`, `enums/modifier_role.ts`: Head,
 Modifier, Particle, Determiner, ...) and a resolved `headWord`/

@@ -1,4 +1,4 @@
-import type { Phrase } from "../phrase";
+import type { Phrase } from "./phrase";
 import type { Coordination } from "./coordination";
 
 /**

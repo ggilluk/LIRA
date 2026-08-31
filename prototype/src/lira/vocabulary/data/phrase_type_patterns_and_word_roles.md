@@ -1,7 +1,7 @@
 # Phrase Type Patterns and Word Roles
 
 How to identify the Head of a Phrase, why that Head's own lexical class
-is what actually determines `Phrase.phraseType` (`data/phrase.ts`,
+is what actually determines `Phrase.phraseType` (`data/entities/phrase.ts`,
 `enums/phrase_type.ts`), and how every other word inside the phrase gets
 assigned a Phrase Role distinct from its own stored Part of Speech.
 
@@ -13,8 +13,8 @@ subtype class's own docstring, one per row below), and
 `linkPhraseWords()` right after `phrase.words` itself is resolved)
 assigns every constituent word its own `ModifierRole`
 (`enums/modifier_role.ts`), stored index-aligned with `words` on
-`phrase.wordRoles` (`data/phrase.ts`). `Phrase.headWord`/
-`Phrase.headWordForm` (`data/phrase.ts`) then single that Head position
+`phrase.wordRoles` (`data/entities/phrase.ts`). `Phrase.headWord`/
+`Phrase.headWordForm` (`data/entities/phrase.ts`) then single that Head position
 out explicitly -- `headWord` the resolved Word it points to (when it
 resolved against the Dictionary at all), `headWordForm` its own
 phrase-local spelling regardless -- derived directly from `wordRoles`

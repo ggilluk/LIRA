@@ -11,7 +11,7 @@
  * docstring for the precedent this follows): data/word_forms.ts's own
  * `WordForms` store calls createWordForm()/copyWordFormWithFreshUuid()
  * directly, so that data/ file ends up importing from here -- the same
- * reason data/phrase.ts and data/dictionary.ts already import
+ * reason data/entities/phrase.ts and data/dictionary.ts already import
  * createWord()/copyWordWithFreshUuid() from role/word_processor.ts. */
 
 import { identifier } from "../../value_objects";

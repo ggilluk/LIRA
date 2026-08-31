@@ -2,7 +2,7 @@ import { PartOfSpeech } from "../../data/enums/part_of_speech";
 import { ModifierRole } from "../../data/enums/modifier_role";
 import { PhraseType } from "../../data/enums/phrase_type";
 import type { Identifier } from "../../../value_objects";
-import type { Phrase } from "../../data/phrase";
+import type { Phrase } from "../../data/entities/phrase";
 import type { Dictionary } from "../../data/dictionary";
 import type { Word } from "../../data/entities/word";
 import type { WordForms } from "../../data/word_forms";
@@ -494,7 +494,7 @@ function nonHeadModifierRole(
 /** Breaks `phrase`'s own `text` into its whitespace-separated tokens
  * ("toy poodle" -> ["toy", "poodle"]) and resolves every one of
  * `phrase.headWord`/`phrase.headWordForm`/`phrase.preModifiers`/
- * `phrase.postModifiers`/`phrase.determiners` (data/phrase.ts's own
+ * `phrase.postModifiers`/`phrase.determiners` (data/entities/phrase.ts's own
  * docstring on each) from that decomposition -- `words`/`wordRoles`
  * themselves (each token's own resolved Word reference and
  * classifyModifierRoles()'s own per-token role) are local to this

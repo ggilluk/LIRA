@@ -10,7 +10,7 @@
  *
  * Known, approved exception to the usual data/-depends-on-role/-never
  * rule (data/entities/word.ts's own docstring; the word_forms.ts fix,
- * commit d087fee): data/phrase.ts's own phraseAsWord() and
+ * commit d087fee): data/entities/phrase.ts's own phraseAsWord() and
  * data/dictionary.ts both call createWord()/copyWordWithFreshUuid()
  * directly, so both real data/ files end up importing from here. This
  * was surfaced and explicitly accepted rather than routed around --

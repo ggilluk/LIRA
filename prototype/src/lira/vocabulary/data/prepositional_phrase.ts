@@ -32,7 +32,7 @@
  * own docstring). Never set for a Common Vocabulary Cache closed-class
  * Phrase, which has no constituency-parsing pass of its own.
  *
- * `headWord` (data/phrase.ts's own docstring on it) is a graph-reference
+ * `headWord` (data/entities/phrase.ts's own docstring on it) is a graph-reference
  * pointer, not narrowed to any Word subtype here the way `preModifiers`/
  * `postModifiers` below are -- an `Identifier` carries no type of its
  * own to narrow. For a real seeded PrepositionalPhrase it always
@@ -44,7 +44,7 @@
  * PrepositionalPhrase, by linkPhraseWords()
  * (role/processor/phrase_processor.ts).
  *
- * `preModifiers` narrows Phrase's own same-named field (data/phrase.ts's
+ * `preModifiers` narrows Phrase's own same-named field (data/entities/phrase.ts's
  * own docstring on it) down to the exact constituent set
  * data/phrase_type_patterns_and_word_roles.md's own "Phrase Role
  * Allowed Types" table gives PrepositionalPhrase's own MODIFIER row: an
@@ -56,7 +56,7 @@
  * docstring on why a sub-phrase/Clause modifier is left out rather than
  * guessed at, and on why a WordForm that fails to resolve is too.
  *
- * `postModifiers` narrows Phrase's own same-named field (data/phrase.ts's
+ * `postModifiers` narrows Phrase's own same-named field (data/entities/phrase.ts's
  * own docstring on it) down to that exact same constituent set --
  * PrepositionalPhrase's own structure ("Preposition + Noun
  * phrase/complement + (Modifiers)") in fact places its real Modifiers
@@ -66,7 +66,7 @@
  * Modifier ever precede the Head) for the rarer pre-Head case. */
 
 import { PhraseType } from "./enums/phrase_type";
-import { createPhrase, type Phrase } from "./phrase";
+import { createPhrase, type Phrase } from "./entities/phrase";
 import type { Identifier } from "../../value_objects";
 import type { AdverbPhrase } from "./entities/adverb_phrase";
 

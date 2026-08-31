@@ -1,10 +1,12 @@
 # Data Entity Design Decisions Log
 
 Design history for the Vocabulary Layer's data entities (`data/entities/*.ts`
-and the sibling top-level entities such as `data/phrase.ts`) -- the "why"
-behind a shape, kept out of the entity files' own field comments so those
-stay focused on what each field *is*. Each entity file's own top docstring
-points back here.
+and the sibling top-level entities still awaiting their own move into
+`entities/`, such as `data/infinitive_phrase.ts`/`data/prepositional_phrase.ts`
+-- the rest of the `*_phrase.ts` family, `phrase.ts` included, has already
+made that move) -- the "why" behind a shape, kept out of the entity files'
+own field comments so those stay focused on what each field *is*. Each
+entity file's own top docstring points back here.
 
 ## Phrase
 
@@ -983,7 +985,7 @@ fix. Confirmed this is `Phrase.headWord`'s own already-documented
 "Undefined whenever no token carries the HEAD role at all" case, not a
 remaining gap -- both tokens still resolve as Determiners regardless,
 since that role assignment (unlike Modifier) is never gated on an
-identified Head position (data/phrase.ts's own `determiners` docstring,
+identified Head position (data/entities/phrase.ts's own `determiners` docstring,
 updated to say so). `Phrase.headWord`/`preModifiers`/`postModifiers`'s
 own docstrings, and `data/entities/noun_phrase.ts`'s, were all updated to
 drop their now-inaccurate blanket "undefined for a Common Vocabulary

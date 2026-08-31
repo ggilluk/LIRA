@@ -1,5 +1,5 @@
 import type { Dictionary } from "../data/dictionary";
-import { toSyntheticWord } from "../data/phrase";
+import { toSyntheticWord } from "../data/entities/phrase";
 import type { Phrases } from "../data/phrases";
 import type { Senses } from "../data/senses";
 import type { Word } from "../data/entities/word";
@@ -81,7 +81,7 @@ export class DictionaryProcessor {
    * back to a plain single-token identifyWord lookup -- "in spite of"
    * resolves as the one Phrase it's seeded as (assets/common/en/
    * prepositions.json, now via Phrases rather than a multi-word
-   * Word -- Phrase's own docstring, data/phrase.ts), not three
+   * Word -- Phrase's own docstring, data/entities/phrase.ts), not three
    * independent single-word lookups on "in"/"spite"/"of". Checks
    * `phraseBook` AND `dictionary` at every span, not phraseBook alone:
    * a WordNet multi-word lemma ("toy poodle") is still an ordinary

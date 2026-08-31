@@ -6,7 +6,7 @@
  * parameters. */
 
 import type { Dictionary } from "../../data/dictionary";
-import { phraseAsWord } from "../../data/phrase";
+import { phraseAsWord } from "../../data/entities/phrase";
 import type { Phrases } from "../../data/phrases";
 import type { Senses } from "../../data/senses";
 import type { Word } from "../../data/entities/word";

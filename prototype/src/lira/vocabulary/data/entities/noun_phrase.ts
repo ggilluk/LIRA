@@ -65,7 +65,7 @@
  * ModifierRole.COMPLEMENT itself is named ahead of any seeder that
  * assigns it.
  *
- * `headWord` (data/phrase.ts's own docstring on it) is a graph-reference
+ * `headWord` (data/entities/phrase.ts's own docstring on it) is a graph-reference
  * pointer, not narrowed to any Word subtype here the way `preModifiers`/
  * `postModifiers` below are -- an `Identifier` carries no type of its
  * own to narrow. For a real seeded NounPhrase it always resolves
@@ -78,7 +78,7 @@
  * `seedWordNet()`'s and `seedClosedClassWords()`'s own call sites,
  * word_seeder.ts.
  *
- * `preModifiers` narrows Phrase's own same-named field (data/phrase.ts's
+ * `preModifiers` narrows Phrase's own same-named field (data/entities/phrase.ts's
  * own docstring on it) down to the exact constituent set
  * data/phrase_type_patterns_and_word_roles.md's own "Phrase Role
  * Allowed Types" table gives NounPhrase's own MODIFIER row: an
@@ -92,14 +92,14 @@
  * docstring on why a sub-phrase/Clause modifier is left out rather than
  * guessed at, and on why a WordForm that fails to resolve is too.
  *
- * `postModifiers` narrows Phrase's own same-named field (data/phrase.ts's
+ * `postModifiers` narrows Phrase's own same-named field (data/entities/phrase.ts's
  * own docstring on it) down to that exact same constituent set --
  * `preModifiers`' own MODIFIER row makes no pre/post distinction, so
  * NounPhrase's post-Head modifier set is identical to its pre-Head one.
  * Same real-population status as `preModifiers` above. */
 
 import { PhraseType } from "../enums/phrase_type";
-import { createPhrase, type Phrase } from "../phrase";
+import { createPhrase, type Phrase } from "./phrase";
 import type { Identifier } from "../../../value_objects";
 import type { AdjectivePhrase } from "./adjective_phrase";
 import type { AdverbPhrase } from "./adverb_phrase";
