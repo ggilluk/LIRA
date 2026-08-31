@@ -3040,10 +3040,10 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     new WordSeeder("en").seedClosedClassWords(dictionary, phraseBook, { excludeOpenClasses: true }, senseStore, wordForms);
     await new WordSeeder("en").seedWordNet(domain);
 
-    // word_coordinations.json's own 8 entries.
+    // word_coordinations.json's own 9 entries.
     const seeded = new WordCoordinationSeeder("en").seed(domain);
-    expect(seeded).toBe(8);
-    expect(coordinations.totalEntries()).toBe(8);
+    expect(seeded).toBe(9);
+    expect(coordinations.totalEntries()).toBe(9);
 
     const saltAndPepper = coordinations.all().find((c) => (c.coordinates[0] as Word).text === "salt");
     expect(saltAndPepper).toBeDefined();
@@ -3063,10 +3063,24 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     expect((backAndForth!.coordinates[0] as Word).partOfSpeech).toBe(PartOfSpeech.ADVERB);
     expect((backAndForth!.coordinates[1] as Word).text).toBe("forth");
 
+    // "red, white, and blue" -- three coordinates, not two.
+    // Coordination.coordinates's own flat-array shape supports this
+    // directly (no nested binary tree needed, this codebase's own fix
+    // for https://github.com/ggilluk/LIRA/issues/3), and the seeder
+    // itself never assumed exactly two -- this is real bundled data
+    // confirming both hold end to end, not just in a synthetic test.
+    const redWhiteBlue = coordinations.all().find((c) => (c.coordinates[0] as Word).text === "red");
+    expect(redWhiteBlue).toBeDefined();
+    expect(redWhiteBlue!.coordinates).toHaveLength(3);
+    expect((redWhiteBlue!.coordinates as Word[]).map((w) => w.text)).toEqual(["red", "white", "blue"]);
+    expect((redWhiteBlue!.coordinates[0] as Word).partOfSpeech).toBe(PartOfSpeech.ADJECTIVE);
+    const redWhiteBlueCoordinatorForm = wordForms.findByUuid(redWhiteBlue!.coordinator!.value);
+    expect(redWhiteBlueCoordinatorForm?.text.value).toBe("and");
+
     // Idempotent -- a second call against the same, already-seeded
     // Domain creates nothing new.
     expect(new WordCoordinationSeeder("en").seed(domain)).toBe(0);
-    expect(coordinations.totalEntries()).toBe(8);
+    expect(coordinations.totalEntries()).toBe(9);
   }, 60000);
 
   it("coordinationRecords() builds the Coordinations tab's own client-facing records against real seeded WordCoordinations", async () => {
@@ -3103,13 +3117,23 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     new WordCoordinationSeeder("en").seed(domain);
 
     const records = coordinationRecords(coordinations, phraseBook, dictionary, wordForms);
-    // 8 real coordinate pairs, plus every standalone Conjunction Word
-    // (coordinating_conjunctions.json's own 7, subordinating_conjunctions.json's
-    // own 17 single-word entries) and Conjunction Phrase
-    // (subordinating_conjunctions.json's own 19 multi-word entries) --
-    // coordinationRecords()'s own docstring on why all three share this
-    // one list.
-    expect(records).toHaveLength(8 + 7 + 17 + 19);
+    // 9 real coordinate pairs (one of them, "red, white, and blue",
+    // three coordinates rather than two), plus every standalone
+    // Conjunction Word (coordinating_conjunctions.json's own 7,
+    // subordinating_conjunctions.json's own 17 single-word entries) and
+    // Conjunction Phrase (subordinating_conjunctions.json's own 19
+    // multi-word entries) -- coordinationRecords()'s own docstring on
+    // why all three share this one list.
+    expect(records).toHaveLength(9 + 7 + 17 + 19);
+    // A three-coordinate row renders correctly through the record layer
+    // too, not just the seeder -- coordinationRecordFor() never assumed
+    // exactly two either.
+    const redWhiteBlue = records.find((r) => r.coordinates.join(" ") === "red white blue")!;
+    expect(redWhiteBlue).toBeDefined();
+    expect(redWhiteBlue.coordinates).toEqual(["red", "white", "blue"]);
+    expect(redWhiteBlue.pos).toBe("ADJECTIVE");
+    expect(redWhiteBlue.coordinator).toBe("and");
+    expect(redWhiteBlue.conjunction_type).toBe("COORDINATING");
     // Sorted by the joined coordinates text -- "back and forth" sorts
     // before "salt and pepper" alphabetically. `coordinates` itself
     // holds the bare coordinate words ("back", "forth"), not the

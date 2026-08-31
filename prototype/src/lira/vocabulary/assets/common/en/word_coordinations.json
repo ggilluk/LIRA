@@ -1,8 +1,14 @@
 {
   "schema_version": "1.0.0",
   "language_code": "en",
-  "count": 8,
+  "count": 9,
   "coordinations": [
+    {
+      "entry_id": "f300b3eb-279b-487d-8e13-2afdbc02997f",
+      "part_of_speech": "ADJECTIVE",
+      "coordinates": ["red", "white", "blue"],
+      "coordinator": "and"
+    },
     {
       "entry_id": "66fdc3f1-7369-4e97-9352-36501aebc007",
       "part_of_speech": "NOUN",

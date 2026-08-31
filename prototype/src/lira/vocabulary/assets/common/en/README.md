@@ -224,8 +224,11 @@ to-preposition pairs.
 
 ## Word coordinations
 
-`word_coordinations.json` -- 8 entries, a small, closed set of fixed,
-lexicalized coordinate expressions: "salt and pepper", "trial and
+`word_coordinations.json` -- 9 entries, a small, closed set of fixed,
+lexicalized coordinate expressions: "red, white, and blue" (`ADJECTIVE`,
+three coordinates -- Coordination's own flat `coordinates` array
+supports two or more, not just a binary pair; this is the one bundled
+example that actually exercises three), "salt and pepper", "trial and
 error", "cause and effect", "law and order", "bread and butter" (all
 `NOUN`), "back and forth", "here and there", "now and then" (all
 `ADVERB`) -- each seeded as one real `WordCoordination`

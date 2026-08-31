@@ -1519,3 +1519,33 @@ own `NOUN`-tagged row (`coordinator: "and"`), "although" tagged
 `SUBORDINATING`, and "as long as" appearing as `["as", "long", "as"]`
 tagged `CONJUNCTION`/`SUBORDINATING` with no `coordinator` -- the
 reported bug's own exact example, now resolving correctly.
+
+### A real three-coordinate example: "red, white, and blue"
+
+Every bundled `word_coordinations.json` entry until now had exactly
+two `coordinates` -- the flat-array shape (this log's own "`coordinates`/
+`coordinator`..." section above, closing
+[ggilluk/LIRA#3](https://github.com/ggilluk/LIRA/issues/3)) always
+supported two or more, and every layer built on top of it
+(`WordCoordinationSeeder`'s own resolution loop, `coordinationRecordFor()`,
+`coordinatesText()`'s own Oxford-comma branch client-side) was already
+written generically, never assuming exactly two -- but nothing in the
+bundled data had ever actually exercised three, so that support was
+still only theoretical.
+
+Added a ninth entry to `word_coordinations.json`: `coordinates: ["red",
+"white", "blue"]`, `part_of_speech: "ADJECTIVE"`, `coordinator: "and"`
+-- verified directly against the bundled WordNet `dict/data.adj` that
+all three are real ADJECTIVE senses first, the same discipline every
+other entry's own words were checked against. No code changed anywhere
+in the seeder, record builder, or client script -- the whole pipeline
+already handled this shape correctly by construction; this only adds
+the first real bundled data that proves it, end to end rather than
+only in a synthetic unit test.
+
+Verified against real seeded data (`vocabulary.test.ts`, both the
+seeder's own test and `coordinationRecords()`'s own): "red, white,
+and blue" seeds with all three `ADJECTIVE` coordinates in order and a
+real `coordinator` resolving to "and", and renders (Playwright, the
+real app) as "red, white, and blue" -- `coordinatesText()`'s own
+Oxford-comma branch, confirmed live rather than only unit-tested.
