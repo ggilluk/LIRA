@@ -1470,6 +1470,84 @@ describe("WordSeeder against the bundled Common Vocabulary Cache", () => {
     expect(eachOther.headWordForm).toBeUndefined();
     expect(eachOther.determiners).toHaveLength(2);
   });
+
+  it("resolves \"a few\"'s own Head to its own standalone PRONOUN Word for \"few\", not the unrelated closed-class DETERMINER homograph of the same lexical form -- the reported bug", () => {
+    const dictionary = new Dictionary();
+    const phraseBook = new Phrases();
+    const senseStore = new Senses();
+    const wordForms = new WordForms();
+    new WordSeeder("en").seedClosedClassWords(dictionary, phraseBook, undefined, senseStore, wordForms);
+
+    // "few" itself resolves to two real, unrelated Words -- a closed-
+    // class DETERMINER (role/determiner_seeder.ts, "few apples", used
+    // attributively) and, since this JSON fix, its own standalone
+    // PRONOUN too ("A small number of, used pronominally", the assets/
+    // common/en/README.md's own "asset_version 1.29.0" Version entry) --
+    // `resolvedWordFor()` (role/processor/phrase_processor.ts) searches
+    // every one of "few"'s own homographs for the one actually matching
+    // NOUN_PHRASE's own Head target (Noun or Pronoun), rather than
+    // `dictionary.lookup()`'s single first-seeded pick (which would
+    // still land on the unrelated DETERMINER homograph, seeded first).
+    expect(dictionary.lookupAll("few").map((w) => w.partOfSpeech)).toEqual([PartOfSpeech.DETERMINER, PartOfSpeech.PRONOUN]);
+
+    const afew = phraseBook.lookup("a few")!;
+    expect(afew.phraseType).toBe(PhraseType.NOUN_PHRASE);
+    expect(afew.headWord).toBeDefined();
+    const head = dictionary.findByUuid(afew.headWord!.value);
+    expect(head?.text).toBe("few");
+    expect(head?.partOfSpeech).toBe(PartOfSpeech.PRONOUN);
+    expect(afew.headWordForm).toBeDefined();
+    expect(wordForms.findByUuid(afew.headWordForm!.value)?.text.value).toBe("few");
+    // "a" is the one remaining Determiner -- "few" no longer among them
+    // now that it correctly carries the Head role instead.
+    expect(afew.determiners).toHaveLength(1);
+    expect(wordForms.findByUuid(afew.determiners![0].value)?.text.value).toBe("a");
+  });
+
+  it("re-links every closed-class Phrase's own headWord once seedWordNet() gives its constituent Words full Dictionary coverage, without ever letting a later, unrelated WordNet homograph override an already-correct closed-class resolution", async () => {
+    const dictionary = new Dictionary();
+    const phraseBook = new Phrases();
+    const senseStore = new Senses();
+    const wordForms = new WordForms();
+    const seeder = new WordSeeder("en");
+    seeder.seedClosedClassWords(dictionary, phraseBook, undefined, senseStore, wordForms);
+
+    const morphologicalPointerRelationships = new MorphologicalPointerRelationshipStore();
+    const semanticRelationships = new SemanticRelationshipStore();
+    const morphologicalPointerRelationshipProcessor = new MorphologicalPointerRelationshipProcessor(
+      morphologicalPointerRelationships,
+      new MorphologicalPointerRelationshipSystemPropertyTensor(),
+    );
+    const semanticRelationshipProcessor = new SemanticRelationshipProcessor(
+      semanticRelationships,
+      new SemanticRelationshipSystemPropertyTensor(),
+    );
+    const domain = {
+      vocabulary: { dictionary, phrases: phraseBook, senses: senseStore, wordForms, morphologicalPointerRelationships, morphologicalPointerRelationshipProcessor, semanticRelationships, semanticRelationshipProcessor },
+    };
+    await seeder.seedWordNet(domain);
+
+    // WordNet seeds two more real homographs for "few" -- a standalone
+    // NOUN sense ("a small elite group") and an ADJECTIVE one ("a
+    // quantifier... a small but indefinite number"), neither the same
+    // quantifier-pronoun meaning "a few" itself needs. seedWordNet()'s
+    // own re-link pass (over every Phrase already in `phraseBook`, not
+    // just its own newly-created ones) runs again regardless, but "a
+    // few" itself already resolved correctly before WordNet ever
+    // loaded, and `resolvedWordFor()`'s own "first homograph actually
+    // matching the target, in Dictionary insertion order" rule keeps it
+    // that way: the closed-class PRONOUN "few" (seeded well before
+    // WordNet) still wins over WordNet's own later, unrelated NOUN one
+    // -- neither WordNet homograph is even NOUN_PHRASE-Head-target-
+    // capable on its own in the ADJECTIVE case, but the NOUN one alone
+    // would have won under a naive "last match" rule, so this confirms
+    // the actual insertion-order-first rule, not merely "some match".
+    expect(dictionary.lookupAll("few").map((w) => w.partOfSpeech)).toEqual([PartOfSpeech.DETERMINER, PartOfSpeech.PRONOUN, PartOfSpeech.NOUN, PartOfSpeech.ADJECTIVE]);
+    const afew = phraseBook.lookup("a few")!;
+    const head = dictionary.findByUuid(afew.headWord!.value);
+    expect(head?.text).toBe("few");
+    expect(head?.partOfSpeech).toBe(PartOfSpeech.PRONOUN);
+  }, 60000);
 });
 
 describe("loadWordNetSynsets against the bundled Princeton WordNet 3.1 dict/ files", () => {
@@ -2099,19 +2177,19 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
       undefined,
     ]);
     // dictionary.lookup("be")'s own arbitrary-but-deterministic
-    // first-seeded homograph resolves to the chemical-element NOUN "Be"
-    // here, not the verb sense a reader might expect -- the same
-    // structural-not-semantic pick "toy poodle"'s own "toy" already
-    // exercises above. No MODIFIER role exists in this phrase's own
-    // wordRoles, so both modifier arrays stay empty.
+    // first-seeded homograph would resolve to the chemical-element NOUN
+    // "Be" -- but linkPhraseWords() resolves the Head specifically via
+    // resolvedWordFor(), which searches every "be" homograph for one
+    // matching InfinitivePhrase's own Head target (VERB), so it finds
+    // the real verb sense "be" instead, not that unrelated NOUN. No
+    // MODIFIER role exists in this phrase's own wordRoles, so both
+    // modifier arrays stay empty.
     const toBeSureHead = dictionary.findByUuid(toBeSure!.headWord!.value);
-    expect(toBeSureHead?.text).toBe("Be");
-    expect(toBeSureHead?.partOfSpeech).toBe(PartOfSpeech.NOUN);
-    // headWordForm still resolves ("Be"'s own base-lemma WordForm) even
-    // though its own spelling's case ("Be") differs from this literal
-    // occurrence's own ("be") -- the match is case-insensitive, the same
-    // way definitionWordSegment()'s own matching is (builder_segment.ts).
-    expect(wordForms.findByUuid(toBeSure!.headWordForm!.value)?.text.value).toBe("Be");
+    expect(toBeSureHead?.text).toBe("be");
+    expect(toBeSureHead?.partOfSpeech).toBe(PartOfSpeech.VERB);
+    // headWordForm resolves to that same verb "be" Word's own base-lemma
+    // WordForm, spelled "be" the same way it literally appears here.
+    expect(wordForms.findByUuid(toBeSure!.headWordForm!.value)?.text.value).toBe("be");
     expect(toBeSure!.preModifiers).toEqual([]);
     expect(toBeSure!.postModifiers).toEqual([]);
     expect(dictionary.lookupAll("toy poodle")).toEqual([]);
@@ -2251,12 +2329,16 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     const giveUp = phraseBook.lookupAll("give up").find((phrase) => phraseBook.synsetIdOf(phrase)?.value === "02686624-v");
     expect(giveUp?.phraseType).toBe(PhraseType.VERB_PHRASE);
     expect(classifyModifierRoles(giveUp!.phraseType, giveUp!.text.trim().split(/\s+/), dictionary)).toEqual([ModifierRole.HEAD, ModifierRole.MODIFIER]);
-    // headWord resolves to that same rare NOUN "give" homograph (this
-    // test's own comment above on why). "up" sits after the Head with a
-    // MODIFIER role, so it lands in postModifiers, not preModifiers.
+    // headWord resolves to "give"'s own VERB sense, not that rare NOUN
+    // homograph -- linkPhraseWords() resolves the Head specifically via
+    // resolvedWordFor(), which searches every "give" homograph for one
+    // matching VerbPhrase's own Head target (VERB), so the rare NOUN
+    // sense never wins here even though it happens to be seeded first.
+    // "up" sits after the Head with a MODIFIER role, so it lands in
+    // postModifiers, not preModifiers.
     const giveUpHead = dictionary.findByUuid(giveUp!.headWord!.value);
     expect(giveUpHead?.text).toBe("give");
-    expect(giveUpHead?.partOfSpeech).toBe(PartOfSpeech.NOUN);
+    expect(giveUpHead?.partOfSpeech).toBe(PartOfSpeech.VERB);
     expect(wordForms.findByUuid(giveUp!.headWordForm!.value)?.text.value).toBe("give");
     expect(giveUp!.preModifiers).toEqual([]);
     expect(giveUp!.postModifiers).toHaveLength(1);
@@ -2278,10 +2360,13 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     ]);
     // "up" here is a Particle, not a Modifier (this test's own comment
     // above), so it's excluded from both modifier arrays -- "to" gets
-    // no role at all, same reason. Both stay empty.
+    // no role at all, same reason. Both stay empty. headWord resolves to
+    // "look"'s own VERB sense, not its unrelated NOUN homograph ("a look
+    // of surprise") -- the same resolvedWordFor() Head-specific
+    // resolution "give up" above already exercises.
     const lookUpToHead = dictionary.findByUuid(lookUpTo!.headWord!.value);
     expect(lookUpToHead?.text).toBe("look");
-    expect(lookUpToHead?.partOfSpeech).toBe(PartOfSpeech.NOUN);
+    expect(lookUpToHead?.partOfSpeech).toBe(PartOfSpeech.VERB);
     expect(wordForms.findByUuid(lookUpTo!.headWordForm!.value)?.text.value).toBe("look");
     expect(lookUpTo!.preModifiers).toEqual([]);
     expect(lookUpTo!.postModifiers).toEqual([]);
@@ -2295,14 +2380,17 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     expect(longAgo?.phraseType).toBe(PhraseType.ADVERB_PHRASE);
     expect(classifyModifierRoles(longAgo!.phraseType, longAgo!.text.trim().split(/\s+/), dictionary)).toEqual([ModifierRole.MODIFIER, ModifierRole.HEAD]);
     // dictionary.lookup("ago")'s own arbitrary-but-deterministic
-    // first-seeded homograph happens to be an ADJECTIVE sense here, not
-    // the ADVERB one the phrase's own AdverbPhrase structure suggests --
-    // the same structural-not-semantic pick every headWord resolution
-    // above already exercises. "long" is the one premodifying Modifier,
-    // so it's the sole preModifiers entry; nothing sits after the Head.
+    // first-seeded homograph would land on an ADJECTIVE sense, not the
+    // ADVERB one the phrase's own AdverbPhrase structure suggests -- but
+    // resolvedWordFor() resolves the Head specifically to a homograph
+    // matching AdverbPhrase's own Head target (ADVERB), so it correctly
+    // finds "ago"'s ADVERB sense instead, the same Head-specific
+    // resolution "give up"/"look up to" above already exercise. "long"
+    // is the one premodifying Modifier, so it's the sole preModifiers
+    // entry; nothing sits after the Head.
     const longAgoHead = dictionary.findByUuid(longAgo!.headWord!.value);
     expect(longAgoHead?.text).toBe("ago");
-    expect(longAgoHead?.partOfSpeech).toBe(PartOfSpeech.ADJECTIVE);
+    expect(longAgoHead?.partOfSpeech).toBe(PartOfSpeech.ADVERB);
     expect(wordForms.findByUuid(longAgo!.headWordForm!.value)?.text.value).toBe("ago");
     expect(longAgo!.preModifiers).toHaveLength(1);
     expect(wordForms.findByUuid((longAgo!.preModifiers![0] as Identifier).value)?.text.value).toBe("long");

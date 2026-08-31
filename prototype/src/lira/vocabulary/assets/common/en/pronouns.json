@@ -3,7 +3,7 @@
   "language_code": "en",
   "part_of_speech": "PRONOUN",
   "closed_class_kind": "pronoun",
-  "count": 100,
+  "count": 101,
   "words": [
     {
       "entry_id": "0808cf58-5260-4aa2-bf3e-f6a6fd0ce5ba",
@@ -2777,6 +2777,46 @@
       "pronunciations": [],
       "syllable_representation": null,
       "syllable_count": 2,
+      "stress_pattern": null,
+      "frequency_value": null,
+      "frequency_scale": null,
+      "etymology_text": null,
+      "first_recorded_use": null,
+      "source_references": [
+        {
+          "source_name": "LIRA English Common Closed-Class Cache v1",
+          "source_version": "1.0.0",
+          "external_identifier": null,
+          "reference_uri": null,
+          "licence_identifier": null
+        }
+      ],
+      "seeded_pleasure_displeasure_weight": 0.0,
+      "seeded_arousal_non_arousal_weight": 0.0,
+      "seeded_dominance_submissive_weight": 0.0
+    },
+    {
+      "entry_id": "02946398-5f8f-401c-ab0b-edccb037df92",
+      "lexical_form": "few",
+      "normalised_form": "few",
+      "text": "few",
+      "version": "1.0",
+      "language_code": "en",
+      "script_code": "Latn",
+      "part_of_speech": "PRONOUN",
+      "closed_class": true,
+      "closed_class_kind": "pronoun",
+      "definition": "A small number of, used pronominally",
+      "gloss": "A small number of, used pronominally",
+      "usage_notes": [],
+      "register_codes": [
+        "NEUTRAL"
+      ],
+      "editorial_labels": [],
+      "dialect_codes": [],
+      "pronunciations": [],
+      "syllable_representation": null,
+      "syllable_count": 1,
       "stress_pattern": null,
       "frequency_value": null,
       "frequency_scale": null,

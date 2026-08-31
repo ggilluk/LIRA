@@ -1296,8 +1296,8 @@ export class WordSeeder {
     // give a different answer depending on whether "begin"/"bit"
     // happened to be seeded yet -- a Phrase like "a bit" can be
     // processed before the standalone "bit" synset, in whatever order
-    // loadWordNetSynsets() itself returns, `newPhrases`'s own docstring
-    // below on the identical hazard for linkPhraseWords()).
+    // loadWordNetSynsets() itself returns, the linking-loop's own
+    // docstring below on the identical hazard for linkPhraseWords()).
     const verbLemmas = new Set<string>();
     const nounLemmas = new Set<string>();
     for (const synset of synsets) {
@@ -1308,17 +1308,14 @@ export class WordSeeder {
       }
     }
     const synsetMembersById = new Map<string, Array<Word | Phrase>>();
-    // Every Phrase newly created by this call's own pass 1, in creation
-    // order -- linkPhraseWords() below can only resolve a Phrase's own
-    // constituent Words correctly once pass 1 has finished seeding every
-    // single-word synset member (a phrase like "toy poodle" can be
+    // linkPhraseWords() (below, over the whole of `phraseBook`, not just
+    // this pass's own newly-created Phrases) can only resolve a Phrase's
+    // own constituent Words correctly once pass 1 has finished seeding
+    // every single-word synset member (a phrase like "toy poodle" can be
     // processed before the standalone "toy"/"poodle" synsets, in
     // whatever order loadWordNetSynsets() itself returns), so the
     // linking itself is deferred to right after this loop rather than
-    // attempted inline. A Phrase found already-seeded from an earlier
-    // seedWordNet run (the `existingPhrase` branch below) is skipped --
-    // it was already linked the run that created it.
-    const newPhrases: Phrase[] = [];
+    // attempted inline.
 
     let processed = 0;
     for (const synset of synsets) {
@@ -1372,7 +1369,6 @@ export class WordSeeder {
           } else {
             phrase = this.synsetMemberToPhrase(synset, lemma, verbLemmas, nounLemmas);
             phraseBook.append(phrase, synset.partOfSpeech, { value: synset.synsetId, ...WORDNET_SYNSET_ID_SCHEME });
-            newPhrases.push(phrase);
             wordsSeeded += 1;
           }
           members.push(phrase);
@@ -1441,11 +1437,24 @@ export class WordSeeder {
     }
 
     // Every single-word synset member is seeded by now (the loop above
-    // ran to completion), so every newly-created Phrase's own
-    // constituent Words can be resolved with full Dictionary coverage --
-    // linkPhraseWords()'s own docstring on why this can't happen
-    // inline, above.
-    for (const phrase of newPhrases) linkPhraseWords(phrase, dictionary, wordForms);
+    // ran to completion), so every Phrase's own constituent Words can be
+    // resolved with full Dictionary coverage -- linkPhraseWords()'s own
+    // docstring on why this can't happen inline, above. Re-links every
+    // Phrase already in `phraseBook`, not just this pass's own newly-
+    // created ones -- a closed-class (Common Vocabulary Cache) Phrase
+    // `seedClosedClassWords()` already linked earlier only ever saw
+    // whatever Words existed in `dictionary` at that moment; when this
+    // seedWordNet() call runs afterward (the real UI's own "Seed
+    // Vocabulary" then "Load WordNet" order), it can newly resolve a
+    // Head that closed-class-only data never could -- "a few" is the
+    // real bundled-data proof: "few" carries no standalone Noun/Pronoun
+    // Word until WordNet seeds one (WordNet's own single-word NOUN
+    // synset for "few", "a small elite group"), so its own Head stayed
+    // unresolved, both tokens falling back to Determiner-only, until
+    // this re-link picks it up. Idempotent and harmless for a Phrase
+    // that already resolved correctly -- linkPhraseWords() simply
+    // recomputes the identical result again.
+    for (const phrase of phraseBook.all()) linkPhraseWords(phrase, dictionary, wordForms);
 
     // senseIds accumulates in whatever order pass 1's own synset loop
     // above happened to visit each one -- byte-offset order within a

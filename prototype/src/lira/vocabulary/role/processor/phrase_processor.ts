@@ -4,6 +4,7 @@ import { PhraseType } from "../../data/enums/phrase_type";
 import type { Identifier } from "../../../value_objects";
 import type { Phrase } from "../../data/phrase";
 import type { Dictionary } from "../../data/dictionary";
+import type { Word } from "../../data/entities/word";
 import type { WordForms } from "../../data/word_forms";
 import { graphUuid as wordGraphUuid } from "../word_processor";
 import { graphUuid as wordFormGraphUuid } from "../word_form_processor";
@@ -257,31 +258,57 @@ function possiblePartsOfSpeech(token: string, dictionary: Dictionary): ReadonlyS
   return pos;
 }
 
+/** The part(s) of speech `phraseType`'s own Head Identification Rule
+ * targets (data/phrase_type_patterns_and_word_roles.md's own "Phrase
+ * Role Allowed Types" table, HEAD row, per PhraseType -- NounPhrase's
+ * own row allows either Noun or Pronoun, every other PhraseType exactly
+ * one). Shared by classifyModifierRoles() below -- deciding *which
+ * token position* is Head -- and by linkPhraseWords()'s own
+ * resolvedWordFor() -- deciding *which of that position's own
+ * homographs* actually is -- so the two can never drift apart. That
+ * split used to be the whole bug behind "a few" resolving its own Head
+ * to the wrong homograph: classifyModifierRoles() correctly found "few"
+ * Noun-capable via possiblePartsOfSpeech()'s own full homograph set once
+ * WordNet's own standalone NOUN sense for "few" existed, but
+ * linkPhraseWords() went on to resolve the position via
+ * `dictionary.lookup()`'s single first-seeded pick regardless -- the
+ * closed-class DETERMINER Word "few" (role/determiner_seeder.ts) seeded
+ * well before that WordNet sense ever could be, an entirely unrelated
+ * word in the same lexical-form/POS-homograph family, not the Word
+ * classifyModifierRoles() itself actually matched. */
+function headTargetPartsOfSpeech(phraseType: PhraseType): ReadonlySet<PartOfSpeech> {
+  switch (phraseType) {
+    case PhraseType.NOUN_PHRASE:
+      return new Set([PartOfSpeech.NOUN, PartOfSpeech.PRONOUN]);
+    case PhraseType.ADJECTIVE_PHRASE:
+      return new Set([PartOfSpeech.ADJECTIVE]);
+    case PhraseType.ADVERB_PHRASE:
+      return new Set([PartOfSpeech.ADVERB]);
+    case PhraseType.VERB_PHRASE:
+    case PhraseType.INFINITIVE_PHRASE:
+      return new Set([PartOfSpeech.VERB]);
+    case PhraseType.PREPOSITIONAL_PHRASE:
+      return new Set([PartOfSpeech.PREPOSITION]);
+  }
+}
+
 /** Finds the index of the last token in `possiblePos` whose own set
- * could be read as `targetPos` (or, when supplied, `alsoTargetPos` --
- * NounPhrase's own Head Identification Rule allows either Noun or
- * Pronoun, data/phrase_type_patterns_and_word_roles.md's own "Phrase
- * Role Allowed Types" table, NounPhrase/HEAD row), restricted to
- * positions *before* the first token that could be read as a
- * Preposition, if any -- the shared Head Identification Rule NounPhrase,
- * AdjectivePhrase, and AdverbPhrase all follow in practice
- * (data/phrase_type_patterns_and_word_roles.md's own Word Patterns
- * table): every row headed by one of those three classes either has no
- * Preposition at all (Head is simply the last `targetPos`-capable token
- * overall) or has the Head appear immediately before a trailing
- * "Preposition + complement" span ("(Noun[Head]) + Preposition + Noun",
- * "(Adjective[Head]) + Preposition + Noun") -- never after it. Falls
- * back to the last `targetPos`-capable token anywhere in the sequence
- * when none appears before that boundary (a case that table's own rows
- * never exercise, kept only so this stays a total function over any
- * token sequence). Returns `undefined` when no token could be read as
- * `targetPos` (or `alsoTargetPos`) at all. */
-function lastTargetPosBeforeFirstPreposition(
-  possiblePos: readonly ReadonlySet<PartOfSpeech>[],
-  targetPos: PartOfSpeech,
-  alsoTargetPos?: PartOfSpeech,
-): number | undefined {
-  const matchesTarget = (pos: ReadonlySet<PartOfSpeech>) => pos.has(targetPos) || (alsoTargetPos !== undefined && pos.has(alsoTargetPos));
+ * intersects `targetPos`, restricted to positions *before* the first
+ * token that could be read as a Preposition, if any -- the shared Head
+ * Identification Rule NounPhrase, AdjectivePhrase, and AdverbPhrase all
+ * follow in practice (data/phrase_type_patterns_and_word_roles.md's own
+ * Word Patterns table): every row headed by one of those three classes
+ * either has no Preposition at all (Head is simply the last
+ * `targetPos`-capable token overall) or has the Head appear immediately
+ * before a trailing "Preposition + complement" span ("(Noun[Head]) +
+ * Preposition + Noun", "(Adjective[Head]) + Preposition + Noun") --
+ * never after it. Falls back to the last `targetPos`-capable token
+ * anywhere in the sequence when none appears before that boundary (a
+ * case that table's own rows never exercise, kept only so this stays a
+ * total function over any token sequence). Returns `undefined` when no
+ * token's own set intersects `targetPos` at all. */
+function lastTargetPosBeforeFirstPreposition(possiblePos: readonly ReadonlySet<PartOfSpeech>[], targetPos: ReadonlySet<PartOfSpeech>): number | undefined {
+  const matchesTarget = (pos: ReadonlySet<PartOfSpeech>) => [...targetPos].some((target) => pos.has(target));
   const firstPrepositionIndex = possiblePos.findIndex((pos) => pos.has(PartOfSpeech.PREPOSITION));
   const boundary = firstPrepositionIndex === -1 ? possiblePos.length : firstPrepositionIndex;
   for (let i = boundary - 1; i >= 0; i--) {
@@ -293,13 +320,13 @@ function lastTargetPosBeforeFirstPreposition(
   return undefined;
 }
 
-/** `possiblePos.findIndex(pos => pos.has(targetPos))`, starting the
+/** `possiblePos.findIndex(pos => intersects targetPos)`, starting the
  * search at `from` -- Array.prototype.findIndex has no `fromIndex`
  * parameter of its own, so this slices first; wrapped to return
  * `undefined` (this module's own "not found" convention for a position)
  * instead of `-1`. */
-function firstIndexWithPos(possiblePos: readonly ReadonlySet<PartOfSpeech>[], targetPos: PartOfSpeech, from: number): number | undefined {
-  const index = possiblePos.slice(from).findIndex((pos) => pos.has(targetPos));
+function firstIndexWithPos(possiblePos: readonly ReadonlySet<PartOfSpeech>[], targetPos: ReadonlySet<PartOfSpeech>, from: number): number | undefined {
+  const index = possiblePos.slice(from).findIndex((pos) => [...targetPos].some((target) => pos.has(target)));
   return index === -1 ? undefined : index + from;
 }
 
@@ -322,7 +349,7 @@ function adverbPhraseHeadIndex(possiblePos: readonly ReadonlySet<PartOfSpeech>[]
       return i - 1;
     }
   }
-  return lastTargetPosBeforeFirstPreposition(possiblePos, PartOfSpeech.ADVERB);
+  return lastTargetPosBeforeFirstPreposition(possiblePos, headTargetPartsOfSpeech(PhraseType.ADVERB_PHRASE));
 }
 
 /** Assigns a ModifierRole (enums/modifier_role.ts) to every one of `tokens`
@@ -390,23 +417,21 @@ export function classifyModifierRoles(phraseType: PhraseType | undefined, tokens
   let headIndex: number | undefined;
   switch (phraseType) {
     case PhraseType.NOUN_PHRASE:
-      headIndex = lastTargetPosBeforeFirstPreposition(possiblePos, PartOfSpeech.NOUN, PartOfSpeech.PRONOUN);
-      break;
     case PhraseType.ADJECTIVE_PHRASE:
-      headIndex = lastTargetPosBeforeFirstPreposition(possiblePos, PartOfSpeech.ADJECTIVE);
+      headIndex = lastTargetPosBeforeFirstPreposition(possiblePos, headTargetPartsOfSpeech(phraseType));
       break;
     case PhraseType.ADVERB_PHRASE:
       headIndex = adverbPhraseHeadIndex(possiblePos, tokens);
       break;
     case PhraseType.VERB_PHRASE:
-      headIndex = firstIndexWithPos(possiblePos, PartOfSpeech.VERB, 0);
+      headIndex = firstIndexWithPos(possiblePos, headTargetPartsOfSpeech(phraseType), 0);
       break;
     case PhraseType.PREPOSITIONAL_PHRASE:
-      headIndex = firstIndexWithPos(possiblePos, PartOfSpeech.PREPOSITION, 0);
+      headIndex = firstIndexWithPos(possiblePos, headTargetPartsOfSpeech(phraseType), 0);
       break;
     case PhraseType.INFINITIVE_PHRASE:
       roles[0] = ModifierRole.PARTICLE;
-      headIndex = firstIndexWithPos(possiblePos, PartOfSpeech.VERB, 1);
+      headIndex = firstIndexWithPos(possiblePos, headTargetPartsOfSpeech(phraseType), 1);
       break;
   }
   if (headIndex !== undefined) roles[headIndex] = ModifierRole.HEAD;
@@ -494,6 +519,20 @@ function nonHeadModifierRole(
  * module), since relying on one arbitrary pick here would misidentify a
  * phrase's own Head whenever that pick happens to land on the wrong
  * homograph (that function's own docstring has the "give up" example).
+ * The Head position specifically carries this one step further still:
+ * `words[headIndex]` is resolved via `resolvedWordFor()` below, not the
+ * same first-seeded `dictionary.lookup()` pick every other position
+ * uses -- searching every one of that token's own homographs for the
+ * one actually matching `headTargetPartsOfSpeech(phrase.phraseType)`,
+ * the identical target classifyModifierRoles() itself already matched
+ * to identify this position as Head in the first place. Without this,
+ * a real bundled-data case broke: "a few" (pronouns.json) correctly
+ * identifies "few" as its own Head once WordNet seeds a standalone NOUN
+ * sense for it ("a small elite group") -- but "few" is *also* a real
+ * closed-class DETERMINER Word (role/determiner_seeder.ts), seeded
+ * earlier, so `dictionary.lookup("few")`'s own first-seeded pick landed
+ * on that entirely unrelated DETERMINER homograph instead of the Noun
+ * `headTargetPartsOfSpeech` actually meant.
  *
  * `headWord` is whichever token position (if any) `wordRoles` holds
  * ModifierRole.HEAD for. `headWordForm` resolves that Head's own
@@ -526,14 +565,31 @@ function nonHeadModifierRole(
  * tokens, never nested spans -- so a MODIFIER token that resolves to a
  * Phrase/Clause span rather than a single Word is left out of every
  * array rather than guessed at. */
+/** `token`'s own resolved Word actually matching `targetPos` --
+ * `linkPhraseWords()`'s own Head-position fix, `possiblePartsOfSpeech()`'s
+ * full-homograph-set reasoning carried one step further: unlike
+ * `dictionary.lookup()`'s single first-seeded-homograph pick, this
+ * searches every one of `token`'s own homographs for the one actually
+ * satisfying `targetPos`, falling back to `dictionary.lookup()`'s own
+ * single pick only when none of them do (a role assigned via one of the
+ * two synthetic closed-set memberships `possiblePartsOfSpeech()` itself
+ * adds -- PHRASE_TYPE_PREPOSITIONS/PHRASE_TYPE_DETERMINERS -- carries no
+ * real Word to resolve at all either way, so there's nothing more
+ * specific to fall back to). */
+function resolvedWordFor(token: string, targetPos: ReadonlySet<PartOfSpeech>, dictionary: Dictionary): Word | undefined {
+  const homographs = dictionary.lookupAll(token);
+  return homographs.find((word) => targetPos.has(word.partOfSpeech)) ?? dictionary.lookup(token);
+}
+
 export function linkPhraseWords(phrase: Phrase, dictionary: Dictionary, wordForms?: WordForms): void {
   const tokens = phrase.text.trim().split(/\s+/).filter((token) => token.length > 0);
-  const words = tokens.map((token) => {
-    const word = dictionary.lookup(token);
-    return word === undefined ? undefined : { value: wordGraphUuid(word) };
-  });
   const wordRoles = classifyModifierRoles(phrase.phraseType, tokens, dictionary);
   const headIndex = wordRoles.indexOf(ModifierRole.HEAD);
+  const headTargets = headIndex !== -1 && phrase.phraseType !== undefined ? headTargetPartsOfSpeech(phrase.phraseType) : undefined;
+  const words = tokens.map((token, i) => {
+    const word = i === headIndex && headTargets !== undefined ? resolvedWordFor(token, headTargets, dictionary) : dictionary.lookup(token);
+    return word === undefined ? undefined : { value: wordGraphUuid(word) };
+  });
 
   const matchingFormId = (i: number): Identifier | undefined => {
     const wordId = words[i];

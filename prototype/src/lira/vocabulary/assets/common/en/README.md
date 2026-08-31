@@ -608,6 +608,36 @@ lexical_form with an earlier-loaded sense never disturbs
 
 ## Version
 
+`v1` / `schema_version 2.0.0` / `asset_version 1.29.0` -- added `few` as
+its own standalone `PRONOUN` entry ("A small number of, used
+pronominally") -- `pronouns.json` 100 -> 101. Real bug: `role/word_seeder.ts`'s
+`linkPhraseWords()` correctly identifies "few" as `a few`'s own Head once
+its own Part of Speech resolution has a Noun-or-Pronoun-capable homograph
+to point at, but "few" had no standalone entry of its own to be one --
+only `fewer` (its own comparative) already did, `a few` itself being the
+only place "few" ever appeared alone. Without this, "few" fell back to
+its own real, unrelated closed-class `DETERMINER` homograph
+(`role/determiner_seeder.ts`'s own "few" lemma, "A small number of" used
+attributively: "few apples") instead, or -- once WordNet loads -- its
+own real but semantically wrong standalone `NOUN` sense ("a small elite
+group", "the discriminating few"), neither the quantifier-pronoun sense
+"a few" itself actually needs. `few` was the reported case and the only
+one fixed here -- checked, not fixed, against the same shape in every
+other multi-word `PRONOUN` idiom this cache carries: `little` shares
+`few`'s own closed-class-Determiner-homograph structure, but its own
+standalone WordNet Noun sense ("a small amount or duration") already
+means the same thing "a little" itself needs, so it isn't actually
+broken. `lot`/`bit` are not Determiner homographs at all, but each still
+resolves to a real, unrelated WordNet Noun sense once WordNet loads ("a
+parcel of land"; "the cutting part of a drill") -- the identical
+wrong-homograph symptom `few` had, left unfixed here since it wasn't the
+reported case (a future `lot`/`bit` standalone `PRONOUN` entry, this
+same shape, would be the matching fix). `each`/`other` have no
+Noun/Pronoun-capable Word at all, on purpose, per
+`data/entities/noun_phrase.ts`'s own docstring on why `each other`
+genuinely has no single-token Head -- not the same kind of gap.
+`total_lexical_forms` 332 -> 333.
+
 `v1` / `schema_version 2.0.0` / `asset_version 1.21.0` -- seeded the
 root ontology: the closed set of Concepts every other Common Concept's
 D1 (noun generalisation) and D2 (noun composition) tree should

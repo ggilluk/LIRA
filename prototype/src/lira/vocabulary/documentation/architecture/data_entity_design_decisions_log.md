@@ -995,3 +995,133 @@ Verified end-to-end against the real bundled Common Vocabulary Cache
 correct "Determiners: #1 no" row; "each other"'s own panel correctly
 still shows no Head Word row at all, with "Determiners: #1 each #2 other"
 unaffected either way.
+
+### Second follow-up: "a few" still resolved both "a" and "few" as Determiners
+
+Third bug report on the same thread, same shape of confirmation: "a few"'s
+own detail panel showed "Determiner Phrase"-style behaviour -- no Head Word
+row, "few" folded in alongside "a" as if both were Determiners -- even
+though the two fixes above had already made `phraseType`/`headWord` work
+correctly for "no one"/"each other". Three distinct, independently-verified
+root causes, not one:
+
+**1. Seeding order.** The follow-up fix above added a
+`linkPhraseWords(phraseCopy, dictionary, wordForms)` call inside
+`seedClosedClassWords()`'s own Phrase loop -- but that loop runs once, at
+Common Vocabulary Cache seeding time, before `seedWordNet()` has added
+anything to `dictionary` at all. For "few" specifically this matters more
+than for "one" ("no one"'s Head): at closed-class-seeding time, `dictionary.lookup("few")`
+resolves to only one homograph -- `role/determiner_seeder.ts`'s own
+`DETERMINER_LEMMAS` entry for "few" ("a small number of, used
+attributively") -- since pronouns.json's own "few" entry (added in fix #3
+below) doesn't exist in the seeded Dictionary until `seedWordNet()` runs
+its own closed-class pass moments later in the real seeding pipeline order,
+and even then `linkPhraseWords()` was never called again afterward to
+pick it up. Confirmed directly: a diagnostic test read `dictionary.lookupAll("few").map(w
+=> w.partOfSpeech)` before/after `seedWordNet()` and saw `[DETERMINER]`
+then `[DETERMINER, PRONOUN, NOUN, ADJECTIVE]` -- the PRONOUN sense
+straightforwardly did not exist yet at the moment "a few"'s own `headWord`
+got resolved and permanently stored.
+
+Fixed in `role/word_seeder.ts`'s `seedWordNet()`: its own linking pass
+used to loop only `newPhrases` (Phrases created by *this* WordNet-seeding
+call). Changed to loop `phraseBook.all()` instead -- re-running
+`linkPhraseWords()` against every Phrase already in `phraseBook`,
+including every closed-class one `seedClosedClassWords()` seeded earlier,
+now that `dictionary` carries WordNet's full homograph set too. The
+now-fully-dead `newPhrases` array (and its one push site) was removed
+outright rather than left as an unused intermediate.
+
+**2. Wrong-homograph resolution -- the deeper, structural bug.** Fixing
+(1) alone was not enough: even re-run after WordNet loads, "a few"'s own
+`headWord` still resolved to the *Determiner* "few", not the Pronoun one.
+`classifyModifierRoles()` already had the discipline to check every
+possible part of speech per token rather than one arbitrary pick (its own
+docstring's "give" example, and this log's own first section above) -- but
+`linkPhraseWords()`'s *own* `words[]` construction never inherited that
+discipline. It resolved every token, Head included, via plain
+`dictionary.lookup(token)` -- first-seeded-homograph-wins, completely
+disconnected from which homograph `classifyModifierRoles()` had actually
+matched the Head position against. For "few" specifically, the Determiner
+homograph happens to be seeded first (closed-class pass runs before
+WordNet), so it silently won every time, regardless of role.
+
+This is a general architectural bug, not a "few"-specific one -- confirmed
+by two independent real-data cases already living (and passing) in
+`vocabulary.test.ts` before this fix, each of which had documented the
+wrong resolution as if it were correct, intended behaviour: "give up"'s
+own Head ("give") resolved to its own rare NOUN sense ("there's a lot of
+give in the rope") instead of the VERB sense actually being headed;
+"look up to"'s own Head ("look") resolved to its own NOUN sense ("a look
+of surprise") instead of VERB; "to be sure"'s own Head ("be") resolved to
+the chemical-element NOUN "Be" instead of the VERB "be"; "long ago"'s own
+Head ("ago") resolved to an ADJECTIVE sense instead of the ADVERB one an
+AdverbPhrase structurally requires. All four were silently wrong in
+exactly the same way "a few" was, just never reported because nothing in
+the UI made the mismatch as visually obvious as a Determiner-tagged
+Pronoun does.
+
+Fixed by adding two new functions to `role/processor/phrase_processor.ts`:
+
+- `headTargetPartsOfSpeech(phraseType)` -- returns the `ReadonlySet<PartOfSpeech>`
+  a given PhraseType's own Head Identification Rule targets (NounPhrase:
+  Noun/Pronoun; AdjectivePhrase: Adjective; AdverbPhrase: Adverb;
+  VerbPhrase/InfinitivePhrase: Verb; PrepositionalPhrase: Preposition) --
+  extracted from `classifyModifierRoles()`'s own switch (which already
+  computed this per-branch inline) so both that switch and the new
+  resolution step below share one definition and can never drift apart.
+- `resolvedWordFor(token, targetPos, dictionary)` -- searches every
+  homograph `dictionary.lookupAll(token)` returns for one whose own
+  `partOfSpeech` is in `targetPos`, falling back to the old
+  `dictionary.lookup(token)` first-seeded pick only when no homograph
+  matches (the correct behaviour for every non-Head position, and for a
+  Head with no matching homograph at all -- unchanged from before).
+
+`linkPhraseWords()` now computes `wordRoles`/`headIndex` first, then
+resolves only the Head token through `resolvedWordFor()` (using
+`headTargetPartsOfSpeech(phrase.phraseType)`); every other position keeps
+resolving via plain `dictionary.lookup()`, matching this codebase's
+existing, otherwise-accepted arbitrary-but-deterministic convention for
+non-Head positions (`definitionWords()`, `word_processor.ts`).
+
+The two pre-existing tests documenting "give up"/"look up to"'s NOUN
+mis-resolution and "to be sure"/"long ago"'s wrong-homograph resolution as
+correct were rewritten to assert the new, actually-correct VERB/ADVERB
+resolutions instead, with comments explaining why the change is a fix, not
+a regression.
+
+**3. "few" itself needed its own PRONOUN sense.** Fixing (1) and (2) still
+left one gap specific to "few": once `resolvedWordFor()` correctly prefers
+a PRONOUN- or NOUN-tagged homograph for a NounPhrase Head, it can only find
+one if one actually exists. WordNet's own real NOUN sense for "few" is "a
+small elite group" ("it was designed for the discriminating few") --
+semantically unrelated to the quantifier-pronoun meaning "a few" itself
+needs, and confirmed by direct inspection of `dict/data.noun` to be the
+*only* NOUN sense WordNet has for "few" at all. Added a new standalone
+PRONOUN entry for "few" to `assets/common/en/pronouns.json` (mirroring the
+existing "fewer" entry's own shape exactly): `"definition": "A small
+number of, used pronominally"`, bumping `pronouns.json`'s own `count`
+(100 -> 101) and `manifest.json`'s `total_lexical_forms` (332 -> 333) /
+its own `pronouns.json` file-count entry / `asset_version` (1.28.0 ->
+1.29.0) to match, with a new `## Version` changelog entry in
+`assets/common/en/README.md` documenting the addition and its exact
+rationale.
+
+While verifying, checked (but deliberately left unfixed, as out of this
+report's own scope) two further words sharing "few"'s exact structure --
+a `DETERMINER_LEMMAS` entry shadowing an unrelated WordNet NOUN/ADJECTIVE
+sense of the same spelling: "lot" (WordNet NOUN sense = "a parcel of land
+having fixed boundaries") and "bit" (WordNet NOUN senses = drill bit/
+horse bit/key parts) -- both still silently resolve their own
+Determiner-Phrase Head to the wrong homograph today, same as "few" did.
+"little" shares the same structure but is *not* broken -- its own WordNet
+NOUN sense ("a small amount or duration") already matches the meaning
+needed, confirmed directly against `dict/data.noun`. "each"/"other" have
+no Noun/Pronoun-capable Word at all, a separate, pre-existing, intentional
+gap documented in the section above, not a new one this fix touches.
+
+Verified end-to-end against the real bundled Common Vocabulary Cache plus
+WordNet (Playwright): "a few"'s own detail panel now renders "Head Word:
+few" (tagged Pronoun, underlined, linking to the new standalone PRONOUN
+Word), alongside its own correct "Determiners: #1 a" row -- "few" no
+longer appears in the Determiners list at all, only "a" does.
