@@ -253,7 +253,7 @@ export class DictionaryView {
     // No capacity gate -- coordinationRecords()'s own docstring on why
     // (a small, closed, hand-curated set today, nowhere near WordNet
     // scale).
-    const coordinations = coordinationRecords(this.coordinations, this.dictionary, this.wordForms);
+    const coordinations = coordinationRecords(this.coordinations, this.phrases, this.dictionary, this.wordForms);
     const commonCount = allWords.filter((w) => w.isCommon).length;
     const posCounts = new Set(allWords.map((w) => w.partOfSpeech));
     // The Words tab's own pos-filter/domain-filter <select> options --

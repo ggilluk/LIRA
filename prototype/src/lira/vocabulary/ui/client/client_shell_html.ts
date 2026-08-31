@@ -103,6 +103,7 @@ export const CLIENT_SHELL_HTML = `<body>
             <th>Coordinates</th>
             <th>Part of speech</th>
             <th>Coordinator</th>
+            <th>Conjunction type</th>
           </tr>
         </thead>
         <tbody id="coordinations-body"></tbody>

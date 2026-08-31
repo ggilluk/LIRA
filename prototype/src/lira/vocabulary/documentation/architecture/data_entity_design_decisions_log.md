@@ -1453,3 +1453,69 @@ Coordinations tab renders between Phrases and Senses exactly as
 positioned, showing all 8 real seeded coordinations ("back and forth"
 tagged Adverb, "salt and pepper" tagged Noun, ...) with their own real
 coordinator ("and"), no console errors.
+
+### Follow-up: every Conjunction Word/Phrase moved into the Coordinations tab too, with its own Conjunction Type
+
+Bug report on the fix above: "as long as" (a multi-word `CONJUNCTION`
+`Phrase`, `subordinating_conjunctions.json`) was appearing in the
+Phrases tab, not the Coordinations tab -- read literally, not a bug at
+all: "as long as" doesn't coordinate anything ("and"/"or"/"but" join
+two-or-more equal constituents; "as long as" introduces a subordinate
+clause instead, `ConjunctionType`'s own docstring), so it was never a
+`WordCoordination` to begin with, and every multi-word lexical entry
+lives in Phrases regardless of its own part of speech. Clarified with
+the user what they actually wanted: the Coordinations tab broadened
+into this Domain's own single, merged home for every Conjunction --
+real coordinate pairs, standalone Conjunction Words ("and", "although"),
+and multi-word Conjunction Phrases ("as long as", "in order that")
+alike -- each carrying its own Conjunction Type (Coordinating/
+Subordinating), not just a real coordinate pair's own `coordinator`.
+
+`builder_coordination.ts`'s `CoordinationRecord` gained a `conjunction_type`
+field, and `coordinationRecords()` now unions three sources into one
+sorted list: real `Coordination`s (`coordinationRecordFor()`, largely
+unchanged, now also resolving its own coordinator's `conjunctionType`),
+every `dictionary.all()` Word that `isConjunction()` (`conjunctionWordRecord()`,
+new), and every `phrases.all()` Phrase whose own `partOfSpeechOf() ===
+CONJUNCTION` (`conjunctionPhraseRecord()`, new). `pos` is what tells a
+real coordinate-pair row apart from a Conjunction-itself row on the
+same list, no separate discriminant field needed: `NOUN`/`ADVERB`/...
+names a coordinate pair (`coordinator` is that pair's own joining
+conjunction); `CONJUNCTION` names a row that IS a Conjunction, single-
+or multi-word (`coordinator` stays undefined -- there's no separate
+joining word, the row already is one).
+
+`conjunctionPhraseRecord()`'s own Conjunction Type is hardcoded
+`SUBORDINATING`, not read off a stored field -- Phrase carries no
+`conjunctionType` of its own (only `Conjunction`, a Word subtype,
+does; `Phrase`'s own `phraseType` has no `CONJUNCTION` shape to assign
+either, `entryToPhrase()`'s own docstring). Verified this is a real,
+checked structural fact rather than a guess: `coordinating_conjunctions.json`
+has zero multi-word entries of its own (`assets/common/en/README.md`'s
+own Word coordinations section), so every multi-word `CONJUNCTION`
+`Phrase` that exists today, by construction, comes from
+`subordinating_conjunctions.json` alone -- flagged in the function's
+own docstring as something a future multi-word *coordinating*
+conjunction would need taught a real source for, rather than staying
+hardcoded.
+
+Client-side (`client_coordinations_tab_view.ts`), `coordinatesText()`
+now branches on `pos === "CONJUNCTION"`: a Conjunction-itself row
+rejoins its own token(s) with plain spaces ("as" + "long" + "as" ->
+"as long as", the same text `linkPhraseWords()` itself split it from),
+while a real coordinate pair still gets the "and"/Oxford-comma join
+`coordinatesText()` already had. Added a "Conjunction type" column
+(`conjunctionTypePill()`, new -- Coordinating/Subordinating, its own
+fixed two-colour palette) to the Coordinations tab's own table, both
+in `client_shell_html.ts`'s header and `coordinationRowHtml()`'s own
+per-row cell.
+
+Verified against real seeded data (`vocabulary.test.ts`): 51 total
+rows (8 real coordinate pairs + 7 coordinating + 17 subordinating
+single-word Conjunctions + 19 subordinating multi-word Conjunction
+Phrases), "and" appearing as its own `CONJUNCTION`-tagged row
+(`COORDINATING`, no `coordinator`) distinct from "salt and pepper"'s
+own `NOUN`-tagged row (`coordinator: "and"`), "although" tagged
+`SUBORDINATING`, and "as long as" appearing as `["as", "long", "as"]`
+tagged `CONJUNCTION`/`SUBORDINATING` with no `coordinator` -- the
+reported bug's own exact example, now resolving correctly.

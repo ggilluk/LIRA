@@ -3102,24 +3102,61 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     await new WordSeeder("en").seedWordNet(domain);
     new WordCoordinationSeeder("en").seed(domain);
 
-    const records = coordinationRecords(coordinations, dictionary, wordForms);
-    expect(records).toHaveLength(8);
+    const records = coordinationRecords(coordinations, phraseBook, dictionary, wordForms);
+    // 8 real coordinate pairs, plus every standalone Conjunction Word
+    // (coordinating_conjunctions.json's own 7, subordinating_conjunctions.json's
+    // own 17 single-word entries) and Conjunction Phrase
+    // (subordinating_conjunctions.json's own 19 multi-word entries) --
+    // coordinationRecords()'s own docstring on why all three share this
+    // one list.
+    expect(records).toHaveLength(8 + 7 + 17 + 19);
     // Sorted by the joined coordinates text -- "back and forth" sorts
-    // before "salt and pepper" alphabetically.
-    const backAndForth = records.find((r) => r.coordinates[0] === "back")!;
+    // before "salt and pepper" alphabetically. `coordinates` itself
+    // holds the bare coordinate words ("back", "forth"), not the
+    // "and"-joined display text (the client script's own
+    // coordinatesText() builds that separately) -- coordinator's own
+    // presence is what distinguishes this real coordinate pair from a
+    // same-shaped Conjunction Phrase row below.
+    const backAndForth = records.find((r) => r.coordinates.join(" ") === "back forth" && r.coordinator === "and")!;
     expect(backAndForth.coordinates).toEqual(["back", "forth"]);
     expect(backAndForth.pos).toBe("ADVERB");
     // coordinator resolves all the way through WordForms back to the
-    // real Conjunction Word's own text -- coordinatorTextFor()'s own
+    // real Conjunction Word's own text -- coordinatorFor()'s own
     // docstring on why this can't just read WordForm.text directly
     // (spelling coincidentally matches here, but the resolution still
     // goes through the real Word, not assumed from the form alone).
     expect(backAndForth.coordinator).toBe("and");
+    expect(backAndForth.conjunction_type).toBe("COORDINATING");
 
-    const saltAndPepper = records.find((r) => r.coordinates[0] === "salt")!;
+    const saltAndPepper = records.find((r) => r.coordinates.join(" ") === "salt pepper" && r.coordinator === "and")!;
     expect(saltAndPepper.coordinates).toEqual(["salt", "pepper"]);
     expect(saltAndPepper.pos).toBe("NOUN");
     expect(saltAndPepper.coordinator).toBe("and");
+    expect(saltAndPepper.conjunction_type).toBe("COORDINATING");
+
+    // A standalone Conjunction Word -- "and" itself, not a coordinate
+    // pair joined by it. `pos` is what tells the two apart on one row
+    // (coordinationRecords()'s own module docstring).
+    const and = records.find((r) => r.coordinates.length === 1 && r.coordinates[0] === "and")!;
+    expect(and).toBeDefined();
+    expect(and.pos).toBe("CONJUNCTION");
+    expect(and.coordinator).toBeUndefined();
+    expect(and.conjunction_type).toBe("COORDINATING");
+
+    const although = records.find((r) => r.coordinates.length === 1 && r.coordinates[0] === "although")!;
+    expect(although.pos).toBe("CONJUNCTION");
+    expect(although.conjunction_type).toBe("SUBORDINATING");
+
+    // A multi-word Conjunction Phrase -- "as long as", the reported bug
+    // (it used to only ever appear in the Phrases tab, with no
+    // Conjunction Type of its own visible anywhere). `coordinates`
+    // holds its own three tokens, not one joined string.
+    const asLongAs = records.find((r) => r.coordinates.join(" ") === "as long as")!;
+    expect(asLongAs).toBeDefined();
+    expect(asLongAs.coordinates).toEqual(["as", "long", "as"]);
+    expect(asLongAs.pos).toBe("CONJUNCTION");
+    expect(asLongAs.coordinator).toBeUndefined();
+    expect(asLongAs.conjunction_type).toBe("SUBORDINATING");
   }, 60000);
 });
 
