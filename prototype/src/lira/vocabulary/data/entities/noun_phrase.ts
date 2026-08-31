@@ -28,8 +28,17 @@
  * they serve rather than their own internal structure ("a bit", "a
  * few", "a lot"), reclassified the same structural-override way
  * classifyDeterminerPhrase() (role/processor/phrase_processor.ts)
- * corrects for. Never set for a Common Vocabulary Cache closed-class
- * Phrase, which has no constituency-parsing pass of its own.
+ * corrects for. Also genuinely set for a Common Vocabulary Cache
+ * closed-class Phrase now, but only a PRONOUN-tagged one --
+ * word_seeder.ts's own entryToPhrase() calls the identical
+ * classifyPhraseType(), whose own PRONOUN case maps straight to
+ * NOUN_PHRASE too (pronouns.json's 17 real multi-word idioms: "each
+ * other", "no one", "the former", ...) -- a Pronoun-headed phrase
+ * genuinely is structurally a Noun Phrase, this subtype's own
+ * "Noun/Pronoun" head shape below. `headWord`/`preModifiers`/
+ * `postModifiers` still stay undefined for one of these, though
+ * (`headWord`'s own docstring below): linkPhraseWords() is never called
+ * for a closed-class Phrase, only a WordNet-seeded one.
  *
  * ModifierRole values valid within a NounPhrase (data/enums/modifier_role.ts),
  * matching the structure above one-for-one -- Determiner, Modifier,

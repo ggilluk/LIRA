@@ -146,10 +146,24 @@ function classifyDeterminerPhrase(tokens: readonly string[], lemma: string, noun
  *   part of seeding), minus INFINITIVE_LOOKALIKE_DENYLIST's own three
  *   false positives.
  *
- * Returns `undefined` only for a `partOfSpeech` WordNet itself never
- * assigns to a multi-word lemma (PRONOUN, DETERMINER, ...) -- dead code
- * against real WordNet data today, kept only so this function has a
- * total, rather than partial, mapping over PartOfSpeech. */
+ * - PRONOUN has no WordNet ss_type of its own either (WordNet never
+ *   assigns a multi-word lemma this part of speech -- dead code against
+ *   real WordNet data specifically), but a real, hand-curated source
+ *   does: the Common Vocabulary Cache's own pronouns.json carries 17
+ *   genuine multi-word PRONOUN idioms ("each other", "one another", "no
+ *   one", "someone else", "the former", "the latter", "a few", "a
+ *   little", "a lot", "a bit", ...). A Pronoun-headed phrase is
+ *   structurally a Noun Phrase -- data/phrase_type_patterns_and_word_roles.md's
+ *   own "Phrase Role Allowed Types" table gives NounPhrase's own HEAD
+ *   row as "Noun, Pronoun", not "Noun" alone (data/entities/noun_phrase.ts's
+ *   own docstring on this exact point) -- so PRONOUN maps straight to
+ *   NOUN_PHRASE, the same no-override treatment NOUN itself gets above.
+ *
+ * Returns `undefined` only for a `partOfSpeech` neither WordNet nor the
+ * Common Vocabulary Cache ever assigns to a multi-word lemma
+ * (DETERMINER, CONJUNCTION, ...) -- dead code against real bundled data
+ * today, kept only so this function has a total, rather than partial,
+ * mapping over PartOfSpeech. */
 export function classifyPhraseType(
   lemma: string,
   partOfSpeech: PartOfSpeech,
@@ -171,6 +185,7 @@ export function classifyPhraseType(
   }
   switch (partOfSpeech) {
     case PartOfSpeech.NOUN:
+    case PartOfSpeech.PRONOUN:
       return PhraseType.NOUN_PHRASE;
     case PartOfSpeech.VERB:
       return PhraseType.VERB_PHRASE;
@@ -243,28 +258,37 @@ function possiblePartsOfSpeech(token: string, dictionary: Dictionary): ReadonlyS
 }
 
 /** Finds the index of the last token in `possiblePos` whose own set
- * could be read as `targetPos`, restricted to positions *before* the
- * first token that could be read as a Preposition, if any -- the shared
- * Head Identification Rule NounPhrase, AdjectivePhrase, and AdverbPhrase
- * all follow in practice (data/phrase_type_patterns_and_word_roles.md's
- * own Word Patterns table): every row headed by one of those three
- * classes either has no Preposition at all (Head is simply the last
- * `targetPos`-capable token overall) or has the Head appear immediately
- * before a trailing "Preposition + complement" span ("(Noun[Head]) +
- * Preposition + Noun", "(Adjective[Head]) + Preposition + Noun") --
- * never after it. Falls back to the last `targetPos`-capable token
- * anywhere in the sequence when none appears before that boundary (a
- * case that table's own rows never exercise, kept only so this stays a
- * total function over any token sequence). Returns `undefined` when no
- * token could be read as `targetPos` at all. */
-function lastTargetPosBeforeFirstPreposition(possiblePos: readonly ReadonlySet<PartOfSpeech>[], targetPos: PartOfSpeech): number | undefined {
+ * could be read as `targetPos` (or, when supplied, `alsoTargetPos` --
+ * NounPhrase's own Head Identification Rule allows either Noun or
+ * Pronoun, data/phrase_type_patterns_and_word_roles.md's own "Phrase
+ * Role Allowed Types" table, NounPhrase/HEAD row), restricted to
+ * positions *before* the first token that could be read as a
+ * Preposition, if any -- the shared Head Identification Rule NounPhrase,
+ * AdjectivePhrase, and AdverbPhrase all follow in practice
+ * (data/phrase_type_patterns_and_word_roles.md's own Word Patterns
+ * table): every row headed by one of those three classes either has no
+ * Preposition at all (Head is simply the last `targetPos`-capable token
+ * overall) or has the Head appear immediately before a trailing
+ * "Preposition + complement" span ("(Noun[Head]) + Preposition + Noun",
+ * "(Adjective[Head]) + Preposition + Noun") -- never after it. Falls
+ * back to the last `targetPos`-capable token anywhere in the sequence
+ * when none appears before that boundary (a case that table's own rows
+ * never exercise, kept only so this stays a total function over any
+ * token sequence). Returns `undefined` when no token could be read as
+ * `targetPos` (or `alsoTargetPos`) at all. */
+function lastTargetPosBeforeFirstPreposition(
+  possiblePos: readonly ReadonlySet<PartOfSpeech>[],
+  targetPos: PartOfSpeech,
+  alsoTargetPos?: PartOfSpeech,
+): number | undefined {
+  const matchesTarget = (pos: ReadonlySet<PartOfSpeech>) => pos.has(targetPos) || (alsoTargetPos !== undefined && pos.has(alsoTargetPos));
   const firstPrepositionIndex = possiblePos.findIndex((pos) => pos.has(PartOfSpeech.PREPOSITION));
   const boundary = firstPrepositionIndex === -1 ? possiblePos.length : firstPrepositionIndex;
   for (let i = boundary - 1; i >= 0; i--) {
-    if (possiblePos[i].has(targetPos)) return i;
+    if (matchesTarget(possiblePos[i])) return i;
   }
   for (let i = possiblePos.length - 1; i >= boundary; i--) {
-    if (possiblePos[i].has(targetPos)) return i;
+    if (matchesTarget(possiblePos[i])) return i;
   }
   return undefined;
 }
@@ -366,7 +390,7 @@ export function classifyModifierRoles(phraseType: PhraseType | undefined, tokens
   let headIndex: number | undefined;
   switch (phraseType) {
     case PhraseType.NOUN_PHRASE:
-      headIndex = lastTargetPosBeforeFirstPreposition(possiblePos, PartOfSpeech.NOUN);
+      headIndex = lastTargetPosBeforeFirstPreposition(possiblePos, PartOfSpeech.NOUN, PartOfSpeech.PRONOUN);
       break;
     case PhraseType.ADJECTIVE_PHRASE:
       headIndex = lastTargetPosBeforeFirstPreposition(possiblePos, PartOfSpeech.ADJECTIVE);

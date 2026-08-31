@@ -2509,11 +2509,44 @@ export class WordSeeder {
    * not on Word or Phrase, so recordPad() below wires a multi-word
    * entry's own raw value through the identical path entryToWord()'s
    * does, ready for registerUniqueSense to pick up regardless of which
-   * of the two this entry became. */
+   * of the two this entry became.
+   *
+   * `phraseType`, unlike every field above, is genuinely computed here
+   * via classifyPhraseType() (role/processor/phrase_processor.ts), the
+   * same function synsetMemberToPhrase() calls for a WordNet-seeded
+   * Phrase -- not left permanently undefined the way it once was for
+   * every closed-class Phrase. In practice this only ever resolves
+   * PRONOUN entries to NOUN_PHRASE (classifyPhraseType()'s own docstring
+   * on why: pronouns.json's 17 real multi-word PRONOUN idioms are the
+   * only closed-class entries this ever fires for) -- a Pronoun-headed
+   * phrase genuinely is structurally a Noun Phrase
+   * (data/entities/noun_phrase.ts's own docstring). `headWord`/
+   * `preModifiers`/`postModifiers`/`determiners` still stay undefined
+   * for these, though: linkPhraseWords() (role/processor/phrase_processor.ts)
+   * is never called for a closed-class Phrase, only a WordNet-seeded one
+   * (seedWordNet()'s own call site) -- Phrase.headWord's own docstring
+   * on this as one of the two independent reasons it can be undefined. */
   private entryToPhrase(entry: WordFileEntry): Phrase {
     const optText = (value: string | null | undefined) => (value ? { value } : undefined);
     this.recordPad(entry);
-    this.cachePhrasePartOfSpeech.set(entry.entry_id, PartOfSpeech[entry.part_of_speech as keyof typeof PartOfSpeech]);
+    const partOfSpeech = PartOfSpeech[entry.part_of_speech as keyof typeof PartOfSpeech];
+    this.cachePhrasePartOfSpeech.set(entry.entry_id, partOfSpeech);
+    // classifyPhraseType()'s own PRONOUN case (role/processor/phrase_processor.ts)
+    // is the only branch a closed-class entry's own `partOfSpeech` can
+    // ever actually reach here -- pronouns.json's 17 real multi-word
+    // PRONOUN idioms ("each other", "no one", "the former", ...) are the
+    // only multi-word closed-class entries in the bundled Common
+    // Vocabulary Cache at all (subordinating_conjunctions.json's own 19
+    // multi-word CONJUNCTION entries are the only other kind, and
+    // PhraseType has no CONJUNCTION shape to assign). `verbLemmas`/
+    // `nounLemmas` are passed empty rather than threaded in from
+    // seedWordNet's own precomputed sets: classifyPhraseType()'s own
+    // "to " + verb-lemma and Determiner Phrase structural checks both
+    // require `partOfSpeech` to be ADJECTIVE/ADVERB/absent-of-PRONOUN-
+    // override to fire at all, so an empty set here changes nothing for
+    // the PRONOUN case this call site actually reaches -- it still falls
+    // straight through to that same PRONOUN -> NOUN_PHRASE mapping.
+    const phraseType = classifyPhraseType(entry.text ?? entry.lexical_form, partOfSpeech, new Set(), new Set());
 
     const sourceReferences = (entry.source_references ?? []).map((ref) => ({
       sourceName: { value: ref.source_name },
@@ -2542,6 +2575,7 @@ export class WordSeeder {
       text: entry.text ?? entry.lexical_form,
       entryId: { value: entry.entry_id },
       lexicalForm,
+      ...(phraseType !== undefined ? { phraseType } : {}),
       definition: optText(entry.definition),
       usageNotes: (entry.usage_notes ?? []).map((note) => ({ value: note })),
       editorialLabels: (entry.editorial_labels ?? []).map((label) => EditorialLabel[label as keyof typeof EditorialLabel]),

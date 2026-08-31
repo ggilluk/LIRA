@@ -223,6 +223,19 @@ describe("classifyPhraseType", () => {
     expect(classifyPhraseType("a cappella", PartOfSpeech.ADVERB, verbLemmas, nounLemmas)).toBe(PhraseType.ADVERB_PHRASE);
     expect(classifyPhraseType("a priori", PartOfSpeech.ADJECTIVE, verbLemmas, nounLemmas)).toBe(PhraseType.ADJECTIVE_PHRASE);
   });
+
+  it("maps PRONOUN straight to NOUN_PHRASE -- a Pronoun-headed phrase is structurally a Noun Phrase (data/phrase_type_patterns_and_word_roles.md's own NounPhrase/HEAD row: Noun, Pronoun), the same real bundled pronouns.json idioms this fixes", () => {
+    expect(classifyPhraseType("each other", PartOfSpeech.PRONOUN, verbLemmas, nounLemmas)).toBe(PhraseType.NOUN_PHRASE);
+    expect(classifyPhraseType("no one", PartOfSpeech.PRONOUN, verbLemmas, nounLemmas)).toBe(PhraseType.NOUN_PHRASE);
+    expect(classifyPhraseType("the former", PartOfSpeech.PRONOUN, verbLemmas, nounLemmas)).toBe(PhraseType.NOUN_PHRASE);
+    // "a lot"/"a bit" also appear in pronouns.json itself, opening with
+    // the indefinite article classifyDeterminerPhrase() checks first --
+    // still NOUN_PHRASE either way, whether that check fires (nounLemmas
+    // has "lot") or falls through to the plain PRONOUN mapping (empty
+    // nounLemmas, entryToPhrase()'s own real call shape, word_seeder.ts).
+    expect(classifyPhraseType("a lot", PartOfSpeech.PRONOUN, verbLemmas, nounLemmas)).toBe(PhraseType.NOUN_PHRASE);
+    expect(classifyPhraseType("a lot", PartOfSpeech.PRONOUN, verbLemmas, new Set())).toBe(PhraseType.NOUN_PHRASE);
+  });
 });
 
 describe("validateFormText (role/word_processor.ts) -- the mechanism every POS class's own validate<Class>() reuses", () => {
@@ -1398,6 +1411,14 @@ describe("WordSeeder against the bundled Common Vocabulary Cache", () => {
     expect(phraseBook.partOfSpeechOf(eachOther!)).toBe(PartOfSpeech.PRONOUN);
     const noOneElse = phraseBook.lookup("no one else");
     expect(phraseBook.partOfSpeechOf(noOneElse!)).toBe(PartOfSpeech.PRONOUN);
+    // The reported bug this fixes: a Pronoun-headed multi-word Phrase is
+    // structurally a Noun Phrase (classifyPhraseType()'s own PRONOUN
+    // case, data/entities/noun_phrase.ts's own docstring) -- entryToPhrase()
+    // now genuinely classifies it as one, rather than leaving phraseType
+    // undefined for every closed-class Phrase the way it used to
+    // regardless of part of speech.
+    expect(eachOther!.phraseType).toBe(PhraseType.NOUN_PHRASE);
+    expect(noOneElse!.phraseType).toBe(PhraseType.NOUN_PHRASE);
 
     // Dictionary itself never saw a multi-word Word (seedClosedClassWords
     // alone is under test here, not seedWordNet -- a WordNet multi-word
@@ -2303,6 +2324,19 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // "X enough" as its own multi-word entry.
     expect(classifyModifierRoles(PhraseType.ADVERB_PHRASE, ["quickly", "enough"], dictionary)).toEqual([ModifierRole.HEAD, ModifierRole.MODIFIER]);
     expect(classifyModifierRoles(PhraseType.ADVERB_PHRASE, ["very", "quickly"], dictionary)).toEqual([ModifierRole.MODIFIER, ModifierRole.HEAD]);
+
+    // The reported bug this fixes: NounPhrase's own Head Identification
+    // Rule allows either a Noun or a Pronoun (data/phrase_type_patterns_and_word_roles.md's
+    // own NounPhrase/HEAD row, data/entities/noun_phrase.ts's own
+    // docstring), but classifyModifierRoles() used to check
+    // PartOfSpeech.NOUN alone -- a NounPhrase whose Head token only
+    // resolves as PRONOUN (never independently NOUN too) got no Head at
+    // all. "someone" is real bundled-dictionary proof: WordNet lexicalizes
+    // no standalone NOUN sense for it (unlike "one", which genuinely does
+    // and so was never broken by this), only the Common Vocabulary
+    // Cache's own PRONOUN entry (pronouns.json) is. "special" resolves
+    // ADJECTIVE, correctly picked up as a pre-Head Modifier either way.
+    expect(classifyModifierRoles(PhraseType.NOUN_PHRASE, ["special", "someone"], dictionary)).toEqual([ModifierRole.MODIFIER, ModifierRole.HEAD]);
 
     // A Common Vocabulary Cache closed-class Phrase never goes through
     // linkPhraseWords()/classifyModifierRoles() at all (no constituency-

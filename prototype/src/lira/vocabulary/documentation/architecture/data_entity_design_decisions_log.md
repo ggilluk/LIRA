@@ -856,3 +856,83 @@ Words tab (its own Labels column concatenates `register_codes` with
 -> `WordRecord.register_codes` -> client tag rendering pipeline end-to-end,
 with "Archaic" (an editorial label, untouched by this change) rendering
 alongside it exactly as before.
+
+### A Pronoun-headed multi-word Phrase is a NounPhrase too, not just a Noun-headed one
+
+Reported bug, confirmed by inspecting the codebase's own already-published
+design docs against its own implementation: `data/phrase_type_patterns_and_word_roles.md`'s
+own "Phrase Role Allowed Types" table gives NounPhrase's HEAD row as "Noun,
+Pronoun" -- and `data/entities/noun_phrase.ts`'s own docstring already said
+so too ("Structure: (Determiner) + (Modifiers) + Noun/Pronoun + (Complements)")
+-- but the actual code never implemented the Pronoun half of that rule in two
+separate places, and a third place never even got the chance to try.
+
+**`role/processor/phrase_processor.ts`'s `classifyModifierRoles()`** --
+NounPhrase's own Head Identification Rule was `lastTargetPosBeforeFirstPreposition(possiblePos,
+PartOfSpeech.NOUN)`, checking `PartOfSpeech.NOUN` alone. Fixed by giving
+`lastTargetPosBeforeFirstPreposition()` an optional second target POS
+parameter (`alsoTargetPos`), and passing `PartOfSpeech.PRONOUN` for
+NounPhrase specifically -- AdjectivePhrase/AdverbPhrase's own call sites are
+unaffected, still single-target. In practice this rarely bit a real
+WordNet-seeded NounPhrase: verified directly against the bundled dict/
+files that no multi-word NOUN-tagged lemma's own last token is ever a
+pronoun-only word ("something", "someone", "everybody", ... have no
+standalone WordNet NOUN synset of their own at all, confirmed by direct
+inspection) -- but it did matter the moment closed-class Phrases started
+getting a real `phraseType` (next paragraph), and matters for any future
+multi-word entry whose Head can only resolve as PRONOUN.
+
+**`role/word_seeder.ts`'s `entryToPhrase()`** -- the deeper issue: every
+closed-class (Common Vocabulary Cache) multi-word Phrase left `phraseType`
+permanently `undefined`, regardless of its own `partOfSpeech`, a
+long-standing documented "no constituency-parsing pass of its own"
+decision repeated across several docstrings this session already touched.
+Verified against every bundled `assets/common/en/*.json` file first (the
+same discipline every other decision in this log used): the *only*
+multi-word closed-class entries that exist at all are pronouns.json's 17
+real PRONOUN idioms ("each other", "one another", "no one", "someone
+else", "the former", "the latter", "a few", "a little", "a lot", "a bit",
+...) and subordinating_conjunctions.json's 19 CONJUNCTION entries (out of
+scope -- PhraseType has no CONJUNCTION shape to assign). So this "never
+classified" behavior, while general in how it was written, only ever had
+one real consequence in the bundled data: every Pronoun-headed idiom
+showed no Phrase Type at all. `entryToPhrase()` now calls the identical
+`classifyPhraseType()` synsetMemberToPhrase() already uses for the
+WordNet path, with `verbLemmas`/`nounLemmas` passed as empty `Set`s
+(deliberately -- classifyPhraseType()'s own structural overrides for "to
+"+verb and Determiner-Phrase-shaped ADJECTIVE/ADVERB lemmas only ever fire
+for those other parts of speech, so an empty set changes nothing for the
+PRONOUN case this call site actually reaches).
+
+**`role/processor/phrase_processor.ts`'s `classifyPhraseType()` itself** --
+its own switch had no `PartOfSpeech.PRONOUN` case at all, falling through
+to `default: return undefined`, with a docstring explicitly framing that as
+correct ("dead code against real WordNet data today"). Added `case
+PartOfSpeech.PRONOUN:` alongside `case PartOfSpeech.NOUN:`, both mapping to
+`PhraseType.NOUN_PHRASE` -- true dead code against WordNet's own ss_type
+assignments (confirmed: WordNet never tags a multi-word lemma PRONOUN), but
+now genuinely reachable from the Common Vocabulary Cache path above, and
+the function's own "total mapping over PartOfSpeech" docstring claim is
+accurate again.
+
+`headWord`/`preModifiers`/`postModifiers`/`determiners` still never get a
+*stored* value for one of these closed-class Phrases -- `linkPhraseWords()`
+is still never called outside `seedWordNet()`, untouched by this fix, so
+that half of `Phrase.headWord`'s own documented "undefined... or for a
+Common Vocabulary Cache closed-class Phrase" case stays true. But the
+Phrases tab's own detail panel doesn't read a stored value for any of
+these fields at all -- `phraseWordSegments()`/`phraseModifierSegments()`
+(`ui/server/builder_phrase.ts`) recompute `classifyModifierRoles()` fresh
+at render time (this same log's own "`words`/`wordRoles`..." section, on
+why) -- so fixing `phraseType` alone was enough to also unlock a correct,
+live-computed Determiners row for these phrases in the UI, with no
+`linkPhraseWords()` call needed.
+
+Verified end-to-end against the real bundled Common Vocabulary Cache
+(Playwright): "each other" and "no one" both now show a "Noun Phrase" tag
+in both the Phrases tab's own table and detail panel (previously blank),
+and "each other"'s own detail panel additionally now renders a correct,
+live-computed "Determiners: #1 each #2 other" row it couldn't show at all
+before (`classifyModifierRoles()` returns every role `undefined` outright
+when `phraseType` itself is `undefined` -- the early-return guard at the
+top of that function).
