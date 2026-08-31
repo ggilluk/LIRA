@@ -1,11 +1,10 @@
 import type { Dictionary } from "../data/dictionary";
 import type { Senses } from "../data/senses";
 import { createSense, graphUuid } from "./sense_processor";
-import { RegisterCode } from "../data/enums/register_code";
 import { createAuxiliary, isAuxiliary } from "./processor/auxiliary_processor";
 import { createWordForm } from "./word_form_processor";
 import type { WordForms } from "../data/word_forms";
-import { identifier } from "../../value_objects";
+import { identifier, LanguageStyleCode, LanguageStyleCodelist } from "../../value_objects";
 import { WordFormField } from "../data/enums/word_forms_enum";
 
 // The subset of WordFormField (data/enums/word_forms_enum.ts) this
@@ -479,13 +478,21 @@ export class AuxiliarySeeder {
         entryId: identifier(lemmaSeed.entryId),
         definition: { value: lemmaSeed.definition },
         isCommon: true,
-        registerCodes: [RegisterCode.NEUTRAL],
       });
       this.dictionary.append(word);
       created++;
 
       for (const formSeed of lemmaSeed.forms) {
-        const form = createWordForm({ field: formSeed.field, text: { value: formSeed.text } });
+        // Every AUXILIARY spelling is NEUTRAL register -- Word no longer
+        // carries a `registerCodes` of its own (data/entities/word.ts's
+        // own docstring on why: register/style is a fact about one
+        // specific spelling, so it lives on that spelling's own
+        // `Text.languageStyleCode` instead), so this is attached per
+        // WordForm rather than once on the Word the way it used to be.
+        const form = createWordForm({
+          field: formSeed.field,
+          text: { value: formSeed.text, languageStyleCode: new LanguageStyleCode(LanguageStyleCodelist.NEUTRAL) },
+        });
         this.wordForms?.append(form);
         this.wordForms?.registerMember(form, word);
 

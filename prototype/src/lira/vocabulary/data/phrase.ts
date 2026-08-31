@@ -16,7 +16,6 @@ import type { Clause } from "../../linguistics/data/clause";
 import type { LinguisticUnit } from "../../linguistics/data/linguistic_unit";
 import type { EditorialLabel } from "./enums/editorial_label";
 import type { PhraseType } from "./enums/phrase_type";
-import type { RegisterCode } from "./enums/register_code";
 import type { SourceReference } from "./source_reference";
 import type { Word } from "./entities/word";
 import type { Phrases } from "./phrases";
@@ -66,12 +65,13 @@ export interface Phrase extends LinguisticUnit {
   /**
    * This Phrase's own canonical written form.
    *
-   * Carries this Phrase's own version/language/dialect, on `Text`'s own
-   * `version`/`languageCode`/`dialectCode` supplementary components
-   * (value_objects/data/text.ts's own docstring) -- a Phrase has no
-   * top-level `version`/`languageCode`/`dialectCodes` fields of its own
-   * for those to duplicate: each is a fact about one specific wording,
-   * not about the Phrase as a whole (data_entity_design_decisions_log.md).
+   * Carries this Phrase's own version/language/dialect/register-style, on
+   * `Text`'s own `version`/`languageCode`/`dialectCode`/`languageStyleCode`
+   * supplementary components (value_objects/data/text.ts's own docstring)
+   * -- a Phrase has no top-level `version`/`languageCode`/`dialectCodes`/
+   * `registerCodes` fields of its own for those to duplicate: each is a
+   * fact about one specific wording, not about the Phrase as a whole
+   * (data_entity_design_decisions_log.md).
    *
    * No separate `normalisedForm` field either: a caller wanting this
    * Phrase's own lower-cased form reads it on demand via
@@ -85,9 +85,6 @@ export interface Phrase extends LinguisticUnit {
 
   /** Usage notes for this Phrase. */
   usageNotes: readonly Text[];
-
-  /** Registers of use this Phrase is associated with. */
-  registerCodes: readonly RegisterCode[];
 
   /** Editorial labels applying to this Phrase. */
   editorialLabels: readonly EditorialLabel[];
@@ -218,7 +215,6 @@ export type PhraseInit = Pick<Phrase, "text"> & Partial<Omit<Phrase, "text">>;
 export function createPhrase(init: PhraseInit): Phrase {
   const phrase: Phrase = {
     usageNotes: [],
-    registerCodes: [],
     editorialLabels: [],
     sourceReferences: [],
     relatedDomainTags: [],
@@ -259,7 +255,6 @@ export function toSyntheticWord(phrase: Phrase, phrases: Phrases): Word {
     partOfSpeech: phrases.partOfSpeechOf(phrase)!,
     definition: phrase.definition,
     usageNotes: phrase.usageNotes,
-    registerCodes: phrase.registerCodes,
     editorialLabels: phrase.editorialLabels,
     sourceReferences: phrase.sourceReferences,
     isCommon: phrase.isCommon,
@@ -280,7 +275,6 @@ export function phraseAsWord(phrase: Phrase, phrases: Phrases, wordForms?: WordF
     partOfSpeech: phrases.partOfSpeechOf(phrase)!,
     definition: phrase.definition,
     usageNotes: phrase.usageNotes,
-    registerCodes: phrase.registerCodes,
     editorialLabels: phrase.editorialLabels,
     sourceReferences: phrase.sourceReferences,
     isCommon: phrase.isCommon,

@@ -1,30 +1,34 @@
 import type { LanguageCode } from "./code/languageCode";
 import type { DialectCode } from "./code/dialectCode";
 import type { ScriptCode } from "./code/scriptCode";
+import type { LanguageStyleCode } from "./code/languageStyleCode";
 
 /** Text. Type, per the UN/CEFACT Core Components Technical Specification.
  *
- * `languageCode`, `scriptCode`, `dialectCode`, `version`, and `formats`
- * are this prototype's own additions (no Python/spec equivalent) --
- * each one a fact about this one specific text value (which language
- * it's written in, which script it's rendered in, which regional/
- * social variety it belongs to, which revision of it this is, which
- * spelling pattern it's expected to satisfy), not a fact about
+ * `languageCode`, `scriptCode`, `dialectCode`, `languageStyleCode`,
+ * `version`, and `formats` are this prototype's own additions (no
+ * Python/spec equivalent) -- each one a fact about this one specific
+ * text value (which language it's written in, which script it's
+ * rendered in, which regional/social variety it belongs to, which
+ * register/style of use it belongs to, which revision of it this is,
+ * which spelling pattern it's expected to satisfy), not a fact about
  * whatever entity happens to hold it, so they live on the value
  * itself rather than on that entity -- one shared, reusable shape any
  * Text-typed field anywhere can opt into (Word/Phrase's own former
- * top-level `version`/`languageCode`/`dialectCodes` fields, vocabulary/
- * documentation/architecture/data_entity_design_decisions_log.md,
+ * top-level `version`/`languageCode`/`dialectCodes`/`registerCodes`
+ * fields, vocabulary/documentation/architecture/data_entity_design_decisions_log.md,
  * folded onto their own `lexicalForm`/base-lemma-WordForm `Text` for
  * exactly this reason).
  *
  * `languageCode` specialises the CCTS language identifier using ISO 639-1.
  * `dialectCode` is LIRA's language-variety specialisation using IANA BCP 47
  * variant subtags because UN/CEFACT does not publish a separate dialect list.
- * `scriptCode` uses ISO 15924. Each specialised Code retains the external
- * standards code as CCTS Code content, plus a numeric Codelist identity for
- * later tensor/graph operations (`LanguageCode`/`DialectCode`/`ScriptCode`,
- * data/code/*.ts).
+ * `scriptCode` uses ISO 15924. `languageStyleCode` is LIRA's own register/
+ * style code list (formal, informal, slang, ...) -- no external standard
+ * exists for this either. Each specialised Code retains the external
+ * standards code (where one exists) as CCTS Code content, plus a Codelist
+ * identity for later tensor/graph operations (`LanguageCode`/`DialectCode`/
+ * `ScriptCode`/`LanguageStyleCode`, data/code/*.ts).
  *
  * `formats`: the regex pattern(s) this specific Text value's own
  * `value` is expected to satisfy (a Vocabulary Layer word-form Text,
@@ -42,6 +46,7 @@ export interface Text {
   languageCode?: LanguageCode;
   scriptCode?: ScriptCode;
   dialectCode?: DialectCode;
+  languageStyleCode?: LanguageStyleCode;
   version?: string;
   formats?: readonly string[];
 }

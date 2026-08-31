@@ -8,7 +8,6 @@ import { EditorialLabel } from "../../data/enums/editorial_label";
 import { PartOfSpeech } from "../../data/enums/part_of_speech";
 import { ModifierRole } from "../../data/enums/modifier_role";
 import { PhraseType } from "../../data/enums/phrase_type";
-import { RegisterCode } from "../../data/enums/register_code";
 import { graphUuid, type Phrase } from "../../data/phrase";
 import type { Phrases } from "../../data/phrases";
 import type { Senses } from "../../data/senses";
@@ -70,7 +69,7 @@ export function phraseRecordFor(phrase: Phrase, phrases: Phrases, senses: Senses
     phrase_type: phraseTypeLabel(phrase),
     definition: senseFields.definition?.value ?? "",
     gloss: senseFields.gloss?.value ?? "",
-    register_codes: phrase.registerCodes.map((code) => RegisterCode[code]),
+    register_codes: phrase.lexicalForm?.languageStyleCode !== undefined ? [phrase.lexicalForm.languageStyleCode.value] : [],
     dialect_codes: phrase.lexicalForm?.dialectCode !== undefined ? [phrase.lexicalForm.dialectCode.value] : [],
     editorial_labels: phrase.editorialLabels.map((label) => EditorialLabel[label]),
     is_common: phrase.isCommon,

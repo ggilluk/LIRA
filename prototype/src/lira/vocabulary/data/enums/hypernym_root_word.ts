@@ -1,4 +1,4 @@
-/** Values are numeric codes, the same convention PartOfSpeech/RegisterCode/
+/** Values are numeric codes, the same convention PartOfSpeech/
  * EditorialLabel already use.
  *
  * The Hypernym-Root-Word column of the Interrogative/Hypernym/Holonym/

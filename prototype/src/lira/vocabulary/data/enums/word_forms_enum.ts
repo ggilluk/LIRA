@@ -2,8 +2,8 @@
  * Word Form to Part of Speech Matrix declares
  * (data/matrices/pos_vs_wordform_matrice.ts) names one of these, and
  * every `WordForm` record (data/entities/word_form.ts) carries one as
- * its own `field`. String-valued, not tensor-coded like PartOfSpeech/
- * RegisterCode (this folder's own usual convention) -- `field` is a
+ * its own `field`. String-valued, not tensor-coded like PartOfSpeech
+ * (this folder's own usual convention) -- `field` is a
  * lookup key (`WordForms.findNamedForm()`/`registerNamedForm()`) and a
  * value real client-facing code already reads directly
  * (`ui/server/builder_word.ts`'s own `WordFormEntry.field`), not a

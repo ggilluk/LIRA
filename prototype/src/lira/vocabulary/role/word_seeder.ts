@@ -45,7 +45,6 @@ import { createNumeral } from "./processor/numeral_processor";
 import { PartOfSpeech } from "../data/enums/part_of_speech";
 import { createPreposition } from "./processor/preposition_processor";
 import { createPronoun } from "./processor/pronoun_processor";
-import { RegisterCode } from "../data/enums/register_code";
 import { WordFormField } from "../data/enums/word_forms_enum";
 import { EditorialLabel } from "../data/enums/editorial_label";
 import { HolonymRootWord } from "../data/enums/holonym_root_word";
@@ -53,7 +52,7 @@ import { HypernymRootWord } from "../data/enums/hypernym_root_word";
 import { InterrogativeRootWord } from "../data/enums/interrogative_root_word";
 import { VectorPrimitiveRootWord } from "../data/enums/vector_primitive_root_word";
 import { VERB_FRAME_TEXT } from "../data/enums/verb_framed_example_template";
-import type { Identifier, Text } from "../../value_objects";
+import { LanguageStyleCodelist, type Identifier, type Text } from "../../value_objects";
 import type { AttributeValue } from "../data/attribute_value";
 import type { Dictionary } from "../data/dictionary";
 import { MorphologicalPointerRelationshipStore } from "../data/morphological_pointer_relationship_store";
@@ -71,7 +70,7 @@ import { graphUuid, type WordFormAttributes } from "./word_form_processor";
 import type { SourceReference } from "../data/source_reference";
 import { createVerb, generateVerbForms, isVerb } from "./processor/verb_processor";
 import type { Word } from "../data/entities/word";
-import { copyWordWithFreshUuid, createWord, dialectCodeFor, graphUuid as wordGraphUuid, languageCodeFor, scriptCodeFor } from "./word_processor";
+import { copyWordWithFreshUuid, createWord, dialectCodeFor, graphUuid as wordGraphUuid, languageCodeFor, languageStyleCodeFor, scriptCodeFor } from "./word_processor";
 import type { SemanticRelationshipStore } from "../data/semantic_relationship_store";
 import {
   languageHasCommonCache,
@@ -751,7 +750,7 @@ export class WordSeeder {
 
   /** Validates JSON schema, duplicate (lexicalForm, partOfSpeech,
    * domainTag) triples, lexical counts, mandatory file existence,
-   * manifest consistency, and that every registerCodes/editorialLabels/
+   * manifest consistency, and that every register_codes/editorialLabels/
    * partOfSpeech value names a real enum member. Unlike Python's
    * version, never creates promoted_words.json or manifest.json when
    * missing (no filesystem to write to) -- both are required to
@@ -882,7 +881,7 @@ export class WordSeeder {
       throw new Error(`${filename}: '${entry.lexical_form}' has unknown part_of_speech '${entry.part_of_speech}'`);
     }
     for (const code of entry.register_codes ?? []) {
-      if (!(code in RegisterCode)) throw new Error(`${filename}: '${entry.lexical_form}' has unknown register_code '${code}'`);
+      if (!(code in LanguageStyleCodelist)) throw new Error(`${filename}: '${entry.lexical_form}' has unknown register_code '${code}'`);
     }
     for (const label of entry.editorial_labels ?? []) {
       if (!(label in EditorialLabel)) throw new Error(`${filename}: '${entry.lexical_form}' has unknown editorial_label '${label}'`);
@@ -2382,17 +2381,22 @@ export class WordSeeder {
     // The base-lemma WordForm's own rich Text -- cached by entryId
     // (cacheLexicalForm's own docstring on why: Word no longer carries
     // `lexicalForm` of its own for this to land on directly). `scriptCode`
-    // is the one of the three genuinely optional in WordFileEntry's own
-    // schema, so it's the only one omitted rather than defaulted.
+    // is one of the four genuinely optional in WordFileEntry's own
+    // schema, so it's omitted rather than defaulted, same as
+    // `languageStyleCode` (register/style is curated, optional data --
+    // languageStyleCodeFor()'s own docstring) and `dialectCode`.
     const scriptCode = entry.script_code ? scriptCodeFor(entry.script_code) : undefined;
     const dialectCode = entry.dialect_codes?.[0];
     const resolvedDialectCode = dialectCode !== undefined ? dialectCodeFor(dialectCode) : undefined;
+    const registerCode = entry.register_codes?.[0];
+    const resolvedLanguageStyleCode = registerCode !== undefined ? languageStyleCodeFor(registerCode) : undefined;
     this.cacheLexicalForm.set(entry.entry_id, {
       value: entry.lexical_form,
       languageCode: languageCodeFor(entry.language_code),
       version: entry.version ?? "1.0",
       ...(scriptCode !== undefined ? { scriptCode } : {}),
       ...(resolvedDialectCode !== undefined ? { dialectCode: resolvedDialectCode } : {}),
+      ...(resolvedLanguageStyleCode !== undefined ? { languageStyleCode: resolvedLanguageStyleCode } : {}),
     });
     if (entry.senses !== undefined && entry.senses.length > 0) {
       this.cacheSenses.set(entry.entry_id, entry.senses.map((value) => ({ value })));
@@ -2413,7 +2417,6 @@ export class WordSeeder {
       partOfSpeech,
       definition: optText(entry.definition),
       usageNotes: (entry.usage_notes ?? []).map((note) => ({ value: note })),
-      registerCodes: (entry.register_codes ?? []).map((code) => RegisterCode[code as keyof typeof RegisterCode]),
       editorialLabels: (entry.editorial_labels ?? []).map((label) => EditorialLabel[label as keyof typeof EditorialLabel]),
       etymologyText: optText(entry.etymology_text),
       firstRecordedUse: optText(entry.first_recorded_use),
@@ -2520,16 +2523,20 @@ export class WordSeeder {
       licenceIdentifier: ref.licence_identifier ? { value: ref.licence_identifier } : undefined,
     }));
 
-    // version/languageCode/dialectCode all live on lexicalForm now
-    // (Phrase.lexicalForm's own docstring) -- entryToWord()'s own
-    // cacheLexicalForm construction, this method's exact counterpart.
+    // version/languageCode/dialectCode/languageStyleCode all live on
+    // lexicalForm now (Phrase.lexicalForm's own docstring) --
+    // entryToWord()'s own cacheLexicalForm construction, this method's
+    // exact counterpart.
     const dialectCode = entry.dialect_codes?.[0];
     const resolvedDialectCode = dialectCode !== undefined ? dialectCodeFor(dialectCode) : undefined;
+    const registerCode = entry.register_codes?.[0];
+    const resolvedLanguageStyleCode = registerCode !== undefined ? languageStyleCodeFor(registerCode) : undefined;
     const lexicalForm: Text = {
       value: entry.lexical_form,
       languageCode: languageCodeFor(entry.language_code),
       version: entry.version ?? "1.0",
       ...(resolvedDialectCode !== undefined ? { dialectCode: resolvedDialectCode } : {}),
+      ...(resolvedLanguageStyleCode !== undefined ? { languageStyleCode: resolvedLanguageStyleCode } : {}),
     };
     return createPhrase({
       text: entry.text ?? entry.lexical_form,
@@ -2537,7 +2544,6 @@ export class WordSeeder {
       lexicalForm,
       definition: optText(entry.definition),
       usageNotes: (entry.usage_notes ?? []).map((note) => ({ value: note })),
-      registerCodes: (entry.register_codes ?? []).map((code) => RegisterCode[code as keyof typeof RegisterCode]),
       editorialLabels: (entry.editorial_labels ?? []).map((label) => EditorialLabel[label as keyof typeof EditorialLabel]),
       sourceReferences,
       isCommon: true,
@@ -2573,15 +2579,15 @@ export class WordSeeder {
       closed_class: false,
       definition: word.definition?.value ?? null,
       usage_notes: word.usageNotes.map((note) => note.value),
-      register_codes: word.registerCodes.map((code) => RegisterCode[code]),
       editorial_labels: word.editorialLabels.map((label) => EditorialLabel[label]),
-      // dialectCode lives on the base-lemma WordForm's own Text now
-      // (Word.wordFormIds's own docstring), not on Word -- same "only
-      // ever receives a bare Word, with no store to resolve through"
-      // situation as lexicalForm/version/language_code above, moot in
-      // practice for the identical reason (promoteWord() has no caller
-      // anywhere in this codebase yet).
+      // dialectCode/languageStyleCode both live on the base-lemma
+      // WordForm's own Text now (Word.wordFormIds's own docstring), not
+      // on Word -- same "only ever receives a bare Word, with no store
+      // to resolve through" situation as lexicalForm/version/
+      // language_code above, moot in practice for the identical reason
+      // (promoteWord() has no caller anywhere in this codebase yet).
       dialect_codes: [],
+      register_codes: [],
       // syllable_representation/syllable_count/stress_pattern have
       // nowhere to go any more -- WordForm carries none of the three
       // (that entity's own docstring, data/entities/word_form.ts, on why

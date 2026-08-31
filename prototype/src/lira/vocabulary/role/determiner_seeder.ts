@@ -1,10 +1,9 @@
 import type { Dictionary } from "../data/dictionary";
 import type { Senses } from "../data/senses";
 import { createSense, graphUuid } from "./sense_processor";
-import { RegisterCode } from "../data/enums/register_code";
 import { createDeterminer, isDeterminer } from "./processor/determiner_processor";
 import type { WordForms } from "../data/word_forms";
-import { identifier } from "../../value_objects";
+import { identifier, LanguageStyleCode, LanguageStyleCodelist } from "../../value_objects";
 import { WordFormField } from "../data/enums/word_forms_enum";
 
 // The subset of WordFormField (data/enums/word_forms_enum.ts) this
@@ -619,7 +618,6 @@ export class DeterminerSeeder {
         entryId: identifier(lemmaSeed.entryId),
         definition: { value: lemmaSeed.definition },
         isCommon: true,
-        registerCodes: [RegisterCode.NEUTRAL],
       });
       this.dictionary.append(word);
       created++;
@@ -634,7 +632,13 @@ export class DeterminerSeeder {
       }
 
       for (const formSeed of lemmaSeed.forms) {
-        const form = this.wordForms?.registerNamedForm(word, formSeed.field, { value: formSeed.text });
+        // Every DETERMINER spelling is NEUTRAL register -- AuxiliarySeeder's
+        // own identical reasoning (role/auxiliary_seeder.ts) for why this
+        // is attached per WordForm rather than once on the Word.
+        const form = this.wordForms?.registerNamedForm(word, formSeed.field, {
+          value: formSeed.text,
+          languageStyleCode: new LanguageStyleCode(LanguageStyleCodelist.NEUTRAL),
+        });
         if (form !== undefined && sense !== undefined) {
           form.senseIds = [...form.senseIds, { value: graphUuid(sense) }];
         }

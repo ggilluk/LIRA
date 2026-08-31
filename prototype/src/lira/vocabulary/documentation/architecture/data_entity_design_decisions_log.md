@@ -773,3 +773,86 @@ Sense-derived `gloss`, while searching a WordNet-only term's `gloss`
 correctly returns no matches -- WordNet-seeded Senses never populated
 `gloss` before this change either, so that emptiness is pre-existing
 behavior, not a regression.
+
+### `Word.registerCodes`/`Phrase.registerCodes` retired: `RegisterCode` renamed to `LanguageStyleCode`, moved onto `Text`
+
+Renamed at the user's explicit direction: `RegisterCode` (`data/enums/register_code.ts`,
+a numeric tensor-coded enum, PartOfSpeech's own convention) is retired outright,
+replaced by `LanguageStyleCode`/`LanguageStyleCodelist`
+(value_objects/data/code/languageStyleCode.ts, value_objects/data/enum/languageStyleCodelist.ts)
+-- new files following this exact folder's own established pair-per-code
+convention (`DialectCode`/`DialectCodelist`, `ScriptCode`/`ScriptCodelist`, ...).
+`LanguageStyleCodelist` is string-valued with its own keys equal to their
+values, `PronounciationCategoryCodelist`'s own shape, not `DialectCodelist`/
+`LanguageCodelist`/`ScriptCodelist`'s own numeric-plus-external-standard-code
+shape -- because, like pronunciation category, there is no external standard
+code list for a text's own register/style of use (formal, slang, ...) to
+translate through, so `LanguageStyleCode.value` is typed as the Codelist
+member directly rather than through an `xCodelistCode()` mapping function,
+and `listAgencyId`/`listAgencyName`/etc. stay unset (`PronounciationCategoryCode`'s
+own identical "LIRA code list, no UNCL 3055 agency" reasoning).
+
+More than a rename: `registerCodes` moved off both `Word` and `Phrase`
+entirely, onto `Text.languageStyleCode` -- a new optional field alongside
+`languageCode`/`scriptCode`/`dialectCode`. This follows `dialectCode`'s own
+already-established precedent to the letter, not a new principle: a
+register/style of use is a fact about one specific wording ("notwithstanding"
+reads as formal/literary; a synonym might not), not a fact about the Word or
+Phrase as a whole, the identical reasoning `dialectCode`'s own move already
+established (this same log, "`words`/`wordRoles`..." section and Phrase's
+own `lexicalForm` docstring: "each is a fact about one specific wording, not
+about the Phrase as a whole"). Concretely: `Word` carries no `registerCodes`
+of its own any more -- a reader resolves it via
+`wordForms.baseLemmaFormOf(word)?.text.languageStyleCode`, `dialectCode`'s
+own exact read path, both now documented together on `Word.wordFormIds`'s
+own docstring. `Phrase.lexicalForm.languageStyleCode` is Phrase's own
+equivalent, alongside `lexicalForm`'s own `dialectCode`.
+
+Cardinality changed too, deliberately: `Word.registerCodes`/`Phrase.registerCodes`
+were arrays; `Text.languageStyleCode` is singular, matching `languageCode`/
+`scriptCode`/`dialectCode`'s own singular shape on `Text` (the user's own
+explicit instruction: "It should be an attribute of the Text object").
+Verified against every bundled `assets/common/en/*.json` file before making
+this call, the same empirical discipline this log's own `gloss` section
+used: of 3958 entries carrying any `register_codes` at all, only one --
+"notwithstanding" (`['LITERARY', 'FORMAL']`) -- ever carries more than one.
+The wire schema (`WordFileEntry.register_codes?: string[]`, `role/asset_loader.ts`)
+keeps its own plural array shape unchanged (matching `dialect_codes`' own
+identical wire-vs-domain cardinality mismatch, already an accepted pattern
+here) -- `role/word_seeder.ts`'s `entryToWord()`/`entryToPhrase()` both take
+`entry.register_codes?.[0]` only, `dialectCode`'s own exact `entry.dialect_codes?.[0]`
+precedent, so "notwithstanding" keeps only `LITERARY` (the array's first
+entry) going forward; `FORMAL` is silently dropped, an accepted, verified-
+minimal loss (one real word, one of its two codes) rather than a
+speculative one. `role/word_processor.ts`'s new `languageStyleCodeFor(code)`
+mirrors `dialectCodeFor()`'s own "asset-sourced, undefined for unrecognised,
+don't throw" shape exactly, since register/style is equally curated/optional
+data, not a WordSeeder-configured guarantee the way language always is.
+
+`role/auxiliary_seeder.ts`/`role/determiner_seeder.ts` each used to set
+`registerCodes: [RegisterCode.NEUTRAL]` once on the whole lemma Word; with
+that field gone, each now attaches `languageStyleCode: new LanguageStyleCode(LanguageStyleCodelist.NEUTRAL)`
+onto every WordForm's own `text` as it's created instead (`createWordForm()`/
+`registerNamedForm()`), preserving the identical fact (every invariant
+AUXILIARY/DETERMINER spelling is NEUTRAL register) at the level it now
+belongs -- the spelling, not the lemma as a whole.
+
+The wire-facing `register_codes` key stays unchanged everywhere outside the
+domain entities themselves: `WordFileEntry.register_codes` (the JSON key),
+`WordRecord.register_codes`/`PhraseRecord.register_codes` (the client-facing
+DTOs, `ui/server/builder_word.ts`/`builder_phrase.ts`), and the client tab
+views that read them (`client_words_tab_view.ts`/`client_phrases_tab_view.ts`)
+-- matching `dialect_codes`' own precedent of keeping its wire/API name
+stable even after its storage moved onto `Text`. Both DTO builders now
+project `Text.languageStyleCode` back into a one-or-zero-element array for
+that wire shape (`languageStyleCode !== undefined ? [languageStyleCode.value] : []`),
+`dialect_codes`' own exact projection one line above each, in both files.
+
+Verified end-to-end against the real bundled WordNet 3.1 dataset
+(Playwright): "notwithstanding" renders with a "Literary" label in the
+Words tab (its own Labels column concatenates `register_codes` with
+`editorial_labels`, unchanged client-side code) -- confirming the full
+`entry.register_codes[0]` -> `languageStyleCodeFor()` -> `Text.languageStyleCode`
+-> `WordRecord.register_codes` -> client tag rendering pipeline end-to-end,
+with "Archaic" (an editorial label, untouched by this change) rendering
+alongside it exactly as before.

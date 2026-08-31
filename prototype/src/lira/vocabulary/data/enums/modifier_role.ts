@@ -27,7 +27,7 @@
  * Determiner/Complement) and its one explicit exclusion (Particle).
  *
  * Values are numeric codes for use in a tensor, not string labels --
- * same convention as PartOfSpeech/PhraseType/RegisterCode/EditorialLabel.
+ * same convention as PartOfSpeech/PhraseType/EditorialLabel.
  *
  * Not yet an implemented data model -- no Phrase or its member words
  * carry a ModifierRole field anywhere in this codebase yet

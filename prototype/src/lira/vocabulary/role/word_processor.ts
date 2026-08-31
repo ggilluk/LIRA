@@ -22,6 +22,8 @@
 import {
   DialectCode,
   LanguageCode,
+  LanguageStyleCode,
+  LanguageStyleCodelist,
   ScriptCode,
   dialectCodelistFromCode,
   identifier,
@@ -52,7 +54,6 @@ export type WordInit = Pick<Word, "text" | "partOfSpeech"> & Partial<Omit<Word, 
 export function createWord(init: WordInit): Word {
   const word: Word = {
     usageNotes: [],
-    registerCodes: [],
     editorialLabels: [],
     relatedDomainTags: [],
     sourceReferences: [],
@@ -131,6 +132,21 @@ export function dialectCodeFor(code: string): DialectCode | undefined {
 export function scriptCodeFor(code: string): ScriptCode | undefined {
   const codelist = scriptCodelistFromCode(code);
   return codelist !== undefined ? new ScriptCode(codelist) : undefined;
+}
+
+/** `code`'s own `LanguageStyleCode` (value_objects/data/code/languageStyleCode.ts)
+ * -- every real caller here passes `entry.register_codes`' own first
+ * entry, sourced from the Common Vocabulary Cache's own curated
+ * `register_codes` list, dialectCodeFor()'s own "asset-sourced, don't
+ * throw" treatment above: undefined for a `code` that names no known
+ * `LanguageStyleCodelist` member, rather than throwing. `LanguageStyleCodelist`
+ * is a string enum whose own keys equal their values (this list has no
+ * external standard to translate through, LanguageStyleCode's own
+ * docstring), so membership is checked directly rather than via a
+ * separate `xCodelistFromCode()` reverse-lookup function the way
+ * `dialectCodeFor()`/`scriptCodeFor()` need for their own numeric lists. */
+export function languageStyleCodeFor(code: string): LanguageStyleCode | undefined {
+  return code in LanguageStyleCodelist ? new LanguageStyleCode(LanguageStyleCodelist[code as keyof typeof LanguageStyleCodelist]) : undefined;
 }
 
 // -- Derived properties (4.3) --------------------------------------

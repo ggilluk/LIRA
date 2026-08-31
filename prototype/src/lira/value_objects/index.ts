@@ -7,11 +7,13 @@ export { PronounciationCategoryCode } from "./data/code/pronounciationCategoryCo
 export { LanguageCode } from "./data/code/languageCode";
 export { DialectCode } from "./data/code/dialectCode";
 export { ScriptCode } from "./data/code/scriptCode";
+export { LanguageStyleCode } from "./data/code/languageStyleCode";
 export { PronounciationCodelist } from "./data/enum/pronounciationCodelist";
 export { PronounciationCategoryCodelist } from "./data/enum/pronounciationCategoryCodelist";
 export { LanguageCodelist, languageCodelistFromCode } from "./data/enum/languageCodelist";
 export { DialectCodelist, dialectCodelistFromCode } from "./data/enum/dialectCodelist";
 export { ScriptCodelist, scriptCodelistFromCode } from "./data/enum/scriptCodelist";
+export { LanguageStyleCodelist } from "./data/enum/languageStyleCodelist";
 export { type Identifier, identifier } from "./data/identifier";
 export { type Number_, number } from "./data/number";
 export { type Text, text, textToLowerCase, textToUpperCase } from "./data/text";

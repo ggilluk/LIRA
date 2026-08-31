@@ -14,7 +14,7 @@ import { ModifierRole } from "./modifier_role";
  * classified (Phrase.phraseType's own docstring).
  *
  * Values are numeric codes for use in a tensor, not string labels --
- * same convention as PartOfSpeech/RegisterCode/EditorialLabel. Matches
+ * same convention as PartOfSpeech/EditorialLabel. Matches
  * Linguistics' own PhraseType (linguistics/data/phrase_type.ts) value
  * for value -- Linguistics classifies a phrase read live out of a
  * sentence; this classifies a Phrase as a standing Vocabulary entry --

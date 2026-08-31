@@ -46,7 +46,6 @@ export type { SemanticRelationship } from "./data/semantic_relationship";
 export { SemanticRelationshipStore } from "./data/semantic_relationship_store";
 export { SemanticRelationshipSystemPropertyTensor } from "./data/semantic_relationship_tensor";
 export { SemanticRelationshipKind, SEMANTIC_MERONYM_KIND_QUALIFIER, type SemanticMeronymKind } from "./data/enums/semantic_relationship_kind";
-export { RegisterCode } from "./data/enums/register_code";
 export type { SourceReference } from "./data/source_reference";
 export { SystemPropertiesRef } from "./data/system_properties_ref";
 export { VectorPrimitiveRootWord } from "./data/enums/vector_primitive_root_word";

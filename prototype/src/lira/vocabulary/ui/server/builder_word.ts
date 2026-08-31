@@ -9,7 +9,6 @@ import { isAdverb } from "../../role/processor/adverb_processor";
 import type { Dictionary } from "../../data/dictionary";
 import { EditorialLabel } from "../../data/enums/editorial_label";
 import { PartOfSpeech } from "../../data/enums/part_of_speech";
-import { RegisterCode } from "../../data/enums/register_code";
 import { isNoun } from "../../role/processor/noun_processor";
 import { graphUuid as phraseGraphUuid, phraseAsWord, type Phrase } from "../../data/phrase";
 import type { Phrases } from "../../data/phrases";
@@ -419,9 +418,11 @@ export function wordRecordFor(
   );
   const senseFields = senseFieldsFor(senses, word, wordForms);
   const wordSenses = sensesFor(word, senses, domainName, wordForms);
-  // dialectCode lives on the base-lemma WordForm's own Text now
-  // (Word.wordFormIds's own docstring), not on Word.
-  const dialectCode = wordForms.baseLemmaFormOf(word)?.text.dialectCode;
+  // dialectCode/languageStyleCode both live on the base-lemma WordForm's
+  // own Text now (Word.wordFormIds's own docstring), not on Word.
+  const baseLemmaText = wordForms.baseLemmaFormOf(word)?.text;
+  const dialectCode = baseLemmaText?.dialectCode;
+  const languageStyleCode = baseLemmaText?.languageStyleCode;
   return {
     id: wordId,
     entry_id: word.entryId.value,
@@ -431,7 +432,7 @@ export function wordRecordFor(
     sense_id: wordForms.synsetIdOf(word)?.value ?? null,
     definition: senseFields.definition?.value ?? "",
     gloss: senseFields.gloss?.value ?? "",
-    register_codes: word.registerCodes.map((code) => RegisterCode[code]),
+    register_codes: languageStyleCode !== undefined ? [languageStyleCode.value] : [],
     dialect_codes: dialectCode !== undefined ? [dialectCode.value] : [],
     editorial_labels: word.editorialLabels.map((label) => EditorialLabel[label]),
     is_common: word.isCommon,
