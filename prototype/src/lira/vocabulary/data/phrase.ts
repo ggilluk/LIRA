@@ -49,7 +49,14 @@ export interface Phrase extends LinguisticUnit {
    * The grammatical shape this Phrase's own words take -- noun phrase,
    * verb phrase, etc.
    *
-   * Undefined for a Common Vocabulary Cache closed-class Phrase.
+   * Undefined for most Common Vocabulary Cache closed-class Phrases --
+   * they have no constituency-parsing pass of their own the way a
+   * WordNet-seeded one does. The one exception is a PRONOUN-tagged
+   * closed-class Phrase (pronouns.json's 17 real multi-word idioms:
+   * "each other", "no one", "the former", ...): `role/word_seeder.ts`'s
+   * `entryToPhrase()` genuinely classifies these as `NOUN_PHRASE`, a
+   * Pronoun-headed phrase being structurally a Noun Phrase
+   * (data/entities/noun_phrase.ts's own docstring).
    *
    * Unlike Word, a Phrase carries no `partOfSpeech` field of its own --
    * that WordNet-tagged fact (`phraseType`'s own input, not an
@@ -139,8 +146,15 @@ export interface Phrase extends LinguisticUnit {
    * graph-reference pointer, resolved against a Dictionary
    * (`Dictionary.findByUuid()`), not an embedded copy of the Word itself.
    *
-   * Undefined whenever no token carries the HEAD role at all, or for a
-   * Common Vocabulary Cache closed-class Phrase. Every per-token
+   * Undefined whenever no token carries the HEAD role at all -- either
+   * because this Phrase's own `phraseType` is itself undefined
+   * (`classifyModifierRoles()`'s own early-return guard never assigns
+   * any role without one, `phraseType`'s own docstring above on which
+   * closed-class Phrases that is), or because `phraseType` is set but no
+   * token resolves to a Word capable of the matching part of speech
+   * ("each other": neither "each" nor "other" is a Noun or Pronoun Word
+   * on its own, both being DETERMINER_LEMMAS entries instead,
+   * role/determiner_seeder.ts). Every per-token
    * resolution and role assignment this field (and every field below)
    * derives from is computed fresh by `linkPhraseWords()`, not stored on
    * the Phrase itself -- see that function's own docstring on why: once
@@ -177,8 +191,12 @@ export interface Phrase extends LinguisticUnit {
    *
    * A MODIFIER-role token whose own resolved Word carries no WordForm
    * spelled the way it appears here is left out entirely, the same
-   * `headWordForm`-can-fail-to-resolve narrowing documented above.
-   * Undefined for a Common Vocabulary Cache closed-class Phrase.
+   * `headWordForm`-can-fail-to-resolve narrowing documented above. Empty
+   * when no token carries the MODIFIER role at all -- always true when
+   * `phraseType` is itself undefined (`phraseType`'s own docstring above
+   * on which closed-class Phrases that still is), since most PhraseType
+   * branches of `classifyModifierRoles()` only ever assign MODIFIER
+   * relative to an identified Head position.
    */
   preModifiers?: readonly (Identifier | Phrase | Clause)[];
 
@@ -186,7 +204,8 @@ export interface Phrase extends LinguisticUnit {
    * This Phrase's own post-Head modifying constituents --
    * `preModifiers`'s own counterpart.
    *
-   * Undefined for a Common Vocabulary Cache closed-class Phrase.
+   * Empty when no token carries the MODIFIER role at all, `preModifiers`'s
+   * own exact reasoning.
    */
   postModifiers?: readonly (Identifier | Phrase | Clause)[];
 
@@ -196,16 +215,25 @@ export interface Phrase extends LinguisticUnit {
    * ModifierRole over (the Common Rules table's own "Determiner" row,
    * data/phrase_type_patterns_and_word_roles.md, applies regardless of
    * PhraseType or position, so unlike `preModifiers`/`postModifiers`
-   * this is never split pre/post). Empty far more often than
-   * `preModifiers`/`postModifiers` are: WordNet lexicalizes almost none
-   * of the closed set of English determiners as a standalone sense
+   * this is never split pre/post -- and, unlike them, never gated on an
+   * identified Head position either, so this can be non-empty even for a
+   * Phrase whose own `headWord` stays undefined, "each other" among
+   * them: both "each" and "other" are real DETERMINER_LEMMAS Words of
+   * their own, role/determiner_seeder.ts, so both resolve here despite
+   * neither being a Head candidate). Empty far more often than
+   * `preModifiers`/`postModifiers` are for a WordNet-seeded Phrase:
+   * WordNet lexicalizes almost none of the closed set of English
+   * determiners as a standalone sense of its own
    * (`PHRASE_TYPE_DETERMINERS`'s own docstring, role/processor/phrase_processor.ts)
-   * -- "the"/"this"/"my" have no Dictionary entry at all to resolve a
-   * WordForm from -- so only the minority of determiner tokens that
-   * happen to double as a real WordNet lemma ("few", "many", "all")
-   * ever appear here.
-   *
-   * Undefined for a Common Vocabulary Cache closed-class Phrase.
+   * -- "the"/"this"/"my" have no WordNet Dictionary entry at all to
+   * resolve a WordForm from -- so only the minority of determiner tokens
+   * that happen to double as a real WordNet lemma ("few", "many", "all")
+   * ever appear here for one of those. A Common Vocabulary Cache
+   * PRONOUN-tagged Phrase's own determiner tokens resolve far more
+   * reliably, by contrast: `AuxiliarySeeder`/`DeterminerSeeder`
+   * (role/auxiliary_seeder.ts, role/determiner_seeder.ts) seed a real
+   * closed-class Word (and WordForm) for nearly every core English
+   * determiner, "the"/"this"/"my" included.
    */
   determiners?: readonly Identifier[];
 }

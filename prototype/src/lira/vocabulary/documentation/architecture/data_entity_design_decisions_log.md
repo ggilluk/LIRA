@@ -936,3 +936,62 @@ live-computed "Determiners: #1 each #2 other" row it couldn't show at all
 before (`classifyModifierRoles()` returns every role `undefined` outright
 when `phraseType` itself is `undefined` -- the early-return guard at the
 top of that function).
+
+### Follow-up: a PRONOUN-headed closed-class Phrase's own `headWord` still wasn't attached
+
+Immediate follow-up bug report on the fix above, confirmed the same way:
+the Phrases tab's own detail panel showed "Noun Phrase" and a correct,
+live-computed "Determiners" row for "no one" -- but no "Head Word: one"
+row at all, even though "one" is a real Word (both NOUN, from WordNet, and
+PRONOUN, from pronouns.json) that `classifyModifierRoles()`'s own
+NounPhrase Head Identification Rule (fixed in the section above) can
+already resolve.
+
+Root cause: `ui/server/builder_phrase.ts`'s `phraseHeadWordSegment()` --
+unlike `phraseModifierSegments()` right next to it, which deliberately
+recomputes `classifyModifierRoles()` fresh at render time -- reads
+`phrase.headWord`/`phrase.headWordForm` as *stored* fields directly
+(`if (phrase.headWordForm === undefined) return undefined; ...`). Those
+two fields are only ever written by `linkPhraseWords()`
+(role/processor/phrase_processor.ts), and `linkPhraseWords()` was only
+ever called from `seedWordNet()` -- never from `seedClosedClassWords()`'s
+own Phrase loop. So even with `phraseType` and the live-recomputed
+Modifiers/Determiners rows both correctly fixed, `headWord`/`headWordForm`
+themselves stayed permanently unset for every closed-class Phrase,
+Pronoun-headed ones included -- a second, independent gap behind the same
+user-visible symptom ("pronouns are not being attached to the head"),
+not something the first fix could reach on its own.
+
+Fixed by calling `linkPhraseWords(phraseCopy, dictionary, wordForms)`
+inside `seedClosedClassWords()`'s own Phrase loop (`role/word_seeder.ts`),
+`seedWordNet()`'s own call site's exact counterpart. Safe unconditionally:
+`dictionary` already carries every closed-class Word this same seeding
+pass inserted moments earlier (the Word loop always runs before the
+Phrase loop within one `seedClosedClassWords()` call), and for a Phrase
+whose own `phraseType` stays `undefined` (every CONJUNCTION-tagged one,
+subordinating_conjunctions.json -- PhraseType has no CONJUNCTION shape)
+`classifyModifierRoles()`'s own early-return guard leaves every field
+`linkPhraseWords()` sets at its own harmless empty/undefined default,
+identical to today's behaviour for those.
+
+"each other" surfaced a genuinely different, harder case while verifying
+this: neither "each" nor "other" is a Noun or Pronoun Word on its own --
+both are `DETERMINER_LEMMAS` entries instead (role/determiner_seeder.ts)
+-- so its own Head Identification Rule finds no Head token to point at at
+all, `headWord`/`headWordForm` correctly stay `undefined` even after this
+fix. Confirmed this is `Phrase.headWord`'s own already-documented
+"Undefined whenever no token carries the HEAD role at all" case, not a
+remaining gap -- both tokens still resolve as Determiners regardless,
+since that role assignment (unlike Modifier) is never gated on an
+identified Head position (data/phrase.ts's own `determiners` docstring,
+updated to say so). `Phrase.headWord`/`preModifiers`/`postModifiers`'s
+own docstrings, and `data/entities/noun_phrase.ts`'s, were all updated to
+drop their now-inaccurate blanket "undefined for a Common Vocabulary
+Cache closed-class Phrase" claims in favour of this precise reasoning.
+
+Verified end-to-end against the real bundled Common Vocabulary Cache
+(Playwright): "no one"'s own detail panel now renders "Head Word: one"
+(underlined, linking to the real PRONOUN Word), alongside its already-
+correct "Determiners: #1 no" row; "each other"'s own panel correctly
+still shows no Head Word row at all, with "Determiners: #1 each #2 other"
+unaffected either way.

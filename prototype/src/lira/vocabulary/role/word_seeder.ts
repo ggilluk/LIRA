@@ -1122,6 +1122,28 @@ export class WordSeeder {
       // not Phrase" guard would skip it anyway, but a Phrase has no
       // base-lemma WordForm concept to register in the first place.
       if (senseStore !== undefined) registerUniqueSense(senseStore, phraseCopy, this.cachePad.get(phrase.entryId.value));
+      // linkPhraseWords() -- seedWordNet()'s own call site's exact
+      // counterpart, not previously called here at all: `headWord`/
+      // `headWordForm`/`preModifiers`/`postModifiers`/`determiners` used
+      // to stay permanently unset for every closed-class Phrase, the
+      // same "no constituency-parsing pass of its own" limitation
+      // `phraseType` itself only just stopped having (this same log's
+      // own "A Pronoun-headed multi-word Phrase..." section). Now that a
+      // PRONOUN-tagged closed-class Phrase genuinely gets phraseType ==
+      // NOUN_PHRASE, it needs this call too -- `phraseHeadWordSegment()`
+      // (ui/server/builder_phrase.ts) reads `phrase.headWord`/
+      // `headWordForm` as stored fields directly, unlike
+      // `phraseModifierSegments()`'s own live re-computation, so without
+      // this call the Phrases tab's own Head Word row stayed blank even
+      // once Phrase Type correctly read "Noun Phrase". Safe to call
+      // unconditionally: `dictionary` already carries every closed-class
+      // Word this same seeding pass just inserted above (single-word
+      // entries are always seeded before this Phrase loop runs), and for
+      // a Phrase whose own `phraseType` stays undefined (every
+      // CONJUNCTION-tagged one, subordinating_conjunctions.json)
+      // classifyModifierRoles()'s own early-return guard leaves every
+      // field it sets here at its own harmless empty/undefined default.
+      linkPhraseWords(phraseCopy, dictionary, wordForms);
       seeded += 1;
     }
     return seeded;
@@ -2521,11 +2543,13 @@ export class WordSeeder {
    * only closed-class entries this ever fires for) -- a Pronoun-headed
    * phrase genuinely is structurally a Noun Phrase
    * (data/entities/noun_phrase.ts's own docstring). `headWord`/
-   * `preModifiers`/`postModifiers`/`determiners` still stay undefined
-   * for these, though: linkPhraseWords() (role/processor/phrase_processor.ts)
-   * is never called for a closed-class Phrase, only a WordNet-seeded one
-   * (seedWordNet()'s own call site) -- Phrase.headWord's own docstring
-   * on this as one of the two independent reasons it can be undefined. */
+   * `headWordForm`/`preModifiers`/`postModifiers`/`determiners`
+   * themselves are populated by `seedClosedClassWords()`'s own Phrase
+   * loop calling linkPhraseWords() against the returned Phrase, the
+   * identical call seedWordNet() already makes for a WordNet-seeded one
+   * -- not computed here, since `linkPhraseWords()` needs the
+   * already-populated `dictionary`/`wordForms` this method itself has no
+   * access to. */
   private entryToPhrase(entry: WordFileEntry): Phrase {
     const optText = (value: string | null | undefined) => (value ? { value } : undefined);
     this.recordPad(entry);

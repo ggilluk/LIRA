@@ -35,10 +35,17 @@
  * NOUN_PHRASE too (pronouns.json's 17 real multi-word idioms: "each
  * other", "no one", "the former", ...) -- a Pronoun-headed phrase
  * genuinely is structurally a Noun Phrase, this subtype's own
- * "Noun/Pronoun" head shape below. `headWord`/`preModifiers`/
- * `postModifiers` still stay undefined for one of these, though
- * (`headWord`'s own docstring below): linkPhraseWords() is never called
- * for a closed-class Phrase, only a WordNet-seeded one.
+ * "Noun/Pronoun" head shape below. `headWord`/`headWordForm`/
+ * `preModifiers`/`postModifiers` are genuinely populated for these too
+ * now -- `seedClosedClassWords()`'s own Phrase loop
+ * (role/word_seeder.ts) calls linkPhraseWords() there as well, the
+ * identical call seedWordNet() already makes for a WordNet-seeded
+ * NounPhrase, below. "each other" is the one real exception: neither
+ * "each" nor "other" resolves to a Noun or Pronoun Word on its own (both
+ * are DETERMINER_LEMMAS entries, role/determiner_seeder.ts), so its own
+ * Head Identification Rule genuinely finds no Head token to point at --
+ * `headWord`'s own "Undefined whenever no token carries the HEAD role at
+ * all" case, not a seeding gap.
  *
  * ModifierRole values valid within a NounPhrase (data/enums/modifier_role.ts),
  * matching the structure above one-for-one -- Determiner, Modifier,
@@ -66,7 +73,10 @@
  * Head Identification Rule never resolves to any other Word subtype
  * (the "ModifierRole values valid within a NounPhrase" note above, HEAD
  * row). Genuinely populated today, for every real seeded multi-word
- * WordNet NounPhrase, by linkPhraseWords() (role/processor/phrase_processor.ts).
+ * WordNet NounPhrase and every PRONOUN-tagged Common Vocabulary Cache
+ * one alike, by linkPhraseWords() (role/processor/phrase_processor.ts) --
+ * `seedWordNet()`'s and `seedClosedClassWords()`'s own call sites,
+ * word_seeder.ts.
  *
  * `preModifiers` narrows Phrase's own same-named field (data/phrase.ts's
  * own docstring on it) down to the exact constituent set

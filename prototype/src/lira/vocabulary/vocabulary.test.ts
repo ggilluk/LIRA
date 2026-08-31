@@ -1437,6 +1437,39 @@ describe("WordSeeder against the bundled Common Vocabulary Cache", () => {
     expect(second).toBe(0);
     expect(phraseBook.totalEntries()).toBe(totalBefore);
   });
+
+  it("attaches a real headWord/headWordForm to a PRONOUN-headed closed-class Phrase, not just a phraseType -- the reported follow-up bug (linkPhraseWords() itself only ever ran for a WordNet-seeded Phrase before this)", () => {
+    const dictionary = new Dictionary();
+    const phraseBook = new Phrases();
+    const wordForms = new WordForms();
+    new WordSeeder("en").seedClosedClassWords(dictionary, phraseBook, undefined, undefined, wordForms);
+
+    // "no one" -- "no" is a real DETERMINER Word (role/determiner_seeder.ts),
+    // "one" a real PRONOUN Word (pronouns.json) -- "one" is the Head.
+    const noOne = phraseBook.lookup("no one")!;
+    expect(noOne.phraseType).toBe(PhraseType.NOUN_PHRASE);
+    expect(noOne.headWord).toBeDefined();
+    const head = dictionary.findByUuid(noOne.headWord!.value);
+    expect(head?.text).toBe("one");
+    expect(head?.partOfSpeech).toBe(PartOfSpeech.PRONOUN);
+    expect(noOne.headWordForm).toBeDefined();
+    expect(wordForms.findByUuid(noOne.headWordForm!.value)?.text.value).toBe("one");
+    expect(noOne.determiners).toHaveLength(1);
+    expect(wordForms.findByUuid(noOne.determiners![0].value)?.text.value).toBe("no");
+
+    // "each other" -- neither "each" nor "other" is a Noun or Pronoun
+    // Word on its own (both are DETERMINER_LEMMAS entries instead), so
+    // this genuinely has no single-token Head to resolve -- headWord
+    // stays undefined, the same documented "no token carries the HEAD
+    // role at all" case a WordNet-seeded Phrase can already hit
+    // (Phrase.headWord's own docstring), not a seeding gap. Both tokens
+    // still resolve as Determiners, independent of any Head.
+    const eachOther = phraseBook.lookup("each other")!;
+    expect(eachOther.phraseType).toBe(PhraseType.NOUN_PHRASE);
+    expect(eachOther.headWord).toBeUndefined();
+    expect(eachOther.headWordForm).toBeUndefined();
+    expect(eachOther.determiners).toHaveLength(2);
+  });
 });
 
 describe("loadWordNetSynsets against the bundled Princeton WordNet 3.1 dict/ files", () => {
