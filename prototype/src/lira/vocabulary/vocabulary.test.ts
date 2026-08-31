@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import type { Identifier } from "../value_objects";
 import { Dictionary } from "./data/dictionary";
 import { MorphologicalPointerRelationshipStore } from "./data/morphological_pointer_relationship_store";
 import { MorphologicalPointerRelationshipSystemPropertyTensor } from "./data/morphological_pointer_relationship_tensor";
@@ -63,10 +64,10 @@ function formTextOf(wordForms: WordForms, word: Word, field: string) {
 // Word carries no `senseIds` of its own any more (WordForm's own
 // docstring on why -- it lives on the base-lemma WordForm now);
 // Phrase keeps its own field, untouched. This resolves either the
-// same way word_seeder.ts's/resolver_domain.ts's own `"words" in
+// same way word_seeder.ts's/resolver_domain.ts's own `"senseIds" in
 // entry` narrowing already does everywhere in production code.
 function senseIdsOf(wordForms: WordForms, entry: Word | Phrase) {
-  return "words" in entry ? entry.senseIds : wordForms.senseIdsOf(entry);
+  return "senseIds" in entry ? entry.senseIds : wordForms.senseIdsOf(entry);
 }
 
 describe("PhraseType", () => {
@@ -1511,13 +1512,13 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     const wordForSynset = (synsetId: string, lemma: string): Word => {
       const sense = senseStore.findBySynsetId(synsetId);
       const member = sense && senseStore.membersOf(senseGraphUuid(sense)).find((m) => m.text === lemma);
-      if (member === undefined || "words" in member) throw new Error(`no Word for "${lemma}" in synset ${synsetId}`);
+      if (member === undefined || "senseIds" in member) throw new Error(`no Word for "${lemma}" in synset ${synsetId}`);
       return member;
     };
     const phraseForSynset = (synsetId: string, lemma: string): Phrase => {
       const sense = senseStore.findBySynsetId(synsetId);
       const member = sense && senseStore.membersOf(senseGraphUuid(sense)).find((m) => m.text === lemma);
-      if (member === undefined || !("words" in member)) throw new Error(`no Phrase for "${lemma}" in synset ${synsetId}`);
+      if (member === undefined || !("senseIds" in member)) throw new Error(`no Phrase for "${lemma}" in synset ${synsetId}`);
       return member;
     };
     // synonyms()/hypernyms()/hyponyms()/antonyms()/meronyms()/holonyms()
@@ -1963,14 +1964,16 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // checks every possible part of speech, not just dictionary.lookup's
     // own arbitrary single pick, so this holds regardless of which one
     // that pick happened to land on).
-    expect(toyPoodle!.wordRoles).toEqual([ModifierRole.MODIFIER, ModifierRole.HEAD]);
-    // Phrase.headWord -- derived straight from wordRoles' own HEAD
-    // position (linkPhraseWords()'s own docstring), so this must always
-    // agree with words[wordRoles.indexOf(HEAD)] exactly -- a
-    // graph-reference pointer, resolved here via Dictionary.findByUuid()
-    // the same way any other `words` entry is, naming the same real
-    // "poodle" Word (NOUN).
-    expect(toyPoodle!.headWord?.value).toBe(toyPoodle!.words[1]?.value);
+    // classifyModifierRoles() is called fresh here (not read off a
+    // stored Phrase field -- data/phrase.ts's own docstring on why
+    // `words`/`wordRoles` don't exist on Phrase any more), over the
+    // same tokenization linkPhraseWords() itself used at seed time.
+    expect(classifyModifierRoles(toyPoodle!.phraseType, toyPoodle!.text.trim().split(/\s+/), dictionary)).toEqual([
+      ModifierRole.MODIFIER,
+      ModifierRole.HEAD,
+    ]);
+    // Phrase.headWord -- a graph-reference pointer, resolved here via
+    // Dictionary.findByUuid(), naming the same real "poodle" Word (NOUN).
     const toyPoodleHead = dictionary.findByUuid(toyPoodle!.headWord!.value);
     expect(toyPoodleHead?.text).toBe("poodle");
     expect(toyPoodleHead?.partOfSpeech).toBe(PartOfSpeech.NOUN);
@@ -1982,10 +1985,10 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     expect(toyPoodleHeadForm?.text.value).toBe("poodle");
     expect(toyPoodleHeadForm?.field).toBe(WordFormField.BASE_LEMMA_CANONICAL_FORM);
     // Phrase.preModifiers -- the one Modifier position ("toy") resolved
-    // to a real Word the same way; nothing sits after the Head, so
-    // postModifiers stays empty.
+    // to the one WordForm on its own resolved Word spelled "toy"; nothing
+    // sits after the Head, so postModifiers stays empty.
     expect(toyPoodle!.preModifiers).toHaveLength(1);
-    expect(toyPoodle!.preModifiers?.[0]).toMatchObject({ text: "toy" });
+    expect(wordForms.findByUuid((toyPoodle!.preModifiers![0] as Identifier).value)?.text.value).toBe("toy");
     expect(toyPoodle!.postModifiers).toEqual([]);
 
     // classifyPhraseType()'s own PREPOSITIONAL_PHRASE/INFINITIVE_PHRASE
@@ -2011,12 +2014,11 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // retains its own POS (a post-head Noun gets no PrepositionalPhrase
     // role, that Word Role Assignment column's own "remaining words
     // retain their POS" rule).
-    expect(atFault!.wordRoles).toEqual([ModifierRole.HEAD, undefined]);
+    expect(classifyModifierRoles(atFault!.phraseType, atFault!.text.trim().split(/\s+/), dictionary)).toEqual([ModifierRole.HEAD, undefined]);
     // headWord still resolves here since "at" happens to have its own
     // (obscure) Dictionary entry -- that same obscure "at" NOUN
     // homograph. No MODIFIER-role position exists in this phrase's own
     // wordRoles above, so both modifier arrays stay empty.
-    expect(atFault!.headWord?.value).toBe(atFault!.words[0]?.value);
     expect(atFault!.headWord).toBeDefined();
     const atFaultHead = dictionary.findByUuid(atFault!.headWord!.value);
     expect(atFaultHead?.text).toBe("at");
@@ -2037,8 +2039,11 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // Head is the first Verb-capable token after it ("be"). "sure"
     // retains its own POS -- not covered by this codebase's own Word
     // Patterns table, which has no InfinitivePhrase rows.
-    expect(toBeSure!.wordRoles).toEqual([ModifierRole.PARTICLE, ModifierRole.HEAD, undefined]);
-    expect(toBeSure!.headWord?.value).toBe(toBeSure!.words[1]?.value);
+    expect(classifyModifierRoles(toBeSure!.phraseType, toBeSure!.text.trim().split(/\s+/), dictionary)).toEqual([
+      ModifierRole.PARTICLE,
+      ModifierRole.HEAD,
+      undefined,
+    ]);
     // dictionary.lookup("be")'s own arbitrary-but-deterministic
     // first-seeded homograph resolves to the chemical-element NOUN "Be"
     // here, not the verb sense a reader might expect -- the same
@@ -2059,19 +2064,17 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
 
     const poodle = dictionary.lookupAll("poodle").find((w) => wordForms.synsetIdOf(w)?.value === "02115987-n");
     expect(poodle).toBeDefined();
-
-    // Broken down into its own constituent Words, stored by uuid
-    // reference (word_seeder.ts's own linkPhraseWords()) -- "toy" is
-    // itself a real standalone WordNet sense (both a noun and a verb,
-    // dict/data.noun and dict/data.verb), so this deliberately checks
-    // against dictionary.lookup("toy") itself -- linkPhraseWords()'s own
-    // first-homograph choice -- rather than asserting which particular
-    // sense that resolves to.
+    // "toy" is itself a real standalone WordNet sense (both a noun and a
+    // verb, dict/data.noun and dict/data.verb) -- dictionary.lookup("toy")'s
+    // own first-homograph choice, needed again below for the
+    // phrase_word_segments check.
     const toy = dictionary.lookup("toy");
     expect(toy).toBeDefined();
-    expect(toyPoodle!.words).toHaveLength(2);
-    expect(toyPoodle!.words[0]?.value).toBe(wordGraphUuid(toy!));
-    expect(toyPoodle!.words[1]?.value).toBe(wordGraphUuid(poodle!));
+    // toyPoodle's own headWord already resolves to this exact "poodle"
+    // Word (checked above), confirming linkPhraseWords()'s own per-token
+    // resolution -- exactly what toyPoodle's own preModifiers[0] resolves
+    // back to for "toy".
+    expect(toyPoodle!.headWord?.value).toBe(wordGraphUuid(poodle!));
 
     // Seeded exactly like a Word: a genuine SemanticRelationship works
     // with the Phrase's own Sense as its own subject exactly like a
@@ -2145,9 +2148,9 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // links to "toy" and "poodle", the same way a definition's own word
     // tokens already link to the Words they mention) -- searchWords()'s
     // `wordId` branch attaches phrase_word_segments only when the
-    // resolved record came from a Phrase, built from that Phrase's own
-    // already-stored `words` references (phraseWordSegments()'s own
-    // docstring), not re-derived on the spot.
+    // resolved record came from a Phrase, built by re-resolving each of
+    // the Phrase's own tokens against `dictionary` fresh
+    // (phraseWordSegments()'s own docstring).
     const detail = view.searchWords({ wordId: phraseGraphUuid(toyPoodle!) }).words[0];
     expect(detail.phrase_word_segments).toHaveLength(2);
     expect(detail.phrase_word_segments![0]).toMatchObject({ text: "toy", word: true, resolved: true, word_id: wordGraphUuid(toy!) });
@@ -2157,7 +2160,7 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
 
     // head_word (phraseHeadWordSegment()'s own docstring) -- one
     // DefinitionSegment singling out the Head among phrase_word_segments
-    // above, "poodle" here (toyPoodle's own wordRoles already confirmed
+    // above, "poodle" here (toyPoodle's own headWord already confirmed
     // this). An ordinary Word's own record never carries this field
     // either.
     expect(detail.head_word).toMatchObject({ text: "poodle", word: true, resolved: true, word_id: wordGraphUuid(poodle!), lexical_form: "poodle" });
@@ -2193,8 +2196,7 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // so it still finds "give"'s VERB sense and heads it correctly.
     const giveUp = phraseBook.lookupAll("give up").find((phrase) => phraseBook.synsetIdOf(phrase)?.value === "02686624-v");
     expect(giveUp?.phraseType).toBe(PhraseType.VERB_PHRASE);
-    expect(giveUp!.wordRoles).toEqual([ModifierRole.HEAD, ModifierRole.MODIFIER]);
-    expect(giveUp!.headWord?.value).toBe(giveUp!.words[0]?.value);
+    expect(classifyModifierRoles(giveUp!.phraseType, giveUp!.text.trim().split(/\s+/), dictionary)).toEqual([ModifierRole.HEAD, ModifierRole.MODIFIER]);
     // headWord resolves to that same rare NOUN "give" homograph (this
     // test's own comment above on why). "up" sits after the Head with a
     // MODIFIER role, so it lands in postModifiers, not preModifiers.
@@ -2204,7 +2206,7 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     expect(wordForms.findByUuid(giveUp!.headWordForm!.value)?.text.value).toBe("give");
     expect(giveUp!.preModifiers).toEqual([]);
     expect(giveUp!.postModifiers).toHaveLength(1);
-    expect(giveUp!.postModifiers?.[0]).toMatchObject({ text: "up" });
+    expect(wordForms.findByUuid((giveUp!.postModifiers![0] as Identifier).value)?.text.value).toBe("up");
 
     // "look up to" (01831800-v, dict/data.verb) -- same Head rule as
     // "give up", but here "up" *is* immediately followed by a token
@@ -2215,8 +2217,11 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // atFault's own trailing "fault" above.
     const lookUpTo = phraseBook.lookupAll("look up to").find((phrase) => phraseBook.synsetIdOf(phrase)?.value === "01831800-v");
     expect(lookUpTo?.phraseType).toBe(PhraseType.VERB_PHRASE);
-    expect(lookUpTo!.wordRoles).toEqual([ModifierRole.HEAD, ModifierRole.PARTICLE, undefined]);
-    expect(lookUpTo!.headWord?.value).toBe(lookUpTo!.words[0]?.value);
+    expect(classifyModifierRoles(lookUpTo!.phraseType, lookUpTo!.text.trim().split(/\s+/), dictionary)).toEqual([
+      ModifierRole.HEAD,
+      ModifierRole.PARTICLE,
+      undefined,
+    ]);
     // "up" here is a Particle, not a Modifier (this test's own comment
     // above), so it's excluded from both modifier arrays -- "to" gets
     // no role at all, same reason. Both stay empty.
@@ -2234,8 +2239,7 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // Adverb-capability does here -- is a Modifier.
     const longAgo = phraseBook.lookupAll("long ago").find((phrase) => phraseBook.synsetIdOf(phrase)?.value === "00022855-r");
     expect(longAgo?.phraseType).toBe(PhraseType.ADVERB_PHRASE);
-    expect(longAgo!.wordRoles).toEqual([ModifierRole.MODIFIER, ModifierRole.HEAD]);
-    expect(longAgo!.headWord?.value).toBe(longAgo!.words[1]?.value);
+    expect(classifyModifierRoles(longAgo!.phraseType, longAgo!.text.trim().split(/\s+/), dictionary)).toEqual([ModifierRole.MODIFIER, ModifierRole.HEAD]);
     // dictionary.lookup("ago")'s own arbitrary-but-deterministic
     // first-seeded homograph happens to be an ADJECTIVE sense here, not
     // the ADVERB one the phrase's own AdverbPhrase structure suggests --
@@ -2247,7 +2251,7 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     expect(longAgoHead?.partOfSpeech).toBe(PartOfSpeech.ADJECTIVE);
     expect(wordForms.findByUuid(longAgo!.headWordForm!.value)?.text.value).toBe("ago");
     expect(longAgo!.preModifiers).toHaveLength(1);
-    expect(longAgo!.preModifiers?.[0]).toMatchObject({ text: "long" });
+    expect(wordForms.findByUuid((longAgo!.preModifiers![0] as Identifier).value)?.text.value).toBe("long");
     expect(longAgo!.postModifiers).toEqual([]);
 
     // "in the meantime" (00065346-r, dict/data.adv) -- PrepositionalPhrase
@@ -2259,8 +2263,11 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // own POS.
     const inTheMeantime = phraseBook.lookupAll("in the meantime").find((phrase) => phraseBook.synsetIdOf(phrase)?.value === "00065346-r");
     expect(inTheMeantime?.phraseType).toBe(PhraseType.PREPOSITIONAL_PHRASE);
-    expect(inTheMeantime!.wordRoles).toEqual([ModifierRole.HEAD, ModifierRole.DETERMINER, undefined]);
-    expect(inTheMeantime!.headWord?.value).toBe(inTheMeantime!.words[0]?.value);
+    expect(classifyModifierRoles(inTheMeantime!.phraseType, inTheMeantime!.text.trim().split(/\s+/), dictionary)).toEqual([
+      ModifierRole.HEAD,
+      ModifierRole.DETERMINER,
+      undefined,
+    ]);
     // dictionary.lookup("in")'s own arbitrary-but-deterministic
     // first-seeded homograph resolves to the abbreviation NOUN "IN"
     // here (Indiana's own postal code, a real WordNet noun sense), the
@@ -2276,6 +2283,14 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     expect(wordForms.findByUuid(inTheMeantime!.headWordForm!.value)?.text.value).toBe("IN");
     expect(inTheMeantime!.preModifiers).toEqual([]);
     expect(inTheMeantime!.postModifiers).toEqual([]);
+    // Phrase.determiners -- WordNet lexicalizes "the" as a standalone
+    // sense nowhere in the bundled data (PHRASE_TYPE_DETERMINERS' own
+    // docstring), so it has no Word, hence no WordForm, to reference --
+    // stays empty even though "the" genuinely carries the DETERMINER
+    // role above. A determiner word that IS independently WordNet-tagged
+    // ("few", "many", "all") would appear here instead
+    // (data_entity_design_decisions_log.md).
+    expect(inTheMeantime!.determiners).toEqual([]);
 
     // classifyModifierRoles() itself, called directly (not just through
     // the full seeding pipeline above), for the one documented ambiguity
@@ -2291,18 +2306,17 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
 
     // A Common Vocabulary Cache closed-class Phrase never goes through
     // linkPhraseWords()/classifyModifierRoles() at all (no constituency-
-    // parsing pass of its own, `words`'s own docstring) -- wordRoles
-    // stays empty, `words`'s own exact counterpart.
+    // parsing pass of its own) -- headWord/headWordForm/preModifiers/
+    // postModifiers/determiners are exactly as unpopulated as they'd be
+    // if that pass had never run, since createPhrase() never defaults
+    // them and nothing else ever touches a closed-class Phrase's own
+    // fields after creation.
     const handCrafted = createPhrase({ text: "in spite of", phraseType: PhraseType.PREPOSITIONAL_PHRASE });
-    expect(handCrafted.wordRoles).toEqual([]);
-    // headWord/headWordForm/preModifiers/postModifiers are exactly as
-    // unpopulated -- createPhrase() never defaults them (unlike
-    // words/wordRoles' own `[]` default above), and nothing else ever
-    // touches a closed-class Phrase's own fields after creation.
     expect(handCrafted.headWord).toBeUndefined();
     expect(handCrafted.headWordForm).toBeUndefined();
     expect(handCrafted.preModifiers).toBeUndefined();
     expect(handCrafted.postModifiers).toBeUndefined();
+    expect(handCrafted.determiners).toBeUndefined();
   }, 60000);
 
   it("seeds a Noun/Verb/Adjective/Adverb subtype per Word, populating per-sense frames/syntacticPosition from real WordNet data previously discarded", async () => {
@@ -2326,7 +2340,7 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     const wordForSynset = (synsetId: string, lemma: string): Word => {
       const sense = senseStore.findBySynsetId(synsetId);
       const member = sense && senseStore.membersOf(senseGraphUuid(sense)).find((m) => m.text === lemma);
-      if (member === undefined || "words" in member) throw new Error(`no Word for "${lemma}" in synset ${synsetId}`);
+      if (member === undefined || "senseIds" in member) throw new Error(`no Word for "${lemma}" in synset ${synsetId}`);
       return member;
     };
 

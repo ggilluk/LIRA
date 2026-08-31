@@ -15,7 +15,6 @@ import { identifier, type Identifier, type Text } from "../../value_objects";
 import type { Clause } from "../../linguistics/data/clause";
 import type { LinguisticUnit } from "../../linguistics/data/linguistic_unit";
 import type { EditorialLabel } from "./enums/editorial_label";
-import type { ModifierRole } from "./enums/modifier_role";
 import type { PhraseType } from "./enums/phrase_type";
 import type { RegisterCode } from "./enums/register_code";
 import type { SourceReference } from "./source_reference";
@@ -140,35 +139,21 @@ export interface Phrase extends LinguisticUnit {
   // ── Structure ────────────────────────────────────────────
 
   /**
-   * This Phrase's own `text` broken down into its constituent Words,
-   * one entry per whitespace-separated token, left to right, stored by
-   * reference.
+   * The one Word, among this Phrase's own `text` broken into its
+   * whitespace-separated tokens, whose position `classifyModifierRoles()`
+   * (role/processor/phrase_processor.ts) assigns ModifierRole.HEAD -- a
+   * graph-reference pointer, resolved against a Dictionary
+   * (`Dictionary.findByUuid()`), not an embedded copy of the Word itself.
    *
-   * A given position is undefined when no Word for that token exists
-   * in the seeding Dictionary. Always empty for a Common Vocabulary
-   * Cache closed-class Phrase.
-   */
-  words: readonly (Identifier | undefined)[];
-
-  /**
-   * The ModifierRole each position in `words` plays within this
-   * Phrase's own structure -- same length and index alignment as
-   * `words` itself.
-   *
-   * A position is undefined when that word carries no role of its own
-   * within this Phrase. Always empty for a Common Vocabulary Cache
-   * closed-class Phrase.
-   */
-  wordRoles: readonly (ModifierRole | undefined)[];
-
-  /**
-   * The one entry of `words` whose matching `wordRoles` position holds
-   * ModifierRole.HEAD -- a graph-reference pointer, resolved against a
-   * Dictionary (`Dictionary.findByUuid()`) the same way any other entry
-   * of `words` is, not an embedded copy of the Word itself.
-   *
-   * Undefined whenever `wordRoles` holds no HEAD position at all, or
-   * for a Common Vocabulary Cache closed-class Phrase.
+   * Undefined whenever no token carries the HEAD role at all, or for a
+   * Common Vocabulary Cache closed-class Phrase. Every per-token
+   * resolution and role assignment this field (and every field below)
+   * derives from is computed fresh by `linkPhraseWords()`, not stored on
+   * the Phrase itself -- see that function's own docstring on why: once
+   * `headWord`/`headWordForm`/`preModifiers`/`postModifiers`/`determiners`
+   * exist as their own typed fields, keeping the full per-token
+   * `words`/`wordRoles` bookkeeping around too would just duplicate the
+   * same facts in a second, untyped shape (data_entity_design_decisions_log.md).
    */
   headWord?: Identifier;
 
@@ -186,13 +171,22 @@ export interface Phrase extends LinguisticUnit {
   headWordForm?: Identifier;
 
   /**
-   * This Phrase's own pre-Head modifying constituents. Every
-   * `*_phrase.ts` subtype narrows this down to the specific
-   * constituent type(s) its own MODIFIER row allows.
+   * This Phrase's own pre-Head modifying constituents -- each entry
+   * either an `Identifier` pointing at the one WordForm (owned by that
+   * MODIFIER-role token's own resolved Word) spelled exactly the way it
+   * appears here (`headWordForm`'s own identical resolution, one
+   * position over), or an embedded sub-Phrase/Clause, for the
+   * constituency-parsing case `linkPhraseWords()` never actually
+   * performs today (that function's own docstring). Every
+   * `*_phrase.ts` subtype narrows this down to the specific constituent
+   * type(s) its own MODIFIER row allows.
    *
+   * A MODIFIER-role token whose own resolved Word carries no WordForm
+   * spelled the way it appears here is left out entirely, the same
+   * `headWordForm`-can-fail-to-resolve narrowing documented above.
    * Undefined for a Common Vocabulary Cache closed-class Phrase.
    */
-  preModifiers?: readonly (Word | Phrase | Clause)[];
+  preModifiers?: readonly (Identifier | Phrase | Clause)[];
 
   /**
    * This Phrase's own post-Head modifying constituents --
@@ -200,7 +194,26 @@ export interface Phrase extends LinguisticUnit {
    *
    * Undefined for a Common Vocabulary Cache closed-class Phrase.
    */
-  postModifiers?: readonly (Word | Phrase | Clause)[];
+  postModifiers?: readonly (Identifier | Phrase | Clause)[];
+
+  /**
+   * This Phrase's own DETERMINER-role tokens, in phrase-text order --
+   * `preModifiers`'s own exact shape and resolution rule, one
+   * ModifierRole over (the Common Rules table's own "Determiner" row,
+   * data/phrase_type_patterns_and_word_roles.md, applies regardless of
+   * PhraseType or position, so unlike `preModifiers`/`postModifiers`
+   * this is never split pre/post). Empty far more often than
+   * `preModifiers`/`postModifiers` are: WordNet lexicalizes almost none
+   * of the closed set of English determiners as a standalone sense
+   * (`PHRASE_TYPE_DETERMINERS`'s own docstring, role/processor/phrase_processor.ts)
+   * -- "the"/"this"/"my" have no Dictionary entry at all to resolve a
+   * WordForm from -- so only the minority of determiner tokens that
+   * happen to double as a real WordNet lemma ("few", "many", "all")
+   * ever appear here.
+   *
+   * Undefined for a Common Vocabulary Cache closed-class Phrase.
+   */
+  determiners?: readonly Identifier[];
 }
 
 export type PhraseInit = Pick<Phrase, "text"> & Partial<Omit<Phrase, "text">>;
@@ -212,8 +225,6 @@ export function createPhrase(init: PhraseInit): Phrase {
     editorialLabels: [],
     sourceReferences: [],
     relatedDomainTags: [],
-    words: [],
-    wordRoles: [],
     senseIds: [],
     isCommon: false,
     entryId: init.entryId ?? identifier(newUuid()),

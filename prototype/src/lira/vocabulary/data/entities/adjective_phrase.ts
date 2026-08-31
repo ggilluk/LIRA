@@ -42,25 +42,27 @@
  * `preModifiers` narrows Phrase's own same-named field (data/phrase.ts's
  * own docstring on it) down to the exact constituent set
  * data/phrase_type_patterns_and_word_roles.md's own "Phrase Role
- * Allowed Types" table gives AdjectivePhrase's own MODIFIER row: `Adverb
- * | AdverbPhrase`. Same real-population status as `headWord` above, for
- * the single-Word-constituent case only -- linkPhraseWords()'s own
+ * Allowed Types" table gives AdjectivePhrase's own MODIFIER row: an
+ * `Adverb`-capable token's own WordForm reference, or an `AdverbPhrase`
+ * sub-constituent -- `headWord`'s own "an Identifier carries no type to
+ * narrow" reasoning, narrowing only the embedded-subtype half of the
+ * union. Same real-population status as `headWord` above, for the
+ * single-Word-constituent case only -- linkPhraseWords()'s own
  * docstring on why a sub-phrase modifier is left out rather than
- * guessed at.
+ * guessed at, and on why a WordForm that fails to resolve is too.
  *
  * `postModifiers` narrows Phrase's own same-named field (data/phrase.ts's
- * own docstring on it) down to that exact same `Adverb | AdverbPhrase`
- * set -- `preModifiers`' own MODIFIER row makes no pre/post
- * distinction, so AdjectivePhrase's post-Head modifier set is identical
- * to its pre-Head one. Same real-population status as `preModifiers`
- * above. */
+ * own docstring on it) down to that exact same constituent set --
+ * `preModifiers`' own MODIFIER row makes no pre/post distinction, so
+ * AdjectivePhrase's post-Head modifier set is identical to its pre-Head
+ * one. Same real-population status as `preModifiers` above. */
 
 import { PhraseType } from "../enums/phrase_type";
 import { createPhrase, type Phrase } from "../phrase";
-import type { Adverb } from "./adverb";
+import type { Identifier } from "../../../value_objects";
 import type { AdverbPhrase } from "./adverb_phrase";
 
-type AdjectivePhraseModifier = Adverb | AdverbPhrase;
+type AdjectivePhraseModifier = Identifier | AdverbPhrase;
 
 export interface AdjectivePhrase extends Phrase {
   phraseType: PhraseType.ADJECTIVE_PHRASE;

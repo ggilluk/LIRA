@@ -45,25 +45,29 @@
  * `preModifiers` narrows Phrase's own same-named field (data/phrase.ts's
  * own docstring on it) down to the exact constituent set
  * data/phrase_type_patterns_and_word_roles.md's own "Phrase Role
- * Allowed Types" table gives AdverbPhrase's own MODIFIER row: `Adverb |
- * AdverbPhrase` -- self-referential, since an AdverbPhrase can itself
- * modify another AdverbPhrase's own Head. Same real-population status
- * as `headWord` above, for the single-Word-constituent case only --
+ * Allowed Types" table gives AdverbPhrase's own MODIFIER row: an
+ * `Adverb`-capable token's own WordForm reference, or a self-referential
+ * `AdverbPhrase` sub-constituent, since an AdverbPhrase can itself
+ * modify another AdverbPhrase's own Head -- `headWord`'s own "an
+ * Identifier carries no type to narrow" reasoning, narrowing only the
+ * embedded-subtype half of the union. Same real-population status as
+ * `headWord` above, for the single-Word-constituent case only --
  * linkPhraseWords()'s own docstring on why a sub-phrase modifier is left
- * out rather than guessed at.
+ * out rather than guessed at, and on why a WordForm that fails to
+ * resolve is too.
  *
  * `postModifiers` narrows Phrase's own same-named field (data/phrase.ts's
  * own docstring on it) down to that exact same self-referential
- * `Adverb | AdverbPhrase` set -- `preModifiers`' own MODIFIER row makes
- * no pre/post distinction, so AdverbPhrase's post-Head modifier set is
- * identical to its pre-Head one. Same real-population status as
- * `preModifiers` above. */
+ * constituent set -- `preModifiers`' own MODIFIER row makes no pre/post
+ * distinction, so AdverbPhrase's post-Head modifier set is identical to
+ * its pre-Head one. Same real-population status as `preModifiers`
+ * above. */
 
 import { PhraseType } from "../enums/phrase_type";
 import { createPhrase, type Phrase } from "../phrase";
-import type { Adverb } from "./adverb";
+import type { Identifier } from "../../../value_objects";
 
-type AdverbPhraseModifier = Adverb | AdverbPhrase;
+type AdverbPhraseModifier = Identifier | AdverbPhrase;
 
 export interface AdverbPhrase extends Phrase {
   phraseType: PhraseType.ADVERB_PHRASE;

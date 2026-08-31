@@ -37,27 +37,30 @@
  * `preModifiers` narrows Phrase's own same-named field (data/phrase.ts's
  * own docstring on it) down to the exact constituent set
  * data/phrase_type_patterns_and_word_roles.md's own "Phrase Role
- * Allowed Types" table gives VerbPhrase's own MODIFIER row: `Adverb |
- * AdverbPhrase`. Same real-population status as `headWord` above, for
- * the single-Word-constituent case only -- linkPhraseWords()'s own
+ * Allowed Types" table gives VerbPhrase's own MODIFIER row: an
+ * `Adverb`-capable token's own WordForm reference, or an `AdverbPhrase`
+ * sub-constituent -- `headWord`'s own "an Identifier carries no type to
+ * narrow" reasoning, narrowing only the embedded-subtype half of the
+ * union. Same real-population status as `headWord` above, for the
+ * single-Word-constituent case only -- linkPhraseWords()'s own
  * docstring on why a sub-phrase modifier is left out rather than
- * guessed at.
+ * guessed at, and on why a WordForm that fails to resolve is too.
  *
  * `postModifiers` narrows Phrase's own same-named field (data/phrase.ts's
- * own docstring on it) down to that exact same `Adverb | AdverbPhrase`
- * set -- VerbPhrase's own structure ("... + (Complements) +
- * (Modifiers)") in fact places its real Modifiers after the Head, so
- * this is the field linkPhraseWords() actually populates in practice
- * for a real VerbPhrase, with `preModifiers` staying available (and
- * populated the same way, should a Modifier ever precede the Head) for
- * the rarer pre-Head case. */
+ * own docstring on it) down to that exact same constituent set --
+ * VerbPhrase's own structure ("... + (Complements) + (Modifiers)") in
+ * fact places its real Modifiers after the Head, so this is the field
+ * linkPhraseWords() actually populates in practice for a real
+ * VerbPhrase, with `preModifiers` staying available (and populated the
+ * same way, should a Modifier ever precede the Head) for the rarer
+ * pre-Head case. */
 
 import { PhraseType } from "../enums/phrase_type";
 import { createPhrase, type Phrase } from "../phrase";
-import type { Adverb } from "./adverb";
+import type { Identifier } from "../../../value_objects";
 import type { AdverbPhrase } from "./adverb_phrase";
 
-type VerbPhraseModifier = Adverb | AdverbPhrase;
+type VerbPhraseModifier = Identifier | AdverbPhrase;
 
 export interface VerbPhrase extends Phrase {
   phraseType: PhraseType.VERB_PHRASE;

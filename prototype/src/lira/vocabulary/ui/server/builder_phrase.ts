@@ -15,6 +15,7 @@ import type { Senses } from "../../data/senses";
 import type { WordForms } from "../../data/word_forms";
 import { definitionWordSegment, type DefinitionSegment } from "./builder_segment";
 import { senseFieldsFor } from "./resolver_domain";
+import { classifyModifierRoles } from "../../role/processor/phrase_processor";
 
 // Phrase's own client-facing record -- deliberately leaner than
 // WordRecord (no relationship_count/definition_segments/domain):
@@ -94,16 +95,19 @@ export function phraseRecords(phrases: Phrases, senses: Senses, wordForms: WordF
 }
 
 /** `phrase`'s own headword (`text`) broken into one DefinitionSegment
- * per whitespace token, in the same order phrase.words itself was
- * populated (WordSeeder.seedWordNet's own linkPhraseWords()) --
- * reusing definitionWordSegment() as-is, so a Phrase's own headword
- * links to its constituent Words exactly the way a Word's own
- * definition text already links to the Words *it* mentions (same
- * hover-tooltip rendering client-side, this file's own embedded client
- * script). Reads the already-stored uuid references directly
- * (Dictionary.findByUuid) rather than re-splitting `text` and
- * re-resolving each token against `dictionary` from scratch -- the
- * whole reason those references were stored ahead of time. */
+ * per whitespace token, in the same order linkPhraseWords()
+ * (role/processor/phrase_processor.ts) itself walks them -- reusing
+ * definitionWordSegment() as-is, so a Phrase's own headword links to
+ * its constituent Words exactly the way a Word's own definition text
+ * already links to the Words *it* mentions (same hover-tooltip
+ * rendering client-side, this file's own embedded client script).
+ * Re-resolves each token against `dictionary` fresh (`dictionary.lookup()`,
+ * the identical case-insensitive first-homograph pick linkPhraseWords()
+ * itself makes) rather than reading a stored per-token reference --
+ * Phrase carries no such array of its own any more
+ * (data_entity_design_decisions_log.md on why `words`/`wordRoles` were
+ * removed once `headWord`/`preModifiers`/`postModifiers`/`determiners`
+ * existed as their own typed fields). */
 export function phraseWordSegments(
   phrase: Phrase,
   dictionary: Dictionary,
@@ -112,11 +116,7 @@ export function phraseWordSegments(
   wordForms: WordForms,
 ): DefinitionSegment[] {
   const tokens = phrase.text.trim().split(/\s+/).filter((token) => token.length > 0);
-  return tokens.map((token, index) => {
-    const ref = phrase.words[index];
-    const resolved = ref !== undefined ? dictionary.findByUuid(ref.value) : undefined;
-    return definitionWordSegment(token, resolved, senses, domainName, wordForms);
-  });
+  return tokens.map((token) => definitionWordSegment(token, dictionary.lookup(token), senses, domainName, wordForms));
 }
 
 /** `phrase.headWordForm`/`phrase.headWord` (data/phrase.ts's own
@@ -150,35 +150,28 @@ export function phraseHeadWordSegment(
  * (data/phrase_type_patterns_and_word_roles.md's own "Phrase Role
  * Allowed Types" table, MODIFIER row) and its DETERMINER-role tokens
  * (that document's own Common Rules table -- valid regardless of
- * PhraseType or position, phrase_processor.ts's own classifyModifierRoles()
- * docstring), each as an ordered DefinitionSegment list -- the
- * client-facing counterpart of `phrase.preModifiers`/`phrase.postModifiers`
- * (data/phrase.ts's own docstring on each) for the first two, and of
- * `phrase.wordRoles`' own DETERMINER entries (no dedicated resolved-Word
- * field of its own exists for those, unlike headWord/preModifiers/
- * postModifiers) for the third. Built the same way
- * phraseWordSegments()/phraseHeadWordSegment() above already are:
- * re-derived from `phrase.text`/`phrase.wordRoles`/`phrase.words`
- * directly, not read off `preModifiers`/`postModifiers` themselves.
- * Those two fields store only the resolved Word objects
- * (linkPhraseWords()'s own docstring, role/processor/phrase_processor.ts)
- * -- once a MODIFIER token is resolved to a Word, its own original
- * phrase-local position and exact surface spelling are gone, and both
- * matter here: position is what tells a pre-Head Modifier from a
- * post-Head one and gives each entry its own display order, and the
- * surface spelling is what `definitionWordSegment()`'s own WordForm
- * matching (builder_segment.ts) needs to find which registered
- * inflected form (if any) this particular occurrence actually spells.
- * Recomputing from the same three source fields those two sibling
- * functions already use keeps all three in exact agreement, and works
- * even for a Phrase seeded before headWord/preModifiers/postModifiers
- * existed (every field read here -- text/wordRoles/words -- predates
- * them). Determiners aren't split pre/post (unlike Modifiers) -- the
- * Word Patterns table has no PhraseType whose own Determiner ever
- * follows the Head, so one flat, position-ordered list covers every
- * real case. Every list is empty for a Phrase with no identified Head or
- * no token carrying that role at all (every Common Vocabulary Cache
- * closed-class Phrase, in particular, whose own `wordRoles` stays `[]`). */
+ * PhraseType or position), each as an ordered DefinitionSegment list --
+ * the client-facing counterpart of `phrase.preModifiers`/
+ * `phrase.postModifiers`/`phrase.determiners` (data/phrase.ts's own
+ * docstring on each). Built by calling classifyModifierRoles()
+ * (role/processor/phrase_processor.ts) fresh over `phrase.text`'s own
+ * tokens, the identical computation linkPhraseWords() itself runs at
+ * seed time, rather than reading those three stored fields directly --
+ * each stores only a WordForm *reference*, which drops the one thing a
+ * token that fails to resolve any WordForm still needs to render
+ * gracefully (its own plain surface text, `definitionWordSegment()`'s
+ * own `resolved: false` fallback) -- and, for `pre`/`post` specifically,
+ * still needs each token's own original phrase-local position to tell a
+ * pre-Head Modifier from a post-Head one. Recomputing here keeps this
+ * function correct for exactly the same reason the pre-reference-typed
+ * version of this function already recomputed rather than reading
+ * `preModifiers`/`postModifiers` (data_entity_design_decisions_log.md).
+ * Determiners aren't split pre/post (unlike Modifiers) -- the Word
+ * Patterns table has no PhraseType whose own Determiner ever follows the
+ * Head, so one flat, position-ordered list covers every real case. Every
+ * list is empty for a Phrase with no identified Head or no token
+ * carrying that role at all (every Common Vocabulary Cache closed-class
+ * Phrase, in particular, whose own `phraseType` stays undefined). */
 export function phraseModifierSegments(
   phrase: Phrase,
   dictionary: Dictionary,
@@ -187,16 +180,15 @@ export function phraseModifierSegments(
   wordForms: WordForms,
 ): { pre: DefinitionSegment[]; post: DefinitionSegment[]; determiners: DefinitionSegment[] } {
   const tokens = phrase.text.trim().split(/\s+/).filter((token) => token.length > 0);
-  const headIndex = phrase.wordRoles.indexOf(ModifierRole.HEAD);
+  const wordRoles = classifyModifierRoles(phrase.phraseType, tokens, dictionary);
+  const headIndex = wordRoles.indexOf(ModifierRole.HEAD);
   const pre: DefinitionSegment[] = [];
   const post: DefinitionSegment[] = [];
   const determiners: DefinitionSegment[] = [];
   tokens.forEach((token, index) => {
-    const role = phrase.wordRoles[index];
+    const role = wordRoles[index];
     if (role !== ModifierRole.MODIFIER && role !== ModifierRole.DETERMINER) return;
-    const ref = phrase.words[index];
-    const resolved = ref !== undefined ? dictionary.findByUuid(ref.value) : undefined;
-    const segment = definitionWordSegment(token, resolved, senses, domainName, wordForms);
+    const segment = definitionWordSegment(token, dictionary.lookup(token), senses, domainName, wordForms);
     if (role === ModifierRole.DETERMINER) determiners.push(segment);
     else (headIndex !== -1 && index < headIndex ? pre : post).push(segment);
   });

@@ -17,7 +17,7 @@ import type { WordForms } from "../../data/word_forms";
  * WordForm's own docstring on why), or the Phrase's own `senseIds[0]`
  * directly (Phrase keeps its own field, untouched by that move). */
 function primarySenseId(entry: Word | Phrase, wordForms: WordForms): Identifier | undefined {
-  return "words" in entry ? entry.senseIds[0] : wordForms.senseIdsOf(entry)[0];
+  return "senseIds" in entry ? entry.senseIds[0] : wordForms.senseIdsOf(entry)[0];
 }
 
 /** The Sense-owned fields that actually apply to `entry` (a Word or a
@@ -62,7 +62,7 @@ export function senseFieldsFor(
       usageNotes: sense.usageNotes,
     };
   }
-  if ("words" in entry) {
+  if ("senseIds" in entry) {
     return {
       domainTag: entry.domainTag,
       relatedDomainTags: entry.relatedDomainTags,

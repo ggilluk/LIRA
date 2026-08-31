@@ -44,5 +44,5 @@ export function resolveEntry(dictionary: Dictionary, phrases: Phrases, senses: S
   if (sense === undefined) return undefined;
   const representative = senses.membersOf(graphUuid(sense))[0];
   if (representative === undefined) return undefined;
-  return "words" in representative ? phraseAsWord(representative, phrases, wordForms) : representative;
+  return "senseIds" in representative ? phraseAsWord(representative, phrases, wordForms) : representative;
 }

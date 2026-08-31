@@ -25,7 +25,7 @@ import { domainLabel } from "./resolver_domain";
  * so this just picks which of the two matching graphUuid() functions
  * to call. `data/senses.ts`'s own identical `memberUuid()`. */
 function memberUuid(member: Word | Phrase): string {
-  return "words" in member ? phraseGraphUuid(member) : wordGraphUuid(member);
+  return "senseIds" in member ? phraseGraphUuid(member) : wordGraphUuid(member);
 }
 
 export interface RelationshipRecord {

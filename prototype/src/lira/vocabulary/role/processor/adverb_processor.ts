@@ -85,7 +85,7 @@ export function determineGradability(
     for (const edge of relationships.outgoing(senseId.value)) {
       if (edge.relationshipType !== SemanticRelationshipKind.PERTAINYM) continue;
       for (const target of senses.membersOf(edge.targetSenseId.value)) {
-        if ("words" in target || !isAdjective(target)) continue;
+        if ("senseIds" in target || !isAdjective(target)) continue;
         if (isAdjectiveGradable(relationships, target, wordForms)) return true;
       }
     }

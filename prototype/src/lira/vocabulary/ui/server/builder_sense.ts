@@ -52,7 +52,7 @@ export function senseRecordFor(sense: Sense, senses: Senses, phrases: Phrases, d
   const members = senses.membersOf(senseUuid);
   const domain = !sense.isCommon ? domainName : (sense.domainTag?.value ?? "Common");
   const firstMember = members[0];
-  const firstMemberPos = firstMember !== undefined ? ("words" in firstMember ? phrases.partOfSpeechOf(firstMember) : firstMember.partOfSpeech) : undefined;
+  const firstMemberPos = firstMember !== undefined ? ("senseIds" in firstMember ? phrases.partOfSpeechOf(firstMember) : firstMember.partOfSpeech) : undefined;
   return {
     id: senseUuid,
     entry_id: sense.entryId.value,

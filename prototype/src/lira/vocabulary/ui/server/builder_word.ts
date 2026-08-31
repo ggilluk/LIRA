@@ -30,7 +30,7 @@ import { domainLabel, isRootWordFor, senseFieldsFor } from "./resolver_domain";
  * so this just picks which of the two matching graphUuid() functions
  * to call. `data/senses.ts`'s own identical `memberUuid()`. */
 function memberUuid(member: Word | Phrase): string {
-  return "words" in member ? phraseGraphUuid(member) : wordGraphUuid(member);
+  return "senseIds" in member ? phraseGraphUuid(member) : wordGraphUuid(member);
 }
 
 export interface WordRecord {
@@ -317,16 +317,16 @@ function morphologicalDerivations(word: Word, dictionary: Dictionary, wordForms:
  * Sense, not `entry`'s other, unrelated senses. */
 function sensesFor(entry: Word | Phrase, senses: Senses, domainName: string, wordForms: WordForms): WordSenseSummary[] {
   const summaries: WordSenseSummary[] = [];
-  const senseIds = "words" in entry ? entry.senseIds : wordForms.senseIdsOf(entry);
+  const senseIds = "senseIds" in entry ? entry.senseIds : wordForms.senseIdsOf(entry);
   senseIds.forEach((senseId, index) => {
     const sense = senses.findByUuid(senseId.value);
     if (sense === undefined) return;
     const domain = !sense.isCommon ? domainName : (sense.domainTag?.value ?? "Common");
     const { seededPleasureDispleasureWeight: p, seededArousalNonArousalWeight: a, seededDominanceSubmissiveWeight: d } = sense;
-    // "words" in entry distinguishes a Phrase (framesForSense() only
+    // "senseIds" in entry distinguishes a Phrase (framesForSense() only
     // ever applies to a genuine VERB Word -- no such concept exists for
     // a multi-word Phrase entry).
-    const frames = !("words" in entry) && isVerb(entry) ? framesForSense(senses, entry, senseId.value) : undefined;
+    const frames = !("senseIds" in entry) && isVerb(entry) ? framesForSense(senses, entry, senseId.value) : undefined;
     summaries.push({
       id: senseId.value,
       is_primary: index === 0,
@@ -545,7 +545,7 @@ export function searchWords(
     const sense = senses.findByUuid(options.wordId);
     const representative = sense !== undefined ? senses.membersOf(senseGraphUuid(sense))[0] : undefined;
     if (representative !== undefined) {
-      if ("words" in representative) {
+      if ("senseIds" in representative) {
         const record = wordRecordFor(phraseAsWord(representative, phrases, wordForms), dictionary, relationships, senses, domainName, wordForms);
         const modifiers = phraseModifierSegments(representative, dictionary, senses, domainName, wordForms);
         return {

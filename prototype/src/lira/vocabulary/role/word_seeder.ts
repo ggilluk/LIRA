@@ -98,12 +98,12 @@ type RelationshipEndpoint = Word | Phrase | Sense;
 
 /** `endpoint`'s own per-Domain graph identity, whichever of the three
  * RelationshipEndpoint shapes it actually is -- narrowed first via
- * `"words" in endpoint` the same way every other Phrase-vs-Word check
+ * `"senseIds" in endpoint` the same way every other Phrase-vs-Word check
  * in this codebase does; `isRootWord` is Sense-only (never a Word
  * field, even after root-word status moved onto Noun specifically) so
  * it's what distinguishes the remaining two. */
 function endpointUuid(endpoint: RelationshipEndpoint): string {
-  if ("words" in endpoint) return phraseGraphUuid(endpoint);
+  if ("senseIds" in endpoint) return phraseGraphUuid(endpoint);
   if ("isRootWord" in endpoint) return senseGraphUuid(endpoint);
   return wordGraphUuid(endpoint);
 }
@@ -542,14 +542,14 @@ function indexedWord(members: readonly (Word | Phrase)[], oneBasedIndex: number)
  * docstring), so this just picks which of the two matching graphUuid()
  * functions to call. `data/senses.ts`'s own identical `memberUuid()`. */
 function memberUuid(member: Word | Phrase): string {
-  return "words" in member ? phraseGraphUuid(member) : wordGraphUuid(member);
+  return "senseIds" in member ? phraseGraphUuid(member) : wordGraphUuid(member);
 }
 
 /** `member`'s own WordNet-tagged part of speech, whichever of Word's own
  * `partOfSpeech` field or Phrases.partOfSpeechOf() actually holds it --
  * memberUuid()'s own identical Word-vs-Phrase dispatch. */
 function memberPartOfSpeech(member: Word | Phrase, phraseBook: Phrases): PartOfSpeech {
-  return "words" in member ? phraseBook.partOfSpeechOf(member)! : member.partOfSpeech;
+  return "senseIds" in member ? phraseBook.partOfSpeechOf(member)! : member.partOfSpeech;
 }
 
 /** Applies one topic-domain tag to `target` -- shared by tagTopicDomain's
@@ -626,7 +626,7 @@ function registerUniqueSense(
   wordDefinition?: Text,
 ): void {
   // Phrase has no root-word concept at all (root_words.json's own 25
-  // entries are all single-word NOUNs) -- the `"words" in entry` check
+  // entries are all single-word NOUNs) -- the `"senseIds" in entry` check
   // (word.ts's own relatedWords()/addCandidate() use the identical
   // Phrase-vs-Word discriminator) is what tells the two apart here,
   // since a Phrase's own `words` field doesn't exist on Word. Root-word
@@ -635,7 +635,7 @@ function registerUniqueSense(
   // -- undefined for a Phrase, a non-Noun Word, or a Noun with nothing
   // to report, so the four ternaries below collapse to one optional-chain
   // read apiece.
-  const isWord = !("words" in entry);
+  const isWord = !("senseIds" in entry);
   const rootWordFields = isWord && isNoun(entry) ? entry : undefined;
   const sense = createSense({
     domainTag: entry.domainTag,
@@ -656,7 +656,7 @@ function registerUniqueSense(
   });
   senseStore.append(sense);
   senseStore.registerMember(sense, entry);
-  if (wordForms !== undefined && !("words" in entry)) {
+  if (wordForms !== undefined && !("senseIds" in entry)) {
     wordForms.registerSense(wordForms.registerBaseLemmaForm(entry), sense);
   }
 }
@@ -1409,10 +1409,10 @@ export class WordSeeder {
       // registerSense(), data/word_forms.ts's own docstrings) --
       // Phrase members skip this, WordForm's own "Word-only" scope
       // (data/entities/word_form.ts's own docstring); a multi-word member is
-      // never anything but a Phrase (`"words" in member` narrows it).
+      // never anything but a Phrase (`"senseIds" in member` narrows it).
       for (const member of members) {
         senseStore.registerMember(sense, member);
-        if (wordForms !== undefined && !("words" in member)) {
+        if (wordForms !== undefined && !("senseIds" in member)) {
           wordForms.registerSense(wordForms.registerBaseLemmaForm(member), sense);
         }
       }
@@ -1733,7 +1733,7 @@ export class WordSeeder {
     const targetSideSenseUuid = senseGraphUuid(targetSideSense);
 
     for (const [sw, tw] of pairs) {
-      if ("words" in sw || "words" in tw) continue;
+      if ("senseIds" in sw || "senseIds" in tw) continue;
       const sourceForm = wordForms.registerBaseLemmaForm(sw);
       const targetForm = wordForms.registerBaseLemmaForm(tw);
       const sourceFormUuid = graphUuid(sourceForm);
@@ -1962,7 +1962,7 @@ export class WordSeeder {
       const primarySense = senseStore.findByUuid(primarySenseId.value);
       return primarySense !== undefined ? senseStore.synsetIdOf(primarySense) : undefined;
     };
-    if ("words" in entry) {
+    if ("senseIds" in entry) {
       if (entry.senseIds.length < 2) return;
       const sorted = [...entry.senseIds].sort((a, b) => frequencyOf(b) - frequencyOf(a));
       entry.senseIds = sorted;

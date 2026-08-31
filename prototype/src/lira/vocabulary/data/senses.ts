@@ -11,7 +11,7 @@ import type { Word } from "./entities/word";
  * docstring), so this just picks which of the two matching graphUuid()
  * functions to call. */
 export function memberUuid(member: Word | Phrase): string {
-  return "words" in member ? phraseGraphUuid(member) : wordGraphUuid(member);
+  return "senseIds" in member ? phraseGraphUuid(member) : wordGraphUuid(member);
 }
 
 /** Sense storage: Phrases's own counterpart for Sense (data/entities/sense.ts's
@@ -97,7 +97,7 @@ export class Senses {
    * or the membership entry. */
   registerMember(sense: Sense, member: Word | Phrase): void {
     const senseUuid = graphUuid(sense);
-    if ("words" in member && !member.senseIds.some((id) => id.value === senseUuid)) {
+    if ("senseIds" in member && !member.senseIds.some((id) => id.value === senseUuid)) {
       member.senseIds = [...member.senseIds, { value: senseUuid }];
     }
     const bucket = this.membersBySenseId.get(senseUuid);

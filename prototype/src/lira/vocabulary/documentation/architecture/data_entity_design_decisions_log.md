@@ -549,3 +549,104 @@ must equal `entry.lexical_form.toLowerCase()`) both stay, the same
 `syllable_count` precedent immediately above: validating the source
 asset's own internal consistency is a different concern from storing the
 already-derivable value on a `Phrase`.
+
+### `words`/`wordRoles`: removed once `headWord`/`preModifiers`/`postModifiers`/`determiners` existed as their own typed fields
+
+Supersedes the "`words`: stored by reference, resolved structurally" and
+"`wordRoles`, `unresolvedHeadWord`, `headWordForm`, `headWord`: the linking
+pass" sections above (both still accurate as historical record of why
+those fields existed in the first place): `Phrase` no longer carries
+`words: readonly (Identifier | undefined)[]` or
+`wordRoles: readonly (ModifierRole | undefined)[]` at all. Once `headWord`
+(this document's own `headWord`/`headWordForm` section, above) and
+`preModifiers`/`postModifiers`/`determiners` (next section) exist as their
+own typed, purpose-built fields, the full per-token `words`/`wordRoles`
+arrays were pure duplication -- every real field derived from them, and no
+other consumer read either one directly (confirmed by a repo-wide grep
+before removing: only `linkPhraseWords()` itself, `phraseWordSegments()`/
+`phraseModifierSegments()` in `ui/server/builder_phrase.ts`, and this
+codebase's own tests ever touched either field).
+
+`linkPhraseWords()` (role/processor/phrase_processor.ts) still computes an
+equivalent `words`/`wordRoles` pair, but as local variables scoped to that
+one function call, never written back onto the `Phrase`. `phraseWordSegments()`/
+`phraseModifierSegments()` (ui/server/builder_phrase.ts) now recompute the
+identical facts fresh at render time instead -- `dictionary.lookup(token)`
+per token for the former, a direct `classifyModifierRoles()` call for the
+latter -- rather than reading a stored array. This isn't a new pattern for
+either function: `phraseModifierSegments()` already recomputed from
+`phrase.text`/`phrase.wordRoles`/`phrase.words` rather than reading
+`preModifiers`/`postModifiers` directly, for the exact same reason this
+section's own new fields still can't fully replace it (below) -- this
+change just moves where the recomputed values come from, not whether
+recomputation happens at all.
+
+One real, unanticipated consequence, found only once the type-checker
+caught it: `"words" in x` was the codebase-wide idiom for narrowing a
+`Word | Phrase` union (`Senses.memberUuid()`, `WordSeeder`'s own
+`endpointUuid()`/`memberUuid()`/`memberPartOfSpeech()`/`registerUniqueSense()`,
+several `ui/server/resolver_*.ts`/`builder_*.ts` functions, and this
+codebase's own tests) -- removing `Phrase.words` broke every one of those
+call sites, not just the two functions this change was actually about.
+Fixed by switching the discriminant to `"senseIds" in x` instead:
+`Phrase.senseIds` is required (never optional, unlike `phraseType`) and,
+since `Word`'s own former `senseIds` field moved onto its base-lemma
+WordForm this session (`synsetId`/pronunciation/syllable sections above,
+and the WordForm migration itself), is now exclusively a `Phrase` field --
+confirmed by the compiler itself once the swap was made: every remaining
+`Word`-vs-`Phrase` narrowing call site resolved cleanly.
+
+### `preModifiers`/`postModifiers`/`determiners`: WordForm references, not embedded Words
+
+Supersedes the "`preModifiers`/`postModifiers`: naming and scope" section
+above. Both fields' own element type changed from `Word | Phrase | Clause`
+to `Identifier | Phrase | Clause` -- the same "by-reference, not an
+embedded copy" correction `headWord`/`headWordForm` already went through
+(this document's own section on that change): each `Identifier` now points
+at the one WordForm (data/entities/word_form.ts), owned by that
+MODIFIER-role token's own resolved Word, whose own spelling matches this
+token's literal occurrence in `phrase.text` -- `headWordForm`'s own exact
+resolution rule, one ModifierRole over, via the same `matchingFormId()`
+helper `linkPhraseWords()` now shares across `headWordForm`/`preModifiers`/
+`postModifiers`/`determiners` alike. A MODIFIER-role token whose own
+resolved Word carries no WordForm spelled the way it appears here is left
+out of `preModifiers`/`postModifiers` entirely now, rather than included
+via its bare `Word` regardless (a real, deliberate behavior narrowing, the
+same one `headWordForm` itself already accepted: a reference that can't
+resolve is no more useful than one that's simply absent). Every
+`*_phrase.ts` subtype's own `XPhraseModifier` union dropped the `Word`
+subtype member(s) it used to narrow to (`Noun`, `Adjective`, `Adverb`,
+...) -- an `Identifier` carries no type of its own to narrow, the same
+reason `headWord`'s own per-subtype narrowing was dropped earlier -- while
+keeping its own `Phrase` subtype members (`NounPhrase`, `AdjectivePhrase`,
+...) intact, since those genuinely narrow the embedded-constituent half of
+the union.
+
+`determiners?: readonly Identifier[]` is new -- `preModifiers`'s own exact
+shape and resolution rule, one ModifierRole over (the Common Rules table's
+own "Determiner" row applies regardless of `PhraseType` or position, so
+unlike `preModifiers`/`postModifiers` this is never split pre/post). Added
+because nothing else on `Phrase` had ever stored this fact as a typed
+field -- the Phrases tab's own "Determiners:" detail-panel row
+(`ui/client/client_detail_panel_controller.ts`) existed and worked before
+this change, built by `phraseModifierSegments()` re-scanning
+`wordRoles`/`words` for `DETERMINER`-role tokens, with no dedicated
+resolved field of its own to read instead. Verified directly against real
+seeded WordNet data: `determiners` stays *empty* far more often than
+`preModifiers`/`postModifiers` do, since WordNet lexicalizes almost none
+of the closed set of English determiners as a standalone sense ("the",
+"this", "my" have no Dictionary entry at all, hence no WordForm to
+reference) -- only the minority that double as a real WordNet lemma
+("few", "many", "all") ever populate it. `phraseModifierSegments()`
+itself, notably, does *not* read this new field either (the same
+"recomputes rather than trusts a stored reference" reasoning as
+`words`/`wordRoles` above) -- it still shows every Determiner token,
+resolved or not (`definitionWordSegment()`'s own `resolved: false`
+fallback), which the reference-only `determiners` field alone could never
+reproduce for a bare function word like "the". Verified end-to-end against
+real seeded WordNet data (Playwright): "toy poodle"'s own Pre-Modifiers
+row still shows "toy" with a working tooltip, and "in the meantime"'s own
+Determiners row still shows "the" as unresolved plain text exactly as
+before -- the by-reference `preModifiers`/`postModifiers`/`determiners`
+fields and the live-recomputing UI path coexist without conflict, each
+serving the purpose the other can't.

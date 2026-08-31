@@ -47,15 +47,18 @@
  * `preModifiers` narrows Phrase's own same-named field (data/phrase.ts's
  * own docstring on it) down to the exact constituent set
  * data/phrase_type_patterns_and_word_roles.md's own "Phrase Role
- * Allowed Types" table gives PrepositionalPhrase's own MODIFIER row:
- * `Adverb | AdverbPhrase`. Same real-population status as `headWord`
- * above, for the single-Word-constituent case only -- linkPhraseWords()'s
- * own docstring on why a sub-phrase/Clause modifier is left out rather
- * than guessed at.
+ * Allowed Types" table gives PrepositionalPhrase's own MODIFIER row: an
+ * `Adverb`-capable token's own WordForm reference, or an `AdverbPhrase`
+ * sub-constituent -- `headWord`'s own "an Identifier carries no type to
+ * narrow" reasoning, narrowing only the embedded-subtype half of the
+ * union. Same real-population status as `headWord` above, for the
+ * single-Word-constituent case only -- linkPhraseWords()'s own
+ * docstring on why a sub-phrase/Clause modifier is left out rather than
+ * guessed at, and on why a WordForm that fails to resolve is too.
  *
  * `postModifiers` narrows Phrase's own same-named field (data/phrase.ts's
- * own docstring on it) down to that exact same `Adverb | AdverbPhrase`
- * set -- PrepositionalPhrase's own structure ("Preposition + Noun
+ * own docstring on it) down to that exact same constituent set --
+ * PrepositionalPhrase's own structure ("Preposition + Noun
  * phrase/complement + (Modifiers)") in fact places its real Modifiers
  * after the Head, so this is the field linkPhraseWords() actually
  * populates in practice for a real PrepositionalPhrase, with
@@ -64,10 +67,10 @@
 
 import { PhraseType } from "./enums/phrase_type";
 import { createPhrase, type Phrase } from "./phrase";
-import type { Adverb } from "./entities/adverb";
+import type { Identifier } from "../../value_objects";
 import type { AdverbPhrase } from "./entities/adverb_phrase";
 
-type PrepositionalPhraseModifier = Adverb | AdverbPhrase;
+type PrepositionalPhraseModifier = Identifier | AdverbPhrase;
 
 export interface PrepositionalPhrase extends Phrase {
   phraseType: PhraseType.PREPOSITIONAL_PHRASE;

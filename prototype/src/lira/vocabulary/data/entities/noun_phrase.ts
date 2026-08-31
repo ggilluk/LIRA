@@ -62,12 +62,16 @@
  * `preModifiers` narrows Phrase's own same-named field (data/phrase.ts's
  * own docstring on it) down to the exact constituent set
  * data/phrase_type_patterns_and_word_roles.md's own "Phrase Role
- * Allowed Types" table gives NounPhrase's own MODIFIER row: `Adjective
- * | AdjectivePhrase | Noun | NounPhrase | AdverbPhrase |
- * PrepositionalPhrase | Clause`. Same real-population status as
- * `headWord` above, for the single-Word-constituent case only --
- * linkPhraseWords()'s own docstring on why a sub-phrase/Clause modifier
- * is left out rather than guessed at.
+ * Allowed Types" table gives NounPhrase's own MODIFIER row: an
+ * `Adjective | Noun`-capable token's own WordForm reference, or an
+ * `AdjectivePhrase | NounPhrase | AdverbPhrase | PrepositionalPhrase |
+ * Clause` sub-constituent -- the same "an Identifier carries no type of
+ * its own to narrow" reasoning `headWord` above already has, so this
+ * narrows the embedded-subtype half of the union only, never the
+ * `Identifier` half. Same real-population status as `headWord` above,
+ * for the single-Word-constituent case only -- linkPhraseWords()'s own
+ * docstring on why a sub-phrase/Clause modifier is left out rather than
+ * guessed at, and on why a WordForm that fails to resolve is too.
  *
  * `postModifiers` narrows Phrase's own same-named field (data/phrase.ts's
  * own docstring on it) down to that exact same constituent set --
@@ -77,14 +81,13 @@
 
 import { PhraseType } from "../enums/phrase_type";
 import { createPhrase, type Phrase } from "../phrase";
-import type { Noun } from "./noun";
-import type { Adjective } from "./adjective";
+import type { Identifier } from "../../../value_objects";
 import type { AdjectivePhrase } from "./adjective_phrase";
 import type { AdverbPhrase } from "./adverb_phrase";
 import type { PrepositionalPhrase } from "../prepositional_phrase";
 import type { Clause } from "../../../linguistics/data/clause";
 
-type NounPhraseModifier = Adjective | AdjectivePhrase | Noun | NounPhrase | AdverbPhrase | PrepositionalPhrase | Clause;
+type NounPhraseModifier = Identifier | AdjectivePhrase | NounPhrase | AdverbPhrase | PrepositionalPhrase | Clause;
 
 export interface NounPhrase extends Phrase {
   phraseType: PhraseType.NOUN_PHRASE;
