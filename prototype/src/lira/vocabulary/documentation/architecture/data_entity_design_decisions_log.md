@@ -1186,8 +1186,10 @@ Linguistic Unit, `Coordinates: LinguisticUnit [2..*]`'s own general
 shape, narrowed per specialisation the same way `left`/`right` already
 were.
 
-Still no consumers wired up -- this remains pure type scaffolding, the
-same status the original addition had. Closes
+Still no seeder wired up at this point -- the shape changed, but the
+type family stayed pure scaffolding, the same status the original
+addition had (`Coordinations`/`coordination_processor.ts` follow in the
+section below). Closes
 [ggilluk/LIRA#3](https://github.com/ggilluk/LIRA/issues/3).
 
 ### `Conjunction.conjunctionType`: coordinating vs. subordinating, now on the Word itself
@@ -1237,3 +1239,73 @@ Verified against real seeded data: "and"/"but"/"or"
 (`coordinating_conjunctions.json`) seed with `conjunctionType:
 COORDINATING`; "although"/"because" (`subordinating_conjunctions.json`)
 seed with `SUBORDINATING`.
+
+### `Coordinations`/`coordination_processor.ts`: a real store and processor, still no seeder
+
+`Coordination<T>` had a base-entity shape (`entryId`, `coordinates`,
+`coordinator`) but no store to hold instances of it and no processor to
+construct/copy them -- every other entity in `data/entities/` has both
+(`Senses`/`role/sense_processor.ts`, `WordForms`/`role/word_form_processor.ts`,
+`Phrases`/(`createPhrase` on `Phrase` itself), `Dictionary`/`role/word_processor.ts`),
+Coordination didn't.
+
+Added `role/coordination_processor.ts` (`createCoordination`,
+`copyCoordinationWithFreshUuid`, `graphUuid`) -- `sense_processor.ts`'s
+own exact shape and placement rationale (a top-level `role/` file, not
+`role/processor/`, since Coordination isn't a Word POS subtype either).
+`CoordinationInit<T>` requires `coordinates` (`Pick`), leaves
+`coordinator`/`entryId` optional (`Partial<Omit<...>>`) -- `PhraseInit`'s
+own identical split between what a caller must supply and what gets a
+sensible default (`entryId` auto-assigned via `identifier(newUuid())`,
+the fold every other entity's own constructor already performs).
+`createCoordination()` does not enforce the "two or more" invariant
+`Coordination.coordinates`'s own docstring documents -- consistent with
+that docstring's own explicit "not enforced at the type level" claim,
+which stays true rather than becoming stale the moment a real
+constructor exists.
+
+Added `data/coordinations.ts`'s `Coordinations<T extends LinguisticUnit>`
+-- `Senses`'s own shape (`all`/`findByUuid`/`append`/`totalEntries`/
+`seedFrom`), deliberately smaller: no text/lemma index (a Coordination
+carries no `text` of its own -- only its own `coordinates` do), no
+synsetId/partOfSpeech side index (no WordNet concept applies to a
+Coordination the way it does a seeded Word/Phrase sense). Holds every
+specialisation (`WordCoordination`, `NounCoordination`, ...) mixed
+together under one shared `Coordination<LinguisticUnit>`, Dictionary's
+own "store broadly, narrow on read" choice for Word's POS subtypes --
+structurally sound since `coordinates`/`coordinator`/`entryId` are all
+either `readonly` or themselves covariant, so a `Coordination<Noun>`
+(say) is assignable to `Coordination<LinguisticUnit>` with no cast
+needed. No `isXCoordination()` guard family exists yet to narrow back
+down on read -- not needed by anything today, the same reason
+Coordination itself still has no seeder or UI consumer.
+
+Wired `coordinations = new Coordinations<LinguisticUnit>()` onto
+`VocabularyContext`, one per Domain alongside `dictionary`/`phrases`/
+`senses`/`wordForms` -- `wordForms`'s own precedent
+(`data/entities/word_form.ts`'s docstring: added to every Domain well
+before every POS wrote to it) for giving an entity a real per-Domain
+home ahead of the seeder that will eventually populate it, rather than
+only adding the field once that seeder exists. Deliberately NOT copied
+into the Physics domain snapshot inside `vocabulary_worker.ts`
+(`physicsDomain.vocabulary.dictionary.seedFrom(...)`/`.phrases.seedFrom(...)`)
+-- that snapshot already leaves `senses`/`wordForms` uncopied too, so
+`coordinations` simply joins the stores that snapshot has never
+covered, not a new omission of its own.
+
+Still no seeder populates a real `Coordinations` store with a real
+seeded `Coordination` -- detecting coordinate structure in real
+Common Vocabulary Cache or WordNet data (or real Linguistics Layer
+text) is a separate, much larger undertaking than giving the type
+family a store and processor, and out of scope here. Verified via
+direct construction instead (`vocabulary.test.ts`'s own new
+`describe("Coordinations", ...)` block): `createCoordination()`/
+`copyCoordinationWithFreshUuid()`/`graphUuid()` against a synthetic
+`Coordination<Adjective>`, the `Coordinations` store's own CRUD/seedFrom
+round-trip, and one test tying `coordinator`/`ConjunctionType` together
+end-to-end -- "red, white, and blue" as a single three-element
+`coordinates` array (`red`/`white`/`blue`, three real `Adjective`
+Words) with `coordinator` resolving, via a real `WordForms` store, to
+"and"'s own base-lemma `WordForm`, whose owning Word is a Conjunction
+with `conjunctionType: ConjunctionType.COORDINATING` -- exactly the
+shape `Coordination.coordinator`'s own docstring describes.

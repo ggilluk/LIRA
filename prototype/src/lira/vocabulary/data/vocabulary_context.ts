@@ -4,6 +4,8 @@ import { DictionaryProcessor } from "../role/dictionary_processor";
 import { LexicalRelationshipProcessor } from "../role/lexical_relationship_processor";
 import { MorphologicalPointerRelationshipProcessor } from "../role/morphological_pointer_relationship_processor";
 import { SemanticRelationshipProcessor } from "../role/semantic_relationship_processor";
+import type { LinguisticUnit } from "../../linguistics/data/linguistic_unit";
+import { Coordinations } from "./coordinations";
 import { Dictionary } from "./dictionary";
 import { LexicalRelationshipStore } from "./lexical_relationship_store";
 import { LexicalRelationshipSystemPropertyTensor } from "./lexical_relationship_tensor";
@@ -24,6 +26,14 @@ import { WordForms } from "./word_forms";
  * `wordForms` holds one specific inflected spelling's own addressable
  * identity and Senses, AUXILIARY-only today (data/entities/word_form.ts's own
  * docstring on why only that one POS subtype has adopted it so far).
+ * `coordinations` holds every seeded Coordination (data/entities/coordination.ts),
+ * mixed together under one shared `Coordination<LinguisticUnit>` --
+ * Coordinations's own docstring (data/coordinations.ts) on why one
+ * store covers every specialisation. Still no seeder populates it
+ * today (Coordination's own "pure type scaffolding" status,
+ * data_entity_design_decisions_log.md's own "## Coordination" section)
+ * -- given a real per-Domain home the same way `wordForms` was, ahead
+ * of the seeding pass that will eventually write to it.
  *
  * `morphologicalPointerRelationships`/`morphologicalPointerRelationshipProcessor`/
  * `morphologicalPointerRelationshipTensor` are seeding-internal working state now,
@@ -51,6 +61,7 @@ export class VocabularyContext {
   phrases = new Phrases();
   senses = new Senses();
   wordForms = new WordForms();
+  coordinations = new Coordinations<LinguisticUnit>();
   hydrator: AsyncDictionaryHydrator;
   dictionaryProcessor: DictionaryProcessor;
 

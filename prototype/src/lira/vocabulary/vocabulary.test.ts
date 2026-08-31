@@ -19,8 +19,10 @@ import { createAdjective, determineGradability, generateAdjectiveForms, isAdject
 import type { Adjective } from "./data/entities/adjective";
 import { createAdverb, determineGradability as determineAdverbGradability, generateAdverbForms, isAdverb, validateAdverb } from "./role/processor/adverb_processor";
 import type { Adverb } from "./data/entities/adverb";
-import { isConjunction } from "./role/processor/conjunction_processor";
+import { createConjunction, isConjunction } from "./role/processor/conjunction_processor";
 import type { Conjunction } from "./data/entities/conjunction";
+import { Coordinations } from "./data/coordinations";
+import { createCoordination, copyCoordinationWithFreshUuid, graphUuid as coordinationGraphUuid } from "./role/coordination_processor";
 import { createDeterminer, isDeterminer, validateDeterminer } from "./role/processor/determiner_processor";
 import { HypernymRootWord } from "./data/enums/hypernym_root_word";
 import { isInterjection } from "./role/processor/interjection_processor";
@@ -941,6 +943,94 @@ describe("Dictionary", () => {
     // A later, shorter multi-word entry never lowers the limit back down.
     dictionary.append(createWord({ text: "each other", partOfSpeech: PartOfSpeech.PRONOUN }));
     expect(dictionary.phraseSpanLimit).toBe(3);
+  });
+});
+
+describe("Coordinations", () => {
+  it("createCoordination/graphUuid/copyCoordinationWithFreshUuid mirror Word's/Sense's own entryId fold", () => {
+    const red = createAdjective({ text: "red" });
+    const white = createAdjective({ text: "white" });
+    const coordination = createCoordination<Adjective>({ coordinates: [red, white] });
+
+    // entryId auto-assigned (identifier()'s own default), the same
+    // fold createWord()/createSense() already give every other entity.
+    expect(coordination.entryId.uuid).toBeDefined();
+    expect(coordination.coordinates).toEqual([red, white]);
+    expect(coordination.coordinator).toBeUndefined();
+
+    const copy = copyCoordinationWithFreshUuid(coordination);
+    expect(coordinationGraphUuid(copy)).not.toBe(coordinationGraphUuid(coordination));
+    expect(copy.entryId.value).toBe(coordination.entryId.value);
+    // A shallow copy -- coordinates is the same array reference, not a
+    // deep clone, Word/Sense's own identical copy semantics.
+    expect(copy.coordinates).toBe(coordination.coordinates);
+  });
+
+  it("append/findByUuid/all/totalEntries store and retrieve a Coordination", () => {
+    const coordinations = new Coordinations<Adjective>();
+    expect(coordinations.totalEntries()).toBe(0);
+
+    const red = createAdjective({ text: "red" });
+    const white = createAdjective({ text: "white" });
+    const coordination = createCoordination<Adjective>({ coordinates: [red, white] });
+    coordinations.append(coordination);
+
+    expect(coordinations.totalEntries()).toBe(1);
+    expect(coordinations.all()).toEqual([coordination]);
+    expect(coordinations.findByUuid(coordinationGraphUuid(coordination))).toBe(coordination);
+    expect(coordinations.findByUuid("no-such-uuid")).toBeUndefined();
+  });
+
+  it("seedFrom copies every Coordination with a fresh uuid but the same entryId", () => {
+    const source = new Coordinations<Adjective>();
+    const red = createAdjective({ text: "red" });
+    const white = createAdjective({ text: "white" });
+    const coordination = createCoordination<Adjective>({ coordinates: [red, white] });
+    source.append(coordination);
+
+    const target = new Coordinations<Adjective>();
+    target.seedFrom(source);
+
+    const copied = target.all()[0];
+    expect(coordinationGraphUuid(copied)).not.toBe(coordinationGraphUuid(coordination));
+    expect(copied.entryId.value).toBe(coordination.entryId.value);
+    // The source store itself is untouched.
+    expect(source.totalEntries()).toBe(1);
+    expect(source.all()[0]).toBe(coordination);
+  });
+
+  it("coordinator resolves to a WordForm whose own Word is a COORDINATING Conjunction -- \"red, white, and blue\"", () => {
+    const wordForms = new WordForms();
+    const red = createAdjective({ text: "red" });
+    const white = createAdjective({ text: "white" });
+    const blue = createAdjective({ text: "blue" });
+    const and = createConjunction({ text: "and", conjunctionType: ConjunctionType.COORDINATING });
+    const andForm = wordForms.registerBaseLemmaForm(and);
+
+    // One flat three-element `coordinates` array, not a nested binary
+    // tree -- this codebase's own fix for
+    // https://github.com/ggilluk/LIRA/issues/3 (an asyndetic list join
+    // has no real Conjunction Word to embed, so the old left/
+    // conjunction/right shape couldn't represent this at all).
+    const coordination = createCoordination<Adjective>({
+      coordinates: [red, white, blue],
+      coordinator: { value: andForm.entryId.uuid! },
+    });
+
+    expect(coordination.coordinates).toHaveLength(3);
+    // coordinator resolves via WordForms.findByUuid(), Phrase.headWordForm's
+    // own identical by-reference pattern -- not an embedded copy.
+    const resolvedForm = wordForms.findByUuid(coordination.coordinator!.value);
+    expect(resolvedForm?.text.value).toBe("and");
+    // The resolved WordForm's own owning Word (`and`, already in hand
+    // here -- WordForm carries no back-reference of its own to resolve
+    // this from cold, the same one-directional Word -> WordForm
+    // reference `word.wordFormIds` already is) is a COORDINATING
+    // Conjunction -- ConjunctionType.COORDINATING is exactly what
+    // Coordination.coordinator's own docstring requires of it.
+    expect(and.partOfSpeech).toBe(PartOfSpeech.CONJUNCTION);
+    if (!isConjunction(and)) throw new Error("unreachable");
+    expect(and.conjunctionType).toBe(ConjunctionType.COORDINATING);
   });
 });
 
