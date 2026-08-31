@@ -20,6 +20,7 @@ import { CLIENT_SHELL_HTML } from "./client_shell_html";
 import { CLIENT_RENDER_HELPER_HTML } from "./client_render_helper_html";
 import { CLIENT_WORDS_TAB_VIEW } from "./client_words_tab_view";
 import { CLIENT_PHRASES_TAB_VIEW } from "./client_phrases_tab_view";
+import { CLIENT_COORDINATIONS_TAB_VIEW } from "./client_coordinations_tab_view";
 import { CLIENT_SENSES_TAB_VIEW } from "./client_senses_tab_view";
 import { CLIENT_WORDS_TAB_OVERCAPACITY } from "./client_words_tab_overcapacity";
 import { CLIENT_SENSES_SECTION_HTML } from "./client_senses_section_html";
@@ -49,6 +50,7 @@ ${CLIENT_SHELL_HTML}
 ${CLIENT_RENDER_HELPER_HTML}
 ${CLIENT_WORDS_TAB_VIEW}
 ${CLIENT_PHRASES_TAB_VIEW}
+${CLIENT_COORDINATIONS_TAB_VIEW}
 ${CLIENT_SENSES_TAB_VIEW}
 ${CLIENT_WORDS_TAB_OVERCAPACITY}
 ${CLIENT_SENSES_SECTION_HTML}

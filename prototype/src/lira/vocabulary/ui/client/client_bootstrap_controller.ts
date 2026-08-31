@@ -16,6 +16,7 @@ export const CLIENT_BOOTSTRAP_CONTROLLER = `function renderUnresolved() {
 function renderAll() {
   renderWords();
   renderPhrases();
+  renderCoordinations();
   renderSenses();
   renderRels();
   renderDetailPanel("words");
@@ -33,12 +34,14 @@ function selectTab(tab) {
   state.tab = tab;
   document.getElementById("tab-words").setAttribute("aria-selected", tab === "words");
   document.getElementById("tab-phrases").setAttribute("aria-selected", tab === "phrases");
+  document.getElementById("tab-coordinations").setAttribute("aria-selected", tab === "coordinations");
   document.getElementById("tab-senses").setAttribute("aria-selected", tab === "senses");
   document.getElementById("tab-rels").setAttribute("aria-selected", tab === "rels");
   document.getElementById("tab-hierarchy").setAttribute("aria-selected", tab === "hierarchy");
   document.getElementById("tab-cyclic").setAttribute("aria-selected", tab === "cyclic");
   document.getElementById("panel-words").classList.toggle("active", tab === "words");
   document.getElementById("panel-phrases").classList.toggle("active", tab === "phrases");
+  document.getElementById("panel-coordinations").classList.toggle("active", tab === "coordinations");
   document.getElementById("panel-senses").classList.toggle("active", tab === "senses");
   document.getElementById("panel-rels").classList.toggle("active", tab === "rels");
   document.getElementById("panel-hierarchy").classList.toggle("active", tab === "hierarchy");
@@ -47,6 +50,7 @@ function selectTab(tab) {
 
 document.getElementById("tab-words").addEventListener("click", () => { selectTab("words"); });
 document.getElementById("tab-phrases").addEventListener("click", () => { selectTab("phrases"); });
+document.getElementById("tab-coordinations").addEventListener("click", () => { selectTab("coordinations"); });
 document.getElementById("tab-senses").addEventListener("click", () => { selectTab("senses"); });
 document.getElementById("tab-rels").addEventListener("click", () => { selectTab("rels"); });
 document.getElementById("tab-hierarchy").addEventListener("click", () => { selectTab("hierarchy"); });
@@ -90,6 +94,7 @@ document.getElementById("pos-filter").addEventListener("change", (e) => {
   state.pos = e.target.value;
   renderWords();
   renderPhrases();
+  renderCoordinations();
   renderSenses();
 });
 

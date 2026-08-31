@@ -5,6 +5,7 @@
  * physically sit right alongside them in the original script. */
 export const CLIENT_RENDER_HELPER_HTML = `const WORDS = @@WORDS_JSON@@;
 const PHRASES = @@PHRASES_JSON@@;
+const COORDINATIONS = @@COORDINATIONS_JSON@@;
 const SENSES = @@SENSES_JSON@@;
 const RELS = @@RELS_JSON@@;
 const LEXICAL_RELS = @@LEXICAL_RELS_JSON@@;

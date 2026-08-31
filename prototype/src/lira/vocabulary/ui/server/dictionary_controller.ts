@@ -40,10 +40,13 @@ import { PartOfSpeech } from "../../data/enums/part_of_speech";
 import type { Dictionary } from "../../data/dictionary";
 import type { LexicalRelationshipStore } from "../../data/lexical_relationship_store";
 import type { SemanticRelationshipStore } from "../../data/semantic_relationship_store";
+import type { LinguisticUnit } from "../../../linguistics/data/linguistic_unit";
+import { Coordinations } from "../../data/coordinations";
 import { Phrases } from "../../data/phrases";
 import { Senses } from "../../data/senses";
 import { WordForms } from "../../data/word_forms";
 import { PAGE_TEMPLATE } from "../client/page_template";
+import { coordinationRecords } from "./builder_coordination";
 import { phraseRecords, searchPhrases, type PhraseRecord } from "./builder_phrase";
 import { senseRecords, searchSenses, type SenseRecord } from "./builder_sense";
 import { relationshipKindCounts, relationshipRecords, searchRelationships, type RelationshipKindCount, type RelationshipRecord } from "./builder_relationship";
@@ -87,6 +90,12 @@ export interface DictionaryViewOptions {
   // every existing caller keeps working with an empty "Sense.Lexical.Relationships"
   // section, the same graceful-degradation `senses` already gets.
   lexicalRelationships?: LexicalRelationshipStore;
+  // Coordination's own store (data/coordinations.ts) -- undefined/
+  // omitted means an empty Coordinations tab, every existing caller
+  // that predates Coordination (data_entity_design_decisions_log.md's
+  // own "## Coordination" section) keeps working unchanged, Phrase's
+  // own identical default-empty-store convention above.
+  coordinations?: Coordinations<LinguisticUnit>;
 }
 
 // A hard ceiling on how many Words this view will build full,
@@ -171,6 +180,7 @@ export class DictionaryView {
   private readonly senses: Senses;
   private readonly wordForms: WordForms;
   private readonly lexicalRelationships: LexicalRelationshipStore | undefined;
+  private readonly coordinations: Coordinations<LinguisticUnit>;
 
   constructor(
     private readonly dictionary: Dictionary,
@@ -184,6 +194,7 @@ export class DictionaryView {
     this.senses = options.senses ?? new Senses();
     this.wordForms = options.wordForms ?? new WordForms();
     this.lexicalRelationships = options.lexicalRelationships;
+    this.coordinations = options.coordinations ?? new Coordinations<LinguisticUnit>();
   }
 
   /** The moment render() is actually called, not construction time --
@@ -239,6 +250,10 @@ export class DictionaryView {
         : lexicalRelationshipRecords(this.lexicalRelationships, this.wordForms, this.dictionary, this.phrases, this.senses, this.domainName);
     const phrases = overCapacityPhrases ? [] : phraseRecords(this.phrases, this.senses, this.wordForms);
     const senses = overCapacitySenses ? [] : senseRecords(this.senses, this.phrases, this.domainName);
+    // No capacity gate -- coordinationRecords()'s own docstring on why
+    // (a small, closed, hand-curated set today, nowhere near WordNet
+    // scale).
+    const coordinations = coordinationRecords(this.coordinations, this.dictionary, this.wordForms);
     const commonCount = allWords.filter((w) => w.isCommon).length;
     const posCounts = new Set(allWords.map((w) => w.partOfSpeech));
     // The Words tab's own pos-filter/domain-filter <select> options --
@@ -274,6 +289,7 @@ export class DictionaryView {
       WORDS_JSON: JSON.stringify(words),
       PHRASES_JSON: JSON.stringify(phrases),
       SENSES_JSON: JSON.stringify(senses),
+      COORDINATIONS_JSON: JSON.stringify(coordinations),
       RELS_JSON: JSON.stringify(rels),
       LEXICAL_RELS_JSON: JSON.stringify(lexicalRels),
       POS_VALUES_JSON: JSON.stringify(posValues),

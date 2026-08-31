@@ -24,6 +24,7 @@ import type { Conjunction } from "./data/entities/conjunction";
 import { Coordinations } from "./data/coordinations";
 import { createCoordination, copyCoordinationWithFreshUuid, graphUuid as coordinationGraphUuid } from "./role/coordination_processor";
 import { WordCoordinationSeeder } from "./role/word_coordination_seeder";
+import { coordinationRecords } from "./ui/server/builder_coordination";
 import type { LinguisticUnit } from "../linguistics/data/linguistic_unit";
 import { createDeterminer, isDeterminer, validateDeterminer } from "./role/processor/determiner_processor";
 import { HypernymRootWord } from "./data/enums/hypernym_root_word";
@@ -3066,6 +3067,59 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // Domain creates nothing new.
     expect(new WordCoordinationSeeder("en").seed(domain)).toBe(0);
     expect(coordinations.totalEntries()).toBe(8);
+  }, 60000);
+
+  it("coordinationRecords() builds the Coordinations tab's own client-facing records against real seeded WordCoordinations", async () => {
+    const dictionary = new Dictionary();
+    const phraseBook = new Phrases();
+    const senseStore = new Senses();
+    const wordForms = new WordForms();
+    const coordinations = new Coordinations<LinguisticUnit>();
+    const morphologicalPointerRelationships = new MorphologicalPointerRelationshipStore();
+    const semanticRelationships = new SemanticRelationshipStore();
+    const morphologicalPointerRelationshipProcessor = new MorphologicalPointerRelationshipProcessor(
+      morphologicalPointerRelationships,
+      new MorphologicalPointerRelationshipSystemPropertyTensor(),
+    );
+    const semanticRelationshipProcessor = new SemanticRelationshipProcessor(
+      semanticRelationships,
+      new SemanticRelationshipSystemPropertyTensor(),
+    );
+    const domain = {
+      vocabulary: {
+        dictionary,
+        phrases: phraseBook,
+        senses: senseStore,
+        wordForms,
+        coordinations,
+        morphologicalPointerRelationships,
+        morphologicalPointerRelationshipProcessor,
+        semanticRelationships,
+        semanticRelationshipProcessor,
+      },
+    };
+    new WordSeeder("en").seedClosedClassWords(dictionary, phraseBook, { excludeOpenClasses: true }, senseStore, wordForms);
+    await new WordSeeder("en").seedWordNet(domain);
+    new WordCoordinationSeeder("en").seed(domain);
+
+    const records = coordinationRecords(coordinations, dictionary, wordForms);
+    expect(records).toHaveLength(8);
+    // Sorted by the joined coordinates text -- "back and forth" sorts
+    // before "salt and pepper" alphabetically.
+    const backAndForth = records.find((r) => r.coordinates[0] === "back")!;
+    expect(backAndForth.coordinates).toEqual(["back", "forth"]);
+    expect(backAndForth.pos).toBe("ADVERB");
+    // coordinator resolves all the way through WordForms back to the
+    // real Conjunction Word's own text -- coordinatorTextFor()'s own
+    // docstring on why this can't just read WordForm.text directly
+    // (spelling coincidentally matches here, but the resolution still
+    // goes through the real Word, not assumed from the form alone).
+    expect(backAndForth.coordinator).toBe("and");
+
+    const saltAndPepper = records.find((r) => r.coordinates[0] === "salt")!;
+    expect(saltAndPepper.coordinates).toEqual(["salt", "pepper"]);
+    expect(saltAndPepper.pos).toBe("NOUN");
+    expect(saltAndPepper.coordinator).toBe("and");
   }, 60000);
 });
 

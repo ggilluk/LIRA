@@ -30,6 +30,7 @@ export const CLIENT_SHELL_HTML = `<body>
     <div class="tabs" role="tablist">
       <button id="tab-words" role="tab" aria-selected="true">Words</button>
       <button id="tab-phrases" role="tab" aria-selected="false">Phrases</button>
+      <button id="tab-coordinations" role="tab" aria-selected="false">Coordinations</button>
       <button id="tab-senses" role="tab" aria-selected="false">Senses</button>
       <button id="tab-rels" role="tab" aria-selected="false">Relationships</button>
       <button id="tab-hierarchy" role="tab" aria-selected="false">Hierarchy</button>
@@ -90,6 +91,23 @@ export const CLIENT_SHELL_HTML = `<body>
         </table>
         <div class="empty-state" id="phrases-empty" style="display:none">@@PHRASES_EMPTY_MESSAGE@@</div>
       </div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-coordinations">
+    <div class="table-wrap">
+      <div class="cyclic-note" id="coordinations-note"></div>
+      <table>
+        <thead>
+          <tr>
+            <th>Coordinates</th>
+            <th>Part of speech</th>
+            <th>Coordinator</th>
+          </tr>
+        </thead>
+        <tbody id="coordinations-body"></tbody>
+      </table>
+      <div class="empty-state" id="coordinations-empty" style="display:none">No coordinations match this search.</div>
     </div>
   </section>
 

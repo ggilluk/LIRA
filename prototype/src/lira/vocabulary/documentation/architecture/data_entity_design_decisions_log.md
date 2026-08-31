@@ -1391,3 +1391,65 @@ two real `NOUN` Words plus a `coordinator` naming "and"'s own real
 base-lemma `WordForm`, "back and forth" resolving the identical shape
 with `ADVERB` instead, and a second `seed()` call against the same
 Domain creating nothing new.
+
+### A Coordinations tab, between Phrases and Senses
+
+`WordCoordinationSeeder` gave a Domain real, seeded `WordCoordination`s
+-- still invisible in the UI, though: the Words/Phrases/Senses/
+Relationships/Hierarchy/Cyclic tab row had nothing that read them.
+Added a new "Coordinations" tab, positioned between Phrases and Senses
+(the user's own requested placement) -- both, like Coordination, aren't
+Word-headed the way Words itself is.
+
+`ui/server/builder_coordination.ts`'s new `CoordinationRecord`/
+`coordinationRecordFor()`/`coordinationRecords()` are `builder_phrase.ts`'s
+own `PhraseRecord`/`phraseRecordFor()`/`phraseRecords()` counterpart,
+deliberately leaner: a Coordination carries no relationships, sense, or
+definition of its own to build a detail panel around (it only
+references Words some other seeding pass already created), so the new
+tab is a plain searchable list with no `aside` detail panel at all --
+`panel-rels`'s own simpler shape, not `panel-phrases`/`panel-senses`'s.
+`coordinatorTextFor()` resolves `Coordination.coordinator` (a WordForm
+reference) all the way back to the real Conjunction Word that owns it
+-- WordForm carries no back-reference of its own for this
+(`word_coordination_seeder.ts`'s own identical resolution at seed time,
+reused here for display rather than re-derived by hand). No capacity
+gate the way `phraseRecords()`/`senseRecords()` need -- Coordination is
+seeded from a small, closed, hand-curated set today, nowhere near
+WordNet scale, so `coordinationRecords()` always embeds the full list
+directly; `DictionaryView.render()`'s own `COORDINATIONS_JSON`
+substitution has no `overCapacity`-gated `[]` branch to match.
+
+Client-side (`ui/client/client_coordinations_tab_view.ts`, new) mirrors
+that same simplicity -- no over-capacity search dispatch/debounce
+(`client_phrases_tab_view.ts`'s own `renderPhrasesOverCapacity()` has
+nothing here to parallel), just a plain client-side filter against
+`state.search.word`/`state.pos`, the shared state every other tab
+already reads. `coordinatesText()` renders "salt and pepper" (two
+coordinates) or "red, white, and blue" (three or more, Oxford-comma
+style) from the flat `coordinates` array -- `Coordination.coordinates`'s
+own docstring on why a flat array reads this way directly, with no
+binary-tree reconstruction needed to get there.
+
+Wired into every layer `Phrases`/`Senses`/`WordForms` already reach:
+`DictionaryViewOptions.coordinations` (new, optional, empty-store
+default -- `phrases`'s own identical convention), `client_shell_html.ts`'s
+tab button + panel markup (between `tab-phrases`/`panel-phrases` and
+`tab-senses`/`panel-senses`), `client_render_helper_html.ts`'s
+`COORDINATIONS` data binding, `client_bootstrap_controller.ts`'s
+`selectTab()`/`renderAll()`/click-listener/`pos-filter`-change wiring,
+and all seven of `vocabulary_worker.ts`'s own `new DictionaryView(...)`
+call sites (`domain.vocabulary.coordinations` alongside the
+`phrases`/`senses`/`wordForms` those already pass) -- every one gets it
+for consistency, even the five that never call `.render()`/
+`.renderFragment()` at all (`searchPhrases`/`searchSenses`/
+`searchRelationships`/`searchLexicalRelationships`/`resolveHierarchy`'s
+own handlers), the same "pass every store, whether or not this one
+endpoint needs it" convention `phrases`/`senses`/`wordForms` already
+follow there.
+
+Verified against real seeded data (Playwright, the real app): the
+Coordinations tab renders between Phrases and Senses exactly as
+positioned, showing all 8 real seeded coordinations ("back and forth"
+tagged Adverb, "salt and pepper" tagged Noun, ...) with their own real
+coordinator ("and"), no console errors.
