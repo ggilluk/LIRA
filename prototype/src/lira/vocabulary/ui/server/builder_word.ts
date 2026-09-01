@@ -19,7 +19,7 @@ import type { Word } from "../../data/entities/word";
 import type { WordForms } from "../../data/word_forms";
 import { graphUuid as wordGraphUuid } from "../../role/word_processor";
 import { graphUuid as senseGraphUuid } from "../../role/sense_processor";
-import { phraseHeadWordSegment, phraseModifierSegments, phraseTypeLabel, phraseWordSegments } from "./builder_phrase";
+import { phraseComplementSegments, phraseHeadWordSegment, phraseModifierSegments, phraseTypeLabel, phraseWordSegments, type PhraseComplementSegment } from "./builder_phrase";
 import { definitionSegments, formFieldLabel, type DefinitionSegment } from "./builder_segment";
 import { domainLabel, isRootWordFor, senseFieldsFor } from "./resolver_domain";
 
@@ -143,6 +143,15 @@ export interface WordRecord {
   // split), same phraseModifierSegments()-recomputed shape and same
   // presence rule as those two.
   determiners?: DefinitionSegment[];
+  // phrase.complements's own client-facing shape (data/entities/phrase.ts's
+  // own docstring on it, PhraseComplementSegment's own docstring,
+  // builder_phrase.ts) -- unlike pre_modifiers/post_modifiers/determiners
+  // above, read directly off the stored Phrase rather than recomputed,
+  // since a Complement is never a bare WordForm reference to begin
+  // with. Present only when this record was resolved from a Phrase;
+  // empty for an ordinary Word and for a Phrase with no Complement span
+  // at all (the overwhelmingly common case).
+  complements?: PhraseComplementSegment[];
   // Every real WordForm record `WordForms` holds for this Word
   // (`wordForms.formsOf(word)`, wordFormsFor()'s own docstring on how
   // this is built), in registration order -- always includes
@@ -528,6 +537,7 @@ export function searchWords(
             pre_modifiers: modifiers.pre,
             post_modifiers: modifiers.post,
             determiners: modifiers.determiners,
+            complements: phraseComplementSegments(phrase),
           },
         ],
         totalMatches: 1,
@@ -559,6 +569,7 @@ export function searchWords(
               pre_modifiers: modifiers.pre,
               post_modifiers: modifiers.post,
               determiners: modifiers.determiners,
+              complements: phraseComplementSegments(representative),
             },
           ],
           totalMatches: 1,

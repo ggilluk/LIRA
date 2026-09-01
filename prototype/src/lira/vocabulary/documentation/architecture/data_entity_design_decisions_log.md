@@ -1758,3 +1758,69 @@ Client-side surfacing of `complements` in the Vocabulary UI's detail
 panel is out of scope here -- `builder_phrase.ts` reads none of it yet,
 matching how `preModifiers`/`postModifiers` themselves were implemented
 as a data-layer change before any UI surfaced them.
+
+### Follow-up: a Complement Phrase registered into the Phrases store, not just embedded
+
+Reported after the fix above shipped: "of a nuisance" didn't show up in
+the Phrases tab at all -- correct given how it was built (a real nested
+`Phrase` object, but only ever reachable by walking into its parent's
+own `complements` array, never `phraseBook.append()`ed, `toSyntheticWord()`'s
+own "never inserted into any Dictionary" precedent). Asked directly
+whether a Complement should become its own independently-listed,
+independently-searchable Phrases-tab entry, or stay a detail-panel-only
+structural fact -- the answer was both.
+
+**Registration** (`role/processor/phrase_processor.ts`): `linkPhraseWords()`/
+`buildComplementPhrase()` both take a new optional `phrases: Phrases`
+parameter -- the same optional-store convention `wordForms` already
+has. When supplied, `registerComplementPhrase()` finds-or-creates the
+Complement directly *in* that store (`Phrases.append()`, tagged with a
+new synthetic `partOfSpeech`: NOUN for a NounPhrase complement, matching
+`classifyPhraseType()`'s own NOUN -> NOUN_PHRASE default; PREPOSITION
+for a PrepositionalPhrase one -- genuinely used for once, since no real
+WordNet-tagged Phrase is ever PREPOSITION-tagged). Dedup key: (`text`,
+`phraseType`, that synthetic `partOfSpeech`) -- the identical (text, tag)
+shape `word_seeder.ts`'s own WordNet Phrase append site already uses.
+
+This dedup is what keeps the whole feature idempotent, and it had to
+be: `linkPhraseWords()` already runs more than once over the same real
+Phrase within a single `seedWordNet()` call (the closed-class-then-
+WordNet re-link pass, this log's own earlier section on it) and again
+on every repeat `seedWordNet()` call -- without reuse, each of those
+would have appended its own fresh duplicate "of a nuisance" every
+single time. `word_seeder.ts`'s own two real `linkPhraseWords()` call
+sites now both pass `phraseBook` through. Verified directly
+(`vocabulary.test.ts`): the "seeds every synset member... stays
+idempotent" test's own `dictionary.totalEntries() + phraseBook.totalEntries()`
+invariant relaxed from exact equality with `wordsSeeded` (no longer
+true -- a Complement Phrase is a real new entry `wordsSeeded` never
+counts, since it isn't itself a synset member) to `toBeGreaterThanOrEqual`,
+plus a new, stronger check that a *second* `seedWordNet()` call leaves
+that total completely unchanged -- the real idempotency proof, not just
+"doesn't crash twice."
+
+**Client surfacing** (`ui/server/builder_phrase.ts`/`builder_word.ts`,
+`ui/client/client_detail_panel_controller.ts`): a new
+`PhraseComplementSegment` (`{ id, text, phrase_type }`) is deliberately
+not shaped like `DefinitionSegment` -- a Complement is a real,
+independently-registered Phrase now, not a single Word/WordForm
+reference, so `phraseComplementSegments()` reads `phrase.complements`
+directly rather than recomputing from `text` the way
+`phraseModifierSegments()` does. Wired into `WordRecord.complements`
+(both `searchWords({ wordId })` branches -- the direct Phrase lookup and
+the Sense-representative fallback) and rendered as a "Complement:" row
+using the existing `<button class="link-btn" data-pivot-id="...">`
+cross-reference pattern (`wireDetailPivotButtons()` already wires every
+one on every render) rather than `definitionSegmentHTML()`'s plain
+hover-only span, since this genuinely needs to navigate, not just show
+a tooltip.
+
+Verified end-to-end (live Playwright, the real running app): searching
+"of a nuisance" in the Phrases tab now finds it as its own row --
+`Preposition · Prepositional Phrase`, no definition (a synthetic entry
+has none) -- alongside "abatement of a nuisance" itself. Opening
+"abatement of a nuisance"'s own detail panel shows a "Complement: **of a
+nuisance** [Prepositional Phrase]" row; clicking it navigates to "of a
+nuisance"'s own detail panel, correctly breaking its own headword down
+into "of"/"a"/"nuisance" via the ordinary `phrase_word_segments`
+rendering every other Phrase already gets.

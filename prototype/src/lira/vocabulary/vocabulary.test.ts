@@ -1781,7 +1781,16 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // wordsSeeded counts Words and multi-word Phrases together
     // (word_seeder.ts's own seedWordNet docstring on isMultiWordLemma) --
     // same combined-count convention seedClosedClassWords already uses.
-    expect(dictionary.totalEntries() + phraseBook.totalEntries()).toBe(first.wordsSeeded);
+    // No longer exact equality: the re-link pass below also registers a
+    // real, independently-listed Phrase for every genuine NounPhrase/
+    // AdjectivePhrase/PrepositionalPhrase Complement span it finds
+    // (registerComplementPhrase(), role/processor/phrase_processor.ts,
+    // Coordination/Phrase's own design log -- the "abatement of a
+    // nuisance" fix) -- each one a real new phraseBook entry that
+    // `wordsSeeded` never counted, since it isn't itself a synset
+    // member.
+    const totalAfterFirst = dictionary.totalEntries() + phraseBook.totalEntries();
+    expect(totalAfterFirst).toBeGreaterThanOrEqual(first.wordsSeeded);
     expect(phraseBook.totalEntries()).toBeGreaterThan(0);
     expect(morphologicalPointerRelationships.totalRelationships()).toBe(first.relationshipsSeeded);
     // One Sense per synset (Sense's own docstring) -- close to, but not
@@ -2151,7 +2160,14 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     expect(second.wordsSeeded).toBe(0);
     expect(second.sensesSeeded).toBe(0);
     expect(second.relationshipsSeeded).toBe(0);
-    expect(dictionary.totalEntries() + phraseBook.totalEntries()).toBe(first.wordsSeeded);
+    // The real idempotency proof for Complement registration:
+    // registerComplementPhrase()'s own (text, phraseType, partOfSpeech)
+    // dedup means the closed-class-then-WordNet re-link pass this
+    // second seedWordNet() call also runs finds every Complement Phrase
+    // it needs already present and reuses it, rather than appending a
+    // second "of a nuisance" -- the store's own total stays exactly what
+    // it was after the first call, not just non-decreasing.
+    expect(dictionary.totalEntries() + phraseBook.totalEntries()).toBe(totalAfterFirst);
     expect(senseStore.totalEntries()).toBe(first.sensesSeeded);
     expect(infusionSense?.domainTag?.value).toBe("medicine");
     expect(new Set([wingerSense!.domainTag!.value, ...wingerSense!.relatedDomainTags.map((tag) => tag.value)])).toEqual(
@@ -2686,6 +2702,18 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // Nothing left to nest any further -- "nuisance" alone opens no
     // trailing Preposition span of its own.
     expect(aNuisance.complements).toEqual([]);
+
+    // Both nested Complements are genuinely registered into phraseBook
+    // itself, not just reachable by walking `complements` -- the
+    // follow-up fix: "of a nuisance"/"a nuisance" are now their own
+    // real, independently-listed, independently-searchable Phrases tab
+    // rows, the identical object `registerComplementPhrase()`
+    // (role/processor/phrase_processor.ts) found-or-created, not a
+    // second, separate copy.
+    expect(phraseBook.lookupAll("of a nuisance")).toContain(ofANuisance);
+    expect(phraseBook.partOfSpeechOf(ofANuisance)).toBe(PartOfSpeech.PREPOSITION);
+    expect(phraseBook.lookupAll("a nuisance")).toContain(aNuisance);
+    expect(phraseBook.partOfSpeechOf(aNuisance)).toBe(PartOfSpeech.NOUN);
   }, 60000);
 
   it("seeds a Noun/Verb/Adjective/Adverb subtype per Word, populating per-sense frames/syntacticPosition from real WordNet data previously discarded", async () => {

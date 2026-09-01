@@ -10,6 +10,7 @@ import { graphUuid as wordGraphUuid } from "../word_processor";
 import { graphUuid as wordFormGraphUuid } from "../word_form_processor";
 import { createNounPhrase } from "../../data/entities/noun_phrase";
 import { createPrepositionalPhrase } from "../../data/entities/prepositional_phrase";
+import type { Phrases } from "../../data/phrases";
 
 // classifyPhraseType()'s own closed class of single-word prepositions --
 // deliberately its own small, self-contained list rather than a read of
@@ -673,7 +674,18 @@ function nonHeadModifierRole(
  * entry instead of this one's, `data/entities/phrase.ts`'s own
  * `complements` docstring). `complements` is always set to an array
  * (possibly empty, `preModifiers`'s own convention), never left
- * `undefined`, whenever this function runs at all. */
+ * `undefined`, whenever this function runs at all.
+ *
+ * `phrases` (optional, the same convention `wordForms` already has) is
+ * this parent's own Phrases store -- when supplied, the nested
+ * Complement Phrase is found-or-created directly *in* that store
+ * (`registerComplementPhrase()`, below `buildComplementPhrase()`'s own
+ * docstring), so it becomes its own real, independently-listed and
+ * independently-searchable entry, the same as a real WordNet-seeded
+ * multi-word Phrase -- not just an object reachable only by walking
+ * into its parent's own `complements` array. Omitted, the nested Phrase
+ * is still built and fully linked exactly the same way, just never
+ * registered anywhere -- purely an embedded, in-memory detail. */
 /** `token`'s own resolved Word actually matching `targetPos` --
  * `linkPhraseWords()`'s own Head-position fix, `possiblePartsOfSpeech()`'s
  * full-homograph-set reasoning carried one step further: unlike
@@ -690,27 +702,84 @@ function resolvedWordFor(token: string, targetPos: ReadonlySet<PartOfSpeech>, di
   return homographs.find((word) => targetPos.has(word.partOfSpeech)) ?? dictionary.lookup(token);
 }
 
+/** The `partOfSpeech` a synthetic, constituency-derived complement
+ * Phrase gets tagged with in `Phrases.append()` -- there is no WordNet
+ * tag to carry over (`classifyComplementPhraseType()`'s own docstring),
+ * so this invents a fresh, self-consistent one instead of borrowing an
+ * arbitrary existing tag: NOUN for a NounPhrase complement (matching
+ * `classifyPhraseType()`'s own NOUN -> NOUN_PHRASE default one Phrase-
+ * structure level up), PREPOSITION for a PrepositionalPhrase complement
+ * -- genuinely used for once, unlike every real WordNet-tagged
+ * PrepositionalPhrase, which is always ADJECTIVE/ADVERB-tagged instead
+ * (`data/entities/prepositional_phrase.ts`'s own docstring on why). This
+ * also usefully distinguishes a complement-derived PrepositionalPhrase
+ * from a WordNet one at the `Phrases.partOfSpeechOf()` level, should a
+ * caller ever need to tell them apart. */
+function partOfSpeechForComplementPhraseType(phraseType: PhraseType): PartOfSpeech {
+  return phraseType === PhraseType.PREPOSITIONAL_PHRASE ? PartOfSpeech.PREPOSITION : PartOfSpeech.NOUN;
+}
+
+/** Finds or creates `text`'s own complement Phrase in `phrases`, so a
+ * genuine, real constituent like "of a nuisance" becomes its own
+ * independently-listed, independently-searchable entry in the Phrases
+ * store -- not just an object embedded inside its parent's own
+ * `complements` array. Reuses an existing entry (matched by `text` +
+ * `phraseType` + the same synthetic `partOfSpeech`
+ * `partOfSpeechForComplementPhraseType()` above assigns) rather than
+ * appending a second copy whenever one already exists -- the same
+ * (text, tag) dedup shape `word_seeder.ts`'s own WordNet Phrase append
+ * site already uses for exactly the same reason. This is what keeps
+ * the whole feature idempotent: `linkPhraseWords()` genuinely runs more
+ * than once over the same real Phrase within a single seeding pass
+ * (`word_seeder.ts`'s own closed-class-then-WordNet re-link pass) and
+ * again on every repeat `seedWordNet()` call, and without this reuse
+ * check each of those would append its own fresh duplicate "of a
+ * nuisance" every single time. A reused entry still gets recursively
+ * re-linked below (`buildComplementPhrase()`'s own caller) -- harmless
+ * and idempotent, `word_seeder.ts`'s own "simply recomputes the
+ * identical result again" precedent for the closed-class re-link pass. */
+function registerComplementPhrase(phrases: Phrases, text: string, phraseType: PhraseType): Phrase {
+  const partOfSpeech = partOfSpeechForComplementPhraseType(phraseType);
+  const existing = phrases.lookupAll(text).find((candidate) => candidate.phraseType === phraseType && phrases.partOfSpeechOf(candidate) === partOfSpeech);
+  if (existing !== undefined) return existing;
+  const created = phraseType === PhraseType.PREPOSITIONAL_PHRASE ? createPrepositionalPhrase({ text }) : createNounPhrase({ text });
+  phrases.append(created, partOfSpeech);
+  return created;
+}
+
 /** Builds and fully links the one nested Phrase a COMPLEMENT span's own
  * `tokens` become -- `linkPhraseWords()`'s own docstring on when this is
  * called. `classifyComplementPhraseType()` decides the shape
  * structurally (never from a WordNet-tagged part of speech -- there is
- * none for an invented internal span); `createPrepositionalPhrase()`/
- * `createNounPhrase()` build the bare Phrase from that shape and this
- * span's own re-joined text, and the recursive `linkPhraseWords()` call
- * populates everything else on it exactly as if it had been a real
- * top-level Phrase all along -- including its own `complements`, so a
- * span nested two Prepositions deep ("out of [print]" -> "of [print]"
- * nested once more inside that) resolves correctly without this
- * function needing its own separate recursion limit or loop. */
-function buildComplementPhrase(tokens: readonly string[], dictionary: Dictionary, wordForms?: WordForms): Phrase {
+ * none for an invented internal span). When `phrases` is supplied, the
+ * Phrase itself is found-or-created via `registerComplementPhrase()`
+ * above, so it becomes its own real, independently-listed entry in the
+ * Phrases store; when omitted (matching every other optional-store
+ * convention `linkPhraseWords()` already has), it's built bare via
+ * `createPrepositionalPhrase()`/`createNounPhrase()` and never
+ * registered anywhere, staying purely an embedded, in-memory detail of
+ * its parent's own `complements` array. Either way, the recursive
+ * `linkPhraseWords()` call populates everything else on it exactly as
+ * if it had been a real top-level Phrase all along -- including its own
+ * `complements`, so a span nested two Prepositions deep ("out of
+ * [print]" -> "of [print]" nested once more inside that) resolves
+ * correctly, and (when `phrases` is supplied) registers itself the same
+ * way, without this function needing its own separate recursion limit
+ * or loop. */
+function buildComplementPhrase(tokens: readonly string[], dictionary: Dictionary, wordForms?: WordForms, phrases?: Phrases): Phrase {
   const phraseType = classifyComplementPhraseType(tokens);
   const text = tokens.join(" ");
-  const complement = phraseType === PhraseType.PREPOSITIONAL_PHRASE ? createPrepositionalPhrase({ text }) : createNounPhrase({ text });
-  linkPhraseWords(complement, dictionary, wordForms);
+  const complement =
+    phrases !== undefined
+      ? registerComplementPhrase(phrases, text, phraseType)
+      : phraseType === PhraseType.PREPOSITIONAL_PHRASE
+        ? createPrepositionalPhrase({ text })
+        : createNounPhrase({ text });
+  linkPhraseWords(complement, dictionary, wordForms, phrases);
   return complement;
 }
 
-export function linkPhraseWords(phrase: Phrase, dictionary: Dictionary, wordForms?: WordForms): void {
+export function linkPhraseWords(phrase: Phrase, dictionary: Dictionary, wordForms?: WordForms, phrases?: Phrases): void {
   const tokens = phrase.text.trim().split(/\s+/).filter((token) => token.length > 0);
   const wordRoles = classifyModifierRoles(phrase.phraseType, tokens, dictionary);
   const headIndex = wordRoles.indexOf(ModifierRole.HEAD);
@@ -732,7 +801,7 @@ export function linkPhraseWords(phrase: Phrase, dictionary: Dictionary, wordForm
   phrase.headWordForm = headIndex === -1 ? undefined : matchingFormId(headIndex);
 
   const complementIndex = wordRoles.indexOf(ModifierRole.COMPLEMENT);
-  phrase.complements = complementIndex === -1 ? [] : [buildComplementPhrase(tokens.slice(complementIndex), dictionary, wordForms)];
+  phrase.complements = complementIndex === -1 ? [] : [buildComplementPhrase(tokens.slice(complementIndex), dictionary, wordForms, phrases)];
 
   const preModifiers: Identifier[] = [];
   const postModifiers: Identifier[] = [];

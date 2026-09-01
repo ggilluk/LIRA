@@ -1165,7 +1165,7 @@ export class WordSeeder {
       // CONJUNCTION-tagged one, subordinating_conjunctions.json)
       // classifyModifierRoles()'s own early-return guard leaves every
       // field it sets here at its own harmless empty/undefined default.
-      linkPhraseWords(phraseCopy, dictionary, wordForms);
+      linkPhraseWords(phraseCopy, dictionary, wordForms, phraseBook);
       seeded += 1;
     }
     return seeded;
@@ -1476,7 +1476,7 @@ export class WordSeeder {
     // this re-link picks it up. Idempotent and harmless for a Phrase
     // that already resolved correctly -- linkPhraseWords() simply
     // recomputes the identical result again.
-    for (const phrase of phraseBook.all()) linkPhraseWords(phrase, dictionary, wordForms);
+    for (const phrase of phraseBook.all()) linkPhraseWords(phrase, dictionary, wordForms, phraseBook);
 
     // senseIds accumulates in whatever order pass 1's own synset loop
     // above happened to visit each one -- byte-offset order within a

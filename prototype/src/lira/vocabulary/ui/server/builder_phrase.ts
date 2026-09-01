@@ -93,6 +93,43 @@ export function phraseRecords(phrases: Phrases, senses: Senses, wordForms: WordF
   return records;
 }
 
+// Phrase.complements's own client-facing shape (data/entities/phrase.ts's
+// own docstring on it) -- deliberately not DefinitionSegment: a
+// Complement is a real, independently-registered Phrase of its own now
+// (registerComplementPhrase(), role/processor/phrase_processor.ts), not
+// a single Word/WordForm reference, so this instead carries just enough
+// to render a clickable pivot link to that Phrase's own detail panel --
+// `id` (its own graph uuid, the same `data-pivot-id`/wordId shape every
+// other cross-reference link in this UI already uses), `text` (its own
+// literal spelling, "of a nuisance"), and `phrase_type` (that nested
+// Phrase's own phraseType, `phraseTypeLabel()`'s own convention, so the
+// client can badge it the identical way the parent Phrase's own
+// `phrase_type` already is).
+export interface PhraseComplementSegment {
+  id: string;
+  text: string;
+  phrase_type?: string;
+}
+
+/** `phrase.complements`, as the client-facing shape above -- one entry
+ * per embedded Phrase (`"entryId" in entry` narrows out the `Identifier`/
+ * `Clause` branches `Phrase.complements`'s own type still carries, the
+ * same narrowing `vocabulary.test.ts`'s own complement assertions
+ * already use; neither branch is ever actually constructed today,
+ * `classifyComplementPhraseType()`'s own docstring, role/processor/phrase_processor.ts).
+ * Reads `phrase.complements` directly rather than recomputing (unlike
+ * `phraseWordSegments()`/`phraseModifierSegments()` below, which
+ * recompute from `text` because a WordForm reference alone drops a
+ * token's own plain surface text) -- a Complement entry is never a bare
+ * WordForm reference to drop in the first place, so there's nothing a
+ * fresh recomputation would recover that the stored Phrase object
+ * itself doesn't already carry. */
+export function phraseComplementSegments(phrase: Phrase): PhraseComplementSegment[] {
+  return (phrase.complements ?? [])
+    .filter((entry): entry is Phrase => "entryId" in entry)
+    .map((complement) => ({ id: graphUuid(complement), text: complement.text, phrase_type: phraseTypeLabel(complement) }));
+}
+
 /** `phrase`'s own headword (`text`) broken into one DefinitionSegment
  * per whitespace token, in the same order linkPhraseWords()
  * (role/processor/phrase_processor.ts) itself walks them -- reusing

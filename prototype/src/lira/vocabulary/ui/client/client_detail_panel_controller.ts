@@ -251,6 +251,29 @@ function modifierListHTML(segments, label) {
   return \`<div class="detail-modifiers" style="margin-top:4px"><span style="opacity:.6">\${label}:</span> \${entries}</div>\`;
 }
 
+// phrase.complements's own render (that field's own docstring,
+// builder_word.ts; PhraseComplementSegment's own docstring,
+// builder_phrase.ts) -- unlike modifierListHTML() above, each entry is
+// a real, independently-registered Phrase of its own now
+// (registerComplementPhrase(), role/processor/phrase_processor.ts), so
+// this links to it with the identical clickable
+// \`<button class="link-btn" data-pivot-id="...">\` pattern the
+// Relationships/Word-Forms sections already use (wireDetailPivotButtons()
+// below wires up every one of these on every render, this function's
+// own entries included) rather than reusing definitionSegmentHTML()'s
+// plain hover-only span. Badged with that nested Phrase's own
+// phrase_type, same as this Phrase's own top-level pill just above.
+// Returns '' for an empty list, \`modifierListHTML()\`'s own convention --
+// the overwhelmingly common case (most Phrases have no Complement span
+// at all).
+function complementListHTML(segments) {
+  if (!segments || !segments.length) return '';
+  const entries = segments
+    .map(seg => \`<button class="link-btn" data-pivot-id="\${seg.id}">\${seg.text}</button>\${seg.phrase_type ? ' ' + phraseTypePill(seg.phrase_type) : ''}\`)
+    .join(' ');
+  return \`<div class="detail-complements" style="margin-top:4px"><span style="opacity:.6">Complement:</span> \${entries}</div>\`;
+}
+
 function wordDetailHTML(word, rels, lexicalRels) {
   return \`
     <div class="detail-word">\${headwordHTML(word)}\${word.is_common ? ' <span class="badge-common">common</span>' : ''}\${word.is_root_word ? ' <span class="badge-root-word">root word</span>' : ''}\${word.is_derivable_noun ? ' <span class="badge-derivable-noun">derivable noun</span>' : ''}\${word.is_fully_hydrated ? '' : ' <span class="badge-common" style="color:#C2544B;border-color:#C2544B">hydration pending</span>'}</div>
@@ -299,6 +322,7 @@ function phraseDetailHTML(phrase, rels, lexicalRels) {
     \${modifierListHTML(phrase.determiners, 'Determiners')}
     \${modifierListHTML(phrase.pre_modifiers, 'Pre-Modifiers')}
     \${modifierListHTML(phrase.post_modifiers, 'Post-Modifiers')}
+    \${complementListHTML(phrase.complements)}
     <div class="detail-definition">\${renderDefinition(phrase)}</div>
     \${phraseSensesSectionHTML(phrase, rels, lexicalRels)}
     <div class="detail-section-title">Provenance</div>
