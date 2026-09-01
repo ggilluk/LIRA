@@ -22,6 +22,7 @@ import type { Adverb } from "./data/entities/adverb";
 import { createConjunction, isConjunction } from "./role/processor/conjunction_processor";
 import type { Conjunction } from "./data/entities/conjunction";
 import { Coordinations } from "./data/coordinations";
+import type { Coordination } from "./data/entities/coordination";
 import { createCoordination, copyCoordinationWithFreshUuid, graphUuid as coordinationGraphUuid } from "./role/coordination_processor";
 import { WordCoordinationSeeder } from "./role/word_coordination_seeder";
 import { coordinationRecords } from "./ui/server/builder_coordination";
@@ -54,7 +55,7 @@ import { DictionaryProcessor } from "./role/dictionary_processor";
 import { MorphologicalPointerRelationshipProcessor } from "./role/morphological_pointer_relationship_processor";
 import { RelationshipSeeder } from "./role/relationship_seeder";
 import { WordSeeder } from "./role/word_seeder";
-import { classifyModifierRoles, classifyPhraseType } from "./role/processor/phrase_processor";
+import { classifyModifierRoles, classifyPhraseType, linkPhraseWords } from "./role/processor/phrase_processor";
 import { NounCharacterFormSeeder } from "./role/noun_character_form_seeder";
 import { PrepositionSenseSeeder } from "./role/preposition_sense_seeder";
 import { IdentificationSource } from "./role/word_identifier";
@@ -1610,8 +1611,8 @@ describe("WordSeeder against the bundled Common Vocabulary Cache", () => {
     expect(head?.partOfSpeech).toBe(PartOfSpeech.PRONOUN);
     expect(noOne.headWordForm).toBeDefined();
     expect(wordForms.findByUuid(noOne.headWordForm!.value)?.text.value).toBe("one");
-    expect(noOne.determiners).toHaveLength(1);
-    expect(wordForms.findByUuid(noOne.determiners![0].value)?.text.value).toBe("no");
+    expect(noOne.determiner).toBeDefined();
+    expect(wordForms.findByUuid((noOne.determiner as Identifier).value)?.text.value).toBe("no");
 
     // "each other" -- neither "each" nor "other" is a Noun or Pronoun
     // Word on its own (both are DETERMINER_LEMMAS entries instead), so
@@ -1619,12 +1620,17 @@ describe("WordSeeder against the bundled Common Vocabulary Cache", () => {
     // stays undefined, the same documented "no token carries the HEAD
     // role at all" case a WordNet-seeded Phrase can already hit
     // (Phrase.headWord's own docstring), not a seeding gap. Both tokens
-    // still resolve as Determiners, independent of any Head.
+    // are DETERMINER-role, spanning the whole Phrase -- the one
+    // deliberate exception `linkPhraseWords()` never collapses into a
+    // nested Phrase (that would build a Phrase whose own `text` equals
+    // its parent's, recursing forever), so `determiner` resolves to just
+    // the run's first token, "each", not a two-element list.
     const eachOther = phraseBook.lookup("each other")!;
     expect(eachOther.phraseType).toBe(PhraseType.NOUN_PHRASE);
     expect(eachOther.headWord).toBeUndefined();
     expect(eachOther.headWordForm).toBeUndefined();
-    expect(eachOther.determiners).toHaveLength(2);
+    expect(eachOther.determiner).toBeDefined();
+    expect(wordForms.findByUuid((eachOther.determiner as Identifier).value)?.text.value).toBe("each");
   });
 
   it("resolves \"a few\"'s own Head to its own standalone PRONOUN Word for \"few\", not the unrelated closed-class DETERMINER homograph of the same lexical form -- the reported bug", () => {
@@ -1656,8 +1662,8 @@ describe("WordSeeder against the bundled Common Vocabulary Cache", () => {
     expect(wordForms.findByUuid(afew.headWordForm!.value)?.text.value).toBe("few");
     // "a" is the one remaining Determiner -- "few" no longer among them
     // now that it correctly carries the Head role instead.
-    expect(afew.determiners).toHaveLength(1);
-    expect(wordForms.findByUuid(afew.determiners![0].value)?.text.value).toBe("a");
+    expect(afew.determiner).toBeDefined();
+    expect(wordForms.findByUuid((afew.determiner as Identifier).value)?.text.value).toBe("a");
   });
 
   it("re-links every closed-class Phrase's own headWord once seedWordNet() gives its constituent Words full Dictionary coverage, without ever letting a later, unrelated WordNet homograph override an already-correct closed-class resolution", async () => {
@@ -2257,12 +2263,12 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     const toyPoodleHeadForm = wordForms.findByUuid(toyPoodle!.headWordForm!.value);
     expect(toyPoodleHeadForm?.text.value).toBe("poodle");
     expect(toyPoodleHeadForm?.field).toBe(WordFormField.BASE_LEMMA_CANONICAL_FORM);
-    // Phrase.preModifiers -- the one Modifier position ("toy") resolved
+    // Phrase.preModifier -- the one Modifier position ("toy") resolved
     // to the one WordForm on its own resolved Word spelled "toy"; nothing
-    // sits after the Head, so postModifiers stays empty.
-    expect(toyPoodle!.preModifiers).toHaveLength(1);
-    expect(wordForms.findByUuid((toyPoodle!.preModifiers![0] as Identifier).value)?.text.value).toBe("toy");
-    expect(toyPoodle!.postModifiers).toEqual([]);
+    // sits after the Head, so postModifier stays undefined.
+    expect(toyPoodle!.preModifier).toBeDefined();
+    expect(wordForms.findByUuid((toyPoodle!.preModifier as Identifier).value)?.text.value).toBe("toy");
+    expect(toyPoodle!.postModifier).toBeUndefined();
 
     // classifyPhraseType()'s own PREPOSITIONAL_PHRASE/INFINITIVE_PHRASE
     // rules, spot-checked against real seeded Phrases rather than just
@@ -2301,8 +2307,8 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // headWordForm resolves to that same "at" Word's own base-lemma
     // WordForm, spelled "at" the same way it literally appears here.
     expect(wordForms.findByUuid(atFault!.headWordForm!.value)?.text.value).toBe("at");
-    expect(atFault!.preModifiers).toEqual([]);
-    expect(atFault!.postModifiers).toEqual([]);
+    expect(atFault!.preModifier).toBeUndefined();
+    expect(atFault!.postModifier).toBeUndefined();
     // "fault" alone -- a single token, no leading Preposition of its own
     // -- becomes one nested NounPhrase (classifyComplementPhraseType()'s
     // own default), correctly resolving "fault"'s own NOUN homograph as
@@ -2347,8 +2353,8 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // headWordForm resolves to that same verb "be" Word's own base-lemma
     // WordForm, spelled "be" the same way it literally appears here.
     expect(wordForms.findByUuid(toBeSure!.headWordForm!.value)?.text.value).toBe("be");
-    expect(toBeSure!.preModifiers).toEqual([]);
-    expect(toBeSure!.postModifiers).toEqual([]);
+    expect(toBeSure!.preModifier).toBeUndefined();
+    expect(toBeSure!.postModifier).toBeUndefined();
     expect(dictionary.lookupAll("toy poodle")).toEqual([]);
 
     const poodle = dictionary.lookupAll("poodle").find((w) => wordForms.synsetIdOf(w)?.value === "02115987-n");
@@ -2476,14 +2482,14 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // matching VerbPhrase's own Head target (VERB), so the rare NOUN
     // sense never wins here even though it happens to be seeded first.
     // "up" sits after the Head with a MODIFIER role, so it lands in
-    // postModifiers, not preModifiers.
+    // postModifier, not preModifier.
     const giveUpHead = dictionary.findByUuid(giveUp!.headWord!.value);
     expect(giveUpHead?.text).toBe("give");
     expect(giveUpHead?.partOfSpeech).toBe(PartOfSpeech.VERB);
     expect(wordForms.findByUuid(giveUp!.headWordForm!.value)?.text.value).toBe("give");
-    expect(giveUp!.preModifiers).toEqual([]);
-    expect(giveUp!.postModifiers).toHaveLength(1);
-    expect(wordForms.findByUuid((giveUp!.postModifiers![0] as Identifier).value)?.text.value).toBe("up");
+    expect(giveUp!.preModifier).toBeUndefined();
+    expect(giveUp!.postModifier).toBeDefined();
+    expect(wordForms.findByUuid((giveUp!.postModifier as Identifier).value)?.text.value).toBe("up");
 
     // "look up to" (01831800-v, dict/data.verb) -- same Head rule as
     // "give up", but here "up" *is* immediately followed by a token
@@ -2509,8 +2515,8 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     expect(lookUpToHead?.text).toBe("look");
     expect(lookUpToHead?.partOfSpeech).toBe(PartOfSpeech.VERB);
     expect(wordForms.findByUuid(lookUpTo!.headWordForm!.value)?.text.value).toBe("look");
-    expect(lookUpTo!.preModifiers).toEqual([]);
-    expect(lookUpTo!.postModifiers).toEqual([]);
+    expect(lookUpTo!.preModifier).toBeUndefined();
+    expect(lookUpTo!.postModifier).toBeUndefined();
 
     // "long ago" (00022855-r, dict/data.adv) -- AdverbPhrase's own
     // premodifying case: "ago" is the Head (the later of two Adverb-
@@ -2527,15 +2533,15 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // matching AdverbPhrase's own Head target (ADVERB), so it correctly
     // finds "ago"'s ADVERB sense instead, the same Head-specific
     // resolution "give up"/"look up to" above already exercise. "long"
-    // is the one premodifying Modifier, so it's the sole preModifiers
-    // entry; nothing sits after the Head.
+    // is the one premodifying Modifier, so it's the sole preModifier
+    // value; nothing sits after the Head.
     const longAgoHead = dictionary.findByUuid(longAgo!.headWord!.value);
     expect(longAgoHead?.text).toBe("ago");
     expect(longAgoHead?.partOfSpeech).toBe(PartOfSpeech.ADVERB);
     expect(wordForms.findByUuid(longAgo!.headWordForm!.value)?.text.value).toBe("ago");
-    expect(longAgo!.preModifiers).toHaveLength(1);
-    expect(wordForms.findByUuid((longAgo!.preModifiers![0] as Identifier).value)?.text.value).toBe("long");
-    expect(longAgo!.postModifiers).toEqual([]);
+    expect(longAgo!.preModifier).toBeDefined();
+    expect(wordForms.findByUuid((longAgo!.preModifier as Identifier).value)?.text.value).toBe("long");
+    expect(longAgo!.postModifier).toBeUndefined();
 
     // "in the meantime" (00065346-r, dict/data.adv) -- PrepositionalPhrase
     // whose own Complement genuinely embeds a Determiner: "in" heads it
@@ -2565,12 +2571,12 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // though its own spelling's case ("IN") differs from this literal
     // occurrence's own ("in") -- the match is case-insensitive.
     expect(wordForms.findByUuid(inTheMeantime!.headWordForm!.value)?.text.value).toBe("IN");
-    expect(inTheMeantime!.preModifiers).toEqual([]);
-    expect(inTheMeantime!.postModifiers).toEqual([]);
+    expect(inTheMeantime!.preModifier).toBeUndefined();
+    expect(inTheMeantime!.postModifier).toBeUndefined();
     // No token belongs to this outer PrepositionalPhrase's own
-    // `determiners` any more -- "the" is genuinely a Determiner, but of
+    // `determiner` any more -- "the" is genuinely a Determiner, but of
     // the nested Complement below, not this Phrase.
-    expect(inTheMeantime!.determiners).toEqual([]);
+    expect(inTheMeantime!.determiner).toBeUndefined();
     expect(inTheMeantime!.complements).toHaveLength(1);
     const inTheMeantimeComplement = inTheMeantime!.complements![0];
     if (!("entryId" in inTheMeantimeComplement)) throw new Error("expected an embedded Phrase, not an Identifier");
@@ -2585,11 +2591,11 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // but still resolves no WordForm here either: WordNet lexicalizes
     // "the" as a standalone sense nowhere in the bundled data
     // (PHRASE_TYPE_DETERMINERS' own docstring), so it has no Word to
-    // reference regardless of which Phrase's own `determiners` is
+    // reference regardless of which Phrase's own `determiner` is
     // asked. A determiner word that IS independently WordNet-tagged
     // ("few", "many", "all") would appear here instead
     // (data_entity_design_decisions_log.md).
-    expect(inTheMeantimeComplement.determiners).toEqual([]);
+    expect(inTheMeantimeComplement.determiner).toBeUndefined();
 
     // classifyModifierRoles() itself, called directly (not just through
     // the full seeding pipeline above), for the one documented ambiguity
@@ -2618,17 +2624,17 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
 
     // A Common Vocabulary Cache closed-class Phrase never goes through
     // linkPhraseWords()/classifyModifierRoles() at all (no constituency-
-    // parsing pass of its own) -- headWord/headWordForm/preModifiers/
-    // postModifiers/determiners are exactly as unpopulated as they'd be
+    // parsing pass of its own) -- headWord/headWordForm/preModifier/
+    // postModifier/determiner are exactly as unpopulated as they'd be
     // if that pass had never run, since createPhrase() never defaults
     // them and nothing else ever touches a closed-class Phrase's own
     // fields after creation.
     const handCrafted = createPhrase({ text: "in spite of", phraseType: PhraseType.PREPOSITIONAL_PHRASE });
     expect(handCrafted.headWord).toBeUndefined();
     expect(handCrafted.headWordForm).toBeUndefined();
-    expect(handCrafted.preModifiers).toBeUndefined();
-    expect(handCrafted.postModifiers).toBeUndefined();
-    expect(handCrafted.determiners).toBeUndefined();
+    expect(handCrafted.preModifier).toBeUndefined();
+    expect(handCrafted.postModifier).toBeUndefined();
+    expect(handCrafted.determiner).toBeUndefined();
     expect(handCrafted.complements).toBeUndefined();
   }, 60000);
 
@@ -2654,12 +2660,12 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     expect(abatementHead?.text).toBe("abatement");
     expect(abatementHead?.partOfSpeech).toBe(PartOfSpeech.NOUN);
     expect(wordForms.findByUuid(abatement.headWordForm!.value)?.text.value).toBe("abatement");
-    // Nothing precedes the Head here, so preModifiers/postModifiers/
-    // determiners all stay empty -- "of a nuisance" is a Complement, not
-    // a Modifier or Determiner of this outer NounPhrase at all.
-    expect(abatement.preModifiers).toEqual([]);
-    expect(abatement.postModifiers).toEqual([]);
-    expect(abatement.determiners).toEqual([]);
+    // Nothing precedes the Head here, so preModifier/postModifier/
+    // determiner all stay undefined -- "of a nuisance" is a Complement,
+    // not a Modifier or Determiner of this outer NounPhrase at all.
+    expect(abatement.preModifier).toBeUndefined();
+    expect(abatement.postModifier).toBeUndefined();
+    expect(abatement.determiner).toBeUndefined();
 
     // The reported fix itself: "of a nuisance" now genuinely exists, as
     // one nested PrepositionalPhrase Complement (NounPhrase's own
@@ -2698,7 +2704,7 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // Determiner -- WordNet does lexicalize "a" (unlike "the"), so
     // unlike `inTheMeantimeComplement`'s own "the" above, this one
     // actually carries a real WordForm reference.
-    expect(aNuisance.determiners).toHaveLength(1);
+    expect(aNuisance.determiner).toBeDefined();
     // Nothing left to nest any further -- "nuisance" alone opens no
     // trailing Preposition span of its own.
     expect(aNuisance.complements).toEqual([]);
@@ -2715,6 +2721,134 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     expect(phraseBook.lookupAll("a nuisance")).toContain(aNuisance);
     expect(phraseBook.partOfSpeechOf(aNuisance)).toBe(PartOfSpeech.NOUN);
   }, 60000);
+
+  it("collapses a run of 2+ pre-Head MODIFIER tokens into one nested Phrase, reused from an already-seeded one -- the reported bug: \"attributive genitive case\" used to split \"attributive genitive\" into two independent single-word preModifier entries instead of recognising it as its own real Phrase", async () => {
+    const { dictionary, phraseBook, wordForms } = await seededVocabularyFixture();
+
+    // 06322991-n (dict/data.noun) -- "attributive_genitive_case" is a
+    // three-word NOUN lemma synonymous with "attributive_genitive"
+    // itself (both lemmas share this exact synset). "attributive
+    // genitive" is ALSO independently a real two-word ADJECTIVE lemma of
+    // its own (00174035-s, dict/data.adj -- WordNet's own "-s" suffix
+    // marks a satellite adjective sense, still plain PartOfSpeech.ADJECTIVE
+    // in this codebase) -- the exact real-data case the reported bug
+    // named: "case" is correctly the Head, but its own
+    // two-token pre-Head span "attributive genitive" should resolve to
+    // that already-seeded ADJECTIVE Phrase as one nested constituent, not
+    // two unrelated single-word preModifier entries.
+    const attributiveGenitiveCase = phraseBook.lookupAll("attributive genitive case").find((phrase) => phraseBook.synsetIdOf(phrase)?.value === "06322991-n");
+    expect(attributiveGenitiveCase).toBeDefined();
+    expect(attributiveGenitiveCase!.phraseType).toBe(PhraseType.NOUN_PHRASE);
+    // Both "attributive" and "genitive" are real ADJECTIVE homographs
+    // (dict/index.adj), so classifyModifierRoles() assigns MODIFIER to
+    // both pre-Head positions, not just the one immediately before Head.
+    expect(classifyModifierRoles(attributiveGenitiveCase!.phraseType, attributiveGenitiveCase!.text.trim().split(/\s+/), dictionary)).toEqual([
+      ModifierRole.MODIFIER,
+      ModifierRole.MODIFIER,
+      ModifierRole.HEAD,
+    ]);
+
+    const head = dictionary.findByUuid(attributiveGenitiveCase!.headWord!.value);
+    expect(head?.text).toBe("case");
+    expect(head?.partOfSpeech).toBe(PartOfSpeech.NOUN);
+
+    // The fix itself: preModifier is one nested AdjectivePhrase, not two
+    // independent WordForm references.
+    expect(attributiveGenitiveCase!.preModifier).toBeDefined();
+    const attributiveGenitive = attributiveGenitiveCase!.preModifier as Phrase;
+    if (!("entryId" in attributiveGenitive)) throw new Error("expected an embedded Phrase, not an Identifier");
+    expect(attributiveGenitive.text).toBe("attributive genitive");
+    expect(attributiveGenitive.phraseType).toBe(PhraseType.ADJECTIVE_PHRASE);
+    expect(isAdjectivePhrase(attributiveGenitive)).toBe(true);
+    expect(attributiveGenitiveCase!.postModifier).toBeUndefined();
+    expect(attributiveGenitiveCase!.determiner).toBeUndefined();
+
+    // Reused, not recreated: this is the exact same already-seeded
+    // ADJECTIVE Phrase "attributive genitive" resolves to on its own
+    // (00174035-s, dict/data.adj) -- registerNestedPhrase()'s own
+    // find-or-create dedup found it rather than building a second,
+    // duplicate copy.
+    const independentlySeeded = phraseBook.lookupAll("attributive genitive").find((phrase) => phraseBook.synsetIdOf(phrase)?.value === "00174035-s");
+    expect(independentlySeeded).toBeDefined();
+    expect(attributiveGenitive).toBe(independentlySeeded);
+    expect(phraseBook.partOfSpeechOf(attributiveGenitive)).toBe(PartOfSpeech.ADJECTIVE);
+
+    // Its own internal structure resolved too, recursively: "genitive"
+    // is its own Head, "attributive" its own sole preModifier.
+    const attributiveGenitiveHead = dictionary.findByUuid(attributiveGenitive.headWord!.value);
+    expect(attributiveGenitiveHead?.text).toBe("genitive");
+    expect(attributiveGenitiveHead?.partOfSpeech).toBe(PartOfSpeech.ADJECTIVE);
+    expect(attributiveGenitive.preModifier).toBeDefined();
+    expect(wordForms.findByUuid((attributiveGenitive.preModifier as Identifier).value)?.text.value).toBe("attributive");
+  }, 60000);
+
+  it("collapses a coordinated run of MODIFIER/DETERMINER tokens (\"big and red\") into a single Coordination, bridging the embedded coordinating conjunction that classifyModifierRoles() itself never assigns a role to -- exercised as a pure function since no real bundled WordNet/Common-Vocabulary-Cache lemma contains a coordinated modifier span", () => {
+    // Hand-seeded, minimal Dictionary: two ADJECTIVE homographs ("big",
+    // "red"), a real COORDINATING Conjunction ("and"), and a NOUN Head
+    // ("dog") -- just enough for classifyModifierRoles()/linkPhraseWords()
+    // to exercise the coordinated-run path over a synthetic NounPhrase
+    // "big and red dog", the same shape a real "toy poodle"-style
+    // pre-Head Modifier run already has, but with a genuine coordinating
+    // conjunction sitting inside it.
+    const dictionary = new Dictionary();
+    const wordForms = new WordForms();
+    const phraseBook = new Phrases();
+    const coordinations = new Coordinations<LinguisticUnit>();
+    const big = createAdjective({ text: "big" });
+    const red = createAdjective({ text: "red" });
+    const and = createConjunction({ text: "and", conjunctionType: ConjunctionType.COORDINATING });
+    const dog = createNoun({ text: "dog" });
+    for (const word of [big, red, and, dog]) {
+      dictionary.append(word);
+      wordForms.registerBaseLemmaForm(word);
+    }
+
+    const phrase = createPhrase({ text: "big and red dog", phraseType: PhraseType.NOUN_PHRASE });
+    // classifyModifierRoles() itself never assigns MODIFIER (or any
+    // role) to "and" -- it's CONJUNCTION-only, not NOUN/ADJECTIVE/ADVERB
+    // -- so the wordRoles array has a genuine gap at index 1 that
+    // linkPhraseWords()'s own run-detection has to bridge across to see
+    // "big and red" as one span, not two disconnected single-token
+    // Modifiers either side of an unrecognised "and".
+    expect(classifyModifierRoles(phrase.phraseType, phrase.text.trim().split(/\s+/), dictionary)).toEqual([
+      ModifierRole.MODIFIER,
+      undefined,
+      ModifierRole.MODIFIER,
+      ModifierRole.HEAD,
+    ]);
+
+    linkPhraseWords(phrase, dictionary, wordForms, phraseBook, coordinations);
+
+    expect(phrase.headWord).toBeDefined();
+    expect(dictionary.findByUuid(phrase.headWord!.value)?.text).toBe("dog");
+    expect(phrase.postModifier).toBeUndefined();
+    expect(phrase.determiner).toBeUndefined();
+
+    // The fix itself: preModifier is one Coordination, not two
+    // independent WordForm references either side of a dropped "and".
+    expect(phrase.preModifier).toBeDefined();
+    const coordination = phrase.preModifier as Coordination<Word | Phrase>;
+    if (!("coordinates" in coordination)) throw new Error("expected a Coordination, not an Identifier or Phrase");
+    expect(coordination.coordinates).toHaveLength(2);
+    expect((coordination.coordinates[0] as Word).text).toBe("big");
+    expect((coordination.coordinates[1] as Word).text).toBe("red");
+    expect(coordination.coordinator).toBeDefined();
+    expect(wordForms.findByUuid(coordination.coordinator!.value)?.text.value).toBe("and");
+
+    // Registered into the supplied Coordinations store, not just built
+    // in memory -- registerModifierCoordination()'s own find-or-create
+    // shape, the same store-registration precedent `phrases` above
+    // already has for a nested Phrase.
+    expect(coordinations.all()).toContain(coordination);
+
+    // Re-linking the identical Phrase a second time finds the exact same
+    // Coordination again rather than building a duplicate -- the same
+    // idempotent re-seeding guarantee every other linkPhraseWords()
+    // consumer already relies on.
+    linkPhraseWords(phrase, dictionary, wordForms, phraseBook, coordinations);
+    expect(phrase.preModifier).toBe(coordination);
+    expect(coordinations.totalEntries()).toBe(1);
+  });
 
   it("seeds a Noun/Verb/Adjective/Adverb subtype per Word, populating per-sense frames/syntacticPosition from real WordNet data previously discarded", async () => {
     const { dictionary, senseStore, wordForms } = await seededVocabularyFixture();
@@ -3094,10 +3228,25 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     new WordSeeder("en").seedClosedClassWords(dictionary, phraseBook, { excludeOpenClasses: true }, senseStore, wordForms);
     await new WordSeeder("en").seedWordNet(domain);
 
-    // word_coordinations.json's own 9 entries.
+    // word_coordinations.json's own 9 entries -- `seeded` counts only
+    // this seeder's own additions (its own dedup keys on each JSON
+    // entry's own `entry_id`, never colliding with an auto-detected
+    // Coordination's freshly-minted uuid, `WordCoordinationSeeder.seed()`'s
+    // own docstring), but `coordinations` itself already carries 48 more
+    // by this point: `seedWordNet()` above now threads `coordinations`
+    // into every `linkPhraseWords()` call (this session's own run-
+    // collapsing feature, buildModifierUnit()'s own docstring,
+    // role/processor/phrase_processor.ts), which auto-detects a
+    // coordinating conjunction embedded in a MODIFIER/DETERMINER run
+    // across the real bundled WordNet data ("National Aeronautics and
+    // Space Administration", "search and rescue", ...) independently of
+    // this hand-curated JSON set -- the two pipelines' own totals simply
+    // add, even when (rarely) both happen to name the same real-world
+    // pairing ("back and forth" is one of word_coordinations.json's own
+    // 9 too), since neither dedups against the other's own entries.
     const seeded = new WordCoordinationSeeder("en").seed(domain);
     expect(seeded).toBe(9);
-    expect(coordinations.totalEntries()).toBe(9);
+    expect(coordinations.totalEntries()).toBe(48 + 9);
 
     const saltAndPepper = coordinations.all().find((c) => (c.coordinates[0] as Word).text === "salt");
     expect(saltAndPepper).toBeDefined();
@@ -3134,7 +3283,7 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // Idempotent -- a second call against the same, already-seeded
     // Domain creates nothing new.
     expect(new WordCoordinationSeeder("en").seed(domain)).toBe(0);
-    expect(coordinations.totalEntries()).toBe(9);
+    expect(coordinations.totalEntries()).toBe(48 + 9);
   }, 60000);
 
   it("coordinationRecords() builds the Coordinations tab's own client-facing records against real seeded WordCoordinations", async () => {
@@ -3171,14 +3320,26 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     new WordCoordinationSeeder("en").seed(domain);
 
     const records = coordinationRecords(coordinations, phraseBook, dictionary, wordForms);
-    // 9 real coordinate pairs (one of them, "red, white, and blue",
-    // three coordinates rather than two), plus every standalone
-    // Conjunction Word (coordinating_conjunctions.json's own 7,
-    // subordinating_conjunctions.json's own 17 single-word entries) and
-    // Conjunction Phrase (subordinating_conjunctions.json's own 19
-    // multi-word entries) -- coordinationRecords()'s own docstring on
-    // why all three share this one list.
-    expect(records).toHaveLength(9 + 7 + 17 + 19);
+    // 9 hand-curated coordinate pairs from word_coordinations.json (one
+    // of them, "red, white, and blue", three coordinates rather than
+    // two) plus 33 more `seedWordNet()` auto-detects across the real
+    // bundled WordNet data via the same run-collapsing modifier-
+    // coordination detection the WordCoordinationSeeder test just above
+    // exercises directly (that test's own comment on why the two
+    // pipelines' totals simply add) -- of the 48 total auto-detected
+    // there, only these 33 have every coordinate a single Word; the
+    // other 15 have at least one multi-word (nested Phrase) side
+    // ("National Aeronautics and Space Administration" -> "National
+    // Aeronautics"/"Space") and `coordinationRecordFor()`'s own
+    // `isWord()` guard just above drops those silently, the same way it
+    // always has for any Coordination it can't render as a flat list of
+    // Word spellings -- plus every standalone Conjunction Word
+    // (coordinating_conjunctions.json's own 7, subordinating_conjunctions.json's
+    // own 17 single-word entries) and Conjunction Phrase
+    // (subordinating_conjunctions.json's own 19 multi-word entries) --
+    // coordinationRecords()'s own docstring on why all three share this
+    // one list.
+    expect(records).toHaveLength(33 + 9 + 7 + 17 + 19);
     // A three-coordinate row renders correctly through the record layer
     // too, not just the seeder -- coordinationRecordFor() never assumed
     // exactly two either.

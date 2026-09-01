@@ -29,8 +29,8 @@
  * pass of its own.
  *
  * `headWord` (data/entities/phrase.ts's own docstring on it) is a graph-reference
- * pointer, not narrowed to any Word subtype here the way `preModifiers`/
- * `postModifiers` below are -- an `Identifier` carries no type of its
+ * pointer, not narrowed to any Word subtype here the way `preModifier`/
+ * `postModifier` below are -- an `Identifier` carries no type of its
  * own to narrow. For a real seeded AdjectivePhrase it always resolves
  * (`Dictionary.findByUuid()`) to an `Adjective`: ADJECTIVE_PHRASE's own
  * Head Identification Rule never resolves to any other Word subtype
@@ -39,23 +39,23 @@
  * today, for every real seeded multi-word WordNet AdjectivePhrase, by
  * linkPhraseWords() (role/processor/phrase_processor.ts).
  *
- * `preModifiers` narrows Phrase's own same-named field (data/entities/phrase.ts's
- * own docstring on it) down to the exact constituent set
- * data/phrase_type_patterns_and_word_roles.md's own "Phrase Role
- * Allowed Types" table gives AdjectivePhrase's own MODIFIER row: an
- * `Adverb`-capable token's own WordForm reference, or an `AdverbPhrase`
- * sub-constituent -- `headWord`'s own "an Identifier carries no type to
- * narrow" reasoning, narrowing only the embedded-subtype half of the
- * union. Same real-population status as `headWord` above, for the
- * single-Word-constituent case only -- linkPhraseWords()'s own
- * docstring on why a sub-phrase modifier is left out rather than
- * guessed at, and on why a WordForm that fails to resolve is too.
+ * `preModifier` narrows Phrase's own same-named field (data/entities/phrase.ts's
+ * own docstring on it) down to `AdjectivePhraseModifier` above: an
+ * `Adverb`- or `Adjective`-capable token's own WordForm reference for
+ * the single-token case, or an `AdverbPhrase`/`AdjectivePhrase`/
+ * `Coordination` sub-constituent for a run of two or more MODIFIER-role
+ * tokens (real constituency parsing now, `buildModifierUnit()`'s own
+ * docstring, role/processor/phrase_processor.ts) -- `headWord`'s own "an
+ * Identifier carries no type to narrow" reasoning, narrowing only the
+ * embedded-subtype half of the union. A single MODIFIER-role token whose
+ * own resolved Word carries no WordForm spelled the way it appears here
+ * resolves to `undefined` rather than guessed at.
  *
- * `postModifiers` narrows Phrase's own same-named field (data/entities/phrase.ts's
+ * `postModifier` narrows Phrase's own same-named field (data/entities/phrase.ts's
  * own docstring on it) down to that exact same constituent set --
- * `preModifiers`' own MODIFIER row makes no pre/post distinction, so
- * AdjectivePhrase's post-Head modifier set is identical to its pre-Head
- * one. Same real-population status as `preModifiers` above.
+ * `preModifier`'s own MODIFIER row makes no pre/post distinction, so
+ * AdjectivePhrase's post-Head modifier is resolved the identical way its
+ * pre-Head one is.
  *
  * `complements` narrows Phrase's own same-named field (data/entities/phrase.ts's
  * own docstring on it) down to AdjectivePhraseComplement below --
@@ -78,9 +78,21 @@ import { createPhrase, type Phrase } from "./phrase";
 import type { Identifier } from "../../../value_objects";
 import type { AdverbPhrase } from "./adverb_phrase";
 import type { PrepositionalPhrase } from "./prepositional_phrase";
+import type { Coordination } from "./coordination";
+import type { Word } from "./word";
 import type { Clause } from "../../../linguistics/data/clause";
 
-type AdjectivePhraseModifier = Identifier | AdverbPhrase;
+// Adjective is included alongside AdverbPhrase's own documented MODIFIER
+// row (`PHRASE_TYPE_DETAILS[PhraseType.ADJECTIVE_PHRASE].allowedTypes`,
+// data/enums/phrase_type.ts, lists only Adverb/AdverbPhrase) -- a pre-
+// existing gap between that table and `nonHeadModifierRole()`'s own real
+// ADJECTIVE_PHRASE branch (role/processor/phrase_processor.ts), which
+// always treated an ADJECTIVE-capable pre-Head token as a genuine
+// Modifier too ("bone dry", degree-modifier-less compounding). Harmless
+// before this field could ever hold an embedded sub-Phrase; corrected
+// here since `buildModifierUnit()` can now genuinely build a nested
+// AdjectivePhrase for a run of 2+ such tokens.
+type AdjectivePhraseModifier = Identifier | AdjectivePhrase | AdverbPhrase | Coordination<Word | Phrase>;
 
 /** AdjectivePhrase's own COMPLEMENT allowed-types row -- `noun_phrase.ts`'s
  * own `NounPhraseComplement` counterpart, identical shape. */
@@ -88,15 +100,15 @@ type AdjectivePhraseComplement = Identifier | PrepositionalPhrase | Clause;
 
 export interface AdjectivePhrase extends Phrase {
   phraseType: PhraseType.ADJECTIVE_PHRASE;
-  preModifiers: readonly AdjectivePhraseModifier[];
-  postModifiers: readonly AdjectivePhraseModifier[];
+  preModifier?: AdjectivePhraseModifier;
+  postModifier?: AdjectivePhraseModifier;
   complements: readonly AdjectivePhraseComplement[];
 }
 
 export type AdjectivePhraseInit = Pick<Phrase, "text"> &
-  Partial<Omit<Phrase, "text" | "phraseType" | "preModifiers" | "postModifiers" | "complements">> & {
-    preModifiers?: readonly AdjectivePhraseModifier[];
-    postModifiers?: readonly AdjectivePhraseModifier[];
+  Partial<Omit<Phrase, "text" | "phraseType" | "preModifier" | "postModifier" | "complements">> & {
+    preModifier?: AdjectivePhraseModifier;
+    postModifier?: AdjectivePhraseModifier;
     complements?: readonly AdjectivePhraseComplement[];
   };
 

@@ -19,7 +19,15 @@ import type { Word } from "../../data/entities/word";
 import type { WordForms } from "../../data/word_forms";
 import { graphUuid as wordGraphUuid } from "../../role/word_processor";
 import { graphUuid as senseGraphUuid } from "../../role/sense_processor";
-import { phraseComplementSegments, phraseHeadWordSegment, phraseModifierSegments, phraseTypeLabel, phraseWordSegments, type PhraseComplementSegment } from "./builder_phrase";
+import {
+  phraseComplementSegments,
+  phraseHeadWordSegment,
+  phraseModifierSegments,
+  phraseTypeLabel,
+  phraseWordSegments,
+  type ModifierSegment,
+  type PhraseComplementSegment,
+} from "./builder_phrase";
 import { definitionSegments, formFieldLabel, type DefinitionSegment } from "./builder_segment";
 import { domainLabel, isRootWordFor, senseFieldsFor } from "./resolver_domain";
 
@@ -123,29 +131,29 @@ export interface WordRecord {
   // Word, and for a Phrase with no identified Head (every Common
   // Vocabulary Cache closed-class Phrase, in particular).
   head_word?: DefinitionSegment;
-  // phrase.preModifiers/phrase.postModifiers's own client-facing shape
-  // (data/entities/phrase.ts's own docstring on each), one DefinitionSegment per
-  // MODIFIER-role token before/after the Head, in phrase-text order --
-  // phraseModifierSegments()'s own docstring (builder_phrase.ts) on why
-  // this is recomputed from the same text/wordRoles/words fields
-  // phrase_word_segments/head_word above already use, not read directly
-  // off preModifiers/postModifiers. Each entry's own array position IS
-  // its display position (1st pre-Modifier, 2nd, ...) -- no separate
-  // index field. Present only when this record was resolved from a
-  // Phrase; both empty for an ordinary Word and for a Phrase with no
-  // MODIFIER-role token at all (every Common Vocabulary Cache
-  // closed-class Phrase, in particular).
-  pre_modifiers?: DefinitionSegment[];
-  post_modifiers?: DefinitionSegment[];
-  // phrase.wordRoles' own DETERMINER-role tokens (data/enums/modifier_role.ts's
-  // own docstring on that role -- valid regardless of PhraseType or
-  // position, so unlike pre_modifiers/post_modifiers above this is never
-  // split), same phraseModifierSegments()-recomputed shape and same
-  // presence rule as those two.
-  determiners?: DefinitionSegment[];
+  // phrase.preModifier/phrase.postModifier's own client-facing shape
+  // (data/entities/phrase.ts's own docstring on each) -- a single
+  // ModifierSegment (modifierUnitSegment()'s own docstring,
+  // builder_phrase.ts), not an array any more: a run of two or more
+  // MODIFIER-role tokens collapses into one nested Phrase or Coordination
+  // now (buildModifierUnit()'s own docstring, role/processor/phrase_processor.ts),
+  // so there's at most one pre-Head and one post-Head constituent to
+  // report, never a numbered list of independent single-word entries.
+  // Present only when this record was resolved from a Phrase; undefined
+  // for an ordinary Word and for a Phrase with no MODIFIER-role token at
+  // all (every Common Vocabulary Cache closed-class Phrase, in
+  // particular).
+  pre_modifier?: ModifierSegment;
+  post_modifier?: ModifierSegment;
+  // phrase.determiner's own client-facing shape (data/enums/modifier_role.ts's
+  // own docstring on the DETERMINER role -- valid regardless of
+  // PhraseType or position, so unlike pre_modifier/post_modifier above
+  // this is never split), same ModifierSegment shape and same presence
+  // rule as those two.
+  determiner?: ModifierSegment;
   // phrase.complements's own client-facing shape (data/entities/phrase.ts's
   // own docstring on it, PhraseComplementSegment's own docstring,
-  // builder_phrase.ts) -- unlike pre_modifiers/post_modifiers/determiners
+  // builder_phrase.ts) -- unlike pre_modifier/post_modifier/determiner
   // above, read directly off the stored Phrase rather than recomputed,
   // since a Complement is never a bare WordForm reference to begin
   // with. Present only when this record was resolved from a Phrase;
@@ -534,9 +542,9 @@ export function searchWords(
             phrase_word_segments: phraseWordSegments(phrase, dictionary, senses, domainName, wordForms),
             phrase_type: phraseTypeLabel(phrase),
             head_word: phraseHeadWordSegment(phrase, dictionary, senses, domainName, wordForms),
-            pre_modifiers: modifiers.pre,
-            post_modifiers: modifiers.post,
-            determiners: modifiers.determiners,
+            pre_modifier: modifiers.pre,
+            post_modifier: modifiers.post,
+            determiner: modifiers.determiner,
             complements: phraseComplementSegments(phrase),
           },
         ],
@@ -566,9 +574,9 @@ export function searchWords(
               phrase_word_segments: phraseWordSegments(representative, dictionary, senses, domainName, wordForms),
               phrase_type: phraseTypeLabel(representative),
               head_word: phraseHeadWordSegment(representative, dictionary, senses, domainName, wordForms),
-              pre_modifiers: modifiers.pre,
-              post_modifiers: modifiers.post,
-              determiners: modifiers.determiners,
+              pre_modifier: modifiers.pre,
+              post_modifier: modifiers.post,
+              determiner: modifiers.determiner,
               complements: phraseComplementSegments(representative),
             },
           ],

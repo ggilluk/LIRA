@@ -63,6 +63,8 @@ import { SemanticRelationshipKind } from "../data/enums/semantic_relationship_ki
 import { copyPhraseWithFreshUuid, createPhrase, graphUuid as phraseGraphUuid, type Phrase } from "../data/entities/phrase";
 import { PhraseType } from "../data/enums/phrase_type";
 import type { Phrases } from "../data/phrases";
+import type { Coordinations } from "../data/coordinations";
+import type { LinguisticUnit } from "../../linguistics/data/linguistic_unit";
 import { createSense, graphUuid as senseGraphUuid } from "./sense_processor";
 import type { Sense } from "../data/entities/sense";
 import type { Senses } from "../data/senses";
@@ -1068,6 +1070,7 @@ export class WordSeeder {
     options?: { excludeOpenClasses?: boolean },
     senseStore?: Senses,
     wordForms?: WordForms,
+    coordinations?: Coordinations<LinguisticUnit>,
   ): number {
     const excludeOpenClasses = options?.excludeOpenClasses ?? false;
     new AuxiliarySeeder(dictionary, senseStore, wordForms).seed();
@@ -1165,14 +1168,16 @@ export class WordSeeder {
       // CONJUNCTION-tagged one, subordinating_conjunctions.json)
       // classifyModifierRoles()'s own early-return guard leaves every
       // field it sets here at its own harmless empty/undefined default.
-      linkPhraseWords(phraseCopy, dictionary, wordForms, phraseBook);
+      linkPhraseWords(phraseCopy, dictionary, wordForms, phraseBook, coordinations);
       seeded += 1;
     }
     return seeded;
   }
 
   seedDomain(
-    domain: { vocabulary: { dictionary: Dictionary; phrases: Phrases; senses?: Senses; wordForms?: WordForms } },
+    domain: {
+      vocabulary: { dictionary: Dictionary; phrases: Phrases; senses?: Senses; wordForms?: WordForms; coordinations?: Coordinations<LinguisticUnit> };
+    },
     options?: { excludeOpenClasses?: boolean },
   ): number {
     return this.seedClosedClassWords(
@@ -1181,6 +1186,7 @@ export class WordSeeder {
       options,
       domain.vocabulary.senses,
       domain.vocabulary.wordForms,
+      domain.vocabulary.coordinations,
     );
   }
 
@@ -1251,6 +1257,7 @@ export class WordSeeder {
         phrases: Phrases;
         senses: Senses;
         wordForms?: WordForms;
+        coordinations?: Coordinations<LinguisticUnit>;
         morphologicalPointerRelationships: MorphologicalPointerRelationshipStore;
         morphologicalPointerRelationshipProcessor: MorphologicalPointerRelationshipProcessor;
         semanticRelationships: SemanticRelationshipStore;
@@ -1265,6 +1272,7 @@ export class WordSeeder {
     const phraseBook = domain.vocabulary.phrases;
     const senseStore = domain.vocabulary.senses;
     const wordForms = domain.vocabulary.wordForms;
+    const coordinations = domain.vocabulary.coordinations;
     const store = domain.vocabulary.morphologicalPointerRelationships;
     const processor = domain.vocabulary.morphologicalPointerRelationshipProcessor;
     const semanticStore = domain.vocabulary.semanticRelationships;
@@ -1476,7 +1484,7 @@ export class WordSeeder {
     // this re-link picks it up. Idempotent and harmless for a Phrase
     // that already resolved correctly -- linkPhraseWords() simply
     // recomputes the identical result again.
-    for (const phrase of phraseBook.all()) linkPhraseWords(phrase, dictionary, wordForms, phraseBook);
+    for (const phrase of phraseBook.all()) linkPhraseWords(phrase, dictionary, wordForms, phraseBook, coordinations);
 
     // senseIds accumulates in whatever order pass 1's own synset loop
     // above happened to visit each one -- byte-offset order within a

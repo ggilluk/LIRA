@@ -6,15 +6,17 @@
 import type { Dictionary } from "../../data/dictionary";
 import { EditorialLabel } from "../../data/enums/editorial_label";
 import { PartOfSpeech } from "../../data/enums/part_of_speech";
-import { ModifierRole } from "../../data/enums/modifier_role";
 import { PhraseType } from "../../data/enums/phrase_type";
 import { graphUuid, type Phrase } from "../../data/entities/phrase";
 import type { Phrases } from "../../data/phrases";
 import type { Senses } from "../../data/senses";
 import type { WordForms } from "../../data/word_forms";
+import type { Identifier } from "../../../value_objects";
+import type { Coordination } from "../../data/entities/coordination";
+import type { Word } from "../../data/entities/word";
+import type { Clause } from "../../../linguistics/data/clause";
 import { definitionWordSegment, type DefinitionSegment } from "./builder_segment";
 import { senseFieldsFor } from "./resolver_domain";
-import { classifyModifierRoles } from "../../role/processor/phrase_processor";
 
 // Phrase's own client-facing record -- deliberately leaner than
 // WordRecord (no relationship_count/definition_segments/domain):
@@ -182,31 +184,91 @@ export function phraseHeadWordSegment(
   return definitionWordSegment(form.text.value, resolved, senses, domainName, wordForms);
 }
 
-/** `phrase`'s own pre-Head and post-Head MODIFIER-role tokens
- * (data/phrase_type_patterns_and_word_roles.md's own "Phrase Role
- * Allowed Types" table, MODIFIER row) and its DETERMINER-role tokens
- * (that document's own Common Rules table -- valid regardless of
- * PhraseType or position), each as an ordered DefinitionSegment list --
- * the client-facing counterpart of `phrase.preModifiers`/
- * `phrase.postModifiers`/`phrase.determiners` (data/entities/phrase.ts's own
- * docstring on each). Built by calling classifyModifierRoles()
- * (role/processor/phrase_processor.ts) fresh over `phrase.text`'s own
- * tokens, the identical computation linkPhraseWords() itself runs at
- * seed time, rather than reading those three stored fields directly --
- * each stores only a WordForm *reference*, which drops the one thing a
- * token that fails to resolve any WordForm still needs to render
- * gracefully (its own plain surface text, `definitionWordSegment()`'s
- * own `resolved: false` fallback) -- and, for `pre`/`post` specifically,
- * still needs each token's own original phrase-local position to tell a
- * pre-Head Modifier from a post-Head one. Recomputing here keeps this
- * function correct for exactly the same reason the pre-reference-typed
- * version of this function already recomputed rather than reading
- * `preModifiers`/`postModifiers` (data_entity_design_decisions_log.md).
- * Determiners aren't split pre/post (unlike Modifiers) -- the Word
- * Patterns table has no PhraseType whose own Determiner ever follows the
- * Head, so one flat, position-ordered list covers every real case. Every
- * list is empty for a Phrase with no identified Head or no token
- * carrying that role at all (every Common Vocabulary Cache closed-class
+/** One resolved value from `phrase.preModifier`/`postModifier`/
+ * `determiner` (data/entities/phrase.ts's own docstring on each), as the
+ * client-facing shape `phraseModifierSegments()` below returns per field.
+ * A plain `DefinitionSegment` for the single-token `Identifier` case (a
+ * WordForm reference -- `phraseHeadWordSegment()`'s own identical
+ * by-reference resolution just above), or a `PhraseComplementSegment`-
+ * shaped clickable link for the multi-token `Phrase` case (a real,
+ * independently-registered nested Phrase now -- `phraseComplementSegments()`'s
+ * own identical shape and reasoning, since `preModifier`/`postModifier`/
+ * `determiner` collapse a whole multi-token span into one nested Phrase
+ * the exact same way `complements` already does, `buildNestedPhrase()`'s
+ * own docstring, role/processor/phrase_processor.ts). */
+export type ModifierSegment = DefinitionSegment | PhraseComplementSegment;
+
+/** `coordination`'s own constituents, joined back into one plain string
+ * for display ("big and red") -- a `Coordination` is never independently
+ * registered into any store with its own detail-panel route
+ * (data/coordinations.ts's own docstring: "no isXCoordination() guard
+ * family exists yet, mirroring how Coordination itself still has no
+ * seeder/UI consumer of its own"), so unlike a nested Phrase this can
+ * never render as a clickable pivot link -- there is nowhere for it to
+ * pivot to. Each coordinate is in practice always a Word or Phrase, both
+ * of which carry `text` (`resolveCoordinateSide()`'s own docstring,
+ * role/processor/phrase_processor.ts -- a coordinate is never itself a
+ * nested Coordination in anything `buildModifierUnit()` constructs
+ * today); the `"text" in coordinate` guard covers that theoretical case
+ * gracefully anyway rather than throwing. */
+function coordinationText(coordination: Coordination<Word | Phrase>, wordForms: WordForms): string {
+  const parts = coordination.coordinates.map((coordinate) => ("text" in coordinate ? coordinate.text : "…"));
+  const coordinatorText = coordination.coordinator !== undefined ? wordForms.findByUuid(coordination.coordinator.value)?.text.value : undefined;
+  if (coordinatorText === undefined) return parts.join(", ");
+  return parts.length === 2 ? `${parts[0]} ${coordinatorText} ${parts[1]}` : `${parts.slice(0, -1).join(", ")}, ${coordinatorText} ${parts[parts.length - 1]}`;
+}
+
+/** Resolves one `phrase.preModifier`/`postModifier`/`determiner` value
+ * to its own `ModifierSegment` -- `undefined` when `value` itself is
+ * (most Phrases have no Determiner, and two-thirds have no post-Head
+ * Modifier either), or when the single-token `Identifier` case fails to
+ * resolve against `wordForms` (no Head-adjacent token was ever
+ * identified for this span, or its resolved Word carries no WordForm
+ * spelled the way it appears here -- `phrase.ts`'s own docstring on when
+ * each happens). A `Clause` value is never actually constructed by
+ * `buildModifierUnit()` today (the same "documented ahead of
+ * construction" status `phraseComplementSegments()`'s own docstring
+ * already notes for its own identical `Clause` branch); `Clause` carries
+ * no `entryId` of its own (linguistics/data/clause.ts), so should one
+ * ever appear it falls into the `Identifier` branch below by the same
+ * `"entryId" in value` test, fails `wordForms.findByUuid()`, and
+ * resolves to `undefined` -- silently dropped, the same as any other
+ * unresolvable single-token case. */
+function modifierUnitSegment(
+  value: Identifier | Phrase | Coordination<Word | Phrase> | Clause | undefined,
+  dictionary: Dictionary,
+  senses: Senses,
+  domainName: string,
+  wordForms: WordForms,
+): ModifierSegment | undefined {
+  if (value === undefined) return undefined;
+  if (!("entryId" in value)) {
+    if (!("value" in value)) return undefined; // Clause -- no entryId, no `value` either; never actually constructed here.
+    const form = wordForms.findByUuid(value.value);
+    return form === undefined ? undefined : definitionWordSegment(form.text.value, dictionary.lookup(form.text.value), senses, domainName, wordForms);
+  }
+  if ("text" in value) return { id: graphUuid(value), text: value.text, phrase_type: phraseTypeLabel(value) };
+  return { text: coordinationText(value, wordForms) };
+}
+
+/** `phrase.preModifier`/`phrase.postModifier`/`phrase.determiner`
+ * (data/entities/phrase.ts's own docstring on each), each as its own
+ * `ModifierSegment` -- the client-facing counterpart of those three
+ * fields, `modifierUnitSegment()`'s own docstring on the two shapes this
+ * takes. Reads the three fields directly, unlike this function's own
+ * pre-run-collapsing version (data_entity_design_decisions_log.md),
+ * which recomputed from `phrase.text` fresh: that recomputation existed
+ * only because the old array-of-`Identifier` fields dropped a token's
+ * own surface text whenever it failed to resolve a WordForm, and
+ * `phraseHeadWordSegment()`'s own by-reference resolution just above
+ * already accepts that same limitation for `headWord`/`headWordForm` --
+ * now that a multi-token span is a real, independently-built nested
+ * Phrase or Coordination rather than an array of independent per-token
+ * references, there is nothing left for a fresh recomputation to
+ * recover that the stored field itself doesn't already carry, the same
+ * reasoning `phraseComplementSegments()`'s own docstring already gives
+ * for reading `complements` directly. `undefined` for a Phrase with no
+ * Modifier/Determiner at all (every Common Vocabulary Cache closed-class
  * Phrase, in particular, whose own `phraseType` stays undefined). */
 export function phraseModifierSegments(
   phrase: Phrase,
@@ -214,21 +276,12 @@ export function phraseModifierSegments(
   senses: Senses,
   domainName: string,
   wordForms: WordForms,
-): { pre: DefinitionSegment[]; post: DefinitionSegment[]; determiners: DefinitionSegment[] } {
-  const tokens = phrase.text.trim().split(/\s+/).filter((token) => token.length > 0);
-  const wordRoles = classifyModifierRoles(phrase.phraseType, tokens, dictionary);
-  const headIndex = wordRoles.indexOf(ModifierRole.HEAD);
-  const pre: DefinitionSegment[] = [];
-  const post: DefinitionSegment[] = [];
-  const determiners: DefinitionSegment[] = [];
-  tokens.forEach((token, index) => {
-    const role = wordRoles[index];
-    if (role !== ModifierRole.MODIFIER && role !== ModifierRole.DETERMINER) return;
-    const segment = definitionWordSegment(token, dictionary.lookup(token), senses, domainName, wordForms);
-    if (role === ModifierRole.DETERMINER) determiners.push(segment);
-    else (headIndex !== -1 && index < headIndex ? pre : post).push(segment);
-  });
-  return { pre, post, determiners };
+): { pre?: ModifierSegment; post?: ModifierSegment; determiner?: ModifierSegment } {
+  return {
+    pre: modifierUnitSegment(phrase.preModifier, dictionary, senses, domainName, wordForms),
+    post: modifierUnitSegment(phrase.postModifier, dictionary, senses, domainName, wordForms),
+    determiner: modifierUnitSegment(phrase.determiner, dictionary, senses, domainName, wordForms),
+  };
 }
 
 /** searchWords()'s own counterpart for the Phrases tab, over

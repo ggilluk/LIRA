@@ -18,6 +18,7 @@ import type { EditorialLabel } from "../enums/editorial_label";
 import type { PhraseType } from "../enums/phrase_type";
 import type { SourceReference } from "../source_reference";
 import type { Word } from "./word";
+import type { Coordination } from "./coordination";
 import type { Phrases } from "../phrases";
 import type { WordForms } from "../word_forms";
 // Known, approved exception to data/ never importing role/ -- see
@@ -158,7 +159,7 @@ export interface Phrase extends LinguisticUnit {
    * resolution and role assignment this field (and every field below)
    * derives from is computed fresh by `linkPhraseWords()`, not stored on
    * the Phrase itself -- see that function's own docstring on why: once
-   * `headWord`/`headWordForm`/`preModifiers`/`postModifiers`/`determiners`
+   * `headWord`/`headWordForm`/`preModifier`/`postModifier`/`determiner`
    * exist as their own typed fields, keeping the full per-token
    * `words`/`wordRoles` bookkeeping around too would just duplicate the
    * same facts in a second, untyped shape (data_entity_design_decisions_log.md).
@@ -179,91 +180,116 @@ export interface Phrase extends LinguisticUnit {
   headWordForm?: Identifier;
 
   /**
-   * This Phrase's own pre-Head modifying constituents -- each entry
-   * either an `Identifier` pointing at the one WordForm (owned by that
-   * MODIFIER-role token's own resolved Word) spelled exactly the way it
-   * appears here (`headWordForm`'s own identical resolution, one
-   * position over), or an embedded sub-Phrase/Clause, for the
-   * constituency-parsing case `linkPhraseWords()` never actually
-   * performs today (that function's own docstring). Every
-   * `*_phrase.ts` subtype narrows this down to the specific constituent
-   * type(s) its own MODIFIER row allows.
+   * This Phrase's own pre-Head modifying constituent -- singular, not a
+   * list: every consecutive run of MODIFIER-role tokens (before the
+   * Head) collapses into exactly one value, the same real constituency
+   * parsing `complements` below already performs for a post-Head
+   * Preposition span (`buildModifierUnit()`'s own docstring,
+   * role/processor/phrase_processor.ts, on why -- the reported case:
+   * "attributive genitive case" used to give two independent
+   * `preModifiers` entries, "attributive" and "genitive", even though
+   * "attributive genitive" is itself a real, independently-seeded
+   * two-word ADJECTIVE lemma).
    *
-   * A MODIFIER-role token whose own resolved Word carries no WordForm
-   * spelled the way it appears here is left out entirely, the same
-   * `headWordForm`-can-fail-to-resolve narrowing documented above. Empty
-   * when no token carries the MODIFIER role at all -- always true when
-   * `phraseType` is itself undefined (`phraseType`'s own docstring above
-   * on which closed-class Phrases that still is), since most PhraseType
-   * branches of `classifyModifierRoles()` only ever assign MODIFIER
-   * relative to an identified Head position.
+   * Either an `Identifier` pointing at the one WordForm (owned by a
+   * single MODIFIER-role token's own resolved Word) spelled exactly the
+   * way it appears here (`headWordForm`'s own identical resolution, one
+   * position over) -- the common single-token case -- or, for a run of
+   * two or more MODIFIER-role tokens, one embedded sub-Phrase (built and
+   * registered the same way `complements` is, `registerComplementPhrase()`'s
+   * own docstring, reused here too) or, when a genuine coordinating
+   * conjunction sits inside that run ("big and red"), one embedded
+   * `Coordination`. Every `*_phrase.ts` subtype narrows this down to the
+   * specific constituent type(s) its own MODIFIER row allows.
+   *
+   * A single MODIFIER-role token whose own resolved Word carries no
+   * WordForm spelled the way it appears here resolves to `undefined`
+   * rather than guessed at (`headWordForm`'s own identical narrowing).
+   * `undefined` when no token carries the MODIFIER role at all -- always
+   * true when `phraseType` is itself undefined (`phraseType`'s own
+   * docstring above on which closed-class Phrases that still is), since
+   * most PhraseType branches of `classifyModifierRoles()` only ever
+   * assign MODIFIER relative to an identified Head position.
    */
-  preModifiers?: readonly (Identifier | Phrase | Clause)[];
+  preModifier?: Identifier | Phrase | Coordination<Word | Phrase> | Clause;
 
   /**
-   * This Phrase's own post-Head modifying constituents --
-   * `preModifiers`'s own counterpart.
+   * This Phrase's own post-Head modifying constituent --
+   * `preModifier`'s own counterpart.
    *
-   * Empty when no token carries the MODIFIER role at all, `preModifiers`'s
-   * own exact reasoning.
+   * `undefined` when no token carries the MODIFIER role at all,
+   * `preModifier`'s own exact reasoning.
    */
-  postModifiers?: readonly (Identifier | Phrase | Clause)[];
+  postModifier?: Identifier | Phrase | Coordination<Word | Phrase> | Clause;
 
   /**
-   * This Phrase's own DETERMINER-role tokens, in phrase-text order --
-   * `preModifiers`'s own exact shape and resolution rule, one
-   * ModifierRole over (the Common Rules table's own "Determiner" row,
+   * This Phrase's own DETERMINER-role constituent -- singular, `preModifier`'s
+   * own exact shape and resolution rule (including the same run-collapsing
+   * for two or more consecutive DETERMINER-role tokens), one ModifierRole
+   * over (the Common Rules table's own "Determiner" row,
    * data/phrase_type_patterns_and_word_roles.md, applies regardless of
-   * PhraseType or position, so unlike `preModifiers`/`postModifiers`
-   * this is never split pre/post -- and, unlike them, never gated on an
-   * identified Head position either, so this can be non-empty even for a
-   * Phrase whose own `headWord` stays undefined, "each other" among
-   * them: both "each" and "other" are real DETERMINER_LEMMAS Words of
-   * their own, role/determiner_seeder.ts, so both resolve here despite
-   * neither being a Head candidate). Empty far more often than
-   * `preModifiers`/`postModifiers` are for a WordNet-seeded Phrase:
-   * WordNet lexicalizes almost none of the closed set of English
-   * determiners as a standalone sense of its own
+   * PhraseType or position, so unlike `preModifier`/`postModifier` this is
+   * never split pre/post -- and, unlike them, never gated on an identified
+   * Head position either, so this can be defined even for a Phrase whose
+   * own `headWord` stays undefined).
+   *
+   * One narrow, deliberate exception to the run-collapsing rule: a
+   * DETERMINER run that consumes every token of this Phrase's own `text`
+   * (true only when there is no Head at all -- "each other", pronouns.json,
+   * neither "each" nor "other" resolving to a Noun/Pronoun Word of its
+   * own) is never collapsed into a nested Phrase, since that nested
+   * Phrase's own `text` would be identical to this Phrase's own and
+   * recursively linking it would never terminate. That one case instead
+   * resolves to the run's own first token alone, as a bare `Identifier`
+   * (`buildModifierUnit()`'s own docstring, role/processor/phrase_processor.ts,
+   * on this guard).
+   *
+   * `undefined` far more often than `preModifier`/`postModifier` are for a
+   * WordNet-seeded Phrase: WordNet lexicalizes almost none of the closed
+   * set of English determiners as a standalone sense of its own
    * (`PHRASE_TYPE_DETERMINERS`'s own docstring, role/processor/phrase_processor.ts)
    * -- "the"/"this"/"my" have no WordNet Dictionary entry at all to
    * resolve a WordForm from -- so only the minority of determiner tokens
    * that happen to double as a real WordNet lemma ("few", "many", "all")
-   * ever appear here for one of those. A Common Vocabulary Cache
-   * PRONOUN-tagged Phrase's own determiner tokens resolve far more
-   * reliably, by contrast: `AuxiliarySeeder`/`DeterminerSeeder`
-   * (role/auxiliary_seeder.ts, role/determiner_seeder.ts) seed a real
-   * closed-class Word (and WordForm) for nearly every core English
-   * determiner, "the"/"this"/"my" included.
+   * ever resolve here. A Common Vocabulary Cache PRONOUN-tagged Phrase's
+   * own determiner token resolves far more reliably, by contrast:
+   * `AuxiliarySeeder`/`DeterminerSeeder` (role/auxiliary_seeder.ts,
+   * role/determiner_seeder.ts) seed a real closed-class Word (and
+   * WordForm) for nearly every core English determiner, "the"/"this"/"my"
+   * included.
    */
-  determiners?: readonly Identifier[];
+  determiner?: Identifier | Phrase | Coordination<Word | Phrase> | Clause;
 
   /**
    * This Phrase's own COMPLEMENT-role constituent(s) -- each entry
    * either an `Identifier` pointing at the one WordForm (owned by that
    * COMPLEMENT-role token's own resolved Word) spelled exactly the way
-   * it appears here, or an embedded sub-Phrase/Clause, `preModifiers`'
-   * own identical two-shape union one ModifierRole over. Every
-   * `*_phrase.ts` subtype that declares a COMPLEMENT row in its own
+   * it appears here, or an embedded sub-Phrase/Clause, `preModifier`'s
+   * own identical shape one ModifierRole over. Every `*_phrase.ts`
+   * subtype that declares a COMPLEMENT row in its own
    * `PHRASE_TYPE_DETAILS[...].allowedTypes` (data/enums/phrase_type.ts --
    * NounPhrase, AdjectivePhrase, PrepositionalPhrase today) narrows this
    * down to that row's own specific constituent type(s); VerbPhrase/
    * AdverbPhrase/InfinitivePhrase declare no such row and so never
-   * populate this beyond an empty array.
+   * populate this beyond an empty array. Unlike `preModifier`/
+   * `postModifier`/`determiner`, this stays an array -- a Phrase's own
+   * structure only ever has at most one Complement span in practice
+   * today (`complementStartIndex()`'s own docstring,
+   * role/processor/phrase_processor.ts), but the shape was never
+   * narrowed to a single value the way those three now are.
    *
-   * Unlike `preModifiers`/`postModifiers`, `linkPhraseWords()`
-   * (role/processor/phrase_processor.ts) does perform real constituency
-   * parsing to populate this field: a post-Head span of `text` shaped
-   * like a genuine Preposition + complement is recognised structurally
-   * (the same closed-set `PHRASE_TYPE_PREPOSITIONS` check
+   * `linkPhraseWords()` (role/processor/phrase_processor.ts) performs
+   * real constituency parsing to populate this field, `preModifier`/
+   * `postModifier`/`determiner`'s own identical treatment now (this log's
+   * own "Phrase.complements" and "preModifier/postModifier/determiner"
+   * sections, data_entity_design_decisions_log.md): a post-Head span of
+   * `text` shaped like a genuine Preposition + complement is recognised
+   * structurally (the same closed-set `PHRASE_TYPE_PREPOSITIONS` check
    * `classifyPhraseType()` itself already uses one level up) and
    * recursively built into its own nested Phrase, complete with its own
-   * `headWord`/`preModifiers`/`postModifiers`/`determiners`/
-   * `complements` -- not just left as a bare `Identifier`/skipped the
-   * way an ordinary MODIFIER-role sub-phrase still is
-   * (`preModifiers`'s own docstring on that gap, still real for the
-   * MODIFIER case). See `complementStartIndex()`'s own docstring
-   * (role/processor/phrase_processor.ts) for exactly which post-Head
-   * span, per PhraseType, is recognised this way.
+   * `headWord`/`preModifier`/`postModifier`/`determiner`/`complements`.
+   * See `complementStartIndex()`'s own docstring for exactly which
+   * post-Head span, per PhraseType, is recognised this way.
    *
    * Empty whenever no such span exists -- true for the large majority of
    * real seeded Phrases ("toy poodle", "highly reliable" have none).

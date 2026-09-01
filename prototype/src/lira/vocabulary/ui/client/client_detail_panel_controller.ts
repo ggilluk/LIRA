@@ -230,42 +230,50 @@ function headwordHTML(word) {
   return \`<span class="def-text">\${word.phrase_word_segments.map(definitionSegmentHTML).join(' ')}</span>\`;
 }
 
-// word.pre_modifiers/word.post_modifiers/word.determiners's own shared
-// render (those fields' own docstrings, builder_word.ts) -- one row per
-// MODIFIER- or DETERMINER-role token, each numbered by its own array
-// position (the simplest, and only, notion of "position" these carry --
-// pre-Modifier #1, #2, ... and post-Modifier #1, #2, ... are counted
-// separately, not as one combined sequence across the Head; Determiners
-// get their own separate count too). Reuses definitionSegmentHTML() as-is,
-// same as headwordHTML() above, so each entry gets the identical hover
-// tooltip -- part of speech, domain, and now (that function's own recent
-// addition) linked WordForm, when one of that Word's own registered
-// spellings matches this occurrence's surface text exactly. \`label\` is
-// "Determiners"/"Pre-Modifiers"/"Post-Modifiers"; returns '' for an empty
-// list rather than an empty, label-only row -- most Phrases have no
-// MODIFIER- or DETERMINER-role token at all (every Common Vocabulary
-// Cache closed-class Phrase, in particular).
-function modifierListHTML(segments, label) {
-  if (!segments || !segments.length) return '';
-  const entries = segments.map((seg, i) => \`<span class="modifier-entry" style="margin-right:10px">#\${i + 1} \${definitionSegmentHTML(seg)}</span>\`).join('');
-  return \`<div class="detail-modifiers" style="margin-top:4px"><span style="opacity:.6">\${label}:</span> \${entries}</div>\`;
+// word.pre_modifier/word.post_modifier/word.determiner's own shared
+// render (those fields' own docstrings, builder_word.ts) -- at most one
+// entry each now, not a numbered list: a run of two or more MODIFIER- or
+// DETERMINER-role tokens collapses into one nested Phrase or Coordination
+// at seed time (buildModifierUnit()'s own docstring, role/processor/phrase_processor.ts),
+// so there's never more than one pre-Modifier/post-Modifier/Determiner
+// constituent to show. Branches on the segment's own shape
+// (ModifierSegment's own docstring, builder_phrase.ts): a plain
+// DefinitionSegment (single-token case, \`.word\` present) renders via
+// definitionSegmentHTML() as-is, same hover tooltip every other word
+// token already gets; a PhraseComplementSegment-shaped link (\`.id\`
+// present -- a real, independently-registered nested Phrase) renders as
+// a clickable pivot button, complementListHTML()'s own identical
+// pattern; anything else (a Coordination, e.g. "big and red" -- never
+// independently registered anywhere, so never clickable, builder_phrase.ts's
+// own coordinationText() docstring) renders as plain text. Returns ''
+// for an absent segment rather than an empty, label-only row -- most
+// Phrases have no MODIFIER- or DETERMINER-role token at all (every
+// Common Vocabulary Cache closed-class Phrase, in particular).
+function modifierEntryHTML(segment) {
+  if (segment.id) return \`<button class="link-btn" data-pivot-id="\${segment.id}">\${segment.text}</button>\${segment.phrase_type ? ' ' + phraseTypePill(segment.phrase_type) : ''}\`;
+  if (segment.word) return definitionSegmentHTML(segment);
+  return segment.text;
+}
+function modifierRowHTML(segment, label) {
+  if (!segment) return '';
+  return \`<div class="detail-modifiers" style="margin-top:4px"><span style="opacity:.6">\${label}:</span> \${modifierEntryHTML(segment)}</div>\`;
 }
 
 // phrase.complements's own render (that field's own docstring,
 // builder_word.ts; PhraseComplementSegment's own docstring,
-// builder_phrase.ts) -- unlike modifierListHTML() above, each entry is
-// a real, independently-registered Phrase of its own now
-// (registerComplementPhrase(), role/processor/phrase_processor.ts), so
-// this links to it with the identical clickable
-// \`<button class="link-btn" data-pivot-id="...">\` pattern the
-// Relationships/Word-Forms sections already use (wireDetailPivotButtons()
-// below wires up every one of these on every render, this function's
-// own entries included) rather than reusing definitionSegmentHTML()'s
-// plain hover-only span. Badged with that nested Phrase's own
-// phrase_type, same as this Phrase's own top-level pill just above.
-// Returns '' for an empty list, \`modifierListHTML()\`'s own convention --
-// the overwhelmingly common case (most Phrases have no Complement span
-// at all).
+// builder_phrase.ts) -- always a real, independently-registered Phrase
+// of its own (registerNestedPhrase(), role/processor/phrase_processor.ts),
+// unlike modifierEntryHTML() above whose \`.id\`-shaped branch is only one
+// of three possible shapes, so this links to it unconditionally with the
+// identical clickable \`<button class="link-btn" data-pivot-id="...">\`
+// pattern the Relationships/Word-Forms sections already use
+// (wireDetailPivotButtons() below wires up every one of these on every
+// render, this function's own entries included) rather than reusing
+// definitionSegmentHTML()'s plain hover-only span. Badged with that
+// nested Phrase's own phrase_type, same as this Phrase's own top-level
+// pill just above. Returns '' for an empty list, \`modifierRowHTML()\`'s
+// own identical convention for an absent segment -- the overwhelmingly
+// common case (most Phrases have no Complement span at all).
 function complementListHTML(segments) {
   if (!segments || !segments.length) return '';
   const entries = segments
@@ -319,9 +327,9 @@ function phraseDetailHTML(phrase, rels, lexicalRels) {
     \${phrase.related_domains && phrase.related_domains.length ? \`<div class="detail-related-domains" style="margin-top:4px"><span style="opacity:.6">Also:</span> \${phrase.related_domains.map(domainPill).join(' ')}</div>\` : ''}
     <div class="detail-entry-id" title="Persistent Qualified Word Identity (domain + part of speech + word) -- stable across regenerations, unlike this phrase's transient graph id">Entry ID <code>\${phrase.entry_id}</code></div>
     \${phrase.head_word ? \`<div class="detail-head-word" style="margin-top:4px" title="The one word whose own lexical class determines this Phrase's phraseType (Head Identification Rule, data/phrase_type_patterns_and_word_roles.md) -- text shown here is its Head Word Form, the phrase-local spelling; the link resolves its own Head Word entity"><span style="opacity:.6">Head Word:</span> \${definitionSegmentHTML(phrase.head_word)}</div>\` : ''}
-    \${modifierListHTML(phrase.determiners, 'Determiners')}
-    \${modifierListHTML(phrase.pre_modifiers, 'Pre-Modifiers')}
-    \${modifierListHTML(phrase.post_modifiers, 'Post-Modifiers')}
+    \${modifierRowHTML(phrase.determiner, 'Determiner')}
+    \${modifierRowHTML(phrase.pre_modifier, 'Pre-Modifier')}
+    \${modifierRowHTML(phrase.post_modifier, 'Post-Modifier')}
     \${complementListHTML(phrase.complements)}
     <div class="detail-definition">\${renderDefinition(phrase)}</div>
     \${phraseSensesSectionHTML(phrase, rels, lexicalRels)}

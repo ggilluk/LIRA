@@ -1,15 +1,24 @@
 import { PartOfSpeech } from "../../data/enums/part_of_speech";
 import { ModifierRole } from "../../data/enums/modifier_role";
 import { PhraseType } from "../../data/enums/phrase_type";
+import { ConjunctionType } from "../../data/enums/conjunction_type";
 import type { Identifier } from "../../../value_objects";
 import type { Phrase } from "../../data/entities/phrase";
 import type { Dictionary } from "../../data/dictionary";
 import type { Word } from "../../data/entities/word";
+import type { Conjunction } from "../../data/entities/conjunction";
 import type { WordForms } from "../../data/word_forms";
 import { graphUuid as wordGraphUuid } from "../word_processor";
 import { graphUuid as wordFormGraphUuid } from "../word_form_processor";
 import { createNounPhrase } from "../../data/entities/noun_phrase";
+import { createAdjectivePhrase } from "../../data/entities/adjective_phrase";
+import { createAdverbPhrase } from "../../data/entities/adverb_phrase";
 import { createPrepositionalPhrase } from "../../data/entities/prepositional_phrase";
+import { isConjunction } from "./conjunction_processor";
+import { createCoordination } from "../coordination_processor";
+import type { Coordination } from "../../data/entities/coordination";
+import type { Coordinations } from "../../data/coordinations";
+import type { LinguisticUnit } from "../../../linguistics/data/linguistic_unit";
 import type { Phrases } from "../../data/phrases";
 
 // classifyPhraseType()'s own closed class of single-word prepositions --
@@ -407,6 +416,54 @@ function classifyComplementPhraseType(tokens: readonly string[]): PhraseType {
   return tokens.length > 0 && PHRASE_TYPE_PREPOSITIONS.has(tokens[0].toLowerCase()) ? PhraseType.PREPOSITIONAL_PHRASE : PhraseType.NOUN_PHRASE;
 }
 
+/** The PhraseType a run of two or more consecutive MODIFIER- or
+ * DETERMINER-role `tokens` should be built as, once `linkPhraseWords()`
+ * has already decided the run doesn't collapse. Structural, the same
+ * "never read off a WordNet-tagged part of speech" reasoning
+ * `classifyComplementPhraseType()` above already has -- there is none
+ * for an invented internal span. ADJECTIVE_PHRASE wins whenever any
+ * token in the run is ADJECTIVE-capable (the reported case: "attributive
+ * genitive" -- both tokens are real ADJECTIVE homographs, dict/index.adj
+ * -- classifies here, matching the real independently-seeded
+ * "attributive_genitive" ADJECTIVE Phrase exactly), else NOUN_PHRASE
+ * whenever any token is NOUN-capable, else ADVERB_PHRASE, else
+ * NOUN_PHRASE as the final default. A heuristic ordering, not an
+ * exhaustive grammar -- the same pragmatic, documented-limitation spirit
+ * `adverbPhraseHeadIndex()` below and `lastTargetPosBeforeFirstPreposition()`'s
+ * own fallback branch already have, not a claim this always matches true
+ * syntactic structure. */
+function classifyModifierPhraseType(tokens: readonly string[], dictionary: Dictionary): PhraseType {
+  const possiblePos = tokens.map((token) => possiblePartsOfSpeech(token, dictionary));
+  if (possiblePos.some((pos) => pos.has(PartOfSpeech.ADJECTIVE))) return PhraseType.ADJECTIVE_PHRASE;
+  if (possiblePos.some((pos) => pos.has(PartOfSpeech.NOUN))) return PhraseType.NOUN_PHRASE;
+  if (possiblePos.some((pos) => pos.has(PartOfSpeech.ADVERB))) return PhraseType.ADVERB_PHRASE;
+  return PhraseType.NOUN_PHRASE;
+}
+
+/** The one token index, strictly between the first and last position of
+ * `tokens`, whose own `dictionary.lookupAll()` includes a real
+ * `Conjunction` Word with `conjunctionType === ConjunctionType.COORDINATING`
+ * -- `WordCoordinationSeeder`'s own identical resolution check
+ * (role/word_coordination_seeder.ts), reused here for the same reason:
+ * a modifier/determiner run shaped like "big and red" should become one
+ * `Coordination`, not one flat nested Phrase whose own internal
+ * structure quietly discards the fact it was ever coordinate at all.
+ * Binary split only ("X and Y") -- no comma-aware N-ary coordination
+ * ("red, white, and blue"): unlike `WordCoordinationSeeder`, which reads
+ * N-ary coordinates from a structured JSON `coordinates` array, this
+ * parses free text, and a real bundled multi-word WordNet/Common-
+ * Vocabulary-Cache lemma never contains a coordinated modifier span at
+ * all (verified directly: no `X_and_Y_Z`/`X_or_Y_Z` 3-word lemma exists
+ * in dict/data.{noun,adj,verb,adv}, no closed-class JSON lemma contains
+ * " and "/" or " either) -- so there is no real shape to generalise
+ * against yet. `undefined` when no such token exists. */
+function coordinatingConjunctionIndex(tokens: readonly string[], dictionary: Dictionary): number | undefined {
+  for (let i = 1; i < tokens.length - 1; i++) {
+    if (isCoordinatingConjunctionToken(tokens[i], dictionary)) return i;
+  }
+  return undefined;
+}
+
 /** AdverbPhrase's own Head Identification Rule -- everywhere else
  * `lastTargetPosBeforeFirstPreposition` decides it, except for the one
  * ambiguity that function alone can't resolve: two adjacent tokens both
@@ -582,10 +639,52 @@ function nonHeadModifierRole(
   }
 }
 
+/** The part-of-speech set a coordinate Word inside a MODIFIER or
+ * DETERMINER run is allowed to resolve against -- `nonHeadModifierRole()`'s
+ * own per-`phraseType` switch just above, re-expressed as the allowed-POS
+ * set for that context instead of a per-token role decision, since
+ * `resolveCoordinateSide()` (below) needs to resolve each coordinate's own
+ * Word by the ROLE this run is playing in its parent Phrase, not by
+ * re-guessing a POS from the coordinate tokens' own ambiguous homograph
+ * set the way `classifyModifierPhraseType()` does for choosing a brand
+ * new nested Phrase's own `phraseType` (a different concern -- that
+ * nested Phrase gets its own full recursive `linkPhraseWords()` pass
+ * afterward to self-correct any imprecision there; a Coordination's own
+ * embedded Word has no such second pass). `role` is always MODIFIER or
+ * DETERMINER (`buildModifierUnit()`'s only two callers, `linkPhraseWords()`);
+ * DETERMINER ignores `phraseType` entirely -- the Common Rules table's
+ * own "Determiner" row applies the same way regardless of PhraseType or
+ * position (`Phrase.determiner`'s own docstring). `isPreHead` only
+ * matters for PREPOSITIONAL_PHRASE, whose own MODIFIER row is the one
+ * case `nonHeadModifierRole()` itself splits by position (ADVERB before
+ * the Head, ADJECTIVE after) -- ignored, and may be omitted, for every
+ * other `phraseType`/`role` combination. Empty for a `phraseType`/`role`
+ * pair no Word Role Assignment row ever assigns MODIFIER to a
+ * coordinate-eligible run for (INFINITIVE_PHRASE, `undefined`) --
+ * `resolvedWordFor()`'s own graceful "falls back to the first homograph"
+ * behavior for an empty target set, `resolveCoordinateSide()`'s own
+ * unchanged reasoning either way. */
+function modifierRunTargetPos(phraseType: PhraseType | undefined, role: ModifierRole.MODIFIER | ModifierRole.DETERMINER, isPreHead?: boolean): ReadonlySet<PartOfSpeech> {
+  if (role === ModifierRole.DETERMINER) return new Set([PartOfSpeech.DETERMINER]);
+  switch (phraseType) {
+    case PhraseType.NOUN_PHRASE:
+      return new Set([PartOfSpeech.NOUN, PartOfSpeech.ADJECTIVE, PartOfSpeech.ADVERB]);
+    case PhraseType.VERB_PHRASE:
+    case PhraseType.ADVERB_PHRASE:
+      return new Set([PartOfSpeech.ADVERB]);
+    case PhraseType.ADJECTIVE_PHRASE:
+      return new Set([PartOfSpeech.ADVERB, PartOfSpeech.ADJECTIVE]);
+    case PhraseType.PREPOSITIONAL_PHRASE:
+      return new Set([isPreHead ? PartOfSpeech.ADVERB : PartOfSpeech.ADJECTIVE]);
+    default:
+      return new Set();
+  }
+}
+
 /** Breaks `phrase`'s own `text` into its whitespace-separated tokens
  * ("toy poodle" -> ["toy", "poodle"]) and resolves every one of
- * `phrase.headWord`/`phrase.headWordForm`/`phrase.preModifiers`/
- * `phrase.postModifiers`/`phrase.determiners` (data/entities/phrase.ts's own
+ * `phrase.headWord`/`phrase.headWordForm`/`phrase.preModifier`/
+ * `phrase.postModifier`/`phrase.determiner` (data/entities/phrase.ts's own
  * docstring on each) from that decomposition -- `words`/`wordRoles`
  * themselves (each token's own resolved Word reference and
  * classifyModifierRoles()'s own per-token role) are local to this
@@ -631,60 +730,75 @@ function nonHeadModifierRole(
  * WordForm (if any) whose own spelling case-insensitively matches this
  * Head's literal occurrence in `phrase.text` -- the same match
  * `definitionWordSegment()` performs (ui/server/builder_segment.ts).
- * `matchingFormId()` below is this exact resolution, shared by every
- * field that needs it: `headWordForm` and every `preModifiers`/
- * `postModifiers`/`determiners` entry alike are all "the one WordForm
- * on this token's own resolved Word spelled the way this token actually
- * appears here" -- a token whose own resolved Word carries no such
- * WordForm is left out of whichever field it would have populated,
+ * `matchingFormId()` below is this exact single-token resolution;
+ * `singleTokenModifierId()` further below is its own standalone
+ * counterpart, used the identical way for a lone MODIFIER/DETERMINER
+ * token -- both are "the one WordForm on this token's own resolved Word
+ * spelled the way this token actually appears here", a token whose own
+ * resolved Word carries no such WordForm resolving to `undefined`
  * rather than guessed at (`headWordForm`'s own docstring on this same
  * narrowing). `wordForms` is optional, matching every other seeding
  * pass's own `Senses`/`WordForms` convention -- omitted, every
- * WordForm-dependent field stays empty/undefined even when a Head or
+ * WordForm-dependent field stays `undefined` even when a Head or
  * Modifier was identified.
  *
- * `preModifiers`/`postModifiers` collect every MODIFIER-role token
- * (before/after the Head, respectively); `determiners` collects every
- * DETERMINER-role token, never split pre/post (the Common Rules table's
- * own "Determiner" row applies regardless of position,
- * data/phrase_type_patterns_and_word_roles.md). Deliberately Word/WordForm-only:
- * the Phrase Role Allowed Types table also permits a MODIFIER to be a
- * sub-phrase (AdjectivePhrase, NounPhrase, AdverbPhrase,
- * PrepositionalPhrase) or a Clause, but classifyModifierRoles() above
- * only ever reasons about flat whitespace tokens for a MODIFIER, never
- * nested spans -- so a MODIFIER token that resolves to a Phrase/Clause
- * span rather than a single Word is left out of every array rather than
- * guessed at.
+ * `preModifier`/`postModifier`/`determiner` each resolve one maximal
+ * run of same-role tokens (`buildModifierUnit()` below) -- MODIFIER
+ * tokens split into a pre-Head run and a post-Head run
+ * (`preHeadModifierRun()`/`postHeadModifierRun()`), DETERMINER tokens
+ * into one run regardless of position (`determinerRun()`, the Common
+ * Rules table's own "Determiner" row applies regardless of position,
+ * data/phrase_type_patterns_and_word_roles.md). A run of exactly one
+ * token resolves the same way it always did -- a bare WordForm
+ * `Identifier` (`singleTokenModifierId()`). A run of two or more tokens
+ * is where this now genuinely differs from before: it becomes one
+ * nested Phrase (`buildNestedPhrase()`, `classifyModifierPhraseType()`'s
+ * own docstring on which PhraseType) or, when a genuine coordinating
+ * conjunction sits inside the run ("big and red"), one real
+ * `Coordination` (`coordinatingConjunctionIndex()`/
+ * `registerModifierCoordination()`) -- the reported fix: "attributive
+ * genitive case" used to give two independent, unrelated `preModifiers`
+ * entries for "attributive" and "genitive" even though "attributive
+ * genitive" is itself a real, independently-seeded two-word ADJECTIVE
+ * lemma; it now collapses into that one nested AdjectivePhrase instead.
  *
- * `phrase.complements` is the one field this function genuinely does
- * build a nested sub-Phrase for. When `classifyModifierRoles()` finds a
+ * One narrow, deliberate exception: a DETERMINER run that consumes
+ * every token of `tokens` (only possible when there is no Head at all --
+ * "each other", pronouns.json, neither "each" nor "other" resolving to
+ * a Noun/Pronoun Word of its own) is never collapsed, even at length 2 --
+ * doing so would build a nested Phrase whose own `text` is identical to
+ * this Phrase's own, and recursively linking it would never terminate
+ * (an identical child, forever). That one case resolves to the run's own
+ * first token alone, `singleTokenModifierId()`'s plain single-token
+ * treatment, dropping the rest -- a narrow, documented compromise for
+ * this one idiom shape, not a general limitation.
+ *
+ * `phrase.complements` also genuinely builds a nested sub-Phrase, the
+ * identical `buildNestedPhrase()` mechanism `preModifier`/`postModifier`/
+ * `determiner` now share: when `classifyModifierRoles()` finds a
  * ModifierRole.COMPLEMENT position (`complementStartIndex()`'s own
  * docstring on exactly which token, per PhraseType), every token from
- * there to the end of `tokens` is joined back into one span of text and
- * recursively linked into a brand-new Phrase of its own
- * (`buildComplementPhrase()` below -- a nested PrepositionalPhrase or
- * NounPhrase, `classifyComplementPhraseType()`'s own docstring on which)
- * via a recursive `linkPhraseWords()` call, complete with its own
- * `headWord`/`headWordForm`/`preModifiers`/`postModifiers`/`determiners`/
- * `complements`. Every token at or past that same start index is then
- * skipped entirely by the flat `preModifiers`/`postModifiers`/
- * `determiners` loop below -- it belongs to the nested Phrase now, not
- * this one (a Determiner genuinely inside the Complement span, like "a"
- * in "of a nuisance", becomes the nested Phrase's own `determiners`
- * entry instead of this one's, `data/entities/phrase.ts`'s own
- * `complements` docstring). `complements` is always set to an array
- * (possibly empty, `preModifiers`'s own convention), never left
- * `undefined`, whenever this function runs at all.
+ * there to the end of `tokens` becomes one nested Phrase (a
+ * PrepositionalPhrase or NounPhrase, `classifyComplementPhraseType()`'s
+ * own docstring on which), complete with its own `headWord`/
+ * `headWordForm`/`preModifier`/`postModifier`/`determiner`/`complements`.
+ * `complements` stays an array (`data/entities/phrase.ts`'s own docstring
+ * on why, unlike the three singular fields), always set (possibly
+ * empty), never left `undefined`, whenever this function runs at all.
  *
  * `phrases` (optional, the same convention `wordForms` already has) is
- * this parent's own Phrases store -- when supplied, the nested
- * Complement Phrase is found-or-created directly *in* that store
- * (`registerComplementPhrase()`, below `buildComplementPhrase()`'s own
- * docstring), so it becomes its own real, independently-listed and
- * independently-searchable entry, the same as a real WordNet-seeded
- * multi-word Phrase -- not just an object reachable only by walking
- * into its parent's own `complements` array. Omitted, the nested Phrase
- * is still built and fully linked exactly the same way, just never
+ * this parent's own Phrases store -- when supplied, every nested Phrase
+ * this function builds (for a Complement span, or for a collapsed
+ * Modifier/Determiner run) is found-or-created directly *in* that store
+ * (`registerNestedPhrase()`), so it becomes its own real, independently-
+ * listed and independently-searchable entry, the same as a real
+ * WordNet-seeded multi-word Phrase -- not just an object reachable only
+ * by walking into its parent's own fields. `coordinations` (optional,
+ * the identical convention) is this parent's own Coordinations store --
+ * when supplied, every Coordination this function builds is likewise
+ * found-or-created directly in it (`registerModifierCoordination()`).
+ * Either store omitted, the corresponding nested Phrase/Coordination is
+ * still built and fully linked exactly the same way, just never
  * registered anywhere -- purely an embedded, in-memory detail. */
 /** `token`'s own resolved Word actually matching `targetPos` --
  * `linkPhraseWords()`'s own Head-position fix, `possiblePartsOfSpeech()`'s
@@ -702,84 +816,352 @@ function resolvedWordFor(token: string, targetPos: ReadonlySet<PartOfSpeech>, di
   return homographs.find((word) => targetPos.has(word.partOfSpeech)) ?? dictionary.lookup(token);
 }
 
-/** The `partOfSpeech` a synthetic, constituency-derived complement
- * Phrase gets tagged with in `Phrases.append()` -- there is no WordNet
- * tag to carry over (`classifyComplementPhraseType()`'s own docstring),
- * so this invents a fresh, self-consistent one instead of borrowing an
- * arbitrary existing tag: NOUN for a NounPhrase complement (matching
- * `classifyPhraseType()`'s own NOUN -> NOUN_PHRASE default one Phrase-
- * structure level up), PREPOSITION for a PrepositionalPhrase complement
- * -- genuinely used for once, unlike every real WordNet-tagged
- * PrepositionalPhrase, which is always ADJECTIVE/ADVERB-tagged instead
- * (`data/entities/prepositional_phrase.ts`'s own docstring on why). This
- * also usefully distinguishes a complement-derived PrepositionalPhrase
- * from a WordNet one at the `Phrases.partOfSpeechOf()` level, should a
- * caller ever need to tell them apart. */
-function partOfSpeechForComplementPhraseType(phraseType: PhraseType): PartOfSpeech {
-  return phraseType === PhraseType.PREPOSITIONAL_PHRASE ? PartOfSpeech.PREPOSITION : PartOfSpeech.NOUN;
+/** `token`'s own WordForm reference, the standalone counterpart of
+ * `linkPhraseWords()`'s own local `matchingFormId()` closure for a
+ * single non-Head MODIFIER/DETERMINER token -- functionally identical
+ * (`dictionary.lookup(token)` is exactly what `matchingFormId()` already
+ * resolves any non-Head position to), just usable from a top-level
+ * function that isn't itself a closure over `linkPhraseWords()`'s own
+ * `words`/`tokens`, since `buildModifierUnit()` below is called with an
+ * arbitrary token sub-span, not a whole-phrase index. `undefined` when
+ * `dictionary` has no Word for `token` at all, or when its resolved
+ * Word carries no WordForm spelled exactly the way `token` appears --
+ * `headWordForm`'s own identical narrowing (data/entities/phrase.ts). */
+function singleTokenModifierId(token: string, dictionary: Dictionary, wordForms?: WordForms): Identifier | undefined {
+  const word = dictionary.lookup(token);
+  if (word === undefined || wordForms === undefined) return undefined;
+  const form = wordForms.formsOf(word).find((candidate) => candidate.text.value.toLowerCase() === token.toLowerCase());
+  return form === undefined ? undefined : { value: wordFormGraphUuid(form) };
 }
 
-/** Finds or creates `text`'s own complement Phrase in `phrases`, so a
- * genuine, real constituent like "of a nuisance" becomes its own
- * independently-listed, independently-searchable entry in the Phrases
- * store -- not just an object embedded inside its parent's own
- * `complements` array. Reuses an existing entry (matched by `text` +
- * `phraseType` + the same synthetic `partOfSpeech`
- * `partOfSpeechForComplementPhraseType()` above assigns) rather than
- * appending a second copy whenever one already exists -- the same
- * (text, tag) dedup shape `word_seeder.ts`'s own WordNet Phrase append
- * site already uses for exactly the same reason. This is what keeps
- * the whole feature idempotent: `linkPhraseWords()` genuinely runs more
- * than once over the same real Phrase within a single seeding pass
- * (`word_seeder.ts`'s own closed-class-then-WordNet re-link pass) and
- * again on every repeat `seedWordNet()` call, and without this reuse
- * check each of those would append its own fresh duplicate "of a
- * nuisance" every single time. A reused entry still gets recursively
- * re-linked below (`buildComplementPhrase()`'s own caller) -- harmless
- * and idempotent, `word_seeder.ts`'s own "simply recomputes the
- * identical result again" precedent for the closed-class re-link pass. */
-function registerComplementPhrase(phrases: Phrases, text: string, phraseType: PhraseType): Phrase {
-  const partOfSpeech = partOfSpeechForComplementPhraseType(phraseType);
+/** The `partOfSpeech` a synthetic, constituency-derived nested Phrase
+ * gets tagged with in `Phrases.append()` -- there is no WordNet tag to
+ * carry over (`classifyComplementPhraseType()`/`classifyModifierPhraseType()`'s
+ * own docstrings), so this invents a fresh, self-consistent one instead
+ * of borrowing an arbitrary existing tag: NOUN for a NounPhrase (matching
+ * `classifyPhraseType()`'s own NOUN -> NOUN_PHRASE default one Phrase-
+ * structure level up), ADJECTIVE/ADVERB for an Adjective/AdverbPhrase
+ * the same direct way, PREPOSITION for a PrepositionalPhrase -- genuinely
+ * used for once, unlike every real WordNet-tagged PrepositionalPhrase,
+ * which is always ADJECTIVE/ADVERB-tagged instead
+ * (`data/entities/prepositional_phrase.ts`'s own docstring on why). This
+ * also usefully distinguishes a constituency-derived nested Phrase from
+ * a WordNet one at the `Phrases.partOfSpeechOf()` level, should a caller
+ * ever need to tell them apart. */
+function partOfSpeechForPhraseType(phraseType: PhraseType): PartOfSpeech {
+  switch (phraseType) {
+    case PhraseType.PREPOSITIONAL_PHRASE:
+      return PartOfSpeech.PREPOSITION;
+    case PhraseType.ADJECTIVE_PHRASE:
+      return PartOfSpeech.ADJECTIVE;
+    case PhraseType.ADVERB_PHRASE:
+      return PartOfSpeech.ADVERB;
+    default:
+      return PartOfSpeech.NOUN;
+  }
+}
+
+/** Builds a bare `phraseType`-shaped Phrase for `text` -- the one-of-four
+ * dispatch `registerNestedPhrase()`/`buildNestedPhrase()` below both
+ * need, kept as its own function so neither has to repeat it. */
+function createNestedPhrase(phraseType: PhraseType, text: string): Phrase {
+  switch (phraseType) {
+    case PhraseType.PREPOSITIONAL_PHRASE:
+      return createPrepositionalPhrase({ text });
+    case PhraseType.ADJECTIVE_PHRASE:
+      return createAdjectivePhrase({ text });
+    case PhraseType.ADVERB_PHRASE:
+      return createAdverbPhrase({ text });
+    default:
+      return createNounPhrase({ text });
+  }
+}
+
+/** Finds or creates `text`'s own nested Phrase in `phrases`, so a
+ * genuine, real constituent -- a Complement span ("of a nuisance") or a
+ * collapsed multi-word Modifier/Determiner run ("attributive genitive")
+ * alike -- becomes its own independently-listed, independently-
+ * searchable entry in the Phrases store, not just an object embedded
+ * inside its parent's own fields. Reuses an existing entry (matched by
+ * `text` + `phraseType` + the same synthetic `partOfSpeech`
+ * `partOfSpeechForPhraseType()` above assigns) rather than appending a
+ * second copy whenever one already exists -- the same (text, tag) dedup
+ * shape `word_seeder.ts`'s own WordNet Phrase append site already uses
+ * for exactly the same reason. This is what keeps the whole feature
+ * idempotent: `linkPhraseWords()` genuinely runs more than once over the
+ * same real Phrase within a single seeding pass (`word_seeder.ts`'s own
+ * closed-class-then-WordNet re-link pass) and again on every repeat
+ * `seedWordNet()` call, and without this reuse check each of those would
+ * append its own fresh duplicate every single time. A reused entry still
+ * gets recursively re-linked below (`buildNestedPhrase()`'s own caller)
+ * -- harmless and idempotent, `word_seeder.ts`'s own "simply recomputes
+ * the identical result again" precedent for the closed-class re-link
+ * pass. */
+function registerNestedPhrase(phrases: Phrases, text: string, phraseType: PhraseType): Phrase {
+  const partOfSpeech = partOfSpeechForPhraseType(phraseType);
   const existing = phrases.lookupAll(text).find((candidate) => candidate.phraseType === phraseType && phrases.partOfSpeechOf(candidate) === partOfSpeech);
   if (existing !== undefined) return existing;
-  const created = phraseType === PhraseType.PREPOSITIONAL_PHRASE ? createPrepositionalPhrase({ text }) : createNounPhrase({ text });
+  const created = createNestedPhrase(phraseType, text);
   phrases.append(created, partOfSpeech);
   return created;
 }
 
-/** Builds and fully links the one nested Phrase a COMPLEMENT span's own
- * `tokens` become -- `linkPhraseWords()`'s own docstring on when this is
- * called. `classifyComplementPhraseType()` decides the shape
- * structurally (never from a WordNet-tagged part of speech -- there is
- * none for an invented internal span). When `phrases` is supplied, the
- * Phrase itself is found-or-created via `registerComplementPhrase()`
- * above, so it becomes its own real, independently-listed entry in the
- * Phrases store; when omitted (matching every other optional-store
- * convention `linkPhraseWords()` already has), it's built bare via
- * `createPrepositionalPhrase()`/`createNounPhrase()` and never
+/** Builds and fully links the one nested Phrase a Complement span, or a
+ * collapsed Modifier/Determiner run, own `tokens` become --
+ * `linkPhraseWords()`'s own docstring on both call shapes. `phraseType`
+ * is decided by the caller (`classifyComplementPhraseType()` for a
+ * Complement span, `classifyModifierPhraseType()` for a Modifier/
+ * Determiner run or a coordinate side) -- never read off a WordNet-
+ * tagged part of speech, there is none for an invented internal span.
+ * When `phrases` is supplied, the Phrase itself is found-or-created via
+ * `registerNestedPhrase()` above, so it becomes its own real,
+ * independently-listed entry in the Phrases store; when omitted
+ * (matching every other optional-store convention `linkPhraseWords()`
+ * already has), it's built bare via `createNestedPhrase()` and never
  * registered anywhere, staying purely an embedded, in-memory detail of
- * its parent's own `complements` array. Either way, the recursive
- * `linkPhraseWords()` call populates everything else on it exactly as
- * if it had been a real top-level Phrase all along -- including its own
- * `complements`, so a span nested two Prepositions deep ("out of
- * [print]" -> "of [print]" nested once more inside that) resolves
- * correctly, and (when `phrases` is supplied) registers itself the same
- * way, without this function needing its own separate recursion limit
- * or loop. */
-function buildComplementPhrase(tokens: readonly string[], dictionary: Dictionary, wordForms?: WordForms, phrases?: Phrases): Phrase {
-  const phraseType = classifyComplementPhraseType(tokens);
+ * its parent's own fields. Either way, the recursive `linkPhraseWords()`
+ * call populates everything else on it exactly as if it had been a real
+ * top-level Phrase all along -- including its own nested `complements`/
+ * `preModifier`/`postModifier`/`determiner`, so a span nested two
+ * Prepositions deep ("out of [print]" -> "of [print]" nested once more
+ * inside that) resolves correctly, and (when `phrases`/`coordinations`
+ * are supplied) registers itself the same way, without this function
+ * needing its own separate recursion limit or loop. */
+function buildNestedPhrase(
+  tokens: readonly string[],
+  phraseType: PhraseType,
+  dictionary: Dictionary,
+  wordForms?: WordForms,
+  phrases?: Phrases,
+  coordinations?: Coordinations<LinguisticUnit>,
+): Phrase {
   const text = tokens.join(" ");
-  const complement =
-    phrases !== undefined
-      ? registerComplementPhrase(phrases, text, phraseType)
-      : phraseType === PhraseType.PREPOSITIONAL_PHRASE
-        ? createPrepositionalPhrase({ text })
-        : createNounPhrase({ text });
-  linkPhraseWords(complement, dictionary, wordForms, phrases);
-  return complement;
+  const nested = phrases !== undefined ? registerNestedPhrase(phrases, text, phraseType) : createNestedPhrase(phraseType, text);
+  linkPhraseWords(nested, dictionary, wordForms, phrases, coordinations);
+  return nested;
 }
 
-export function linkPhraseWords(phrase: Phrase, dictionary: Dictionary, wordForms?: WordForms, phrases?: Phrases): void {
+/** One side of a coordinated Modifier/Determiner run ("big" or "red" in
+ * "big and red") -- length 1 resolves via `resolvedWordFor()` against
+ * `targetPos` (the same POS-aware resolution the Head position itself
+ * gets, more precise than `singleTokenModifierId()`'s plain first-
+ * homograph pick, since a coordinate side's own Word is embedded
+ * directly into `Coordination.coordinates`, not referenced by
+ * `Identifier` -- `createCoordination()`'s own established "embed real
+ * objects, not references" shape, `WordCoordinationSeeder`'s identical
+ * precedent); length 2 or more recurses into one further nested Phrase
+ * via `buildNestedPhrase()`, one level only -- a coordinate side is
+ * never itself searched for a second, nested coordination (no real
+ * bundled data ever exercises this, `coordinatingConjunctionIndex()`'s
+ * own docstring). `undefined` only when `tokens` is empty, which
+ * `coordinatingConjunctionIndex()`'s own bounds (`1 <= i <= length - 2`)
+ * already guarantee never happens for either side. */
+function resolveCoordinateSide(
+  tokens: readonly string[],
+  targetPos: ReadonlySet<PartOfSpeech>,
+  dictionary: Dictionary,
+  wordForms?: WordForms,
+  phrases?: Phrases,
+  coordinations?: Coordinations<LinguisticUnit>,
+): Word | Phrase | undefined {
+  if (tokens.length === 0) return undefined;
+  if (tokens.length === 1) return resolvedWordFor(tokens[0], targetPos, dictionary);
+  return buildNestedPhrase(tokens, classifyModifierPhraseType(tokens, dictionary), dictionary, wordForms, phrases, coordinations);
+}
+
+/** Finds or creates a `Coordination` for `coordinates`/`coordinator` in
+ * `coordinations` -- `Coordinations` has no text index at all
+ * (documented design choice, data/coordinations.ts: "a Coordination
+ * carries no `text` of its own to index"), so dedup here is a linear
+ * scan comparing each coordinate's own `entryId.uuid` in order (a Word,
+ * Phrase, and nested Coordination alike all carry that field) plus the
+ * coordinator's own `value` -- cheap, a real Coordinations store stays
+ * small. `registerNestedPhrase()`'s own reuse-before-create shape,
+ * adapted to the store this actually has. Builds via `createCoordination()`
+ * (role/coordination_processor.ts) when no match is found. `coordinator`
+ * is resolved by the caller against the *existing* WordForm on the
+ * matched Conjunction Word (`singleTokenModifierId()`) -- this function
+ * never registers a new WordForm, `linkPhraseWords()`'s own identical
+ * invariant. */
+function registerModifierCoordination(
+  coordinations: Coordinations<LinguisticUnit>,
+  coordinates: readonly (Word | Phrase)[],
+  coordinator: Identifier | undefined,
+): Coordination<Word | Phrase> {
+  // `coordinations.all()` is typed `Coordination<LinguisticUnit>` (the
+  // store's own broad, mixed-specialisation shape, data/coordinations.ts's
+  // own docstring) -- every coordinate here is in fact a Word or Phrase
+  // (this function's own real callers, `buildModifierUnit()`), both of
+  // which genuinely carry `entryId` despite `LinguisticUnit` itself not
+  // declaring it, so the cast below is safe at runtime.
+  const existing = coordinations.all().find((candidate) => {
+    if (candidate.coordinates.length !== coordinates.length) return false;
+    if ((candidate.coordinator?.value ?? undefined) !== (coordinator?.value ?? undefined)) return false;
+    return candidate.coordinates.every((entry, i) => (entry as { entryId: Identifier }).entryId.uuid === coordinates[i].entryId.uuid);
+  });
+  if (existing !== undefined) return existing as unknown as Coordination<Word | Phrase>;
+  const created = createCoordination<Word | Phrase>({ coordinates, coordinator });
+  coordinations.append(created);
+  return created;
+}
+
+/** Resolves one maximal run of same-role `tokens` (length 1 or more) to
+ * `phrase.preModifier`/`postModifier`/`determiner`'s own value --
+ * `linkPhraseWords()`'s own docstring on when each of the three calls
+ * this, and on the one determiner-only exception it never reaches this
+ * function for. Length 1 -> `singleTokenModifierId()` (unchanged from
+ * before this feature). Length 2 or more -> `coordinatingConjunctionIndex()`
+ * first: found -> split the run around it, `resolveCoordinateSide()`
+ * each half against `targetPos` (`modifierRunTargetPos()`'s own docstring
+ * on why this, not `classifyModifierPhraseType()`, decides each
+ * coordinate Word's own POS -- the run's *role* in its parent Phrase
+ * already pins that down, it isn't re-guessed from the coordinate
+ * tokens' own ambiguous homograph set), `registerModifierCoordination()`
+ * (or a bare, unregistered `createCoordination()` when `coordinations`
+ * is omitted); not found -> `classifyModifierPhraseType()` +
+ * `buildNestedPhrase()`, one flat nested Phrase for the whole run --
+ * unlike the coordination branch, this one DOES still classify from the
+ * run's own tokens, since it's deciding a brand new nested Phrase's own
+ * `phraseType`, not a single Word's POS, and that nested Phrase gets its
+ * own full recursive `linkPhraseWords()` pass afterward to self-correct
+ * any imprecision here. `undefined` when `tokens` is empty (no run at
+ * all). */
+function buildModifierUnit(
+  tokens: readonly string[],
+  targetPos: ReadonlySet<PartOfSpeech>,
+  dictionary: Dictionary,
+  wordForms?: WordForms,
+  phrases?: Phrases,
+  coordinations?: Coordinations<LinguisticUnit>,
+): Identifier | Phrase | Coordination<Word | Phrase> | undefined {
+  if (tokens.length === 0) return undefined;
+  if (tokens.length === 1) return singleTokenModifierId(tokens[0], dictionary, wordForms);
+
+  const conjunctionIndex = coordinatingConjunctionIndex(tokens, dictionary);
+  if (conjunctionIndex !== undefined) {
+    const leftTokens = tokens.slice(0, conjunctionIndex);
+    const rightTokens = tokens.slice(conjunctionIndex + 1);
+    const left = resolveCoordinateSide(leftTokens, targetPos, dictionary, wordForms, phrases, coordinations);
+    const right = resolveCoordinateSide(rightTokens, targetPos, dictionary, wordForms, phrases, coordinations);
+    if (left !== undefined && right !== undefined) {
+      const coordinatorWord = dictionary
+        .lookupAll(tokens[conjunctionIndex])
+        .find((word): word is Conjunction => isConjunction(word) && word.conjunctionType === ConjunctionType.COORDINATING);
+      const coordinatorId = coordinatorWord !== undefined ? singleTokenModifierId(tokens[conjunctionIndex], dictionary, wordForms) : undefined;
+      return coordinations !== undefined
+        ? registerModifierCoordination(coordinations, [left, right], coordinatorId)
+        : createCoordination<Word | Phrase>({ coordinates: [left, right], coordinator: coordinatorId });
+    }
+  }
+
+  return buildNestedPhrase(tokens, classifyModifierPhraseType(tokens, dictionary), dictionary, wordForms, phrases, coordinations);
+}
+
+/** Whether `tokens[index]` resolves to a real COORDINATING `Conjunction`
+ * Word -- `coordinatingConjunctionIndex()`'s own membership check, pulled
+ * out as its own predicate so `extendRunBackward()`/`extendRunForward()`
+ * below can reuse it to recognise a coordinator sitting inside an
+ * otherwise-contiguous MODIFIER/DETERMINER run ("big *and* red"), not
+ * just to locate one already known to be inside a run. */
+function isCoordinatingConjunctionToken(token: string, dictionary: Dictionary): boolean {
+  return dictionary.lookupAll(token).some((word): word is Conjunction => isConjunction(word) && word.conjunctionType === ConjunctionType.COORDINATING);
+}
+
+/** Extends a same-`role` run backward from `start` (exclusive) as far as
+ * it goes -- one token at a time for an ordinary contiguous run, or two
+ * at a time when the immediately preceding token is a real coordinating
+ * conjunction (`isCoordinatingConjunctionToken()`) bridging back to
+ * another same-`role` token just beyond it ("red" <- "and" <- "big", for
+ * a MODIFIER run) -- `classifyModifierRoles()` never assigns MODIFIER or
+ * DETERMINER to a Conjunction-only token itself (`nonHeadModifierRole()`'s
+ * own switch has no Conjunction-role branch, `possiblePartsOfSpeech()`
+ * never returns CONJUNCTION alongside NOUN/ADJECTIVE/ADVERB/DETERMINER
+ * for any of "and"/"or"/"nor"/"but"), so without this bridge a
+ * coordinator embedded in a run would stop `preHeadModifierRun()`/
+ * `postHeadModifierRun()`/`determinerRun()` right at its own position,
+ * the same way any other non-`role` token does -- `buildModifierUnit()`'s
+ * own `coordinatingConjunctionIndex()` split would then never see it,
+ * since it only ever runs over whatever span these three functions
+ * already decided was the run. Only ever bridges one coordinator deep on
+ * either side, matching `coordinatingConjunctionIndex()`'s own binary-
+ * split-only scope ("X and Y", never a comma-joined "X, Y, and Z"). */
+function extendRunBackward(wordRoles: readonly (ModifierRole | undefined)[], tokens: readonly string[], dictionary: Dictionary, start: number, role: ModifierRole): number {
+  while (start > 0) {
+    if (wordRoles[start - 1] === role) {
+      start -= 1;
+      continue;
+    }
+    if (start > 1 && wordRoles[start - 1] === undefined && wordRoles[start - 2] === role && isCoordinatingConjunctionToken(tokens[start - 1], dictionary)) {
+      start -= 2;
+      continue;
+    }
+    break;
+  }
+  return start;
+}
+
+/** `extendRunBackward()`'s own forward counterpart. */
+function extendRunForward(wordRoles: readonly (ModifierRole | undefined)[], tokens: readonly string[], dictionary: Dictionary, end: number, role: ModifierRole): number {
+  while (end + 1 < wordRoles.length) {
+    if (wordRoles[end + 1] === role) {
+      end += 1;
+      continue;
+    }
+    if (end + 2 < wordRoles.length && wordRoles[end + 1] === undefined && wordRoles[end + 2] === role && isCoordinatingConjunctionToken(tokens[end + 1], dictionary)) {
+      end += 2;
+      continue;
+    }
+    break;
+  }
+  return end;
+}
+
+/** The maximal run of pre-Head MODIFIER-role `wordRoles`, immediately
+ * adjacent to `headIndex` -- `[start, end)` token indices, `undefined`
+ * when the token immediately before the Head isn't itself MODIFIER-role
+ * (no run at all). Every real Word Role Assignment row places a
+ * NounPhrase/AdjectivePhrase/AdverbPhrase's own pre-Head Modifiers
+ * immediately before the Head with nothing else between, so an ordinary
+ * run is genuinely contiguous -- but `extendRunBackward()`'s own bridging
+ * lets this reach one token further back across a real coordinating
+ * conjunction ("big and red" -> one run of three, not two separate
+ * one-token Modifiers either side of an unrecognised "and"). */
+function preHeadModifierRun(wordRoles: readonly (ModifierRole | undefined)[], headIndex: number, tokens: readonly string[], dictionary: Dictionary): [number, number] | undefined {
+  if (headIndex <= 0 || wordRoles[headIndex - 1] !== ModifierRole.MODIFIER) return undefined;
+  return [extendRunBackward(wordRoles, tokens, dictionary, headIndex - 1, ModifierRole.MODIFIER), headIndex];
+}
+
+/** `preHeadModifierRun()`'s own post-Head counterpart. */
+function postHeadModifierRun(wordRoles: readonly (ModifierRole | undefined)[], headIndex: number, tokens: readonly string[], dictionary: Dictionary): [number, number] | undefined {
+  if (headIndex === -1 || headIndex >= wordRoles.length - 1 || wordRoles[headIndex + 1] !== ModifierRole.MODIFIER) return undefined;
+  return [headIndex + 1, extendRunForward(wordRoles, tokens, dictionary, headIndex + 1, ModifierRole.MODIFIER) + 1];
+}
+
+/** The maximal run of DETERMINER-role `wordRoles`, starting at the first
+ * one found -- `[start, end)` token indices, `undefined` when no token
+ * carries the role at all. Unlike `preHeadModifierRun()`/
+ * `postHeadModifierRun()`, this never gates on a Head position (the
+ * Common Rules table's own "Determiner" row applies regardless of
+ * position or PhraseType, `Phrase.determiner`'s own docstring), so it
+ * scans the whole token list -- ordinarily a genuinely contiguous run
+ * ("each other", both tokens DETERMINER, positions 0-1, the one real
+ * bundled multi-token case), extended the same `extendRunForward()` way
+ * as `postHeadModifierRun()` across a real coordinating conjunction
+ * ("his or her", never a real bundled example either, but structurally
+ * identical to a coordinated Modifier run). */
+function determinerRun(wordRoles: readonly (ModifierRole | undefined)[], tokens: readonly string[], dictionary: Dictionary): [number, number] | undefined {
+  const start = wordRoles.indexOf(ModifierRole.DETERMINER);
+  if (start === -1) return undefined;
+  return [start, extendRunForward(wordRoles, tokens, dictionary, start, ModifierRole.DETERMINER) + 1];
+}
+
+export function linkPhraseWords(
+  phrase: Phrase,
+  dictionary: Dictionary,
+  wordForms?: WordForms,
+  phrases?: Phrases,
+  coordinations?: Coordinations<LinguisticUnit>,
+): void {
   const tokens = phrase.text.trim().split(/\s+/).filter((token) => token.length > 0);
   const wordRoles = classifyModifierRoles(phrase.phraseType, tokens, dictionary);
   const headIndex = wordRoles.indexOf(ModifierRole.HEAD);
@@ -801,20 +1183,32 @@ export function linkPhraseWords(phrase: Phrase, dictionary: Dictionary, wordForm
   phrase.headWordForm = headIndex === -1 ? undefined : matchingFormId(headIndex);
 
   const complementIndex = wordRoles.indexOf(ModifierRole.COMPLEMENT);
-  phrase.complements = complementIndex === -1 ? [] : [buildComplementPhrase(tokens.slice(complementIndex), dictionary, wordForms, phrases)];
+  phrase.complements =
+    complementIndex === -1
+      ? []
+      : [buildNestedPhrase(tokens.slice(complementIndex), classifyComplementPhraseType(tokens.slice(complementIndex)), dictionary, wordForms, phrases, coordinations)];
 
-  const preModifiers: Identifier[] = [];
-  const postModifiers: Identifier[] = [];
-  const determiners: Identifier[] = [];
-  for (let i = 0; i < tokens.length; i++) {
-    if (i === headIndex) continue;
-    if (wordRoles[i] !== ModifierRole.MODIFIER && wordRoles[i] !== ModifierRole.DETERMINER) continue;
-    const formId = matchingFormId(i);
-    if (formId === undefined) continue;
-    if (wordRoles[i] === ModifierRole.DETERMINER) determiners.push(formId);
-    else (headIndex !== -1 && i < headIndex ? preModifiers : postModifiers).push(formId);
+  const preRun = preHeadModifierRun(wordRoles, headIndex, tokens, dictionary);
+  phrase.preModifier =
+    preRun === undefined
+      ? undefined
+      : buildModifierUnit(tokens.slice(preRun[0], preRun[1]), modifierRunTargetPos(phrase.phraseType, ModifierRole.MODIFIER, true), dictionary, wordForms, phrases, coordinations);
+
+  const postRun = postHeadModifierRun(wordRoles, headIndex, tokens, dictionary);
+  phrase.postModifier =
+    postRun === undefined
+      ? undefined
+      : buildModifierUnit(tokens.slice(postRun[0], postRun[1]), modifierRunTargetPos(phrase.phraseType, ModifierRole.MODIFIER, false), dictionary, wordForms, phrases, coordinations);
+
+  const detRun = determinerRun(wordRoles, tokens, dictionary);
+  if (detRun === undefined) {
+    phrase.determiner = undefined;
+  } else if (detRun[0] === 0 && detRun[1] === tokens.length) {
+    // The one deliberate exception a Determiner run never collapses for
+    // -- `linkPhraseWords()`'s own docstring on why ("each other" would
+    // otherwise recurse forever into an identical child).
+    phrase.determiner = singleTokenModifierId(tokens[detRun[0]], dictionary, wordForms);
+  } else {
+    phrase.determiner = buildModifierUnit(tokens.slice(detRun[0], detRun[1]), modifierRunTargetPos(phrase.phraseType, ModifierRole.DETERMINER), dictionary, wordForms, phrases, coordinations);
   }
-  phrase.preModifiers = preModifiers;
-  phrase.postModifiers = postModifiers;
-  phrase.determiners = determiners;
 }

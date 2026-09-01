@@ -36,7 +36,7 @@
  * other", "no one", "the former", ...) -- a Pronoun-headed phrase
  * genuinely is structurally a Noun Phrase, this subtype's own
  * "Noun/Pronoun" head shape below. `headWord`/`headWordForm`/
- * `preModifiers`/`postModifiers` are genuinely populated for these too
+ * `preModifier`/`postModifier` are genuinely populated for these too
  * now -- `seedClosedClassWords()`'s own Phrase loop
  * (role/word_seeder.ts) calls linkPhraseWords() there as well, the
  * identical call seedWordNet() already makes for a WordNet-seeded
@@ -75,8 +75,8 @@
  * (Complements)" above) always said it could be.
  *
  * `headWord` (data/entities/phrase.ts's own docstring on it) is a graph-reference
- * pointer, not narrowed to any Word subtype here the way `preModifiers`/
- * `postModifiers` below are -- an `Identifier` carries no type of its
+ * pointer, not narrowed to any Word subtype here the way `preModifier`/
+ * `postModifier` below are -- an `Identifier` carries no type of its
  * own to narrow. For a real seeded NounPhrase it always resolves
  * (`Dictionary.findByUuid()`) to a `Noun | Pronoun`: this subtype's own
  * Head Identification Rule never resolves to any other Word subtype
@@ -87,25 +87,27 @@
  * `seedWordNet()`'s and `seedClosedClassWords()`'s own call sites,
  * word_seeder.ts.
  *
- * `preModifiers` narrows Phrase's own same-named field (data/entities/phrase.ts's
+ * `preModifier` narrows Phrase's own same-named field (data/entities/phrase.ts's
  * own docstring on it) down to the exact constituent set
  * data/phrase_type_patterns_and_word_roles.md's own "Phrase Role
  * Allowed Types" table gives NounPhrase's own MODIFIER row: an
- * `Adjective | Noun`-capable token's own WordForm reference, or an
- * `AdjectivePhrase | NounPhrase | AdverbPhrase | PrepositionalPhrase |
- * Clause` sub-constituent -- the same "an Identifier carries no type of
- * its own to narrow" reasoning `headWord` above already has, so this
- * narrows the embedded-subtype half of the union only, never the
- * `Identifier` half. Same real-population status as `headWord` above,
- * for the single-Word-constituent case only -- linkPhraseWords()'s own
- * docstring on why a sub-phrase/Clause modifier is left out rather than
- * guessed at, and on why a WordForm that fails to resolve is too.
+ * `Adjective | Noun`-capable token's own WordForm reference for the
+ * single-token case, or an `AdjectivePhrase | NounPhrase | AdverbPhrase |
+ * PrepositionalPhrase | Coordination | Clause` sub-constituent for a run
+ * of two or more MODIFIER-role tokens (real constituency parsing now,
+ * `buildModifierUnit()`'s own docstring, role/processor/phrase_processor.ts)
+ * -- the same "an Identifier carries no type of its own to narrow"
+ * reasoning `headWord` above already has, so this narrows the embedded-
+ * subtype half of the union only, never the `Identifier` half. A single
+ * MODIFIER-role token whose own resolved Word carries no WordForm
+ * spelled the way it appears here resolves to `undefined` rather than
+ * guessed at.
  *
- * `postModifiers` narrows Phrase's own same-named field (data/entities/phrase.ts's
+ * `postModifier` narrows Phrase's own same-named field (data/entities/phrase.ts's
  * own docstring on it) down to that exact same constituent set --
- * `preModifiers`' own MODIFIER row makes no pre/post distinction, so
- * NounPhrase's post-Head modifier set is identical to its pre-Head one.
- * Same real-population status as `preModifiers` above.
+ * `preModifier`'s own MODIFIER row makes no pre/post distinction, so
+ * NounPhrase's post-Head modifier is resolved the identical way its
+ * pre-Head one is.
  *
  * `complements` narrows Phrase's own same-named field (data/entities/phrase.ts's
  * own docstring on it) down to NounPhraseComplement above. Genuinely
@@ -115,7 +117,8 @@
  * complement, running to the end of `text` -- built as one nested
  * PrepositionalPhrase ("abatement of [a nuisance]"; "toy poodle" has no
  * such token at all, so its own `complements` stays empty, same as
- * `preModifiers`/`postModifiers` do whenever no matching token exists).
+ * `preModifier`/`postModifier` staying `undefined` whenever no matching
+ * token exists).
  * A `Clause` complement is never constructed -- this codebase performs
  * no clause-level parsing within a Phrase's own text at all, only the
  * PrepositionalPhrase case `classifyComplementPhraseType()`'s own
@@ -127,9 +130,11 @@ import type { Identifier } from "../../../value_objects";
 import type { AdjectivePhrase } from "./adjective_phrase";
 import type { AdverbPhrase } from "./adverb_phrase";
 import type { PrepositionalPhrase } from "./prepositional_phrase";
+import type { Coordination } from "./coordination";
+import type { Word } from "./word";
 import type { Clause } from "../../../linguistics/data/clause";
 
-type NounPhraseModifier = Identifier | AdjectivePhrase | NounPhrase | AdverbPhrase | PrepositionalPhrase | Clause;
+type NounPhraseModifier = Identifier | AdjectivePhrase | NounPhrase | AdverbPhrase | PrepositionalPhrase | Coordination<Word | Phrase> | Clause;
 
 /** NounPhrase's own COMPLEMENT allowed-types row
  * (`PHRASE_TYPE_DETAILS[PhraseType.NOUN_PHRASE].allowedTypes`,
@@ -138,15 +143,15 @@ type NounPhraseComplement = Identifier | PrepositionalPhrase | Clause;
 
 export interface NounPhrase extends Phrase {
   phraseType: PhraseType.NOUN_PHRASE;
-  preModifiers: readonly NounPhraseModifier[];
-  postModifiers: readonly NounPhraseModifier[];
+  preModifier?: NounPhraseModifier;
+  postModifier?: NounPhraseModifier;
   complements: readonly NounPhraseComplement[];
 }
 
 export type NounPhraseInit = Pick<Phrase, "text"> &
-  Partial<Omit<Phrase, "text" | "phraseType" | "preModifiers" | "postModifiers" | "complements">> & {
-    preModifiers?: readonly NounPhraseModifier[];
-    postModifiers?: readonly NounPhraseModifier[];
+  Partial<Omit<Phrase, "text" | "phraseType" | "preModifier" | "postModifier" | "complements">> & {
+    preModifier?: NounPhraseModifier;
+    postModifier?: NounPhraseModifier;
     complements?: readonly NounPhraseComplement[];
   };
 

@@ -1824,3 +1824,260 @@ nuisance** [Prepositional Phrase]" row; clicking it navigates to "of a
 nuisance"'s own detail panel, correctly breaking its own headword down
 into "of"/"a"/"nuisance" via the ordinary `phrase_word_segments`
 rendering every other Phrase already gets.
+
+## `Phrase.preModifier`/`postModifier`/`determiner`: array -> singular, with real run-collapsing
+
+### The reported bug: "attributive genitive case" split its own "attributive genitive" into two unrelated Modifiers
+
+`Phrase.preModifiers`/`postModifiers` (arrays of bare `Identifier` --
+each a WordForm reference) and `determiners` (same shape) assigned one
+array entry per MODIFIER- or DETERMINER-role token, independently of
+its neighbors. "attributive genitive case" (06322991-n, dict/data.noun)
+seeds as a real NounPhrase, head "case" -- correct -- but its own two
+pre-Head tokens landed as two independent `preModifiers` entries,
+"attributive" and "genitive" each on their own, even though "attributive
+genitive" is *itself* a real, independently-seeded two-word ADJECTIVE
+lemma of its own (00174035-s, dict/data.adj -- WordNet's own "-s" suffix
+for a satellite-adjective sense, still plain `PartOfSpeech.ADJECTIVE`
+here) sharing the identical synset as "attributive_genitive_case"
+itself. Reported directly, with the exact expected shape named: a
+Modifier run of 2+ tokens should collapse into one nested Phrase (or a
+`Coordination`, when a real coordinating conjunction sits inside the
+run), the same way `Phrase.complements` already collapses a post-Head
+span -- not stay a flat array of single-word entries. Explicitly scoped
+to apply the identical fix to `postModifier` and `determiner` too.
+
+### Field shape: singular, three-way union
+
+Base `Phrase`: `preModifiers?`/`postModifiers?: readonly (Identifier |
+Phrase | Clause)[]` and `determiners?: readonly Identifier[]` became
+`preModifier?`/`postModifier?`/`determiner?: Identifier | Phrase |
+Coordination<Word | Phrase> | Clause` -- one value, not an array;
+`determiner` gains the same `Phrase`/`Coordination` embedding
+`preModifier`/`postModifier` already had (it never supported anything
+but a bare `Identifier` before, since no real bundled DETERMINER run
+was ever longer than the one "each other" exception, below). Every
+`*_phrase.ts` subtype's own narrowed `XPhraseModifier` union followed
+the same singular rename and gained `Coordination<Word | Phrase>`
+alongside its existing `Identifier`/embedded-Phrase branches.
+`AdjectivePhraseModifier` also gained a self-referential `AdjectivePhrase`
+branch while already being touched here -- correcting a pre-existing,
+harmless gap between `PHRASE_TYPE_DETAILS[ADJECTIVE_PHRASE].allowedTypes.MODIFIER`
+(which only ever listed `["Adverb", "AdverbPhrase"]`) and the real
+runtime `nonHeadModifierRole()` ADJECTIVE_PHRASE branch (which already
+treated an ADJECTIVE-capable pre-Head token as a genuine Modifier too,
+"bone dry" -- degree-modifier-less compounding). `complements` is
+untouched -- it stays an array, `Phrase.complements`'s own docstring on
+why a Complement span never has more than one constituent in practice
+even though the field's own shape doesn't structurally forbid it.
+
+### Run-collapsing algorithm (`role/processor/phrase_processor.ts`)
+
+`preHeadModifierRun()`/`postHeadModifierRun()`/`determinerRun()` find
+the maximal contiguous same-role token span adjacent to (or, for
+`determinerRun()`, anywhere in) `wordRoles` -- `[start, end)` indices,
+`undefined` when no run exists. `buildModifierUnit()` resolves one such
+span: length 1 -> `singleTokenModifierId()` (unchanged, the pre-existing
+per-token WordForm-reference resolution `linkPhraseWords()`'s own local
+`matchingFormId()` closure already did, pulled out standalone since this
+function now operates on an arbitrary token sub-span, not a whole-phrase
+index); length 2+ -> `coordinatingConjunctionIndex()` first (below),
+falling back to `classifyModifierPhraseType()` + `buildNestedPhrase()`
+(one flat nested Phrase for the whole run, `registerNestedPhrase()`'s
+own find-or-create dedup against `phrases` when supplied -- the exact
+mechanism `Phrase.complements`'s own `registerComplementPhrase()`
+already established one section up, generalised here beyond just
+Complements and renamed to match: `partOfSpeechForComplementPhraseType()`
+-> `partOfSpeechForPhraseType()`, `registerComplementPhrase()`/
+`buildComplementPhrase()` -> `registerNestedPhrase()`/`buildNestedPhrase()`).
+`classifyModifierPhraseType()` picks the new nested Phrase's own
+`phraseType` structurally from the run's own tokens (ADJECTIVE_PHRASE if
+any token is ADJECTIVE-capable, else NOUN_PHRASE if any is NOUN-capable,
+else ADVERB_PHRASE, else NOUN_PHRASE default) -- verified this picks
+ADJECTIVE_PHRASE for "attributive genitive", matching the real
+independently-seeded Phrase exactly.
+
+**The determiner self-reference guard.** A pre-/post-Head MODIFIER run
+can never span every token in `tokens` -- a Head token always sits
+outside it by construction. A DETERMINER run *can*: "each other"
+(pronouns.json) has no Head at all, both tokens DETERMINER-role,
+spanning 100% of `tokens`. Collapsing that would build a nested Phrase
+whose own `text` equals its parent's, and recursively linking it would
+never terminate (an identical child containing an identical child,
+forever). `linkPhraseWords()` checks for this one case explicitly
+(`detRun[0] === 0 && detRun[1] === tokens.length`) and falls back to the
+run's own first token alone via `singleTokenModifierId()` instead of
+collapsing -- a narrow, deliberate compromise scoped to this one real
+idiom shape, not a general non-collapsing rule (verified: "each other"
+own updated test now asserts `determiner` resolves "each" alone, not a
+nested "each other" Phrase).
+
+### Coordination detection: `coordinatingConjunctionIndex()`, and why it needed run-detection changes of its own
+
+`coordinatingConjunctionIndex()` finds the one token index (strictly
+between a run's own first and last position) whose own
+`dictionary.lookupAll(token)` includes a real `Conjunction` Word with
+`conjunctionType === ConjunctionType.COORDINATING` (`isConjunction()`,
+role/processor/conjunction_processor.ts) -- `WordCoordinationSeeder`'s
+own identical resolution pattern, reused rather than reinvented. Binary
+split only ("X and Y") -- no comma-aware N-ary coordination, matching
+the scope of the one real precedent this mirrors (`WordCoordinationSeeder`
+handles N-ary via structured JSON `coordinates`, not free-text parsing).
+Found -> split the run around it, resolve each side
+(`resolveCoordinateSide()`: length 1 -> `resolvedWordFor()` against the
+run's own target POS below; length 2+ -> one further nested Phrase, one
+level only -- a coordinate side is never itself searched for a second,
+nested coordination), `registerModifierCoordination(coordinations,
+coordinates, coordinator)` finds-or-creates the `Coordination` in the
+supplied `Coordinations` store (a linear scan over `coordinations.all()`
+comparing each coordinate's own `entryId.uuid` in order plus
+`coordinator?.value` -- `Coordinations` has no text index of its own to
+do better with, `data/coordinations.ts`'s own documented design choice)
+or builds a bare, unregistered one via `createCoordination()` when
+`coordinations` is omitted, the same "optional store" convention
+`wordForms`/`phrases` already have.
+
+Getting the run itself to include the embedded coordinator at all needed
+its own fix. `classifyModifierRoles()` never assigns MODIFIER or
+DETERMINER to a Conjunction-only token ("and"/"or"/... resolve to
+CONJUNCTION alone, never alongside NOUN/ADJECTIVE/ADVERB/DETERMINER), so
+a naive contiguous-role scan stops dead at the coordinator -- "big and
+red" would scan as one lone MODIFIER ("red") immediately before the
+Head, with "big" and "and" left outside the run entirely, coordination
+detection never even reached. `extendRunBackward()`/`extendRunForward()`
+(shared by all three run-finding functions) bridge exactly one such gap:
+after an ordinary same-role token, also accept a real coordinating
+conjunction (`isCoordinatingConjunctionToken()`, the membership check
+`coordinatingConjunctionIndex()` itself already made, pulled out so both
+call sites share it) immediately followed by one more same-role token
+beyond it -- one bridge deep on either side, matching
+`coordinatingConjunctionIndex()`'s own binary-split-only scope.
+
+**Coordinate resolution needed its own target-POS fix, not
+`classifyModifierPhraseType()`'s.** The first working version resolved
+each coordinate side against `headTargetPartsOfSpeech(classifyModifierPhraseType(tokens))`
+-- reusing the same heuristic `buildNestedPhrase()`'s own non-coordination
+branch already uses to pick a brand new nested Phrase's own `phraseType`.
+That's the wrong POS source for a coordinate Word specifically: a
+coordinate's own correct POS is already pinned down by the *role* this
+run is playing in its parent Phrase (e.g. ADVERB, for a VERB_PHRASE
+post-Head Modifier run), not by re-guessing from the coordinate tokens'
+own ambiguous homograph set -- and the two disagree often enough to
+matter. Caught live against the real bundled data: `move_back_and_forth`
+(01880523-v) is a real four-token VerbPhrase ("move" Head, "back and
+forth" one post-Head Modifier run); `classifyModifierPhraseType(["back",
+"forth"])` picked NOUN_PHRASE (both tokens are *also* real NOUN
+homographs -- "forth" names a river, capitalized "Forth"), so the
+coordinate resolution searched for a NOUN "forth" and silently returned
+the wrong homograph -- a Scottish river standing in for the adverb.
+Fixed by adding `modifierRunTargetPos(phraseType, role, isPreHead?)`,
+`nonHeadModifierRole()`'s own per-`phraseType` MODIFIER/DETERMINER
+switch re-expressed as an allowed-POS *set* instead of a per-token role
+decision (NOUN_PHRASE -> `{NOUN, ADJECTIVE, ADVERB}`; VERB_PHRASE/
+ADVERB_PHRASE -> `{ADVERB}`; ADJECTIVE_PHRASE -> `{ADVERB, ADJECTIVE}`;
+PREPOSITIONAL_PHRASE -> `{ADVERB}` pre-Head / `{ADJECTIVE}` post-Head;
+DETERMINER role, any `phraseType` -> `{DETERMINER}`), computed once in
+`linkPhraseWords()` from the enclosing Phrase's own `phraseType` and
+passed into `buildModifierUnit()`/`resolveCoordinateSide()` directly --
+`classifyModifierPhraseType()` stays exactly as it was, still used
+(correctly) for the non-coordination nested-Phrase-`phraseType` decision
+one branch over, since that nested Phrase gets its own full recursive
+`linkPhraseWords()` pass afterward to self-correct any imprecision there,
+the same safety net a directly-embedded `Coordination` Word never gets.
+
+### Verified against real seeded WordNet + Common Vocabulary Cache data, not just synthetic tests
+
+Contrary to this feature's own original plan, which found no real
+bundled `X_and_Y_Z`-shaped 3-word lemma and assumed coordination
+detection could only be verified synthetically: a live dump against the
+real seeded data (`seedClosedClassWords({ excludeOpenClasses: true })` +
+`seedWordNet()`, `coordinations` threaded through) found **48** real,
+correctly-structured Modifier-run coordinations -- almost entirely
+genuine multi-word organisation/idiom names whose own coordinated span
+is embedded *inside* a longer WordNet lemma, not the lemma's whole text:
+"National Aeronautics and Space Administration" -> "National Aeronautics"/
+"Space" either side of "and"; "search and rescue [mission]"; "Health and
+Human [Services]"; "profit and loss"; "clear and present [danger]";
+"last but not [least]" (a real `but`-coordinated one, not just `and`).
+Of those 48, 15 have at least one multi-word (nested Phrase) coordinate
+side rather than a single Word on both sides. `vocabulary.test.ts`'s own
+pure-function synthetic test ("big and red dog" against a hand-seeded
+four-Word Dictionary) still exists alongside this, since it's the only
+way to exercise the idempotent-re-link/`Coordinations`-store-registration
+path in isolation from ~92,000 other Words' worth of real seeding noise
+-- but the claim that no real bundled coordination example exists was
+wrong, and the feature turns out to do real, immediately useful work
+against the bundled data as shipped, not just a hypothetical.
+
+This interaction changed two pre-existing `WordCoordinationSeeder`/
+`coordinationRecords()` test expectations that had implicitly assumed
+`coordinations` stayed empty until `WordCoordinationSeeder` ran: it
+doesn't any more, since `seedWordNet()` now threads `coordinations`
+through every `linkPhraseWords()` call
+(role/word_seeder.ts's own `seedClosedClassWords()`/`seedWordNet()`,
+both gaining an optional `coordinations?: Coordinations<LinguisticUnit>`
+parameter, `VocabularyContext.coordinations` already existed and needed
+no change of its own). `coordinations.totalEntries()` after
+`WordCoordinationSeeder` runs is `48 + 9`, not `9` alone -- the two
+pipelines' totals simply add, even on the one case where they happen to
+name the same real-world pairing ("back and forth" is independently both
+one of `word_coordinations.json`'s own 9 hand-curated entries *and* one
+of the 48 auto-detected ones, from the unrelated `move_back_and_forth`
+lemma above) -- neither pipeline dedups against the other's own entries,
+so this is an accepted, harmless doubling, not a bug. `coordinationRecords()`'s
+own count grew by 33, not 48: `coordinationRecordFor()`'s pre-existing
+`isWord()` guard silently drops any Coordination with a multi-word
+(Phrase) coordinate side, the same as it always has -- 15 of the 48 hit
+that guard, leaving 33 that render.
+
+### UI (`ui/server/builder_phrase.ts`/`builder_word.ts`, `ui/client/client_detail_panel_controller.ts`)
+
+`phraseModifierSegments()` no longer recomputes from `phrase.text` via a
+fresh `classifyModifierRoles()` pass the way its array-shaped
+predecessor did (that recomputation existed only to recover a token's
+own plain surface text when no WordForm matched it, an `Identifier`-only
+concern) -- now that a multi-token span is a real, independently-built
+nested Phrase or Coordination rather than an array of independent
+per-token references, it reads `phrase.preModifier`/`postModifier`/
+`determiner` directly, `phraseComplementSegments()`'s own identical
+"nothing left for a fresh recomputation to recover" reasoning. Returns
+`{ pre?, post?, determiner?: ModifierSegment }`, `ModifierSegment` being
+`DefinitionSegment | PhraseComplementSegment` -- the single-token
+`Identifier` case renders as a plain word (hover-tooltip only, reusing
+`definitionWordSegment()`), the multi-token nested-Phrase case as a
+`PhraseComplementSegment`-shaped clickable link (`{ id, text,
+phrase_type }`, `phraseComplementSegments()`'s own exact shape and
+reasoning -- a nested Phrase here is registered into `Phrases` the same
+way a Complement already is). A `Coordination` value renders as plain
+joined text instead of a link (`coordinationText()`, joining each
+coordinate's own `text` around the coordinator's own spelling) --
+deliberately never clickable, unlike a nested Phrase: a `Coordination`
+is never independently registered into any store with its own
+detail-panel route (`data/coordinations.ts`'s own docstring: "no
+isXCoordination() guard family exists yet, mirroring how Coordination
+itself still has no seeder/UI consumer of its own"), so a pivot link
+here would resolve nowhere. `WordRecord.pre_modifiers`/`post_modifiers`/
+`determiners` (arrays) became `pre_modifier`/`post_modifier`/`determiner`
+(single, possibly-undefined `ModifierSegment`) in both `searchWords({
+wordId })` branches; the client's own `modifierListHTML()` (numbered,
+array-shaped) was replaced by `modifierEntryHTML()`/`modifierRowHTML()`,
+branching on the segment's own shape (`.id` present -> clickable link,
+`.word` present -> `definitionSegmentHTML()`, neither -> plain text) for
+a single entry rather than an indexed list.
+
+### Verified end-to-end
+
+`npx tsc -b --force` clean. Full `vitest run --no-file-parallelism`:
+169/169 passing, including a new dedicated "attributive genitive case"
+test (verifying `preModifier` is the exact same already-seeded
+"attributive genitive" AdjectivePhrase object, not a fresh duplicate --
+`registerNestedPhrase()`'s own dedup working end to end against real
+WordNet data) and a new synthetic Coordination test ("big and red dog"
+against a hand-seeded Dictionary, verifying `coordinates`/`coordinator`/
+store-registration/idempotent re-linking). Live Playwright check against
+the real running app: seeded WordNet, searched "attributive genitive
+case" in the Phrases tab, opened its detail panel, confirmed a single
+"Pre-Modifier: **attributive genitive**" link (not two separate word
+chips), clicked through to confirm "attributive genitive" is its own
+real Phrases-tab row with head "genitive" and its own "attributive"
+Pre-Modifier.
