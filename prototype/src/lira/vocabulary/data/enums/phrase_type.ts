@@ -64,12 +64,13 @@ export enum PhraseType {
  * Allowed Types" table specifies, made machine-readable -- for each
  * `ModifierRole` a PhraseType actually uses, which LIRA type (a Word
  * subtype, a Phrase subtype, or Clause, named by its own type name)
- * may fill that role. Plain data, not a new rule system, classifier,
- * or validation mechanism -- nothing in this codebase reads or
- * enforces this yet, the same "declared ahead of any real consumer"
- * status `ModifierRole.COMPLEMENT` itself has (enums/modifier_role.ts's
- * own docstring). `INFINITIVE_PHRASE` carries no entries here, the
- * same reason it carries no row in that document's own table. */
+ * may fill that role. Still plain data, not read programmatically by
+ * anything in this codebase -- `role/processor/phrase_processor.ts`'s
+ * own `complementStartIndex()` mirrors this table's own COMPLEMENT rows
+ * by hand, in its own `switch` over `PhraseType`, rather than looking
+ * this map up at runtime, so the two must be kept in sync by eye, not by
+ * construction. `INFINITIVE_PHRASE` carries no entries here, the same
+ * reason it carries no row in that document's own table. */
 export const PHRASE_TYPE_DETAILS: Record<
   PhraseType,
   { definition: string; structure: string; example: string; allowedTypes: Partial<Record<ModifierRole, readonly string[]>> }

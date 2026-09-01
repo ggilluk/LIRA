@@ -61,9 +61,18 @@
  * Pronoun. Not yet enforced anywhere (no runtime or TypeScript
  * validation mechanism exists for ModifierRole-per-PhraseType today --
  * a later change may add one once constituent/role validation is
- * designed); documented here ahead of that enforcement, the same way
- * ModifierRole.COMPLEMENT itself is named ahead of any seeder that
- * assigns it.
+ * designed); documented here ahead of that enforcement.
+ *
+ * ModifierRole.COMPLEMENT is genuinely assigned now, not just declared
+ * ahead of a seeder (`complements`' own docstring below,
+ * role/processor/phrase_processor.ts's own `classifyModifierRoles()`/
+ * `complementStartIndex()`) -- "abatement of a nuisance" (00362285-n,
+ * dict/data.noun) was the reported case that surfaced the gap: a
+ * post-Head "Preposition + complement" span like "of a nuisance" used
+ * to be silently dropped entirely (no role, no field, nowhere), rather
+ * than becoming the genuine PrepositionalPhrase constituent this
+ * subtype's own structure ("(Determiner) + (Modifiers) + Noun/Pronoun +
+ * (Complements)" above) always said it could be.
  *
  * `headWord` (data/entities/phrase.ts's own docstring on it) is a graph-reference
  * pointer, not narrowed to any Word subtype here the way `preModifiers`/
@@ -96,28 +105,49 @@
  * own docstring on it) down to that exact same constituent set --
  * `preModifiers`' own MODIFIER row makes no pre/post distinction, so
  * NounPhrase's post-Head modifier set is identical to its pre-Head one.
- * Same real-population status as `preModifiers` above. */
+ * Same real-population status as `preModifiers` above.
+ *
+ * `complements` narrows Phrase's own same-named field (data/entities/phrase.ts's
+ * own docstring on it) down to NounPhraseComplement above. Genuinely
+ * populated by `linkPhraseWords()` for the real case this subtype's own
+ * structure comment already named: a token immediately after the Head
+ * capable of reading as a Preposition starts this NounPhrase's own
+ * complement, running to the end of `text` -- built as one nested
+ * PrepositionalPhrase ("abatement of [a nuisance]"; "toy poodle" has no
+ * such token at all, so its own `complements` stays empty, same as
+ * `preModifiers`/`postModifiers` do whenever no matching token exists).
+ * A `Clause` complement is never constructed -- this codebase performs
+ * no clause-level parsing within a Phrase's own text at all, only the
+ * PrepositionalPhrase case `classifyComplementPhraseType()`'s own
+ * docstring covers (role/processor/phrase_processor.ts). */
 
 import { PhraseType } from "../enums/phrase_type";
 import { createPhrase, type Phrase } from "./phrase";
 import type { Identifier } from "../../../value_objects";
 import type { AdjectivePhrase } from "./adjective_phrase";
 import type { AdverbPhrase } from "./adverb_phrase";
-import type { PrepositionalPhrase } from "../prepositional_phrase";
+import type { PrepositionalPhrase } from "./prepositional_phrase";
 import type { Clause } from "../../../linguistics/data/clause";
 
 type NounPhraseModifier = Identifier | AdjectivePhrase | NounPhrase | AdverbPhrase | PrepositionalPhrase | Clause;
+
+/** NounPhrase's own COMPLEMENT allowed-types row
+ * (`PHRASE_TYPE_DETAILS[PhraseType.NOUN_PHRASE].allowedTypes`,
+ * data/enums/phrase_type.ts): `["PrepositionalPhrase", "Clause"]`. */
+type NounPhraseComplement = Identifier | PrepositionalPhrase | Clause;
 
 export interface NounPhrase extends Phrase {
   phraseType: PhraseType.NOUN_PHRASE;
   preModifiers: readonly NounPhraseModifier[];
   postModifiers: readonly NounPhraseModifier[];
+  complements: readonly NounPhraseComplement[];
 }
 
 export type NounPhraseInit = Pick<Phrase, "text"> &
-  Partial<Omit<Phrase, "text" | "phraseType" | "preModifiers" | "postModifiers">> & {
+  Partial<Omit<Phrase, "text" | "phraseType" | "preModifiers" | "postModifiers" | "complements">> & {
     preModifiers?: readonly NounPhraseModifier[];
     postModifiers?: readonly NounPhraseModifier[];
+    complements?: readonly NounPhraseComplement[];
   };
 
 export function createNounPhrase(init: NounPhraseInit): NounPhrase {

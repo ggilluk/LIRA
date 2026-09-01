@@ -236,6 +236,39 @@ export interface Phrase extends LinguisticUnit {
    * determiner, "the"/"this"/"my" included.
    */
   determiners?: readonly Identifier[];
+
+  /**
+   * This Phrase's own COMPLEMENT-role constituent(s) -- each entry
+   * either an `Identifier` pointing at the one WordForm (owned by that
+   * COMPLEMENT-role token's own resolved Word) spelled exactly the way
+   * it appears here, or an embedded sub-Phrase/Clause, `preModifiers`'
+   * own identical two-shape union one ModifierRole over. Every
+   * `*_phrase.ts` subtype that declares a COMPLEMENT row in its own
+   * `PHRASE_TYPE_DETAILS[...].allowedTypes` (data/enums/phrase_type.ts --
+   * NounPhrase, AdjectivePhrase, PrepositionalPhrase today) narrows this
+   * down to that row's own specific constituent type(s); VerbPhrase/
+   * AdverbPhrase/InfinitivePhrase declare no such row and so never
+   * populate this beyond an empty array.
+   *
+   * Unlike `preModifiers`/`postModifiers`, `linkPhraseWords()`
+   * (role/processor/phrase_processor.ts) does perform real constituency
+   * parsing to populate this field: a post-Head span of `text` shaped
+   * like a genuine Preposition + complement is recognised structurally
+   * (the same closed-set `PHRASE_TYPE_PREPOSITIONS` check
+   * `classifyPhraseType()` itself already uses one level up) and
+   * recursively built into its own nested Phrase, complete with its own
+   * `headWord`/`preModifiers`/`postModifiers`/`determiners`/
+   * `complements` -- not just left as a bare `Identifier`/skipped the
+   * way an ordinary MODIFIER-role sub-phrase still is
+   * (`preModifiers`'s own docstring on that gap, still real for the
+   * MODIFIER case). See `complementStartIndex()`'s own docstring
+   * (role/processor/phrase_processor.ts) for exactly which post-Head
+   * span, per PhraseType, is recognised this way.
+   *
+   * Empty whenever no such span exists -- true for the large majority of
+   * real seeded Phrases ("toy poodle", "highly reliable" have none).
+   */
+  complements?: readonly (Identifier | Phrase | Clause)[];
 }
 
 export type PhraseInit = Pick<Phrase, "text"> & Partial<Omit<Phrase, "text">>;

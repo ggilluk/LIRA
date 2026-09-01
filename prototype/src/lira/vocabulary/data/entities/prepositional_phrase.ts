@@ -63,25 +63,60 @@
  * after the Head, so this is the field linkPhraseWords() actually
  * populates in practice for a real PrepositionalPhrase, with
  * `preModifiers` staying available (and populated the same way, should a
- * Modifier ever precede the Head) for the rarer pre-Head case. */
+ * Modifier ever precede the Head) for the rarer pre-Head case.
+ *
+ * `complements` narrows Phrase's own same-named field (data/entities/phrase.ts's
+ * own docstring on it) down to PrepositionalPhraseComplement above.
+ * Unlike `preModifiers`/`postModifiers`, this is genuinely the field
+ * `linkPhraseWords()` populates for *every* real multi-word
+ * PrepositionalPhrase that has more than one token: PREPOSITIONAL_PHRASE's
+ * own structure places its whole complement immediately after the Head
+ * ("within [the framework]", "out of [print]"), so `linkPhraseWords()`
+ * treats everything from `headWord`'s own position onward as one
+ * embedded sub-Phrase -- a nested PrepositionalPhrase when that span
+ * itself opens with another Preposition-capable token ("out of
+ * [of print]" -> "print" nested one PrepositionalPhrase deeper still),
+ * a NounPhrase otherwise (the overwhelmingly common real case,
+ * `classifyComplementPhraseType()`'s own docstring,
+ * role/processor/phrase_processor.ts) -- never a bare `Identifier`, a
+ * `Pronoun`/`Adverb`/`AdverbPhrase`/`Clause` complement, or empty, for a
+ * genuine multi-word PrepositionalPhrase today: only those two branches
+ * of PrepositionalPhraseComplement are ever actually constructed. A
+ * single-token PrepositionalPhrase built directly (`createPrepositionalPhrase()`,
+ * never through `seedWordNet()`, which never seeds a one-word Phrase at
+ * all) stays empty, the same "nothing to link" case every other
+ * `linkPhraseWords()`-populated field already has. */
 
-import { PhraseType } from "./enums/phrase_type";
-import { createPhrase, type Phrase } from "./entities/phrase";
-import type { Identifier } from "../../value_objects";
-import type { AdverbPhrase } from "./entities/adverb_phrase";
+import { PhraseType } from "../enums/phrase_type";
+import { createPhrase, type Phrase } from "./phrase";
+import type { Identifier } from "../../../value_objects";
+import type { AdverbPhrase } from "./adverb_phrase";
+import type { NounPhrase } from "./noun_phrase";
+import type { Clause } from "../../../linguistics/data/clause";
 
 type PrepositionalPhraseModifier = Identifier | AdverbPhrase;
+
+/** PrepositionalPhrase's own COMPLEMENT allowed-types row
+ * (`PHRASE_TYPE_DETAILS[PhraseType.PREPOSITIONAL_PHRASE].allowedTypes`,
+ * data/enums/phrase_type.ts): `["NounPhrase", "Pronoun", "Adverb",
+ * "AdverbPhrase", "PrepositionalPhrase", "Clause"]` -- the bare
+ * `Pronoun`/`Adverb` Word-subtype entries fold into the generic
+ * `Identifier` branch here, `preModifiers`'s own identical "an
+ * Identifier carries no type of its own to narrow" reasoning below. */
+type PrepositionalPhraseComplement = Identifier | NounPhrase | AdverbPhrase | PrepositionalPhrase | Clause;
 
 export interface PrepositionalPhrase extends Phrase {
   phraseType: PhraseType.PREPOSITIONAL_PHRASE;
   preModifiers: readonly PrepositionalPhraseModifier[];
   postModifiers: readonly PrepositionalPhraseModifier[];
+  complements: readonly PrepositionalPhraseComplement[];
 }
 
 export type PrepositionalPhraseInit = Pick<Phrase, "text"> &
-  Partial<Omit<Phrase, "text" | "phraseType" | "preModifiers" | "postModifiers">> & {
+  Partial<Omit<Phrase, "text" | "phraseType" | "preModifiers" | "postModifiers" | "complements">> & {
     preModifiers?: readonly PrepositionalPhraseModifier[];
     postModifiers?: readonly PrepositionalPhraseModifier[];
+    complements?: readonly PrepositionalPhraseComplement[];
   };
 
 export function createPrepositionalPhrase(init: PrepositionalPhraseInit): PrepositionalPhrase {

@@ -1,4 +1,4 @@
-import type { PrepositionalPhrase } from "../prepositional_phrase";
+import type { PrepositionalPhrase } from "./prepositional_phrase";
 import type { Coordination } from "./coordination";
 
 /**

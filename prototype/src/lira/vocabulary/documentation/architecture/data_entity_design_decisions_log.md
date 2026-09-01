@@ -2,11 +2,11 @@
 
 Design history for the Vocabulary Layer's data entities (`data/entities/*.ts`
 and the sibling top-level entities still awaiting their own move into
-`entities/`, such as `data/infinitive_phrase.ts`/`data/prepositional_phrase.ts`
--- the rest of the `*_phrase.ts` family, `phrase.ts` included, has already
-made that move) -- the "why" behind a shape, kept out of the entity files'
-own field comments so those stay focused on what each field *is*. Each
-entity file's own top docstring points back here.
+`entities/`, such as `data/infinitive_phrase.ts` -- the rest of the
+`*_phrase.ts` family, `phrase.ts`/`prepositional_phrase.ts` included, has
+already made that move) -- the "why" behind a shape, kept out of the
+entity files' own field comments so those stay focused on what each
+field *is*. Each entity file's own top docstring points back here.
 
 ## Phrase
 
@@ -1626,3 +1626,135 @@ so every existing and future entry seeds `correlative: undefined` until
 a producer is written for it, the same "documented ahead of a real
 producer" state `coordinator` itself started in before
 `WordCoordinationSeeder` existed.
+
+## `Phrase.complements`: real constituency parsing for the one gap `linkPhraseWords()` always had
+
+### The reported bug: "abatement of a nuisance" silently dropped its own "of a nuisance"
+
+"abatement of a nuisance" (00362285-n, dict/data.noun, synonymous with
+"nuisance_abatement") seeds as a real NounPhrase, head "abatement" --
+but its own trailing "of a nuisance" span went nowhere at all.
+`classifyModifierRoles()`'s own NounPhrase branch only ever assigns
+MODIFIER *before* the Head; nothing assigns any role to a token after
+it. `ModifierRole.COMPLEMENT` existed in the enum and NounPhrase's own
+COMPLEMENT allowed-types row already named `PrepositionalPhrase`/`Clause`
+as valid fillers (`PHRASE_TYPE_DETAILS[PhraseType.NOUN_PHRASE].allowedTypes`,
+data/enums/phrase_type.ts) -- but nothing in the codebase ever assigned
+that role or built such a Phrase (`data/enums/modifier_role.ts`'s own
+former docstring said so outright). `linkPhraseWords()`'s own former
+docstring was equally explicit: "nothing in this codebase performs
+constituency parsing within a phrase's own text ... a MODIFIER token
+that resolves to a Phrase/Clause span rather than a single Word is left
+out of every array rather than guessed at." This was a real, working-
+as-designed gap, not a regression -- but a gap all the same, and the
+reported case is exactly the shape it silently swallowed.
+
+### `data/prepositional_phrase.ts` moved into `data/entities/`
+
+Housekeeping ahead of the real fix, matching every sibling
+`*_phrase.ts` subtype's own already-completed move (this log's own
+opening note): `git mv data/prepositional_phrase.ts
+data/entities/prepositional_phrase.ts`, its own internal relative
+imports fixed for the new depth, and its 4 external importers
+(`data/entities/prepositional_phrase_coordination.ts`,
+`data/entities/noun_phrase.ts`, `role/word_seeder.ts`,
+`vocabulary.test.ts`) updated to the new path. `data/infinitive_phrase.ts`
+is now the only `*_phrase.ts` file still awaiting this same move --
+out of scope here, untouched.
+
+### `complementStartIndex()`/`classifyComplementPhraseType()`: deciding whether a Complement span exists, and what shape it takes
+
+Added to `role/processor/phrase_processor.ts`, alongside
+`classifyModifierRoles()`'s existing Head-finding helpers, for the
+three PhraseTypes that actually declare a COMPLEMENT row in their own
+`PHRASE_TYPE_DETAILS[...].allowedTypes` -- NounPhrase, AdjectivePhrase,
+PrepositionalPhrase (VerbPhrase/AdverbPhrase/InfinitivePhrase declare
+none, so `complementStartIndex()` always returns `undefined` for them,
+unchanged):
+
+- NounPhrase/AdjectivePhrase: the first post-Head token capable of
+  reading as a Preposition (`PHRASE_TYPE_PREPOSITIONS`'s own closed
+  set, the same membership `classifyPhraseType()` itself already checks
+  one Phrase-structure level up) starts the Complement, running to the
+  end of the token list. `undefined` when no such token exists -- the
+  overwhelmingly common case ("toy poodle", "highly reliable").
+- PrepositionalPhrase: always `headIndex + 1`, unconditionally, when
+  any token follows the Head -- PrepositionalPhrase's own structure
+  ("Preposition + Noun phrase/complement + (Modifiers)") places its
+  Complement immediately after its own Preposition Head, every time.
+  This makes the post-Head Modifier rule `nonHeadModifierRole()` still
+  carries for PrepositionalPhrase permanently unreachable in practice
+  (verified: no real bundled-data test ever exercised it, only
+  `postModifiers.toEqual([])` assertions) -- left in place rather than
+  deleted, matching this module's own existing "kept for a case the
+  real data never exercises" precedent for a couple of its other
+  fallback branches.
+
+`classifyComplementPhraseType()` decides the nested shape structurally,
+never from a WordNet-tagged part of speech (there is none for an
+internal span this codebase invents): a nested PrepositionalPhrase when
+the span itself opens with another Preposition-capable token ("out of
+[of print]" -> "of print" nested one level, itself complementing "of"
+with "print"), a NounPhrase otherwise. Only these two branches are ever
+actually built -- PrepositionalPhrase's own COMPLEMENT row genuinely
+allows six shapes (NounPhrase, Pronoun, Adverb, AdverbPhrase,
+PrepositionalPhrase, Clause), but a Pronoun/Adverb/AdverbPhrase/Clause
+complement has no real producer here, the same "documented ahead of a
+real producer" status this feature itself just closed out for
+COMPLEMENT more broadly.
+
+### `Phrase.complements` + narrowed per-subtype fields
+
+Added `complements?: readonly (Identifier | Phrase | Clause)[]` to the
+base `Phrase` entity, `preModifiers`/`postModifiers`'s own exact two-
+shape union one field over. Narrowed in `NounPhrase`/`AdjectivePhrase`
+(`Identifier | PrepositionalPhrase | Clause`, their own shared
+COMPLEMENT row) and `PrepositionalPhrase` (`Identifier | NounPhrase |
+AdverbPhrase | PrepositionalPhrase | Clause`, its own six-shape row
+minus the bare Pronoun/Adverb Word-subtype entries, which fold into the
+generic `Identifier` branch the same way every other `*_phrase.ts`
+subtype's own MODIFIER row already does). `VerbPhrase`/`AdverbPhrase`/
+`InfinitivePhrase` are untouched -- no COMPLEMENT row, no narrowing.
+
+Unlike `preModifiers`/`postModifiers`, this is a field
+`linkPhraseWords()` genuinely builds a real nested Phrase for, not just
+an `Identifier` or a left-out gap: when `classifyModifierRoles()` finds
+a COMPLEMENT position, every token from there to the end is re-joined
+into text and recursively linked into a brand-new Phrase
+(`buildComplementPhrase()`) via a recursive `linkPhraseWords()` call --
+complete with its own `headWord`/`preModifiers`/`postModifiers`/
+`determiners`/`complements`, so a span nested two Prepositions deep
+resolves correctly with no separate recursion limit needed. Every token
+at or past the Complement's own start index is excluded from the outer
+Phrase's flat `preModifiers`/`postModifiers`/`determiners` loop --
+already true for free, since none of those tokens carry MODIFIER/
+DETERMINER roles any more once `classifyModifierRoles()` marks them
+COMPLEMENT-owned; no separate skip logic was needed in that loop.
+
+### Verified end-to-end against real seeded WordNet data (`vocabulary.test.ts`)
+
+"abatement of a nuisance" itself: outer NounPhrase (head "abatement",
+`preModifiers`/`postModifiers`/`determiners` all empty), `complements`
+= one PrepositionalPhrase ("of a nuisance", `headWord` genuinely
+`undefined` -- "of" has no standalone WordNet sense, same as every
+other real preposition), whose own `complements` = one further nested
+NounPhrase ("a nuisance", head "nuisance", `determiners` = one real
+WordForm reference for "a") -- recursion terminates there, "nuisance"
+alone opens no trailing Preposition span. Two existing tests' own
+`classifyModifierRoles()` assertions updated for the same underlying
+behavior change: "at fault" (`[HEAD, undefined]` -> `[HEAD, COMPLEMENT]`,
+its own single-token Complement "fault" resolving as a nested NounPhrase
+in turn) and "in the meantime" (`[HEAD, DETERMINER, undefined]` ->
+`[HEAD, COMPLEMENT, undefined]` -- "the" now belongs to the nested
+"the meantime" NounPhrase's own `determiners`, not the outer
+PrepositionalPhrase's, though it still resolves no WordForm there
+either, for the identical "the" has no WordNet sense reason as before).
+Live Playwright check against the real running app (WordNet seeded,
+Vocabulary UI's Phrases tab): "abatement of a nuisance" renders
+correctly, no console errors, seeding completing normally with the new
+recursive construction in the real pipeline, not just under test.
+
+Client-side surfacing of `complements` in the Vocabulary UI's detail
+panel is out of scope here -- `builder_phrase.ts` reads none of it yet,
+matching how `preModifiers`/`postModifiers` themselves were implemented
+as a data-layer change before any UI surfaced them.

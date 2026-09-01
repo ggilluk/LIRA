@@ -33,7 +33,7 @@ import { createAdverbPhrase } from "../data/entities/adverb_phrase";
 import { createConjunction } from "./processor/conjunction_processor";
 import { createInfinitivePhrase } from "../data/infinitive_phrase";
 import { createNounPhrase } from "../data/entities/noun_phrase";
-import { createPrepositionalPhrase } from "../data/prepositional_phrase";
+import { createPrepositionalPhrase } from "../data/entities/prepositional_phrase";
 import { createVerbPhrase } from "../data/entities/verb_phrase";
 import { classifyPhraseType, linkPhraseWords } from "./processor/phrase_processor";
 import { createDeterminer } from "./processor/determiner_processor";

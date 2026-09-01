@@ -8,6 +8,8 @@ import type { Word } from "../../data/entities/word";
 import type { WordForms } from "../../data/word_forms";
 import { graphUuid as wordGraphUuid } from "../word_processor";
 import { graphUuid as wordFormGraphUuid } from "../word_form_processor";
+import { createNounPhrase } from "../../data/entities/noun_phrase";
+import { createPrepositionalPhrase } from "../../data/entities/prepositional_phrase";
 
 // classifyPhraseType()'s own closed class of single-word prepositions --
 // deliberately its own small, self-contained list rather than a read of
@@ -330,6 +332,80 @@ function firstIndexWithPos(possiblePos: readonly ReadonlySet<PartOfSpeech>[], ta
   return index === -1 ? undefined : index + from;
 }
 
+/** The index `tokens`' own COMPLEMENT span starts at, for `phraseType`s
+ * that actually declare a COMPLEMENT row in their own
+ * `PHRASE_TYPE_DETAILS[...].allowedTypes` (data/enums/phrase_type.ts) --
+ * NounPhrase, AdjectivePhrase, PrepositionalPhrase; every other
+ * PhraseType (VerbPhrase, AdverbPhrase, InfinitivePhrase -- none declare
+ * a COMPLEMENT row) always returns `undefined` here. `undefined` either
+ * way when there's no Head to complement (`headIndex === undefined`) or
+ * nothing follows it.
+ *
+ * - NounPhrase/AdjectivePhrase: the first post-Head token capable of
+ *   reading as a Preposition -- the same `PHRASE_TYPE_PREPOSITIONS`
+ *   closed-set membership `classifyPhraseType()` itself already checks
+ *   one level up, one Phrase-structure level deeper here: a NounPhrase's
+ *   own "(Determiner) + (Modifiers) + Noun/Pronoun + (Complements)"
+ *   structure (data/entities/noun_phrase.ts's own docstring) places its
+ *   Complement immediately after that Preposition token, running to the
+ *   end of `tokens` -- "abatement [of a nuisance]", the reported case
+ *   this function exists for. `undefined` when no post-Head token
+ *   qualifies (the overwhelmingly common case -- "toy poodle" has none).
+ * - PrepositionalPhrase: always `headIndex + 1` when any token follows
+ *   the Head, with no further condition -- PrepositionalPhrase's own
+ *   "Preposition + Noun phrase/complement + (Modifiers)" structure
+ *   places its Complement immediately after its own Preposition Head,
+ *   every time ("within [the framework]", "out of [print]"). This
+ *   supersedes the narrower, never-exercised-by-real-bundled-data post-
+ *   Head Modifier rule `nonHeadModifierRole()` below still carries for
+ *   PrepositionalPhrase (that rule's own docstring) -- a genuine
+ *   multi-word PrepositionalPhrase always has *something* after its
+ *   Head, so this always finds a Complement span there in practice,
+ *   leaving that Modifier rule permanently unreachable but not removed,
+ *   the same "kept for a case that table's own rows never exercise"
+ *   status this module already gives a couple of its own fallback
+ *   branches (`lastTargetPosBeforeFirstPreposition`'s own docstring). */
+function complementStartIndex(phraseType: PhraseType | undefined, tokens: readonly string[], headIndex: number | undefined): number | undefined {
+  if (headIndex === undefined) return undefined;
+  switch (phraseType) {
+    case PhraseType.NOUN_PHRASE:
+    case PhraseType.ADJECTIVE_PHRASE: {
+      const prepositionIndex = tokens.findIndex((token, i) => i > headIndex && PHRASE_TYPE_PREPOSITIONS.has(token.toLowerCase()));
+      return prepositionIndex === -1 ? undefined : prepositionIndex;
+    }
+    case PhraseType.PREPOSITIONAL_PHRASE:
+      return headIndex + 1 < tokens.length ? headIndex + 1 : undefined;
+    default:
+      return undefined;
+  }
+}
+
+/** The PhraseType a COMPLEMENT span's own `tokens` should be built as,
+ * once `complementStartIndex()` above has already decided a span
+ * exists -- structural, not read off any WordNet-tagged part of speech
+ * (there is none for an internal span this codebase invents from
+ * constituency parsing, unlike `classifyPhraseType()`'s own top-level
+ * WordNet-tagged input). PrepositionalPhrase's own COMPLEMENT allowed-
+ * types row (`PHRASE_TYPE_DETAILS[PhraseType.PREPOSITIONAL_PHRASE].allowedTypes`)
+ * genuinely allows six shapes (NounPhrase, Pronoun, Adverb, AdverbPhrase,
+ * PrepositionalPhrase, Clause) -- only two are actually built here: a
+ * nested PrepositionalPhrase when the span itself opens with another
+ * Preposition-capable token ("out of [print]" -> "of print" nested one
+ * level, itself complementing "of" with the single-token span
+ * "print"), NounPhrase otherwise -- the overwhelmingly common real case
+ * for both NounPhrase's and AdjectivePhrase's own COMPLEMENT row (which
+ * only ever allow PrepositionalPhrase/Clause to begin with, so their
+ * own span always opens with a Preposition by construction) and for
+ * PrepositionalPhrase's own complement (`PHRASE_TYPE_PREPOSITIONS`'s own
+ * closed set of ~80 real English prepositions never doubles as a
+ * Pronoun/Adverb). Pronoun/Adverb/AdverbPhrase/Clause complements are
+ * never constructed -- documented ahead of any real producer, the same
+ * status `ModifierRole.COMPLEMENT` itself had before this function
+ * existed (data/enums/modifier_role.ts's own former docstring on it). */
+function classifyComplementPhraseType(tokens: readonly string[]): PhraseType {
+  return tokens.length > 0 && PHRASE_TYPE_PREPOSITIONS.has(tokens[0].toLowerCase()) ? PhraseType.PREPOSITIONAL_PHRASE : PhraseType.NOUN_PHRASE;
+}
+
 /** AdverbPhrase's own Head Identification Rule -- everywhere else
  * `lastTargetPosBeforeFirstPreposition` decides it, except for the one
  * ambiguity that function alone can't resolve: two adjacent tokens both
@@ -382,7 +458,13 @@ function adverbPhraseHeadIndex(possiblePos: readonly ReadonlySet<PartOfSpeech>[]
  *   Modifier; nothing after it is (it either retains its own POS, or --
  *   AdverbPhrase only -- is itself a postmodifying Adverb, already
  *   excluded from being picked as Head above so it falls through to the
- *   same per-position ADVERB check as a pre-head one).
+ *   same per-position ADVERB check as a pre-head one). NounPhrase/
+ *   AdjectivePhrase only: the one post-Head token, if any, that starts a
+ *   genuine Complement span (`complementStartIndex()` above) instead
+ *   gets ModifierRole.COMPLEMENT -- every token after *that* one carries
+ *   no role of its own at all, `undefined` same as an ordinary unrecognised
+ *   token, since the whole trailing span becomes one nested Phrase
+ *   instead (`linkPhraseWords()`'s own docstring on why).
  * - VerbPhrase: Head is the *first* Verb-capable token (every real row
  *   in the table opens with it). A token capable of reading as Adverb
  *   immediately followed by one capable of reading as Preposition is a
@@ -391,10 +473,11 @@ function adverbPhraseHeadIndex(possiblePos: readonly ReadonlySet<PartOfSpeech>[]
  * - PrepositionalPhrase: Head is the *first* Preposition-capable token
  *   -- deliberately only the first: a second one later in the sequence
  *   ("(Preposition[Head]) + Noun + Preposition + Noun") heads its own
- *   embedded complement instead and keeps only its own POS, no role. A
- *   pre-head Adverb-capable token is a Modifier; a post-head Adjective-
- *   capable token is a Modifier; a Noun/Pronoun either side retains its
- *   own POS.
+ *   embedded Complement instead (`complementStartIndex()` above always
+ *   finds one immediately after the Head for a genuine multi-word
+ *   PrepositionalPhrase), which gets ModifierRole.COMPLEMENT; nothing
+ *   after that position carries a role of its own, the identical
+ *   NounPhrase/AdjectivePhrase reasoning just above.
  * - InfinitivePhrase: "to" (position 0, guaranteed by classifyPhraseType
  *   itself) is always a Particle, never a Head candidate
  *   (data/infinitive_phrase.ts's own docstring on why); Head is the
@@ -406,9 +489,13 @@ function adverbPhraseHeadIndex(possiblePos: readonly ReadonlySet<PartOfSpeech>[]
  * Independent of every rule above: any token capable of reading as
  * DETERMINER always gets ModifierRole.DETERMINER, regardless of position
  * or PhraseType -- the Common Rules table's own "Determiner" row
- * ("Preserve Determiner from the seeded vocabulary"). A token with an
- * empty possible-POS set (`dictionary` has no Word for it and it's in
- * neither closed set) never gets a role. */
+ * ("Preserve Determiner from the seeded vocabulary") -- *except* a token
+ * at or past a Complement span's own start index, which the Complement
+ * rule above already claims first: a Determiner genuinely inside a
+ * nested Complement ("of [a] nuisance") belongs to that nested Phrase's
+ * own `determiners`, not this one's (`linkPhraseWords()`'s own
+ * docstring). A token with an empty possible-POS set (`dictionary` has
+ * no Word for it and it's in neither closed set) never gets a role. */
 export function classifyModifierRoles(phraseType: PhraseType | undefined, tokens: readonly string[], dictionary: Dictionary): readonly (ModifierRole | undefined)[] {
   const roles: (ModifierRole | undefined)[] = tokens.map(() => undefined);
   if (phraseType === undefined || tokens.length === 0) return roles;
@@ -435,9 +522,12 @@ export function classifyModifierRoles(phraseType: PhraseType | undefined, tokens
       break;
   }
   if (headIndex !== undefined) roles[headIndex] = ModifierRole.HEAD;
+  const complementStart = complementStartIndex(phraseType, tokens, headIndex);
+  if (complementStart !== undefined) roles[complementStart] = ModifierRole.COMPLEMENT;
 
   for (let i = 0; i < tokens.length; i++) {
     if (i === headIndex || (phraseType === PhraseType.INFINITIVE_PHRASE && i === 0)) continue;
+    if (complementStart !== undefined && i >= complementStart) continue;
     if (possiblePos[i].has(PartOfSpeech.DETERMINER)) {
       roles[i] = ModifierRole.DETERMINER;
       continue;
@@ -559,12 +649,31 @@ function nonHeadModifierRole(
  * data/phrase_type_patterns_and_word_roles.md). Deliberately Word/WordForm-only:
  * the Phrase Role Allowed Types table also permits a MODIFIER to be a
  * sub-phrase (AdjectivePhrase, NounPhrase, AdverbPhrase,
- * PrepositionalPhrase) or a Clause, but nothing in this codebase
- * performs constituency parsing *within* a phrase's own text --
- * classifyModifierRoles() above only ever reasons about flat whitespace
- * tokens, never nested spans -- so a MODIFIER token that resolves to a
- * Phrase/Clause span rather than a single Word is left out of every
- * array rather than guessed at. */
+ * PrepositionalPhrase) or a Clause, but classifyModifierRoles() above
+ * only ever reasons about flat whitespace tokens for a MODIFIER, never
+ * nested spans -- so a MODIFIER token that resolves to a Phrase/Clause
+ * span rather than a single Word is left out of every array rather than
+ * guessed at.
+ *
+ * `phrase.complements` is the one field this function genuinely does
+ * build a nested sub-Phrase for. When `classifyModifierRoles()` finds a
+ * ModifierRole.COMPLEMENT position (`complementStartIndex()`'s own
+ * docstring on exactly which token, per PhraseType), every token from
+ * there to the end of `tokens` is joined back into one span of text and
+ * recursively linked into a brand-new Phrase of its own
+ * (`buildComplementPhrase()` below -- a nested PrepositionalPhrase or
+ * NounPhrase, `classifyComplementPhraseType()`'s own docstring on which)
+ * via a recursive `linkPhraseWords()` call, complete with its own
+ * `headWord`/`headWordForm`/`preModifiers`/`postModifiers`/`determiners`/
+ * `complements`. Every token at or past that same start index is then
+ * skipped entirely by the flat `preModifiers`/`postModifiers`/
+ * `determiners` loop below -- it belongs to the nested Phrase now, not
+ * this one (a Determiner genuinely inside the Complement span, like "a"
+ * in "of a nuisance", becomes the nested Phrase's own `determiners`
+ * entry instead of this one's, `data/entities/phrase.ts`'s own
+ * `complements` docstring). `complements` is always set to an array
+ * (possibly empty, `preModifiers`'s own convention), never left
+ * `undefined`, whenever this function runs at all. */
 /** `token`'s own resolved Word actually matching `targetPos` --
  * `linkPhraseWords()`'s own Head-position fix, `possiblePartsOfSpeech()`'s
  * full-homograph-set reasoning carried one step further: unlike
@@ -579,6 +688,26 @@ function nonHeadModifierRole(
 function resolvedWordFor(token: string, targetPos: ReadonlySet<PartOfSpeech>, dictionary: Dictionary): Word | undefined {
   const homographs = dictionary.lookupAll(token);
   return homographs.find((word) => targetPos.has(word.partOfSpeech)) ?? dictionary.lookup(token);
+}
+
+/** Builds and fully links the one nested Phrase a COMPLEMENT span's own
+ * `tokens` become -- `linkPhraseWords()`'s own docstring on when this is
+ * called. `classifyComplementPhraseType()` decides the shape
+ * structurally (never from a WordNet-tagged part of speech -- there is
+ * none for an invented internal span); `createPrepositionalPhrase()`/
+ * `createNounPhrase()` build the bare Phrase from that shape and this
+ * span's own re-joined text, and the recursive `linkPhraseWords()` call
+ * populates everything else on it exactly as if it had been a real
+ * top-level Phrase all along -- including its own `complements`, so a
+ * span nested two Prepositions deep ("out of [print]" -> "of [print]"
+ * nested once more inside that) resolves correctly without this
+ * function needing its own separate recursion limit or loop. */
+function buildComplementPhrase(tokens: readonly string[], dictionary: Dictionary, wordForms?: WordForms): Phrase {
+  const phraseType = classifyComplementPhraseType(tokens);
+  const text = tokens.join(" ");
+  const complement = phraseType === PhraseType.PREPOSITIONAL_PHRASE ? createPrepositionalPhrase({ text }) : createNounPhrase({ text });
+  linkPhraseWords(complement, dictionary, wordForms);
+  return complement;
 }
 
 export function linkPhraseWords(phrase: Phrase, dictionary: Dictionary, wordForms?: WordForms): void {
@@ -601,6 +730,9 @@ export function linkPhraseWords(phrase: Phrase, dictionary: Dictionary, wordForm
 
   phrase.headWord = headIndex === -1 ? undefined : words[headIndex];
   phrase.headWordForm = headIndex === -1 ? undefined : matchingFormId(headIndex);
+
+  const complementIndex = wordRoles.indexOf(ModifierRole.COMPLEMENT);
+  phrase.complements = complementIndex === -1 ? [] : [buildComplementPhrase(tokens.slice(complementIndex), dictionary, wordForms)];
 
   const preModifiers: Identifier[] = [];
   const postModifiers: Identifier[] = [];

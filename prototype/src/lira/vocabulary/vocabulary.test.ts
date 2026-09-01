@@ -45,7 +45,7 @@ import { isNounPhrase } from "./data/entities/noun_phrase";
 import { isVerbPhrase } from "./data/entities/verb_phrase";
 import { isAdjectivePhrase } from "./data/entities/adjective_phrase";
 import { isAdverbPhrase } from "./data/entities/adverb_phrase";
-import { isPrepositionalPhrase } from "./data/prepositional_phrase";
+import { isPrepositionalPhrase } from "./data/entities/prepositional_phrase";
 import { isInfinitivePhrase } from "./data/infinitive_phrase";
 import { createSense, graphUuid as senseGraphUuid } from "./role/sense_processor";
 import { Senses, memberUuid } from "./data/senses";
@@ -2268,10 +2268,12 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // Dictionary itself has an "at" sense -- it happens to have one here
     // too (index.noun lists a real, obscure "at" noun homograph), but
     // that's incidental to *why* it's the Head, not the reason. "fault"
-    // retains its own POS (a post-head Noun gets no PrepositionalPhrase
-    // role, that Word Role Assignment column's own "remaining words
-    // retain their POS" rule).
-    expect(classifyModifierRoles(atFault!.phraseType, atFault!.text.trim().split(/\s+/), dictionary)).toEqual([ModifierRole.HEAD, undefined]);
+    // starts PrepositionalPhrase's own Complement span -- always
+    // everything right after the Head (complementStartIndex()'s own
+    // docstring, role/processor/phrase_processor.ts) -- rather than
+    // retaining only its own POS with no role at all, this feature's own
+    // fix.
+    expect(classifyModifierRoles(atFault!.phraseType, atFault!.text.trim().split(/\s+/), dictionary)).toEqual([ModifierRole.HEAD, ModifierRole.COMPLEMENT]);
     // headWord still resolves here since "at" happens to have its own
     // (obscure) Dictionary entry -- that same obscure "at" NOUN
     // homograph. No MODIFIER-role position exists in this phrase's own
@@ -2285,6 +2287,20 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     expect(wordForms.findByUuid(atFault!.headWordForm!.value)?.text.value).toBe("at");
     expect(atFault!.preModifiers).toEqual([]);
     expect(atFault!.postModifiers).toEqual([]);
+    // "fault" alone -- a single token, no leading Preposition of its own
+    // -- becomes one nested NounPhrase (classifyComplementPhraseType()'s
+    // own default), correctly resolving "fault"'s own NOUN homograph as
+    // that nested Phrase's own Head in turn, with nothing left to nest
+    // any deeper.
+    expect(atFault!.complements).toHaveLength(1);
+    const atFaultComplement = atFault!.complements![0];
+    if (!("entryId" in atFaultComplement)) throw new Error("expected an embedded Phrase, not an Identifier");
+    expect(atFaultComplement.text).toBe("fault");
+    expect(isNounPhrase(atFaultComplement)).toBe(true);
+    const atFaultComplementHead = dictionary.findByUuid(atFaultComplement.headWord!.value);
+    expect(atFaultComplementHead?.text).toBe("fault");
+    expect(atFaultComplementHead?.partOfSpeech).toBe(PartOfSpeech.NOUN);
+    expect(atFaultComplement.complements).toEqual([]);
 
     const toBeSure = phraseBook.lookupAll("to be sure").find((phrase) => phraseBook.synsetIdOf(phrase)?.value === "00151192-r");
     expect(phraseBook.partOfSpeechOf(toBeSure!)).toBe(PartOfSpeech.ADVERB);
@@ -2506,25 +2522,26 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     expect(longAgo!.postModifiers).toEqual([]);
 
     // "in the meantime" (00065346-r, dict/data.adv) -- PrepositionalPhrase
-    // with a genuine Determiner in the middle: "in" heads it (via the
-    // same PHRASE_TYPE_PREPOSITIONS closed-set path "at"/"to" use above),
-    // "the" is a Determiner (PHRASE_TYPE_DETERMINERS, word_seeder.ts --
-    // WordNet doesn't lexicalize determiners as standalone senses any
-    // more than it does most prepositions), and "meantime" retains its
-    // own POS.
+    // whose own Complement genuinely embeds a Determiner: "in" heads it
+    // (via the same PHRASE_TYPE_PREPOSITIONS closed-set path "at"/"to"
+    // use above), and "the meantime" -- everything after the Head --
+    // becomes one nested NounPhrase Complement, "the" resolving as
+    // *that* nested Phrase's own Determiner rather than this outer
+    // PrepositionalPhrase's (this feature's own fix: a Complement span's
+    // own internal structure, including its Determiner, belongs to the
+    // nested Phrase, not flattened into the outer one).
     const inTheMeantime = phraseBook.lookupAll("in the meantime").find((phrase) => phraseBook.synsetIdOf(phrase)?.value === "00065346-r");
     expect(inTheMeantime?.phraseType).toBe(PhraseType.PREPOSITIONAL_PHRASE);
     expect(classifyModifierRoles(inTheMeantime!.phraseType, inTheMeantime!.text.trim().split(/\s+/), dictionary)).toEqual([
       ModifierRole.HEAD,
-      ModifierRole.DETERMINER,
+      ModifierRole.COMPLEMENT,
       undefined,
     ]);
     // dictionary.lookup("in")'s own arbitrary-but-deterministic
     // first-seeded homograph resolves to the abbreviation NOUN "IN"
     // here (Indiana's own postal code, a real WordNet noun sense), the
     // same structural-not-semantic pick every headWord resolution above
-    // already exercises. "the" carries DETERMINER, not MODIFIER, so
-    // neither modifier array picks it up.
+    // already exercises.
     const inTheMeantimeHead = dictionary.findByUuid(inTheMeantime!.headWord!.value);
     expect(inTheMeantimeHead?.text).toBe("IN");
     expect(inTheMeantimeHead?.partOfSpeech).toBe(PartOfSpeech.NOUN);
@@ -2534,14 +2551,29 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     expect(wordForms.findByUuid(inTheMeantime!.headWordForm!.value)?.text.value).toBe("IN");
     expect(inTheMeantime!.preModifiers).toEqual([]);
     expect(inTheMeantime!.postModifiers).toEqual([]);
-    // Phrase.determiners -- WordNet lexicalizes "the" as a standalone
-    // sense nowhere in the bundled data (PHRASE_TYPE_DETERMINERS' own
-    // docstring), so it has no Word, hence no WordForm, to reference --
-    // stays empty even though "the" genuinely carries the DETERMINER
-    // role above. A determiner word that IS independently WordNet-tagged
+    // No token belongs to this outer PrepositionalPhrase's own
+    // `determiners` any more -- "the" is genuinely a Determiner, but of
+    // the nested Complement below, not this Phrase.
+    expect(inTheMeantime!.determiners).toEqual([]);
+    expect(inTheMeantime!.complements).toHaveLength(1);
+    const inTheMeantimeComplement = inTheMeantime!.complements![0];
+    if (!("entryId" in inTheMeantimeComplement)) throw new Error("expected an embedded Phrase, not an Identifier");
+    expect(inTheMeantimeComplement.text).toBe("the meantime");
+    expect(isNounPhrase(inTheMeantimeComplement)).toBe(true);
+    const inTheMeantimeComplementHead = dictionary.findByUuid(inTheMeantimeComplement.headWord!.value);
+    expect(inTheMeantimeComplementHead?.text).toBe("meantime");
+    expect(inTheMeantimeComplementHead?.partOfSpeech).toBe(PartOfSpeech.NOUN);
+    expect(inTheMeantimeComplement.headWordForm).toBeDefined();
+    // "the" genuinely carries the DETERMINER role within this nested
+    // Phrase (classifyModifierRoles() run over "the meantime" alone) --
+    // but still resolves no WordForm here either: WordNet lexicalizes
+    // "the" as a standalone sense nowhere in the bundled data
+    // (PHRASE_TYPE_DETERMINERS' own docstring), so it has no Word to
+    // reference regardless of which Phrase's own `determiners` is
+    // asked. A determiner word that IS independently WordNet-tagged
     // ("few", "many", "all") would appear here instead
     // (data_entity_design_decisions_log.md).
-    expect(inTheMeantime!.determiners).toEqual([]);
+    expect(inTheMeantimeComplement.determiners).toEqual([]);
 
     // classifyModifierRoles() itself, called directly (not just through
     // the full seeding pipeline above), for the one documented ambiguity
@@ -2581,6 +2613,79 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     expect(handCrafted.preModifiers).toBeUndefined();
     expect(handCrafted.postModifiers).toBeUndefined();
     expect(handCrafted.determiners).toBeUndefined();
+    expect(handCrafted.complements).toBeUndefined();
+  }, 60000);
+
+  it("breaks a NounPhrase's own post-Head Preposition span into a real nested PrepositionalPhrase Complement, recursing as deep as the real data goes -- the reported bug: \"abatement of a nuisance\" used to drop \"of a nuisance\" entirely", async () => {
+    const { dictionary, phraseBook, wordForms } = await seededVocabularyFixture();
+
+    // 00362285-n (dict/data.noun), synonymous with "nuisance_abatement" --
+    // this exact lemma is what surfaced the gap: a genuine NounPhrase
+    // whose own structure is "(Determiner) + (Modifiers) + Noun/Pronoun +
+    // (Complements)" (data/entities/noun_phrase.ts's own docstring) had
+    // no way at all to represent its own trailing "of a nuisance" span --
+    // not as a Modifier (NounPhrase's own Word Role Assignment column
+    // never assigns one after the Head), not as anything else either
+    // (`ModifierRole.COMPLEMENT` was declared but never assigned by any
+    // seeder or classifier, `data/enums/modifier_role.ts`'s own former
+    // docstring on it) -- so it was silently dropped.
+    const abatement = phraseBook.lookupAll("abatement of a nuisance")[0];
+    expect(abatement).toBeDefined();
+    expect(abatement.phraseType).toBe(PhraseType.NOUN_PHRASE);
+    expect(isNounPhrase(abatement)).toBe(true);
+
+    const abatementHead = dictionary.findByUuid(abatement.headWord!.value);
+    expect(abatementHead?.text).toBe("abatement");
+    expect(abatementHead?.partOfSpeech).toBe(PartOfSpeech.NOUN);
+    expect(wordForms.findByUuid(abatement.headWordForm!.value)?.text.value).toBe("abatement");
+    // Nothing precedes the Head here, so preModifiers/postModifiers/
+    // determiners all stay empty -- "of a nuisance" is a Complement, not
+    // a Modifier or Determiner of this outer NounPhrase at all.
+    expect(abatement.preModifiers).toEqual([]);
+    expect(abatement.postModifiers).toEqual([]);
+    expect(abatement.determiners).toEqual([]);
+
+    // The reported fix itself: "of a nuisance" now genuinely exists, as
+    // one nested PrepositionalPhrase Complement (NounPhrase's own
+    // COMPLEMENT allowed-types row, `PHRASE_TYPE_DETAILS[PhraseType.NOUN_PHRASE]`,
+    // data/enums/phrase_type.ts -- `["PrepositionalPhrase", "Clause"]`).
+    expect(abatement.complements).toHaveLength(1);
+    const ofANuisance = abatement.complements![0];
+    if (!("entryId" in ofANuisance)) throw new Error("expected an embedded Phrase, not an Identifier");
+    expect(ofANuisance.text).toBe("of a nuisance");
+    expect(ofANuisance.phraseType).toBe(PhraseType.PREPOSITIONAL_PHRASE);
+    expect(isPrepositionalPhrase(ofANuisance)).toBe(true);
+    // "of" -- like "the" above -- has no standalone WordNet sense of its
+    // own anywhere in the bundled data, so this nested Phrase's own
+    // headWord genuinely stays undefined even though classifyModifierRoles()
+    // still correctly identifies its *position* as Head (PHRASE_TYPE_PREPOSITIONS'
+    // own closed-set membership alone, never a Dictionary lookup, decides
+    // that -- `classifyPhraseType()`'s own docstring on this same
+    // "structural, not lexical" reasoning).
+    expect(ofANuisance.headWord).toBeUndefined();
+
+    // Recursion doesn't stop at one level: "of a nuisance"'s own
+    // Complement -- everything after ITS Head -- is "a nuisance",
+    // itself opening with no Preposition, so it becomes one further
+    // nested NounPhrase, exactly `classifyComplementPhraseType()`'s own
+    // default branch (role/processor/phrase_processor.ts).
+    expect(ofANuisance.complements).toHaveLength(1);
+    const aNuisance = ofANuisance.complements![0];
+    if (!("entryId" in aNuisance)) throw new Error("expected an embedded Phrase, not an Identifier");
+    expect(aNuisance.text).toBe("a nuisance");
+    expect(aNuisance.phraseType).toBe(PhraseType.NOUN_PHRASE);
+    expect(isNounPhrase(aNuisance)).toBe(true);
+    const nuisanceHead = dictionary.findByUuid(aNuisance.headWord!.value);
+    expect(nuisanceHead?.text).toBe("nuisance");
+    expect(nuisanceHead?.partOfSpeech).toBe(PartOfSpeech.NOUN);
+    // "a" genuinely resolves as this innermost NounPhrase's own
+    // Determiner -- WordNet does lexicalize "a" (unlike "the"), so
+    // unlike `inTheMeantimeComplement`'s own "the" above, this one
+    // actually carries a real WordForm reference.
+    expect(aNuisance.determiners).toHaveLength(1);
+    // Nothing left to nest any further -- "nuisance" alone opens no
+    // trailing Preposition span of its own.
+    expect(aNuisance.complements).toEqual([]);
   }, 60000);
 
   it("seeds a Noun/Verb/Adjective/Adverb subtype per Word, populating per-sense frames/syntacticPosition from real WordNet data previously discarded", async () => {

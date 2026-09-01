@@ -55,25 +55,49 @@
  * own docstring on it) down to that exact same constituent set --
  * `preModifiers`' own MODIFIER row makes no pre/post distinction, so
  * AdjectivePhrase's post-Head modifier set is identical to its pre-Head
- * one. Same real-population status as `preModifiers` above. */
+ * one. Same real-population status as `preModifiers` above.
+ *
+ * `complements` narrows Phrase's own same-named field (data/entities/phrase.ts's
+ * own docstring on it) down to AdjectivePhraseComplement below --
+ * `PHRASE_TYPE_DETAILS[PhraseType.ADJECTIVE_PHRASE].allowedTypes`'s own
+ * COMPLEMENT row, `["PrepositionalPhrase", "Clause"]`. Genuinely
+ * populated by `linkPhraseWords()` the same structural way NounPhrase's
+ * own `complements` is (data/entities/noun_phrase.ts's own docstring on
+ * it): a token immediately after the Head capable of reading as a
+ * Preposition starts this AdjectivePhrase's own complement, running to
+ * the end of `text`, built as one nested PrepositionalPhrase -- e.g. a
+ * genuine "(Degree modifiers) + Adjective + (Complements)" case like
+ * "responsible for the outcome" ("for the outcome" nested). Empty
+ * whenever no such token exists (most real seeded AdjectivePhrases:
+ * "highly reliable" has none). A `Clause` complement is never
+ * constructed -- `classifyComplementPhraseType()`'s own docstring,
+ * role/processor/phrase_processor.ts. */
 
 import { PhraseType } from "../enums/phrase_type";
 import { createPhrase, type Phrase } from "./phrase";
 import type { Identifier } from "../../../value_objects";
 import type { AdverbPhrase } from "./adverb_phrase";
+import type { PrepositionalPhrase } from "./prepositional_phrase";
+import type { Clause } from "../../../linguistics/data/clause";
 
 type AdjectivePhraseModifier = Identifier | AdverbPhrase;
+
+/** AdjectivePhrase's own COMPLEMENT allowed-types row -- `noun_phrase.ts`'s
+ * own `NounPhraseComplement` counterpart, identical shape. */
+type AdjectivePhraseComplement = Identifier | PrepositionalPhrase | Clause;
 
 export interface AdjectivePhrase extends Phrase {
   phraseType: PhraseType.ADJECTIVE_PHRASE;
   preModifiers: readonly AdjectivePhraseModifier[];
   postModifiers: readonly AdjectivePhraseModifier[];
+  complements: readonly AdjectivePhraseComplement[];
 }
 
 export type AdjectivePhraseInit = Pick<Phrase, "text"> &
-  Partial<Omit<Phrase, "text" | "phraseType" | "preModifiers" | "postModifiers">> & {
+  Partial<Omit<Phrase, "text" | "phraseType" | "preModifiers" | "postModifiers" | "complements">> & {
     preModifiers?: readonly AdjectivePhraseModifier[];
     postModifiers?: readonly AdjectivePhraseModifier[];
+    complements?: readonly AdjectivePhraseComplement[];
   };
 
 export function createAdjectivePhrase(init: AdjectivePhraseInit): AdjectivePhrase {
