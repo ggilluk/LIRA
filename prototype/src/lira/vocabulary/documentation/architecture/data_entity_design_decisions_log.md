@@ -1549,3 +1549,57 @@ and blue" seeds with all three `ADJECTIVE` coordinates in order and a
 real `coordinator` resolving to "and", and renders (Playwright, the
 real app) as "red, white, and blue" -- `coordinatesText()`'s own
 Oxford-comma branch, confirmed live rather than only unit-tested.
+
+## Test infrastructure
+
+### `seededVocabularyFixture()`: one shared WordNet-scale domain instead of 23 independent ones
+
+`vocabulary.test.ts` called `WordSeeder.seedWordNet()` 23 separate
+times, each building a brand-new Dictionary/Phrases/Senses/WordForms/
+relationship-store domain from scratch -- ~92,000 Words and ~175,000
+relationships, every single call, with no sharing between them.
+`wordnet_loader.ts`'s own module-level cache (`loadWordNetSynsets()`,
+`lexnamesCache`, `senseFrequencyCache`) only memoizes the raw `dict/`
+file *text parsing*; the downstream object construction into fresh
+stores -- the dominant cost, 10-30+ seconds per call -- was redone in
+full on every one of those 23 sites, serialized (no `test.concurrent`
+anywhere in the file, and the suite already runs under
+`--no-file-parallelism`). This was the whole suite's own dominant
+runtime cost by a wide margin.
+
+Most of those 23 calls, though, only ever *read* the fully-seeded
+domain afterward -- no test-local seeding transition of its own to
+observe. Added `seededVocabularyFixture()`, a module-level, lazily-
+memoized async function: the first call builds one fresh domain (plain
+`new WordSeeder("en").seedWordNet({ vocabulary: {...fresh stores...} })`,
+no closed-class seeding, no `NounCharacterFormSeeder`/
+`PrepositionSenseSeeder`/`WordCoordinationSeeder` -- deliberately the
+same bare shape those 16 tests already built individually, so switching
+a test onto the fixture changes nothing observable), caches the
+resulting `Promise`, and every later call returns the identical
+already-seeded stores. 16 tests across 8 `describe` blocks (word-form
+generation, the WordNet seeding suite itself, phrase/relationship
+classification, `DictionaryView.searchWords`/`searchPhrases`/
+`searchSenses`/`searchRelationships`/`resolveHierarchy`) now destructure
+`await seededVocabularyFixture()` instead of rebuilding their own domain.
+
+7 tests deliberately keep their own independent domain, because each
+one's own assertions require observing a *transition* the shared
+fixture's single build can't reproduce: `NounCharacterFormSeeder`'s
+own before/after (updates vs. creates), the closed-class Phrase
+headWord re-link (needs closed-class-seeded-before-WordNet ordering),
+the big "seeds every synset member... stays idempotent" test (asserts
+on the *first* real call's own stats, then calls `seedWordNet()` a
+second time on the same domain to check idempotency), `PrepositionSenseSeeder`'s
+and `WordCoordinationSeeder`'s own before/after-WordNet no-op checks,
+and `coordinationRecords()`'s own test (needs closed-class seeding +
+all three post-WordNet seeders together, a combination no other test
+shares, so consolidating it would save nothing). Real `seedWordNet()`-
+family call sites: 23 -> 8 (1 shared fixture build + 7 independent).
+
+Measured effect (`npx vitest run --no-file-parallelism`, this
+environment, 4 CPUs): full suite (166 tests, 5 files) dropped from the
+previously observed 250-440s range to a consistent ~135s, still
+166/166 passing. `npx tsc -b --force` stays clean -- a test-only
+change, so the built `dist-pages` app output is unaffected and this
+change was not built/deployed.
