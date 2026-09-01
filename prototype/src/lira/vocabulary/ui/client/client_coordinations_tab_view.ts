@@ -28,11 +28,15 @@ function filteredCoordinations() {
   return COORDINATIONS.filter(c => matchesCoordinationQuery(c) && (!state.pos || c.pos === state.pos));
 }
 
-// A Conjunction-itself row (pos === "CONJUNCTION", no coordinator of
-// its own) reads as its own token(s) rejoined with plain spaces --
-// "as" + "long" + "as" -> "as long as", the same text linkPhraseWords()
-// itself split it from, not a coordinated list. A real coordinate
-// pair instead joins with its own conjunction: "salt and pepper" (two
+// A Conjunction-itself row (pos === "CONJUNCTION") has no real
+// coordinates of its own to show here at all -- CoordinationRecord.coordinates's
+// own docstring (builder_coordination.ts) on why it's always empty for
+// that shape, with the row's own text ("and", "as long as") carried in
+// c.coordinator instead, rendered in its own column
+// (coordinationRowHtml() below) -- so this returns '' for that shape,
+// same as it does for the vanishingly rare real coordinate pair with no
+// coordinates at all. A real coordinate pair instead joins its own
+// c.coordinates with its own conjunction: "salt and pepper" (two
 // coordinates) / "red, white, and blue" (three or more, Oxford-comma
 // style) -- Coordination.coordinates's own docstring on why this reads
 // as one flat list rather than a nested binary tree. Falls back to
@@ -42,9 +46,9 @@ function filteredCoordinations() {
 // today actually omits it, but the join still needs some conjunction
 // to display.
 function coordinatesText(c) {
-  if (c.pos === "CONJUNCTION") return c.coordinates.join(" ");
+  if (!c.coordinates.length) return '';
   const conj = c.coordinator || "and";
-  if (c.coordinates.length <= 1) return c.coordinates.join(", ");
+  if (c.coordinates.length === 1) return c.coordinates.join(", ");
   if (c.coordinates.length === 2) return c.coordinates.join(\` \${conj} \`);
   return c.coordinates.slice(0, -1).join(", ") + \`, \${conj} \` + c.coordinates[c.coordinates.length - 1];
 }
@@ -56,9 +60,10 @@ function conjunctionTypePill(conjunctionType) {
 }
 
 function coordinationRowHtml(c) {
+  const coordinatesCell = coordinatesText(c) || '<span style="opacity:.5">&mdash;</span>';
   return \`
     <tr>
-      <td>\${coordinatesText(c)}</td>
+      <td>\${coordinatesCell}</td>
       <td>\${posPill(c.pos)}</td>
       <td>\${c.coordinator || '<span style="opacity:.5">&mdash;</span>'}</td>
       <td>\${conjunctionTypePill(c.conjunction_type)}</td>

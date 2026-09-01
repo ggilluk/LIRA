@@ -3375,26 +3375,31 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
 
     // A standalone Conjunction Word -- "and" itself, not a coordinate
     // pair joined by it. `pos` is what tells the two apart on one row
-    // (coordinationRecords()'s own module docstring).
-    const and = records.find((r) => r.coordinates.length === 1 && r.coordinates[0] === "and")!;
+    // (coordinationRecords()'s own module docstring). `coordinates`
+    // stays empty for this shape -- the reported bug: a Conjunction-
+    // itself row's own text used to populate `coordinates` (reading as
+    // though it were itself being coordinated) instead of `coordinator`,
+    // the field that actually means "this is the word doing the
+    // joining" (CoordinationRecord.coordinates's own docstring,
+    // builder_coordination.ts).
+    const and = records.find((r) => r.pos === "CONJUNCTION" && r.coordinator === "and")!;
     expect(and).toBeDefined();
-    expect(and.pos).toBe("CONJUNCTION");
-    expect(and.coordinator).toBeUndefined();
+    expect(and.coordinates).toEqual([]);
     expect(and.conjunction_type).toBe("COORDINATING");
 
-    const although = records.find((r) => r.coordinates.length === 1 && r.coordinates[0] === "although")!;
-    expect(although.pos).toBe("CONJUNCTION");
+    const although = records.find((r) => r.pos === "CONJUNCTION" && r.coordinator === "although")!;
+    expect(although).toBeDefined();
+    expect(although.coordinates).toEqual([]);
     expect(although.conjunction_type).toBe("SUBORDINATING");
 
     // A multi-word Conjunction Phrase -- "as long as", the reported bug
     // (it used to only ever appear in the Phrases tab, with no
-    // Conjunction Type of its own visible anywhere). `coordinates`
-    // holds its own three tokens, not one joined string.
-    const asLongAs = records.find((r) => r.coordinates.join(" ") === "as long as")!;
+    // Conjunction Type of its own visible anywhere). Its own full text
+    // lives in `coordinator` now, `coordinates` empty the same way the
+    // single-word Conjunction rows above are.
+    const asLongAs = records.find((r) => r.pos === "CONJUNCTION" && r.coordinator === "as long as")!;
     expect(asLongAs).toBeDefined();
-    expect(asLongAs.coordinates).toEqual(["as", "long", "as"]);
-    expect(asLongAs.pos).toBe("CONJUNCTION");
-    expect(asLongAs.coordinator).toBeUndefined();
+    expect(asLongAs.coordinates).toEqual([]);
     expect(asLongAs.conjunction_type).toBe("SUBORDINATING");
   }, 60000);
 });

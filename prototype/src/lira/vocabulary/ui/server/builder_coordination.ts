@@ -15,11 +15,15 @@
  * a fact a real coordinate-pair row's own `coordinator` shares, but a
  * standalone Conjunction Word/Phrase had nowhere to show at all before
  * this. `pos` is what tells the three shapes apart on one row: `NOUN`/
- * `ADVERB`/... names a real coordinate pair (`coordinator` is that
- * pair's own joining conjunction); `CONJUNCTION` names a row that IS a
- * Conjunction itself, single- or multi-word (`coordinator` stays
- * undefined -- there's no separate joining word, the row already is
- * one). */
+ * `ADVERB`/... names a real coordinate pair (`coordinates` its own
+ * joined content, `coordinator` the word joining them); `CONJUNCTION`
+ * names a row that IS a Conjunction itself, single- or multi-word --
+ * `coordinates` stays empty there (nothing is being coordinated; the
+ * row already is the joining word), with the row's own text carried in
+ * `coordinator` instead (`CoordinationRecord.coordinates`'s own
+ * docstring on the reported bug this fixed: a standalone Conjunction's
+ * own text used to populate `coordinates`, reading as though it were
+ * itself a coordinate). */
 
 import { PartOfSpeech } from "../../data/enums/part_of_speech";
 import { ConjunctionType } from "../../data/enums/conjunction_type";
@@ -41,10 +45,13 @@ export interface CoordinationRecord {
   // Each coordinate's own lexical text, in order -- coordinatesText()
   // (the embedded client script) joins these with `coordinator` into
   // one readable phrase ("salt and pepper"), Oxford-comma style for
-  // three or more -- or, for a row that IS a Conjunction itself
-  // (`pos === "CONJUNCTION"`), its own token(s) joined with plain
-  // spaces instead ("as", "long", "as" -> "as long as"), since there's
-  // no separate coordinator to join them with.
+  // three or more. Always empty for a row that IS a Conjunction itself
+  // (`pos === "CONJUNCTION"`) -- that row has no real coordinates at
+  // all (nothing is being joined; the row already IS the joining word),
+  // so its own text lives in `coordinator` below instead, not here (the
+  // reported bug this fixed: "as soon as"'s own three tokens used to
+  // populate `coordinates`, reading as though they were themselves
+  // being coordinated).
   coordinates: string[];
   // The shared part of speech every `coordinates` entry carries for a
   // real coordinate pair, or "CONJUNCTION" for a row that IS one --
@@ -56,10 +63,13 @@ export interface CoordinationRecord {
   // here, same as Phrase.pos already does for a Phrase whose own
   // tokens carry more than one homograph POS).
   pos: string;
-  // The coordinating conjunction's own lexical text -- undefined for
-  // an asyndetic Coordination (Coordination.coordinator's own
-  // docstring on why that's a real, honest case, not a gap) and for
-  // every Conjunction-itself row (this module's own docstring above).
+  // The coordinating conjunction's own lexical text -- for a real
+  // coordinate pair, the word/phrase joining its `coordinates`;
+  // undefined only for the vanishingly rare asyndetic case (Coordination.coordinator's
+  // own docstring on why that's a real, honest gap, not a bug). For a
+  // Conjunction-itself row, this IS that row's own text -- single word
+  // ("and", "although") or multi-word phrase ("as soon as") alike --
+  // since the row already is the conjunction, never undefined there.
   coordinator?: string;
   // ConjunctionType[...]'s own enum key string ("COORDINATING"/
   // "SUBORDINATING") -- the coordinator's own type for a real
@@ -120,35 +130,41 @@ export function coordinationRecordFor(coordination: Coordination<LinguisticUnit>
 /** A standalone Conjunction Word ("and", "although") as its own
  * CoordinationRecord -- this module's own docstring on why `pos ===
  * "CONJUNCTION"` (not the coordinated words' own part of speech) is
- * what marks a row like this one apart from a real coordinate pair. */
+ * what marks a row like this one apart from a real coordinate pair.
+ * `coordinates` stays empty -- `CoordinationRecord.coordinates`'s own
+ * docstring on why -- with the Word's own text carried in `coordinator`
+ * instead, the field that actually means "this word/phrase joins
+ * things," which is exactly what being a Conjunction means here. */
 function conjunctionWordRecord(word: Conjunction): CoordinationRecord {
   return {
     id: wordGraphUuid(word),
-    coordinates: [word.text],
+    coordinates: [],
     pos: PartOfSpeech[PartOfSpeech.CONJUNCTION],
+    coordinator: word.text,
     conjunction_type: ConjunctionType[word.conjunctionType],
   };
 }
 
 /** A multi-word Conjunction Phrase ("as long as", "in order that") as
- * its own CoordinationRecord -- `coordinates` is this Phrase's own
- * text split into its whitespace-separated tokens ("2 or more
- * WordForms" worth), not a single joined string, `phraseWordSegments()`'s
- * own tokenization (builder_phrase.ts). Always SUBORDINATING: verified
- * directly against the bundled Common Vocabulary Cache that every
- * multi-word CONJUNCTION entry comes from subordinating_conjunctions.json
- * -- coordinating_conjunctions.json has zero multi-word entries of its
- * own (assets/common/en/README.md's own Word coordinations section) --
- * so this is a real, checked structural fact, not a guess, though a
- * future closed-class file that added a multi-word *coordinating*
- * conjunction would need this taught a real ConjunctionType source the
- * way conjunctionWordRecord() above already has, rather than staying
- * hardcoded here. */
+ * its own CoordinationRecord -- `coordinates` stays empty, this row's
+ * own full text carried in `coordinator` instead, `conjunctionWordRecord()`'s
+ * own identical reasoning one word/phrase distinction over
+ * (`CoordinationRecord.coordinates`'s own docstring). Always
+ * SUBORDINATING: verified directly against the bundled Common
+ * Vocabulary Cache that every multi-word CONJUNCTION entry comes from
+ * subordinating_conjunctions.json -- coordinating_conjunctions.json has
+ * zero multi-word entries of its own (assets/common/en/README.md's own
+ * Word coordinations section) -- so this is a real, checked structural
+ * fact, not a guess, though a future closed-class file that added a
+ * multi-word *coordinating* conjunction would need this taught a real
+ * ConjunctionType source the way conjunctionWordRecord() above already
+ * has, rather than staying hardcoded here. */
 function conjunctionPhraseRecord(phrase: Phrase): CoordinationRecord {
   return {
     id: phraseGraphUuid(phrase),
-    coordinates: phrase.text.trim().split(/\s+/).filter((token) => token.length > 0),
+    coordinates: [],
     pos: PartOfSpeech[PartOfSpeech.CONJUNCTION],
+    coordinator: phrase.text,
     conjunction_type: ConjunctionType[ConjunctionType.SUBORDINATING],
   };
 }
@@ -173,6 +189,13 @@ export function coordinationRecords(coordinations: Coordinations<LinguisticUnit>
   for (const phrase of phrases.all()) {
     if (phrases.partOfSpeechOf(phrase) === PartOfSpeech.CONJUNCTION) records.push(conjunctionPhraseRecord(phrase));
   }
-  records.sort((a, b) => a.coordinates.join(" ").toLowerCase().localeCompare(b.coordinates.join(" ").toLowerCase()));
+  // A Conjunction-itself row's own sortable text lives in `coordinator`
+  // now, not `coordinates` (that field's own docstring on why it's
+  // empty there) -- falls back to `coordinator` so those 43 rows still
+  // sort alphabetically among themselves and against the real
+  // coordinate-pair rows, rather than all comparing equal as empty
+  // strings.
+  const sortKey = (r: CoordinationRecord) => (r.coordinates.join(" ") || r.coordinator || "").toLowerCase();
+  records.sort((a, b) => sortKey(a).localeCompare(sortKey(b)));
   return records;
 }

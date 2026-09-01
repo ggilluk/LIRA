@@ -2081,3 +2081,71 @@ case" in the Phrases tab, opened its detail panel, confirmed a single
 chips), clicked through to confirm "attributive genitive" is its own
 real Phrases-tab row with head "genitive" and its own "attributive"
 Pre-Modifier.
+
+### Follow-up: a standalone Conjunction's own text was showing under COORDINATES, not COORDINATOR
+
+Reported directly, with a real example: "as soon as" -- a multi-word
+subordinating Conjunction Phrase -- rendered in the Coordinations tab
+with its own three tokens under the COORDINATES column and nothing
+under COORDINATOR. Not a display-only glitch: `conjunctionWordRecord()`/
+`conjunctionPhraseRecord()` (`ui/server/builder_coordination.ts`) had
+always built a standalone Conjunction row this way, putting its own
+text into `coordinates` with `coordinator` left `undefined` -- a real,
+pre-existing category error the field's own docstring had rationalised
+away ("there's no separate coordinator to join them with") rather than
+fixed: a standalone Conjunction row has no real coordinates at all
+(nothing is being joined; the row already IS the joining word), so its
+own text belongs in `coordinator`, the field that actually means "this
+word/phrase joins things."
+
+Fixed by swapping which field carries the text: `coordinates: []`,
+`coordinator: word.text` (single-word) / `coordinator: phrase.text`
+(multi-word), for both record builders. Client `coordinatesText()`
+(`ui/client/client_coordinations_tab_view.ts`) now returns `''` for an
+empty `coordinates` list -- `coordinationRowHtml()` renders that as the
+same em-dash placeholder the COORDINATOR column already used for an
+asyndetic real coordinate pair, so a Conjunction-itself row now reads
+COORDINATES "—" / COORDINATOR "as soon as", not the reverse.
+
+**A real, silent regression this surfaced and fixed in the same pass**:
+`coordinationRecords()`'s own sort (`records.sort((a, b) =>
+a.coordinates.join(" ")...)`) keyed purely off `coordinates` -- with
+that now empty for all 43 Conjunction-itself rows, every one of them
+would have compared equal (empty string) and lost their alphabetical
+order entirely, silently, with no test catching it (nothing asserted
+sort order for that subset). Fixed by falling back to `coordinator`
+when `coordinates` is empty (`(r.coordinates.join(" ") ||
+r.coordinator || "").toLowerCase()`), so both shapes still sort
+correctly against each other on one list.
+
+**Investigation dead-end worth recording**: live-checking this fix
+first turned up an apparently empty Coordinations tab (0 rows) no
+matter what was searched, even right after "Load WordNet" reported
+92,335 words seeded. Traced with temporary `console.log`s in
+`vocabulary_worker.ts` (Worker console output surfaces through
+Playwright's own `page.on("console")`) down to `dictionary.lookupAll("and")`
+returning zero homographs even after a full WordNet seed --
+`handleSeedWordNet` never calls `seedClosedClassWords()` at all
+(`word_seeder.ts`'s own "Load WordNet is this prototype's actual
+source of truth for NOUN/VERB/ADJECTIVE/ADVERB coverage" design,
+`handleSeedCommonVocabulary`'s docstring), so with only "Load WordNet"
+clicked, no Conjunction Word ever exists in the Dictionary at all --
+neither `WordCoordinationSeeder` (its own `coordinatorWord` resolution
+fails for every one of its 9 entries) nor this feature's own modifier-
+run coordination detection (`isCoordinatingConjunctionToken()` finds
+nothing to match) can find a coordinator to key off. Not a bug of its
+own -- "Seed Vocabulary" (`handleSeedCommonVocabulary`) is what seeds
+every closed-class Conjunction, and is meant to be clicked alongside
+"Load WordNet" for full coverage, exactly the workflow the toolbar's
+own two separate buttons already imply -- but a genuine trap for a
+same-day live check that only exercises one of the two. Live-verified
+correctly afterward, both buttons clicked: 85 coordinations total, "as
+soon as"/"although"/"and" all rendering COORDINATES "—" / COORDINATOR
+their own text, "search and rescue" (a real modifier-run auto-detected
+Coordination) still rendering its own real coordinate pair correctly
+either side of "and", unaffected.
+
+Full `vitest run --no-file-parallelism`: 169/169 passing, including
+the existing `coordinationRecords()` test's own standalone-Conjunction
+assertions updated for the new `coordinates: []`/`coordinator: <text>`
+shape.
