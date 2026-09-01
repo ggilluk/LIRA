@@ -79,4 +79,20 @@ export interface Coordination<T extends LinguisticUnit> {
    * whether `coordinates` resolves.
    */
   coordinator?: Identifier;
+
+  /**
+   * The correlative marker pairing with `coordinator` in a correlative
+   * coordination -- "either" in "either A or B", "both" in "both A and
+   * B", "neither" in "neither A nor B" -- a graph-reference pointer to
+   * the one WordForm (data/entities/word_form.ts) whose own resolved
+   * Word carries it, resolved against a WordForms store
+   * (`WordForms.findByUuid()`), never an embedded copy -- `coordinator`'s
+   * own identical by-reference pattern just above.
+   *
+   * Undefined for every ordinary coordination -- a correlative marker is
+   * the exception, not the rule (most coordinations, syndetic or
+   * asyndetic, have none at all), so its absence is the common case and
+   * carries no meaning of its own beyond "not correlative".
+   */
+  correlative?: Identifier;
 }

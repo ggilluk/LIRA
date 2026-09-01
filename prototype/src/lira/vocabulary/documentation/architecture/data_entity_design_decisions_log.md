@@ -1603,3 +1603,26 @@ previously observed 250-440s range to a consistent ~135s, still
 166/166 passing. `npx tsc -b --force` stays clean -- a test-only
 change, so the built `dist-pages` app output is unaffected and this
 change was not built/deployed.
+
+## Coordination (continued)
+
+### `correlative`: an optional second by-reference marker, alongside `coordinator`
+
+Added `Coordination.correlative?: Identifier` -- the same by-reference-
+to-a-WordForm shape `coordinator` already has (resolved via
+`WordForms.findByUuid()`, never an embedded copy), naming the first
+half of a correlative pair marking the coordination itself: "either" in
+"either A or B", "both" in "both A and B", "neither" in "neither A nor
+B". `coordinator` still names the second half ("or"/"and"/"nor") --
+`correlative` is additive, not a replacement.
+
+Purely additive to the entity: `createCoordination()`/
+`copyCoordinationWithFreshUuid()` (`role/coordination_processor.ts`)
+both already build/copy a `Coordination` generically (`Partial<Omit<...>>`
+spread and a full object spread, respectively), so neither needed a
+change to carry the new optional field. No seeder populates it yet --
+`word_coordinations.json`'s own schema has no `correlative` key today,
+so every existing and future entry seeds `correlative: undefined` until
+a producer is written for it, the same "documented ahead of a real
+producer" state `coordinator` itself started in before
+`WordCoordinationSeeder` existed.
