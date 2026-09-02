@@ -376,3 +376,73 @@ works as well as the plain-Word side. (The paragraph's own
 separate, pre-existing PhraseType-ranking ambiguity -- "stands" is a
 genuine NOUN/VERB homograph and nothing in this change touches ranking
 -- not a regression from this fix and out of this fix's own scope.)
+
+## `ReadingScorer`: a genuinely ambiguous token now prefers its own VERB_PHRASE reading
+
+The follow-up to the section above, requested directly: "look into that
+suggest prioritising verbs." Traced to `ReadingScorer.rankKey()`
+(`role/reading_scorer.ts`) -- the one shared ranking tuple every
+candidate `SequencePath` `PhraseReader.read()` tries at a given start
+position is sorted by. For "stands" in "The old house stands on the
+hill.", the NOUN_PHRASE reading (plural of the furniture/vending sense
+of "stand") and the VERB_PHRASE reading (third-person-singular of the
+verb "stand") tie on every real correctness signal the tuple already
+had -- both a bare single-token completion, both `VALID`, no open
+obligations, identical `phraseCount`/`lexicalEvidenceSum` (no learned
+evidence this session). The decision fell all the way through to
+`candidateRankIndexSum`, which orders candidates by
+`PartOfSpeechIdentifier.identifySeeded()`'s own returned order -- and
+since `WordForms.lookupByText("stands")` returns whichever POS's own
+`generateXForms()` happened to register that inflected spelling first
+during seeding, this was an accidental tie-break, not a grammatical
+judgment. Picking the noun reading here is far costlier than picking
+the verb reading of a genuinely different ambiguous token would be:
+`ClauseReader.assignRoles()` needs a real `VERB_PHRASE` among a
+clause's own phrases to ever find a predicate at all, so the wrong
+choice here doesn't just mis-tag one word -- it makes the *whole
+clause* `MISSING_PREDICATE`/`INVALID`, exactly the live symptom
+reported ("The old house stands on the hill." reading confidence 0.05,
+INVALID).
+
+**New `ScoringFactors.isVerbPhraseCandidate: 0 | 1`**, populated only by
+`SequenceEngine.scoringFactors()` (the one call site that has a real
+`SequencePath.phraseType` to read, set to `1` exactly when it's
+`PhraseType.VERB_PHRASE`) -- `finiteVerbPhraseCount`'s own "only means
+anything at one level" precedent one level down: `ClauseReader` builds
+its own `ScoringFactors` directly via `createScoringFactors()` rather
+than through `SequenceEngine.scoringFactors()`, so this field simply
+never gets set away from its neutral `0` default there, contributing
+nothing to a clause-level comparison (there's no single "PhraseType" a
+whole clause reading has to read it from anyway). Slotted into
+`rankKey()`'s tuple right after `undischargedObligationCount` --
+deliberately *before* `phraseCount`/`lexicalEvidenceSum`/
+`candidateRankIndexSum`, so a real correctness signal (validation, span,
+obligations) still always wins outright, but this deliberate
+grammatical preference now always outranks the softer/accidental
+tie-breakers that used to decide ties like "stands" arbitrarily.
+Negated in the tuple (`-factors.isVerbPhraseCandidate`) the same way
+`phraseCount`/`lexicalEvidenceSum` already are, since `1` (is a verb
+reading) needs to sort *before* `0`.
+
+This is a tie-break, not an override: a genuinely worse VERB_PHRASE
+candidate (lower validation, shorter span, more open obligations) still
+correctly loses to a genuinely better non-VERB_PHRASE one -- covered by
+its own dedicated test below.
+
+`npx tsc -b --force` clean. Full `vitest run --no-file-parallelism`:
+175/175 (173 prior + two new tests), both against `ReadingScorer`
+directly rather than a real seeded sentence -- "stand" isn't in the
+closed-class Common Vocabulary Cache `linguistics.test.ts`'s own
+`seededController()` helper seeds (no WordNet), so a real end-to-end
+repro would have needed this file's own first WordNet-scale fixture,
+disproportionate for testing what is really just one tuple's own
+ordering. One test hand-builds the exact tied scenario (both `VALID`,
+identical otherwise) but deliberately gives the *noun* candidate the
+*better* `candidateRankIndexSum`, to prove `isVerbPhraseCandidate`'s
+own earlier tuple position genuinely outranks that later tie-break
+rather than merely happening to agree with it; the other confirms a
+`VALID` non-verb candidate still beats an `INVALID` verb one. Live
+Playwright, the real running app, the exact reported sentence: "The old
+house stands on the hill." now reads VALID (was INVALID, confidence
+0.05 -> 1.00), "stands" tagged VERB/VERB_PHRASE and correctly assigned
+as the clause's own PREDICATE (was NOUN/NOUN_PHRASE, MISSING_PREDICATE).

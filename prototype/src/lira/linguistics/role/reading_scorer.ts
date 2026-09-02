@@ -22,6 +22,29 @@ export interface ScoringFactors {
   validation: ValidationOutcome;
   unresolvedTokenCount: number;
   undischargedObligationCount: number;
+  // 1 when this candidate's own PhraseType is VERB_PHRASE, 0 otherwise
+  // -- only ever populated by SequenceEngine.scoringFactors() (a real
+  // PhraseType lives on the SequencePath it reads this off of), so this
+  // only means anything when PhraseReader.read() is ranking candidates
+  // of *different* PhraseTypes competing at the same start position,
+  // finiteVerbPhraseCount's own "only means anything at clause level"
+  // reasoning one level down. Reported directly, with a real bundled
+  // example: "The old house stands on the hill." -- "stands" is a
+  // genuine NOUN ("stands", the plural of the vending/furniture sense
+  // of "stand") / VERB ("stands", third-person-singular of the verb
+  // "stand") homograph, and with every other factor genuinely tied
+  // (both a bare single-token completion, both VALID, no obligations),
+  // the deciding factor used to be candidateRankIndexSum -- an
+  // essentially accidental tie-break driven by whichever POS happened
+  // to seed its own inflected "stands" WordForm first, not a
+  // grammatical judgment. A wrongly-NOUN "stands" here doesn't just
+  // mis-tag one word: the clause never finds a VERB_PHRASE for its own
+  // predicate at all, so the whole clause reads MISSING_PREDICATE/
+  // INVALID -- picking the noun reading of an ambiguous token is far
+  // more costly than picking a verb reading of one, since English
+  // clauses need a predicate a great deal more reliably than they need
+  // any one particular NOUN_PHRASE reading of an ambiguous token.
+  isVerbPhraseCandidate: 0 | 1;
   finiteVerbPhraseCount: number;
   phraseCount: number;
   lexicalEvidenceSum: number;
@@ -37,6 +60,7 @@ export function createScoringFactors(init: Pick<ScoringFactors, "validation"> & 
   return {
     unresolvedTokenCount: 0,
     undischargedObligationCount: 0,
+    isVerbPhraseCandidate: 0,
     finiteVerbPhraseCount: 0,
     phraseCount: 0,
     lexicalEvidenceSum: 0.0,
@@ -60,6 +84,7 @@ export class ReadingScorer {
       -factors.spanLength, // maximal munch among equally-valid candidates
       factors.unresolvedTokenCount,
       factors.undischargedObligationCount,
+      -factors.isVerbPhraseCandidate, // prefer a VERB_PHRASE reading of a genuinely ambiguous token (ScoringFactors's own docstring on why)
       Math.abs(factors.finiteVerbPhraseCount - 1), // exactly one finite VERB_PHRASE is the well-formed shape
       -factors.phraseCount,
       -factors.lexicalEvidenceSum,

@@ -350,6 +350,7 @@ export class SequenceEngine {
       validation: this.validateSequence(path),
       unresolvedTokenCount: unresolved,
       undischargedObligationCount: undischarged,
+      isVerbPhraseCandidate: path.phraseType === PhraseType.VERB_PHRASE ? 1 : 0,
       phraseCount: 1 + path.nestedPaths.length,
       spanLength: path.endIndex - path.startIndex,
       candidateRankIndexSum: rankIndexSum,

@@ -27,6 +27,7 @@ import { SentenceType } from "./data/sentence_type";
 import { ReadingErrorKind } from "./data/reading_error";
 import { LinguisticUnitKind } from "./data/linguistic_unit_kind";
 import { createUserPrompt } from "./ui/user_prompt";
+import { createScoringFactors, ReadingScorer } from "./role/reading_scorer";
 
 function seededController(): LinguisticController {
   const dictionary = new Dictionary();
@@ -409,5 +410,34 @@ describe("MainClause mood subtypes' own subject/predicate narrowing", () => {
 
     const withoutSubject = createImperativeMainClause({ text: "Open the door.", predicate: verbPhrase });
     expect(withoutSubject.subject).toBeUndefined();
+  });
+});
+
+describe("ReadingScorer -- rankKey's own VERB_PHRASE tie-break", () => {
+  it("prefers a VERB_PHRASE candidate over an otherwise-tied non-VERB_PHRASE one, even when the last-resort tie-break would have favoured the other", () => {
+    // Mirrors the real reported case: "The old house stands on the
+    // hill." -- "stands" is a genuine NOUN ("stands", plural of the
+    // furniture/vending sense)/VERB ("stands", third-person-singular of
+    // "stand") homograph, every other ranking factor genuinely tied
+    // (both a bare single-token completion, both VALID, no obligations).
+    // The noun candidate is given a *better* (lower) candidateRankIndexSum
+    // here on purpose, to prove isVerbPhraseCandidate's own earlier
+    // tuple position actually outranks that tie-break, not just happens
+    // to agree with it -- without this fix, the noun reading would win,
+    // and the clause it belongs to would then find no VERB_PHRASE for
+    // its own predicate at all (MISSING_PREDICATE/INVALID).
+    const scorer = new ReadingScorer();
+    const nounCandidate = createScoringFactors({ validation: ValidationOutcome.VALID, isVerbPhraseCandidate: 0, candidateRankIndexSum: 0 });
+    const verbCandidate = createScoringFactors({ validation: ValidationOutcome.VALID, isVerbPhraseCandidate: 1, candidateRankIndexSum: 5 });
+    const ranked = scorer.rank([["noun", nounCandidate], ["verb", verbCandidate]] as const);
+    expect(ranked[0]).toBe("verb");
+  });
+
+  it("still lets a genuinely worse VERB_PHRASE candidate lose to a genuinely better non-VERB_PHRASE one -- this is a tie-break, not an override of real validation/span/obligation signals", () => {
+    const scorer = new ReadingScorer();
+    const invalidVerb = createScoringFactors({ validation: ValidationOutcome.INVALID, isVerbPhraseCandidate: 1 });
+    const validNoun = createScoringFactors({ validation: ValidationOutcome.VALID, isVerbPhraseCandidate: 0 });
+    const ranked = scorer.rank([["verb", invalidVerb], ["noun", validNoun]] as const);
+    expect(ranked[0]).toBe("noun");
   });
 });
