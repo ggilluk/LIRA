@@ -1,6 +1,7 @@
 import { createClause, type Clause } from "../data/clause";
 import { ClauseType } from "../data/clause_type";
 import { LinguisticUnitKind } from "../data/linguistic_unit_kind";
+import { createMainClause } from "../data/main_clause";
 import type { Phrase } from "../data/phrase";
 import { createReadingError, ReadingErrorKind, type ReadingError } from "../data/reading_error";
 import { isPunctuation, type TokenReading } from "../data/token_reading";
@@ -97,11 +98,15 @@ export class ClauseReader {
     const confidence = this.engine.scorer.confidence(factors);
 
     const allWords = phrases.flatMap((phrase) => phrase.words);
-    const clause = createClause({
+    // Always a real MainClause -- this is the one code path that ever
+    // resolves a ClauseType at all in this phase, and it only ever
+    // resolves to INDEPENDENT (clause_type.ts's own docstring); the
+    // other, still-unimplemented ClauseType.DEPENDENT/RELATIVE/
+    // COORDINATED cases read as UNRESOLVED via emptyClause() below
+    // instead, never guessed into a SubordinateClause.
+    const clause = createMainClause({
       text: allWords.map((word) => word.text).join(" "),
       tokens: allWords,
-      isIndependent: true,
-      clauseType: ClauseType.INDEPENDENT,
       phrases,
       subject, predicate, object: obj, complement, modifiers,
       finiteVerb,

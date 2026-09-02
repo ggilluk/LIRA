@@ -7,6 +7,22 @@
  * Clause.read() result that would need one of those three is reported
  * UNRESOLVED, never guessed into INDEPENDENT.
  *
+ * Clause itself narrows into two real subtypes over this enum --
+ * MainClause (data/main_clause.ts) for INDEPENDENT, the one value a real
+ * ClauseReader.read() call actually produces today, and
+ * SubordinateClause (data/subordinate_clause.ts) for the other three
+ * (DEPENDENT/RELATIVE/COORDINATED) taken together -- a clause that
+ * cannot stand alone as a complete sentence. A COORDINATED clause
+ * ("...and she left") is grammatically still built from two independent
+ * clauses joined by a coordinating conjunction, but is classified
+ * SubordinateClause here rather than MainClause: this binary split is
+ * deliberately keyed on "is this ClauseType the one this phase's own
+ * ClauseReader genuinely resolves to" (INDEPENDENT alone), not on a
+ * finer-grained grammatical-independence judgment call, since Phase 2's
+ * own clause-level recursion (which will actually construct a
+ * COORDINATED clause) hasn't been designed yet and shouldn't be
+ * pre-empted by this split.
+ *
  * Ported from linguistics/data/clause_type.py. */
 export enum ClauseType {
   INDEPENDENT = 0,

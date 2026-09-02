@@ -42,7 +42,9 @@ export interface Clause extends LinguisticUnit {
   errors: readonly ReadingError[];
 }
 
-export function createClause(init: Pick<Clause, "text"> & Partial<Clause>): Clause {
+export type ClauseInit = Pick<Clause, "text"> & Partial<Clause>;
+
+export function createClause(init: ClauseInit): Clause {
   return {
     tokens: [],
     isIndependent: true,

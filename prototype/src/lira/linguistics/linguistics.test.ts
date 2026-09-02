@@ -11,6 +11,8 @@ import { LinguisticController } from "./role/linguistic_controller";
 import { ValidationOutcome } from "./data/validation_outcome";
 import { PhraseType } from "./data/phrase_type";
 import { ClauseType } from "./data/clause_type";
+import { isMainClause } from "./data/main_clause";
+import { createSubordinateClause, isSubordinateClause, type SubordinateClauseType } from "./data/subordinate_clause";
 import { SentenceType } from "./data/sentence_type";
 import { ReadingErrorKind } from "./data/reading_error";
 import { LinguisticUnitKind } from "./data/linguistic_unit_kind";
@@ -43,6 +45,12 @@ describe("LinguisticController against the bundled Common Vocabulary Cache", () 
 
     const clause = sentence.clauses[0];
     expect(clause.clauseType).toBe(ClauseType.INDEPENDENT);
+    // ClauseReader always resolves a real reading to a genuine
+    // MainClause, never a SubordinateClause (main_clause.ts's own
+    // docstring -- clause-level recursion for DEPENDENT/RELATIVE/
+    // COORDINATED isn't implemented yet).
+    expect(isMainClause(clause)).toBe(true);
+    expect(isSubordinateClause(clause)).toBe(false);
     expect(clause.subject?.phraseType).toBe(PhraseType.NOUN_PHRASE);
     expect(clause.predicate?.phraseType).toBe(PhraseType.VERB_PHRASE);
     // "is" is a linking verb -- "a representation" is a complement, not
@@ -300,5 +308,22 @@ describe("Learned lexical transition evidence (spec 15-24, Proposed)", () => {
     const secondRecorded = controller.recordObservedReading(secondReading);
     expect(controller.evidenceStore.totalObservations).toBe(recorded + secondRecorded);
     expect(controller.evidenceStore.weightFor(PhraseType.NOUN_PHRASE, undefined, PartOfSpeech.DETERMINER)).toBe(firstWeight * 2);
+  });
+});
+
+describe("MainClause/SubordinateClause -- Clause's own two narrowing subtypes", () => {
+  it("isMainClause/isSubordinateClause distinguish INDEPENDENT from the other three ClauseType values", () => {
+    // No real ClauseReader.read() call produces a SubordinateClause yet
+    // (clause-level recursion for DEPENDENT/RELATIVE/COORDINATED isn't
+    // implemented -- subordinate_clause.ts's own docstring), so this is
+    // a pure, hand-built construction rather than a real seeded reading,
+    // the same way this module's own synthetic edge-case tests already
+    // are for cases with no real bundled example.
+    const subordinateTypes: readonly SubordinateClauseType[] = [ClauseType.DEPENDENT, ClauseType.RELATIVE, ClauseType.COORDINATED];
+    for (const clauseType of subordinateTypes) {
+      const subordinate = createSubordinateClause({ text: "because it rained", clauseType });
+      expect(isSubordinateClause(subordinate)).toBe(true);
+      expect(isMainClause(subordinate)).toBe(false);
+    }
   });
 });
