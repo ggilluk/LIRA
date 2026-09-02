@@ -38,6 +38,17 @@ function main(): void {
   const linguisticsClient = new LinguisticsWorkerClient();
   linguisticsClient.onStatus((state, detail) => statusBoard.update("linguistics", state, detail));
 
+  // Hands each worker one end of a direct MessageChannel so the
+  // Linguistic Service can resolve raw text against the Vocabulary
+  // Service's own real seeded Dictionary instead of maintaining an
+  // independent copy of its own (vocabulary/role/web_worker/
+  // dictionary_query_protocol.ts's own docstring) -- this is the one
+  // and only time the main thread is involved: every lookup afterward
+  // goes worker-to-worker directly over the transferred ports.
+  const dictionaryQueryChannel = new MessageChannel();
+  vocabularyClient.linkPort(dictionaryQueryChannel.port1);
+  linguisticsClient.linkVocabularyPort(dictionaryQueryChannel.port2);
+
   Promise.all([vocabularyClient.init(), linguisticsClient.init()])
     .then(([domains]) => {
       loadingScreen.destroy();

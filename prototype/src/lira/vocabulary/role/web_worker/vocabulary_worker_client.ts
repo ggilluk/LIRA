@@ -145,6 +145,16 @@ export class VocabularyWorkerClient {
     });
   }
 
+  /** Hands this worker one end of a MessageChannel it then shares
+   * directly with the Linguistic Service worker, no further
+   * main-thread relay involved (dictionary_query_protocol.ts's own
+   * docstring) -- main.ts's own one-time wiring call, paired with
+   * LinguisticsWorkerClient.linkVocabularyPort on the other end of the
+   * same channel. `port` is transferred, not cloned. */
+  linkPort(port: MessagePort): void {
+    this.worker.postMessage({ type: "link-port", port }, [port]);
+  }
+
   /** Renders one Domain's DictionaryView inside the worker (cached
    * there after the first call for that Domain) and resolves with its
    * three renderFragment() pieces -- style/body/script -- for the

@@ -32,7 +32,10 @@ import { Phrases } from "../../../vocabulary/data/phrases";
 import { WordForms } from "../../../vocabulary/data/word_forms";
 import { AsyncDictionaryHydrator } from "../../../vocabulary/role/dictionary_hydrator";
 import { DictionaryProcessor } from "../../../vocabulary/role/dictionary_processor";
-import { WordSeeder } from "../../../vocabulary/role/word_seeder";
+import type { LookupWordsRequest, LookupWordsResult } from "../../../vocabulary/role/web_worker/dictionary_query_protocol";
+import { graphUuid as wordGraphUuid } from "../../../vocabulary/role/word_processor";
+import { graphUuid as formGraphUuid } from "../../../vocabulary/role/word_form_processor";
+import { graphUuid as phraseGraphUuid } from "../../../vocabulary/data/entities/phrase";
 import type { Clause } from "../../data/clause";
 import { ClauseType } from "../../data/clause_type";
 import type { Document } from "../../data/document";
@@ -48,6 +51,7 @@ import { SentenceType } from "../../data/sentence_type";
 import { isKnown, type TokenReading } from "../../data/token_reading";
 import { ValidationOutcome } from "../../data/validation_outcome";
 import { LinguisticController } from "../linguistic_controller";
+import { LinguisticLexer } from "../lexer";
 import type {
   JsonAlternative,
   JsonBlock,
@@ -59,6 +63,7 @@ import type {
   JsonSentenceSummary,
   LinguisticsWorkerMessage,
   LinguisticsWorkerRequest,
+  LinkVocabularyPortRequest,
   PredictedWord,
   ReadDocumentRequest,
   ReadRequest,
@@ -72,33 +77,150 @@ interface WorkerScope {
 const ctx = self as unknown as WorkerScope;
 
 let controller: LinguisticController | undefined;
+let dictionary: Dictionary | undefined;
+let phraseBook: Phrases | undefined;
+let wordForms: WordForms | undefined;
+
+// The direct MessagePort to the Vocabulary Service worker
+// (vocabulary/role/web_worker/dictionary_query_protocol.ts's own
+// docstring) -- undefined until main.ts's own one-time
+// "link-vocabulary-port" message arrives, well before any real read
+// request could reach this worker.
+let vocabularyPort: MessagePort | undefined;
+const pendingLookups = new Map<string, (result: LookupWordsResult) => void>();
+let nextLookupId = 0;
+
+// Every candidate text already asked for (whether or not the Vocabulary
+// Service actually had a match), and every real Word/WordForm/Phrase
+// entryId already inserted locally -- both grow for the life of this
+// worker (never reset), so re-reading the same or overlapping text
+// across multiple calls costs nothing beyond the first time, and a
+// Word/Phrase/WordForm received more than once (found via more than one
+// queried text) is only ever inserted once.
+const queriedTexts = new Set<string>();
+const insertedWordIds = new Set<string>();
+const insertedFormIds = new Set<string>();
+const insertedPhraseIds = new Set<string>();
+
+// A generous, hardcoded upper bound on the multi-word span
+// DictionaryProcessor.identifyPhrase's own real search
+// (dictionary.phraseSpanLimit/phraseBook.spanLimit, both driven by
+// whatever's actually been seeded) might need -- this worker has no
+// independently-seeded Dictionary of its own any more to read that
+// bound off of ahead of asking, so prefetchTextsFor() below just tries
+// every span up to this constant; a handful of extra, harmless
+// empty-result queries costs far less than ever under-fetching a real
+// multi-word match.
+const MAX_PREFETCH_SPAN = 5;
 
 function post(message: LinguisticsWorkerMessage): void {
   ctx.postMessage(message);
 }
 
+function handleLinkVocabularyPort(request: LinkVocabularyPortRequest): void {
+  vocabularyPort = request.port;
+  vocabularyPort.onmessage = (event: MessageEvent<LookupWordsResult | { type: "lookup-words-error"; requestId: string; message: string }>) => {
+    const message = event.data;
+    const resolve = pendingLookups.get(message.requestId);
+    if (!resolve) return;
+    pendingLookups.delete(message.requestId);
+    resolve(message.type === "lookup-words-result" ? message : { type: "lookup-words-result", requestId: message.requestId, words: [], wordForms: [], phrases: [] });
+  };
+}
+
+function queryVocabulary(texts: readonly string[]): Promise<LookupWordsResult> {
+  return new Promise((resolve) => {
+    if (!vocabularyPort || texts.length === 0) {
+      resolve({ type: "lookup-words-result", requestId: "", words: [], wordForms: [], phrases: [] });
+      return;
+    }
+    const requestId = `lookup-${nextLookupId++}`;
+    pendingLookups.set(requestId, resolve);
+    vocabularyPort!.postMessage({ type: "lookup-words", requestId, domain: "Common", texts } satisfies LookupWordsRequest);
+  });
+}
+
+/** Every candidate (already-lowercased) whitespace-joined span
+ * DictionaryProcessor.identifyPhrase's own longest-match search could
+ * try against `rawText` -- every raw token by itself, plus every
+ * consecutive multi-word run up to MAX_PREFETCH_SPAN tokens. */
+function prefetchTextsFor(rawText: string): string[] {
+  const rawTokens = LinguisticLexer.extractTokens(rawText);
+  const texts = new Set<string>();
+  for (let start = 0; start < rawTokens.length; start++) {
+    for (let span = 1; span <= MAX_PREFETCH_SPAN && start + span <= rawTokens.length; span++) {
+      texts.add(rawTokens.slice(start, start + span).join(" ").toLowerCase());
+    }
+  }
+  return [...texts];
+}
+
+/** Resolves `rawText` against the Vocabulary Service's own real seeded
+ * Dictionary before a read runs, inserting anything not already cached
+ * locally into this worker's own dictionary/phraseBook/wordForms --
+ * this module's own docstring on why this worker no longer runs an
+ * independent WordSeeder pass at all. Idempotent per candidate text
+ * (queriedTexts) and per real entity (insertedWordIds/insertedFormIds/
+ * insertedPhraseIds), so this only ever costs a real round trip for
+ * genuinely new text. */
+async function prefetchWords(rawText: string): Promise<void> {
+  if (!dictionary || !phraseBook || !wordForms) return;
+  const candidates = prefetchTextsFor(rawText).filter((text) => !queriedTexts.has(text));
+  if (candidates.length === 0) return;
+  for (const text of candidates) queriedTexts.add(text);
+
+  const result = await queryVocabulary(candidates);
+  for (const word of result.words) {
+    const id = wordGraphUuid(word);
+    if (insertedWordIds.has(id)) continue;
+    insertedWordIds.add(id);
+    dictionary.append(word);
+  }
+  for (const { word, form } of result.wordForms) {
+    const wordId = wordGraphUuid(word);
+    if (!insertedWordIds.has(wordId)) {
+      insertedWordIds.add(wordId);
+      dictionary.append(word);
+    }
+    const formId = formGraphUuid(form);
+    if (insertedFormIds.has(formId)) continue;
+    insertedFormIds.add(formId);
+    wordForms.append(form);
+    wordForms.registerMember(form, word);
+  }
+  for (const { phrase, partOfSpeech } of result.phrases) {
+    const id = phraseGraphUuid(phrase);
+    if (insertedPhraseIds.has(id)) continue;
+    insertedPhraseIds.add(id);
+    phraseBook.append(phrase, partOfSpeech);
+  }
+}
+
+/** Configures the grammar and builds an empty, session-persistent
+ * dictionary/phraseBook/wordForms -- this worker no longer runs its own
+ * WordSeeder pass at all (see this module's own docstring): every real
+ * Word/WordForm/Phrase it ever holds arrives via prefetchWords(),
+ * sourced live from the Vocabulary Service's own real seeded Dictionary
+ * for whichever text a caller actually reads, not independently
+ * re-derived from the raw cache files. A session that opens the
+ * Sentence Reader before the Vocabulary tab's own "Seed Vocabulary"/
+ * "Load WordNet" have ever been clicked sees every prefetch come back
+ * empty and every occurrence read UNRESOLVED, honestly -- the same "no
+ * guessing" behaviour as before, just now genuinely reflecting what the
+ * Vocabulary Service actually has, WordNet included, rather than a
+ * second, independently-seeded, WordNet-blind copy. */
 function handleInit(): void {
   try {
-    post({ type: "status", state: "running", detail: "Seeding the Common Vocabulary Cache…" });
-    const dictionary = new Dictionary();
-    const phraseBook = new Phrases();
-    // Threaded through the same way vocabulary_worker.ts already does
-    // (domain.vocabulary.wordForms) -- without it, an inflected
-    // open-class surface form (a Noun's own plural, a Verb's own past
-    // tense, ...) would resolve to UNRESOLVED once each POS's own
-    // generateXForms() stops writing scalar *_Form fields and starts
-    // registering real WordForm records instead; PartOfSpeechIdentifier.
-    // identifySeeded() reads those back via WordForms.lookupByText().
-    const wordForms = new WordForms();
-    const wordsSeeded = new WordSeeder("en").seedClosedClassWords(dictionary, phraseBook, undefined, undefined, wordForms);
-
-    post({ type: "status", state: "running", detail: `Seeded ${wordsSeeded} words — configuring grammar…` });
+    post({ type: "status", state: "running", detail: "Configuring grammar…" });
+    dictionary = new Dictionary();
+    phraseBook = new Phrases();
+    wordForms = new WordForms();
     const hydrator = new AsyncDictionaryHydrator(dictionary, wordForms);
     const processor = new DictionaryProcessor(dictionary, phraseBook, hydrator, "Common", wordForms);
     controller = new LinguisticController(processor);
 
-    post({ type: "status", state: "done", detail: `${wordsSeeded} words ready` });
-    post({ type: "ready", wordCount: wordsSeeded });
+    post({ type: "status", state: "done", detail: "Grammar configured — words resolve live against the Vocabulary Service" });
+    post({ type: "ready", wordCount: 0 });
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     post({ type: "status", state: "error", detail: message });
@@ -106,12 +228,13 @@ function handleInit(): void {
   }
 }
 
-function handleRead(request: ReadRequest): void {
+async function handleRead(request: ReadRequest): Promise<void> {
   if (!controller) {
     post({ type: "error", requestId: request.requestId, message: "Linguistic Service: not initialised yet" });
     return;
   }
   try {
+    await prefetchWords(request.text);
     const trace: unknown[] = [];
     const sentence = controller.readSentence(request.text, trace);
     const rawTokens = controller.readingContext.tokenResolver.resolveSentence(request.text);
@@ -150,12 +273,13 @@ function handleRead(request: ReadRequest): void {
  * single Sentence -- the tree view's later on-demand `read` calls for
  * one sentence's detail always set `skipLearning: true` so this is the
  * only place a fresh document read's transitions get recorded. */
-function handleReadDocument(request: ReadDocumentRequest): void {
+async function handleReadDocument(request: ReadDocumentRequest): Promise<void> {
   if (!controller) {
     post({ type: "error", requestId: request.requestId, message: "Linguistic Service: not initialised yet" });
     return;
   }
   try {
+    await prefetchWords(request.text);
     const document = controller.readDocument(request.text);
     let recordedThisRead = 0;
     if (request.learningEnabled) {
@@ -254,8 +378,9 @@ function buildPredictedWords(sentence: Sentence, rawTokens: readonly TokenReadin
 ctx.addEventListener("message", (event) => {
   const request = event.data;
   if (request.type === "init") handleInit();
-  else if (request.type === "read") handleRead(request);
-  else if (request.type === "read-document") handleReadDocument(request);
+  else if (request.type === "link-vocabulary-port") handleLinkVocabularyPort(request);
+  else if (request.type === "read") void handleRead(request);
+  else if (request.type === "read-document") void handleReadDocument(request);
 });
 
 // --- Sentence/Clause/Phrase/ReadingError -> JSON, the same fields

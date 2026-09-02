@@ -34,6 +34,18 @@ export interface InitRequest {
   type: "init";
 }
 
+/** Sent once, by the main thread, right after this worker (and the
+ * Linguistic Service worker) are both constructed -- hands over one end
+ * of a MessageChannel the two workers then use directly, with no
+ * further main-thread involvement (dictionary_query_protocol.ts's own
+ * docstring). `port` is a Transferable -- main.ts posts this with
+ * `[port]` as the transfer list, so this worker receives real
+ * ownership of it, not a clone. */
+export interface LinkPortRequest {
+  type: "link-port";
+  port: MessagePort;
+}
+
 export interface RenderRequest {
   type: "render";
   requestId: string;
@@ -189,6 +201,7 @@ export interface ResolveHierarchyRequest {
 
 export type VocabularyWorkerRequest =
   | InitRequest
+  | LinkPortRequest
   | RenderRequest
   | SeedWordNetRequest
   | SeedCommonVocabularyRequest

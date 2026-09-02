@@ -50,6 +50,15 @@ export class LinguisticsWorkerClient {
     });
   }
 
+  /** Hands this worker one end of a MessageChannel it then shares
+   * directly with the Vocabulary Service worker -- main.ts's own
+   * one-time wiring call, paired with VocabularyWorkerClient.linkPort
+   * on the other end of the same channel. `port` is transferred, not
+   * cloned. */
+  linkVocabularyPort(port: MessagePort): void {
+    this.worker.postMessage({ type: "link-vocabulary-port", port }, [port]);
+  }
+
   /** Reads one sentence's worth of text through the worker's
    * LinguisticController and resolves with its predicted structure plus
    * the full search trace -- the same `{predicted, trace}` shape

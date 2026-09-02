@@ -250,3 +250,129 @@ none at all. No real `ClauseReader.read()` call exercises any of this
 narrowing yet (same "declared ahead of its own detector" state the mood
 subtypes themselves are already in), so, like those, this is
 synthetic-only coverage.
+
+## The Linguistic Service worker no longer maintains its own copy of the Dictionary
+
+Reported directly, with a real paragraph: ordinary open-class words like
+"house" and "old" showed UNRESOLVED in the Sentence Reader UI. Traced to
+`linguistics_worker.ts`'s own long-standing, explicitly documented
+design: it "seeds its own Dictionary from the same Common Vocabulary
+Cache the Vocabulary Service seeds -- it cannot reach across the
+Vocabulary worker's own thread boundary to share that one's in-memory
+Dictionary, so it builds a second, independent copy inside this
+worker's own global scope" -- a `WordSeeder.seedClosedClassWords()`
+pass at boot, capped at the ~3,000-word closed-class cache and
+permanently blind to WordNet, no matter how much WordNet the Vocabulary
+tab's own "Load WordNet" button had loaded on the *other* worker.
+"house"/"old" (and virtually every open-class content word) could never
+resolve there, by design, regardless of sentence complexity.
+
+**Fix, per direct instruction: "Linguistics Worker needs to use the
+Vocabulary Worker for the dictionary and not maintain its own copy" --
+worker-to-worker, not relayed through the main thread.** Two follow-up
+decisions, both asked directly rather than guessed:
+
+1. *Sharing model.* `PhraseReader`/`ClauseReader`/`SentenceReader`/
+   `DocumentReader` never touch the Dictionary at all -- every real
+   lookup funnels through exactly one place, `GraphProcessor.processTokenCandidates()`/
+   `processPhraseCandidates()`, called once per raw token before any
+   phrase/clause search runs (`role/token_resolver.ts`'s own docstring
+   on why). Chose **batched per-request prefetch** over true per-token
+   live queries: before a read runs, the Linguistic Service asks the
+   Vocabulary Service once for every candidate span the read is about
+   to check, then runs the entire existing, unmodified synchronous
+   reading pipeline against a small local cache built from the answer.
+   The alternative -- every `dictionary.lookupAll()`-shaped call
+   becoming its own async round trip, right where it happens today --
+   would have rippled through `PartOfSpeechIdentifier`,
+   `DictionaryProcessor.identifyWord`/`identifyPhrase`, `GraphProcessor`,
+   `TokenResolver`, and `LinguisticController`, converting the whole
+   read *and* write path from synchronous to async for a search that
+   already tries every `PhraseType` at every token position -- far
+   larger and slower for no behavioural gain, once the "everything
+   funnels through one place" fact was actually confirmed.
+2. *Transport.* A direct `MessageChannel` between the two workers
+   (`main.ts` creates one `MessageChannel`, transfers `port1` to the
+   Vocabulary worker and `port2` to the Linguistic worker, once, right
+   after constructing both), not relayed through the main thread for
+   every query -- matching "worker to worker not via main" exactly.
+
+**New shared protocol**: `vocabulary/role/web_worker/dictionary_query_protocol.ts`
+(imported by both workers -- the one exception to `linguistics_worker_protocol.ts`'s
+own "nothing here imports from Vocabulary's worker plumbing" rule,
+which governs the *client-facing* protocol file, not the worker
+implementation itself, which already imports plenty from Vocabulary's
+data/role layers). `LookupWordsRequest` carries `texts: string[]` --
+every distinct (lowercased) whitespace-joined span
+`DictionaryProcessor.identifyPhrase()`'s own longest-match search could
+try, computed once per read by a new `prefetchTextsFor()` (this
+worker's own `LinguisticLexer.extractTokens()` plus a generous
+hardcoded `MAX_PREFETCH_SPAN` -- this worker has no independently-seeded
+Dictionary of its own left to read a real span bound off of ahead of
+asking, so a few harmless empty-result over-fetches beat ever
+under-fetching a real multi-word match). `LookupWordsResult` carries
+real `Word`/`WordForm`/`Phrase` entity objects directly -- all three are
+plain data interfaces with no class instances or functions on them, so
+they cross the `MessagePort`'s structured-clone transfer with no custom
+serialisation at all, the requester reconstructing its own local
+`Dictionary`/`WordForms`/`Phrases` by inserting them (`Phrases.append()`'s
+own `partOfSpeech` parameter included in the DTO, since `Phrases` keeps
+that in a private side index rather than on `Phrase` itself).
+
+**`vocabulary_worker.ts`** answers `lookup-words` by running
+`dictionary.lookupAll()`/`wordForms.lookupByText()`/`phrases.lookupAll()`
+against the addressed Domain's own real seeded stores for every
+requested text and posting back whatever matched -- no new matching
+logic, this is the exact same read surface `DictionaryProcessor`
+already exposes locally, just answered for a remote asker instead of an
+in-process caller. Falls back to an all-empty result for an unseeded/
+unknown Domain, the same honest "nothing yet" `identifyWord()` itself
+already gives a genuinely-unseeded token.
+
+**`linguistics_worker.ts`**: `WordSeeder`/its own seeding pass is gone
+entirely. `handleInit()` now only builds an *empty*,
+session-persistent `dictionary`/`phraseBook`/`wordForms` (never
+rebuilt, only ever grown) and configures the grammar -- `controller`
+itself is still built once, so `LexicalEvidenceStore`/`SequenceEngine`
+learning state correctly persists across reads exactly as before; only
+the Dictionary-backing objects underneath `DictionaryProcessor` change
+shape. A new `prefetchWords()`, awaited at the top of `handleRead()`/
+`handleReadDocument()` (both now `async`), does the query-and-insert
+step -- idempotent by construction: `queriedTexts` skips a text already
+asked for in this session, `insertedWordIds`/`insertedFormIds`/
+`insertedPhraseIds` skip a real entity already inserted (the same real
+Word can legitimately arrive via more than one queried text -- an exact
+match and an inflected-form match both naming it, say -- and must only
+ever be appended once). This also means a session that opens the
+Sentence Reader before "Seed Vocabulary"/"Load WordNet" have ever been
+clicked in the Vocabulary tab sees every prefetch come back empty and
+every occurrence read UNRESOLVED -- correct, honest behaviour under the
+new architecture (there is genuinely nothing to resolve against yet),
+not a regression.
+
+**One structural type-check needed real code, not just a story**:
+`Clause.subject`'s own widened `Phrase | Clause` type (this log's own
+immediately preceding section) meant `linguistics_worker.ts`'s existing
+`clauseToJson()` already had to narrow it before calling `phraseToJson()`
+-- untouched by this change, confirmed still correct against the new
+data flow.
+
+No test changes needed: `linguistics.test.ts` builds its own local
+`Dictionary`/`DictionaryProcessor` directly, in-process, never through a
+worker boundary, so none of this was reachable from the existing suite
+at all -- verification for this change is necessarily live-only.
+`npx tsc -b --force` clean; full `vitest run --no-file-parallelism`
+173/173 unchanged (confirms this really did touch nothing the suite
+exercises). Live Playwright, the real running app: seeded both
+Vocabulary buttons, then read the reported paragraph in the Sentence
+Reader tab -- "house" (NOUN, confidence 0.87), "old" (ADJECTIVE), "hill"
+(NOUN) all now resolve with real seeded parts of speech, where every one
+previously showed "Not found in the Common Vocabulary Cache". Separately
+confirmed the multi-word closed-class Phrase path too ("They helped each
+other." -- "each other" resolves as one PRONOUN-tagged span, not two
+independent words), proving the `Phrases.append()` reconstruction side
+works as well as the plain-Word side. (The paragraph's own
+"stands"-as-NOUN-not-VERB misparse in that same live check is a
+separate, pre-existing PhraseType-ranking ambiguity -- "stands" is a
+genuine NOUN/VERB homograph and nothing in this change touches ranking
+-- not a regression from this fix and out of this fix's own scope.)

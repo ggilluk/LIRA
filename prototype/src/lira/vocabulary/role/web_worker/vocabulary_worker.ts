@@ -28,7 +28,13 @@ import { PrepositionSenseSeeder } from "../preposition_sense_seeder";
 import { RelationshipSeeder } from "../relationship_seeder";
 import { WordCoordinationSeeder } from "../word_coordination_seeder";
 import { WordSeeder } from "../word_seeder";
+import type { PartOfSpeech } from "../../data/enums/part_of_speech";
+import type { Word } from "../../data/entities/word";
+import type { WordForm } from "../../data/entities/word_form";
+import type { Phrase } from "../../data/entities/phrase";
+import type { LookupWordsRequest } from "./dictionary_query_protocol";
 import type {
+  LinkPortRequest,
   RenderedFragment,
   RenderRequest,
   ResolveHierarchyRequest,
@@ -548,9 +554,52 @@ function handleResolveHierarchy(request: ResolveHierarchyRequest): void {
   post({ type: "resolve-hierarchy-result", requestId: request.requestId, ...result });
 }
 
+// The direct MessagePort to the Linguistic Service worker
+// (dictionary_query_protocol.ts's own docstring) -- undefined until
+// main.ts's own one-time "link-port" message arrives, which it sends
+// right after constructing both workers, well before any real read
+// request could reach the Linguistic Service.
+let linguisticsPort: MessagePort | undefined;
+
+function handleLinkPort(request: LinkPortRequest): void {
+  linguisticsPort = request.port;
+  linguisticsPort.onmessage = (event: MessageEvent<LookupWordsRequest>) => handleLookupWords(event.data);
+}
+
+/** Answers one LookupWordsRequest -- every real Word/WordForm/Phrase
+ * this Domain's own seeded stores have for any of `request.texts`
+ * (dictionary_query_protocol.ts's own docstring on why this is
+ * text-driven rather than a full-store export). `domains.get()` comes
+ * back empty/undefined exactly when nothing has been seeded into this
+ * Domain yet (handleInit's own "seeds nothing at startup" default, or
+ * a Domain name the Linguistic Service never should have addressed) --
+ * either way this simply reports no matches, the same honest
+ * "UNRESOLVED, not guessed" behaviour identifyWord itself already
+ * gives a genuinely-unseeded token. */
+function handleLookupWords(request: LookupWordsRequest): void {
+  if (!linguisticsPort) return;
+  const domain = domains.get(request.domain);
+  if (!domain) {
+    linguisticsPort.postMessage({ type: "lookup-words-result", requestId: request.requestId, words: [], wordForms: [], phrases: [] });
+    return;
+  }
+  const words: Word[] = [];
+  const wordForms: { word: Word; form: WordForm }[] = [];
+  const phrases: { phrase: Phrase; partOfSpeech: PartOfSpeech }[] = [];
+  for (const text of request.texts) {
+    words.push(...domain.vocabulary.dictionary.lookupAll(text));
+    wordForms.push(...domain.vocabulary.wordForms.lookupByText(text));
+    for (const phrase of domain.vocabulary.phrases.lookupAll(text)) {
+      phrases.push({ phrase, partOfSpeech: domain.vocabulary.phrases.partOfSpeechOf(phrase)! });
+    }
+  }
+  linguisticsPort.postMessage({ type: "lookup-words-result", requestId: request.requestId, words, wordForms, phrases });
+}
+
 ctx.addEventListener("message", (event) => {
   const request = event.data;
   if (request.type === "init") void handleInit();
+  else if (request.type === "link-port") handleLinkPort(request);
   else if (request.type === "render") handleRender(request);
   else if (request.type === "seed-wordnet") void handleSeedWordNet(request);
   else if (request.type === "seed-common-vocabulary") void handleSeedCommonVocabulary(request);

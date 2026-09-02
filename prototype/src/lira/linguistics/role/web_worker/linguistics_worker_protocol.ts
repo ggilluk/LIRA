@@ -20,6 +20,19 @@ export interface InitRequest {
   type: "init";
 }
 
+/** Sent once, by the main thread, right after this worker (and the
+ * Vocabulary Service worker) are both constructed -- hands over one end
+ * of a MessageChannel this worker then uses directly against the
+ * Vocabulary Service, no further main-thread involvement
+ * (vocabulary/role/web_worker/dictionary_query_protocol.ts's own
+ * docstring -- imported by name only in this comment, never by `import`,
+ * this module's own layering rule above). `port` is a Transferable --
+ * main.ts posts this with `[port]` as the transfer list. */
+export interface LinkVocabularyPortRequest {
+  type: "link-vocabulary-port";
+  port: MessagePort;
+}
+
 export interface ReadRequest {
   type: "read";
   requestId: string;
@@ -60,7 +73,7 @@ export interface ReadDocumentRequest {
   learningEnabled: boolean;
 }
 
-export type LinguisticsWorkerRequest = InitRequest | ReadRequest | ReadDocumentRequest;
+export type LinguisticsWorkerRequest = InitRequest | LinkVocabularyPortRequest | ReadRequest | ReadDocumentRequest;
 
 export interface StatusMessage {
   type: "status";
