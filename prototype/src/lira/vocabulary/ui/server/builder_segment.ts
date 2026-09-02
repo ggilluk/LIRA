@@ -9,6 +9,7 @@
 
 import type { Dictionary } from "../../data/dictionary";
 import { PartOfSpeech } from "../../data/enums/part_of_speech";
+import type { WordFormField } from "../../data/enums/word_forms_enum";
 import type { Senses } from "../../data/senses";
 import type { Word } from "../../data/entities/word";
 import type { WordForms } from "../../data/word_forms";
@@ -37,7 +38,7 @@ export type DefinitionSegment =
       // exactly (WordForms.formsOf() came back empty, or every one of its
       // entries spells the word differently than this particular
       // occurrence does).
-      word_form?: { field: string; label: string; value: string };
+      word_form?: { field: WordFormField; label: string; value: string };
     };
 
 /** "pluralNumberForm" -> "Plural Number Form" -- every *_Form field name

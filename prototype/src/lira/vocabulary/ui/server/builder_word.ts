@@ -9,6 +9,7 @@ import { isAdverb } from "../../role/processor/adverb_processor";
 import type { Dictionary } from "../../data/dictionary";
 import { EditorialLabel } from "../../data/enums/editorial_label";
 import { PartOfSpeech } from "../../data/enums/part_of_speech";
+import type { WordFormField } from "../../data/enums/word_forms_enum";
 import { isNoun } from "../../role/processor/noun_processor";
 import { graphUuid as phraseGraphUuid, phraseAsWord, type Phrase } from "../../data/entities/phrase";
 import type { Phrases } from "../../data/phrases";
@@ -195,7 +196,16 @@ export interface WordRecord {
 }
 
 export interface WordFormEntry {
-  field: string;
+  // `WordForm.field`'s own real type (data/entities/word_form.ts), not
+  // a generic `string` -- every entry `wordFormsFor()` builds from a
+  // real `WordForm` record carries its own genuine `WordFormField`
+  // value here, unchanged. The one literal exception is
+  // `"wordCharacterForms"` -- `wordFormsFor()`'s own synthetic
+  // Noun.wordCharacterForms row, which was never a Word Form Matrix
+  // field to begin with (that field's own docstring, data/entities/noun.ts)
+  // and so was deliberately never added to `WordFormField` itself, only
+  // named here as this type's own explicit second case.
+  field: WordFormField | "wordCharacterForms";
   label: string;
   value: string;
   // WordRecord.word_forms's own docstring on when this is non-empty --
