@@ -1,6 +1,17 @@
 /** Verbatim slice of PAGE_TEMPLATE's HTML body shell (original
  * dictionary_view.ts lines 2507-2680) -- the
- * <!--@@BODY_FRAGMENT_START/END@@--> markers stay embedded in place. */
+ * <!--@@BODY_FRAGMENT_START/END@@--> markers stay embedded in place.
+ *
+ * The Words table's own 27 WordForm columns (between "Word" and "Part
+ * of speech") are hand-written here as static `<th>` text, one per
+ * `WordFormField` member (data/enums/word_forms_enum.ts), in that
+ * enum's own declared order -- `formFieldLabel()`'s own camelCase ->
+ * Title Case transform (ui/server/builder_segment.ts) applied by hand,
+ * since this file is a plain template string with no computation step
+ * of its own. `client_words_tab_view.ts`'s own `WORD_FORM_FIELDS`
+ * constant mirrors this exact same field list, in the exact same
+ * order, for `wordRowHtml()`'s own per-row cell lookup -- keep both in
+ * sync with the real enum by hand if it ever changes. */
 export const CLIENT_SHELL_HTML = `<body>
 <div class="page">
   <header class="masthead">
@@ -55,6 +66,33 @@ export const CLIENT_SHELL_HTML = `<body>
           <thead>
             <tr>
               <th data-sort="lexical_form">Word</th>
+              <th>Base Lemma Canonical Form</th>
+              <th>Singular Number Form</th>
+              <th>Plural Number Form</th>
+              <th>Present Tense Form</th>
+              <th>Present Tense Instance Form</th>
+              <th>Past Tense Form</th>
+              <th>Past Tense Instance Form</th>
+              <th>Third Person Singular Present Form</th>
+              <th>Present Participle Form</th>
+              <th>Past Participle Form</th>
+              <th>Bare Infinitive Form</th>
+              <th>Modal Form</th>
+              <th>Secondary Modal Form</th>
+              <th>Positive Degree Form</th>
+              <th>Comparative Degree Form</th>
+              <th>Comparative Periphrastic Form</th>
+              <th>Superlative Degree Form</th>
+              <th>Superlative Periphrastic Form</th>
+              <th>First Person Form</th>
+              <th>Second Person Form</th>
+              <th>Third Person Form</th>
+              <th>Subjective Case Form</th>
+              <th>Objective Case Form</th>
+              <th>Possessive Case Form</th>
+              <th>Consonant Sound Form</th>
+              <th>Vowel Sound Form</th>
+              <th>Reflexive Case Form</th>
               <th data-sort="pos">Part of speech</th>
               <th data-sort="domain">Domain</th>
               <th data-sort="definition">Definition</th>

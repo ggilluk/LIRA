@@ -211,6 +211,15 @@ select#pos-filter, select#domain-filter {
   box-shadow: var(--shadow);
 }
 table { width: 100%; border-collapse: collapse; font-size: 0.87rem; }
+/* The Words table's own 33 columns (client_shell_html.ts) are too many
+   to squash into 100% of .table-wrap's own width and stay readable --
+   width:max-content (floored at 100%) sizes it to its real content
+   instead, so .table-wrap's own overflow-x:auto scrolls horizontally
+   the same way it already scrolls vertically past MAX_WORD_ROWS_SHOWN,
+   rather than every column shrinking to an unreadable sliver. Every
+   other table here stays plain width:100% -- none of them has enough
+   columns for this to matter. */
+#panel-words table { width: max-content; min-width: 100%; }
 thead th {
   position: sticky;
   top: 0;

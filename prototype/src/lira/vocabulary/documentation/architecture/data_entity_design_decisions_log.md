@@ -2149,3 +2149,96 @@ Full `vitest run --no-file-parallelism`: 169/169 passing, including
 the existing `coordinationRecords()` test's own standalone-Conjunction
 assertions updated for the new `coordinates: []`/`coordinator: <text>`
 shape.
+
+## Words tab: every WordForm as its own fixed column, Base Lemma Canonical Form first
+
+Requested directly: "show all wordForms as columns. The first column
+should be the base lemma Form." No data-layer change needed at all --
+`WordRecord.word_forms: WordFormEntry[]` (`ui/server/builder_word.ts`)
+has carried every one of a Word's own real `WordForm` records, fully
+populated, for every row already embedded in `WORDS` (under
+`MAX_INTERACTIVE_WORDS`) and for every `searchWords()` result (over it)
+since the WordForm migration itself (this log's own much earlier
+"Phase 1-6" sections) -- this was purely a client-rendering gap, never
+a plumbing one.
+
+Asked directly how to scope it, given `WordFormField` has 27 possible
+members but any one Word only ever populates a handful (a Noun ~3, a
+Verb ~9): **all 27, fixed, in the enum's own canonical order** (not a
+narrower dynamic set that would shift under a filter) -- and to keep
+the existing "Word" column (lexical form + its common/root-word/
+derivable-noun/sense-id badges) as its own column rather than folding
+it into the new Base Lemma one, even though the two usually show the
+same spelling.
+
+**Column order gives the "Base Lemma first" requirement for free.**
+`WordFormField`'s own declared order (`data/enums/word_forms_enum.ts`)
+already opens with `BASE_LEMMA_CANONICAL_FORM` -- it mirrors the Word
+Form to Part of Speech Matrix's own row order, and every real seeding
+path registers a Word's own base-lemma WordForm before any
+POS-specific `generateXForms()` adds the rest (`WordForms.formsOf()`'s
+own docstring, `data/word_forms.ts`). Using that enum order directly
+for the 27 new columns needed no special-casing to put Base Lemma
+first -- it already is first.
+
+**Two files hand-mirror the same 27-entry list, by necessity.**
+`client_shell_html.ts`'s own `<thead>` (27 new `<th>` cells, hardcoded
+label text, between "Word" and "Part of speech") is a plain template
+string with no computation step of its own -- consistent with every
+other table header in that file already being static text, not
+generated. `client_words_tab_view.ts`'s own new `WORD_FORM_FIELDS`
+constant carries the matching 27 field *values* (the camelCase strings
+`WordFormEntry.field` actually holds) in the identical order, so
+`wordFormColumnsHtml()` can build a `{field: entry}` lookup map per row
+and emit one `<td>` per `WORD_FORM_FIELDS` entry -- the entry's own
+`value` when the Word has that form, an em-dash otherwise
+(`modifierListHTML()`'s/`coordinationRowHtml()`'s own identical
+"absent" convention, reused rather than reinvented). Neither file can
+import the real `WordFormField` TS enum at runtime (both are plain
+strings embedded into the page), so the two lists are cross-referenced
+by comment and have to be kept in sync by hand if the enum ever
+changes -- the one real cost of not adding a third server->client
+plumbing token (`WORD_FORM_FIELDS_JSON`, mirroring `POS_VALUES_JSON`'s
+own established pattern) for something this foundational and rarely
+changed.
+
+**Table width**: 33 columns (Word + 27 WordForm + Part of speech/
+Domain/Definition/Labels/Relationships) don't fit in `.table-wrap`'s
+own width the way every other table's much smaller column count
+already does under the shared `table { width: 100% }` rule -- squashed
+to 100%, most WordForm columns would render as unreadable slivers.
+Scoped a `#panel-words table { width: max-content; min-width: 100% }`
+override so this one table sizes to its real content instead, letting
+`.table-wrap`'s own pre-existing `overflow-x: auto` scroll it
+horizontally (the same way it already scrolls vertically past
+`MAX_WORD_ROWS_SHOWN`) -- every other table keeps the plain
+`width: 100%` rule, unaffected, since none of them has enough columns
+for this to matter.
+
+**One real regression caught before it shipped**: `client_words_tab_overcapacity.ts`'s
+own "Searching…" placeholder row hardcodes `colspan="6"` to span the
+Words table's own column count while a live over-capacity search is in
+flight -- missed on the first pass, since it's a separate file from
+the header/row-rendering changes, and would have rendered a
+mis-spanned placeholder row (visually broken, one cell way too narrow)
+for exactly the population size (>20,000 words) this feature matters
+most for. Updated to `colspan="33"`, with a comment cross-referencing
+`client_shell_html.ts`'s own `<thead>` row as the source of truth to
+keep in sync by hand. The three sibling tables' own identical
+`colspan` placeholders (Phrases 5, Senses 6, Relationships 4) were
+checked and confirmed untouched/correct -- this feature only ever
+touches the Words table.
+
+Verified end-to-end (live Playwright, the real running app, both "Seed
+Vocabulary" and "Load WordNet" clicked): 33 header cells in the
+expected order (`Word`, `Base Lemma Canonical Form`, ...,
+`Reflexive Case Form`, `Part of speech`, ...); a real seeded Noun
+("boondoggle") shows Base Lemma/Singular/Plural populated with its own
+tense-form columns all correctly dashed; a real seeded Verb ("brunch")
+shows Base Lemma/Present/Past/Third Person Singular Present/Present
+Participle/Past Participle all correctly populated with its own
+singular/plural-number columns dashed; the table visibly overflows its
+own container width and scrolls horizontally rather than squashing.
+`npx tsc -b --force` clean, full `vitest run --no-file-parallelism`
+169/169 (no test exercised the Words table's own HTML/column
+structure before this, so nothing needed updating).

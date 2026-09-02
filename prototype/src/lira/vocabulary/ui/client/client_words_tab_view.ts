@@ -2,7 +2,10 @@
  * lines 3056-3165) -- the Words tab's own filtering + row rendering
  * (matchesQuery/filteredWords/wordRowHtml/renderWords), plus filteredRels/
  * relationshipsForWord/sortRows, which the original script physically
- * interleaves here even though they're shared by other tabs too. */
+ * interleaves here even though they're shared by other tabs too.
+ * WORD_FORM_FIELDS/wordFormColumnsHtml (added alongside wordRowHtml)
+ * are this file's own later addition, not part of that original slice --
+ * the Words table's own fixed 27 WordForm columns. */
 export const CLIENT_WORDS_TAB_VIEW = `
 // Three independent substring filters (AND'd together, each one a
 // no-op while empty) rather than one combined "word, gloss, or
@@ -92,10 +95,51 @@ function sortRows(rows, key, dir) {
 // to reach a word outside the first MAX_WORD_ROWS_SHOWN.
 const MAX_WORD_ROWS_SHOWN = 1000;
 
+// The Words table's own 27 WordForm columns -- data/enums/word_forms_enum.ts's
+// own WordFormField, member for member, in that same declared order
+// (client_shell_html.ts's own \`<th>\` row mirrors this exact list by
+// hand, same order, since neither file can import the real TS enum at
+// runtime). Base Lemma Canonical Form leads, matching every Word's own
+// first-registered WordForm in practice (WordForms.formsOf()'s own
+// docstring, data/word_forms.ts) -- the reported requirement that the
+// first WordForm column be the base lemma falls out of using the
+// Matrix's own canonical row order directly, no special-casing needed.
+const WORD_FORM_FIELDS = [
+  "baseLemmaCanonicalForm", "singularNumberForm", "pluralNumberForm",
+  "presentTenseForm", "presentTenseInstanceForm", "pastTenseForm", "pastTenseInstanceForm",
+  "thirdPersonSingularPresentForm", "presentParticipleForm", "pastParticipleForm",
+  "bareInfinitiveForm", "modalForm", "secondaryModalForm",
+  "positiveDegreeForm", "comparativeDegreeForm", "comparativePeriphrasticForm",
+  "superlativeDegreeForm", "superlativePeriphrasticForm",
+  "firstPersonForm", "secondPersonForm", "thirdPersonForm",
+  "subjectiveCaseForm", "objectiveCaseForm", "possessiveCaseForm",
+  "consonantSoundForm", "vowelSoundForm", "reflexiveCaseForm",
+];
+
+// One <td> per WORD_FORM_FIELDS entry, in that fixed order -- an
+// em-dash (modifierListHTML()'s/coordinationRowHtml()'s own identical
+// "absent" convention, client_detail_panel_controller.ts/
+// client_coordinations_tab_view.ts) for whichever of the 27 a
+// particular Word doesn't carry (a Noun has 3 -- base lemma/singular/
+// plural -- not all 27; the rest of that row stays dashes). \`w.word_forms\`
+// is keyed by \`field\` (WordFormEntry.field, ui/server/builder_word.ts)
+// against a fresh lookup map built once per row -- cheap at
+// MAX_WORD_ROWS_SHOWN scale, and simpler than sorting/re-indexing
+// \`word_forms\` itself into column order.
+function wordFormColumnsHtml(w) {
+  const byField = {};
+  for (const form of w.word_forms) byField[form.field] = form;
+  return WORD_FORM_FIELDS.map(field => {
+    const form = byField[field];
+    return \`<td>\${form ? \`<span class="word-form">\${form.value}</span>\` : '<span style="opacity:.5">&mdash;</span>'}</td>\`;
+  }).join('');
+}
+
 function wordRowHtml(w) {
   return \`
     <tr data-word-id="\${w.id}" class="\${w.id === state.selectedWordId ? 'selected' : ''}">
       <td><span class="word-form">\${w.lexical_form}</span> \${senseIdBadge(w.sense_id)}\${w.is_common ? ' <span class="badge-common">common</span>' : ''}\${w.is_root_word ? ' <span class="badge-root-word">root word</span>' : ''}\${w.is_derivable_noun ? ' <span class="badge-derivable-noun">derivable noun</span>' : ''}</td>
+      \${wordFormColumnsHtml(w)}
       <td>\${posPill(w.pos)}</td>
       <td>\${domainPill(w.domain)}</td>
       <td class="definition">\${w.definition || w.gloss || '<span style="opacity:.5">&mdash;</span>'}</td>

@@ -35,7 +35,10 @@ function renderWordsOverCapacity() {
     document.getElementById("words-note").style.display = "none";
     document.getElementById("words-empty").style.display = "none";
     document.getElementById("words-body").innerHTML =
-      '<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--ink-muted,#5B6660)">Searching…</td></tr>';
+      // 33 columns: Word, the 27 WordForm columns, Part of speech,
+      // Domain, Definition, Labels, Relationships (client_shell_html.ts's
+      // own <thead> row) -- kept in sync by hand alongside it.
+      '<tr><td colspan="33" style="text-align:center;padding:24px;color:var(--ink-muted,#5B6660)">Searching…</td></tr>';
     document.dispatchEvent(new CustomEvent("lira-search-words", {
       detail: {
         requestId,
