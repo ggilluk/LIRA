@@ -2242,3 +2242,141 @@ own container width and scrolls horizontally rather than squashing.
 `npx tsc -b --force` clean, full `vitest run --no-file-parallelism`
 169/169 (no test exercised the Words table's own HTML/column
 structure before this, so nothing needed updating).
+
+## `WordFormEntry.field`/`DefinitionSegment.word_form.field`: typed as `string`, should be `WordFormField`
+
+Reported directly: "in wordForm the attribute field should be the
+wordform enum." Both were genuinely mistyped as bare `string` even
+though every real value ever assigned to either (`wordFormsFor()` in
+`builder_word.ts`, `definitionWordSegment()` in `builder_segment.ts`)
+was already a real `WordFormField` member's own string value -- a
+type-only gap, not a runtime one. Fixed by narrowing
+`WordFormEntry.field` to `WordFormField | "wordCharacterForms"` (the
+one non-enum literal `wordFormsFor()` itself synthesizes for
+`Noun.wordCharacterForms`, `WordForm` being a Word-only concept with no
+Matrix row of its own for that field) and `DefinitionSegment.word_form.field`
+to plain `WordFormField`. Confirmed the built output was byte-identical
+to the prior deploy (a pure type change, no runtime code path
+altered), so this one was committed and pushed without a redeploy.
+
+## `WordFormField`: string-valued -> numeric, tensor-coded, with a dedicated `wordFormFieldLabel()` for the GUI
+
+Requested directly, and explicitly reversing this enum's own prior
+documented decision: "the wordforms enum should be by number not text.
+Otherwise it cannot be used by tensor operations a seperate functiom
+should exist to comvert to text for the GUI." `WordFormField`
+(`data/enums/word_forms_enum.ts`) had been string-valued since its own
+introduction (this log's much earlier WordForm-migration sections),
+each member's value spelled out as its own camelCase name (e.g.
+`PLURAL_NUMBER_FORM = "pluralNumberForm"`) precisely so client code
+without access to the real TS enum could still read a self-describing
+value straight off the wire -- the enum's own docstring argued this
+directly. That reasoning is overridden now: `WordFormField` moves onto
+the same "tensor-coded" convention `PartOfSpeech`/`LinguisticUnitKind`
+already use (`data/enums/part_of_speech.ts`'s own docstring) --
+sequential integers, `0`-`26`, matching the enum's own declared order
+(itself unchanged, still mirroring the Word Form to Part of Speech
+Matrix's own row order) -- so a `WordForm`'s own `field` can be used
+directly as a tensor index/one-hot position, not just a display key.
+
+**The user's own second requirement -- text still has to reach the
+GUI somehow -- is a new, separate, dedicated function**, not a
+retrofit of the existing generic one. `wordFormFieldLabel(field:
+WordFormField): string` (new, same file) looks a numeric code up in a
+new `WORD_FORM_FIELD_LABELS: Record<WordFormField, string>` table
+carrying each of the 27 members' own exact prior label text ("Plural
+Number Form", etc, byte-identical to what the old camelCase-splitting
+transform used to produce, so no rendered label changed). Deliberately
+NOT the same function as `formFieldLabel()` (`builder_segment.ts`,
+generic camelCase-string -> Title Case splitter): that one has 5 real
+call sites, only 2 of which ever passed a real `WordFormField` value
+(`wordFormsFor()`'s own real WordForm rows, `definitionWordSegment()`'s
+own matched-form segment) -- the other 3 pass arbitrary non-enum
+camelCase strings with no numeric code of their own at all (Word's own
+`isNominalised`/`isAdjectivised`/... derivation-pointer field names in
+`morphologicalDerivations()`, and the synthetic `"wordCharacterForms"`
+literal). Retyping `formFieldLabel()`'s own parameter to `WordFormField`
+would have broken those 3 unrelated call sites for no reason; adding a
+second, dedicated, table-backed function for the 2 real-enum sites
+keeps both concerns cleanly separated, and `formFieldLabel()` itself
+was left otherwise untouched (only its own docstring rewritten, to
+scope it explicitly to non-enum field names now that it no longer
+covers `WordFormField` at all).
+
+**Real call sites updated, beyond the enum's own file**:
+`wordFormsFor()`/`builder_word.ts` and `definitionWordSegment()`/
+`builder_segment.ts` (both switched to `wordFormFieldLabel()` for their
+label text, per above); `validateFormText()`/`role/word_processor.ts`
+(`WordFormIssue.reason`'s own diagnostic message interpolates a
+`field` value into human-readable text -- switched to
+`wordFormFieldLabel(field)` so the message still reads e.g. "...for
+'Plural Number Form'" rather than a bare digit); `vocabulary.test.ts`
+(two `reason`-string assertions, `formTextOf()`'s own `field` parameter
+type).
+
+**One genuinely pre-existing, previously-undetected bug this surfaced**:
+`role/part_of_speech_identifier.ts`'s `identifySeeded()`/`inflectedReason()`
+locally re-typed a real `WordFormField` value as a bare `string` on its
+own `formMatches` array and burned it straight into a user-facing
+`WordIdentifier.reason` diagnostic ("Matched ... via this Word's own
+\"${field}\" form..."). Not on the original list of files expected to
+need a change -- only surfaced via a dedicated research agent's
+exhaustive full-tree grep before implementation began, given the size
+of this refactor's blast radius and that it explicitly reverses a
+documented prior decision. Would have been a straight compile error
+the moment the enum went numeric (the local `string` retyping papered
+over the real type, so `tsc` itself never caught it on its own), not
+merely a display regression. Fixed by properly typing `field` as
+`WordFormField` and routing the message through `wordFormFieldLabel()`
+too, the same as every other real diagnostic call site above.
+
+**Client-side (`ui/client/*.ts`, plain JS template strings -- neither
+file can import the real TS enum at runtime)**: `client_words_tab_view.ts`'s
+own `WORD_FORM_FIELDS` constant, previously a hand-written 27-entry
+array of the camelCase string values in declared order (kept in sync
+with the enum by hand, the previous section's own documented cost),
+collapses to `Array.from({ length: 27 }, (_, field) => field)` -- once
+the enum's own values ARE its declared order (0-26, no gaps), the
+array is just that whole range, no name-copying needed at all; the
+one hand-sync cost this replaced is gone outright.
+`client_senses_section_html.ts`'s own `verbFrameText()` compared a
+`WordForm.field` against the string literals `'presentParticipleForm'`/
+`'thirdPersonSingularPresentForm'` to find the two real inflected
+spellings a WordNet verb-frame sentence's own "----ing"/"----s"
+placeholders substitute against -- switched to the literal numeric
+codes `8`/`7` (`WordFormField.PRESENT_PARTICIPLE_FORM`/
+`THIRD_PERSON_SINGULAR_PRESENT_FORM`'s own declared positions), with a
+comment naming which enum member each number is, since this client
+script has no way to import the real enum and name them any other way.
+This one was flagged as the highest-risk client-side site during
+review -- a wrong number here fails silently (frame text falls back to
+naive lemma+suffix concatenation, not a crash or a console error), not
+loudly -- so it got its own dedicated live check rather than relying on
+code review alone.
+
+**Files read and confirmed safe as-is, no change needed**: `data/entities/word_form.ts`
+(`WordForm.field: WordFormField` was already correctly typed against
+the enum, unaffected by a change to the enum's own underlying
+representation), `data/word_forms.ts`, `data/matrices/pos_vs_wordform_matrice.ts`
+(`WORD_FORM_MATRIX` is looked up via `.find()`/`.filter()` with `===`,
+never keyed by string), every `role/processor/*_processor.ts` /
+`*_seeder.ts` (each assigns/compares real `WordFormField` enum members
+by name, never their own literal string spelling), `client_shell_html.ts`
+(the Words tab `<thead>` cells are static label text, not field
+values), `client_detail_panel_controller.ts`, `data/matrices/word_form_part_of_speech_matrix.md`.
+
+Verified end-to-end. `npx tsc -b --force` clean; full `vitest run
+--no-file-parallelism` 169/169. Live Playwright, the real running app
+(both "Seed Vocabulary" and "Load WordNet" clicked): the Words tab
+table's "brunch" (Noun) row's own 24th WordForm column -- 0-indexed
+enum value 23, `POSSESSIVE_CASE_FORM` -- correctly shows `"brunch's"`
+while every other WordForm column on that row correctly shows an
+em-dash, confirming the numeric codes round-trip correctly through
+JSON serialization, the client's own numeric-keyed `{field: entry}`
+lookup (relying on JS's implicit numeric-to-string key coercion, no
+code change needed there), and the fixed-column rendering order all
+stay aligned; the word detail panel's own Word Forms section for the
+same Word renders "Base Lemma Canonical Form", "Singular Number Form",
+"Plural Number Form", "Possessive Case Form" as real label text (not
+raw numeric codes), confirming `wordFormFieldLabel()` reaches the GUI
+as the user's own second requirement asked.

@@ -9,7 +9,7 @@
 
 import type { Dictionary } from "../../data/dictionary";
 import { PartOfSpeech } from "../../data/enums/part_of_speech";
-import type { WordFormField } from "../../data/enums/word_forms_enum";
+import { wordFormFieldLabel, type WordFormField } from "../../data/enums/word_forms_enum";
 import type { Senses } from "../../data/senses";
 import type { Word } from "../../data/entities/word";
 import type { WordForms } from "../../data/word_forms";
@@ -41,15 +41,21 @@ export type DefinitionSegment =
       word_form?: { field: WordFormField; label: string; value: string };
     };
 
-/** "pluralNumberForm" -> "Plural Number Form" -- every *_Form field name
- * this codebase defines is camelCase built from Title Case words (each
- * one already capitalized after the first, camelCase's own convention),
- * so splitting on an uppercase letter and capitalizing the first
- * character recovers exactly the Word Form to Part of Speech Matrix's
- * own row names (data/matrices/word_form_part_of_speech_matrix.md) without
- * needing a second, hand-maintained label table. Shared with
- * builder_word.ts's own WordRecord.word_forms (WordFormEntry.label),
- * which used to keep a private copy of this exact function. */
+/** "wordCharacterForms" -> "Word Character Forms" -- for an arbitrary
+ * camelCase field NAME (Word's own `isNominalised`/`isAdjectivised`/...
+ * derivation-pointer field names, builder_word.ts's own
+ * `morphologicalDerivations()`; the synthetic `"wordCharacterForms"`
+ * `WordFormEntry` row, `wordFormsFor()`'s own docstring), never a real
+ * `WordFormField` -- `wordFormFieldLabel()` (data/enums/word_forms_enum.ts)
+ * is that one's own dedicated label function now that `WordFormField`
+ * itself is a numeric, tensor-coded enum with no camelCase text of its
+ * own left to split. Splits on an uppercase letter and capitalizes the
+ * first character -- every one of these non-enum field names (every
+ * "isXyz" derivation flag, "wordCharacterForms") this codebase
+ * defines is camelCase built from Title Case words (each one already
+ * capitalized after the first, camelCase's own convention), so this
+ * recovers the Title Case reading without needing a second,
+ * hand-maintained label table for these non-enum names. */
 export function formFieldLabel(field: string): string {
   const spaced = field.replace(/([A-Z])/g, " $1");
   return spaced.charAt(0).toUpperCase() + spaced.slice(1);
@@ -74,7 +80,7 @@ export function definitionWordSegment(
     pos: PartOfSpeech[resolved.partOfSpeech],
     domain: domainLabel(senses, domainName, resolved, wordForms),
     gloss: fields.gloss?.value ?? fields.definition?.value ?? "",
-    word_form: matchingForm && { field: matchingForm.field, label: formFieldLabel(matchingForm.field), value: matchingForm.text.value },
+    word_form: matchingForm && { field: matchingForm.field, label: wordFormFieldLabel(matchingForm.field), value: matchingForm.text.value },
   };
 }
 

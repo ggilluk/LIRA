@@ -9,7 +9,7 @@ import { isAdverb } from "../../role/processor/adverb_processor";
 import type { Dictionary } from "../../data/dictionary";
 import { EditorialLabel } from "../../data/enums/editorial_label";
 import { PartOfSpeech } from "../../data/enums/part_of_speech";
-import type { WordFormField } from "../../data/enums/word_forms_enum";
+import { wordFormFieldLabel, type WordFormField } from "../../data/enums/word_forms_enum";
 import { isNoun } from "../../role/processor/noun_processor";
 import { graphUuid as phraseGraphUuid, phraseAsWord, type Phrase } from "../../data/entities/phrase";
 import type { Phrases } from "../../data/phrases";
@@ -388,7 +388,7 @@ function wordFormsFor(word: Word, wordForms: WordForms, wordSenses: readonly Wor
   const forms: WordFormEntry[] = [];
   for (const form of wordForms.formsOf(word)) {
     const formSenses = form.senseIds.map((id) => senseById.get(id.value)).filter((sense): sense is WordSenseSummary => sense !== undefined);
-    forms.push({ field: form.field, label: formFieldLabel(form.field), value: form.text.value, senses: formSenses });
+    forms.push({ field: form.field, label: wordFormFieldLabel(form.field), value: form.text.value, senses: formSenses });
   }
   // Noun.wordCharacterForms isn't a Word Form Matrix field (that
   // field's own docstring, data/entities/noun.ts) -- not spelling-derivable, so

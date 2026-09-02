@@ -62,14 +62,19 @@ function padMeterRow(posLabel, negLabel, value) {
 // (already sent to the client for the Word Forms section) rather than
 // requiring WordSenseSummary to carry its own copy of the same two
 // values.
+// 8/7 -- WordFormField.PRESENT_PARTICIPLE_FORM/THIRD_PERSON_SINGULAR_PRESENT_FORM's
+// own numeric codes (data/enums/word_forms_enum.ts), a tensor-coded
+// enum now with no camelCase text of its own left to write here --
+// this client script has no way to import the real TS enum at runtime,
+// so these two are named by their own declared position instead.
 function verbFrameText(word, frame) {
   const formValue = (field) => {
     const entry = (word.word_forms || []).find(f => f.field === field);
     return entry ? entry.value : undefined;
   };
   const base = word.lexical_form;
-  const ing = formValue('presentParticipleForm') || (base + 'ing');
-  const thirdPerson = formValue('thirdPersonSingularPresentForm') || (base + 's');
+  const ing = formValue(8) || (base + 'ing');
+  const thirdPerson = formValue(7) || (base + 's');
   return frame.replace(/----ing/g, ing).replace(/----s/g, thirdPerson).replace(/----/g, base);
 }
 

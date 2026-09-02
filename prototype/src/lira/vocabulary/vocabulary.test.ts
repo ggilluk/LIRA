@@ -10,7 +10,7 @@ import { SemanticRelationshipKind } from "./data/enums/semantic_relationship_kin
 import { SemanticRelationshipProcessor } from "./role/semantic_relationship_processor";
 import { PartOfSpeech } from "./data/enums/part_of_speech";
 import { ConjunctionType } from "./data/enums/conjunction_type";
-import { WordFormField } from "./data/enums/word_forms_enum";
+import { WordFormField, wordFormFieldLabel } from "./data/enums/word_forms_enum";
 import type { Word } from "./data/entities/word";
 import { createWord, graphUuid as wordGraphUuid, validateFormText } from "./role/word_processor";
 import { stringPatternsFor } from "./data/matrices/pos_vs_wordform_matrice";
@@ -65,7 +65,7 @@ import { DictionaryView } from "./ui/server/dictionary_controller";
 // generateXForms()'s own migrated POS types register a WordForm instead
 // of assigning a named scalar field -- this reads one back the same way
 // `word.field` used to, for test assertions.
-function formTextOf(wordForms: WordForms, word: Word, field: string) {
+function formTextOf(wordForms: WordForms, word: Word, field: WordFormField) {
   return wordForms.formsOf(word).find((form) => form.field === field)?.text;
 }
 
@@ -1173,7 +1173,7 @@ describe("PartOfSpeechIdentifier / DictionaryProcessor: inflected-form fallback"
     expect(wordGraphUuid(candidates[0].word!)).toBe(wordGraphUuid(run));
     expect(candidates[0].source).toBe(IdentificationSource.INFLECTED_FORM);
     expect(candidates[0].confidence).toBeLessThan(1.0);
-    expect(candidates[0].reason).toContain(WordFormField.PAST_TENSE_FORM);
+    expect(candidates[0].reason).toContain(wordFormFieldLabel(WordFormField.PAST_TENSE_FORM));
   });
 
   it("finds a Verb by its own irregular past-tense form via the WordForms store, now that Verb no longer writes a scalar *_Form field", () => {
@@ -1235,7 +1235,7 @@ describe("PartOfSpeechIdentifier / DictionaryProcessor: inflected-form fallback"
     expect(candidates).toHaveLength(1);
     expect(wordGraphUuid(candidates[0].word!)).toBe(wordGraphUuid(dog));
     expect(candidates[0].source).toBe(IdentificationSource.INFLECTED_FORM);
-    expect(candidates[0].reason).toContain(WordFormField.PLURAL_NUMBER_FORM);
+    expect(candidates[0].reason).toContain(wordFormFieldLabel(WordFormField.PLURAL_NUMBER_FORM));
   });
 });
 

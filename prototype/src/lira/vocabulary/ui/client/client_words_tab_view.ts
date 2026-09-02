@@ -104,17 +104,15 @@ const MAX_WORD_ROWS_SHOWN = 1000;
 // docstring, data/word_forms.ts) -- the reported requirement that the
 // first WordForm column be the base lemma falls out of using the
 // Matrix's own canonical row order directly, no special-casing needed.
-const WORD_FORM_FIELDS = [
-  "baseLemmaCanonicalForm", "singularNumberForm", "pluralNumberForm",
-  "presentTenseForm", "presentTenseInstanceForm", "pastTenseForm", "pastTenseInstanceForm",
-  "thirdPersonSingularPresentForm", "presentParticipleForm", "pastParticipleForm",
-  "bareInfinitiveForm", "modalForm", "secondaryModalForm",
-  "positiveDegreeForm", "comparativeDegreeForm", "comparativePeriphrasticForm",
-  "superlativeDegreeForm", "superlativePeriphrasticForm",
-  "firstPersonForm", "secondPersonForm", "thirdPersonForm",
-  "subjectiveCaseForm", "objectiveCaseForm", "possessiveCaseForm",
-  "consonantSoundForm", "vowelSoundForm", "reflexiveCaseForm",
-];
+// WordFormField (data/enums/word_forms_enum.ts) is a numeric, tensor-
+// coded enum now -- its own declared order IS its own value (0-26, no
+// gaps), so this is just that whole range in order, not a hand-copied
+// list of the 27 members' own names any more (there's no camelCase
+// text left on the enum's own value to copy). The <th> label text in
+// client_shell_html.ts is unrelated prose, kept in sync by hand against
+// the same declared order -- neither file can import the real TS enum
+// at runtime.
+const WORD_FORM_FIELDS = Array.from({ length: 27 }, (_, field) => field);
 
 // One <td> per WORD_FORM_FIELDS entry, in that fixed order -- an
 // em-dash (modifierListHTML()'s/coordinationRowHtml()'s own identical
@@ -122,10 +120,10 @@ const WORD_FORM_FIELDS = [
 // client_coordinations_tab_view.ts) for whichever of the 27 a
 // particular Word doesn't carry (a Noun has 3 -- base lemma/singular/
 // plural -- not all 27; the rest of that row stays dashes). \`w.word_forms\`
-// is keyed by \`field\` (WordFormEntry.field, ui/server/builder_word.ts)
-// against a fresh lookup map built once per row -- cheap at
-// MAX_WORD_ROWS_SHOWN scale, and simpler than sorting/re-indexing
-// \`word_forms\` itself into column order.
+// is keyed by \`field\` (WordFormEntry.field, ui/server/builder_word.ts --
+// a numeric WordFormField code now, 0-26) against a fresh lookup map
+// built once per row -- cheap at MAX_WORD_ROWS_SHOWN scale, and simpler
+// than sorting/re-indexing \`word_forms\` itself into column order.
 function wordFormColumnsHtml(w) {
   const byField = {};
   for (const form of w.word_forms) byField[form.field] = form;
