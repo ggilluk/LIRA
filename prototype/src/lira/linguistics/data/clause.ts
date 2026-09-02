@@ -6,6 +6,7 @@ import type { Interpretation } from "./interpretation";
 import type { LinguisticUnit } from "./linguistic_unit";
 import type { Phrase } from "./phrase";
 import type { ReadingError } from "./reading_error";
+import type { SentenceType } from "./sentence_type";
 import type { TokenReading } from "./token_reading";
 import { ValidationOutcome } from "./validation_outcome";
 
@@ -24,6 +25,25 @@ export interface Clause extends LinguisticUnit {
   isIndependent?: boolean;
 
   clauseType?: ClauseType;
+  // The communicative-act category this clause itself expresses --
+  // declarative/interrogative/imperative/exclamatory, SentenceType's own
+  // four values (data/sentence_type.ts) reused here rather than a second,
+  // near-identical enum, since a sentence's own mood is really its main
+  // clause's mood, SentenceType's own docstring already treating this as
+  // a sentence-level stand-in for a genuine clause-level judgment
+  // ("distinguished purely by terminal punctuation... none of them
+  // enforce distinct word-order grammar"). Only ever meaningful for a
+  // MainClause (main_clause.ts's own docstring, and its own
+  // DeclarativeMainClause/InterrogativeMainClause/ImperativeMainClause/
+  // ExclamativeMainClause subtypes narrowing this field to one literal
+  // value each) -- an embedded SubordinateClause carries no independent
+  // illocutionary force of its own the same way, so this stays
+  // `undefined` there. Declared on base Clause rather than only on
+  // MainClause, the same way Phrase.complements lives on base Phrase
+  // even though only some Phrase subtypes ever populate it
+  // (noun_phrase.ts's own docstring on that precedent). No ClauseReader
+  // detection logic sets this yet -- see main_clause.ts's own docstring.
+  mood?: SentenceType;
   phrases: Phrase[];
   subject?: Phrase;
   predicate?: Phrase;

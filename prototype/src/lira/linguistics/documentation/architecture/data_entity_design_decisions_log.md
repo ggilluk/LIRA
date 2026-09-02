@@ -84,3 +84,69 @@ for all three of `DEPENDENT`/`RELATIVE`/`COORDINATED`, since no real
 `ClauseReader.read()` call produces one yet (this layer's own equivalent
 of Vocabulary's synthetic-only Coordination tests, used for the identical
 reason: no real code path exists to seed the case from).
+
+## `MainClause`: split further into `DeclarativeMainClause`/`InterrogativeMainClause`/`ImperativeMainClause`/`ExclamativeMainClause`
+
+Requested directly, with all four examples given: "She opened the door."
+(declarative), "Did she open the door?" (interrogative), "Open the
+door." (imperative), "What a beautiful day it is!" (exclamative).
+`MainClause` narrows further into these four, one per communicative-act
+mood, the identical narrowing pattern its own split from `Clause` just
+established (`main_clause.ts`'s own docstring) -- each new subtype
+narrows a new `mood` field down to one literal value.
+
+**`mood` reuses `SentenceType` (`data/sentence_type.ts`) rather than a
+new enum.** `SentenceType`'s own four values -- `DECLARATIVE`/
+`INTERROGATIVE`/`IMPERATIVE`/`EXCLAMATORY` -- already name exactly this
+same communicative-act classification, and its own docstring already
+frames the sentence-level version as a stand-in for a genuine
+clause-level judgment it doesn't make yet ("distinguished purely by
+terminal punctuation... none of them enforce distinct word-order
+grammar"). Introducing a second, near-identical 4-value enum inside the
+same layer purely to rename `EXCLAMATORY` to the requested class name's
+own "Exclamative" would have duplicated one taxonomy for no real gain --
+"exclamative" and "exclamatory" name the identical grammatical mood, so
+`ExclamativeMainClause` (the requested class name, kept verbatim) narrows
+`SentenceType.EXCLAMATORY` (the existing value, kept verbatim) rather
+than inventing `ClauseMood.EXCLAMATIVE` alongside it. This also leaves
+the door open for the natural future fix `SentenceType`'s own docstring
+already gestures at -- deriving `Sentence.sentenceType` from its own
+`MainClause.mood` once real mood-classifying grammar exists, instead of
+purely from terminal punctuation -- without a second enum standing in
+the way.
+
+**`mood?: SentenceType` lives on base `Clause`, not only on `MainClause`**,
+the identical precedent `Phrase.complements` already set in Vocabulary
+(declared on base `Phrase` even though only three of its six subtypes
+ever populate it, `noun_phrase.ts`'s own docstring) -- documented as
+only ever meaningful for a `MainClause` (an embedded `SubordinateClause`
+carries no independent illocutionary force of its own the same way).
+
+**Four new files** (`declarative_main_clause.ts`/`interrogative_main_clause.ts`/
+`imperative_main_clause.ts`/`exclamative_main_clause.ts`), each the
+identical shape: an interface narrowing `mood` to one `SentenceType`
+literal, a `create*()` constructor, and an `is*()` type guard checking
+both `clauseType === INDEPENDENT` and the specific `mood` value (so a
+`SubordinateClause` can never accidentally satisfy one of these, even
+though `mood` is typed on base `Clause`).
+
+**Declared ahead of their own detector**, the identical state
+`SubordinateClause` started in one section up: `ClauseReader` has no
+mood-classifying grammar at all yet -- subject-absence detection for
+`IMPERATIVE`, subject-auxiliary inversion for `INTERROGATIVE`, wh-fronting
+for `EXCLAMATIVE` are all real, unimplemented Phase 2 work (`SentenceType`'s
+own docstring already names exactly this gap for the sentence-level
+version). No `ClauseReader.read()` call sets `mood` today, so it stays
+`undefined` on every real `MainClause`; only a hand-built value via one
+of the four new `create*()` functions is ever one of these subtypes right
+now. `ImperativeMainClause`'s own docstring separately notes that once a
+real one IS built, it will correctly have no `subject` at all
+(`SentenceType`'s own docstring on why `IMPERATIVE` needs its own
+`ClauseTemplate` with `subjectRequired=false`), unlike the other three.
+
+`npx tsc -b --force` clean. Full `vitest run --no-file-parallelism`:
+171/171 (170 prior + one new test) -- one new synthetic test hand-building
+all four subtypes via their own constructors and checking every `is*()`
+guard against every sibling mood, not just its own, mirroring the
+`SubordinateClause` synthetic test's own reasoning: no real reading
+exercises this yet, so the coverage has to be built by hand.

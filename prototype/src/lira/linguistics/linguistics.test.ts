@@ -13,6 +13,10 @@ import { PhraseType } from "./data/phrase_type";
 import { ClauseType } from "./data/clause_type";
 import { isMainClause } from "./data/main_clause";
 import { createSubordinateClause, isSubordinateClause, type SubordinateClauseType } from "./data/subordinate_clause";
+import { createDeclarativeMainClause, isDeclarativeMainClause } from "./data/declarative_main_clause";
+import { createInterrogativeMainClause, isInterrogativeMainClause } from "./data/interrogative_main_clause";
+import { createImperativeMainClause, isImperativeMainClause } from "./data/imperative_main_clause";
+import { createExclamativeMainClause, isExclamativeMainClause } from "./data/exclamative_main_clause";
 import { SentenceType } from "./data/sentence_type";
 import { ReadingErrorKind } from "./data/reading_error";
 import { LinguisticUnitKind } from "./data/linguistic_unit_kind";
@@ -325,5 +329,43 @@ describe("MainClause/SubordinateClause -- Clause's own two narrowing subtypes", 
       expect(isSubordinateClause(subordinate)).toBe(true);
       expect(isMainClause(subordinate)).toBe(false);
     }
+  });
+});
+
+describe("DeclarativeMainClause/InterrogativeMainClause/ImperativeMainClause/ExclamativeMainClause -- MainClause's own four mood subtypes", () => {
+  it("each is* guard recognises only its own constructor's output, over both mood and every sibling mood", () => {
+    // No real ClauseReader.read() call sets `mood` yet -- no
+    // mood-classifying grammar exists (main_clause.ts's own docstring),
+    // so these are pure, hand-built constructions, the same synthetic
+    // approach the MainClause/SubordinateClause split above already
+    // uses for its own still-undetected case.
+    const declarative = createDeclarativeMainClause({ text: "She opened the door." });
+    const interrogative = createInterrogativeMainClause({ text: "Did she open the door?" });
+    const imperative = createImperativeMainClause({ text: "Open the door." });
+    const exclamative = createExclamativeMainClause({ text: "What a beautiful day it is!" });
+
+    expect(declarative.mood).toBe(SentenceType.DECLARATIVE);
+    expect(interrogative.mood).toBe(SentenceType.INTERROGATIVE);
+    expect(imperative.mood).toBe(SentenceType.IMPERATIVE);
+    expect(exclamative.mood).toBe(SentenceType.EXCLAMATORY);
+
+    // Every one is still a real MainClause underneath its own mood.
+    for (const clause of [declarative, interrogative, imperative, exclamative]) {
+      expect(isMainClause(clause)).toBe(true);
+    }
+
+    expect(isDeclarativeMainClause(declarative)).toBe(true);
+    expect(isDeclarativeMainClause(interrogative)).toBe(false);
+    expect(isDeclarativeMainClause(imperative)).toBe(false);
+    expect(isDeclarativeMainClause(exclamative)).toBe(false);
+
+    expect(isInterrogativeMainClause(interrogative)).toBe(true);
+    expect(isInterrogativeMainClause(declarative)).toBe(false);
+
+    expect(isImperativeMainClause(imperative)).toBe(true);
+    expect(isImperativeMainClause(declarative)).toBe(false);
+
+    expect(isExclamativeMainClause(exclamative)).toBe(true);
+    expect(isExclamativeMainClause(declarative)).toBe(false);
   });
 });
