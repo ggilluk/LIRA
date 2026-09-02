@@ -45,7 +45,16 @@ export interface Clause extends LinguisticUnit {
   // detection logic sets this yet -- see main_clause.ts's own docstring.
   mood?: SentenceType;
   phrases: Phrase[];
-  subject?: Phrase;
+  // Widened to `Phrase | Clause` (self-referential, `nestedClauses`'s
+  // own precedent below) rather than staying plain `Phrase` -- a
+  // MainClause mood subtype's own narrowing (DeclarativeMainClause's
+  // own docstring, data/declarative_main_clause.ts) permits an embedded
+  // nominal Clause as `subject` ("The fact that she left surprised
+  // me."), and TypeScript requires a subtype's own narrowed field type
+  // stay assignable to its base's declared type -- Clause is not
+  // itself a Phrase, so base Clause's own `subject` has to admit the
+  // possibility here for that narrowing to typecheck at all.
+  subject?: Phrase | Clause;
   predicate?: Phrase;
   object?: Phrase;
   complement?: Phrase;

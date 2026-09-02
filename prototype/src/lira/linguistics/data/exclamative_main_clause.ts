@@ -14,12 +14,22 @@ import { createMainClause, type MainClause, type MainClauseInit } from "./main_c
 import { SentenceType } from "./sentence_type";
 import type { Clause } from "./clause";
 import { ClauseType } from "./clause_type";
+import type { NounPhrase } from "./noun_phrase";
+import type { PrepositionalPhrase } from "./prepositional_phrase";
+import type { VerbPhrase } from "./verb_phrase";
 
 export interface ExclamativeMainClause extends MainClause {
   mood: SentenceType.EXCLAMATORY;
+  // subject/predicate narrowing -- DeclarativeMainClause's own identical
+  // shape and reasoning (declarative_main_clause.ts's own docstring).
+  subject?: NounPhrase | PrepositionalPhrase | Clause;
+  predicate?: VerbPhrase;
 }
 
-export type ExclamativeMainClauseInit = Omit<MainClauseInit, "mood">;
+export type ExclamativeMainClauseInit = Omit<MainClauseInit, "mood" | "subject" | "predicate"> & {
+  subject?: NounPhrase | PrepositionalPhrase | Clause;
+  predicate?: VerbPhrase;
+};
 
 export function createExclamativeMainClause(init: ExclamativeMainClauseInit): ExclamativeMainClause {
   return createMainClause({ ...init, mood: SentenceType.EXCLAMATORY }) as ExclamativeMainClause;

@@ -10,6 +10,7 @@ import { GrammarConfigurator } from "./role/grammar_configurator";
 import { LinguisticController } from "./role/linguistic_controller";
 import { ValidationOutcome } from "./data/validation_outcome";
 import { PhraseType } from "./data/phrase_type";
+import type { Phrase } from "./data/phrase";
 import { ClauseType } from "./data/clause_type";
 import { isMainClause } from "./data/main_clause";
 import { createSubordinateClause, isSubordinateClause, type SubordinateClauseType } from "./data/subordinate_clause";
@@ -17,6 +18,11 @@ import { createDeclarativeMainClause, isDeclarativeMainClause } from "./data/dec
 import { createInterrogativeMainClause, isInterrogativeMainClause } from "./data/interrogative_main_clause";
 import { createImperativeMainClause, isImperativeMainClause } from "./data/imperative_main_clause";
 import { createExclamativeMainClause, isExclamativeMainClause } from "./data/exclamative_main_clause";
+import { createClause } from "./data/clause";
+import { createPhrase } from "./data/phrase";
+import { isNounPhrase, type NounPhrase } from "./data/noun_phrase";
+import { isVerbPhrase, type VerbPhrase } from "./data/verb_phrase";
+import { isPrepositionalPhrase, type PrepositionalPhrase } from "./data/prepositional_phrase";
 import { SentenceType } from "./data/sentence_type";
 import { ReadingErrorKind } from "./data/reading_error";
 import { LinguisticUnitKind } from "./data/linguistic_unit_kind";
@@ -55,7 +61,13 @@ describe("LinguisticController against the bundled Common Vocabulary Cache", () 
     // COORDINATED isn't implemented yet).
     expect(isMainClause(clause)).toBe(true);
     expect(isSubordinateClause(clause)).toBe(false);
-    expect(clause.subject?.phraseType).toBe(PhraseType.NOUN_PHRASE);
+    // clause.subject is `Phrase | Clause | undefined` now
+    // (declarative_main_clause.ts's own subject narrowing), but a real
+    // ClauseReader.read() call only ever assigns a Phrase to it today
+    // (no clause-embedding grammar exists yet) -- this cast reflects
+    // that, the same way linguistics_worker.ts's own "words" in ...
+    // check narrows it at runtime.
+    expect((clause.subject as Phrase | undefined)?.phraseType).toBe(PhraseType.NOUN_PHRASE);
     expect(clause.predicate?.phraseType).toBe(PhraseType.VERB_PHRASE);
     // "is" is a linking verb -- "a representation" is a complement, not
     // an object (clause_reader.ts's own LINKING_VERB_FORMS).
@@ -367,5 +379,35 @@ describe("DeclarativeMainClause/InterrogativeMainClause/ImperativeMainClause/Exc
 
     expect(isExclamativeMainClause(exclamative)).toBe(true);
     expect(isExclamativeMainClause(declarative)).toBe(false);
+  });
+});
+
+describe("MainClause mood subtypes' own subject/predicate narrowing", () => {
+  it("Declarative/Interrogative/Exclamative accept a NounPhrase, PrepositionalPhrase, or embedded Clause subject and a VerbPhrase predicate", () => {
+    const nounPhrase = createPhrase({ text: "she", phraseType: PhraseType.NOUN_PHRASE }) as NounPhrase;
+    const prepositionalPhrase = createPhrase({ text: "in the garden", phraseType: PhraseType.PREPOSITIONAL_PHRASE }) as PrepositionalPhrase;
+    const verbPhrase = createPhrase({ text: "opened the door", phraseType: PhraseType.VERB_PHRASE }) as VerbPhrase;
+    const embeddedClause = createClause({ text: "that she left" });
+
+    expect(isNounPhrase(nounPhrase)).toBe(true);
+    expect(isPrepositionalPhrase(prepositionalPhrase)).toBe(true);
+    expect(isVerbPhrase(verbPhrase)).toBe(true);
+
+    for (const subject of [nounPhrase, prepositionalPhrase, embeddedClause]) {
+      const declarative = createDeclarativeMainClause({ text: "...", subject, predicate: verbPhrase });
+      expect(declarative.subject).toBe(subject);
+      expect(declarative.predicate).toBe(verbPhrase);
+    }
+  });
+
+  it("Imperative accepts only a NounPhrase subject (or none), never a PrepositionalPhrase or embedded Clause", () => {
+    const nounPhrase = createPhrase({ text: "you", phraseType: PhraseType.NOUN_PHRASE }) as NounPhrase;
+    const verbPhrase = createPhrase({ text: "open the door", phraseType: PhraseType.VERB_PHRASE }) as VerbPhrase;
+
+    const withSubject = createImperativeMainClause({ text: "You open the door.", subject: nounPhrase, predicate: verbPhrase });
+    expect(withSubject.subject).toBe(nounPhrase);
+
+    const withoutSubject = createImperativeMainClause({ text: "Open the door.", predicate: verbPhrase });
+    expect(withoutSubject.subject).toBeUndefined();
   });
 });

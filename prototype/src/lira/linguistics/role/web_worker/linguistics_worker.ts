@@ -305,7 +305,14 @@ function clauseToJson(clause: Clause): JsonClause {
   return {
     clauseType: clause.clauseType !== undefined ? ClauseType[clause.clauseType] : null,
     text: clause.text,
-    subject: phraseToJson(clause.subject),
+    // clause.subject can be a Phrase or an embedded Clause now
+    // (declarative_main_clause.ts's own subject narrowing) -- no JSON
+    // shape exists yet for an embedded Clause subject (Phase 2
+    // clause-embedding work isn't implemented), so this reports null
+    // for that case the same way phraseToJson(undefined) already does.
+    // "words" in ... distinguishes a real Phrase (which always has it)
+    // from a Clause (which never does, using `tokens` instead).
+    subject: clause.subject && "words" in clause.subject ? phraseToJson(clause.subject) : null,
     predicate: phraseToJson(clause.predicate),
     object: phraseToJson(clause.object),
     complement: phraseToJson(clause.complement),
