@@ -146,6 +146,22 @@ export class ClauseReader {
         continue;
       }
 
+      // Past the predicate, no subject found yet -- subject-auxiliary
+      // inversion ("Did the young woman open the gate?": the AUXILIARY
+      // "Did" alone already satisfies predicateHeadRequires on its own,
+      // long before the real main verb "open" is even reached, so the
+      // ordinary pre-predicate scan above never finds a subject at
+      // all). The first subject-eligible phrase found now is the
+      // (inverted) subject, not the object -- real English word order
+      // for a yes/no question, a fronted wh-question, or "Is behind the
+      // station a safe place to wait?"'s own PrepositionalPhrase
+      // subject alike. Never fires for an ordinary declarative, where
+      // the pre-predicate scan above already found the subject.
+      if (subject === undefined && template.subjectPhraseTypes.has(phrase.phraseType)) {
+        subject = phrase;
+        continue;
+      }
+
       // Past the predicate: first NOUN_PHRASE/ADJECTIVE_PHRASE becomes
       // the object or complement (never both), everything else is a
       // modifier.

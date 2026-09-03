@@ -473,6 +473,20 @@ describe("generate<Class>Forms() -- deriving *_Form values from a base lemma", (
     expect(formTextOf(wordForms, roof, WordFormField.PLURAL_NUMBER_FORM)).toBeUndefined();
   });
 
+  it("Noun: abstains on pluralNumberForm for a single-character lemma -- WordNet seeds every letter of the alphabet as its own NOUN (dict/index.noun), and naive -s pluralization collides real ones with unrelated closed-class words spelled the same way as the 'wrong' plural (\"i\" -> \"is\", the copula; \"u\" -> \"us\", the pronoun)", () => {
+    const i = createNoun({ text: "i" });
+    const u = createNoun({ text: "u" });
+    const wordForms = new WordForms();
+    generateNounForms(i, wordForms);
+    generateNounForms(u, wordForms);
+    expect(formTextOf(wordForms, i, WordFormField.PLURAL_NUMBER_FORM)).toBeUndefined();
+    expect(formTextOf(wordForms, u, WordFormField.PLURAL_NUMBER_FORM)).toBeUndefined();
+    // Singular/possessive are unaffected -- only the collision-prone
+    // plural rule is skipped for a single-character lemma.
+    expect(formTextOf(wordForms, i, WordFormField.SINGULAR_NUMBER_FORM)).toEqual({ value: "i" });
+    expect(formTextOf(wordForms, i, WordFormField.POSSESSIVE_CASE_FORM)).toEqual({ value: "i's", formats: ["/'s$/i"] });
+  });
+
   it("Noun: never overwrites a field already registered", () => {
     const child = createNoun({ text: "child" });
     const wordForms = new WordForms();

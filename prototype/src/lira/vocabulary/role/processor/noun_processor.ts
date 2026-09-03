@@ -47,8 +47,26 @@ export function validateNoun(noun: Noun, wordForms: WordForms): readonly WordFor
  * alone ("roof" takes plain -s, "knife" takes -ves, and both end the
  * same way), so a lemma matching that shape is left undefined rather
  * than guessed either way; rules #5-6 (irregular/unchanged) have no
- * spelling signal to detect at all. */
+ * spelling signal to detect at all.
+ *
+ * A single-character lemma is the same kind of "don't guess" case,
+ * for a different reason: real English orthography pluralizes a
+ * spelled-out letter with an apostrophe ("I's", "A's"), not plain -s
+ * -- WordNet genuinely seeds every letter of the alphabet as its own
+ * NOUN lemma ("a", "i", "u", ..., dict/index.noun), and naive -s
+ * pluralization collides several of them with real, unrelated closed-
+ * class words spelled the same way as the "wrong" plural: "i" -> "is"
+ * (the copula), "u" -> "us" (the pronoun). The reported bug: "A
+ * meaning is a representation." read INVALID once WordNet's own "i"
+ * noun was reachable at all (this only ever surfaced once the
+ * Linguistics Service started resolving words against the Vocabulary
+ * Service's own real WordNet-scale Dictionary instead of its own
+ * closed-class-only copy) -- "is" gained a spurious NOUN candidate
+ * (PLURAL_NUMBER_FORM of "i") that out-competed its own real AUXILIARY/
+ * VERB reading whenever no valid VERB_PHRASE completion happened to be
+ * available to out-rank it. */
 function generatedPluralNumberForm(lemma: string): Text | undefined {
+  if (lemma.length <= 1) return undefined;
   if (endsInConsonantY(lemma)) return { value: `${lemma.slice(0, -1)}ies`, formats: ["/ies$/i"] };
   if (/(s|x|z|ch|sh)$/i.test(lemma)) return { value: `${lemma}es`, formats: ["/es$/i"] };
   if (/(f|fe)$/i.test(lemma)) return undefined;

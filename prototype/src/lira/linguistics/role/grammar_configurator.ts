@@ -120,17 +120,36 @@ function buildPhraseGrammars(): Map<PhraseType, PhraseGrammar> {
       [POS.VERB, new Set([POS.ADVERB, POS.CONJUNCTION])],
       [POS.CONJUNCTION, new Set([POS.AUXILIARY, POS.VERB, POS.ADVERB])],
     ]),
-    // Deliberately excludes AUXILIARY -- a bare "is"/"have"/"been" never
-    // completes a VERB_PHRASE on its own. This is what makes "is"
-    // resolve to VERB (not AUXILIARY) in "A meaning is a
-    // representation.": AUXILIARY is a valid *start* but only VERB is a
-    // valid *end*.
-    endStates: new Set([POS.VERB]),
-    headPreference: [POS.VERB],
-    obligationsRaised: new Map([
-      [POS.AUXILIARY, ObligationKind.AUXILIARY_REQUIRES_COMPATIBLE_VERB_FORM],
-      [POS.CONJUNCTION, coordination],
-    ]),
+    // Includes AUXILIARY as well as VERB: this used to exclude AUXILIARY
+    // on the assumption a bare copula "is"/"was"/"be" always has its own
+    // separate, standalone VERB Dictionary entry to fall back to instead
+    // (a real closed-class entry the unit-test-only seeding path
+    // provides) -- but the deployed app's own "Seed Vocabulary" action
+    // seeds with `excludeOpenClasses: true` (word_seeder.ts's own
+    // seedClosedClassWords docstring), which never seeds that entry, so
+    // "is" only ever resolves as AUXILIARY (PartOfSpeechIdentifier's own
+    // INFLECTED_FORM fallback onto "be"). Reported bug, root-caused live:
+    // "A meaning is a representation." -- "is" (AUXILIARY-only, no
+    // following VERB) never completed a VERB_PHRASE at all, so it was
+    // silently dropped from the read Sentence rather than merely
+    // mis-scored. "be" as a copula/linking verb is a genuine, complete
+    // predicate on its own ("She is a doctor.", "The sky is blue.") --
+    // English doesn't require a following main verb the way an auxiliary
+    // *chain* does ("is running", "was unlocked", both still explored
+    // and preferred via ReadingScorer's own maximal-munch spanLength
+    // tie-break, since VERB is still reachable via the AUXILIARY->VERB
+    // transition below and a longer equally-VALID candidate always wins).
+    endStates: new Set([POS.VERB, POS.AUXILIARY]),
+    headPreference: [POS.VERB, POS.AUXILIARY],
+    // No obligation raised for AUXILIARY any more (the old
+    // AUXILIARY_REQUIRES_COMPATIBLE_VERB_FORM entry, ObligationKind's own
+    // docstring) -- that obligation existed only to force this now-
+    // retired disambiguation, and unconditionally requiring a following
+    // VERB is exactly what made a bare copula INVALID. Nothing else
+    // raises that ObligationKind any more (grep confirms), so it's
+    // effectively retired; ObligationKind/OBLIGATION_ERROR_KIND (role/
+    // phrase_reader.ts) still name it for documentation, harmlessly.
+    obligationsRaised: new Map([[POS.CONJUNCTION, coordination]]),
   }));
 
   grammars.set(PhraseType.ADJECTIVE_PHRASE, phraseGrammar({
@@ -193,14 +212,29 @@ function buildClauseElementTemplates(): Map<ClauseType, ClauseTemplate> {
   const templates = new Map<ClauseType, ClauseTemplate>();
   templates.set(ClauseType.INDEPENDENT, {
     clauseType: ClauseType.INDEPENDENT,
-    subjectPhraseTypes: new Set([PhraseType.NOUN_PHRASE]),
+    // PREPOSITIONAL_PHRASE alongside NOUN_PHRASE -- locative inversion
+    // ("Under the old bridge is a strange place to sleep.", "Is behind
+    // the station a safe place to wait?"): a PrepositionalPhrase
+    // genuinely can fill the subject role in real English, fronted in
+    // place of the semantic subject it locates. Previously declared
+    // ahead of this template ever actually admitting one
+    // (declarative_main_clause.ts's own docstring on
+    // `DeclarativeMainClause.subject`'s own PrepositionalPhrase-typed
+    // union member).
+    subjectPhraseTypes: new Set([PhraseType.NOUN_PHRASE, PhraseType.PREPOSITIONAL_PHRASE]),
     predicatePhraseTypes: new Set([PhraseType.VERB_PHRASE]),
     objectPhraseTypes: new Set([PhraseType.NOUN_PHRASE]),
     complementPhraseTypes: new Set([PhraseType.NOUN_PHRASE, PhraseType.ADJECTIVE_PHRASE]),
     modifierPhraseTypes: new Set([PhraseType.ADVERB_PHRASE, PhraseType.PREPOSITIONAL_PHRASE]),
     subjectRequired: true,
     predicateRequired: true,
-    predicateHeadRequires: new Set([POS.VERB]),
+    // AUXILIARY alongside VERB -- VERB_PHRASE's own endStates/
+    // headPreference now admit a bare copula predicate headed by
+    // AUXILIARY (grammar_configurator.ts's own VERB_PHRASE docstring on
+    // why), so this clause-level "has a finite verb form" check has to
+    // recognise that head too, or a genuinely VALID VERB_PHRASE predicate
+    // ("is", "was") would still fail here with MISSING_FINITE_VERB.
+    predicateHeadRequires: new Set([POS.VERB, POS.AUXILIARY]),
     obligationsRaised: [ObligationKind.DECLARATIVE_CLAUSE_REQUIRES_FINITE_VERB],
   });
   // DEPENDENT/RELATIVE/COORDINATED: Phase 2 (clause_type.ts) -- no entry

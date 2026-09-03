@@ -6,6 +6,9 @@ import { WordForms } from "../vocabulary/data/word_forms";
 import { AsyncDictionaryHydrator } from "../vocabulary/role/dictionary_hydrator";
 import { DictionaryProcessor } from "../vocabulary/role/dictionary_processor";
 import { WordSeeder } from "../vocabulary/role/word_seeder";
+import { createNoun } from "../vocabulary/role/processor/noun_processor";
+import { createVerb } from "../vocabulary/role/processor/verb_processor";
+import { createAdjective } from "../vocabulary/role/processor/adjective_processor";
 import { GrammarConfigurator } from "./role/grammar_configurator";
 import { LinguisticController } from "./role/linguistic_controller";
 import { ValidationOutcome } from "./data/validation_outcome";
@@ -441,3 +444,96 @@ describe("ReadingScorer -- rankKey's own VERB_PHRASE tie-break", () => {
     expect(ranked[0]).toBe("noun");
   });
 });
+
+describe("VERB_PHRASE grammar -- a bare AUXILIARY completes a copula predicate", () => {
+  it("reads a copula sentence as VALID even when \"is\" only ever resolves via the INFLECTED_FORM fallback onto AUXILIARY \"be\", never a standalone VERB Dictionary entry -- the deployed app's own real seeding shape (Vocabulary tab's \"Seed Vocabulary\" action calls WordSeeder.seedDomain with excludeOpenClasses:true, word_seeder.ts's own seedClosedClassWords docstring), unlike seededController() above which seeds with excludeOpenClasses defaulted to false and so still gets a standalone closed-class \"is\" VERB entry that would mask this bug", () => {
+    const dictionary = new Dictionary();
+    const phraseBook = new Phrases();
+    const wordForms = new WordForms();
+    new WordSeeder("en").seedClosedClassWords(dictionary, phraseBook, { excludeOpenClasses: true }, undefined, wordForms);
+    // No standalone Dictionary entry for "is" -- only reachable via the
+    // inflected-form fallback onto AUXILIARY "be" (PartOfSpeechIdentifier.identifySeeded()'s
+    // own two-tier lookup).
+    expect(dictionary.lookupAll("is")).toHaveLength(0);
+    expect(wordForms.lookupByText("is").some(({ word }) => word.partOfSpeech === PartOfSpeech.AUXILIARY)).toBe(true);
+    dictionary.append(createNoun({ text: "meaning" }));
+    dictionary.append(createNoun({ text: "representation" }));
+    const hydrator = new AsyncDictionaryHydrator(dictionary, wordForms);
+    const processor = new DictionaryProcessor(dictionary, phraseBook, hydrator, "Common", wordForms);
+    const controller = new LinguisticController(processor);
+
+    const sentence = controller.readSentence("A meaning is a representation.");
+    expect(sentence.validation).toBe(ValidationOutcome.VALID);
+    const clause = sentence.clauses[0];
+    expect(clause.predicate?.phraseType).toBe(PhraseType.VERB_PHRASE);
+    expect(clause.predicate?.text).toBe("is");
+    // Still a linking-verb complement, not an object -- LINKING_VERB_FORMS
+    // matches "is" by its own headWord text, not by POS, so this stays
+    // unaffected by "is" now resolving as AUXILIARY instead of VERB.
+    expect(clause.complement?.phraseType).toBe(PhraseType.NOUN_PHRASE);
+    expect(clause.object).toBeUndefined();
+  });
+
+  it("still prefers the longer auxiliary-chain reading over stopping bare at the AUXILIARY when a real main verb follows (maximal munch) -- \"was unlocked\" reads as one VERB_PHRASE, not \"was\" alone with \"unlocked\" left dangling", () => {
+    const dictionary = new Dictionary();
+    const phraseBook = new Phrases();
+    const wordForms = new WordForms();
+    new WordSeeder("en").seedClosedClassWords(dictionary, phraseBook, { excludeOpenClasses: true }, undefined, wordForms);
+    dictionary.append(createNoun({ text: "door" }));
+    dictionary.append(createVerb({ text: "unlocked" }));
+    const hydrator = new AsyncDictionaryHydrator(dictionary, wordForms);
+    const processor = new DictionaryProcessor(dictionary, phraseBook, hydrator, "Common", wordForms);
+    const controller = new LinguisticController(processor);
+
+    const sentence = controller.readSentence("The door was unlocked.");
+    expect(sentence.validation).toBe(ValidationOutcome.VALID);
+    const clause = sentence.clauses[0];
+    expect(clause.predicate?.text).toBe("was unlocked");
+  });
+});
+
+describe("ClauseReader.assignRoles() -- subject-auxiliary inversion", () => {
+  it("reads 'Did the young woman open the gate?' as VALID with the NounPhrase after the fronted AUXILIARY assigned as SUBJECT, not OBJECT", () => {
+    const dictionary = new Dictionary();
+    const phraseBook = new Phrases();
+    const wordForms = new WordForms();
+    new WordSeeder("en").seedClosedClassWords(dictionary, phraseBook, undefined, undefined, wordForms);
+    dictionary.append(createAdjective({ text: "young" }));
+    dictionary.append(createNoun({ text: "woman" }));
+    dictionary.append(createVerb({ text: "open" }));
+    dictionary.append(createNoun({ text: "gate" }));
+    const hydrator = new AsyncDictionaryHydrator(dictionary, wordForms);
+    const processor = new DictionaryProcessor(dictionary, phraseBook, hydrator, "Common", wordForms);
+    const controller = new LinguisticController(processor);
+
+    const sentence = controller.readSentence("Did the young woman open the gate?");
+    expect(sentence.validation).toBe(ValidationOutcome.VALID);
+    const clause = sentence.clauses[0];
+    expect((clause.subject as Phrase | undefined)?.phraseType).toBe(PhraseType.NOUN_PHRASE);
+    expect((clause.subject as Phrase | undefined)?.text).toBe("the young woman");
+    expect(clause.object?.text).toBe("the gate");
+  });
+});
+
+describe("ClauseReader.assignRoles() -- PrepositionalPhrase as clause subject (locative inversion)", () => {
+  it("reads 'Under the bridge stands a statue.' as VALID with the PrepositionalPhrase assigned as SUBJECT", () => {
+    const dictionary = new Dictionary();
+    const phraseBook = new Phrases();
+    const wordForms = new WordForms();
+    new WordSeeder("en").seedClosedClassWords(dictionary, phraseBook, undefined, undefined, wordForms);
+    dictionary.append(createNoun({ text: "bridge" }));
+    dictionary.append(createVerb({ text: "stands" }));
+    dictionary.append(createNoun({ text: "statue" }));
+    const hydrator = new AsyncDictionaryHydrator(dictionary, wordForms);
+    const processor = new DictionaryProcessor(dictionary, phraseBook, hydrator, "Common", wordForms);
+    const controller = new LinguisticController(processor);
+
+    const sentence = controller.readSentence("Under the bridge stands a statue.");
+    expect(sentence.validation).toBe(ValidationOutcome.VALID);
+    const clause = sentence.clauses[0];
+    expect((clause.subject as Phrase | undefined)?.phraseType).toBe(PhraseType.PREPOSITIONAL_PHRASE);
+    expect((clause.subject as Phrase | undefined)?.text).toBe("Under the bridge");
+    expect(clause.predicate?.phraseType).toBe(PhraseType.VERB_PHRASE);
+  });
+});
+

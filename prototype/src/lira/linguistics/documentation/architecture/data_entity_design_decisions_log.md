@@ -446,3 +446,143 @@ Playwright, the real running app, the exact reported sentence: "The old
 house stands on the hill." now reads VALID (was INVALID, confidence
 0.05 -> 1.00), "stands" tagged VERB/VERB_PHRASE and correctly assigned
 as the clause's own PREDICATE (was NOUN/NOUN_PHRASE, MISSING_PREDICATE).
+
+## Four grammar-template gaps, diagnosed against one reported paragraph
+
+Follow-up request against a single 10-sentence paragraph ("only 3 or 10
+sentances resolved the verb phrase"), diagnosed into four independent
+root causes:
+
+- **A.** Clause-embedding subjects/objects ("That the door was unlocked
+  surprised everyone.", "Did what happened yesterday surprise you?") --
+  needs real recursive clause parsing (`ClauseTemplate`s for
+  DEPENDENT/RELATIVE only exist as "Phase 2" stubs, `grammar_configurator.ts`'s
+  own docstring) -- genuinely out of scope here, a much larger change.
+- **B.** Subject-auxiliary inversion ("Did the young woman open the
+  gate?").
+- **C.** `PrepositionalPhrase` as clause subject, locative inversion
+  ("Under the old bridge is a strange place to sleep.", "Is behind the
+  station a safe place to wait?").
+- **D.** Wh-fronted exclamatives ("What a remarkable building that old
+  house is!").
+
+B and C are template-level fixes, both implemented:
+
+**C** -- `buildClauseElementTemplates()`'s own INDEPENDENT
+`ClauseTemplate.subjectPhraseTypes` widened from `{NOUN_PHRASE}` to
+`{NOUN_PHRASE, PREPOSITIONAL_PHRASE}` (`grammar_configurator.ts`) -- a
+`PrepositionalPhrase` genuinely can fill the subject role in real
+English when fronted in place of the semantic subject it locates.
+
+**B** -- `ClauseReader.assignRoles()` gained one new branch, inserted
+right before the existing complement/object-assignment block: past the
+predicate, with no subject found yet, the first subject-eligible phrase
+found is now the (inverted) subject rather than the object. Never fires
+for an ordinary declarative (the pre-predicate scan already finds the
+subject there); fires for a yes/no question, a fronted wh-question, or a
+PrepositionalPhrase subject inverted the same way ("Is behind the
+station...").
+
+## The `AUXILIARY`/`is` mystery: a phrase- and clause-level grammar gap `excludeOpenClasses` uncovered, not a Worker bug
+
+While re-verifying B/C live, "A meaning is a representation." (this
+session's own flagship worked example) intermittently still failed --
+`SUBJECT` rendered as the corrupted `"A meaning a"`, "is" itself simply
+absent from the read Sentence's own token array, not merely mis-scored.
+Traced first to a real, separate bug (below), then to the actual root
+cause once that was fixed and the symptom persisted.
+
+**Real bug #1, fixed in passing**: `generatedPluralNumberForm()`
+(`vocabulary/role/processor/noun_processor.ts`) naively pluralized
+*every* lemma with plain `-s` outside its f/fe/s/x/z/ch/sh special
+cases -- including WordNet's own single-character NOUN lemmas (WordNet
+seeds every letter of the alphabet as its own lemma, `dict/index.noun`:
+"a", "i", "u", "o", "b", "y", ...). `"i" -> "is"` collides with the
+copula, `"u" -> "us"` with the pronoun, both real closed-class words
+spelled identically to the "wrong" plural. This only became reachable
+once the Linguistics Service started resolving words against the
+Vocabulary Service's own real WordNet-scale Dictionary instead of an
+independent closed-class-only copy (`data_entity_design_decisions_log.md`'s
+own "Linguistic Service resolves words via the Vocabulary Service"
+section) -- a spurious NOUN candidate for "is" could now out-compete its
+real AUXILIARY reading whenever no valid `VERB_PHRASE` completion
+happened to be available to outrank it. Fixed: a single-character lemma
+is now also a "don't guess" case for `generatedPluralNumberForm()`,
+alongside the existing f/fe abstention.
+
+**Real bug #2, the actual root cause**: fixing bug #1 did *not* fully
+resolve the symptom. Root-caused via a diagnostic that mirrored the
+deployed app's own real seeding shape exactly (`WordSeeder.seedDomain(domain,
+{ excludeOpenClasses: true })`, which the Vocabulary tab's own "Seed
+Vocabulary" action actually calls) rather than
+`linguistics.test.ts`'s own `seededController()` helper, which seeds
+with `excludeOpenClasses` defaulted to `false` and so still gets a
+standalone closed-class `Word { text: "is", partOfSpeech: VERB }` entry
+that no longer exists in the live app at all. With that entry gone,
+"is" only ever resolves via `PartOfSpeechIdentifier.identifySeeded()`'s
+inflected-form fallback onto the AUXILIARY "be" -- and `VERB_PHRASE`'s
+own grammar (`grammar_configurator.ts`) *deliberately* excluded
+AUXILIARY from `endStates`, on the explicit (now-false) assumption that
+"is" always had its own separate standalone VERB reading to fall back
+to. Without that VERB reading, a bare copula "is" (no following main
+verb) could never complete a `VERB_PHRASE` at all -- not `INVALID`,
+simply never a phrase candidate in the first place, so `PhraseReader`
+never covered that token with anything, and it silently dropped out of
+the reconstructed Sentence entirely (traced precisely with `readDocument()`'s
+own `sentence.text` coming back as `"A meaning a representation ."`,
+"is" gone).
+
+Fixed at both levels this assumption was baked into:
+
+- **Phrase level** (`VERB_PHRASE` grammar, `grammar_configurator.ts`):
+  `endStates`/`headPreference` both widened from `{VERB}` to
+  `{VERB, AUXILIARY}`. The obligation that used to force this
+  disambiguation (`AUXILIARY_REQUIRES_COMPATIBLE_VERB_FORM`, raised on
+  every AUXILIARY step, discharged only by a following VERB) is no
+  longer raised at all -- keeping it would have made every bare-copula
+  sentence `INVALID` outright (the obligation can never discharge with
+  nothing following), exactly backwards from the fix's own goal.
+  `ObligationKind`/`OBLIGATION_ERROR_KIND` (`role/phrase_reader.ts`)
+  still name it, harmlessly, since nothing else in the grammar ever
+  raised it.
+- **Clause level** (`INDEPENDENT` `ClauseTemplate`, `grammar_configurator.ts`):
+  `predicateHeadRequires` widened the same way, from `{VERB}` to
+  `{VERB, AUXILIARY}` -- `ClauseReader.validate()`'s own "does the
+  predicate have a finite verb form" check reads a `Phrase.headPartOfSpeech`
+  no different from the phrase-level fix, and without this second
+  widening a `VERB_PHRASE` correctly headed by AUXILIARY still failed
+  the clause as `MISSING_FINITE_VERB`.
+
+An auxiliary *chain* ("was unlocked", "is running") is unaffected --
+`AUXILIARY -> VERB` is still a real transition, so the beam search still
+explores the longer completion too, and `ReadingScorer.rankKey()`'s own
+maximal-munch `spanLength` tie-break (both readings tied `VALID` once
+the obligation is gone) still prefers the longer, more complete one.
+`LINKING_VERB_FORMS` in `ClauseReader` matches "is"/"was"/... by the
+predicate's own `headWord.text`, never by POS, so "a representation"
+still lands as a `complement`, not an `object`, unaffected by "is" now
+resolving as AUXILIARY instead of VERB.
+
+`npx tsc -b --force` clean. Full `vitest run --no-file-parallelism`:
+180/180 (175 prior + 5 new: the single-character noun-plural
+abstention, the bare-copula fix with both a standalone-copula case and
+an auxiliary-chain non-regression case, subject-auxiliary inversion,
+and PrepositionalPhrase-as-subject). Every new grammar/clause-level test
+deliberately seeds with `excludeOpenClasses: true` (bug #2's own root
+cause) rather than reusing `seededController()`, so a future regression
+of this exact kind can't hide behind that helper's more permissive
+seeding again.
+
+Live Playwright, the reported paragraph, all 10 sentences, after both
+fixes: 8/10 now read VALID (up from the reported 3/10), one reads
+UNRESOLVED ("Did what happened yesterday surprise you?" -- "what
+happened yesterday" as a fronted embedded-clause object, category A
+above, genuinely needs clause-embedding, not a template tweak), and
+none read INVALID. Category D (wh-fronted exclamatives) turned out to
+validate correctly already once B/C/the copula fix landed -- this
+shallow, non-recursive grammar apparently has enough surface structure
+to accept that shape without needing dedicated exclamative-fronting
+rules of its own. Category A (clause-embedding) remains unimplemented,
+as scoped: it needs a real recursive `ClauseTemplate` for DEPENDENT/
+RELATIVE clauses, a materially larger change than a template widening,
+reported to the user rather than attempted here.
