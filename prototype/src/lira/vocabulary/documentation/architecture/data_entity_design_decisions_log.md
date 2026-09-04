@@ -2380,3 +2380,47 @@ same Word renders "Base Lemma Canonical Form", "Singular Number Form",
 "Plural Number Form", "Possessive Case Form" as real label text (not
 raw numeric codes), confirming `wordFormFieldLabel()` reaches the GUI
 as the user's own second requirement asked.
+
+## `DeterminerSeeder`: every lemma was missing its own Base Lemma Canonical Form
+
+Reported directly: "when seeding determiners in vocabulary the base
+lemma form must be set. There are entries with it not set." Confirmed:
+`WORD_FORM_MATRIX`'s own `BASE_LEMMA_CANONICAL_FORM` row (`data/matrices/pos_vs_wordform_matrice.ts`)
+lists `DETERMINER` in its `appliesTo` set, alongside NOUN/VERB/ADJECTIVE/
+ADVERB/PRONOUN/PREPOSITION/CONJUNCTION/INTERJECTION/NUMERAL --
+`validateDeterminer()`'s own docstring (`role/processor/determiner_processor.ts`)
+even already documented `DeterminerSeeder` as this Word's own writer for
+"Singular/Plural Number Form and Consonant/Vowel-Sound Form, plus
+baseLemmaCanonicalForm" -- but `DeterminerSeeder.seed()`
+(`role/determiner_seeder.ts`) never actually called `WordForms.registerBaseLemmaForm()`
+for any of its 44 lemmas, only `registerNamedForm()` for the other four
+fields. Every real DETERMINER Word this seeder ever produced -- "the",
+"a", "this", ... -- carried no `BASE_LEMMA_CANONICAL_FORM` WordForm at
+all, silently missing from both the Words tab's own fixed-column table
+and the word detail panel's Word Forms section (both simply show an
+em-dash for an unregistered field, so this had no error to surface, only
+a permanently-blank column).
+
+Fixed with one line, `this.wordForms?.registerBaseLemmaForm(word)`,
+inserted right after `dictionary.append(word)` and before the
+per-lemma Sense/forms loop -- the same "keep Base Lemma Canonical Form
+the *first* WordForm on record" ordering `WordSeeder`'s own closed-class
+loop and every `generateXForms()` already follow (`registerBaseLemmaForm()`'s
+own call-site comments elsewhere in `word_seeder.ts`). `registerBaseLemmaForm()`
+defaults its own `text` parameter to `word.text` when omitted (`WordForms`'s
+own signature), so no per-lemma text needs threading through
+`DeterminerLemmaSeed` -- "a"'s own Base Lemma Canonical Form correctly
+comes out as the bare lemma "a", not its own Vowel-Sound Form "an".
+
+`AuxiliarySeeder` was checked too, as the other closed class seeded
+outside the ordinary `loadCache()` loop -- `WORD_FORM_MATRIX`'s own
+`BASE_LEMMA_CANONICAL_FORM` row's `appliesTo` set deliberately excludes
+AUXILIARY, so it has nothing to fix here; the gap was DETERMINER-only,
+exactly as reported.
+
+`npx tsc -b --force` clean. Full `vitest run --no-file-parallelism`:
+181/181 (180 prior + one new test asserting `wordForms.formsOf(the)`
+now includes a `BASE_LEMMA_CANONICAL_FORM` WordForm, that it's the
+first form registered, that `validateDeterminer()` still reports no
+issues, and that "a"'s own Base Lemma Canonical Form is "a" rather than
+"an").

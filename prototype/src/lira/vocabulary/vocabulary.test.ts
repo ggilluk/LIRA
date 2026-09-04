@@ -1439,6 +1439,32 @@ describe("WordSeeder against the bundled Common Vocabulary Cache", () => {
     expect(she.wordFormIds).toEqual([]);
   });
 
+  it("DeterminerSeeder registers Base Lemma Canonical Form for every lemma, not just Singular/Plural Number Form and Consonant/Vowel-Sound Form -- WORD_FORM_MATRIX's own BASE_LEMMA_CANONICAL_FORM row applies to DETERMINER (validateDeterminer()'s own docstring already documented this seeder as the writer)", () => {
+    const dictionary = new Dictionary();
+    const wordForms = new WordForms();
+    new WordSeeder("en").seedClosedClassWords(dictionary, new Phrases(), undefined, undefined, wordForms);
+
+    const the = dictionary.lookup("the")!;
+    if (!isDeterminer(the)) throw new Error("unreachable");
+    const forms = wordForms.formsOf(the);
+    const baseLemma = forms.find((form) => form.field === WordFormField.BASE_LEMMA_CANONICAL_FORM);
+    expect(baseLemma).toBeDefined();
+    expect(baseLemma?.text).toEqual({ value: "the" });
+    // Registered first, ahead of Singular/Plural/Consonant/Vowel-Sound
+    // Form -- the same "keep it the first WordForm on record" ordering
+    // every other seeded POS already follows.
+    expect(forms[0]?.field).toBe(WordFormField.BASE_LEMMA_CANONICAL_FORM);
+    expect(validateDeterminer(the, wordForms)).toEqual([]);
+
+    // "a" -- a lemma whose own Singular Number Form differs from its
+    // canonical spelling only in the sense that it also carries a
+    // Consonant/Vowel-Sound alternation -- still gets its own
+    // BASE_LEMMA_CANONICAL_FORM equal to the bare lemma "a", not "an".
+    const a = dictionary.lookup("a")!;
+    if (!isDeterminer(a)) throw new Error("unreachable");
+    expect(wordForms.formsOf(a).find((form) => form.field === WordFormField.BASE_LEMMA_CANONICAL_FORM)?.text).toEqual({ value: "a" });
+  });
+
   it("Conjunction.conjunctionType distinguishes coordinating_conjunctions.json from subordinating_conjunctions.json, per real bundled closed_class_kind data", () => {
     const dictionary = new Dictionary();
     new WordSeeder("en").seedClosedClassWords(dictionary, new Phrases());

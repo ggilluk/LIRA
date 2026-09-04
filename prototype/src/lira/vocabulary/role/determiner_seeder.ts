@@ -621,6 +621,16 @@ export class DeterminerSeeder {
       });
       this.dictionary.append(word);
       created++;
+      // Base Lemma Canonical Form -- WORD_FORM_MATRIX's own
+      // BASE_LEMMA_CANONICAL_FORM row applies to DETERMINER just like
+      // every other open/closed class it lists (pos_vs_wordform_matrice.ts),
+      // and validateDeterminer()'s own docstring already documented this
+      // seeder as registering it -- registered first, before the
+      // Singular/Plural/Consonant/Vowel-Sound forms below, the same
+      // "keep it the first WordForm on record" ordering WordSeeder's own
+      // closed-class loop uses (word_seeder.ts's own registerBaseLemmaForm()
+      // comment).
+      this.wordForms?.registerBaseLemmaForm(word);
 
       const sense =
         this.senses === undefined
