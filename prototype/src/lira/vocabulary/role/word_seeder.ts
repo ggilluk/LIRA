@@ -46,7 +46,7 @@ import { PartOfSpeech } from "../data/enums/part_of_speech";
 import { ConjunctionType } from "../data/enums/conjunction_type";
 import { createPreposition } from "./processor/preposition_processor";
 import { createPronoun } from "./processor/pronoun_processor";
-import { WordFormField } from "../data/enums/word_forms_enum";
+import { WordFormType } from "../data/enums/word_forms_enum";
 import { EditorialLabel } from "../data/enums/editorial_label";
 import { HolonymRootWord } from "../data/enums/holonym_root_word";
 import { HypernymRootWord } from "../data/enums/hypernym_root_word";
@@ -1561,7 +1561,7 @@ export class WordSeeder {
     // only saves recomputing gradability for a Word that doesn't need it.
     const hasBothDegreeForms = (word: Word): boolean => {
       const forms = wordForms?.formsOf(word) ?? [];
-      return forms.some((f) => f.field === WordFormField.COMPARATIVE_DEGREE_FORM) && forms.some((f) => f.field === WordFormField.SUPERLATIVE_DEGREE_FORM);
+      return forms.some((f) => f.field === WordFormType.COMPARATIVE_DEGREE_FORM) && forms.some((f) => f.field === WordFormType.SUPERLATIVE_DEGREE_FORM);
     };
     for (const word of dictionary.all()) {
       if (isAdjective(word)) {

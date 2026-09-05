@@ -96,7 +96,7 @@ function sortRows(rows, key, dir) {
 const MAX_WORD_ROWS_SHOWN = 1000;
 
 // The Words table's own 27 WordForm columns -- data/enums/word_forms_enum.ts's
-// own WordFormField, member for member, in that same declared order
+// own WordFormType, member for member, in that same declared order
 // (client_shell_html.ts's own \`<th>\` row mirrors this exact list by
 // hand, same order, since neither file can import the real TS enum at
 // runtime). Base Lemma Canonical Form leads, matching every Word's own
@@ -104,7 +104,7 @@ const MAX_WORD_ROWS_SHOWN = 1000;
 // docstring, data/word_forms.ts) -- the reported requirement that the
 // first WordForm column be the base lemma falls out of using the
 // Matrix's own canonical row order directly, no special-casing needed.
-// WordFormField (data/enums/word_forms_enum.ts) is a numeric, tensor-
+// WordFormType (data/enums/word_forms_enum.ts) is a numeric, tensor-
 // coded enum now -- its own declared order IS its own value (0-26, no
 // gaps), so this is just that whole range in order, not a hand-copied
 // list of the 27 members' own names any more (there's no camelCase
@@ -121,7 +121,7 @@ const WORD_FORM_FIELDS = Array.from({ length: 27 }, (_, field) => field);
 // particular Word doesn't carry (a Noun has 3 -- base lemma/singular/
 // plural -- not all 27; the rest of that row stays dashes). \`w.word_forms\`
 // is keyed by \`field\` (WordFormEntry.field, ui/server/builder_word.ts --
-// a numeric WordFormField code now, 0-26) against a fresh lookup map
+// a numeric WordFormType code now, 0-26) against a fresh lookup map
 // built once per row -- cheap at MAX_WORD_ROWS_SHOWN scale, and simpler
 // than sorting/re-indexing \`word_forms\` itself into column order.
 function wordFormColumnsHtml(w) {

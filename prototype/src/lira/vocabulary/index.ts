@@ -32,7 +32,7 @@ export { VocabularyContext } from "./data/vocabulary_context";
 export type { WordForm } from "./data/entities/word_form";
 export { createWordForm } from "./role/word_form_processor";
 export { WordForms } from "./data/word_forms";
-export { WordFormField } from "./data/enums/word_forms_enum";
+export { WordFormType } from "./data/enums/word_forms_enum";
 export type { MorphologicalPointerRelationship } from "./data/morphological_pointer_relationship";
 export { MorphologicalPointerRelationshipStore } from "./data/morphological_pointer_relationship_store";
 export { MorphologicalPointerRelationshipSystemPropertyTensor } from "./data/morphological_pointer_relationship_tensor";

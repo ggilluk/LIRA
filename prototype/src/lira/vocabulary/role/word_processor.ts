@@ -34,7 +34,7 @@ import {
 import type { Dictionary } from "../data/dictionary";
 import type { DefinitionWordReference } from "../data/definition_word_reference";
 import type { Word } from "../data/entities/word";
-import { wordFormFieldLabel, type WordFormField } from "../data/enums/word_forms_enum";
+import { wordFormTypeLabel, type WordFormType } from "../data/enums/word_forms_enum";
 
 // Splits a definition's prose into its own word tokens -- deliberately a
 // local regex, not a Linguistics-Layer LinguisticLexer import: Vocabulary
@@ -219,13 +219,13 @@ export function definitionWords(definitionText: Text | undefined, dictionary: Di
 // `createWord` itself, so this adds no new cross-file dependency.
 
 /** One validation failure from validateFormText/validate<Class> below --
- * `field` names which WordFormField the issue is on, `reason` says
+ * `field` names which WordFormType the issue is on, `reason` says
  * which of the two ways a claimed Text.formats entry failed (its own
- * message text names `field` via `wordFormFieldLabel()`,
+ * message text names `field` via `wordFormTypeLabel()`,
  * data/enums/word_forms_enum.ts, not `field` itself -- a numeric,
  * tensor-coded enum value has no readable text of its own any more). */
 export interface WordFormIssue {
-  field: WordFormField;
+  field: WordFormType;
   reason: string;
 }
 
@@ -257,13 +257,13 @@ export function parseFormatPattern(pattern: string): RegExp {
  * `text.value` itself doesn't actually match it (stale data -- the
  * value changed after `formats` was set, or the two were never
  * consistent to begin with). */
-export function validateFormText(field: WordFormField, text: Text, known: readonly string[]): WordFormIssue | undefined {
+export function validateFormText(field: WordFormType, text: Text, known: readonly string[]): WordFormIssue | undefined {
   if (text.formats === undefined) return undefined;
   for (const claimed of text.formats) {
     if (!known.includes(claimed)) {
       return {
         field,
-        reason: `'${claimed}' is not a recognised String Pattern for '${wordFormFieldLabel(field)}' (word_form_part_of_speech_matrix.md)`,
+        reason: `'${claimed}' is not a recognised String Pattern for '${wordFormTypeLabel(field)}' (word_form_part_of_speech_matrix.md)`,
       };
     }
     if (!parseFormatPattern(claimed).test(text.value)) {

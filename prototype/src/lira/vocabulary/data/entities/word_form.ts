@@ -12,7 +12,7 @@
  */
 
 import type { Code, Identifier, Number_, Text } from "../../../value_objects";
-import type { WordFormField } from "../enums/word_forms_enum";
+import type { WordFormType } from "../enums/word_forms_enum";
 
 export interface WordForm {
 
@@ -37,7 +37,7 @@ export interface WordForm {
    * Part of Speech Matrix's own single agreed list
    * (data/enums/word_forms_enum.ts, data/matrices/pos_vs_wordform_matrice.ts).
    */
-  field: WordFormField;
+  field: WordFormType;
 
 
   // ── Data Attributes ──────────────────────────────────────

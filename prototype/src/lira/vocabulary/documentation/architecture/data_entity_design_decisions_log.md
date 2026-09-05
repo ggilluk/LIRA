@@ -2596,3 +2596,29 @@ own MERONYM test) now reads `.meronymKind` and compares against
 `MeronymKindEnum` members instead of raw strings; nothing else changed,
 confirming this really is a pure representational collapse, not a
 behavioural one.
+
+## `WordFormField` renamed to `WordFormType`
+
+Asked directly: rename `WordFormField` -> `WordFormType` (the enum
+itself, `data/enums/word_forms_enum.ts`). A pure identifier rename
+across all 21 files that reference it -- `wordFormFieldLabel()` ->
+`wordFormTypeLabel()` and its own backing `WORD_FORM_FIELD_LABELS` ->
+`WORD_FORM_TYPE_LABELS` renamed alongside it (both embed the enum's own
+name, so left un-renamed they'd read as if they still referred to a
+type called `WordFormField`). `WordForm.field`, the property this enum
+is the type of, was deliberately left as `field` -- the user's own
+request named the enum/type itself, not that property, and
+`field`/`WordFormType` (a field typed by a WordFormType) reads no
+worse than `field`/`WordFormField` did.
+
+Mechanical: `WordFormField` (and its two derived names above) replaced
+1:1 wherever they appeared -- enum declaration, every `WordFormField.X`
+member access, every `field: WordFormField`/`WordFormField | undefined`
+type position, every import/export, and every docstring/comment
+mentioning it by name. `git diff --stat` confirms it: 458
+insertions/458 deletions across 21 files, a perfectly balanced rename
+with no other line touched.
+
+`npx tsc -b --force` clean. Full `vitest run --no-file-parallelism`:
+181/181, unchanged -- pure identifier rename, no runtime behaviour or
+data shape affected.

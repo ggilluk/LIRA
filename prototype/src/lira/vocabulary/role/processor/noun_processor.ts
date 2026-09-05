@@ -5,7 +5,7 @@ import type { WordForms } from "../../data/word_forms";
 import { createWord, endsInConsonantY, validateFormText, type WordFormIssue } from "../word_processor";
 import type { Noun } from "../../data/entities/noun";
 import { stringPatternsFor } from "../../data/matrices/pos_vs_wordform_matrice";
-import { WordFormField } from "../../data/enums/word_forms_enum";
+import { WordFormType } from "../../data/enums/word_forms_enum";
 
 export type NounInit = Pick<Noun, "text"> & Partial<Omit<Noun, "text" | "partOfSpeech">>;
 
@@ -98,13 +98,13 @@ function generatedPluralNumberForm(lemma: string): Text | undefined {
 export function generateNounForms(noun: Noun, wordForms: WordForms | undefined): Noun {
   if (wordForms === undefined) return noun;
   const lemma = noun.text;
-  const has = (field: WordFormField): boolean => wordForms.formsOf(noun).some((form) => form.field === field);
-  if (!has(WordFormField.SINGULAR_NUMBER_FORM)) wordForms.registerNamedForm(noun, WordFormField.SINGULAR_NUMBER_FORM, { value: lemma });
-  if (!has(WordFormField.PLURAL_NUMBER_FORM)) {
+  const has = (field: WordFormType): boolean => wordForms.formsOf(noun).some((form) => form.field === field);
+  if (!has(WordFormType.SINGULAR_NUMBER_FORM)) wordForms.registerNamedForm(noun, WordFormType.SINGULAR_NUMBER_FORM, { value: lemma });
+  if (!has(WordFormType.PLURAL_NUMBER_FORM)) {
     const plural = generatedPluralNumberForm(lemma);
-    if (plural !== undefined) wordForms.registerNamedForm(noun, WordFormField.PLURAL_NUMBER_FORM, plural);
+    if (plural !== undefined) wordForms.registerNamedForm(noun, WordFormType.PLURAL_NUMBER_FORM, plural);
   }
-  if (!has(WordFormField.POSSESSIVE_CASE_FORM))
-    wordForms.registerNamedForm(noun, WordFormField.POSSESSIVE_CASE_FORM, { value: `${lemma}'s`, formats: ["/'s$/i"] });
+  if (!has(WordFormType.POSSESSIVE_CASE_FORM))
+    wordForms.registerNamedForm(noun, WordFormType.POSSESSIVE_CASE_FORM, { value: `${lemma}'s`, formats: ["/'s$/i"] });
   return noun;
 }

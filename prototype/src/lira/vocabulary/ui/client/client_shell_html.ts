@@ -4,7 +4,7 @@
  *
  * The Words table's own 27 WordForm columns (between "Word" and "Part
  * of speech") are hand-written here as static `<th>` text, one per
- * `WordFormField` member (data/enums/word_forms_enum.ts), in that
+ * `WordFormType` member (data/enums/word_forms_enum.ts), in that
  * enum's own declared order -- `formFieldLabel()`'s own camelCase ->
  * Title Case transform (ui/server/builder_segment.ts) applied by hand,
  * since this file is a plain template string with no computation step

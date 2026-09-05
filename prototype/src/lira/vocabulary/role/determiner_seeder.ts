@@ -4,9 +4,9 @@ import { createSense, graphUuid } from "./sense_processor";
 import { createDeterminer, isDeterminer } from "./processor/determiner_processor";
 import type { WordForms } from "../data/word_forms";
 import { identifier, LanguageStyleCode, LanguageStyleCodelist } from "../../value_objects";
-import { WordFormField } from "../data/enums/word_forms_enum";
+import { WordFormType } from "../data/enums/word_forms_enum";
 
-// The subset of WordFormField (data/enums/word_forms_enum.ts) this
+// The subset of WordFormType (data/enums/word_forms_enum.ts) this
 // seeder ever authors -- AuxiliarySeeder's own AuxiliaryFormField
 // alias (role/auxiliary_seeder.ts), same reasoning: authoring-time
 // safety for the literal data below. Singular/Plural Number Form are
@@ -19,7 +19,7 @@ import { WordFormField } from "../data/enums/word_forms_enum";
 // bareInfinitiveForm and presentTenseForm often repeat the identical
 // spelling under two different field names (word_form.ts's own docstring
 // on why the field name, not the text, is what distinguishes a WordForm).
-type DeterminerFormField = WordFormField.SINGULAR_NUMBER_FORM | WordFormField.PLURAL_NUMBER_FORM | WordFormField.CONSONANT_SOUND_FORM | WordFormField.VOWEL_SOUND_FORM;
+type DeterminerFormField = WordFormType.SINGULAR_NUMBER_FORM | WordFormType.PLURAL_NUMBER_FORM | WordFormType.CONSONANT_SOUND_FORM | WordFormType.VOWEL_SOUND_FORM;
 
 interface DeterminerFormSeed {
   field: DeterminerFormField;
@@ -78,9 +78,9 @@ const DETERMINER_LEMMAS: readonly DeterminerLemmaSeed[] = [
     lemma: "a",
     definition: "Introduces a singular noun referring to one non-specific thing -- 'a' before a consonant sound, 'an' before a vowel sound",
     forms: [
-      { field: WordFormField.SINGULAR_NUMBER_FORM, text: "a" },
-      { field: WordFormField.CONSONANT_SOUND_FORM, text: "a" },
-      { field: WordFormField.VOWEL_SOUND_FORM, text: "an" },
+      { field: WordFormType.SINGULAR_NUMBER_FORM, text: "a" },
+      { field: WordFormType.CONSONANT_SOUND_FORM, text: "a" },
+      { field: WordFormType.VOWEL_SOUND_FORM, text: "an" },
     ],
   },
   {
@@ -88,10 +88,10 @@ const DETERMINER_LEMMAS: readonly DeterminerLemmaSeed[] = [
     lemma: "the",
     definition: "Introduces a noun referring to a specific, already-identified thing",
     forms: [
-      { field: WordFormField.SINGULAR_NUMBER_FORM, text: "the" },
-      { field: WordFormField.PLURAL_NUMBER_FORM, text: "the" },
-      { field: WordFormField.CONSONANT_SOUND_FORM, text: "the" },
-      { field: WordFormField.VOWEL_SOUND_FORM, text: "the" },
+      { field: WordFormType.SINGULAR_NUMBER_FORM, text: "the" },
+      { field: WordFormType.PLURAL_NUMBER_FORM, text: "the" },
+      { field: WordFormType.CONSONANT_SOUND_FORM, text: "the" },
+      { field: WordFormType.VOWEL_SOUND_FORM, text: "the" },
     ],
   },
   {
@@ -99,10 +99,10 @@ const DETERMINER_LEMMAS: readonly DeterminerLemmaSeed[] = [
     lemma: "this",
     definition: "Refers to a singular thing that is nearby or currently being discussed",
     forms: [
-      { field: WordFormField.SINGULAR_NUMBER_FORM, text: "this" },
-      { field: WordFormField.PLURAL_NUMBER_FORM, text: "these" },
-      { field: WordFormField.CONSONANT_SOUND_FORM, text: "this" },
-      { field: WordFormField.VOWEL_SOUND_FORM, text: "this" },
+      { field: WordFormType.SINGULAR_NUMBER_FORM, text: "this" },
+      { field: WordFormType.PLURAL_NUMBER_FORM, text: "these" },
+      { field: WordFormType.CONSONANT_SOUND_FORM, text: "this" },
+      { field: WordFormType.VOWEL_SOUND_FORM, text: "this" },
     ],
   },
   {
@@ -110,10 +110,10 @@ const DETERMINER_LEMMAS: readonly DeterminerLemmaSeed[] = [
     lemma: "that",
     definition: "Refers to a singular thing that is farther away or previously mentioned",
     forms: [
-      { field: WordFormField.SINGULAR_NUMBER_FORM, text: "that" },
-      { field: WordFormField.PLURAL_NUMBER_FORM, text: "those" },
-      { field: WordFormField.CONSONANT_SOUND_FORM, text: "that" },
-      { field: WordFormField.VOWEL_SOUND_FORM, text: "that" },
+      { field: WordFormType.SINGULAR_NUMBER_FORM, text: "that" },
+      { field: WordFormType.PLURAL_NUMBER_FORM, text: "those" },
+      { field: WordFormType.CONSONANT_SOUND_FORM, text: "that" },
+      { field: WordFormType.VOWEL_SOUND_FORM, text: "that" },
     ],
   },
   {
@@ -121,9 +121,9 @@ const DETERMINER_LEMMAS: readonly DeterminerLemmaSeed[] = [
     lemma: "my",
     definition: "Belonging to the speaker",
     forms: [
-      { field: WordFormField.SINGULAR_NUMBER_FORM, text: "my" },
-      { field: WordFormField.CONSONANT_SOUND_FORM, text: "my" },
-      { field: WordFormField.VOWEL_SOUND_FORM, text: "my" },
+      { field: WordFormType.SINGULAR_NUMBER_FORM, text: "my" },
+      { field: WordFormType.CONSONANT_SOUND_FORM, text: "my" },
+      { field: WordFormType.VOWEL_SOUND_FORM, text: "my" },
     ],
   },
   {
@@ -131,10 +131,10 @@ const DETERMINER_LEMMAS: readonly DeterminerLemmaSeed[] = [
     lemma: "your",
     definition: "Belonging to the person or people being addressed",
     forms: [
-      { field: WordFormField.SINGULAR_NUMBER_FORM, text: "your" },
-      { field: WordFormField.PLURAL_NUMBER_FORM, text: "your" },
-      { field: WordFormField.CONSONANT_SOUND_FORM, text: "your" },
-      { field: WordFormField.VOWEL_SOUND_FORM, text: "your" },
+      { field: WordFormType.SINGULAR_NUMBER_FORM, text: "your" },
+      { field: WordFormType.PLURAL_NUMBER_FORM, text: "your" },
+      { field: WordFormType.CONSONANT_SOUND_FORM, text: "your" },
+      { field: WordFormType.VOWEL_SOUND_FORM, text: "your" },
     ],
   },
   {
@@ -142,9 +142,9 @@ const DETERMINER_LEMMAS: readonly DeterminerLemmaSeed[] = [
     lemma: "his",
     definition: "Belonging to a male person or animal",
     forms: [
-      { field: WordFormField.SINGULAR_NUMBER_FORM, text: "his" },
-      { field: WordFormField.CONSONANT_SOUND_FORM, text: "his" },
-      { field: WordFormField.VOWEL_SOUND_FORM, text: "his" },
+      { field: WordFormType.SINGULAR_NUMBER_FORM, text: "his" },
+      { field: WordFormType.CONSONANT_SOUND_FORM, text: "his" },
+      { field: WordFormType.VOWEL_SOUND_FORM, text: "his" },
     ],
   },
   {
@@ -152,9 +152,9 @@ const DETERMINER_LEMMAS: readonly DeterminerLemmaSeed[] = [
     lemma: "her",
     definition: "Belonging to a female person or animal",
     forms: [
-      { field: WordFormField.SINGULAR_NUMBER_FORM, text: "her" },
-      { field: WordFormField.CONSONANT_SOUND_FORM, text: "her" },
-      { field: WordFormField.VOWEL_SOUND_FORM, text: "her" },
+      { field: WordFormType.SINGULAR_NUMBER_FORM, text: "her" },
+      { field: WordFormType.CONSONANT_SOUND_FORM, text: "her" },
+      { field: WordFormType.VOWEL_SOUND_FORM, text: "her" },
     ],
   },
   {
@@ -162,9 +162,9 @@ const DETERMINER_LEMMAS: readonly DeterminerLemmaSeed[] = [
     lemma: "its",
     definition: "Belonging to a thing, animal, or abstract entity",
     forms: [
-      { field: WordFormField.SINGULAR_NUMBER_FORM, text: "its" },
-      { field: WordFormField.CONSONANT_SOUND_FORM, text: "its" },
-      { field: WordFormField.VOWEL_SOUND_FORM, text: "its" },
+      { field: WordFormType.SINGULAR_NUMBER_FORM, text: "its" },
+      { field: WordFormType.CONSONANT_SOUND_FORM, text: "its" },
+      { field: WordFormType.VOWEL_SOUND_FORM, text: "its" },
     ],
   },
   {
@@ -172,9 +172,9 @@ const DETERMINER_LEMMAS: readonly DeterminerLemmaSeed[] = [
     lemma: "our",
     definition: "Belonging to the speaker and others",
     forms: [
-      { field: WordFormField.PLURAL_NUMBER_FORM, text: "our" },
-      { field: WordFormField.CONSONANT_SOUND_FORM, text: "our" },
-      { field: WordFormField.VOWEL_SOUND_FORM, text: "our" },
+      { field: WordFormType.PLURAL_NUMBER_FORM, text: "our" },
+      { field: WordFormType.CONSONANT_SOUND_FORM, text: "our" },
+      { field: WordFormType.VOWEL_SOUND_FORM, text: "our" },
     ],
   },
   {
@@ -182,9 +182,9 @@ const DETERMINER_LEMMAS: readonly DeterminerLemmaSeed[] = [
     lemma: "their",
     definition: "Belonging to more than one other person, or a person of unspecified gender",
     forms: [
-      { field: WordFormField.PLURAL_NUMBER_FORM, text: "their" },
-      { field: WordFormField.CONSONANT_SOUND_FORM, text: "their" },
-      { field: WordFormField.VOWEL_SOUND_FORM, text: "their" },
+      { field: WordFormType.PLURAL_NUMBER_FORM, text: "their" },
+      { field: WordFormType.CONSONANT_SOUND_FORM, text: "their" },
+      { field: WordFormType.VOWEL_SOUND_FORM, text: "their" },
     ],
   },
   {
@@ -192,10 +192,10 @@ const DETERMINER_LEMMAS: readonly DeterminerLemmaSeed[] = [
     lemma: "whose",
     definition: "Belonging to whom or which; used to ask or specify possession",
     forms: [
-      { field: WordFormField.SINGULAR_NUMBER_FORM, text: "whose" },
-      { field: WordFormField.PLURAL_NUMBER_FORM, text: "whose" },
-      { field: WordFormField.CONSONANT_SOUND_FORM, text: "whose" },
-      { field: WordFormField.VOWEL_SOUND_FORM, text: "whose" },
+      { field: WordFormType.SINGULAR_NUMBER_FORM, text: "whose" },
+      { field: WordFormType.PLURAL_NUMBER_FORM, text: "whose" },
+      { field: WordFormType.CONSONANT_SOUND_FORM, text: "whose" },
+      { field: WordFormType.VOWEL_SOUND_FORM, text: "whose" },
     ],
   },
   // "which"/"what" are deliberately NOT seeded here, even though the
@@ -215,10 +215,10 @@ const DETERMINER_LEMMAS: readonly DeterminerLemmaSeed[] = [
     lemma: "whatever",
     definition: "Any or every one of; no matter what",
     forms: [
-      { field: WordFormField.SINGULAR_NUMBER_FORM, text: "whatever" },
-      { field: WordFormField.PLURAL_NUMBER_FORM, text: "whatever" },
-      { field: WordFormField.CONSONANT_SOUND_FORM, text: "whatever" },
-      { field: WordFormField.VOWEL_SOUND_FORM, text: "whatever" },
+      { field: WordFormType.SINGULAR_NUMBER_FORM, text: "whatever" },
+      { field: WordFormType.PLURAL_NUMBER_FORM, text: "whatever" },
+      { field: WordFormType.CONSONANT_SOUND_FORM, text: "whatever" },
+      { field: WordFormType.VOWEL_SOUND_FORM, text: "whatever" },
     ],
   },
   {
@@ -226,10 +226,10 @@ const DETERMINER_LEMMAS: readonly DeterminerLemmaSeed[] = [
     lemma: "whichever",
     definition: "Any one out of a set, no matter which; the choice does not matter",
     forms: [
-      { field: WordFormField.SINGULAR_NUMBER_FORM, text: "whichever" },
-      { field: WordFormField.PLURAL_NUMBER_FORM, text: "whichever" },
-      { field: WordFormField.CONSONANT_SOUND_FORM, text: "whichever" },
-      { field: WordFormField.VOWEL_SOUND_FORM, text: "whichever" },
+      { field: WordFormType.SINGULAR_NUMBER_FORM, text: "whichever" },
+      { field: WordFormType.PLURAL_NUMBER_FORM, text: "whichever" },
+      { field: WordFormType.CONSONANT_SOUND_FORM, text: "whichever" },
+      { field: WordFormType.VOWEL_SOUND_FORM, text: "whichever" },
     ],
   },
   {
@@ -237,10 +237,10 @@ const DETERMINER_LEMMAS: readonly DeterminerLemmaSeed[] = [
     lemma: "all",
     definition: "The whole quantity or extent of",
     forms: [
-      { field: WordFormField.SINGULAR_NUMBER_FORM, text: "all" },
-      { field: WordFormField.PLURAL_NUMBER_FORM, text: "all" },
-      { field: WordFormField.CONSONANT_SOUND_FORM, text: "all" },
-      { field: WordFormField.VOWEL_SOUND_FORM, text: "all" },
+      { field: WordFormType.SINGULAR_NUMBER_FORM, text: "all" },
+      { field: WordFormType.PLURAL_NUMBER_FORM, text: "all" },
+      { field: WordFormType.CONSONANT_SOUND_FORM, text: "all" },
+      { field: WordFormType.VOWEL_SOUND_FORM, text: "all" },
     ],
   },
   {
@@ -248,9 +248,9 @@ const DETERMINER_LEMMAS: readonly DeterminerLemmaSeed[] = [
     lemma: "both",
     definition: "The two, considered together",
     forms: [
-      { field: WordFormField.PLURAL_NUMBER_FORM, text: "both" },
-      { field: WordFormField.CONSONANT_SOUND_FORM, text: "both" },
-      { field: WordFormField.VOWEL_SOUND_FORM, text: "both" },
+      { field: WordFormType.PLURAL_NUMBER_FORM, text: "both" },
+      { field: WordFormType.CONSONANT_SOUND_FORM, text: "both" },
+      { field: WordFormType.VOWEL_SOUND_FORM, text: "both" },
     ],
   },
   {
@@ -258,9 +258,9 @@ const DETERMINER_LEMMAS: readonly DeterminerLemmaSeed[] = [
     lemma: "each",
     definition: "Every individual one of a group, considered separately",
     forms: [
-      { field: WordFormField.SINGULAR_NUMBER_FORM, text: "each" },
-      { field: WordFormField.CONSONANT_SOUND_FORM, text: "each" },
-      { field: WordFormField.VOWEL_SOUND_FORM, text: "each" },
+      { field: WordFormType.SINGULAR_NUMBER_FORM, text: "each" },
+      { field: WordFormType.CONSONANT_SOUND_FORM, text: "each" },
+      { field: WordFormType.VOWEL_SOUND_FORM, text: "each" },
     ],
   },
   {
@@ -268,9 +268,9 @@ const DETERMINER_LEMMAS: readonly DeterminerLemmaSeed[] = [
     lemma: "every",
     definition: "Each one of a group, without exception",
     forms: [
-      { field: WordFormField.SINGULAR_NUMBER_FORM, text: "every" },
-      { field: WordFormField.CONSONANT_SOUND_FORM, text: "every" },
-      { field: WordFormField.VOWEL_SOUND_FORM, text: "every" },
+      { field: WordFormType.SINGULAR_NUMBER_FORM, text: "every" },
+      { field: WordFormType.CONSONANT_SOUND_FORM, text: "every" },
+      { field: WordFormType.VOWEL_SOUND_FORM, text: "every" },
     ],
   },
   {
@@ -278,9 +278,9 @@ const DETERMINER_LEMMAS: readonly DeterminerLemmaSeed[] = [
     lemma: "either",
     definition: "One or the other of two",
     forms: [
-      { field: WordFormField.SINGULAR_NUMBER_FORM, text: "either" },
-      { field: WordFormField.CONSONANT_SOUND_FORM, text: "either" },
-      { field: WordFormField.VOWEL_SOUND_FORM, text: "either" },
+      { field: WordFormType.SINGULAR_NUMBER_FORM, text: "either" },
+      { field: WordFormType.CONSONANT_SOUND_FORM, text: "either" },
+      { field: WordFormType.VOWEL_SOUND_FORM, text: "either" },
     ],
   },
   {
@@ -288,9 +288,9 @@ const DETERMINER_LEMMAS: readonly DeterminerLemmaSeed[] = [
     lemma: "neither",
     definition: "Not one nor the other of two",
     forms: [
-      { field: WordFormField.SINGULAR_NUMBER_FORM, text: "neither" },
-      { field: WordFormField.CONSONANT_SOUND_FORM, text: "neither" },
-      { field: WordFormField.VOWEL_SOUND_FORM, text: "neither" },
+      { field: WordFormType.SINGULAR_NUMBER_FORM, text: "neither" },
+      { field: WordFormType.CONSONANT_SOUND_FORM, text: "neither" },
+      { field: WordFormType.VOWEL_SOUND_FORM, text: "neither" },
     ],
   },
   {
@@ -298,10 +298,10 @@ const DETERMINER_LEMMAS: readonly DeterminerLemmaSeed[] = [
     lemma: "any",
     definition: "Whichever, or some, amount or number (typically in questions or negatives)",
     forms: [
-      { field: WordFormField.SINGULAR_NUMBER_FORM, text: "any" },
-      { field: WordFormField.PLURAL_NUMBER_FORM, text: "any" },
-      { field: WordFormField.CONSONANT_SOUND_FORM, text: "any" },
-      { field: WordFormField.VOWEL_SOUND_FORM, text: "any" },
+      { field: WordFormType.SINGULAR_NUMBER_FORM, text: "any" },
+      { field: WordFormType.PLURAL_NUMBER_FORM, text: "any" },
+      { field: WordFormType.CONSONANT_SOUND_FORM, text: "any" },
+      { field: WordFormType.VOWEL_SOUND_FORM, text: "any" },
     ],
   },
   {
@@ -309,10 +309,10 @@ const DETERMINER_LEMMAS: readonly DeterminerLemmaSeed[] = [
     lemma: "some",
     definition: "An unspecified amount or number of",
     forms: [
-      { field: WordFormField.SINGULAR_NUMBER_FORM, text: "some" },
-      { field: WordFormField.PLURAL_NUMBER_FORM, text: "some" },
-      { field: WordFormField.CONSONANT_SOUND_FORM, text: "some" },
-      { field: WordFormField.VOWEL_SOUND_FORM, text: "some" },
+      { field: WordFormType.SINGULAR_NUMBER_FORM, text: "some" },
+      { field: WordFormType.PLURAL_NUMBER_FORM, text: "some" },
+      { field: WordFormType.CONSONANT_SOUND_FORM, text: "some" },
+      { field: WordFormType.VOWEL_SOUND_FORM, text: "some" },
     ],
   },
   {
@@ -320,10 +320,10 @@ const DETERMINER_LEMMAS: readonly DeterminerLemmaSeed[] = [
     lemma: "no",
     definition: "Not any; zero of",
     forms: [
-      { field: WordFormField.SINGULAR_NUMBER_FORM, text: "no" },
-      { field: WordFormField.PLURAL_NUMBER_FORM, text: "no" },
-      { field: WordFormField.CONSONANT_SOUND_FORM, text: "no" },
-      { field: WordFormField.VOWEL_SOUND_FORM, text: "no" },
+      { field: WordFormType.SINGULAR_NUMBER_FORM, text: "no" },
+      { field: WordFormType.PLURAL_NUMBER_FORM, text: "no" },
+      { field: WordFormType.CONSONANT_SOUND_FORM, text: "no" },
+      { field: WordFormType.VOWEL_SOUND_FORM, text: "no" },
     ],
   },
   {
@@ -331,10 +331,10 @@ const DETERMINER_LEMMAS: readonly DeterminerLemmaSeed[] = [
     lemma: "enough",
     definition: "As much or as many as required",
     forms: [
-      { field: WordFormField.SINGULAR_NUMBER_FORM, text: "enough" },
-      { field: WordFormField.PLURAL_NUMBER_FORM, text: "enough" },
-      { field: WordFormField.CONSONANT_SOUND_FORM, text: "enough" },
-      { field: WordFormField.VOWEL_SOUND_FORM, text: "enough" },
+      { field: WordFormType.SINGULAR_NUMBER_FORM, text: "enough" },
+      { field: WordFormType.PLURAL_NUMBER_FORM, text: "enough" },
+      { field: WordFormType.CONSONANT_SOUND_FORM, text: "enough" },
+      { field: WordFormType.VOWEL_SOUND_FORM, text: "enough" },
     ],
   },
   {
@@ -342,9 +342,9 @@ const DETERMINER_LEMMAS: readonly DeterminerLemmaSeed[] = [
     lemma: "much",
     definition: "A large amount of (used with uncountable nouns)",
     forms: [
-      { field: WordFormField.SINGULAR_NUMBER_FORM, text: "much" },
-      { field: WordFormField.CONSONANT_SOUND_FORM, text: "much" },
-      { field: WordFormField.VOWEL_SOUND_FORM, text: "much" },
+      { field: WordFormType.SINGULAR_NUMBER_FORM, text: "much" },
+      { field: WordFormType.CONSONANT_SOUND_FORM, text: "much" },
+      { field: WordFormType.VOWEL_SOUND_FORM, text: "much" },
     ],
   },
   {
@@ -352,9 +352,9 @@ const DETERMINER_LEMMAS: readonly DeterminerLemmaSeed[] = [
     lemma: "many",
     definition: "A large number of",
     forms: [
-      { field: WordFormField.PLURAL_NUMBER_FORM, text: "many" },
-      { field: WordFormField.CONSONANT_SOUND_FORM, text: "many" },
-      { field: WordFormField.VOWEL_SOUND_FORM, text: "many" },
+      { field: WordFormType.PLURAL_NUMBER_FORM, text: "many" },
+      { field: WordFormType.CONSONANT_SOUND_FORM, text: "many" },
+      { field: WordFormType.VOWEL_SOUND_FORM, text: "many" },
     ],
   },
   {
@@ -362,9 +362,9 @@ const DETERMINER_LEMMAS: readonly DeterminerLemmaSeed[] = [
     lemma: "little",
     definition: "A small amount of (used with uncountable nouns)",
     forms: [
-      { field: WordFormField.SINGULAR_NUMBER_FORM, text: "little" },
-      { field: WordFormField.CONSONANT_SOUND_FORM, text: "little" },
-      { field: WordFormField.VOWEL_SOUND_FORM, text: "little" },
+      { field: WordFormType.SINGULAR_NUMBER_FORM, text: "little" },
+      { field: WordFormType.CONSONANT_SOUND_FORM, text: "little" },
+      { field: WordFormType.VOWEL_SOUND_FORM, text: "little" },
     ],
   },
   {
@@ -372,9 +372,9 @@ const DETERMINER_LEMMAS: readonly DeterminerLemmaSeed[] = [
     lemma: "few",
     definition: "A small number of",
     forms: [
-      { field: WordFormField.PLURAL_NUMBER_FORM, text: "few" },
-      { field: WordFormField.CONSONANT_SOUND_FORM, text: "few" },
-      { field: WordFormField.VOWEL_SOUND_FORM, text: "few" },
+      { field: WordFormType.PLURAL_NUMBER_FORM, text: "few" },
+      { field: WordFormType.CONSONANT_SOUND_FORM, text: "few" },
+      { field: WordFormType.VOWEL_SOUND_FORM, text: "few" },
     ],
   },
   {
@@ -382,9 +382,9 @@ const DETERMINER_LEMMAS: readonly DeterminerLemmaSeed[] = [
     lemma: "less",
     definition: "A smaller amount of (used with uncountable nouns); comparative of 'little'",
     forms: [
-      { field: WordFormField.SINGULAR_NUMBER_FORM, text: "less" },
-      { field: WordFormField.CONSONANT_SOUND_FORM, text: "less" },
-      { field: WordFormField.VOWEL_SOUND_FORM, text: "less" },
+      { field: WordFormType.SINGULAR_NUMBER_FORM, text: "less" },
+      { field: WordFormType.CONSONANT_SOUND_FORM, text: "less" },
+      { field: WordFormType.VOWEL_SOUND_FORM, text: "less" },
     ],
   },
   {
@@ -392,9 +392,9 @@ const DETERMINER_LEMMAS: readonly DeterminerLemmaSeed[] = [
     lemma: "fewer",
     definition: "A smaller number of; comparative of 'few'",
     forms: [
-      { field: WordFormField.PLURAL_NUMBER_FORM, text: "fewer" },
-      { field: WordFormField.CONSONANT_SOUND_FORM, text: "fewer" },
-      { field: WordFormField.VOWEL_SOUND_FORM, text: "fewer" },
+      { field: WordFormType.PLURAL_NUMBER_FORM, text: "fewer" },
+      { field: WordFormType.CONSONANT_SOUND_FORM, text: "fewer" },
+      { field: WordFormType.VOWEL_SOUND_FORM, text: "fewer" },
     ],
   },
   {
@@ -402,9 +402,9 @@ const DETERMINER_LEMMAS: readonly DeterminerLemmaSeed[] = [
     lemma: "least",
     definition: "The smallest amount of; superlative of 'little'",
     forms: [
-      { field: WordFormField.SINGULAR_NUMBER_FORM, text: "least" },
-      { field: WordFormField.CONSONANT_SOUND_FORM, text: "least" },
-      { field: WordFormField.VOWEL_SOUND_FORM, text: "least" },
+      { field: WordFormType.SINGULAR_NUMBER_FORM, text: "least" },
+      { field: WordFormType.CONSONANT_SOUND_FORM, text: "least" },
+      { field: WordFormType.VOWEL_SOUND_FORM, text: "least" },
     ],
   },
   {
@@ -412,9 +412,9 @@ const DETERMINER_LEMMAS: readonly DeterminerLemmaSeed[] = [
     lemma: "fewest",
     definition: "The smallest number of; superlative of 'few'",
     forms: [
-      { field: WordFormField.PLURAL_NUMBER_FORM, text: "fewest" },
-      { field: WordFormField.CONSONANT_SOUND_FORM, text: "fewest" },
-      { field: WordFormField.VOWEL_SOUND_FORM, text: "fewest" },
+      { field: WordFormType.PLURAL_NUMBER_FORM, text: "fewest" },
+      { field: WordFormType.CONSONANT_SOUND_FORM, text: "fewest" },
+      { field: WordFormType.VOWEL_SOUND_FORM, text: "fewest" },
     ],
   },
   {
@@ -422,10 +422,10 @@ const DETERMINER_LEMMAS: readonly DeterminerLemmaSeed[] = [
     lemma: "more",
     definition: "A greater amount or number of; comparative of 'much'/'many'",
     forms: [
-      { field: WordFormField.SINGULAR_NUMBER_FORM, text: "more" },
-      { field: WordFormField.PLURAL_NUMBER_FORM, text: "more" },
-      { field: WordFormField.CONSONANT_SOUND_FORM, text: "more" },
-      { field: WordFormField.VOWEL_SOUND_FORM, text: "more" },
+      { field: WordFormType.SINGULAR_NUMBER_FORM, text: "more" },
+      { field: WordFormType.PLURAL_NUMBER_FORM, text: "more" },
+      { field: WordFormType.CONSONANT_SOUND_FORM, text: "more" },
+      { field: WordFormType.VOWEL_SOUND_FORM, text: "more" },
     ],
   },
   {
@@ -433,10 +433,10 @@ const DETERMINER_LEMMAS: readonly DeterminerLemmaSeed[] = [
     lemma: "most",
     definition: "The greatest quantity or number of",
     forms: [
-      { field: WordFormField.SINGULAR_NUMBER_FORM, text: "most" },
-      { field: WordFormField.PLURAL_NUMBER_FORM, text: "most" },
-      { field: WordFormField.CONSONANT_SOUND_FORM, text: "most" },
-      { field: WordFormField.VOWEL_SOUND_FORM, text: "most" },
+      { field: WordFormType.SINGULAR_NUMBER_FORM, text: "most" },
+      { field: WordFormType.PLURAL_NUMBER_FORM, text: "most" },
+      { field: WordFormType.CONSONANT_SOUND_FORM, text: "most" },
+      { field: WordFormType.VOWEL_SOUND_FORM, text: "most" },
     ],
   },
   {
@@ -444,9 +444,9 @@ const DETERMINER_LEMMAS: readonly DeterminerLemmaSeed[] = [
     lemma: "several",
     definition: "More than two but not very many",
     forms: [
-      { field: WordFormField.PLURAL_NUMBER_FORM, text: "several" },
-      { field: WordFormField.CONSONANT_SOUND_FORM, text: "several" },
-      { field: WordFormField.VOWEL_SOUND_FORM, text: "several" },
+      { field: WordFormType.PLURAL_NUMBER_FORM, text: "several" },
+      { field: WordFormType.CONSONANT_SOUND_FORM, text: "several" },
+      { field: WordFormType.VOWEL_SOUND_FORM, text: "several" },
     ],
   },
   {
@@ -454,9 +454,9 @@ const DETERMINER_LEMMAS: readonly DeterminerLemmaSeed[] = [
     lemma: "another",
     definition: "One more, or a different, thing of the same kind",
     forms: [
-      { field: WordFormField.SINGULAR_NUMBER_FORM, text: "another" },
-      { field: WordFormField.CONSONANT_SOUND_FORM, text: "another" },
-      { field: WordFormField.VOWEL_SOUND_FORM, text: "another" },
+      { field: WordFormType.SINGULAR_NUMBER_FORM, text: "another" },
+      { field: WordFormType.CONSONANT_SOUND_FORM, text: "another" },
+      { field: WordFormType.VOWEL_SOUND_FORM, text: "another" },
     ],
   },
   {
@@ -464,10 +464,10 @@ const DETERMINER_LEMMAS: readonly DeterminerLemmaSeed[] = [
     lemma: "other",
     definition: "Different from the one(s) already mentioned",
     forms: [
-      { field: WordFormField.SINGULAR_NUMBER_FORM, text: "other" },
-      { field: WordFormField.PLURAL_NUMBER_FORM, text: "other" },
-      { field: WordFormField.CONSONANT_SOUND_FORM, text: "other" },
-      { field: WordFormField.VOWEL_SOUND_FORM, text: "other" },
+      { field: WordFormType.SINGULAR_NUMBER_FORM, text: "other" },
+      { field: WordFormType.PLURAL_NUMBER_FORM, text: "other" },
+      { field: WordFormType.CONSONANT_SOUND_FORM, text: "other" },
+      { field: WordFormType.VOWEL_SOUND_FORM, text: "other" },
     ],
   },
   {
@@ -475,10 +475,10 @@ const DETERMINER_LEMMAS: readonly DeterminerLemmaSeed[] = [
     lemma: "certain",
     definition: "Some but not named or specified",
     forms: [
-      { field: WordFormField.SINGULAR_NUMBER_FORM, text: "certain" },
-      { field: WordFormField.PLURAL_NUMBER_FORM, text: "certain" },
-      { field: WordFormField.CONSONANT_SOUND_FORM, text: "certain" },
-      { field: WordFormField.VOWEL_SOUND_FORM, text: "certain" },
+      { field: WordFormType.SINGULAR_NUMBER_FORM, text: "certain" },
+      { field: WordFormType.PLURAL_NUMBER_FORM, text: "certain" },
+      { field: WordFormType.CONSONANT_SOUND_FORM, text: "certain" },
+      { field: WordFormType.VOWEL_SOUND_FORM, text: "certain" },
     ],
   },
   {
@@ -486,10 +486,10 @@ const DETERMINER_LEMMAS: readonly DeterminerLemmaSeed[] = [
     lemma: "such",
     definition: "Of the kind previously mentioned or implied",
     forms: [
-      { field: WordFormField.SINGULAR_NUMBER_FORM, text: "such" },
-      { field: WordFormField.PLURAL_NUMBER_FORM, text: "such" },
-      { field: WordFormField.CONSONANT_SOUND_FORM, text: "such" },
-      { field: WordFormField.VOWEL_SOUND_FORM, text: "such" },
+      { field: WordFormType.SINGULAR_NUMBER_FORM, text: "such" },
+      { field: WordFormType.PLURAL_NUMBER_FORM, text: "such" },
+      { field: WordFormType.CONSONANT_SOUND_FORM, text: "such" },
+      { field: WordFormType.VOWEL_SOUND_FORM, text: "such" },
     ],
   },
   {
@@ -497,10 +497,10 @@ const DETERMINER_LEMMAS: readonly DeterminerLemmaSeed[] = [
     lemma: "half",
     definition: "One of two equal parts of; being half of",
     forms: [
-      { field: WordFormField.SINGULAR_NUMBER_FORM, text: "half" },
-      { field: WordFormField.PLURAL_NUMBER_FORM, text: "half" },
-      { field: WordFormField.CONSONANT_SOUND_FORM, text: "half" },
-      { field: WordFormField.VOWEL_SOUND_FORM, text: "half" },
+      { field: WordFormType.SINGULAR_NUMBER_FORM, text: "half" },
+      { field: WordFormType.PLURAL_NUMBER_FORM, text: "half" },
+      { field: WordFormType.CONSONANT_SOUND_FORM, text: "half" },
+      { field: WordFormType.VOWEL_SOUND_FORM, text: "half" },
     ],
   },
   {
@@ -508,10 +508,10 @@ const DETERMINER_LEMMAS: readonly DeterminerLemmaSeed[] = [
     lemma: "double",
     definition: "Twice as much or as many of",
     forms: [
-      { field: WordFormField.SINGULAR_NUMBER_FORM, text: "double" },
-      { field: WordFormField.PLURAL_NUMBER_FORM, text: "double" },
-      { field: WordFormField.CONSONANT_SOUND_FORM, text: "double" },
-      { field: WordFormField.VOWEL_SOUND_FORM, text: "double" },
+      { field: WordFormType.SINGULAR_NUMBER_FORM, text: "double" },
+      { field: WordFormType.PLURAL_NUMBER_FORM, text: "double" },
+      { field: WordFormType.CONSONANT_SOUND_FORM, text: "double" },
+      { field: WordFormType.VOWEL_SOUND_FORM, text: "double" },
     ],
   },
   {
@@ -519,10 +519,10 @@ const DETERMINER_LEMMAS: readonly DeterminerLemmaSeed[] = [
     lemma: "twice",
     definition: "Two times the amount or number of",
     forms: [
-      { field: WordFormField.SINGULAR_NUMBER_FORM, text: "twice" },
-      { field: WordFormField.PLURAL_NUMBER_FORM, text: "twice" },
-      { field: WordFormField.CONSONANT_SOUND_FORM, text: "twice" },
-      { field: WordFormField.VOWEL_SOUND_FORM, text: "twice" },
+      { field: WordFormType.SINGULAR_NUMBER_FORM, text: "twice" },
+      { field: WordFormType.PLURAL_NUMBER_FORM, text: "twice" },
+      { field: WordFormType.CONSONANT_SOUND_FORM, text: "twice" },
+      { field: WordFormType.VOWEL_SOUND_FORM, text: "twice" },
     ],
   },
   {
@@ -530,9 +530,9 @@ const DETERMINER_LEMMAS: readonly DeterminerLemmaSeed[] = [
     lemma: "various",
     definition: "More than one, distinct and different",
     forms: [
-      { field: WordFormField.PLURAL_NUMBER_FORM, text: "various" },
-      { field: WordFormField.CONSONANT_SOUND_FORM, text: "various" },
-      { field: WordFormField.VOWEL_SOUND_FORM, text: "various" },
+      { field: WordFormType.PLURAL_NUMBER_FORM, text: "various" },
+      { field: WordFormType.CONSONANT_SOUND_FORM, text: "various" },
+      { field: WordFormType.VOWEL_SOUND_FORM, text: "various" },
     ],
   },
   {
@@ -540,9 +540,9 @@ const DETERMINER_LEMMAS: readonly DeterminerLemmaSeed[] = [
     lemma: "numerous",
     definition: "Existing or occurring in great number; many",
     forms: [
-      { field: WordFormField.PLURAL_NUMBER_FORM, text: "numerous" },
-      { field: WordFormField.CONSONANT_SOUND_FORM, text: "numerous" },
-      { field: WordFormField.VOWEL_SOUND_FORM, text: "numerous" },
+      { field: WordFormType.PLURAL_NUMBER_FORM, text: "numerous" },
+      { field: WordFormType.CONSONANT_SOUND_FORM, text: "numerous" },
+      { field: WordFormType.VOWEL_SOUND_FORM, text: "numerous" },
     ],
   },
 ];

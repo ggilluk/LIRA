@@ -1,6 +1,6 @@
 import type { Dictionary } from "../data/dictionary";
 import { PartOfSpeech } from "../data/enums/part_of_speech";
-import { wordFormFieldLabel, type WordFormField } from "../data/enums/word_forms_enum";
+import { wordFormTypeLabel, type WordFormType } from "../data/enums/word_forms_enum";
 import type { Word } from "../data/entities/word";
 import { isTitleCase, isUpperCase, type WordLookupContext } from "../data/word_lookup_context";
 import type { WordForms } from "../data/word_forms";
@@ -56,7 +56,7 @@ export class PartOfSpeechIdentifier {
       return candidates;
     }
 
-    const formMatches: readonly { word: Word; field: WordFormField }[] =
+    const formMatches: readonly { word: Word; field: WordFormType }[] =
       this.wordForms?.lookupByText(context.normalisedText).map(({ word, form }) => ({ word, field: form.field })) ?? [];
     const candidates: WordIdentifier[] = formMatches.map(({ word, field }) => ({
       word,
@@ -114,7 +114,7 @@ export class PartOfSpeechIdentifier {
     return 0.85;
   }
 
-  private inflectedReason(word: Word, field: WordFormField, context: WordLookupContext): string {
-    return `Matched "${context.rawText}" via this Word's own "${wordFormFieldLabel(field)}" form, not its base lexical form ("${word.text}").`;
+  private inflectedReason(word: Word, field: WordFormType, context: WordLookupContext): string {
+    return `Matched "${context.rawText}" via this Word's own "${wordFormTypeLabel(field)}" form, not its base lexical form ("${word.text}").`;
   }
 }

@@ -62,7 +62,7 @@ function padMeterRow(posLabel, negLabel, value) {
 // (already sent to the client for the Word Forms section) rather than
 // requiring WordSenseSummary to carry its own copy of the same two
 // values.
-// 8/7 -- WordFormField.PRESENT_PARTICIPLE_FORM/THIRD_PERSON_SINGULAR_PRESENT_FORM's
+// 8/7 -- WordFormType.PRESENT_PARTICIPLE_FORM/THIRD_PERSON_SINGULAR_PRESENT_FORM's
 // own numeric codes (data/enums/word_forms_enum.ts), a tensor-coded
 // enum now with no camelCase text of its own left to write here --
 // this client script has no way to import the real TS enum at runtime,

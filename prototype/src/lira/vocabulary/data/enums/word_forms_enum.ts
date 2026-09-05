@@ -13,7 +13,7 @@
  * client-facing code read directly rather than a system-tensor
  * dimension -- reversed here so `field` can participate in tensor
  * operations the same way every sibling enum already does.
- * `wordFormFieldLabel()` below is the one place that still needs the
+ * `wordFormTypeLabel()` below is the one place that still needs the
  * human-readable camelCase-derived text this enum's own values used to
  * carry for free -- every GUI consumer now goes through it rather than
  * reading `field` as displayable text itself.
@@ -22,7 +22,7 @@
  * convention. Ordered the same as the Matrix's own row order
  * (data/matrices/pos_vs_wordform_matrice.ts) -- every numeric code
  * below is simply that row order, 0-based. */
-export enum WordFormField {
+export enum WordFormType {
   BASE_LEMMA_CANONICAL_FORM = 0,
   SINGULAR_NUMBER_FORM = 1,
   PLURAL_NUMBER_FORM = 2,
@@ -66,38 +66,38 @@ export enum WordFormField {
  * unchanged -- it still derives a label from an arbitrary camelCase
  * *string* (Word's own `isNominalised`/`isAdjectivised`/... derivation
  * flags, and the synthetic `"wordCharacterForms"` WordFormEntry row,
- * neither of which is a `WordFormField` member), so it can't be reused
+ * neither of which is a `WordFormType` member), so it can't be reused
  * here now that `field` itself is a number, not a string. */
-export function wordFormFieldLabel(field: WordFormField): string {
-  return WORD_FORM_FIELD_LABELS[field];
+export function wordFormTypeLabel(field: WordFormType): string {
+  return WORD_FORM_TYPE_LABELS[field];
 }
 
-const WORD_FORM_FIELD_LABELS: Record<WordFormField, string> = {
-  [WordFormField.BASE_LEMMA_CANONICAL_FORM]: "Base Lemma Canonical Form",
-  [WordFormField.SINGULAR_NUMBER_FORM]: "Singular Number Form",
-  [WordFormField.PLURAL_NUMBER_FORM]: "Plural Number Form",
-  [WordFormField.PRESENT_TENSE_FORM]: "Present Tense Form",
-  [WordFormField.PRESENT_TENSE_INSTANCE_FORM]: "Present Tense Instance Form",
-  [WordFormField.PAST_TENSE_FORM]: "Past Tense Form",
-  [WordFormField.PAST_TENSE_INSTANCE_FORM]: "Past Tense Instance Form",
-  [WordFormField.THIRD_PERSON_SINGULAR_PRESENT_FORM]: "Third Person Singular Present Form",
-  [WordFormField.PRESENT_PARTICIPLE_FORM]: "Present Participle Form",
-  [WordFormField.PAST_PARTICIPLE_FORM]: "Past Participle Form",
-  [WordFormField.BARE_INFINITIVE_FORM]: "Bare Infinitive Form",
-  [WordFormField.MODAL_FORM]: "Modal Form",
-  [WordFormField.SECONDARY_MODAL_FORM]: "Secondary Modal Form",
-  [WordFormField.POSITIVE_DEGREE_FORM]: "Positive Degree Form",
-  [WordFormField.COMPARATIVE_DEGREE_FORM]: "Comparative Degree Form",
-  [WordFormField.COMPARATIVE_PERIPHRASTIC_FORM]: "Comparative Periphrastic Form",
-  [WordFormField.SUPERLATIVE_DEGREE_FORM]: "Superlative Degree Form",
-  [WordFormField.SUPERLATIVE_PERIPHRASTIC_FORM]: "Superlative Periphrastic Form",
-  [WordFormField.FIRST_PERSON_FORM]: "First Person Form",
-  [WordFormField.SECOND_PERSON_FORM]: "Second Person Form",
-  [WordFormField.THIRD_PERSON_FORM]: "Third Person Form",
-  [WordFormField.SUBJECTIVE_CASE_FORM]: "Subjective Case Form",
-  [WordFormField.OBJECTIVE_CASE_FORM]: "Objective Case Form",
-  [WordFormField.POSSESSIVE_CASE_FORM]: "Possessive Case Form",
-  [WordFormField.CONSONANT_SOUND_FORM]: "Consonant Sound Form",
-  [WordFormField.VOWEL_SOUND_FORM]: "Vowel Sound Form",
-  [WordFormField.REFLEXIVE_CASE_FORM]: "Reflexive Case Form",
+const WORD_FORM_TYPE_LABELS: Record<WordFormType, string> = {
+  [WordFormType.BASE_LEMMA_CANONICAL_FORM]: "Base Lemma Canonical Form",
+  [WordFormType.SINGULAR_NUMBER_FORM]: "Singular Number Form",
+  [WordFormType.PLURAL_NUMBER_FORM]: "Plural Number Form",
+  [WordFormType.PRESENT_TENSE_FORM]: "Present Tense Form",
+  [WordFormType.PRESENT_TENSE_INSTANCE_FORM]: "Present Tense Instance Form",
+  [WordFormType.PAST_TENSE_FORM]: "Past Tense Form",
+  [WordFormType.PAST_TENSE_INSTANCE_FORM]: "Past Tense Instance Form",
+  [WordFormType.THIRD_PERSON_SINGULAR_PRESENT_FORM]: "Third Person Singular Present Form",
+  [WordFormType.PRESENT_PARTICIPLE_FORM]: "Present Participle Form",
+  [WordFormType.PAST_PARTICIPLE_FORM]: "Past Participle Form",
+  [WordFormType.BARE_INFINITIVE_FORM]: "Bare Infinitive Form",
+  [WordFormType.MODAL_FORM]: "Modal Form",
+  [WordFormType.SECONDARY_MODAL_FORM]: "Secondary Modal Form",
+  [WordFormType.POSITIVE_DEGREE_FORM]: "Positive Degree Form",
+  [WordFormType.COMPARATIVE_DEGREE_FORM]: "Comparative Degree Form",
+  [WordFormType.COMPARATIVE_PERIPHRASTIC_FORM]: "Comparative Periphrastic Form",
+  [WordFormType.SUPERLATIVE_DEGREE_FORM]: "Superlative Degree Form",
+  [WordFormType.SUPERLATIVE_PERIPHRASTIC_FORM]: "Superlative Periphrastic Form",
+  [WordFormType.FIRST_PERSON_FORM]: "First Person Form",
+  [WordFormType.SECOND_PERSON_FORM]: "Second Person Form",
+  [WordFormType.THIRD_PERSON_FORM]: "Third Person Form",
+  [WordFormType.SUBJECTIVE_CASE_FORM]: "Subjective Case Form",
+  [WordFormType.OBJECTIVE_CASE_FORM]: "Objective Case Form",
+  [WordFormType.POSSESSIVE_CASE_FORM]: "Possessive Case Form",
+  [WordFormType.CONSONANT_SOUND_FORM]: "Consonant Sound Form",
+  [WordFormType.VOWEL_SOUND_FORM]: "Vowel Sound Form",
+  [WordFormType.REFLEXIVE_CASE_FORM]: "Reflexive Case Form",
 };

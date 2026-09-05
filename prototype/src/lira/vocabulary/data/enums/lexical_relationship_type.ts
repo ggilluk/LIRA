@@ -179,11 +179,11 @@ export function relationshipItem(kind: LexicalRelationshipType): number {
 // a MERONYM edge -- MERONYM's own docstring above on why this is a
 // qualifying field, not a separate relationship kind. Undefined for a
 // hand-curated Common Vocabulary Cache MERONYM/HOLONYM fact, which
-// draws no such distinction. Numeric, WordFormField's own precedent
+// draws no such distinction. Numeric, WordFormType's own precedent
 // (data/enums/word_forms_enum.ts) for a small closed set of
 // internal-only values -- meronymKindLabel() below is the same
 // "numeric enum + dedicated label function" split that field's own
-// wordFormFieldLabel() already established, for wherever a caller
+// wordFormTypeLabel() already established, for wherever a caller
 // needs the human-readable spelling instead of the enum member itself
 // (the UI builders that surface this value to the Vocabulary tab, in
 // particular).

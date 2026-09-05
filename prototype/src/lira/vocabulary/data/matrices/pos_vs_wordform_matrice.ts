@@ -49,7 +49,7 @@
  * rule set, or vice versa. */
 
 import { PartOfSpeech } from "../enums/part_of_speech";
-import { WordFormField } from "../enums/word_forms_enum";
+import { WordFormType } from "../enums/word_forms_enum";
 
 export interface WordFormRule {
   appliesTo: readonly PartOfSpeech[];
@@ -64,7 +64,7 @@ export interface WordFormRule {
 }
 
 export interface WordFormRow {
-  field: WordFormField;
+  field: WordFormType;
   label: string;
   purpose: string;
   rules: readonly WordFormRule[];
@@ -74,7 +74,7 @@ const P = PartOfSpeech;
 
 export const WORD_FORM_MATRIX: readonly WordFormRow[] = [
   {
-    field: WordFormField.BASE_LEMMA_CANONICAL_FORM,
+    field: WordFormType.BASE_LEMMA_CANONICAL_FORM,
     label: "Base Lemma Canonical Form",
     purpose: "Identifies the standard dictionary form used to represent the word.",
     rules: [
@@ -89,7 +89,7 @@ export const WORD_FORM_MATRIX: readonly WordFormRow[] = [
     ],
   },
   {
-    field: WordFormField.SINGULAR_NUMBER_FORM,
+    field: WordFormType.SINGULAR_NUMBER_FORM,
     label: "Singular Number Form",
     purpose: "Identifies the word form used when referring to one person, thing, place, or idea.",
     rules: [
@@ -114,7 +114,7 @@ export const WORD_FORM_MATRIX: readonly WordFormRow[] = [
     ],
   },
   {
-    field: WordFormField.PLURAL_NUMBER_FORM,
+    field: WordFormType.PLURAL_NUMBER_FORM,
     label: "Plural Number Form",
     purpose: "Identifies the word form used when referring to more than one person, thing, place, or idea.",
     rules: [
@@ -201,7 +201,7 @@ export const WORD_FORM_MATRIX: readonly WordFormRow[] = [
     ],
   },
   {
-    field: WordFormField.PRESENT_TENSE_FORM,
+    field: WordFormType.PRESENT_TENSE_FORM,
     label: "Present Tense Form",
     purpose: "Identifies the verb form used for an action, event, or state that occurs or exists in the present.",
     rules: [
@@ -226,7 +226,7 @@ export const WORD_FORM_MATRIX: readonly WordFormRow[] = [
     ],
   },
   {
-    field: WordFormField.PRESENT_TENSE_INSTANCE_FORM,
+    field: WordFormType.PRESENT_TENSE_INSTANCE_FORM,
     label: "Present Tense Instance Form",
     purpose:
       "Identifies the present-tense verb form tied to one specific Determiner/pronoun, distinct from the general Present Tense Form shared by every other Determiner this lemma doesn't single out. AUXILIARY-only -- 'be' is the only lemma in this codebase that needs a distinct form for one specific Determiner beyond the ordinary Third Person Singular Present Form split every Verb already has ('am', Determiner: I, vs. 'are', every other Determiner Present Tense Form already covers).",
@@ -243,7 +243,7 @@ export const WORD_FORM_MATRIX: readonly WordFormRow[] = [
     ],
   },
   {
-    field: WordFormField.PAST_TENSE_FORM,
+    field: WordFormType.PAST_TENSE_FORM,
     label: "Past Tense Form",
     purpose: "Identifies the verb form used for an action, event, or state that occurred or existed in the past.",
     rules: [
@@ -320,7 +320,7 @@ export const WORD_FORM_MATRIX: readonly WordFormRow[] = [
     ],
   },
   {
-    field: WordFormField.PAST_TENSE_INSTANCE_FORM,
+    field: WordFormType.PAST_TENSE_INSTANCE_FORM,
     label: "Past Tense Instance Form",
     purpose:
       "Identifies the past-tense verb form tied to one specific Determiner/pronoun -- Present Tense Instance Form's own exact past-tense counterpart. AUXILIARY-only, and only 'be' needs it: 'was' (Determiner: I/he/she/it) vs. 'were', the general Past Tense Form covering we/you/they.",
@@ -337,7 +337,7 @@ export const WORD_FORM_MATRIX: readonly WordFormRow[] = [
     ],
   },
   {
-    field: WordFormField.THIRD_PERSON_SINGULAR_PRESENT_FORM,
+    field: WordFormType.THIRD_PERSON_SINGULAR_PRESENT_FORM,
     label: "Third Person Singular Present Form",
     purpose: "Identifies the present-tense verb form used when the subject is one person or thing other than the speaker or listener.",
     rules: [
@@ -385,7 +385,7 @@ export const WORD_FORM_MATRIX: readonly WordFormRow[] = [
     ],
   },
   {
-    field: WordFormField.PRESENT_PARTICIPLE_FORM,
+    field: WordFormType.PRESENT_PARTICIPLE_FORM,
     label: "Present Participle Form",
     purpose: "Identifies the verb form used to describe an action or state as ongoing.",
     rules: [
@@ -435,7 +435,7 @@ export const WORD_FORM_MATRIX: readonly WordFormRow[] = [
     ],
   },
   {
-    field: WordFormField.PAST_PARTICIPLE_FORM,
+    field: WordFormType.PAST_PARTICIPLE_FORM,
     label: "Past Participle Form",
     purpose: "Identifies the verb form used to construct perfect tenses and passive expressions.",
     rules: [
@@ -513,7 +513,7 @@ export const WORD_FORM_MATRIX: readonly WordFormRow[] = [
     ],
   },
   {
-    field: WordFormField.BARE_INFINITIVE_FORM,
+    field: WordFormType.BARE_INFINITIVE_FORM,
     label: "Bare Infinitive Form",
     purpose: "Identifies the basic verb form used without the word to.",
     rules: [
@@ -528,7 +528,7 @@ export const WORD_FORM_MATRIX: readonly WordFormRow[] = [
     ],
   },
   {
-    field: WordFormField.MODAL_FORM,
+    field: WordFormType.MODAL_FORM,
     label: "Modal Form",
     purpose:
       "Identifies the primary spelling of a modal or semi-modal auxiliary -- can, may, shall, will, must, ought, need, dare. AUXILIARY-only: in this invariant auxiliary use a modal has no infinitive, no participle, and no person/number agreement of its own, so none of the Verb-style *_Form fields above ever apply to it -- this and Secondary Modal Form below are the only two fields a modal lemma's Auxiliary Word ever populates (need/dare's own ordinary lexical-verb use, which does inflect regularly, is a separate VERB Word, out of this row's scope).",
@@ -544,7 +544,7 @@ export const WORD_FORM_MATRIX: readonly WordFormRow[] = [
     ],
   },
   {
-    field: WordFormField.SECONDARY_MODAL_FORM,
+    field: WordFormType.SECONDARY_MODAL_FORM,
     label: "Secondary Modal Form",
     purpose:
       "Identifies the secondary/preterite-present spelling paired with a modal's own Modal Form -- could, might, should, would. Undefined for must/ought, which are defective and have no secondary form at all (a genuine lexical gap, not an unpopulated placeholder).",
@@ -561,7 +561,7 @@ export const WORD_FORM_MATRIX: readonly WordFormRow[] = [
     ],
   },
   {
-    field: WordFormField.POSITIVE_DEGREE_FORM,
+    field: WordFormType.POSITIVE_DEGREE_FORM,
     label: "Positive Degree Form",
     purpose: "Identifies the basic adjective or adverb form that describes a quality without comparison.",
     rules: [
@@ -577,7 +577,7 @@ export const WORD_FORM_MATRIX: readonly WordFormRow[] = [
     ],
   },
   {
-    field: WordFormField.COMPARATIVE_DEGREE_FORM,
+    field: WordFormType.COMPARATIVE_DEGREE_FORM,
     label: "Comparative Degree Form",
     purpose: "Identifies the adjective or adverb word form used to express a greater or lesser degree of a quality.",
     rules: [
@@ -648,7 +648,7 @@ export const WORD_FORM_MATRIX: readonly WordFormRow[] = [
     ],
   },
   {
-    field: WordFormField.COMPARATIVE_PERIPHRASTIC_FORM,
+    field: WordFormType.COMPARATIVE_PERIPHRASTIC_FORM,
     label: "Comparative Periphrastic Form",
     purpose:
       "Documents English's general periphrastic-comparison pattern (a separate comparative word rather than changing the adjective or adverb itself) -- neither POS subtype this prototype implements carries this as its own field; both fold the periphrastic value into Comparative Degree Form directly instead.",
@@ -676,7 +676,7 @@ export const WORD_FORM_MATRIX: readonly WordFormRow[] = [
     ],
   },
   {
-    field: WordFormField.SUPERLATIVE_DEGREE_FORM,
+    field: WordFormType.SUPERLATIVE_DEGREE_FORM,
     label: "Superlative Degree Form",
     purpose: "Identifies the adjective or adverb word form used to express the highest or lowest degree of a quality.",
     rules: [
@@ -747,7 +747,7 @@ export const WORD_FORM_MATRIX: readonly WordFormRow[] = [
     ],
   },
   {
-    field: WordFormField.SUPERLATIVE_PERIPHRASTIC_FORM,
+    field: WordFormType.SUPERLATIVE_PERIPHRASTIC_FORM,
     label: "Superlative Periphrastic Form",
     purpose:
       "Documents English's general periphrastic-superlative pattern (a separate superlative word rather than changing the adjective or adverb itself) -- neither POS subtype this prototype implements carries this as its own field; both fold the periphrastic value into Superlative Degree Form directly instead.",
@@ -775,7 +775,7 @@ export const WORD_FORM_MATRIX: readonly WordFormRow[] = [
     ],
   },
   {
-    field: WordFormField.FIRST_PERSON_FORM,
+    field: WordFormType.FIRST_PERSON_FORM,
     label: "First Person Form",
     purpose: "Identifies the word form used when the speaker refers to themselves or a group that includes them.",
     rules: [
@@ -811,7 +811,7 @@ export const WORD_FORM_MATRIX: readonly WordFormRow[] = [
     ],
   },
   {
-    field: WordFormField.SECOND_PERSON_FORM,
+    field: WordFormType.SECOND_PERSON_FORM,
     label: "Second Person Form",
     purpose: "Identifies the word form used when referring to the person or people being addressed.",
     rules: [
@@ -865,7 +865,7 @@ export const WORD_FORM_MATRIX: readonly WordFormRow[] = [
     ],
   },
   {
-    field: WordFormField.THIRD_PERSON_FORM,
+    field: WordFormType.THIRD_PERSON_FORM,
     label: "Third Person Form",
     purpose: "Identifies the word form used when referring to someone or something other than the speaker or listener.",
     rules: [
@@ -901,7 +901,7 @@ export const WORD_FORM_MATRIX: readonly WordFormRow[] = [
     ],
   },
   {
-    field: WordFormField.SUBJECTIVE_CASE_FORM,
+    field: WordFormType.SUBJECTIVE_CASE_FORM,
     label: "Subjective Case Form",
     purpose: "Identifies the pronoun form used for the person or thing performing or experiencing what the clause describes.",
     rules: [
@@ -918,7 +918,7 @@ export const WORD_FORM_MATRIX: readonly WordFormRow[] = [
     ],
   },
   {
-    field: WordFormField.OBJECTIVE_CASE_FORM,
+    field: WordFormType.OBJECTIVE_CASE_FORM,
     label: "Objective Case Form",
     purpose: "Identifies the pronoun form used for the person or thing affected by an action or following a preposition.",
     rules: [
@@ -935,7 +935,7 @@ export const WORD_FORM_MATRIX: readonly WordFormRow[] = [
     ],
   },
   {
-    field: WordFormField.POSSESSIVE_CASE_FORM,
+    field: WordFormType.POSSESSIVE_CASE_FORM,
     label: "Possessive Case Form",
     purpose: "Identifies the noun, pronoun, or determiner form used to show that something belongs or relates to a person or thing.",
     rules: [
@@ -973,7 +973,7 @@ export const WORD_FORM_MATRIX: readonly WordFormRow[] = [
     ],
   },
   {
-    field: WordFormField.CONSONANT_SOUND_FORM,
+    field: WordFormType.CONSONANT_SOUND_FORM,
     label: "Consonant-Sound Form",
     purpose: "Identifies the word form used immediately before a word beginning with a consonant sound.",
     rules: [
@@ -988,7 +988,7 @@ export const WORD_FORM_MATRIX: readonly WordFormRow[] = [
     ],
   },
   {
-    field: WordFormField.VOWEL_SOUND_FORM,
+    field: WordFormType.VOWEL_SOUND_FORM,
     label: "Vowel-Sound Form",
     purpose: "Identifies the word form used immediately before a word beginning with a vowel sound.",
     rules: [
@@ -1003,7 +1003,7 @@ export const WORD_FORM_MATRIX: readonly WordFormRow[] = [
     ],
   },
   {
-    field: WordFormField.REFLEXIVE_CASE_FORM,
+    field: WordFormType.REFLEXIVE_CASE_FORM,
     label: "Reflexive Case Form",
     purpose: "Identifies the pronoun form used when a person or thing refers back to itself.",
     rules: [
@@ -1042,7 +1042,7 @@ export const WORD_FORM_MATRIX: readonly WordFormRow[] = [
  * never have changed correctness, only the array's own length --
  * deduplicating here keeps this a true behavioral match rather than a
  * literal one). */
-export function stringPatternsFor(field: WordFormField, pos: PartOfSpeech): readonly string[] {
+export function stringPatternsFor(field: WordFormType, pos: PartOfSpeech): readonly string[] {
   const row = WORD_FORM_MATRIX.find((r) => r.field === field);
   if (row === undefined) return [];
   const patterns = row.rules.filter((rule) => rule.appliesTo.includes(pos)).map((rule) => rule.stringPattern);
@@ -1058,6 +1058,6 @@ export function stringPatternsFor(field: WordFormField, pos: PartOfSpeech): read
  * own docstring) -- kept alongside `stringPatternsFor()` as a plain,
  * still-correct view over `WORD_FORM_MATRIX` rather than deleted along
  * with its one-time caller. */
-export function fieldsFor(pos: PartOfSpeech): readonly WordFormField[] {
+export function fieldsFor(pos: PartOfSpeech): readonly WordFormType[] {
   return WORD_FORM_MATRIX.filter((row) => row.rules.some((rule) => rule.appliesTo.includes(pos))).map((row) => row.field);
 }

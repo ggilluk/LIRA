@@ -9,7 +9,7 @@
 
 import type { Dictionary } from "../../data/dictionary";
 import { PartOfSpeech } from "../../data/enums/part_of_speech";
-import { wordFormFieldLabel, type WordFormField } from "../../data/enums/word_forms_enum";
+import { wordFormTypeLabel, type WordFormType } from "../../data/enums/word_forms_enum";
 import type { Senses } from "../../data/senses";
 import type { Word } from "../../data/entities/word";
 import type { WordForms } from "../../data/word_forms";
@@ -38,7 +38,7 @@ export type DefinitionSegment =
       // exactly (WordForms.formsOf() came back empty, or every one of its
       // entries spells the word differently than this particular
       // occurrence does).
-      word_form?: { field: WordFormField; label: string; value: string };
+      word_form?: { field: WordFormType; label: string; value: string };
     };
 
 /** "wordCharacterForms" -> "Word Character Forms" -- for an arbitrary
@@ -46,8 +46,8 @@ export type DefinitionSegment =
  * derivation-pointer field names, builder_word.ts's own
  * `morphologicalDerivations()`; the synthetic `"wordCharacterForms"`
  * `WordFormEntry` row, `wordFormsFor()`'s own docstring), never a real
- * `WordFormField` -- `wordFormFieldLabel()` (data/enums/word_forms_enum.ts)
- * is that one's own dedicated label function now that `WordFormField`
+ * `WordFormType` -- `wordFormTypeLabel()` (data/enums/word_forms_enum.ts)
+ * is that one's own dedicated label function now that `WordFormType`
  * itself is a numeric, tensor-coded enum with no camelCase text of its
  * own left to split. Splits on an uppercase letter and capitalizes the
  * first character -- every one of these non-enum field names (every
@@ -80,7 +80,7 @@ export function definitionWordSegment(
     pos: PartOfSpeech[resolved.partOfSpeech],
     domain: domainLabel(senses, domainName, resolved, wordForms),
     gloss: fields.gloss?.value ?? fields.definition?.value ?? "",
-    word_form: matchingForm && { field: matchingForm.field, label: wordFormFieldLabel(matchingForm.field), value: matchingForm.text.value },
+    word_form: matchingForm && { field: matchingForm.field, label: wordFormTypeLabel(matchingForm.field), value: matchingForm.text.value },
   };
 }
 
