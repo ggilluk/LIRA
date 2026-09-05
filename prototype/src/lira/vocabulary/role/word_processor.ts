@@ -34,7 +34,6 @@ import {
 import type { Dictionary } from "../data/dictionary";
 import type { DefinitionWordReference } from "../data/definition_word_reference";
 import type { Word } from "../data/entities/word";
-import { newUuid } from "../data/uuid";
 import { wordFormFieldLabel, type WordFormField } from "../data/enums/word_forms_enum";
 
 // Splits a definition's prose into its own word tokens -- deliberately a
@@ -65,7 +64,7 @@ export function createWord(init: WordInit): Word {
     // itself now that Identifier carries a `uuid` of its own, no
     // reason for a second Identifier-typed field to exist alongside it
     // (WordForm's own identical fold, role/word_form_processor.ts).
-    entryId: init.entryId ?? identifier(newUuid()),
+    entryId: init.entryId ?? identifier(crypto.randomUUID()),
     ...init,
   };
   return word;
@@ -79,7 +78,7 @@ export function createWord(init: WordInit): Word {
  * reassignment, used by Dictionary.seedFrom and
  * WordSeeder.seedClosedClassWords/loadCache. */
 export function copyWordWithFreshUuid(word: Word): Word {
-  return { ...word, entryId: { ...word.entryId, uuid: newUuid() } };
+  return { ...word, entryId: { ...word.entryId, uuid: crypto.randomUUID() } };
 }
 
 /** `word`'s own per-Domain graph identity -- `word.entryId.uuid`,

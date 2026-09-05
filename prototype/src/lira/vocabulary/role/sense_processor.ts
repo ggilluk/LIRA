@@ -14,7 +14,6 @@
  * createWord()/copyWordWithFreshUuid() from role/word_processor.ts. */
 
 import { identifier } from "../../value_objects";
-import { newUuid } from "../data/uuid";
 import type { Sense } from "../data/entities/sense";
 
 export type SenseInit = Partial<Sense>;
@@ -31,7 +30,7 @@ export function createSense(init: SenseInit = {}): Sense {
     // itself now that Identifier carries a `uuid` of its own, no
     // reason for a second Identifier-typed field to exist alongside it
     // (WordForm's own identical fold, role/word_form_processor.ts).
-    entryId: init.entryId ?? identifier(newUuid()),
+    entryId: init.entryId ?? identifier(crypto.randomUUID()),
     ...init,
   };
 }
@@ -45,7 +44,7 @@ export function createSense(init: SenseInit = {}): Sense {
  * reason: two Domains' independent copies of the same sense must never
  * be confused as the same graph node. */
 export function copySenseWithFreshUuid(sense: Sense): Sense {
-  return { ...sense, entryId: { ...sense.entryId, uuid: newUuid() } };
+  return { ...sense, entryId: { ...sense.entryId, uuid: crypto.randomUUID() } };
 }
 
 /** `sense`'s own per-Domain graph identity -- `sense.entryId.uuid`,

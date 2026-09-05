@@ -26,7 +26,6 @@ import type { WordForms } from "../word_forms";
 // base-entity constructor, needed here (toSyntheticWord/phraseAsWord
 // below) the same way every POS processor already needs it.
 import { createWord } from "../../role/word_processor";
-import { newUuid } from "../uuid";
 
 export interface Phrase extends LinguisticUnit {
 
@@ -307,7 +306,7 @@ export function createPhrase(init: PhraseInit): Phrase {
     relatedDomainTags: [],
     senseIds: [],
     isCommon: false,
-    entryId: init.entryId ?? identifier(newUuid()),
+    entryId: init.entryId ?? identifier(crypto.randomUUID()),
     ...init,
   };
   if (phrase.lexicalForm === undefined) phrase.lexicalForm = { value: phrase.text };
@@ -318,7 +317,7 @@ export function createPhrase(init: PhraseInit): Phrase {
  * except `entryId.uuid`, which becomes a fresh uuid. The Phrase
  * counterpart of copyWordWithFreshUuid (role/word_processor.ts). */
 export function copyPhraseWithFreshUuid(phrase: Phrase): Phrase {
-  return { ...phrase, entryId: { ...phrase.entryId, uuid: newUuid() } };
+  return { ...phrase, entryId: { ...phrase.entryId, uuid: crypto.randomUUID() } };
 }
 
 /** `phrase`'s own per-Domain graph identity. Word's own identical
@@ -338,7 +337,7 @@ export function graphUuid(phrase: Phrase): string {
 export function toSyntheticWord(phrase: Phrase, phrases: Phrases): Word {
   return createWord({
     text: phrase.text,
-    entryId: { ...phrase.entryId, uuid: newUuid() },
+    entryId: { ...phrase.entryId, uuid: crypto.randomUUID() },
     partOfSpeech: phrases.partOfSpeechOf(phrase)!,
     definition: phrase.definition,
     usageNotes: phrase.usageNotes,

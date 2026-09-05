@@ -5,7 +5,6 @@ import type { SemanticRelationshipSystemPropertyTensor } from "../data/semantic_
 import type { SemanticRelationshipStore } from "../data/semantic_relationship_store";
 import type { SourceReference } from "../data/source_reference";
 import { SystemPropertiesRef } from "../data/system_properties_ref";
-import { newUuid } from "../data/uuid";
 
 /** Creates SemanticRelationship records -- LexicalRelationshipProcessor's
  * own exact counterpart (role/lexical_relationship_processor.ts),
@@ -28,7 +27,7 @@ export class SemanticRelationshipProcessor {
     temporal?: number;
     activation?: number;
   }): SemanticRelationship {
-    const relationshipUuid = newUuid();
+    const relationshipUuid = crypto.randomUUID();
     const version = "1.0";
     const row = this.tensor.allocateRow(
       relationshipUuid,

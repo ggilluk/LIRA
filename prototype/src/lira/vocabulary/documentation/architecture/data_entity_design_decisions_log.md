@@ -2424,3 +2424,46 @@ now includes a `BASE_LEMMA_CANONICAL_FORM` WordForm, that it's the
 first form registered, that `validateDeterminer()` still reports no
 issues, and that "a"'s own Base Lemma Canonical Form is "a" rather than
 "an").
+
+## Removed `data/uuid.ts` -- every fresh-uuid call site now uses `crypto.randomUUID()` directly
+
+Asked directly whether anything still called `data/uuid.ts`'s own
+`newUuid()` wrapper (a one-line `crypto.randomUUID()` re-export, the
+browser-port stand-in for Python's `uuid.uuid4()`). It did have real
+callers -- 8 files, all in the Vocabulary role/ layer -- but every one
+of them was already reachable through `Identifier` itself:
+`value_objects/data/identifier.ts`'s own `identifier()` already calls
+`crypto.randomUUID()` directly to auto-assign `Identifier.uuid`, so
+`newUuid()` was a redundant second entry point to the exact same
+browser global, not a distinct capability anything actually needed.
+
+Replaced every call site 1:1, no behaviour change:
+
+- The 5 entity `createXxx()` constructors' own `entryId: init.entryId ??
+  identifier(newUuid())` (Word/WordForm/Sense/Coordination/Phrase --
+  `role/word_processor.ts`, `role/word_form_processor.ts`,
+  `role/sense_processor.ts`, `role/coordination_processor.ts`,
+  `data/entities/phrase.ts`) -> `identifier(crypto.randomUUID())`.
+- Their own `copyXxxWithFreshUuid()` counterparts' `{ ...entryId, uuid:
+  newUuid() }` -> `{ ...entryId, uuid: crypto.randomUUID() }`, same five
+  files, plus `Phrase.toSyntheticWord()`'s own identical inline copy.
+- The 3 relationship processors' own `const relationshipUuid = newUuid()`
+  (`role/lexical_relationship_processor.ts`, `role/morphological_pointer_relationship_processor.ts`,
+  `role/semantic_relationship_processor.ts`) -> `crypto.randomUUID()`
+  directly -- these three don't build a real `Identifier` via
+  `identifier()` at all (their own `uuid` field is a bare `{ value }`
+  literal), a separate, narrower gap than this change's own scope
+  (confirmed with the user directly: only the 5 constructors' own
+  double-random-uuid-at-creation question was in scope here, not this
+  one) -- left otherwise untouched, just pointed at the same browser
+  global instead of the retired wrapper.
+
+`newUuid` imports removed from all 8 files; `data/uuid.ts` itself
+deleted once nothing referenced it any more (confirmed via a
+repository-wide grep for `newUuid`/`data/uuid` turning up nothing else,
+this log's own historical entries aside).
+
+`npx tsc -b --force` clean. Full `vitest run --no-file-parallelism`:
+181/181, unchanged -- this is a pure call-site substitution (same
+underlying `crypto.randomUUID()` either way), not a behavioural change,
+so no test needed updating or adding.

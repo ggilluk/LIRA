@@ -15,7 +15,6 @@
  * createWord()/copyWordWithFreshUuid() from role/word_processor.ts. */
 
 import { identifier } from "../../value_objects";
-import { newUuid } from "../data/uuid";
 import type { WordForm } from "../data/entities/word_form";
 
 // `field`/`text` are the two facts every WordForm must be authored
@@ -40,7 +39,7 @@ export function createWordForm(init: WordFormInit): WordForm {
     // separate top-level `uuid` field, folded into `entryId` itself now
     // that Identifier carries a `uuid` of its own; no reason for a
     // second Identifier-typed field to exist alongside it.
-    entryId: init.entryId ?? identifier(newUuid()),
+    entryId: init.entryId ?? identifier(crypto.randomUUID()),
     ...init,
   };
 }
@@ -54,7 +53,7 @@ export function createWordForm(init: WordFormInit): WordForm {
  * independent copies of the same form must never be confused as the
  * same graph node. */
 export function copyWordFormWithFreshUuid(form: WordForm): WordForm {
-  return { ...form, entryId: { ...form.entryId, uuid: newUuid() } };
+  return { ...form, entryId: { ...form.entryId, uuid: crypto.randomUUID() } };
 }
 
 /** `form`'s own per-Domain graph identity -- `form.entryId.uuid`,

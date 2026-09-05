@@ -5,7 +5,6 @@ import type { MorphologicalPointerRelationshipSystemPropertyTensor } from "../da
 import type { LexicalRelationshipType } from "../data/enums/lexical_relationship_type";
 import type { SourceReference } from "../data/source_reference";
 import { SystemPropertiesRef } from "../data/system_properties_ref";
-import { newUuid } from "../data/uuid";
 
 /** Creates MorphologicalPointerRelationship records, allocating each one's
  * tensor-backed SystemPropertiesRef row (Design Principle 8) and
@@ -30,7 +29,7 @@ export class MorphologicalPointerRelationshipProcessor {
     temporal?: number;
     activation?: number;
   }): MorphologicalPointerRelationship {
-    const relationshipUuid = newUuid();
+    const relationshipUuid = crypto.randomUUID();
     const version = "1.0";
     const row = this.tensor.allocateRow(
       relationshipUuid,

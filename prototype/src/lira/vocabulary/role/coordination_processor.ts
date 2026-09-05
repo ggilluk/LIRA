@@ -8,7 +8,6 @@
  * reason). */
 
 import { identifier } from "../../value_objects";
-import { newUuid } from "../data/uuid";
 import type { LinguisticUnit } from "../../linguistics/data/linguistic_unit";
 import type { Coordination } from "../data/entities/coordination";
 
@@ -21,7 +20,7 @@ export function createCoordination<T extends LinguisticUnit>(init: CoordinationI
     // identical two-role shape every other entity in this folder
     // already has (Sense.entryId's own docstring on the fold this
     // mirrors).
-    entryId: init.entryId ?? identifier(newUuid()),
+    entryId: init.entryId ?? identifier(crypto.randomUUID()),
     ...init,
   };
 }
@@ -34,7 +33,7 @@ export function createCoordination<T extends LinguisticUnit>(init: CoordinationI
  * copies of the same coordination must never be confused as the same
  * graph node. */
 export function copyCoordinationWithFreshUuid<T extends LinguisticUnit>(coordination: Coordination<T>): Coordination<T> {
-  return { ...coordination, entryId: { ...coordination.entryId, uuid: newUuid() } };
+  return { ...coordination, entryId: { ...coordination.entryId, uuid: crypto.randomUUID() } };
 }
 
 /** `coordination`'s own per-Domain graph identity -- `entryId.uuid`,

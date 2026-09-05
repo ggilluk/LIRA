@@ -465,8 +465,8 @@ export class AuxiliarySeeder {
       const word = createAuxiliary({
         text: lemmaSeed.lemma,
         // identifier(), not a bare `{ value }` literal -- createWord()'s
-        // own defaulting (`init.entryId ?? identifier(newUuid())`) only
-        // auto-generates a fresh `uuid` when `entryId` is omitted
+        // own defaulting (`init.entryId ?? identifier(crypto.randomUUID())`)
+        // only auto-generates a fresh `uuid` when `entryId` is omitted
         // entirely; a caller-supplied partial entryId is trusted as-is.
         // Every other Word-creation path in this codebase either omits
         // entryId (letting createWord() generate one outright) or is a
