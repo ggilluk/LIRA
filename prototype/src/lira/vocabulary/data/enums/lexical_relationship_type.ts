@@ -181,8 +181,26 @@ export function relationshipItem(kind: LexicalRelationshipType): number {
 // Cache MERONYM/HOLONYM fact, which draws no such distinction.
 export const MERONYM_KIND_QUALIFIER = "meronymKind";
 
-// MERONYM_KIND_QUALIFIER's own three possible AttributeValue.value
-// strings -- word_seeder.ts's own relationshipKindForPointer picks one
-// per WordNet pointer symbol (%p/#p -> "part", %m/#m -> "member",
-// %s/#s -> "substance").
-export type MeronymKind = "part" | "member" | "substance";
+// MERONYM_KIND_QUALIFIER's own three possible qualifier values --
+// word_seeder.ts's own relationshipKindForPointer picks one per WordNet
+// pointer symbol (%p/#p -> PART, %m/#m -> MEMBER, %s/#s -> SUBSTANCE).
+// Numeric, WordFormField's own precedent (data/enums/word_forms_enum.ts)
+// for a small closed set of internal-only values -- meronymKindLabel()
+// below is what actually reaches AttributeValue.value (a Text, so
+// string-typed), the same "numeric enum + dedicated label function"
+// split that field's own wordFormFieldLabel() already established.
+export enum MeronymKind {
+  PART = 0,
+  MEMBER = 1,
+  SUBSTANCE = 2,
+}
+
+export function meronymKindLabel(kind: MeronymKind): string {
+  return MERONYM_KIND_LABELS[kind];
+}
+
+const MERONYM_KIND_LABELS: Record<MeronymKind, string> = {
+  [MeronymKind.PART]: "part",
+  [MeronymKind.MEMBER]: "member",
+  [MeronymKind.SUBSTANCE]: "substance",
+};

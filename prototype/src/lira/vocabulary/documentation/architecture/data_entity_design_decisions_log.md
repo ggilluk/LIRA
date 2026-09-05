@@ -2463,6 +2463,56 @@ deleted once nothing referenced it any more (confirmed via a
 repository-wide grep for `newUuid`/`data/uuid` turning up nothing else,
 this log's own historical entries aside).
 
+## `MeronymKind`: string union -> numeric enum, `data/enums/`
+
+Asked directly, after reporting a real-WordNet-seeded table of every
+`AttributeValue` name/value pair the codebase produces (only one name
+exists at all, `"meronymKind"`, always one of three values): make
+`MeronymKind` a real enum, alongside every other closed classification
+in `data/enums/`. It had been a bare string union
+(`"part" | "member" | "substance"`, `data/enums/lexical_relationship_type.ts`)
+-- the one exception to this codebase's own established rule that a
+closed, small, internal-only classification is a numeric `enum`
+(`WordFormField`'s own conversion, this log's own section on it, is the
+direct precedent for the exact split applied here).
+
+`MeronymKind` itself only ever needs to move through internal code
+(`relationshipKindForPointer()`'s own return value, threaded through
+`seedPointerRelationship()`/`copySemanticRelationship()`/`copyLexicalRelationship()`) --
+it becomes a string again only at the one point it actually leaves that
+internal path: `AttributeValue.value` is a `Text` (string-typed, by that
+type's own generic "any qualifier" contract, `data/attribute_value.ts`),
+so the numeric enum member has to render to its real lowercase spelling
+somewhere. New `meronymKindLabel()` does exactly that --
+`wordFormFieldLabel()`'s own identical shape (a `Record<Enum, string>`
+lookup table, one function reading it) -- called at the single
+`AttributeValue` construction site (`WordSeeder.seedPointerRelationship()`)
+instead of relying on the enum member's own text being the union
+value it used to be.
+
+`MERONYM_KIND_QUALIFIER` (the qualifier's own `name`, always literally
+`"meronymKind"`) is unaffected -- it was never part of the union this
+converts, just a sibling constant.
+
+`SemanticMeronymKind`/`SEMANTIC_MERONYM_KIND_QUALIFIER`
+(`data/enums/semantic_relationship_kind.ts`) were deliberately left
+untouched -- a duplicate-shaped declaration of the identical
+`"part" | "member" | "substance"` union under a different name, but
+never actually referenced by any real qualifier-construction code
+(only `MeronymKind`/`MERONYM_KIND_QUALIFIER`, from
+`lexical_relationship_type.ts`, are); out of this request's own named
+scope (`MeronymKind` specifically), and a separate, pre-existing
+duplication this didn't introduce.
+
+`npx tsc -b --force` clean. Full `vitest run --no-file-parallelism`:
+181/181, unchanged -- `meronymKindLabel()` reproduces the exact same
+`"part"`/`"member"`/`"substance"` strings the union literals used to be,
+so the existing real-WordNet-seeded assertion on those exact strings
+(`vocabulary.test.ts`'s own MERONYM-qualifier test) needed no change at
+all, and none of the six `relationshipKindForPointer()` call sites
+change behaviour, only which literal (`MeronymKind.PART` vs `"part"`)
+they write.
+
 `npx tsc -b --force` clean. Full `vitest run --no-file-parallelism`:
 181/181, unchanged -- this is a pure call-site substitution (same
 underlying `crypto.randomUUID()` either way), not a behavioural change,

@@ -58,7 +58,7 @@ import type { AttributeValue } from "../data/attribute_value";
 import type { Dictionary } from "../data/dictionary";
 import { MorphologicalPointerRelationshipStore } from "../data/morphological_pointer_relationship_store";
 import type { LexicalRelationshipStore } from "../data/lexical_relationship_store";
-import { LexicalRelationshipType, MERONYM_KIND_QUALIFIER, relationshipGroup, type MeronymKind } from "../data/enums/lexical_relationship_type";
+import { LexicalRelationshipType, MERONYM_KIND_QUALIFIER, MeronymKind, meronymKindLabel, relationshipGroup } from "../data/enums/lexical_relationship_type";
 import { SemanticRelationshipKind } from "../data/enums/semantic_relationship_kind";
 import { copyPhraseWithFreshUuid, createPhrase, graphUuid as phraseGraphUuid, type Phrase } from "../data/entities/phrase";
 import { PhraseType } from "../data/enums/phrase_type";
@@ -474,17 +474,17 @@ function relationshipKindForPointer(
     // `@i`/`~i` (instance-of) fall through to `default` -- deliberately
     // unrecognised, not seeded (this function's own docstring above).
     case "%p":
-      return { kind: LexicalRelationshipType.MERONYM, swap: true, meronymKind: "part" };
+      return { kind: LexicalRelationshipType.MERONYM, swap: true, meronymKind: MeronymKind.PART };
     case "%m":
-      return { kind: LexicalRelationshipType.MERONYM, swap: true, meronymKind: "member" };
+      return { kind: LexicalRelationshipType.MERONYM, swap: true, meronymKind: MeronymKind.MEMBER };
     case "%s":
-      return { kind: LexicalRelationshipType.MERONYM, swap: true, meronymKind: "substance" };
+      return { kind: LexicalRelationshipType.MERONYM, swap: true, meronymKind: MeronymKind.SUBSTANCE };
     case "#p":
-      return { kind: LexicalRelationshipType.MERONYM, swap: false, meronymKind: "part" };
+      return { kind: LexicalRelationshipType.MERONYM, swap: false, meronymKind: MeronymKind.PART };
     case "#m":
-      return { kind: LexicalRelationshipType.MERONYM, swap: false, meronymKind: "member" };
+      return { kind: LexicalRelationshipType.MERONYM, swap: false, meronymKind: MeronymKind.MEMBER };
     case "#s":
-      return { kind: LexicalRelationshipType.MERONYM, swap: false, meronymKind: "substance" };
+      return { kind: LexicalRelationshipType.MERONYM, swap: false, meronymKind: MeronymKind.SUBSTANCE };
     case "*":
       return { kind: LexicalRelationshipType.ENTAILMENT, swap: false };
     case ">":
@@ -1646,7 +1646,7 @@ export class WordSeeder {
     if (resolved === undefined) return 0;
 
     const qualifiers: readonly AttributeValue[] | undefined =
-      resolved.meronymKind !== undefined ? [{ name: { value: MERONYM_KIND_QUALIFIER }, value: { value: resolved.meronymKind } }] : undefined;
+      resolved.meronymKind !== undefined ? [{ name: { value: MERONYM_KIND_QUALIFIER }, value: { value: meronymKindLabel(resolved.meronymKind) } }] : undefined;
 
     this.copySemanticRelationship(semanticProcessor, semanticExistingEdges, synset, pointer, resolved, senseStore, qualifiers);
 
