@@ -101,15 +101,15 @@ export class WordForms {
     return this.textIndex.get(text.toLowerCase())?.slice() ?? [];
   }
 
-  /** The WordForm standing for `word`'s own `field`, if one has been
+  /** The WordForm standing for `word`'s own `formType`, if one has been
    * registered -- the pure read side registerNamedForm() below builds
    * its own find-or-create on top of. Also how every reader resolves a
    * fact that moved off Word onto its base-lemma WordForm (`senseIds`/
    * `synsetId`/`contractionOf`, each field's own docstring, data/entities/word_form.ts):
    * `wordForms.findNamedForm(word, WordFormType.BASE_LEMMA_CANONICAL_FORM)?.senseIds ?? []`,
    * baseLemmaFormOf() below's own shorthand for exactly that lookup. */
-  findNamedForm(word: Word, field: WordFormType): WordForm | undefined {
-    return this.formsOf(word).find((form) => form.field === field);
+  findNamedForm(word: Word, formType: WordFormType): WordForm | undefined {
+    return this.formsOf(word).find((form) => form.formType === formType);
   }
 
   /** findNamedForm()'s own `WordFormType.BASE_LEMMA_CANONICAL_FORM`
@@ -190,16 +190,16 @@ export class WordForms {
   }
 
   /** Idempotent find-or-create: the WordForm standing for `word`'s own
-   * `field` -- reuses `word`'s own existing entry for that field if one
-   * was already registered (by this call or any earlier one), rather
-   * than creating a duplicate on a re-seed. The one primitive every
-   * POS's own generateXForms()/hand-curated seeder call uses to store an
-   * inflected spelling -- registerBaseLemmaForm() below is just this,
-   * specialised to `WordFormType.BASE_LEMMA_CANONICAL_FORM`. */
-  registerNamedForm(word: Word, field: WordFormType, text: Text): WordForm {
-    const existing = this.findNamedForm(word, field);
+   * `formType` -- reuses `word`'s own existing entry for that form type
+   * if one was already registered (by this call or any earlier one),
+   * rather than creating a duplicate on a re-seed. The one primitive
+   * every POS's own generateXForms()/hand-curated seeder call uses to
+   * store an inflected spelling -- registerBaseLemmaForm() below is
+   * just this, specialised to `WordFormType.BASE_LEMMA_CANONICAL_FORM`. */
+  registerNamedForm(word: Word, formType: WordFormType, text: Text): WordForm {
+    const existing = this.findNamedForm(word, formType);
     if (existing !== undefined) return existing;
-    const form = createWordForm({ field, text });
+    const form = createWordForm({ formType, text });
     this.append(form);
     this.registerMember(form, word);
     return form;

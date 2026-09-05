@@ -33,11 +33,11 @@ export interface WordForm {
   // ── Classification ───────────────────────────────────────
 
   /**
-   * Which `*_Form` field this WordForm stands for -- the Word Form to
+   * Which `*_Form` type this WordForm stands for -- the Word Form to
    * Part of Speech Matrix's own single agreed list
    * (data/enums/word_forms_enum.ts, data/matrices/pos_vs_wordform_matrice.ts).
    */
-  field: WordFormType;
+  formType: WordFormType;
 
 
   // ── Data Attributes ──────────────────────────────────────

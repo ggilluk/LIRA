@@ -41,7 +41,7 @@ export function isAdverb(word: Word): word is Adverb {
 export function validateAdverb(adverb: Adverb, wordForms: WordForms): readonly WordFormIssue[] {
   const issues: WordFormIssue[] = [];
   for (const form of wordForms.formsOf(adverb)) {
-    const issue = validateFormText(form.field, form.text, stringPatternsFor(form.field, PartOfSpeech.ADVERB));
+    const issue = validateFormText(form.formType, form.text, stringPatternsFor(form.formType, PartOfSpeech.ADVERB));
     if (issue !== undefined) issues.push(issue);
   }
   return issues;
@@ -140,7 +140,7 @@ function isAdverbPeriphrasticComparison(lemma: string): boolean {
 export function generateAdverbForms(adverb: Adverb, gradable: boolean, wordForms: WordForms | undefined): Adverb {
   if (wordForms === undefined) return adverb;
   const lemma = adverb.text;
-  const has = (field: WordFormType): boolean => wordForms.formsOf(adverb).some((form) => form.field === field);
+  const has = (field: WordFormType): boolean => wordForms.formsOf(adverb).some((form) => form.formType === field);
 
   if (!has(WordFormType.POSITIVE_DEGREE_FORM)) wordForms.registerNamedForm(adverb, WordFormType.POSITIVE_DEGREE_FORM, { value: lemma });
 

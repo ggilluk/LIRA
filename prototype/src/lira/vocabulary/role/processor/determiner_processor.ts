@@ -29,7 +29,7 @@ export function isDeterminer(word: Word): word is Determiner {
 export function validateDeterminer(determiner: Determiner, wordForms: WordForms): readonly WordFormIssue[] {
   const issues: WordFormIssue[] = [];
   for (const form of wordForms.formsOf(determiner)) {
-    const issue = validateFormText(form.field, form.text, stringPatternsFor(form.field, PartOfSpeech.DETERMINER));
+    const issue = validateFormText(form.formType, form.text, stringPatternsFor(form.formType, PartOfSpeech.DETERMINER));
     if (issue !== undefined) issues.push(issue);
   }
   return issues;

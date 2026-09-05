@@ -57,7 +57,7 @@ export class PartOfSpeechIdentifier {
     }
 
     const formMatches: readonly { word: Word; field: WordFormType }[] =
-      this.wordForms?.lookupByText(context.normalisedText).map(({ word, form }) => ({ word, field: form.field })) ?? [];
+      this.wordForms?.lookupByText(context.normalisedText).map(({ word, form }) => ({ word, field: form.formType })) ?? [];
     const candidates: WordIdentifier[] = formMatches.map(({ word, field }) => ({
       word,
       partOfSpeech: word.partOfSpeech,

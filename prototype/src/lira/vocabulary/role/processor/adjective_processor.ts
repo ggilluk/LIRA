@@ -56,7 +56,7 @@ export function syntacticPositionForSense(senses: Senses, adjective: Adjective, 
 export function validateAdjective(adjective: Adjective, wordForms: WordForms): readonly WordFormIssue[] {
   const issues: WordFormIssue[] = [];
   for (const form of wordForms.formsOf(adjective)) {
-    const issue = validateFormText(form.field, form.text, stringPatternsFor(form.field, PartOfSpeech.ADJECTIVE));
+    const issue = validateFormText(form.formType, form.text, stringPatternsFor(form.formType, PartOfSpeech.ADJECTIVE));
     if (issue !== undefined) issues.push(issue);
   }
   return issues;
@@ -160,7 +160,7 @@ export function determineGradability(relationships: SemanticRelationshipStore, a
 export function generateAdjectiveForms(adjective: Adjective, gradable: boolean, wordForms: WordForms | undefined): Adjective {
   if (wordForms === undefined) return adjective;
   const lemma = adjective.text;
-  const has = (field: WordFormType): boolean => wordForms.formsOf(adjective).some((form) => form.field === field);
+  const has = (field: WordFormType): boolean => wordForms.formsOf(adjective).some((form) => form.formType === field);
 
   if (!has(WordFormType.POSITIVE_DEGREE_FORM)) wordForms.registerNamedForm(adjective, WordFormType.POSITIVE_DEGREE_FORM, { value: lemma });
 

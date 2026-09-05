@@ -29,7 +29,7 @@ export function isAuxiliary(word: Word): word is Auxiliary {
 export function validateAuxiliary(auxiliary: Auxiliary, wordForms: WordForms): readonly WordFormIssue[] {
   const issues: WordFormIssue[] = [];
   for (const form of wordForms.formsOf(auxiliary)) {
-    const issue = validateFormText(form.field, form.text, stringPatternsFor(form.field, PartOfSpeech.AUXILIARY));
+    const issue = validateFormText(form.formType, form.text, stringPatternsFor(form.formType, PartOfSpeech.AUXILIARY));
     if (issue !== undefined) issues.push(issue);
   }
   return issues;

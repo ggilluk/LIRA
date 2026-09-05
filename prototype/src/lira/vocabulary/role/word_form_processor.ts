@@ -17,16 +17,16 @@
 import { identifier } from "../../value_objects";
 import type { WordForm } from "../data/entities/word_form";
 
-// `field`/`text` are the two facts every WordForm must be authored
+// `formType`/`text` are the two facts every WordForm must be authored
 // with -- WordInit's own exact "Pick the real requirements, Partial the
 // rest" shape (role/word_processor.ts), not a bare `Partial<WordForm>`
 // the way SenseInit is (every one of Sense's own fields is already
 // optional, so Partial alone is enough there).
-export type WordFormInit = Pick<WordForm, "field" | "text"> & Partial<Omit<WordForm, "field" | "text">>;
+export type WordFormInit = Pick<WordForm, "formType" | "text"> & Partial<Omit<WordForm, "formType" | "text">>;
 
 // WordForms.registerBaseLemmaForm()'s own `extra` parameter shape --
 // every WordForm attribute that isn't required at creation time the way
-// `field`/`text` are, applied onto an already-registered WordForm
+// `formType`/`text` are, applied onto an already-registered WordForm
 // instead.
 export type WordFormAttributes = Partial<Pick<WordForm, "frequencyValue" | "frequencyScale">>;
 

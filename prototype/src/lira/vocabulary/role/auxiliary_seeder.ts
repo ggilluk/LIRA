@@ -490,7 +490,7 @@ export class AuxiliarySeeder {
         // `Text.languageStyleCode` instead), so this is attached per
         // WordForm rather than once on the Word the way it used to be.
         const form = createWordForm({
-          field: formSeed.field,
+          formType: formSeed.field,
           text: { value: formSeed.text, languageStyleCode: new LanguageStyleCode(LanguageStyleCodelist.NEUTRAL) },
         });
         this.wordForms?.append(form);

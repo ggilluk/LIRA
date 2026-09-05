@@ -66,7 +66,7 @@ import { DictionaryView } from "./ui/server/dictionary_controller";
 // of assigning a named scalar field -- this reads one back the same way
 // `word.field` used to, for test assertions.
 function formTextOf(wordForms: WordForms, word: Word, field: WordFormType) {
-  return wordForms.formsOf(word).find((form) => form.field === field)?.text;
+  return wordForms.formsOf(word).find((form) => form.formType === field)?.text;
 }
 
 // Word carries no `senseIds` of its own any more (WordForm's own
@@ -1201,7 +1201,7 @@ describe("PartOfSpeechIdentifier / DictionaryProcessor: inflected-form fallback"
     const matches = wordForms.lookupByText("ran");
     expect(matches).toHaveLength(1);
     expect(wordGraphUuid(matches[0].word)).toBe(wordGraphUuid(run));
-    expect(matches[0].form.field).toBe(WordFormType.PAST_TENSE_FORM);
+    expect(matches[0].form.formType).toBe(WordFormType.PAST_TENSE_FORM);
   });
 
   it("an exact match always wins outright over an inflected match, even when both exist for the same surface text", () => {
@@ -1447,13 +1447,13 @@ describe("WordSeeder against the bundled Common Vocabulary Cache", () => {
     const the = dictionary.lookup("the")!;
     if (!isDeterminer(the)) throw new Error("unreachable");
     const forms = wordForms.formsOf(the);
-    const baseLemma = forms.find((form) => form.field === WordFormType.BASE_LEMMA_CANONICAL_FORM);
+    const baseLemma = forms.find((form) => form.formType === WordFormType.BASE_LEMMA_CANONICAL_FORM);
     expect(baseLemma).toBeDefined();
     expect(baseLemma?.text).toEqual({ value: "the" });
     // Registered first, ahead of Singular/Plural/Consonant/Vowel-Sound
     // Form -- the same "keep it the first WordForm on record" ordering
     // every other seeded POS already follows.
-    expect(forms[0]?.field).toBe(WordFormType.BASE_LEMMA_CANONICAL_FORM);
+    expect(forms[0]?.formType).toBe(WordFormType.BASE_LEMMA_CANONICAL_FORM);
     expect(validateDeterminer(the, wordForms)).toEqual([]);
 
     // "a" -- a lemma whose own Singular Number Form differs from its
@@ -1462,7 +1462,7 @@ describe("WordSeeder against the bundled Common Vocabulary Cache", () => {
     // BASE_LEMMA_CANONICAL_FORM equal to the bare lemma "a", not "an".
     const a = dictionary.lookup("a")!;
     if (!isDeterminer(a)) throw new Error("unreachable");
-    expect(wordForms.formsOf(a).find((form) => form.field === WordFormType.BASE_LEMMA_CANONICAL_FORM)?.text).toEqual({ value: "a" });
+    expect(wordForms.formsOf(a).find((form) => form.formType === WordFormType.BASE_LEMMA_CANONICAL_FORM)?.text).toEqual({ value: "a" });
   });
 
   it("Conjunction.conjunctionType distinguishes coordinating_conjunctions.json from subordinating_conjunctions.json, per real bundled closed_class_kind data", () => {
@@ -2300,7 +2300,7 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // appears here unmodified.
     const toyPoodleHeadForm = wordForms.findByUuid(toyPoodle!.headWordForm!.value);
     expect(toyPoodleHeadForm?.text.value).toBe("poodle");
-    expect(toyPoodleHeadForm?.field).toBe(WordFormType.BASE_LEMMA_CANONICAL_FORM);
+    expect(toyPoodleHeadForm?.formType).toBe(WordFormType.BASE_LEMMA_CANONICAL_FORM);
     // Phrase.preModifier -- the one Modifier position ("toy") resolved
     // to the one WordForm on its own resolved Word spelled "toy"; nothing
     // sits after the Head, so postModifier stays undefined.

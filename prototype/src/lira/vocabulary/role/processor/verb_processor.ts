@@ -53,7 +53,7 @@ export function framesForSense(senses: Senses, verb: Verb, senseId: string): rea
 export function validateVerb(verb: Verb, wordForms: WordForms): readonly WordFormIssue[] {
   const issues: WordFormIssue[] = [];
   for (const form of wordForms.formsOf(verb)) {
-    const issue = validateFormText(form.field, form.text, stringPatternsFor(form.field, PartOfSpeech.VERB));
+    const issue = validateFormText(form.formType, form.text, stringPatternsFor(form.formType, PartOfSpeech.VERB));
     if (issue !== undefined) issues.push(issue);
   }
   return issues;
@@ -303,7 +303,7 @@ export function generateVerbForms(verb: Verb, wordForms: WordForms | undefined):
   if (wordForms === undefined) return verb;
   const lemma = verb.text;
   const irregular = IRREGULAR_VERB_FORMS[lemma];
-  const has = (field: WordFormType): boolean => wordForms.formsOf(verb).some((form) => form.field === field);
+  const has = (field: WordFormType): boolean => wordForms.formsOf(verb).some((form) => form.formType === field);
 
   if (!has(WordFormType.PRESENT_TENSE_FORM)) wordForms.registerNamedForm(verb, WordFormType.PRESENT_TENSE_FORM, { value: lemma });
 

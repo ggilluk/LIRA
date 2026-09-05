@@ -2622,3 +2622,53 @@ with no other line touched.
 `npx tsc -b --force` clean. Full `vitest run --no-file-parallelism`:
 181/181, unchanged -- pure identifier rename, no runtime behaviour or
 data shape affected.
+
+## `WordForm.field` renamed to `WordForm.formType`
+
+Follow-up to the `WordFormField` -> `WordFormType` enum rename above:
+asked to rename the entity property itself, `WordForm.field: WordFormType`,
+to `formType`. Scoped narrowly to the real `WordForm` entity (`data/entities/word_form.ts`)
+and every direct construction/read of it -- `WordFormInit`
+(`role/word_form_processor.ts`, `Pick<WordForm, "field" | ...>` ->
+`"formType"`), `WordForms.findNamedForm()`/`registerNamedForm()`
+(`data/word_forms.ts`, both their own `field` parameter and internal
+`form.field` reads renamed to `formType`, since these are the core
+Vocabulary Layer API real callers interact with directly), every POS
+processor's own `validateFormText(form.field, ...)`/`stringPatternsFor(form.field,
+...)` call (all seven `role/processor/*_processor.ts` files),
+`word_seeder.ts`'s `hasBothDegreeForms()`, `part_of_speech_identifier.ts`'s
+inflected-form fallback, `auxiliary_seeder.ts`'s direct `createWordForm()`
+call, and every real-`WordForm`-instance read in `vocabulary.test.ts`.
+
+Deliberately **not** renamed -- separate type declarations that happen
+to share the name `field` for their own, independent reasons, not
+forced to change just because the source `WordForm` property did:
+
+- `WordFormRow.field` (`data/matrices/pos_vs_wordform_matrice.ts`) --
+  a Word Form Matrix row's own classification, a different type.
+- `WordFormEntry.field` (`ui/server/builder_word.ts`) and the inline
+  `word_form: {field, label, value}` shape (`ui/server/builder_segment.ts`) --
+  client-facing JSON output shapes, `builder_word.ts`'s own docstring
+  already documenting `field` there as deliberately independent of
+  `WordForm`'s own naming.
+- `WordFormIssue.field` (`role/word_processor.ts`) -- a validation
+  issue's own shape.
+- Every client-side (`ui/client/*.ts`) `form.field`/`byField` access --
+  these read the JSON shapes above, never a real `WordForm` (client
+  code never sees one -- structured-clone/postMessage only ever carries
+  the plain JSON records `builder_word.ts`/`builder_segment.ts` build).
+- `AuxiliaryFormSeed.field`/`DeterminerFormSeed.field` (`role/auxiliary_seeder.ts`,
+  `role/determiner_seeder.ts`) -- each seeder's own local, hand-authored
+  seed-data shape, read at its own call sites (`formSeed.field`) and
+  passed *into* `registerNamedForm()`/`createWordForm()`'s now-renamed
+  parameter/property, not renamed themselves.
+
+Every one of those call sites that copies a value *from* a real
+`WordForm.formType` *into* one of these separately-named shapes was
+still updated (e.g. `builder_word.ts`'s `field: form.field` ->
+`field: form.formType` -- the output key `field` is unchanged, only the
+source read is).
+
+`npx tsc -b --force` clean. Full `vitest run --no-file-parallelism`:
+181/181, unchanged -- pure identifier rename, no runtime behaviour or
+data shape affected.

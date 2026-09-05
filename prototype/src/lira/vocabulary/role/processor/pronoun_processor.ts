@@ -28,7 +28,7 @@ export function isPronoun(word: Word): word is Pronoun {
 export function validatePronoun(pronoun: Pronoun, wordForms: WordForms): readonly WordFormIssue[] {
   const issues: WordFormIssue[] = [];
   for (const form of wordForms.formsOf(pronoun)) {
-    const issue = validateFormText(form.field, form.text, stringPatternsFor(form.field, PartOfSpeech.PRONOUN));
+    const issue = validateFormText(form.formType, form.text, stringPatternsFor(form.formType, PartOfSpeech.PRONOUN));
     if (issue !== undefined) issues.push(issue);
   }
   return issues;

@@ -34,7 +34,7 @@ export function isNoun(word: Word): word is Noun {
 export function validateNoun(noun: Noun, wordForms: WordForms): readonly WordFormIssue[] {
   const issues: WordFormIssue[] = [];
   for (const form of wordForms.formsOf(noun)) {
-    const issue = validateFormText(form.field, form.text, stringPatternsFor(form.field, PartOfSpeech.NOUN));
+    const issue = validateFormText(form.formType, form.text, stringPatternsFor(form.formType, PartOfSpeech.NOUN));
     if (issue !== undefined) issues.push(issue);
   }
   return issues;
@@ -98,7 +98,7 @@ function generatedPluralNumberForm(lemma: string): Text | undefined {
 export function generateNounForms(noun: Noun, wordForms: WordForms | undefined): Noun {
   if (wordForms === undefined) return noun;
   const lemma = noun.text;
-  const has = (field: WordFormType): boolean => wordForms.formsOf(noun).some((form) => form.field === field);
+  const has = (field: WordFormType): boolean => wordForms.formsOf(noun).some((form) => form.formType === field);
   if (!has(WordFormType.SINGULAR_NUMBER_FORM)) wordForms.registerNamedForm(noun, WordFormType.SINGULAR_NUMBER_FORM, { value: lemma });
   if (!has(WordFormType.PLURAL_NUMBER_FORM)) {
     const plural = generatedPluralNumberForm(lemma);

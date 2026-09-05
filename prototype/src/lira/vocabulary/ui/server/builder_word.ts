@@ -196,7 +196,7 @@ export interface WordRecord {
 }
 
 export interface WordFormEntry {
-  // `WordForm.field`'s own real type (data/entities/word_form.ts), not
+  // `WordForm.formType`'s own real type (data/entities/word_form.ts), not
   // a generic `string` -- every entry `wordFormsFor()` builds from a
   // real `WordForm` record carries its own genuine `WordFormType`
   // value here, unchanged. The one literal exception is
@@ -388,7 +388,7 @@ function wordFormsFor(word: Word, wordForms: WordForms, wordSenses: readonly Wor
   const forms: WordFormEntry[] = [];
   for (const form of wordForms.formsOf(word)) {
     const formSenses = form.senseIds.map((id) => senseById.get(id.value)).filter((sense): sense is WordSenseSummary => sense !== undefined);
-    forms.push({ field: form.field, label: wordFormTypeLabel(form.field), value: form.text.value, senses: formSenses });
+    forms.push({ field: form.formType, label: wordFormTypeLabel(form.formType), value: form.text.value, senses: formSenses });
   }
   // Noun.wordCharacterForms isn't a Word Form Matrix field (that
   // field's own docstring, data/entities/noun.ts) -- not spelling-derivable, so

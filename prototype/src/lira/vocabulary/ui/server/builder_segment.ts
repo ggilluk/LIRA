@@ -80,7 +80,7 @@ export function definitionWordSegment(
     pos: PartOfSpeech[resolved.partOfSpeech],
     domain: domainLabel(senses, domainName, resolved, wordForms),
     gloss: fields.gloss?.value ?? fields.definition?.value ?? "",
-    word_form: matchingForm && { field: matchingForm.field, label: wordFormTypeLabel(matchingForm.field), value: matchingForm.text.value },
+    word_form: matchingForm && { field: matchingForm.formType, label: wordFormTypeLabel(matchingForm.formType), value: matchingForm.text.value },
   };
 }
 

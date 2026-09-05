@@ -1,4 +1,4 @@
-/** The single closed set of `WordForm.field` names -- every row the
+/** The single closed set of `WordForm.formType` names -- every row the
  * Word Form to Part of Speech Matrix declares
  * (data/matrices/pos_vs_wordform_matrice.ts) names one of these, and
  * every `WordForm` record (data/entities/word_form.ts) carries one as

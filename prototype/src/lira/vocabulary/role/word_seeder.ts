@@ -1561,7 +1561,7 @@ export class WordSeeder {
     // only saves recomputing gradability for a Word that doesn't need it.
     const hasBothDegreeForms = (word: Word): boolean => {
       const forms = wordForms?.formsOf(word) ?? [];
-      return forms.some((f) => f.field === WordFormType.COMPARATIVE_DEGREE_FORM) && forms.some((f) => f.field === WordFormType.SUPERLATIVE_DEGREE_FORM);
+      return forms.some((f) => f.formType === WordFormType.COMPARATIVE_DEGREE_FORM) && forms.some((f) => f.formType === WordFormType.SUPERLATIVE_DEGREE_FORM);
     };
     for (const word of dictionary.all()) {
       if (isAdjective(word)) {
