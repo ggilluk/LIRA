@@ -105,9 +105,9 @@ export enum LexicalRelationshipType {
   // wheel, a %m member of some collection, say) couldn't be queried as
   // one list at all. WordSeeder.seedWordNet stores every part/member/
   // substance fact as this same MERONYM kind and records which one it
-  // is as a `meronymKind` qualifier (MERONYM_KIND_QUALIFIER below) on
-  // the LexicalRelationship's own `qualifiers` (data/lexical_relationship.ts) --
-  // the Common Vocabulary Cache's own hand-curated MERONYM/HOLONYM facts
+  // is as a `meronymKind` field (MeronymKindEnum below) directly on the
+  // LexicalRelationship itself (data/lexical_relationship.ts) -- the
+  // Common Vocabulary Cache's own hand-curated MERONYM/HOLONYM facts
   // simply leave it unset, same as they always have.
   // -- Manner (category 3)
   TROPONYM = 88,
@@ -172,35 +172,33 @@ export function relationshipItem(kind: LexicalRelationshipType): number {
   return kind & 0b111;
 }
 
-// The AttributeValue.name (data/attribute_value.ts) WordSeeder.seedWordNet
-// attaches to a MERONYM LexicalRelationship's own `qualifiers`, recording
-// which of WordNet's three part-whole pointer families (%p/%m/%s, or
-// their #p/#m/#s reciprocals) produced it -- MERONYM's own docstring
-// above on why this is a qualifier, not a separate relationship kind.
-// Absent (qualifiers stays []) for a hand-curated Common Vocabulary
-// Cache MERONYM/HOLONYM fact, which draws no such distinction.
-export const MERONYM_KIND_QUALIFIER = "meronymKind";
-
-// MERONYM_KIND_QUALIFIER's own three possible qualifier values --
-// word_seeder.ts's own relationshipKindForPointer picks one per WordNet
-// pointer symbol (%p/#p -> PART, %m/#m -> MEMBER, %s/#s -> SUBSTANCE).
-// Numeric, WordFormField's own precedent (data/enums/word_forms_enum.ts)
-// for a small closed set of internal-only values -- meronymKindLabel()
-// below is what actually reaches AttributeValue.value (a Text, so
-// string-typed), the same "numeric enum + dedicated label function"
-// split that field's own wordFormFieldLabel() already established.
-export enum MeronymKind {
+// `LexicalRelationship`/`MorphologicalPointerRelationship`/
+// `SemanticRelationship`'s own optional `meronymKind` field (each
+// entity's own docstring) -- which of WordNet's three part-whole
+// pointer families (%p/%m/%s, or their #p/#m/#s reciprocals) produced
+// a MERONYM edge -- MERONYM's own docstring above on why this is a
+// qualifying field, not a separate relationship kind. Undefined for a
+// hand-curated Common Vocabulary Cache MERONYM/HOLONYM fact, which
+// draws no such distinction. Numeric, WordFormField's own precedent
+// (data/enums/word_forms_enum.ts) for a small closed set of
+// internal-only values -- meronymKindLabel() below is the same
+// "numeric enum + dedicated label function" split that field's own
+// wordFormFieldLabel() already established, for wherever a caller
+// needs the human-readable spelling instead of the enum member itself
+// (the UI builders that surface this value to the Vocabulary tab, in
+// particular).
+export enum MeronymKindEnum {
   PART = 0,
   MEMBER = 1,
   SUBSTANCE = 2,
 }
 
-export function meronymKindLabel(kind: MeronymKind): string {
+export function meronymKindLabel(kind: MeronymKindEnum): string {
   return MERONYM_KIND_LABELS[kind];
 }
 
-const MERONYM_KIND_LABELS: Record<MeronymKind, string> = {
-  [MeronymKind.PART]: "part",
-  [MeronymKind.MEMBER]: "member",
-  [MeronymKind.SUBSTANCE]: "substance",
+const MERONYM_KIND_LABELS: Record<MeronymKindEnum, string> = {
+  [MeronymKindEnum.PART]: "part",
+  [MeronymKindEnum.MEMBER]: "member",
+  [MeronymKindEnum.SUBSTANCE]: "substance",
 };

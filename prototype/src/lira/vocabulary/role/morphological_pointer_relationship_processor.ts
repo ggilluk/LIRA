@@ -1,8 +1,7 @@
-import type { AttributeValue } from "../data/attribute_value";
 import type { MorphologicalPointerRelationship } from "../data/morphological_pointer_relationship";
 import type { MorphologicalPointerRelationshipStore } from "../data/morphological_pointer_relationship_store";
 import type { MorphologicalPointerRelationshipSystemPropertyTensor } from "../data/morphological_pointer_relationship_tensor";
-import type { LexicalRelationshipType } from "../data/enums/lexical_relationship_type";
+import type { LexicalRelationshipType, MeronymKindEnum } from "../data/enums/lexical_relationship_type";
 import type { SourceReference } from "../data/source_reference";
 import { SystemPropertiesRef } from "../data/system_properties_ref";
 
@@ -23,7 +22,7 @@ export class MorphologicalPointerRelationshipProcessor {
     relationshipType: LexicalRelationshipType;
     sourceReferences: readonly SourceReference[];
     inverseRelationshipType?: LexicalRelationshipType;
-    qualifiers?: readonly AttributeValue[];
+    meronymKind?: MeronymKindEnum;
     confidence?: number;
     provenance?: number;
     temporal?: number;
@@ -48,7 +47,7 @@ export class MorphologicalPointerRelationshipProcessor {
       sourceReferences: options.sourceReferences,
       systemProperties: new SystemPropertiesRef(this.tensor, row),
       inverseRelationshipType: options.inverseRelationshipType,
-      qualifiers: options.qualifiers ?? [],
+      meronymKind: options.meronymKind,
     };
     this.store.add(relationship);
     return relationship;

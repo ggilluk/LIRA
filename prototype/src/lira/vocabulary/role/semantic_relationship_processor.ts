@@ -1,4 +1,4 @@
-import type { AttributeValue } from "../data/attribute_value";
+import type { MeronymKindEnum } from "../data/enums/lexical_relationship_type";
 import type { SemanticRelationshipKind } from "../data/enums/semantic_relationship_kind";
 import type { SemanticRelationship } from "../data/semantic_relationship";
 import type { SemanticRelationshipSystemPropertyTensor } from "../data/semantic_relationship_tensor";
@@ -21,7 +21,7 @@ export class SemanticRelationshipProcessor {
     relationshipType: SemanticRelationshipKind;
     sourceReferences: readonly SourceReference[];
     inverseRelationshipType?: SemanticRelationshipKind;
-    qualifiers?: readonly AttributeValue[];
+    meronymKind?: MeronymKindEnum;
     confidence?: number;
     provenance?: number;
     temporal?: number;
@@ -46,7 +46,7 @@ export class SemanticRelationshipProcessor {
       sourceReferences: options.sourceReferences,
       systemProperties: new SystemPropertiesRef(this.tensor, row),
       inverseRelationshipType: options.inverseRelationshipType,
-      qualifiers: options.qualifiers ?? [],
+      meronymKind: options.meronymKind,
     };
     this.store.add(relationship);
     return relationship;

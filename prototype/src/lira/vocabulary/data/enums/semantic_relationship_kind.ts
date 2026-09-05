@@ -50,10 +50,3 @@ export enum SemanticRelationshipKind {
   USAGE_DOMAIN = 15,
   PERTAINYM = 16,
 }
-
-// SemanticRelationship's own MERONYM_KIND_QUALIFIER-style qualifier --
-// MERONYM's own docstring (lexical_relationship_type.ts) has the full
-// "one kind, three real-world distinctions" reasoning; unchanged by the
-// relocation here.
-export const SEMANTIC_MERONYM_KIND_QUALIFIER = "meronymKind";
-export type SemanticMeronymKind = "part" | "member" | "substance";

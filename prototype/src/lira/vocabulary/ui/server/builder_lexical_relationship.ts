@@ -11,7 +11,7 @@
  * -- unlike `relationshipRecordFor()`'s own hardcoded `group: 1`, this
  * enum still has real Morphological/Orthographic groups to report. */
 
-import { LexicalRelationshipType, MERONYM_KIND_QUALIFIER, relationshipCategory, relationshipGroup } from "../../data/enums/lexical_relationship_type";
+import { LexicalRelationshipType, meronymKindLabel, relationshipCategory, relationshipGroup } from "../../data/enums/lexical_relationship_type";
 import { PartOfSpeech } from "../../data/enums/part_of_speech";
 import type { Dictionary } from "../../data/dictionary";
 import type { LexicalRelationship } from "../../data/lexical_relationship";
@@ -118,7 +118,7 @@ export function lexicalRelationshipRecordFor(
     group: relationshipGroup(rel.relationshipType),
     category: relationshipCategory(rel.relationshipType),
     confidence: Math.round(rel.systemProperties.confidenceWeight * 10000) / 10000,
-    qualifier: rel.qualifiers.find((q) => q.name.value === MERONYM_KIND_QUALIFIER)?.value.value ?? null,
+    qualifier: rel.meronymKind !== undefined ? meronymKindLabel(rel.meronymKind) : null,
     via_sense_id: null,
   };
 }

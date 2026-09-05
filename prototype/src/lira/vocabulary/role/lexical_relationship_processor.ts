@@ -1,8 +1,7 @@
-import type { AttributeValue } from "../data/attribute_value";
 import type { LexicalRelationship } from "../data/lexical_relationship";
 import type { LexicalRelationshipStore } from "../data/lexical_relationship_store";
 import type { LexicalRelationshipSystemPropertyTensor } from "../data/lexical_relationship_tensor";
-import type { LexicalRelationshipType } from "../data/enums/lexical_relationship_type";
+import type { LexicalRelationshipType, MeronymKindEnum } from "../data/enums/lexical_relationship_type";
 import type { SourceReference } from "../data/source_reference";
 import { SystemPropertiesRef } from "../data/system_properties_ref";
 
@@ -24,7 +23,7 @@ export class LexicalRelationshipProcessor {
     relationshipType: LexicalRelationshipType;
     sourceReferences: readonly SourceReference[];
     inverseRelationshipType?: LexicalRelationshipType;
-    qualifiers?: readonly AttributeValue[];
+    meronymKind?: MeronymKindEnum;
     confidence?: number;
     provenance?: number;
     temporal?: number;
@@ -51,7 +50,7 @@ export class LexicalRelationshipProcessor {
       sourceReferences: options.sourceReferences,
       systemProperties: new SystemPropertiesRef(this.tensor, row),
       inverseRelationshipType: options.inverseRelationshipType,
-      qualifiers: options.qualifiers ?? [],
+      meronymKind: options.meronymKind,
     };
     this.store.add(relationship);
     return relationship;

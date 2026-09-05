@@ -3,7 +3,7 @@ import type { Identifier } from "../value_objects";
 import { Dictionary } from "./data/dictionary";
 import { MorphologicalPointerRelationshipStore } from "./data/morphological_pointer_relationship_store";
 import { MorphologicalPointerRelationshipSystemPropertyTensor } from "./data/morphological_pointer_relationship_tensor";
-import { LexicalRelationshipType } from "./data/enums/lexical_relationship_type";
+import { LexicalRelationshipType, MeronymKindEnum } from "./data/enums/lexical_relationship_type";
 import { SemanticRelationshipStore } from "./data/semantic_relationship_store";
 import { SemanticRelationshipSystemPropertyTensor } from "./data/semantic_relationship_tensor";
 import { SemanticRelationshipKind } from "./data/enums/semantic_relationship_kind";
@@ -2103,15 +2103,13 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     }
 
     // The part/member/substance distinction WordNet itself draws is
-    // recorded as a `meronymKind` qualifier on the shared MERONYM kind,
-    // not three separate relationship kinds (MERONYM's own docstring) --
+    // recorded as a `meronymKind` field on the shared MERONYM kind, not
+    // three separate relationship kinds (MERONYM's own docstring) --
     // every seeded MERONYM edge should carry exactly one.
     const meronymEdges = morphologicalPointerRelationships.all().filter((r) => r.relationshipType === LexicalRelationshipType.MERONYM);
     expect(meronymEdges.length).toBeGreaterThan(0);
-    const seenMeronymKinds = new Set(
-      meronymEdges.map((r) => r.qualifiers.find((q) => q.name.value === "meronymKind")?.value.value),
-    );
-    expect(seenMeronymKinds).toEqual(new Set(["part", "member", "substance"]));
+    const seenMeronymKinds = new Set(meronymEdges.map((r) => r.meronymKind));
+    expect(seenMeronymKinds).toEqual(new Set([MeronymKindEnum.PART, MeronymKindEnum.MEMBER, MeronymKindEnum.SUBSTANCE]));
 
     // MERONYM's own stored direction is (part, MERONYM, whole) --
     // relationshipKindForPointer's own docstring, and the Common

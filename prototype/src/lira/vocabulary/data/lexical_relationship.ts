@@ -1,6 +1,5 @@
 import type { Identifier, Text } from "../../value_objects";
-import type { AttributeValue } from "./attribute_value";
-import type { LexicalRelationshipType } from "./enums/lexical_relationship_type";
+import type { LexicalRelationshipType, MeronymKindEnum } from "./enums/lexical_relationship_type";
 import type { SourceReference } from "./source_reference";
 import type { SystemPropertiesRef } from "./system_properties_ref";
 
@@ -43,5 +42,9 @@ export interface LexicalRelationship {
   systemProperties: SystemPropertiesRef;
 
   inverseRelationshipType?: LexicalRelationshipType;
-  qualifiers: readonly AttributeValue[];
+  // Which of WordNet's three part-whole pointer families (%p/%m/%s, or
+  // their #p/#m/#s reciprocals) produced this edge, set only when
+  // `relationshipType` is MERONYM and only for a WordNet-seeded fact --
+  // MeronymKindEnum's own docstring (enums/lexical_relationship_type.ts).
+  meronymKind?: MeronymKindEnum;
 }

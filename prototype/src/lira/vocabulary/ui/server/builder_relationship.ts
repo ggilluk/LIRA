@@ -4,7 +4,8 @@
  * senseExpandedRelationships and the public methods searchRelationships/
  * relationshipKindCounts). */
 
-import { SemanticRelationshipKind, SEMANTIC_MERONYM_KIND_QUALIFIER } from "../../data/enums/semantic_relationship_kind";
+import { meronymKindLabel } from "../../data/enums/lexical_relationship_type";
+import { SemanticRelationshipKind } from "../../data/enums/semantic_relationship_kind";
 import { PartOfSpeech } from "../../data/enums/part_of_speech";
 import type { Dictionary } from "../../data/dictionary";
 import type { Phrases } from "../../data/phrases";
@@ -62,12 +63,12 @@ export interface RelationshipRecord {
   group: number;
   category: number;
   confidence: number;
-  // MERONYM_KIND_QUALIFIER's own value ("part"/"member"/"substance") for
-  // a WordNet-seeded MERONYM edge, or null for every other kind and for
-  // a hand-curated Common Vocabulary Cache MERONYM/HOLONYM fact (which
-  // draws no such distinction) -- lexical_relationship_type.ts's own
-  // MERONYM docstring on why this rides as a qualifier rather than its
-  // own relationship kind.
+  // meronymKindLabel() of this edge's own `meronymKind` ("part"/"member"/
+  // "substance") for a WordNet-seeded MERONYM edge, or null for every
+  // other kind and for a hand-curated Common Vocabulary Cache MERONYM/
+  // HOLONYM fact (which draws no such distinction) --
+  // lexical_relationship_type.ts's own MERONYM docstring on why this
+  // rides as a qualifying field rather than its own relationship kind.
   qualifier: string | null;
   // Which of the *subject* Word/Phrase's own several Senses
   // (Word.senseIds's own docstring) this row's edge actually came from
@@ -168,7 +169,7 @@ export function relationshipRecordFor(
     group: 1,
     category: 0,
     confidence: Math.round(rel.systemProperties.confidenceWeight * 10000) / 10000,
-    qualifier: rel.qualifiers.find((q) => q.name.value === SEMANTIC_MERONYM_KIND_QUALIFIER)?.value.value ?? null,
+    qualifier: rel.meronymKind !== undefined ? meronymKindLabel(rel.meronymKind) : null,
     via_sense_id: null,
   };
 }

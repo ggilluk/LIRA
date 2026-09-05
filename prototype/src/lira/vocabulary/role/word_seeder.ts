@@ -54,11 +54,10 @@ import { InterrogativeRootWord } from "../data/enums/interrogative_root_word";
 import { VectorPrimitiveRootWord } from "../data/enums/vector_primitive_root_word";
 import { VERB_FRAME_TEXT } from "../data/enums/verb_framed_example_template";
 import { LanguageStyleCodelist, type Identifier, type Text } from "../../value_objects";
-import type { AttributeValue } from "../data/attribute_value";
 import type { Dictionary } from "../data/dictionary";
 import { MorphologicalPointerRelationshipStore } from "../data/morphological_pointer_relationship_store";
 import type { LexicalRelationshipStore } from "../data/lexical_relationship_store";
-import { LexicalRelationshipType, MERONYM_KIND_QUALIFIER, MeronymKind, meronymKindLabel, relationshipGroup } from "../data/enums/lexical_relationship_type";
+import { LexicalRelationshipType, MeronymKindEnum, relationshipGroup } from "../data/enums/lexical_relationship_type";
 import { SemanticRelationshipKind } from "../data/enums/semantic_relationship_kind";
 import { copyPhraseWithFreshUuid, createPhrase, graphUuid as phraseGraphUuid, type Phrase } from "../data/entities/phrase";
 import { PhraseType } from "../data/enums/phrase_type";
@@ -420,11 +419,12 @@ function hasReciprocalDerivationEdge(
  * contains it), not the other way around.
  *
  * `meronymKind`, set only for the six meronym/holonym symbols, is the
- * MERONYM_KIND_QUALIFIER value seedPointerRelationship attaches to the
- * resulting edge's own `qualifiers` -- MERONYM's own docstring
- * (lexical_relationship_type.ts) on why "part of a larger whole" vs.
- * "member of a group" vs. "substance a whole is made of" is a property
- * of one MERONYM fact, not three separate relationship kinds. */
+ * MeronymKindEnum value seedPointerRelationship attaches directly to
+ * the resulting edge's own `meronymKind` field -- MERONYM's own
+ * docstring (lexical_relationship_type.ts) on why "part of a larger
+ * whole" vs. "member of a group" vs. "substance a whole is made of" is
+ * a property of one MERONYM fact, not three separate relationship
+ * kinds. */
 
 // Every LexicalRelationshipType that also names a true sense-to-sense
 // semantic fact gets its own SemanticRelationshipKind counterpart here
@@ -463,7 +463,7 @@ function relationshipKindForPointer(
   symbol: string,
   sourcePos: PartOfSpeech,
   targetPos: PartOfSpeech,
-): { kind: LexicalRelationshipType; swap: boolean; meronymKind?: MeronymKind } | undefined {
+): { kind: LexicalRelationshipType; swap: boolean; meronymKind?: MeronymKindEnum } | undefined {
   switch (symbol) {
     case "!":
       return { kind: LexicalRelationshipType.ANTONYM, swap: false };
@@ -474,17 +474,17 @@ function relationshipKindForPointer(
     // `@i`/`~i` (instance-of) fall through to `default` -- deliberately
     // unrecognised, not seeded (this function's own docstring above).
     case "%p":
-      return { kind: LexicalRelationshipType.MERONYM, swap: true, meronymKind: MeronymKind.PART };
+      return { kind: LexicalRelationshipType.MERONYM, swap: true, meronymKind: MeronymKindEnum.PART };
     case "%m":
-      return { kind: LexicalRelationshipType.MERONYM, swap: true, meronymKind: MeronymKind.MEMBER };
+      return { kind: LexicalRelationshipType.MERONYM, swap: true, meronymKind: MeronymKindEnum.MEMBER };
     case "%s":
-      return { kind: LexicalRelationshipType.MERONYM, swap: true, meronymKind: MeronymKind.SUBSTANCE };
+      return { kind: LexicalRelationshipType.MERONYM, swap: true, meronymKind: MeronymKindEnum.SUBSTANCE };
     case "#p":
-      return { kind: LexicalRelationshipType.MERONYM, swap: false, meronymKind: MeronymKind.PART };
+      return { kind: LexicalRelationshipType.MERONYM, swap: false, meronymKind: MeronymKindEnum.PART };
     case "#m":
-      return { kind: LexicalRelationshipType.MERONYM, swap: false, meronymKind: MeronymKind.MEMBER };
+      return { kind: LexicalRelationshipType.MERONYM, swap: false, meronymKind: MeronymKindEnum.MEMBER };
     case "#s":
-      return { kind: LexicalRelationshipType.MERONYM, swap: false, meronymKind: MeronymKind.SUBSTANCE };
+      return { kind: LexicalRelationshipType.MERONYM, swap: false, meronymKind: MeronymKindEnum.SUBSTANCE };
     case "*":
       return { kind: LexicalRelationshipType.ENTAILMENT, swap: false };
     case ">":
@@ -1645,17 +1645,14 @@ export class WordSeeder {
     const resolved = relationshipKindForPointer(pointer.symbol, synset.partOfSpeech, memberPartOfSpeech(targetMembers[0], phraseBook));
     if (resolved === undefined) return 0;
 
-    const qualifiers: readonly AttributeValue[] | undefined =
-      resolved.meronymKind !== undefined ? [{ name: { value: MERONYM_KIND_QUALIFIER }, value: { value: meronymKindLabel(resolved.meronymKind) } }] : undefined;
-
-    this.copySemanticRelationship(semanticProcessor, semanticExistingEdges, synset, pointer, resolved, senseStore, qualifiers);
+    this.copySemanticRelationship(semanticProcessor, semanticExistingEdges, synset, pointer, resolved, senseStore, resolved.meronymKind);
 
     if (pointer.sourceWordIndex === 0 && pointer.targetWordIndex === 0 && relationshipGroup(resolved.kind) === 1) {
       const sourceSense = senseStore.findBySynsetId(synset.synsetId);
       const targetSense = senseStore.findBySynsetId(pointer.targetSynsetId);
       if (sourceSense === undefined || targetSense === undefined || senseGraphUuid(sourceSense) === senseGraphUuid(targetSense)) return 0;
       const pair: readonly [Sense, Sense] = resolved.swap ? [targetSense, sourceSense] : [sourceSense, targetSense];
-      return this.createEdges(processor, existingEdges, resolved.kind, [pair], qualifiers);
+      return this.createEdges(processor, existingEdges, resolved.kind, [pair], resolved.meronymKind);
     }
 
     const sourceWords = pointer.sourceWordIndex === 0 ? sourceMembers : indexedWord(sourceMembers, pointer.sourceWordIndex);
@@ -1681,11 +1678,11 @@ export class WordSeeder {
         senseStore,
         wordForms,
         pairs,
-        qualifiers,
+        resolved.meronymKind,
       );
     }
 
-    return this.createEdges(processor, existingEdges, resolved.kind, pairs, qualifiers);
+    return this.createEdges(processor, existingEdges, resolved.kind, pairs, resolved.meronymKind);
   }
 
   /** Copies one resolved pointer's own fact into a permanent
@@ -1767,13 +1764,13 @@ export class WordSeeder {
     lexicalExistingEdges: Set<string>,
     synset: WordNetSynset,
     pointer: WordNetPointer,
-    resolved: { kind: LexicalRelationshipType; swap: boolean; meronymKind?: MeronymKind },
+    resolved: { kind: LexicalRelationshipType; swap: boolean; meronymKind?: MeronymKindEnum },
     sourcePos: PartOfSpeech,
     targetPos: PartOfSpeech,
     senseStore: Senses,
     wordForms: WordForms,
     pairs: readonly (readonly [Word | Phrase, Word | Phrase])[],
-    qualifiers: readonly AttributeValue[] | undefined,
+    meronymKind: MeronymKindEnum | undefined,
   ): void {
     if (DERIVATION_FAMILY.has(resolved.kind) && sourcePos !== targetPos && derivationBasePrecedence(targetPos) < derivationBasePrecedence(sourcePos)) {
       return;
@@ -1808,7 +1805,7 @@ export class WordSeeder {
         targetSenseId: targetSideSenseUuid,
         relationshipType: resolved.kind,
         sourceReferences: [WORDNET_SOURCE_REFERENCE],
-        qualifiers,
+        meronymKind,
         confidence: WORDNET_SEEDER_DEFAULT_WEIGHT,
         provenance: WORDNET_SEEDER_DEFAULT_WEIGHT,
         temporal: WORDNET_SEEDER_DEFAULT_WEIGHT,
@@ -1844,9 +1841,9 @@ export class WordSeeder {
     semanticExistingEdges: Set<string>,
     synset: WordNetSynset,
     pointer: WordNetPointer,
-    resolved: { kind: LexicalRelationshipType; swap: boolean; meronymKind?: MeronymKind },
+    resolved: { kind: LexicalRelationshipType; swap: boolean; meronymKind?: MeronymKindEnum },
     senseStore: Senses,
-    qualifiers: readonly AttributeValue[] | undefined,
+    meronymKind: MeronymKindEnum | undefined,
   ): void {
     const semanticKind = LEXICAL_TO_SEMANTIC_KIND[resolved.kind];
     if (semanticKind === undefined) return;
@@ -1864,7 +1861,7 @@ export class WordSeeder {
       targetSenseId: targetUuid,
       relationshipType: semanticKind,
       sourceReferences: [WORDNET_SOURCE_REFERENCE],
-      qualifiers,
+      meronymKind,
       confidence: WORDNET_SEEDER_DEFAULT_WEIGHT,
       provenance: WORDNET_SEEDER_DEFAULT_WEIGHT,
       temporal: WORDNET_SEEDER_DEFAULT_WEIGHT,
@@ -1955,7 +1952,7 @@ export class WordSeeder {
     existingEdges: Set<string>,
     kind: LexicalRelationshipType,
     pairs: Iterable<readonly [RelationshipEndpoint, RelationshipEndpoint]>,
-    qualifiers?: readonly AttributeValue[],
+    meronymKind?: MeronymKindEnum,
   ): number {
     const symmetric = SYMMETRIC_RELATIONSHIP_KINDS.has(kind);
     let created = 0;
@@ -1970,7 +1967,7 @@ export class WordSeeder {
         targetWordId: targetUuid,
         relationshipType: kind,
         sourceReferences: [WORDNET_SOURCE_REFERENCE],
-        qualifiers,
+        meronymKind,
         confidence: WORDNET_SEEDER_DEFAULT_WEIGHT,
         provenance: WORDNET_SEEDER_DEFAULT_WEIGHT,
         temporal: WORDNET_SEEDER_DEFAULT_WEIGHT,

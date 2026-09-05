@@ -21,7 +21,6 @@ export { WordSeeder } from "./role/word_seeder";
 export { type WordInit, createWord, copyWordWithFreshUuid, definitionWords } from "./role/word_processor";
 export { loadWordNetSynsets, type WordNetSynset } from "./role/wordnet_loader";
 
-export type { AttributeValue } from "./data/attribute_value";
 export { type DefinitionWordReference, isResolved } from "./data/definition_word_reference";
 export { Dictionary } from "./data/dictionary";
 export { EditorialLabel } from "./data/enums/editorial_label";
@@ -40,12 +39,12 @@ export { MorphologicalPointerRelationshipSystemPropertyTensor } from "./data/mor
 export type { LexicalRelationship } from "./data/lexical_relationship";
 export { LexicalRelationshipStore } from "./data/lexical_relationship_store";
 export { LexicalRelationshipProcessor } from "./role/lexical_relationship_processor";
-export { LexicalRelationshipType, relationshipCategory, relationshipGroup, relationshipItem } from "./data/enums/lexical_relationship_type";
+export { LexicalRelationshipType, MeronymKindEnum, meronymKindLabel, relationshipCategory, relationshipGroup, relationshipItem } from "./data/enums/lexical_relationship_type";
 export { PartOfSpeech } from "./data/enums/part_of_speech";
 export type { SemanticRelationship } from "./data/semantic_relationship";
 export { SemanticRelationshipStore } from "./data/semantic_relationship_store";
 export { SemanticRelationshipSystemPropertyTensor } from "./data/semantic_relationship_tensor";
-export { SemanticRelationshipKind, SEMANTIC_MERONYM_KIND_QUALIFIER, type SemanticMeronymKind } from "./data/enums/semantic_relationship_kind";
+export { SemanticRelationshipKind } from "./data/enums/semantic_relationship_kind";
 export type { SourceReference } from "./data/source_reference";
 export { SystemPropertiesRef } from "./data/system_properties_ref";
 export { VectorPrimitiveRootWord } from "./data/enums/vector_primitive_root_word";

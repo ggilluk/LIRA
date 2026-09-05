@@ -2517,3 +2517,82 @@ they write.
 181/181, unchanged -- this is a pure call-site substitution (same
 underlying `crypto.randomUUID()` either way), not a behavioural change,
 so no test needed updating or adding.
+
+## `AttributeValue`/`qualifiers` collapsed into a direct `meronymKind` field, `data/attribute_value.ts` deleted
+
+Follow-up to the `MeronymKind` -> `MeronymKindEnum` conversion above.
+Asked to rename `AttributeValue` -- a fully generic `{name: Text, value:
+Text}` qualifier struct, attached as `qualifiers: readonly
+AttributeValue[]` to all three relationship kinds
+(`LexicalRelationship`/`MorphologicalPointerRelationship`/`SemanticRelationship`),
+speced (Vocabulary Layer developer specification 7.3) as an open-ended
+"attach any future typed qualifier" extensibility point. Flagged before
+acting: the requested new name (`SemanticMeronymKind`) both mis-describes
+a type used across all three relationship kinds (not semantic-specific)
+and collides with the *other*, separate, pre-existing
+`SemanticMeronymKind`/`SEMANTIC_MERONYM_KIND_QUALIFIER` duplicate this
+same log's own previous section had already flagged as unused. Resolved
+by recommendation, then implementing exactly what the user actually
+wanted once clarified: since a real-WordNet-seed tally (this log's own
+prior "make a table" request) had already shown `qualifiers` never
+carries more than one real fact in this entire codebase -- the
+`meronymKind` qualifier, nothing else, ever -- the generic array-of-
+qualifiers mechanism was pure indirection for a single always-present-
+or-absent fact. Collapsed it to a direct field instead of renaming the
+generic type at all.
+
+- `LexicalRelationship`/`MorphologicalPointerRelationship`/`SemanticRelationship`'s
+  own `qualifiers: readonly AttributeValue[]` -> `meronymKind?: MeronymKindEnum`,
+  a single optional field, directly typed, no `Text` boxing.
+- `data/attribute_value.ts` deleted outright -- nothing constructs an
+  `AttributeValue` any more anywhere in the codebase.
+- `MERONYM_KIND_QUALIFIER` (`"meronymKind"` string constant,
+  `lexical_relationship_type.ts`) deleted -- it only ever existed to
+  name the one qualifier a caller had to string-match for; a real field
+  name doesn't need one.
+- The *other* pre-existing duplicate, `SemanticMeronymKind`/
+  `SEMANTIC_MERONYM_KIND_QUALIFIER` (`data/enums/semantic_relationship_kind.ts`),
+  deleted too -- this is what actually resolves the collision the
+  requested rename ran into: nothing is left named `SemanticMeronymKind`
+  anywhere afterward. (Its own `SEMANTIC_MERONYM_KIND_QUALIFIER`
+  constant turned out to have one real caller after all,
+  `builder_relationship.ts`'s own qualifier lookup -- corrected an
+  earlier, wrong "fully unused" read of it from this log's prior
+  section; folded onto the single `meronymKindLabel()` call the direct
+  field now uses instead.)
+- The 3 relationship processors' own `create()` options: `qualifiers?:
+  readonly AttributeValue[]` -> `meronymKind?: MeronymKindEnum`, passed
+  straight through instead of defaulted to `[]`.
+- `word_seeder.ts`: the local `qualifiers` array built once in
+  `seedPointerRelationship()` and threaded through
+  `copySemanticRelationship()`/`copyLexicalRelationship()`/`createEdges()`
+  is gone -- each now takes `meronymKind: MeronymKindEnum | undefined`
+  directly and passes `resolved.meronymKind` straight through, no
+  intermediate array-wrapping or `meronymKindLabel()` call needed at
+  construction time any more (the enum member is stored as-is; only a
+  *reader* that wants the human spelling calls that function now).
+  `MERONYM_KIND_QUALIFIER`/`AttributeValue` imports removed.
+- `ui/server/builder_lexical_relationship.ts` and
+  `ui/server/builder_relationship.ts`: `rel.qualifiers.find((q) =>
+  q.name.value === X)?.value.value ?? null` -> `rel.meronymKind !==
+  undefined ? meronymKindLabel(rel.meronymKind) : null` -- same output
+  shape (`qualifier: string | null`) client code already consumes,
+  simpler to read, and compiler-checked against a real enum instead of
+  a string literal.
+
+Deliberate trade-off, stated to the user before implementing: this
+narrows the data model from "a relationship can carry any future
+qualifier" (the original spec's own intent) to "a relationship can
+carry *only* a meronym kind." A second qualifier, if one is ever
+needed, means adding another named field, not extending an array. Given
+`qualifiers` has never carried a second kind of fact across this
+codebase's entire seeded dataset, accepted as a good trade for the
+simplification -- but recorded here since it's a genuine narrowing, not
+a pure refactor.
+
+`npx tsc -b --force` clean. Full `vitest run --no-file-parallelism`:
+181/181 -- the one test that read `.qualifiers` directly (`vocabulary.test.ts`'s
+own MERONYM test) now reads `.meronymKind` and compares against
+`MeronymKindEnum` members instead of raw strings; nothing else changed,
+confirming this really is a pure representational collapse, not a
+behavioural one.
