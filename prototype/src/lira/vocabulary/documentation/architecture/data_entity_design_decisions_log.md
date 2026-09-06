@@ -2672,3 +2672,97 @@ source read is).
 `npx tsc -b --force` clean. Full `vitest run --no-file-parallelism`:
 181/181, unchanged -- pure identifier rename, no runtime behaviour or
 data shape affected.
+
+## Two token-resolution gaps, uncovered while verifying the Linguistics Layer's clause-embedding work
+
+Both found empirically, running the real bundled WordNet + closed-class
+seed through `LinguisticController.readSentence()` (not a hand-seeded
+stand-in) against the two reported sentences from this session's own
+"Four grammar-template gaps" paragraph
+(linguistics/documentation/architecture/data_entity_design_decisions_log.md) --
+neither is really about clause embedding itself, but each independently
+blocked one of the two sentences from resolving correctly, so both were
+root-caused and fixed here before that feature could be verified.
+
+**Gap 1 -- `shouldDoubleFinalConsonant()`'s own "abstain" case was
+correct but too broad.** "Did what happened yesterday surprise you?"
+read `UNRESOLVED`: `"happened" has no seeded or hydrated part of speech
+yet`. Traced to `generatedVerbForms()` -> `regularEdForm("happen")` ->
+`shouldDoubleFinalConsonant("happen")`: "happen" ends
+consonant-vowel-consonant but isn't monosyllabic, so the function
+correctly abstains rather than guess whether it doubles ("occur" ->
+"occurred" does, "happen" -> "happened" doesn't, identical spelling
+test, genuinely different stress) -- but `regularEdForm` treats "abstain"
+as "generate nothing at all", so "happen" (a hugely common, everyday
+regular verb) never got a past-tense WordForm registered, period.
+
+Enumerating every real bundled WordNet VERB lemma this abstain branch
+actually reaches: **1,007** lemmas. Far too many to classify by hand with
+confidence -- and a real, large subset of them (`cancel`/`travel`/
+`label`/`model`/`signal`/`level`/`quarrel`/`marvel`/`channel`/`tunnel`/
+`barrel`/...) are the well-known British-doubles ("cancelled")/American-
+doesn't ("canceled") dialectal spelling class, which this generator has
+no dialect parameter to resolve either way -- hardcoding one spelling
+would just trade a gap for a wrong answer. So the fix stays narrow: a new
+`NON_DOUBLING_MULTISYLLABLE_VERBS` closed set in `role/word_processor.ts`
+(23 hand-verified, non-dialectal, unambiguously first-syllable-stressed
+common verbs -- "happen", "open", "enter", "answer", "offer", "suffer",
+"gather", "listen", "differ", "wonder", "murder", "order", "cover",
+"discover", "remember", "consider", "deliver", "visit", "limit",
+"profit", "benefit", "develop", "gossip"), checked by
+`shouldDoubleFinalConsonant()` before it abstains -- the same "closed,
+well-known set... not an open curation project" reasoning
+`IRREGULAR_VERB_FORMS` (verb_processor.ts) already gives for a different
+problem (irregular spelling, not stress), applied here for stress. Every
+other lemma among the 1,007 (including every "-el" dialectal one) still
+abstains exactly as before -- this is a carve-out of the false-positive
+sliver that could be resolved with real confidence, not an attempt at
+the rest.
+
+**Gap 2 -- `PartOfSpeechIdentifier.identifySeeded()`'s exact-match
+branch hid the inflected fallback outright.** Once Gap 1 was fixed, "Did
+what happened yesterday surprise you?" resolved, but "That the door was
+unlocked surprised everyone." still only read `VALID` by accident (its
+own already-known limitation, this log's "Four grammar-template gaps"
+section): `unlocked`/`surprised` each only ever offered `ADJECTIVE` as a
+candidate part of speech, never `VERB`, even though both are genuinely,
+separately, real WordNet VERB past-participle spellings too (confirmed
+directly: `wordForms.lookupByText("surprised")` finds both `VERB:surprise`
+(past tense + past participle) and `ADJECTIVE:surprised` (its own real,
+independent WordNet lemma) -- but `dictionary.lookupAll("surprised")`
+finds only the ADJECTIVE, since that Word's own canonical spelling is
+the exact match, while the VERB's canonical spelling is "surprise", not
+"surprised"). `identifySeeded()`'s own logic used to be "an exact
+`lookupAll()` match always wins outright -- only once that comes back
+*empty* does this fall back to `WordForms.lookupByText()`" -- so once the
+ADJECTIVE's own exact match was found, the VERB's inflected spelling was
+never even queried, let alone offered as a second candidate. This is the
+single choke point both `DictionaryProcessor.identifyWord` and
+`identifyPhrase` call for every span they try, so this silently starved
+every caller in the whole system of the VERB reading for any spelling
+hitting this same real, common English pattern (a participial adjective
+sharing its exact spelling with a different Word's own inflected verb
+form -- "excited", "interested", "confused", "tired", "worried", ...
+alongside "surprised"/"unlocked").
+
+Fixed by always gathering *both* candidate sources and merging them
+(deduplicated by Word, so a Word's own base-lemma WordForm spelling
+never double-counts against its own already-found exact match) rather
+than one-or-the-other -- `inflectedConfidence()`'s own docstring already
+says it's "below every possible `seededConfidence()` value... an exact
+match must always outrank an inflected one when both exist for the same
+occurrence", which only makes sense as a real ranking rule if both are
+ever actually candidates together; the early-return silently prevented
+that from ever happening. One existing test
+(`PartOfSpeechIdentifier / DictionaryProcessor: inflected-form fallback`,
+vocabulary.test.ts) asserted the old, narrower behavior outright ("run"
+never appears once an exact match exists for "ran") -- updated to assert
+the corrected one instead (the exact match still ranks first; the
+inflected candidate is no longer hidden).
+
+`npx tsc -b --force` clean both times. Full `vitest run
+--no-file-parallelism`: 182/182 after Gap 1 (0 regressions across the
+whole WordNet-scale suite), 182/182 again after Gap 2 (1 test updated to
+match the corrected behavior, as above; every other WordNet-scale test
+-- ranking, phrase reconstruction, hierarchy resolution -- unaffected,
+despite this being the single choke point for all identification).

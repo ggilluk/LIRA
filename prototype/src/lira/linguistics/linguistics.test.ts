@@ -2,7 +2,14 @@ import { describe, expect, it } from "vitest";
 import { Dictionary } from "../vocabulary/data/dictionary";
 import { PartOfSpeech } from "../vocabulary/data/enums/part_of_speech";
 import { Phrases } from "../vocabulary/data/phrases";
+import { Senses } from "../vocabulary/data/senses";
 import { WordForms } from "../vocabulary/data/word_forms";
+import { MorphologicalPointerRelationshipStore } from "../vocabulary/data/morphological_pointer_relationship_store";
+import { MorphologicalPointerRelationshipSystemPropertyTensor } from "../vocabulary/data/morphological_pointer_relationship_tensor";
+import { SemanticRelationshipStore } from "../vocabulary/data/semantic_relationship_store";
+import { SemanticRelationshipSystemPropertyTensor } from "../vocabulary/data/semantic_relationship_tensor";
+import { MorphologicalPointerRelationshipProcessor } from "../vocabulary/role/morphological_pointer_relationship_processor";
+import { SemanticRelationshipProcessor } from "../vocabulary/role/semantic_relationship_processor";
 import { AsyncDictionaryHydrator } from "../vocabulary/role/dictionary_hydrator";
 import { DictionaryProcessor } from "../vocabulary/role/dictionary_processor";
 import { WordSeeder } from "../vocabulary/role/word_seeder";
@@ -21,7 +28,7 @@ import { createDeclarativeMainClause, isDeclarativeMainClause } from "./data/dec
 import { createInterrogativeMainClause, isInterrogativeMainClause } from "./data/interrogative_main_clause";
 import { createImperativeMainClause, isImperativeMainClause } from "./data/imperative_main_clause";
 import { createExclamativeMainClause, isExclamativeMainClause } from "./data/exclamative_main_clause";
-import { createClause } from "./data/clause";
+import { createClause, type Clause } from "./data/clause";
 import { createPhrase } from "./data/phrase";
 import { isNounPhrase, type NounPhrase } from "./data/noun_phrase";
 import { isVerbPhrase, type VerbPhrase } from "./data/verb_phrase";
@@ -40,6 +47,54 @@ function seededController(): LinguisticController {
   const hydrator = new AsyncDictionaryHydrator(dictionary);
   const processor = new DictionaryProcessor(dictionary, phraseBook, hydrator, "Common", wordForms);
   return new LinguisticController(processor);
+}
+
+// Real WordNet + real closed-class seeding, the same combination the
+// deployed app's own "Seed Vocabulary" + "Load WordNet" actions run one
+// after the other (vocabulary/role/web_worker/vocabulary_worker.ts) --
+// needed for the clause-embedding tests below (data_entity_design_decisions_log.md's
+// own diagnosis: both real reported sentences depend on real WordNet
+// homograph resolution -- "unlocked"/"surprised" each genuinely being
+// both an ADJECTIVE lemma and a VERB inflection, "happened" needing a
+// real generated past-tense WordForm -- that a hand-seeded stand-in
+// Dictionary can't be trusted to reproduce faithfully). Mirrors
+// vocabulary.test.ts's own seededVocabularyFixture() -- memoized once per
+// file, not reseeded per test, since WordSeeder.seedWordNet() alone
+// reconstructs the whole ~92,000-Word graph from scratch every call.
+let sharedWordNetController: Promise<LinguisticController> | undefined;
+
+function seededWordNetController(): Promise<LinguisticController> {
+  if (sharedWordNetController === undefined) {
+    sharedWordNetController = (async () => {
+      const dictionary = new Dictionary();
+      const phraseBook = new Phrases();
+      const senseStore = new Senses();
+      const wordForms = new WordForms();
+      const morphologicalPointerRelationships = new MorphologicalPointerRelationshipStore();
+      const semanticRelationships = new SemanticRelationshipStore();
+      const morphologicalPointerRelationshipProcessor = new MorphologicalPointerRelationshipProcessor(
+        morphologicalPointerRelationships,
+        new MorphologicalPointerRelationshipSystemPropertyTensor(),
+      );
+      const semanticRelationshipProcessor = new SemanticRelationshipProcessor(
+        semanticRelationships,
+        new SemanticRelationshipSystemPropertyTensor(),
+      );
+      const domain = {
+        vocabulary: {
+          dictionary, phrases: phraseBook, senses: senseStore, wordForms,
+          morphologicalPointerRelationships, morphologicalPointerRelationshipProcessor,
+          semanticRelationships, semanticRelationshipProcessor,
+        },
+      };
+      new WordSeeder("en").seedDomain(domain, { excludeOpenClasses: true });
+      await new WordSeeder("en").seedWordNet(domain);
+      const hydrator = new AsyncDictionaryHydrator(dictionary);
+      const processor = new DictionaryProcessor(dictionary, phraseBook, hydrator, "Common", wordForms);
+      return new LinguisticController(processor);
+    })();
+  }
+  return sharedWordNetController;
 }
 
 describe("GrammarConfigurator", () => {
@@ -333,12 +388,16 @@ describe("Learned lexical transition evidence (spec 15-24, Proposed)", () => {
 
 describe("MainClause/SubordinateClause -- Clause's own two narrowing subtypes", () => {
   it("isMainClause/isSubordinateClause distinguish INDEPENDENT from the other three ClauseType values", () => {
-    // No real ClauseReader.read() call produces a SubordinateClause yet
-    // (clause-level recursion for DEPENDENT/RELATIVE/COORDINATED isn't
-    // implemented -- subordinate_clause.ts's own docstring), so this is
-    // a pure, hand-built construction rather than a real seeded reading,
-    // the same way this module's own synthetic edge-case tests already
-    // are for cases with no real bundled example.
+    // A real ClauseReader.read() call now does produce a genuine
+    // ClauseType.DEPENDENT SubordinateClause -- the "ClauseReader
+    // recognises an embedded nominal subject clause" describe block
+    // below, against real seeded WordNet data -- but RELATIVE/
+    // COORDINATED (clause-level recursion for a genuine relative clause
+    // or clause coordination) still aren't implemented at all
+    // (subordinate_clause.ts's own docstring), so those two stay a pure,
+    // hand-built construction here, the same way this module's own
+    // synthetic edge-case tests already are for cases with no real
+    // bundled example.
     const subordinateTypes: readonly SubordinateClauseType[] = [ClauseType.DEPENDENT, ClauseType.RELATIVE, ClauseType.COORDINATED];
     for (const clauseType of subordinateTypes) {
       const subordinate = createSubordinateClause({ text: "because it rained", clauseType });
@@ -534,6 +593,100 @@ describe("ClauseReader.assignRoles() -- PrepositionalPhrase as clause subject (l
     expect((clause.subject as Phrase | undefined)?.phraseType).toBe(PhraseType.PREPOSITIONAL_PHRASE);
     expect((clause.subject as Phrase | undefined)?.text).toBe("Under the bridge");
     expect(clause.predicate?.phraseType).toBe(PhraseType.VERB_PHRASE);
+  });
+});
+
+describe("ClauseReader recognises an embedded nominal subject clause (clause_embedding.ts)", () => {
+  it("reads 'That the door was unlocked surprised everyone.' as VALID with a real ClauseType.DEPENDENT SubordinateClause as SUBJECT -- the complementizer case", async () => {
+    const controller = await seededWordNetController();
+    const sentence = controller.readSentence("That the door was unlocked surprised everyone.");
+    expect(sentence.validation).toBe(ValidationOutcome.VALID);
+
+    const clause = sentence.clauses[0];
+    const embedded = clause.subject as Clause;
+    expect(embedded.clauseType).toBe(ClauseType.DEPENDENT);
+    expect(isSubordinateClause(embedded)).toBe(true);
+    expect(embedded.text).toBe("the door was unlocked");
+    expect((embedded.subject as Phrase).text).toBe("the door");
+    expect(embedded.predicate?.text).toBe("was unlocked");
+
+    // The real matrix predicate -- "surprised" -- not stranded as a
+    // modifier the way it used to be before this recognised "the door
+    // was unlocked" as one embedded constituent (data_entity_design_decisions_log.md).
+    expect(clause.predicate?.phraseType).toBe(PhraseType.VERB_PHRASE);
+    expect(clause.predicate?.text).toBe("surprised");
+    expect(clause.object?.text).toBe("everyone");
+    expect(clause.nestedClauses).toEqual([embedded]);
+
+    // "That" itself is consumed as a pure complementizer -- never a
+    // Phrase of its own, correctly -- but must still be a real word in
+    // this clause's own reconstructed text/tokens, not silently dropped
+    // the way a consumed-but-never-materialised token once made "is"
+    // vanish from a read Sentence entirely (this session's own
+    // AUXILIARY/`is` mystery, data_entity_design_decisions_log.md).
+    expect(clause.text).toBe("That the door was unlocked surprised everyone");
+    expect(clause.tokens[0]?.text).toBe("That");
+  });
+
+  it("reads 'Did what happened yesterday surprise you?' as VALID with a real ClauseType.DEPENDENT SubordinateClause as SUBJECT -- the free-relative case, past the fronted AUXILIARY", async () => {
+    const controller = await seededWordNetController();
+    const sentence = controller.readSentence("Did what happened yesterday surprise you?");
+    expect(sentence.validation).toBe(ValidationOutcome.VALID);
+
+    const clause = sentence.clauses[0];
+    const embedded = clause.subject as Clause;
+    expect(embedded.clauseType).toBe(ClauseType.DEPENDENT);
+    expect(embedded.text).toBe("what happened yesterday");
+    expect((embedded.subject as Phrase).text).toBe("what");
+    expect(embedded.predicate?.text).toBe("happened");
+
+    // The matrix predicate stays bound to the fronted AUXILIARY alone --
+    // the same discontinuous-predicate limitation
+    // "Did the young woman open the gate?" already has above, unrelated
+    // to and unchanged by this fix.
+    expect(clause.predicate?.text).toBe("Did");
+    expect(clause.object?.text).toBe("you");
+  });
+
+  it("falls back to the ordinary flat reading, unaffected, when the trigger word never resolves into a valid embedded clause -- 'That is fine.'", () => {
+    const dictionary = new Dictionary();
+    const phraseBook = new Phrases();
+    const wordForms = new WordForms();
+    new WordSeeder("en").seedClosedClassWords(dictionary, phraseBook, undefined, undefined, wordForms);
+    dictionary.append(createAdjective({ text: "fine" }));
+    const hydrator = new AsyncDictionaryHydrator(dictionary, wordForms);
+    const processor = new DictionaryProcessor(dictionary, phraseBook, hydrator, "Common", wordForms);
+    const controller = new LinguisticController(processor);
+
+    const sentence = controller.readSentence("That is fine.");
+    expect(sentence.validation).toBe(ValidationOutcome.VALID);
+    const clause = sentence.clauses[0];
+    // "That" itself is the (ordinary, unembedded) subject -- no boundary
+    // ever satisfies embeddedSubjectClauseSpan()'s own two conditions
+    // here (neither "is" alone nor "is fine" is a valid embedded clause:
+    // AUXILIARY/ADJECTIVE, never subject-shaped), so this clause never
+    // even attempts a Clause-typed subject.
+    expect((clause.subject as Phrase | undefined)?.text).toBe("That");
+    expect(clause.nestedClauses).toEqual([]);
+  });
+
+  it("never fires for an ordinary declarative with no complementizer/free-relative trigger at all -- regression, 'A meaning is a representation.' unaffected", () => {
+    const dictionary = new Dictionary();
+    const phraseBook = new Phrases();
+    const wordForms = new WordForms();
+    new WordSeeder("en").seedClosedClassWords(dictionary, phraseBook, { excludeOpenClasses: true }, undefined, wordForms);
+    dictionary.append(createNoun({ text: "meaning" }));
+    dictionary.append(createNoun({ text: "representation" }));
+    const hydrator = new AsyncDictionaryHydrator(dictionary, wordForms);
+    const processor = new DictionaryProcessor(dictionary, phraseBook, hydrator, "Common", wordForms);
+    const controller = new LinguisticController(processor);
+
+    const sentence = controller.readSentence("A meaning is a representation.");
+    expect(sentence.validation).toBe(ValidationOutcome.VALID);
+    const clause = sentence.clauses[0];
+    expect((clause.subject as Phrase | undefined)?.phraseType).toBe(PhraseType.NOUN_PHRASE);
+    expect((clause.subject as Phrase | undefined)?.text).toBe("A meaning");
+    expect(clause.nestedClauses).toEqual([]);
   });
 });
 

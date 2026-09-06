@@ -530,17 +530,42 @@ describe("generate<Class>Forms() -- deriving *_Form values from a base lemma", (
     expect(formTextOf(stopForms, stop, WordFormType.PAST_TENSE_FORM)).toEqual({ value: "stopped", formats: ["/([bcdfghjklmnpqrstvwxyz])\\1ed$/i"] });
     expect(formTextOf(stopForms, stop, WordFormType.PRESENT_PARTICIPLE_FORM)).toEqual({ value: "stopping", formats: ["/([bcdfghjklmnpqrstvwxyz])\\1ing$/i"] });
 
-    // "differ"/"open" end the identical consonant-vowel-consonant shape
-    // "stop" does, but are two syllables, not one -- real English
-    // doesn't double here ("differed"/"opened", not "differred"/
-    // "openned"), and telling a genuine doubling case like "occur" apart
-    // from these needs real stress data this codebase doesn't have, so
-    // both fields are left undefined rather than guessed either way.
-    const differ = createVerb({ text: "differ" });
-    const differForms = new WordForms();
-    generateVerbForms(differ, differForms);
-    expect(formTextOf(differForms, differ, WordFormType.PAST_TENSE_FORM)).toBeUndefined();
-    expect(formTextOf(differForms, differ, WordFormType.PRESENT_PARTICIPLE_FORM)).toBeUndefined();
+    // "cancel" ends the identical consonant-vowel-consonant shape "stop"
+    // does, but is two syllables, not one -- and unlike "happen"/
+    // "differ" below, its own doubling is a genuine, unresolved British/
+    // American spelling variant ("cancelled" vs "canceled"), not just an
+    // unverified stress question -- so both fields are left undefined
+    // rather than guessed either way (NON_DOUBLING_MULTISYLLABLE_VERBS's
+    // own docstring, role/word_processor.ts, on why this one lemma class
+    // is deliberately left out of that carve-out).
+    const cancel = createVerb({ text: "cancel" });
+    const cancelForms = new WordForms();
+    generateVerbForms(cancel, cancelForms);
+    expect(formTextOf(cancelForms, cancel, WordFormType.PAST_TENSE_FORM)).toBeUndefined();
+    expect(formTextOf(cancelForms, cancel, WordFormType.PRESENT_PARTICIPLE_FORM)).toBeUndefined();
+  });
+
+  it("Verb: NON_DOUBLING_MULTISYLLABLE_VERBS resolves a small, hand-verified carve-out of the polysyllabic-CVC abstention -- \"happen\"/\"differ\", not \"occur\"", () => {
+    // "happen"/"differ" end the identical consonant-vowel-consonant
+    // shape "stop" does and are two syllables, not one, exactly like
+    // "cancel" above -- but real English never doubles either
+    // ("happened"/"differed", not "happenned"/"differred") and neither
+    // carries a dialectal spelling variant, so this carve-out resolves
+    // them with confidence rather than leaving them abstained.
+    const happen = createVerb({ text: "happen" });
+    const happenForms = new WordForms();
+    generateVerbForms(happen, happenForms);
+    expect(formTextOf(happenForms, happen, WordFormType.PAST_TENSE_FORM)).toEqual({ value: "happened", formats: ["/ed$/i"] });
+    expect(formTextOf(happenForms, happen, WordFormType.PRESENT_PARTICIPLE_FORM)).toEqual({ value: "happening", formats: ["/ing$/i"] });
+
+    // "occur" ends the same shape and is genuinely stressed on its own
+    // final syllable ("oc-CUR") -- a real doubling case this carve-out
+    // must never mistakenly resolve just because it also ends CVC and
+    // isn't monosyllabic; still correctly abstains.
+    const occur = createVerb({ text: "occur" });
+    const occurForms = new WordForms();
+    generateVerbForms(occur, occurForms);
+    expect(formTextOf(occurForms, occur, WordFormType.PAST_TENSE_FORM)).toBeUndefined();
   });
 
   it("Verb: presentParticipleForm's ie -> ying rule, and abstains on the vowel-before-e silent-e ambiguity", () => {
@@ -1204,25 +1229,30 @@ describe("PartOfSpeechIdentifier / DictionaryProcessor: inflected-form fallback"
     expect(matches[0].form.formType).toBe(WordFormType.PAST_TENSE_FORM);
   });
 
-  it("an exact match always wins outright over an inflected match, even when both exist for the same surface text", () => {
+  it("an exact match always ranks first, but a genuine inflected-form collision with a different Word still surfaces both candidates", () => {
     const dictionary = new Dictionary();
     const wordForms = new WordForms();
     const run = createVerb({ text: "run" });
     dictionary.append(run);
     generateVerbForms(run, wordForms);
     // A second, unrelated Word whose own BASE spelling happens to equal
-    // "run"'s own pastTenseForm -- contrived, but exactly the precedence
-    // case identifySeeded()'s own docstring calls out.
+    // "run"'s own pastTenseForm -- contrived, but exactly the real
+    // "surprised" (ADJECTIVE lemma) / "surprise" (VERB, own past-
+    // participle spelling) collision identifySeeded()'s own docstring
+    // names, one level simpler.
     const ranNoun = createNoun({ text: "ran" });
     dictionary.append(ranNoun);
     const processor = new DictionaryProcessor(dictionary, new Phrases(), new AsyncDictionaryHydrator(dictionary), "Common", wordForms);
 
     const candidates = processor.identifyWord("ran");
-    expect(candidates.every((c) => c.source === IdentificationSource.SEEDED_VOCABULARY)).toBe(true);
-    expect(candidates.some((c) => c.word !== undefined && wordGraphUuid(c.word) === wordGraphUuid(ranNoun))).toBe(true);
-    // "run" (only reachable via the inflected fallback here) never
-    // appears once an exact match exists for the same surface text.
-    expect(candidates.some((c) => c.word !== undefined && wordGraphUuid(c.word) === wordGraphUuid(run))).toBe(false);
+    // The exact match ranks first...
+    expect(candidates[0].source).toBe(IdentificationSource.SEEDED_VOCABULARY);
+    expect(wordGraphUuid(candidates[0].word!)).toBe(wordGraphUuid(ranNoun));
+    // ...but "run" (only reachable via the inflected fallback here) is
+    // no longer hidden just because an unrelated exact match also
+    // exists for the same surface text -- both are real candidates.
+    const inflected = candidates.find((c) => c.word !== undefined && wordGraphUuid(c.word) === wordGraphUuid(run));
+    expect(inflected?.source).toBe(IdentificationSource.INFLECTED_FORM);
   });
 
   it("resolves a real WordNet-seeded plural back to its base Noun via the inflected-form fallback", async () => {

@@ -237,7 +237,32 @@ function buildClauseElementTemplates(): Map<ClauseType, ClauseTemplate> {
     predicateHeadRequires: new Set([POS.VERB, POS.AUXILIARY]),
     obligationsRaised: [ObligationKind.DECLARATIVE_CLAUSE_REQUIRES_FINITE_VERB],
   });
-  // DEPENDENT/RELATIVE/COORDINATED: Phase 2 (clause_type.ts) -- no entry
+  // DEPENDENT: a nominal subordinate clause ("the door was unlocked" in
+  // "That the door was unlocked surprised everyone.", "what happened
+  // yesterday" in "Did what happened yesterday surprise you?") has
+  // exactly the same internal shape as an INDEPENDENT clause -- it's
+  // still a subject plus a finite predicate, just embedded rather than
+  // standing alone -- so this mirrors INDEPENDENT's own template
+  // wholesale (role/clause_embedding.ts's own docstring on where this
+  // gets used: a candidate embedded span is read against *this*
+  // template, not INDEPENDENT's, purely so a caller can tell which kind
+  // of clause it built without re-deriving it). Raises no obligation of
+  // its own -- there's no "must discharge" condition specific to being
+  // embedded, unlike a genuine RELATIVE clause's still-unimplemented
+  // RELATIVE_PRONOUN_OPENS_RELATIVE_CLAUSE.
+  templates.set(ClauseType.DEPENDENT, {
+    clauseType: ClauseType.DEPENDENT,
+    subjectPhraseTypes: new Set([PhraseType.NOUN_PHRASE, PhraseType.PREPOSITIONAL_PHRASE]),
+    predicatePhraseTypes: new Set([PhraseType.VERB_PHRASE]),
+    objectPhraseTypes: new Set([PhraseType.NOUN_PHRASE]),
+    complementPhraseTypes: new Set([PhraseType.NOUN_PHRASE, PhraseType.ADJECTIVE_PHRASE]),
+    modifierPhraseTypes: new Set([PhraseType.ADVERB_PHRASE, PhraseType.PREPOSITIONAL_PHRASE]),
+    subjectRequired: true,
+    predicateRequired: true,
+    predicateHeadRequires: new Set([POS.VERB, POS.AUXILIARY]),
+    obligationsRaised: [],
+  });
+  // RELATIVE/COORDINATED: still Phase 2 (clause_type.ts) -- no entry
   // here, so ClauseReader must report those UNRESOLVED rather than
   // guess a template for them.
   return templates;

@@ -430,14 +430,15 @@ function clauseToJson(clause: Clause): JsonClause {
   return {
     clauseType: clause.clauseType !== undefined ? ClauseType[clause.clauseType] : null,
     text: clause.text,
-    // clause.subject can be a Phrase or an embedded Clause now
-    // (declarative_main_clause.ts's own subject narrowing) -- no JSON
-    // shape exists yet for an embedded Clause subject (Phase 2
-    // clause-embedding work isn't implemented), so this reports null
-    // for that case the same way phraseToJson(undefined) already does.
-    // "words" in ... distinguishes a real Phrase (which always has it)
-    // from a Clause (which never does, using `tokens` instead).
-    subject: clause.subject && "words" in clause.subject ? phraseToJson(clause.subject) : null,
+    // clause.subject can be a Phrase or a real embedded Clause now
+    // (clause_embedding.ts's own docstring -- ClauseReader.read() itself
+    // recognises a nominal subordinate clause like "the door was
+    // unlocked"/"what happened yesterday" filling this role). "words"
+    // in ... distinguishes a real Phrase (which always has it) from a
+    // Clause (which never does, using `tokens` instead) -- recurses
+    // into clauseToJson() itself for the embedded-Clause case, the same
+    // way phraseToJson() already recurses into its own nestedPhrases.
+    subject: clause.subject === undefined ? null : "words" in clause.subject ? phraseToJson(clause.subject) : clauseToJson(clause.subject),
     predicate: phraseToJson(clause.predicate),
     object: phraseToJson(clause.object),
     complement: phraseToJson(clause.complement),

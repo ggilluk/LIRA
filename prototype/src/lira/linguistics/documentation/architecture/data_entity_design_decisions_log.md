@@ -586,3 +586,231 @@ rules of its own. Category A (clause-embedding) remains unimplemented,
 as scoped: it needs a real recursive `ClauseTemplate` for DEPENDENT/
 RELATIVE clauses, a materially larger change than a template widening,
 reported to the user rather than attempted here.
+
+## Category A implemented: recursive clause embedding for a nominal SUBJECT clause
+
+Follow-up request, directly: implement category A above. Scoped to what
+the two reported sentences actually need -- a nominal subordinate
+clause, opened by the complementizer "that" or the free-relative wh-word
+"what", filling the matrix `INDEPENDENT` clause's SUBJECT role.
+Object-position embedding ("I know that she left.") is a natural
+extension of the identical mechanism but isn't exercised by either
+reported sentence, so it stays unimplemented here, named explicitly
+rather than silently half-done.
+
+**Diagnosis first, against the real seeded pipeline, not a guess.**
+Manually tracing `SequenceEngine`'s beam search and `ReadingScorer`'s
+maximal-munch ranking by eye produced a wrong prediction of the actual
+failure mode more than once during this work -- this system's behaviour
+is a scored search over real seeded data, not something safe to reason
+about from source alone. Running both reported sentences through
+`LinguisticController.readSentence()` with `trace` enabled, against a
+real `WordSeeder.seedDomain({excludeOpenClasses:true})` +
+`seedWordNet()` pass (the same combination the deployed app's own "Seed
+Vocabulary" + "Load WordNet" actions run), surfaced the two real,
+unrelated token-resolution gaps this same log's own Vocabulary-layer
+entry documents ("happen" never generating a past-tense WordForm at
+all; `unlocked`/`surprised` each only ever offering `ADJECTIVE` as a
+candidate, hiding their real VERB reading) -- both fixed there first, as
+genuine prerequisites, before this feature could even be verified
+end-to-end.
+
+**1. `ClauseType.DEPENDENT` template (`grammar_configurator.ts`).** A
+nominal dependent clause has exactly the same internal shape as an
+`INDEPENDENT` one -- still a subject plus a finite predicate, just
+embedded rather than standing alone -- so `buildClauseElementTemplates()`
+mirrors `INDEPENDENT`'s template wholesale for `DEPENDENT`, raising no
+obligation of its own (there's no "must discharge" condition specific to
+being embedded, unlike a genuine `RELATIVE` clause's still-unimplemented
+`RELATIVE_PRONOUN_OPENS_RELATIVE_CLAUSE`). `RELATIVE`/`COORDINATED` still
+have no template at all.
+
+**2. Trigger recognition (new `role/clause_embedding.ts`).** Two small
+closed sets, the same structural-recognition pattern
+`PHRASE_TYPE_DETERMINERS`/`PHRASE_TYPE_PREPOSITIONS` already establish:
+`NOMINAL_CLAUSE_COMPLEMENTIZERS = {"that"}` (a pure subordinator,
+consumed -- the embedded span starts at the *next* token) and
+`FREE_RELATIVE_PRONOUNS = {"what", "whoever", "whatever", "whichever"}`
+(the wh-word genuinely *is* the embedded clause's own subject -- "what
+happened" = "the thing that happened" -- so the embedded span starts *at*
+that token). "who"/"which" deliberately excluded: unlike "what", both
+are always seeded with a real, independent PRONOUN Word too, so the
+ordinary flat parse already treats them as an ordinary subject
+NOUN_PHRASE and no reported failure needs this mechanism for them.
+
+**3. The boundary search (`embeddedSubjectClauseSpan()`,
+clause_embedding.ts).** Scans candidate boundaries from just past the
+trigger up to the clause's own end, accepting a boundary only when BOTH:
+(a) `ClauseReader.read()` against the DEPENDENT template reads `VALID`
+over exactly that span, and (b) a real matrix predicate is *structurally
+possible* starting there -- checked via `SequenceEngine.findValidSequences()`
+directly for the matrix template's own `predicatePhraseTypes`, **not**
+via `PhraseReader.read()`'s single cross-phrase-type-ranked winner. This
+distinction is load-bearing, confirmed against real data: at the token
+"surprised", `PhraseReader.read()` picks `ADJECTIVE_PHRASE` as its own
+winner (a real, separate WordNet adjective lemma spelled identically to
+the verb's own past participle -- this log's own Gap 2 above), even
+though a VALID `VERB_PHRASE` reading of the same token also genuinely
+exists; checking cross-type ranking would have wrongly rejected the
+correct boundary there. Among every boundary satisfying both conditions,
+the search keeps the **largest** -- required, not incidental: for "That
+the door was unlocked surprised everyone.", the boundary right after
+"was" already satisfies both ("the door was" is itself a VALID dependent
+clause headed by the AUXILIARY-only predicate "was", and "unlocked"
+alone starts a VALID VERB_PHRASE reading too) -- taking the first match
+would wrongly truncate the embedded clause there. Only the boundary
+right after "unlocked" (the largest satisfying one) matches the correct
+constituent structure, leaving "surprised" as the real matrix predicate.
+
+**4. Wiring into `ClauseReader.read()`.** Before its existing per-position
+`phraseReader.read()` call, at any position where no subject-shaped
+phrase has been read yet (a purely local check over `phrases` so far,
+the same `subjectPhraseTypes` set `assignRoles()` itself already checks,
+not a duplicate of that function's own full role-resolution state
+machine): if the current token is a trigger, run the boundary search; on
+a match, build the embedded clause for real via
+`this.read(tokens, {clauseType: ClauseType.DEPENDENT, ...})`
+(recursive), record it directly as the resolved subject (bypassing the
+ordinary phrase-by-phrase loop for that whole span), and push it onto
+the eventual clause's own `nestedClauses` -- its first real populator
+(`clause_type.ts`'s own "Populated from Phase 2 onward" note). Fires
+symmetrically at the ordinary pre-predicate position (declarative --
+"That the door was unlocked surprised everyone.") and the post-predicate
+inverted position the existing subject-auxiliary-inversion fix (this
+log's own "B" section above) already scans -- "Did what happened
+yesterday surprise you?", trigger "what" found right after "Did" is
+read as the matrix predicate -- both are simply "no subject found yet"
+moments, so one call site covers both real sentences.
+
+`assignRoles()` widened to accept an optional pre-resolved
+`subject: Phrase | Clause`, since a Clause is never itself a Phrase and
+can't be pushed into the ordinary `phrases` array -- `Clause.subject`/
+`DeclarativeMainClause.subject`/`InterrogativeMainClause.subject`/
+`ExclamativeMainClause.subject` already admitted `Clause` (their own
+docstrings said this was widened in advance of exactly this work), so no
+type change was needed there. `read()` itself now also accepts a
+`clauseType` option (defaulting to `INDEPENDENT`) and builds either a
+real `MainClause` or a real `SubordinateClause` accordingly, and tracks
+an ordered `orderedWordChunks` array alongside `phrases` (a Clause has no
+`.words` of its own to flatten the way a Phrase does, so the embedded
+clause's own `.tokens` are spliced in at the exact position its span
+occupied, keeping the outer clause's own reconstructed `text`/`tokens`
+complete and correctly ordered).
+
+**One real bug caught by testing against the real seeded pipeline: infinite
+recursion.** The free-relative trigger ("what") *is* the embedded
+clause's own subject, so the recursive candidate-span read starts at
+that exact same token -- which then re-recognised "what" as a trigger
+all over again, recursing forever (`RangeError: Maximum call stack size
+exceeded`, live, against "Did what happened yesterday surprise you?").
+Fixed with a new `ClauseReadOptions.allowEmbedding` flag, `false` on the
+one recursive call `read()` makes for a candidate span -- the same "one
+level only" scoping this session's own Coordination work already settled
+on for a coordinate side (`resolveCoordinateSide()`,
+vocabulary/role/processor/phrase_processor.ts): an embedded clause is
+never itself searched for a second, nested embedded clause.
+
+**Verification.** `npx tsc -b --force` clean. Full `vitest run
+--no-file-parallelism`: 186/186 (182 prior + 4 new -- both real reported
+sentences against a real, shared, memoized WordNet+closed-class fixture
+(`seededWordNetController()`, mirroring vocabulary.test.ts's own
+`seededVocabularyFixture()`), a fallback-when-no-valid-boundary
+regression ("That is fine.", hand-seeded), and a no-trigger-at-all
+regression ("A meaning is a representation.", hand-seeded)). Live,
+against the real running app, both reported sentences now read `VALID`
+with genuinely correct structure, not merely an accidental `VALID`
+outcome for the wrong reason:
+
+- "That the door was unlocked surprised everyone." -- subject is a real
+  `ClauseType.DEPENDENT` `SubordinateClause`, "the door was unlocked"
+  (its own subject "the door", predicate "was unlocked" -- now correctly
+  ONE combined VERB_PHRASE, `unlocked`'s VERB reading no longer hidden);
+  the matrix's own predicate is "surprised" (the real lexical verb, no
+  longer stranded as a modifier), object "everyone".
+- "Did what happened yesterday surprise you?" -- subject is a real
+  `ClauseType.DEPENDENT` `SubordinateClause`, "what happened yesterday"
+  (subject "what", predicate "happened", object "yesterday"); the
+  matrix's own predicate stays bound to the fronted AUXILIARY "Did"
+  alone, object "you" -- the same discontinuous-predicate limitation
+  "Did the young woman open the gate?" already has (this log's own "B"
+  section), unrelated to and unchanged by this work: this system has no
+  way to represent one predicate split across a fronted auxiliary and a
+  later main verb, only ever binds to whichever completes first.
+
+Regression pass, unchanged: "A meaning is a representation.", "Did the
+young woman open the gate?", "Under the old bridge is a strange place to
+sleep." (the B/C-fix flagship examples) all read identically to before
+this work.
+
+## Two real bugs the committed test suite couldn't catch, found only by testing the live app itself
+
+The mechanism above passed every committed test and an early live check
+looked right too -- but a closer live pass (multiple submissions, the
+Sentence Reader tab's own tree view, not just the first read) surfaced
+two further real, live-only bugs, neither reachable from
+`LinguisticController.readSentence()` calls in isolation the way every
+committed test uses it.
+
+**Bug 1 -- `linguistics_worker.ts`'s own `clauseToJson()` had no JSON
+shape for an embedded Clause subject at all.** Its own pre-existing
+comment said so directly ("no JSON shape exists yet for an embedded
+Clause subject (Phase 2 clause-embedding work isn't implemented)") --
+true when written, now false, but never updated once this work actually
+landed. `JsonClause.subject` stayed typed `JsonPhrase | null`, and
+`clauseToJson()` reported `null` whenever `clause.subject` was a real
+Clause, discarding it entirely before it ever reached the browser. Fixed
+by widening `JsonClause.subject` to `JsonPhrase | JsonClause | null` and
+having `clauseToJson()` recurse into itself for the embedded case (the
+same way `phraseToJson()` already recurses into its own `nestedPhrases`)
+-- `sentence_reader_view.ts`'s own `renderWinner()`/`roleRow()` updated to
+render a Clause-shaped role as its own nested breakdown of roles
+(subject/predicate/object/complement/modifiers, one level indented),
+distinguished from an ordinary Phrase-shaped role via a new
+`isJsonClause()` guard (`"clauseType" in value`).
+
+**Bug 2 -- the complementizer token itself silently vanished from the
+clause's own reconstructed `text`/`tokens`.** Found only by clicking
+through the Sentence Reader's own tree view after the *first* read
+looked correct: the tree view's per-sentence detail panel re-reads
+`sentence.text` on demand (`client.read(summary.text, ...)`,
+`sentence_reader_view.ts`'s own docstring on this "on-demand read for
+detail" pattern) -- and `sentence.text` for "That the door was unlocked
+surprised everyone." had silently become "the door was unlocked
+surprised everyone.", "That" gone. Root cause: the complementizer is
+deliberately never pushed into `phrases` (correct -- it plays no clause
+role of its own), but the fix's very first version never pushed it
+anywhere *else* either, so it never reached `orderedWordChunks` and
+therefore never reached `clause.tokens`/`.text` -- exactly the same
+failure mode this log's own "AUXILIARY/`is` mystery" section already
+named once for a completely different reason ("`is` itself simply
+absent from the read Sentence's own token array, not merely
+mis-scored"). Silently re-reading the shortened text then produced a
+*different*, embedding-free sentence (no complementizer at position 0
+to trigger on), whose own flat parse is what the detail panel actually
+displayed -- consistent, reproducible, and invisible to every committed
+test, since none of them re-read a clause's own reconstructed `.text`
+the way the live tree view does.
+
+Fixed in `ClauseReader.read()`: when the trigger is a complementizer
+(`embeddedStart !== index` -- the trigger sits one position *before* the
+embedded span starts, unlike a free-relative trigger which *is* the
+embedded span's own first token, already included in
+`found.embedded.tokens`), the trigger token is materialised directly via
+`this.phraseReader.graphProcessor.materialiseToken()` -- the same
+underlying step `PhraseReader.materialiseStep()` itself uses, just
+invoked here since this one token is deliberately never routed through
+`phraseReader.read()` at all -- and pushed into `orderedWordChunks` on
+its own, never into `phrases`. Still excluded from every clause role
+(`subject`/`predicate`/etc.), correctly; only no longer excluded from
+the clause's own reconstructed text.
+
+Both fixed, `npx tsc -b --force` clean, full `vitest run
+--no-file-parallelism` unaffected (186/186, neither bug was reachable
+from any committed test's own call pattern). Re-verified live,
+end-to-end, both reported sentences, across repeated submissions and via
+the tree view's own per-sentence detail re-read: the Winner panel now
+shows a real "embedded clause · DEPENDENT" row with its own nested
+subject/predicate/object breakdown for both, and `sentence.text` for
+"That the door was unlocked surprised everyone." correctly still starts
+with "That". Regression pass (the same three flagship examples) still
+unaffected.

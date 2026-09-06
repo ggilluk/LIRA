@@ -327,6 +327,31 @@ function isMonosyllabic(word: string): boolean {
   return (word.match(/[aeiou]+/gi) ?? []).length === 1;
 }
 
+/** shouldDoubleFinalConsonant()'s own Exception Lookup for the one
+ * narrow sliver of its "ends CVC but isn't monosyllabic" abstention it
+ * can resolve with confidence -- a closed, hand-verified set of common
+ * English verbs whose stress is unambiguously *not* on their final
+ * syllable ("HAP-pen", never "hap-PEN") and which carry no British/
+ * American spelling variant either (unlike the real, much larger
+ * "-el"-ending class -- "cancel"/"travel"/"label"/"model"/"signal", GB
+ * "cancelled" vs US "canceled" -- deliberately left abstaining, since
+ * picking either spelling here would be a dialect choice this codebase
+ * has no basis to make). Found by enumerating every real bundled
+ * WordNet VERB lemma this function's own "abstain" branch actually
+ * reaches (1,007 of them) and hand-verifying stress for this subset
+ * alone against ordinary English pronunciation -- not an attempt at the
+ * other ~980 (many genuinely ambiguous, dialectal, or both), the same
+ * "closed, well-known set... not an open curation project" reasoning
+ * IRREGULAR_VERB_FORMS's own docstring already gives for a different
+ * problem (verb_processor.ts) -- this one's for stress, not irregular
+ * spelling, but the same principle: only add what's genuinely
+ * uncontroversial, leave the rest exactly as undecided as before. */
+const NON_DOUBLING_MULTISYLLABLE_VERBS: ReadonlySet<string> = new Set([
+  "happen", "open", "enter", "answer", "offer", "suffer", "gather", "listen",
+  "differ", "wonder", "murder", "order", "cover", "discover", "remember",
+  "consider", "deliver", "visit", "limit", "profit", "benefit", "develop", "gossip",
+]);
+
 /** Whether a *_Form generator should double `word`'s own final
  * consonant before appending a regular suffix ("run" -> "running",
  * "big" -> "bigger") -- true only when the lemma both ends
@@ -335,18 +360,23 @@ function isMonosyllabic(word: string): boolean {
  * (heuristically) monosyllabic, since real English doubling for a
  * longer word depends on which syllable is stressed, not just spelling
  * -- "occur" -> "occurred" doubles, "differ" -> "differed" doesn't, and
- * both pass the identical CVC spelling test. Every regular-suffix
- * generator that calls this (verb_processor.ts's regularEdForm/regularIngForm,
- * this file's own regularDegreeForm below) treats "not double, and not a
- * CVC lemma at all either" as the ordinary plain-suffix case, and
- * "ends CVC but isn't monosyllabic" as an outright abstention -- the
- * matrix's own Required Linguistic Data for every rule this backs
- * ("Syllable Count; Stress Pattern; Final Phoneme/Letter Pattern",
+ * both pass the identical CVC spelling test -- except
+ * NON_DOUBLING_MULTISYLLABLE_VERBS above, checked first: a small,
+ * hand-verified carve-out of that same abstention for lemmas this
+ * function can resolve with real confidence rather than guess. Every
+ * regular-suffix generator that calls this (verb_processor.ts's
+ * regularEdForm/regularIngForm, this file's own regularDegreeForm
+ * below) treats "not double, and not a CVC lemma at all either" as the
+ * ordinary plain-suffix case, and "ends CVC but isn't monosyllabic, and
+ * not in the carve-out" as an outright abstention -- the matrix's own
+ * Required Linguistic Data for every rule this backs ("Syllable Count;
+ * Stress Pattern; Final Phoneme/Letter Pattern",
  * word_form_part_of_speech_matrix.md) isn't data this codebase has for
  * any WordNet-seeded Word today, so guessing wrong is the one outcome
  * every caller here deliberately avoids. */
 export function shouldDoubleFinalConsonant(word: string): "double" | "abstain" | "plain" {
   if (!endsInCvc(word)) return "plain";
+  if (NON_DOUBLING_MULTISYLLABLE_VERBS.has(word.toLowerCase())) return "plain";
   return isMonosyllabic(word) ? "double" : "abstain";
 }
 

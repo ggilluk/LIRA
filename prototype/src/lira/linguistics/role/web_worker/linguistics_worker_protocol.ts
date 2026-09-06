@@ -124,7 +124,12 @@ export interface JsonPhrase {
 export interface JsonClause {
   clauseType: string | null;
   text: string;
-  subject: JsonPhrase | null;
+  // A Phrase when the subject is an ordinary constituent (the common
+  // case), a nested JsonClause when it's a real embedded nominal
+  // subordinate clause instead (clause_embedding.ts's own docstring,
+  // linguistics/role/clause_embedding.ts -- "That the door was unlocked
+  // surprised everyone.", "Did what happened yesterday surprise you?").
+  subject: JsonPhrase | JsonClause | null;
   predicate: JsonPhrase | null;
   object: JsonPhrase | null;
   complement: JsonPhrase | null;

@@ -25,53 +25,75 @@ export class PartOfSpeechIdentifier {
     private readonly wordForms?: WordForms,
   ) {}
 
-  /** An exact lookupAll() match always wins outright when one exists --
-   * only once that comes back empty does this fall back to
-   * WordForms.lookupByText() (every migrated POS subtype's own
-   * generated WordForm records, e.g. "commas" -> "comma" via
-   * pluralNumberForm, "ran" -> "run" via pastTenseForm, "was" -> "be"
-   * via a pastTenseInstanceForm WordForm -- every POS now registers
-   * its own inflected spellings there, data/word_forms.ts's own
-   * docstring). This is the one choke point both
-   * DictionaryProcessor.identifyWord and identifyPhrase call for every
-   * span they try (identifyPhrase's own docstring), so this fallback
-   * covers ordinary single-word identification and every phrase-search
-   * span alike without either caller needing its own copy of this
-   * logic. An inflected match is real evidence, just weaker than the
-   * Word's own canonical spelling, so it's scored below every exact
-   * match (inflectedConfidence()) and tagged
+  /** An exact lookupAll() match and every WordForms.lookupByText() match
+   * (every migrated POS subtype's own generated WordForm records, e.g.
+   * "commas" -> "comma" via pluralNumberForm, "ran" -> "run" via
+   * pastTenseForm, "was" -> "be" via a pastTenseInstanceForm WordForm --
+   * every POS now registers its own inflected spellings there,
+   * data/word_forms.ts's own docstring) are both always gathered and
+   * merged, not one-or-the-other: a real, genuinely common English
+   * spelling collision -- a participial adjective sharing its exact
+   * spelling with a different Word's own inflected verb form ("surprised"
+   * is both its own standalone ADJECTIVE lemma and VERB "surprise"'s own
+   * past-participle spelling; "unlocked", "excited", "interested", ... the
+   * same) -- used to make identifySeeded() return only the ADJECTIVE:
+   * lookupAll("surprised") already found that exact match, so this used
+   * to return outright, never even calling lookupByText() at all, hiding
+   * the VERB reading completely from every caller (ClauseReader among
+   * them: "That the door was unlocked surprised everyone." reads VALID
+   * today only by accident, never correctly recognising "unlocked"/
+   * "surprised" as VERB_PHRASE-capable at all --
+   * linguistics/documentation/architecture/data_entity_design_decisions_log.md).
+   * `exactWords` below excludes only a genuine same-Word duplicate (a
+   * Word's own base-lemma WordForm spells identically to its own exact
+   * lookupAll() match, and would otherwise appear twice) -- a *different*
+   * Word's inflected spelling colliding with this one's exact spelling
+   * is exactly the case this function now surfaces both readings for.
+   *
+   * This is the one choke point both DictionaryProcessor.identifyWord and
+   * identifyPhrase call for every span they try (identifyPhrase's own
+   * docstring), so this merge covers ordinary single-word identification
+   * and every phrase-search span alike without either caller needing its
+   * own copy of this logic. An inflected match is real evidence, just
+   * weaker than a Word's own canonical spelling, so it's scored below
+   * every exact match (inflectedConfidence(), always < every
+   * seededConfidence() value) and tagged
    * IdentificationSource.INFLECTED_FORM rather than SEEDED_VOCABULARY,
-   * with a reason naming the specific field that matched. */
+   * with a reason naming the specific field that matched -- an exact
+   * match for the same occurrence still always outranks it once both are
+   * merged and sorted below. */
   identifySeeded(context: WordLookupContext): readonly WordIdentifier[] {
     const seededWords = this.dictionary.lookupAll(context.normalisedText);
-    if (seededWords.length > 0) {
-      const candidates: WordIdentifier[] = seededWords.map((word) => ({
-        word,
-        partOfSpeech: word.partOfSpeech,
-        source: IdentificationSource.SEEDED_VOCABULARY,
-        confidence: this.seededConfidence(word.partOfSpeech, context),
-        reason: this.seededReason(word.partOfSpeech, context),
-      }));
-      candidates.sort((a, b) => b.confidence - a.confidence);
-      return candidates;
-    }
-
-    const formMatches: readonly { word: Word; field: WordFormType }[] =
-      this.wordForms?.lookupByText(context.normalisedText).map(({ word, form }) => ({ word, field: form.formType })) ?? [];
-    const candidates: WordIdentifier[] = formMatches.map(({ word, field }) => ({
+    const exactCandidates: WordIdentifier[] = seededWords.map((word) => ({
       word,
       partOfSpeech: word.partOfSpeech,
-      source: IdentificationSource.INFLECTED_FORM,
-      confidence: this.inflectedConfidence(),
-      reason: this.inflectedReason(word, field, context),
+      source: IdentificationSource.SEEDED_VOCABULARY,
+      confidence: this.seededConfidence(word.partOfSpeech, context),
+      reason: this.seededReason(word.partOfSpeech, context),
     }));
+
+    const exactWords = new Set(seededWords);
+    const formMatches: readonly { word: Word; field: WordFormType }[] =
+      this.wordForms?.lookupByText(context.normalisedText).map(({ word, form }) => ({ word, field: form.formType })) ?? [];
+    const inflectedCandidates: WordIdentifier[] = formMatches
+      .filter(({ word }) => !exactWords.has(word))
+      .map(({ word, field }) => ({
+        word,
+        partOfSpeech: word.partOfSpeech,
+        source: IdentificationSource.INFLECTED_FORM,
+        confidence: this.inflectedConfidence(),
+        reason: this.inflectedReason(word, field, context),
+      }));
 
     // Stable sort: candidates tied on confidence (the common case --
     // casing evidence only ever applies to PROPER_NOUN/SYMBOL, and
     // inflectedConfidence() never varies by candidate) keep the
     // underlying index's own insertion order -- Array.prototype.sort is
     // a stable sort in every engine this targets (ECMA-262 since
-    // ES2019).
+    // ES2019). Exact candidates listed first, so an exact/inflected tie
+    // (never possible today, inflectedConfidence() is always strictly
+    // lower, but not relied on silently) still prefers the exact one.
+    const candidates: WordIdentifier[] = [...exactCandidates, ...inflectedCandidates];
     candidates.sort((a, b) => b.confidence - a.confidence);
 
     return candidates;

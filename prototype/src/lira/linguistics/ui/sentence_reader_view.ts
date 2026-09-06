@@ -37,6 +37,7 @@ import { PartOfSpeech } from "../../vocabulary/data/enums/part_of_speech";
 import type { LinguisticsWorkerClient } from "../role/web_worker/linguistics_worker_client";
 import type {
   JsonBlock,
+  JsonClause,
   JsonDocument,
   JsonPhrase,
   JsonReadingError,
@@ -480,13 +481,13 @@ export class SentenceReaderView {
    * glance" summary, the trace panel underneath is "see why". */
   private renderWinner(sentence: JsonSentence, trace: readonly TracePosition[]): string {
     const clause = sentence.clauses[0];
-    const roles: [string, JsonPhrase | null][] = clause
+    const roles: [string, JsonPhrase | JsonClause | null][] = clause
       ? [
           ["subject", clause.subject],
           ["predicate", clause.predicate],
           ["object", clause.object],
           ["complement", clause.complement],
-          ...clause.modifiers.map((modifier): [string, JsonPhrase | null] => ["modifier", modifier]),
+          ...clause.modifiers.map((modifier): [string, JsonPhrase | JsonClause | null] => ["modifier", modifier]),
         ]
       : [];
     const roleRows = roles.map(([role, phrase]) => roleRow(role, phrase)).join("");
@@ -588,13 +589,40 @@ export class SentenceReaderView {
   }
 }
 
-function roleRow(role: string, phrase: JsonPhrase | null): string {
-  if (!phrase) return "";
+function isJsonClause(value: JsonPhrase | JsonClause): value is JsonClause {
+  return "clauseType" in value;
+}
+
+/** A role can now win either an ordinary Phrase (the common case) or a
+ * real embedded nominal subordinate clause (clause_embedding.ts's own
+ * docstring, linguistics/role/clause_embedding.ts -- "the door was
+ * unlocked"/"what happened yesterday" filling SUBJECT) -- rendered as
+ * its own nested breakdown of roles, recursing into this same function,
+ * rather than only ever showing a single phrase's own text/type the way
+ * every other role still does. */
+function roleRow(role: string, value: JsonPhrase | JsonClause | null): string {
+  if (!value) return "";
+  if (isJsonClause(value)) {
+    const nestedRoles: [string, JsonPhrase | JsonClause | null][] = [
+      ["subject", value.subject],
+      ["predicate", value.predicate],
+      ["object", value.object],
+      ["complement", value.complement],
+      ...value.modifiers.map((modifier): [string, JsonPhrase | JsonClause | null] => ["modifier", modifier]),
+    ];
+    return `
+      <div class="lira-sr-winner-role-row">
+        <span class="lira-sr-winner-role-label">${escapeHtml(role)}</span>
+        <span class="lira-sr-mono">"${escapeHtml(value.text)}"</span>
+        <span class="lira-sr-faint">embedded clause · ${escapeHtml(value.clauseType ?? "?")}</span>
+      </div>
+      <div class="lira-sr-winner-roles lira-sr-winner-roles-nested">${nestedRoles.map(([nestedRole, nestedValue]) => roleRow(nestedRole, nestedValue)).join("")}</div>`;
+  }
   return `
     <div class="lira-sr-winner-role-row">
       <span class="lira-sr-winner-role-label">${escapeHtml(role)}</span>
-      <span class="lira-sr-mono">"${escapeHtml(phrase.text)}"</span>
-      <span class="lira-sr-faint">${escapeHtml(phrase.phraseType ?? "?")}</span>
+      <span class="lira-sr-mono">"${escapeHtml(value.text)}"</span>
+      <span class="lira-sr-faint">${escapeHtml(value.phraseType ?? "?")}</span>
     </div>`;
 }
 
@@ -884,6 +912,7 @@ const CSS = `
 /* Winner summary card. */
 .lira-sr-winner-head { display: flex; align-items: center; gap: 0.55rem; margin-bottom: 0.5rem; flex-wrap: wrap; }
 .lira-sr-winner-roles { display: flex; flex-direction: column; gap: 0.25rem; margin-bottom: 0.3rem; }
+.lira-sr-winner-roles-nested { margin: 0.15rem 0 0.3rem 1.1rem; }
 .lira-sr-winner-role-row {
   display: flex; align-items: center; gap: 0.4rem; font-size: 0.78rem; padding: 0.2rem 0.4rem;
   background: var(--ground); border: 1px solid var(--line); border-radius: 4px; flex-wrap: wrap;
