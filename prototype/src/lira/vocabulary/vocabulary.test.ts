@@ -47,7 +47,7 @@ import { isVerbPhrase } from "./data/entities/verb_phrase";
 import { isAdjectivePhrase } from "./data/entities/adjective_phrase";
 import { isAdverbPhrase } from "./data/entities/adverb_phrase";
 import { isPrepositionalPhrase } from "./data/entities/prepositional_phrase";
-import { isInfinitivePhrase } from "./data/infinitive_phrase";
+import { isInfinitivePhrase } from "./data/entities/infinitive_phrase";
 import { createSense, graphUuid as senseGraphUuid } from "./role/sense_processor";
 import { Senses, memberUuid } from "./data/senses";
 import { AsyncDictionaryHydrator } from "./role/dictionary_hydrator";
@@ -2397,7 +2397,7 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     expect(toBeSure?.phraseType).toBe(PhraseType.INFINITIVE_PHRASE);
     expect(isInfinitivePhrase(toBeSure!)).toBe(true);
     expect(isAdverbPhrase(toBeSure!)).toBe(false);
-    // InfinitivePhrase's own fixed rule (data/infinitive_phrase.ts's own
+    // InfinitivePhrase's own fixed rule (data/entities/infinitive_phrase.ts's own
     // docstring): "to" is always a Particle, never a Head candidate;
     // Head is the first Verb-capable token after it ("be"). "sure"
     // retains its own POS -- not covered by this codebase's own Word

@@ -2766,3 +2766,19 @@ whole WordNet-scale suite), 182/182 again after Gap 2 (1 test updated to
 match the corrected behavior, as above; every other WordNet-scale test
 -- ranking, phrase reconstruction, hierarchy resolution -- unaffected,
 despite this being the single choke point for all identification).
+
+## Move `infinitive_phrase.ts` into `data/entities/`
+
+The one Phrase subtype still sitting in `data/` directly -- its five
+siblings (NounPhrase, VerbPhrase, AdjectivePhrase, AdverbPhrase,
+PrepositionalPhrase) already moved there earlier this session
+("Move `prepositional_phrase.ts` into `data/entities/`" above), leaving
+`infinitive_phrase.ts` the only inconsistent one. Pure relocation --
+`git mv`, its own two internal imports re-pointed the same way every
+other `data/entities/*_phrase.ts` file already points (`../enums/phrase_type`,
+`./phrase`), and the three external references (`role/word_seeder.ts`'s
+own import, a docstring mention each in `role/processor/phrase_processor.ts`
+and `vocabulary.test.ts`) updated to the new path. No behavior change.
+
+`npx tsc -b --force` clean. Full `vitest run --no-file-parallelism`:
+186/186, unchanged.

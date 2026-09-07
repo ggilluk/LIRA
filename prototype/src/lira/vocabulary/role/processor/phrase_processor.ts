@@ -538,7 +538,7 @@ function adverbPhraseHeadIndex(possiblePos: readonly ReadonlySet<PartOfSpeech>[]
  *   NounPhrase/AdjectivePhrase reasoning just above.
  * - InfinitivePhrase: "to" (position 0, guaranteed by classifyPhraseType
  *   itself) is always a Particle, never a Head candidate
- *   (data/infinitive_phrase.ts's own docstring on why); Head is the
+ *   (data/entities/infinitive_phrase.ts's own docstring on why); Head is the
  *   first Verb-capable token after it. No Modifier/Particle/Determiner
  *   assignment beyond those two positions -- not covered by this
  *   codebase's own Word Patterns table, which has no InfinitivePhrase

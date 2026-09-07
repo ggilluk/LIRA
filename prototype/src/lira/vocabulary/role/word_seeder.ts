@@ -31,7 +31,7 @@ import { createAdjectivePhrase } from "../data/entities/adjective_phrase";
 import { createAdverb, determineGradability as determineAdverbGradability, generateAdverbForms, isAdverb } from "./processor/adverb_processor";
 import { createAdverbPhrase } from "../data/entities/adverb_phrase";
 import { createConjunction } from "./processor/conjunction_processor";
-import { createInfinitivePhrase } from "../data/infinitive_phrase";
+import { createInfinitivePhrase } from "../data/entities/infinitive_phrase";
 import { createNounPhrase } from "../data/entities/noun_phrase";
 import { createPrepositionalPhrase } from "../data/entities/prepositional_phrase";
 import { createVerbPhrase } from "../data/entities/verb_phrase";
