@@ -39,6 +39,7 @@ import { classifyPhraseType, linkPhraseWords } from "./processor/phrase_processo
 import { createDeterminer } from "./processor/determiner_processor";
 import { AuxiliarySeeder } from "./auxiliary_seeder";
 import { DeterminerSeeder } from "./determiner_seeder";
+import { ContractionSeeder } from "./contraction_seeder";
 import { createInterjection } from "./processor/interjection_processor";
 import { createNoun, generateNounForms, isNoun } from "./processor/noun_processor";
 import { createNumeral } from "./processor/numeral_processor";
@@ -1128,6 +1129,18 @@ export class WordSeeder {
       const form = insertedByEntryId.get(link.formEntryId);
       if (base && form) dictionary.linkForm(base, form, link.derivationKinds);
     }
+    // ContractionSeeder (role/contraction_seeder.ts): "not"/"n't" plus
+    // the 7 full-contraction AUXILIARY lemmas (don't, can't, isn't,
+    // wasn't, hadn't, I'm, it's) AuxiliarySeeder's own AUXILIARY_LEMMAS
+    // comment names as still missing. Deliberately here, after this
+    // method's own loadCache() loop just above -- not alongside
+    // AuxiliarySeeder/DeterminerSeeder before it -- since it needs
+    // "I"/"it" (pronouns.json, a loadCache() entry) and "be"/"have"'s own
+    // WordForms ("is"/"was"/"had"/"am") already resolvable, and running
+    // after seedClosedClassWords()'s own loadCache() loop still finishes
+    // well ahead of any WordNet homograph race, seedWordNet() only ever
+    // running as its own separate pass.
+    new ContractionSeeder(dictionary, senseStore, wordForms).seed();
     // Phrases (Phrase's own docstring on why these are split out of
     // `loadCache()` entirely rather than sharing Word's own dedup loop
     // above): the identical excludeOpenClasses/alreadyPresent shape,

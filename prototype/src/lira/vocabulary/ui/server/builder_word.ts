@@ -300,9 +300,22 @@ function morphologicalDerivations(word: Word, dictionary: Dictionary, wordForms:
   const derivations: WordRecord["derivations"] = [];
   const addIfSet = (attribute: string, pointer: Identifier | undefined): void => {
     if (pointer === undefined) return;
-    const target = dictionary.findByUuid(pointer.value);
-    if (target === undefined) return;
-    derivations.push({ attribute, label: formFieldLabel(attribute), target: { id: wordGraphUuid(target), text: target.text } });
+    // Every field but `contractionOf` always resolves against Dictionary --
+    // WordForm.contractionOf's own docstring (data/entities/word_form.ts) is
+    // the one field whose own components can be either a Word (a bare
+    // closed-class lemma) or a WordForm (a specific inflected spelling
+    // that isn't independently addressable, e.g. "is"/"was"/"had"/"am" --
+    // each a WordForm of "be"/"have"), so this tries Dictionary first and
+    // WordForms on a miss, rather than silently dropping the WordForm half
+    // as an unresolved pointer.
+    const wordTarget = dictionary.findByUuid(pointer.value);
+    if (wordTarget !== undefined) {
+      derivations.push({ attribute, label: formFieldLabel(attribute), target: { id: wordGraphUuid(wordTarget), text: wordTarget.text } });
+      return;
+    }
+    const formTarget = wordForms.findByUuid(pointer.value);
+    if (formTarget === undefined) return;
+    derivations.push({ attribute, label: formFieldLabel(attribute), target: { id: pointer.value, text: formTarget.text.value } });
   };
   if (isNoun(word)) {
     addIfSet("isDerivedFromVerb", word.isDerivedFromVerb);

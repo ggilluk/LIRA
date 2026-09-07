@@ -2782,3 +2782,103 @@ and `vocabulary.test.ts`) updated to the new path. No behavior change.
 
 `npx tsc -b --force` clean. Full `vitest run --no-file-parallelism`:
 186/186, unchanged.
+
+## `WordForm.contractionOf`'s target: `Word`/`WordForm`, not `Phrase`
+
+Reported as a possible design error against the entities class-model
+diagram (see the diagram artifact's own "WordForm" panel): should
+`contractionOf` point at a `Phrase` -- "can't" as a contraction of the
+phrase "can not" -- instead of two `Word`/`WordForm` identifiers? Scanned
+the real seeded data and the grammar before answering.
+
+**What was actually seeded, before this work**: nothing. AuxiliarySeeder's
+own `AUXILIARY_LEMMAS` comment (role/auxiliary_seeder.ts) already named the
+gap outright: the 7 full contractions the old, retired `auxiliaries.json`
+used to carry (don't, can't, I'm, it's, isn't, wasn't, hadn't) "still have
+no lemma-model equivalent" -- none existed as a Word at all.
+`relationships/orthographic_relationships.json` (the CONTRACTION cache) was
+empty (`count: 0`). And the negator itself was broken: `PartOfSpeech.PARTICLE`'s
+retirement (assets/common/en/README.md's own `particles.json` row) left
+"not" resolving only to an unrelated WordNet VERB homograph, and "n't"
+with no Dictionary entry at all.
+
+**The grammar question**: neither of this family's two real syntactic
+shapes fits any `Phrase` this codebase's own `PhraseType` can express.
+Split by shape (Huddleston, Pullum & Reynolds, *A Student's Introduction
+to English Grammar* -- this codebase's own cited grammar reference,
+`data/entities/coordination.ts`):
+- **Auxiliary + Negator** (don't, can't, isn't, wasn't, hadn't) -- "not" is
+  a dependent of the auxiliary marking clause polarity, not a phrase of
+  its own. Checked `PHRASE_TYPE_DETAILS[VERB_PHRASE]`
+  (data/enums/phrase_type.ts) directly: its own Head Identification Rule
+  is `[ModifierRole.HEAD]: ["Verb"]` -- an `Auxiliary` can never head a
+  `VerbPhrase` in this grammar, with or without a main verb present. And
+  `ModifierRole` (data/enums/modifier_role.ts) has no role "not" could
+  take either -- not HEAD, MODIFIER (a modifier qualifies the head the way
+  "quickly" qualifies "runs"; "not" doesn't qualify "can" that way),
+  PARTICLE (reserved for a phrasal verb's own non-head component), or
+  COMPLEMENT.
+- **Subject Pronoun + finite Auxiliary** (I'm, it's) -- "I am"/"it is" is a
+  subject and its predicator, the seed of a `Clause`
+  (linguistics/data/clause.ts), never a `Phrase`, in any theory of
+  grammar.
+
+So "point `contractionOf` at the correctly seeded phrase" has no single
+answer -- the two groups aren't the same *kind* of thing. A `Clause`
+target for the second group was considered and rejected: this codebase
+has no persisted, addressable Clause store anywhere (unlike
+Dictionary/Phrases/Senses/WordForms) -- a `Clause` is built fresh per
+sentence read by `ClauseReader`, never seeded -- so inventing Clause
+persistence from nothing, for 2 contractions, would be disproportionate.
+
+**What shipped**: `contractionOf` keeps pointing at the honest thing that
+already exists for each component -- a `Word` Identifier for a bare
+closed-class lemma (do/can/not/n't/I/it), or a `WordForm` Identifier for a
+specific inflected spelling that is *not* independently addressable under
+this codebase's own lemma+WordForm model (is/was/had/am, each a WordForm
+of the "be"/"have" lemma -- an "isn't"->"be" pointer alone couldn't
+distinguish 3rd-singular "is" from "was"/"were"/"am"/"are", the exact fact
+this field exists to preserve). `WordForm.contractionOf`'s own docstring
+(data/entities/word_form.ts) rewritten to describe this split.
+
+New `role/contraction_seeder.ts` (`ContractionSeeder`, called from
+`WordSeeder.seedClosedClassWords()` right after its own `loadCache()` loop
+-- needs "I"/"it", pronouns.json entries, and "be"/"have"'s own WordForms
+already resolvable, unlike AuxiliarySeeder/DeterminerSeeder which run
+before `loadCache()`):
+- Seeds "not" (ADVERB, real negator definition) and "n't" (ADVERB) -- Step
+  0, blocking: nothing downstream can point at a correct negator without
+  this. "n't" is itself modelled as a one-component contraction of "not"
+  (`contractionOf: [not]`) -- not a separate lexeme, recreating the
+  historical `not -> n't CONTRACTION` relationship
+  assets/common/en/README.md documents as existing before the retirement,
+  and doubling as a real one-component example of `contractionOf`'s own
+  many-to-many shape (not always a pair).
+- Seeds the 7 full-contraction AUXILIARY lemmas (each single-spelling and
+  invariant, the same shape must/ought/need/dare already have), with
+  `contractionOf` set directly at seed time rather than through
+  `RelationshipSeeder`'s generic cache-driven CONTRACTION pipeline
+  (role/relationship_seeder.ts) -- that pipeline is Word-to-Word only and
+  predates this session's own lemma+WordForm consolidation (Phase 1-6),
+  and these are fixed structural facts about English orthography, not
+  curated cache data that varies, AuxiliarySeeder's own "data this seeder
+  authors directly" precedent.
+
+**A real UI bug this surfaced**: `morphologicalDerivations()`
+(ui/server/builder_word.ts) resolved every derivation pointer -- including
+`contractionOf` -- against `Dictionary.findByUuid()` only, silently
+dropping any pointer that failed to resolve there (its own docstring:
+"an unresolved pointer would mean something else went wrong"). True for
+every other derivation field (isNominalised and its siblings always point
+at a Word), but no longer true for `contractionOf` now that some of its
+own entries are `WordForm` Identifiers -- "isn't" would have shown only
+"n't" in its own Word Forms panel, silently dropping "is". Fixed: tries
+`Dictionary.findByUuid()` first, falls back to `WordForms.findByUuid()` on
+a miss, rendering that WordForm's own spelling as the target text.
+
+`npx tsc -b --force` clean. Full `vitest run --no-file-parallelism`:
+188/188 (2 new tests: `ContractionSeeder` itself, real-seeded, asserting
+every one of the 9 new Words' own `contractionOf` resolves to the correct
+mix of Word/WordForm identifiers and stays stable across a re-seed; and
+`morphologicalDerivations()`'s own WordForm-fallback fix, exercised
+through the real `DictionaryView.searchWords()` path).

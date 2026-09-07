@@ -13,6 +13,7 @@ import { ConjunctionType } from "./data/enums/conjunction_type";
 import { WordFormType, wordFormTypeLabel } from "./data/enums/word_forms_enum";
 import type { Word } from "./data/entities/word";
 import { createWord, graphUuid as wordGraphUuid, validateFormText } from "./role/word_processor";
+import { graphUuid as formGraphUuid } from "./role/word_form_processor";
 import { stringPatternsFor } from "./data/matrices/pos_vs_wordform_matrice";
 import { AdjectivePosition } from "./data/enums/adjective_position";
 import { createAdjective, determineGradability, generateAdjectiveForms, isAdjective, syntacticPositionForSense, validateAdjective } from "./role/processor/adjective_processor";
@@ -36,6 +37,7 @@ import { WordForms } from "./data/word_forms";
 import { isNumeral } from "./role/processor/numeral_processor";
 import { isPreposition } from "./role/processor/preposition_processor";
 import { createPronoun, isPronoun, validatePronoun } from "./role/processor/pronoun_processor";
+import { isAuxiliary } from "./role/processor/auxiliary_processor";
 import { createVerb, framesForSense, generateVerbForms, isVerb, validateVerb } from "./role/processor/verb_processor";
 import type { Verb } from "./data/entities/verb";
 import { createPhrase, graphUuid as phraseGraphUuid, type Phrase } from "./data/entities/phrase";
@@ -1663,6 +1665,107 @@ describe("WordSeeder against the bundled Common Vocabulary Cache", () => {
     const second = new WordSeeder("en").seedClosedClassWords(dictionary, phraseBook);
     expect(second).toBe(0);
     expect(phraseBook.totalEntries()).toBe(totalBefore);
+  });
+
+  it("ContractionSeeder (role/contraction_seeder.ts): seeds a real negator plus the 7 full-contraction AUXILIARY lemmas, with contractionOf resolving to the honest component -- a Word for a bare lemma, a WordForm for an inflected spelling that isn't independently addressable", () => {
+    const dictionary = new Dictionary();
+    const phraseBook = new Phrases();
+    const senseStore = new Senses();
+    const wordForms = new WordForms();
+    new WordSeeder("en").seedClosedClassWords(dictionary, phraseBook, undefined, senseStore, wordForms);
+
+    // "not"/"n't" are real ADVERB Words now, not the accidental gap
+    // PartOfSpeech.PARTICLE's retirement left (assets/common/en/README.md's
+    // own particles.json row) -- "n't" itself is modelled as a one-component
+    // contraction of "not", WordForm.contractionOf's own many-to-many shape
+    // (not always a pair).
+    const not = dictionary.lookupAll("not").find(isAdverb);
+    expect(not).toBeDefined();
+    const nApostropheT = dictionary.lookupAll("n't").find(isAdverb);
+    expect(nApostropheT).toBeDefined();
+    const nApostropheTForm = wordForms.baseLemmaFormOf(nApostropheT!);
+    expect(nApostropheTForm?.contractionOf).toHaveLength(1);
+    expect(nApostropheTForm!.contractionOf[0].value).toBe(wordGraphUuid(not!));
+
+    const doWord = dictionary.lookupAll("do").find(isAuxiliary)!;
+    const canWord = dictionary.lookupAll("can").find(isAuxiliary)!;
+    const beWord = dictionary.lookupAll("be").find(isAuxiliary)!;
+    const haveWord = dictionary.lookupAll("have").find(isAuxiliary)!;
+    const iWord = dictionary.lookupAll("I").find(isPronoun)!;
+    const itWord = dictionary.lookupAll("it").find(isPronoun)!;
+    const isForm = wordForms.formsOf(beWord).find((f) => f.text.value === "is")!;
+    const amForm = wordForms.formsOf(beWord).find((f) => f.text.value === "am")!;
+    const wasForm = wordForms.formsOf(beWord).find((f) => f.text.value === "was")!;
+    const hadForm = wordForms.formsOf(haveWord).find((f) => f.text.value === "had")!;
+
+    // Auxiliary + Negator: both components are genuine standalone Words
+    // (do/can are their own lemma), so contractionOf points at two Word
+    // identifiers, exactly RelationshipSeeder's own historical do/not ->
+    // don't shape (assets/common/en/relationships/README.md).
+    const dont = dictionary.lookupAll("don't").find(isAuxiliary)!;
+    expect(dont).toBeDefined();
+    const dontComponents = wordForms.baseLemmaFormOf(dont)!.contractionOf;
+    expect(dontComponents.map((id) => id.value).sort()).toEqual([wordGraphUuid(doWord), wordGraphUuid(nApostropheT!)].sort());
+
+    const cant = dictionary.lookupAll("can't").find(isAuxiliary)!;
+    const cantComponents = wordForms.baseLemmaFormOf(cant)!.contractionOf;
+    expect(cantComponents.map((id) => id.value).sort()).toEqual([wordGraphUuid(canWord), wordGraphUuid(nApostropheT!)].sort());
+
+    // isn't/wasn't/hadn't: "is"/"was"/"had" are inflected spellings of the
+    // "be"/"have" lemma, not independently addressable Words any more
+    // under this codebase's own lemma+WordForm model -- contractionOf
+    // correctly points at the specific WordForm, not the abstract lemma
+    // Word, so the fact isn't lost (an "isn't"->"be" pointer alone
+    // couldn't distinguish 3rd-singular "is" from "was"/"were"/"am"/"are").
+    const isnt = dictionary.lookupAll("isn't").find(isAuxiliary)!;
+    const isntComponents = wordForms.baseLemmaFormOf(isnt)!.contractionOf;
+    expect(isntComponents.map((id) => id.value).sort()).toEqual([formGraphUuid(isForm), wordGraphUuid(nApostropheT!)].sort());
+
+    const wasnt = dictionary.lookupAll("wasn't").find(isAuxiliary)!;
+    const wasntComponents = wordForms.baseLemmaFormOf(wasnt)!.contractionOf;
+    expect(wasntComponents.map((id) => id.value).sort()).toEqual([formGraphUuid(wasForm), wordGraphUuid(nApostropheT!)].sort());
+
+    const hadnt = dictionary.lookupAll("hadn't").find(isAuxiliary)!;
+    const hadntComponents = wordForms.baseLemmaFormOf(hadnt)!.contractionOf;
+    expect(hadntComponents.map((id) => id.value).sort()).toEqual([formGraphUuid(hadForm), wordGraphUuid(nApostropheT!)].sort());
+
+    // Subject Pronoun + finite Auxiliary (I'm, it's): Clause-shaped, not
+    // Phrase-shaped, in any grammar -- and this codebase has no persisted,
+    // addressable Clause store to point at anyway (Clause is built fresh
+    // per sentence read by ClauseReader, never seeded). contractionOf
+    // stays Word/WordForm-pointing here too, the same honest shape as the
+    // Auxiliary + Negator group above, not forced into a fabricated Phrase.
+    const im = dictionary.lookupAll("I'm").find(isAuxiliary)!;
+    const imComponents = wordForms.baseLemmaFormOf(im)!.contractionOf;
+    expect(imComponents.map((id) => id.value).sort()).toEqual([wordGraphUuid(iWord), formGraphUuid(amForm)].sort());
+
+    const its = dictionary.lookupAll("it's").find(isAuxiliary)!;
+    const itsComponents = wordForms.baseLemmaFormOf(its)!.contractionOf;
+    expect(itsComponents.map((id) => id.value).sort()).toEqual([wordGraphUuid(itWord), formGraphUuid(isForm)].sort());
+
+    // Idempotent: re-seeding neither duplicates the 9 new Words nor
+    // reassigns contractionOf to a fresh (and now-mismatched) uuid.
+    const before = dictionary.all().length;
+    const second = new WordSeeder("en").seedClosedClassWords(dictionary, phraseBook, undefined, senseStore, wordForms);
+    expect(second).toBe(0);
+    expect(dictionary.all().length).toBe(before);
+    expect(wordForms.baseLemmaFormOf(dont)!.contractionOf.map((id) => id.value).sort()).toEqual(dontComponents.map((id) => id.value).sort());
+  });
+
+  it("WordRecord.derivations (morphologicalDerivations(), ui/server/builder_word.ts) resolves a contractionOf pointer against WordForms too, not just Dictionary -- 'isn't' shows both 'is' (a WordForm, not an independently addressable Word) and 'n't', not just the half that happens to be a bare Word", () => {
+    const dictionary = new Dictionary();
+    const phraseBook = new Phrases();
+    const senseStore = new Senses();
+    const wordForms = new WordForms();
+    new WordSeeder("en").seedClosedClassWords(dictionary, phraseBook, undefined, senseStore, wordForms);
+
+    const isnt = dictionary.lookupAll("isn't").find(isAuxiliary)!;
+    const view = new DictionaryView(dictionary, new SemanticRelationshipStore(), { domainName: "Common", phrases: phraseBook, senses: senseStore, wordForms });
+    const record = view.searchWords({ wordId: wordGraphUuid(isnt) }).words[0];
+
+    expect(record.derivations).toHaveLength(2);
+    const texts = record.derivations.map((d) => d.target.text).sort();
+    expect(texts).toEqual(["is", "n't"]);
   });
 
   it("attaches a real headWord/headWordForm to a PRONOUN-headed closed-class Phrase, not just a phraseType -- the reported follow-up bug (linkPhraseWords() itself only ever ran for a WordNet-seeded Phrase before this)", () => {

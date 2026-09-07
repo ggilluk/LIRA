@@ -77,8 +77,30 @@ export interface WordForm {
   senseIds: readonly Identifier[];
 
   /**
-   * Identifiers of the closed-class Words this contracted spelling
-   * spells (e.g. "don't" spells "do" and "not").
+   * Identifiers of this contracted spelling's own components -- each
+   * either a `Word` (a bare closed-class lemma, e.g. "do"/"not" for
+   * "don't") or a `WordForm` (a specific inflected spelling that is not
+   * itself an independently addressable Word under this codebase's own
+   * lemma+WordForm model, e.g. "is"/"was"/"had"/"am", each a WordForm of
+   * the "be"/"have" lemma -- an "isn't"->"be" pointer alone couldn't
+   * distinguish 3rd-singular "is" from "was"/"were"/"am"/"are"). Never a
+   * `Phrase` -- deliberately: this family's two real syntactic shapes
+   * (Auxiliary + Negator: don't/can't/isn't/wasn't/hadn't; Subject Pronoun
+   * + finite Auxiliary: I'm/it's) fit neither one of `PhraseType`'s own six
+   * structural shapes (`VERB_PHRASE`'s own Head Identification Rule admits
+   * only `Verb`, never `Auxiliary`, data/enums/phrase_type.ts) nor a
+   * persisted `Clause` (this codebase has no addressable Clause store at
+   * all -- Clause is built fresh per sentence read by ClauseReader, never
+   * seeded) -- see role/contraction_seeder.ts's own docstring and
+   * documentation/architecture/data_entity_design_decisions_log.md for the
+   * full grammar analysis. `Identifier` itself carries no type of its own
+   * to narrow between the two (`Phrase.headWord`'s own identical
+   * reasoning, data/entities/phrase.ts), so this stays a plain
+   * `Identifier[]`, resolved by trying `Dictionary.findByUuid()` first and
+   * `WordForms.findByUuid()` on a miss.
+   *
+   * Many-to-many, not always a pair -- "n't" is itself a genuine one-
+   * component contraction of "not" alone.
    *
    * Empty when this WordForm is not itself a contraction.
    */
