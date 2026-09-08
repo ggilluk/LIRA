@@ -626,7 +626,7 @@ describe("ClauseReader recognises an embedded nominal subject clause (clause_emb
     // AUXILIARY/`is` mystery, data_entity_design_decisions_log.md).
     expect(clause.text).toBe("That the door was unlocked surprised everyone");
     expect(clause.tokens[0]?.text).toBe("That");
-  });
+  }, 60000);
 
   it("reads 'Did what happened yesterday surprise you?' as VALID with a real ClauseType.DEPENDENT SubordinateClause as SUBJECT -- the free-relative case, past the fronted AUXILIARY", async () => {
     const controller = await seededWordNetController();
@@ -646,7 +646,7 @@ describe("ClauseReader recognises an embedded nominal subject clause (clause_emb
     // to and unchanged by this fix.
     expect(clause.predicate?.text).toBe("Did");
     expect(clause.object?.text).toBe("you");
-  });
+  }, 60000);
 
   it("falls back to the ordinary flat reading, unaffected, when the trigger word never resolves into a valid embedded clause -- 'That is fine.'", () => {
     const dictionary = new Dictionary();

@@ -1101,7 +1101,7 @@ describe("Coordinations", () => {
     // conjunction/right shape couldn't represent this at all).
     const coordination = createCoordination<Adjective>({
       coordinates: [red, white, blue],
-      coordinator: { value: andForm.entryId.uuid! },
+      coordinator: { value: andForm.wordFormId.uuid! },
     });
 
     expect(coordination.coordinates).toHaveLength(3);

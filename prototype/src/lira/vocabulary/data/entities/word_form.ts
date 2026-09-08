@@ -22,12 +22,12 @@ export interface WordForm {
    * Identifier of the underlying WordForm entry this record
    * represents.
    *
-   * `entryId.value` is stable across every Domain that holds a copy
-   * of this WordForm; `entryId.uuid` is this WordForm's own unique
+   * `wordFormId.value` is stable across every Domain that holds a copy
+   * of this WordForm; `wordFormId.uuid` is this WordForm's own unique
    * identifier within its own Domain, freshly regenerated every time
    * this WordForm is copied into another Domain.
    */
-  entryId: Identifier;
+  wordFormId: Identifier;
 
 
   // ── Classification ───────────────────────────────────────

@@ -36,16 +36,16 @@ export function createWordForm(init: WordFormInit): WordForm {
     contractionOf: [],
     // identifier()'s own auto-assigned `uuid` (value_objects/data/identifier.ts)
     // is this WordForm's own per-Domain identity -- Word/Sense's own
-    // separate top-level `uuid` field, folded into `entryId` itself now
+    // separate top-level `uuid` field, folded into `wordFormId` itself now
     // that Identifier carries a `uuid` of its own; no reason for a
     // second Identifier-typed field to exist alongside it.
-    entryId: init.entryId ?? identifier(crypto.randomUUID()),
+    wordFormId: init.wordFormId ?? identifier(crypto.randomUUID()),
     ...init,
   };
 }
 
 /** A shallow copy of `form`, sharing every field's own object identity
- * except `entryId.uuid`, which becomes a fresh uuid -- `entryId.value`
+ * except `wordFormId.uuid`, which becomes a fresh uuid -- `wordFormId.value`
  * (and every other field) stays the same, so this copy is still
  * recognisably the same underlying WordForm, just a distinct graph
  * node -- copySense/copyWordWithFreshUuid's own exact counterpart,
@@ -53,19 +53,19 @@ export function createWordForm(init: WordFormInit): WordForm {
  * independent copies of the same form must never be confused as the
  * same graph node. */
 export function copyWordFormWithFreshUuid(form: WordForm): WordForm {
-  return { ...form, entryId: { ...form.entryId, uuid: crypto.randomUUID() } };
+  return { ...form, wordFormId: { ...form.wordFormId, uuid: crypto.randomUUID() } };
 }
 
-/** `form`'s own per-Domain graph identity -- `form.entryId.uuid`,
+/** `form`'s own per-Domain graph identity -- `form.wordFormId.uuid`,
  * always set for a real WordForm (createWordForm()/
  * copyWordFormWithFreshUuid() above are its only two constructors, and
  * both always assign it); the assertion here just names that guarantee
  * once instead of repeating it at every call site that needs a
  * WordForm's own identity as a plain string (WordForms's own `byUuid`
  * map key, LexicalRelationship's own sourceWordFormId/targetWordFormId,
- * ...). `entryId.value` is the stable, cross-Domain identity --
+ * ...). `wordFormId.value` is the stable, cross-Domain identity --
  * deliberately not what this reads (data/entities/word_form.ts's own
- * docstring on the two roles `entryId` now plays). */
+ * docstring on the two roles `wordFormId` now plays). */
 export function graphUuid(form: WordForm): string {
-  return form.entryId.uuid!;
+  return form.wordFormId.uuid!;
 }

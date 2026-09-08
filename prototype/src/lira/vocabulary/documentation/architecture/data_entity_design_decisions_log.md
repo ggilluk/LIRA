@@ -2882,3 +2882,46 @@ every one of the 9 new Words' own `contractionOf` resolves to the correct
 mix of Word/WordForm identifiers and stays stable across a re-seed; and
 `morphologicalDerivations()`'s own WordForm-fallback fix, exercised
 through the real `DictionaryView.searchWords()` path).
+
+## Rename `WordForm.entryId` to `WordForm.wordFormId`
+
+`entryId` was the one identity field name every entity in this folder
+shared verbatim (Word, Phrase, Sense, Coordination, WordForm all called
+theirs `entryId`) -- harmless when each type is read in isolation, but the
+Vocabulary layer's own graph-reference architecture means a caller
+routinely holds an `Identifier` resolved from one of several possible
+source types at once (`WordForm.contractionOf`'s own docstring above is
+the freshest example: an entry may resolve against either `Dictionary` or
+`WordForms`), and `entryId` alone gives no hint which. Renamed only
+`WordForm`'s own field to `wordFormId` -- Word/Phrase/Sense/Coordination
+keep `entryId` unchanged; this was requested and scoped to WordForm alone,
+not a blanket rename across every entity in this folder.
+
+Every real call site found by tracing actual field access (not a blind
+text search across `entryId`, which also matches every other entity's own
+identical field name): `data/entities/word_form.ts`'s own declaration,
+`role/word_form_processor.ts`'s three functions (`createWordForm()`,
+`copyWordFormWithFreshUuid()`, `graphUuid()`), one direct field read each
+in `role/word_coordination_seeder.ts` (`coordinatorForm.wordFormId.uuid`)
+and `vocabulary.test.ts` (`andForm.wordFormId.uuid`) -- both resolving a
+`WordForm` via `WordForms.baseLemmaFormOf()`/`registerBaseLemmaForm()` to
+build a `Coordination.coordinator` pointer. Every other file that touches a
+WordForm's identity goes through `graphUuid(form)`
+(role/word_form_processor.ts) rather than reading `.entryId`/`.wordFormId`
+directly, so needed no change at all -- confirmed by a clean
+`npx tsc -b --force` immediately after the rename (a stale `.entryId`
+access on a `WordForm`-typed value would have been a type error, not a
+silent miss).
+
+Also fixed two pre-existing, unrelated test timeouts surfaced while
+re-running the full suite after this rename: the two slow real-WordNet-seed
+`ClauseReader` clause-embedding tests (`linguistics.test.ts`, added earlier
+this session) had no explicit `it()` timeout, so the first caller paying
+`seededWordNetController()`'s own real ~20-30s seeding cost occasionally
+exceeded Vitest's 5000ms default -- both now pass `60000` explicitly, the
+same precedent already used elsewhere in this suite for other slow
+real-seeding tests. Unrelated to the `entryId` rename itself, but blocked a
+clean "all green" verification of it.
+
+`npx tsc -b --force` clean. Full `vitest run --no-file-parallelism`:
+188/188.

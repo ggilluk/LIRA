@@ -117,7 +117,7 @@ export class WordCoordinationSeeder {
         createCoordination<Word>({
           entryId: identifier(entry.entry_id),
           coordinates: resolvedCoordinates,
-          coordinator: { value: coordinatorForm.entryId.uuid! },
+          coordinator: { value: coordinatorForm.wordFormId.uuid! },
         }),
       );
       existingEntryValues.add(entry.entry_id);
