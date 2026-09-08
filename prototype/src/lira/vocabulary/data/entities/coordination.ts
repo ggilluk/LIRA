@@ -28,12 +28,13 @@ export interface Coordination<T extends LinguisticUnit> {
    * addressed, copied across Domains, and (once a store exists for it)
    * looked up the same way every other entity in this folder already is.
    *
-   * `entryId.value` is stable across every Domain that holds a copy of
-   * this Coordination; `entryId.uuid` is this Coordination's own unique
-   * identifier within its own Domain, freshly regenerated every time
-   * this Coordination is copied into another Domain.
+   * `coordinationId.value` is stable across every Domain that holds a
+   * copy of this Coordination; `coordinationId.uuid` is this
+   * Coordination's own unique identifier within its own Domain, freshly
+   * regenerated every time this Coordination is copied into another
+   * Domain.
    */
-  entryId: Identifier;
+  coordinationId: Identifier;
 
 
   // ── Structure ────────────────────────────────────────────

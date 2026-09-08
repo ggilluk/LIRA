@@ -26,7 +26,7 @@
  * run only after `seedWordNet()` completes, `PrepositionSenseSeeder`'s
  * own identical timing (`role/web_worker/vocabulary_worker.ts`'s own
  * `handleSeedWordNet()` calls both, back to back). Idempotent across
- * repeated calls (an existing `entryId.value` is never seeded twice),
+ * repeated calls (an existing `coordinationId.value` is never seeded twice),
  * and silently seeds nothing before WordNet has loaded -- every
  * `coordinates` word fails to resolve yet, the same "skip, not an
  * error" treatment `skipUnresolvable` already gives an ordinary
@@ -90,7 +90,7 @@ export class WordCoordinationSeeder {
     if (doc === undefined) return 0;
 
     const { dictionary, wordForms, coordinations } = domain.vocabulary;
-    const existingEntryValues = new Set(coordinations.all().map((coordination) => coordination.entryId.value));
+    const existingEntryValues = new Set(coordinations.all().map((coordination) => coordination.coordinationId.value));
 
     let seeded = 0;
     for (const entry of doc.coordinations) {
@@ -115,7 +115,7 @@ export class WordCoordinationSeeder {
 
       coordinations.append(
         createCoordination<Word>({
-          entryId: identifier(entry.entry_id),
+          coordinationId: identifier(entry.entry_id),
           coordinates: resolvedCoordinates,
           coordinator: { value: coordinatorForm.wordFormId.uuid! },
         }),

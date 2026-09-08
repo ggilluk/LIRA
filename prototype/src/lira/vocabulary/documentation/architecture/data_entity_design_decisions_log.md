@@ -3188,3 +3188,50 @@ words, 70,928 phrases, 118,423 senses, 144,614 relationships) --
 confirmed no crash and no page error building all 144,614 real
 relationships, which is exactly the path `endpointUuid()`'s own fix
 needed to survive.
+
+## Rename `Coordination.entryId` to `Coordination.coordinationId`
+
+The fourth and last of the four entities that used to share the one
+`entryId` field name (Word/Phrase/Sense/Coordination) -- requested
+separately, after the three others (WordForm -> wordFormId, Phrase ->
+phraseId, Word -> wordId / Sense -> senseId) had already landed.
+`entryId` no longer names anything shared with another entity in this
+folder now that this one's done; every real identity field in
+`data/entities/` is its own entity's own name.
+
+By far the smallest of the four in blast radius -- Coordination has no
+UI detail panel of its own (`data/coordinations.ts`'s own docstring:
+"no isXCoordination() guard family exists yet, mirroring how
+Coordination itself still has no seeder/UI consumer of its own"), and
+none of the duck-typed cross-entity discriminators this codebase already
+has (`memberUuid()`, `endpointUuid()`, `coordinateGraphUuid()`,
+`modifierUnitSegment()`) ever included `Coordination` as one of the
+types being distinguished by field name -- confirmed by re-checking each
+one specifically for this rename, not assumed from the three prior
+renames' own conclusions. No behaviour-affecting bug this time, unlike
+the `Word`/`Sense` rename's `endpointUuid()` fix.
+
+Real edits: `data/entities/coordination.ts`'s own field declaration and
+docstring; `role/coordination_processor.ts`'s `createCoordination()`,
+`copyCoordinationWithFreshUuid()`, `graphUuid()`, and their docstrings;
+`role/word_coordination_seeder.ts`'s own `existingEntryValues` dedup
+read and its `createCoordination<Word>({ coordinationId: ... })`
+construction call (the one real seeder that builds a Coordination
+directly, `WordCoordinationSeeder`'s own 85 hand-curated entries);
+`vocabulary.test.ts`'s `describe("Coordinations", ...)` block (four
+direct field reads, two test titles naming "entryId" in prose).
+`registerModifierCoordination()` (`phrase_processor.ts`) needed no
+change at all -- it never reads `.entryId`/`.coordinationId` directly,
+only through the already-generic `createCoordination()`/`coordinations.append()`
+calls, and its own `coordinateGraphUuid()` dedup helper (added during
+the `Word`/`Sense` rename) discriminates `Word` vs `Phrase` only, never
+touching `Coordination`'s own field.
+
+`npx tsc -b --force` clean. Full `vitest run --no-file-parallelism`
+187/187, including the `Coordinations` describe block and
+`WordCoordinationSeeder`'s own real-seeded test. Live Playwright against
+the real running app, full `Load WordNet` -- confirmed no crash and no
+page error, with the Coordinations tab rendering all 85 real
+hand-curated Word Coordinations (their own coordinator/conjunction-type
+columns populated correctly) after a full WordNet seed, the one real
+production path that constructs a `Coordination` end to end.

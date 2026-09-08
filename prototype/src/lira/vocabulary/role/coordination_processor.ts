@@ -16,31 +16,31 @@ export type CoordinationInit<T extends LinguisticUnit> = Pick<Coordination<T>, "
 export function createCoordination<T extends LinguisticUnit>(init: CoordinationInit<T>): Coordination<T> {
   return {
     // identifier()'s own auto-assigned `uuid` (value_objects/data/identifier.ts)
-    // is this Coordination's own per-Domain identity -- entryId's own
-    // identical two-role shape every other entity in this folder
+    // is this Coordination's own per-Domain identity -- coordinationId's
+    // own identical two-role shape every other entity in this folder
     // already has (Sense.senseId's own docstring on the fold this
     // mirrors).
-    entryId: init.entryId ?? identifier(crypto.randomUUID()),
+    coordinationId: init.coordinationId ?? identifier(crypto.randomUUID()),
     ...init,
   };
 }
 
 /** A shallow copy of `coordination`, sharing every field's own object
- * identity except `entryId.uuid`, which becomes a fresh uuid --
+ * identity except `coordinationId.uuid`, which becomes a fresh uuid --
  * copySenseWithFreshUuid/copyWordWithFreshUuid's own exact counterpart
  * (role/sense_processor.ts, role/word_processor.ts), used by
  * Coordinations.seedFrom for the same reason: two Domains' independent
  * copies of the same coordination must never be confused as the same
  * graph node. */
 export function copyCoordinationWithFreshUuid<T extends LinguisticUnit>(coordination: Coordination<T>): Coordination<T> {
-  return { ...coordination, entryId: { ...coordination.entryId, uuid: crypto.randomUUID() } };
+  return { ...coordination, coordinationId: { ...coordination.coordinationId, uuid: crypto.randomUUID() } };
 }
 
-/** `coordination`'s own per-Domain graph identity -- `entryId.uuid`,
+/** `coordination`'s own per-Domain graph identity -- `coordinationId.uuid`,
  * always set for a real Coordination (createCoordination()/
  * copyCoordinationWithFreshUuid() above are its only two constructors,
  * and both always assign it). Sense/Word's own identical graphUuid()
  * (role/sense_processor.ts, role/word_processor.ts). */
 export function graphUuid<T extends LinguisticUnit>(coordination: Coordination<T>): string {
-  return coordination.entryId.uuid!;
+  return coordination.coordinationId.uuid!;
 }

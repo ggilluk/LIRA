@@ -1019,20 +1019,20 @@ describe("Dictionary", () => {
 });
 
 describe("Coordinations", () => {
-  it("createCoordination/graphUuid/copyCoordinationWithFreshUuid mirror Word's own wordId / Sense's own senseId fold", () => {
+  it("createCoordination/graphUuid/copyCoordinationWithFreshUuid mirror Word's own wordId / Sense's own senseId fold, via Coordination's own coordinationId", () => {
     const red = createAdjective({ text: "red" });
     const white = createAdjective({ text: "white" });
     const coordination = createCoordination<Adjective>({ coordinates: [red, white] });
 
-    // entryId auto-assigned (identifier()'s own default), the same
-    // fold createWord()/createSense() already give every other entity.
-    expect(coordination.entryId.uuid).toBeDefined();
+    // coordinationId auto-assigned (identifier()'s own default), the
+    // same fold createWord()/createSense() already give every other entity.
+    expect(coordination.coordinationId.uuid).toBeDefined();
     expect(coordination.coordinates).toEqual([red, white]);
     expect(coordination.coordinator).toBeUndefined();
 
     const copy = copyCoordinationWithFreshUuid(coordination);
     expect(coordinationGraphUuid(copy)).not.toBe(coordinationGraphUuid(coordination));
-    expect(copy.entryId.value).toBe(coordination.entryId.value);
+    expect(copy.coordinationId.value).toBe(coordination.coordinationId.value);
     // A shallow copy -- coordinates is the same array reference, not a
     // deep clone, Word/Sense's own identical copy semantics.
     expect(copy.coordinates).toBe(coordination.coordinates);
@@ -1053,7 +1053,7 @@ describe("Coordinations", () => {
     expect(coordinations.findByUuid("no-such-uuid")).toBeUndefined();
   });
 
-  it("seedFrom copies every Coordination with a fresh uuid but the same entryId", () => {
+  it("seedFrom copies every Coordination with a fresh uuid but the same coordinationId", () => {
     const source = new Coordinations<Adjective>();
     const red = createAdjective({ text: "red" });
     const white = createAdjective({ text: "white" });
@@ -1065,7 +1065,7 @@ describe("Coordinations", () => {
 
     const copied = target.all()[0];
     expect(coordinationGraphUuid(copied)).not.toBe(coordinationGraphUuid(coordination));
-    expect(copied.entryId.value).toBe(coordination.entryId.value);
+    expect(copied.coordinationId.value).toBe(coordination.coordinationId.value);
     // The source store itself is untouched.
     expect(source.totalEntries()).toBe(1);
     expect(source.all()[0]).toBe(coordination);
