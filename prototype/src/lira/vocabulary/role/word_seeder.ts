@@ -31,7 +31,6 @@ import { createAdjectivePhrase } from "../data/entities/adjective_phrase";
 import { createAdverb, determineGradability as determineAdverbGradability, generateAdverbForms, isAdverb } from "./processor/adverb_processor";
 import { createAdverbPhrase } from "../data/entities/adverb_phrase";
 import { createConjunction } from "./processor/conjunction_processor";
-import { createInfinitivePhrase } from "../data/entities/infinitive_phrase";
 import { createNounPhrase } from "../data/entities/noun_phrase";
 import { createPrepositionalPhrase } from "../data/entities/prepositional_phrase";
 import { createVerbPhrase } from "../data/entities/verb_phrase";
@@ -1330,24 +1329,22 @@ export class WordSeeder {
     let relationshipsSeeded = 0;
 
     const synsets = await loadWordNetSynsets();
-    // classifyPhraseType()'s own INFINITIVE_PHRASE/Determiner Phrase
-    // checks -- every single-word VERB-tagged/NOUN-tagged lemma across
-    // the whole dataset, lower-cased, built once up front rather than
-    // per-Phrase: this is the exact same synset list pass 1 is about to
-    // walk, so there's no Dictionary-population-order dependency to
-    // worry about (unlike a `dictionary.lookup()` check, which would
-    // give a different answer depending on whether "begin"/"bit"
-    // happened to be seeded yet -- a Phrase like "a bit" can be
-    // processed before the standalone "bit" synset, in whatever order
-    // loadWordNetSynsets() itself returns, the linking-loop's own
-    // docstring below on the identical hazard for linkPhraseWords()).
-    const verbLemmas = new Set<string>();
+    // classifyPhraseType()'s own Determiner Phrase check -- every
+    // single-word NOUN-tagged lemma across the whole dataset, lower-cased,
+    // built once up front rather than per-Phrase: this is the exact same
+    // synset list pass 1 is about to walk, so there's no
+    // Dictionary-population-order dependency to worry about (unlike a
+    // `dictionary.lookup()` check, which would give a different answer
+    // depending on whether "bit" happened to be seeded yet -- a Phrase
+    // like "a bit" can be processed before the standalone "bit" synset, in
+    // whatever order loadWordNetSynsets() itself returns, the
+    // linking-loop's own docstring below on the identical hazard for
+    // linkPhraseWords()).
     const nounLemmas = new Set<string>();
     for (const synset of synsets) {
-      if (synset.partOfSpeech !== PartOfSpeech.VERB && synset.partOfSpeech !== PartOfSpeech.NOUN) continue;
-      const target = synset.partOfSpeech === PartOfSpeech.VERB ? verbLemmas : nounLemmas;
+      if (synset.partOfSpeech !== PartOfSpeech.NOUN) continue;
       for (const lemma of synset.lemmas) {
-        if (!isMultiWordLemma(lemma)) target.add(lemma.toLowerCase());
+        if (!isMultiWordLemma(lemma)) nounLemmas.add(lemma.toLowerCase());
       }
     }
     const synsetMembersById = new Map<string, Array<Word | Phrase>>();
@@ -1410,7 +1407,7 @@ export class WordSeeder {
           if (existingPhrase !== undefined) {
             phrase = existingPhrase;
           } else {
-            phrase = this.synsetMemberToPhrase(synset, lemma, verbLemmas, nounLemmas);
+            phrase = this.synsetMemberToPhrase(synset, lemma, nounLemmas);
             phraseBook.append(phrase, synset.partOfSpeech, { value: synset.synsetId, ...WORDNET_SYNSET_ID_SCHEME });
             wordsSeeded += 1;
           }
@@ -2315,7 +2312,7 @@ export class WordSeeder {
    * matching data/*_phrase.ts constructor, the same "every PhraseType
    * gets its own narrowed subtype" mirror data/entities/noun.ts and its four
    * siblings already are for Word. */
-  private synsetMemberToPhrase(synset: WordNetSynset, lemma: string, verbLemmas: ReadonlySet<string>, nounLemmas: ReadonlySet<string>): Phrase {
+  private synsetMemberToPhrase(synset: WordNetSynset, lemma: string, nounLemmas: ReadonlySet<string>): Phrase {
     const shared = {
       text: lemma,
       // languageCode lives on lexicalForm now (Phrase.lexicalForm's own
@@ -2327,7 +2324,7 @@ export class WordSeeder {
       isCommon: true,
       sourceReferences: [WORDNET_SOURCE_REFERENCE],
     };
-    switch (classifyPhraseType(lemma, synset.partOfSpeech, verbLemmas, nounLemmas)) {
+    switch (classifyPhraseType(lemma, synset.partOfSpeech, nounLemmas)) {
       case PhraseType.NOUN_PHRASE:
         return createNounPhrase(shared);
       case PhraseType.VERB_PHRASE:
@@ -2338,8 +2335,6 @@ export class WordSeeder {
         return createAdverbPhrase(shared);
       case PhraseType.PREPOSITIONAL_PHRASE:
         return createPrepositionalPhrase(shared);
-      case PhraseType.INFINITIVE_PHRASE:
-        return createInfinitivePhrase(shared);
       default:
         // classifyPhraseType()'s own docstring: undefined only for a
         // partOfSpeech WordNet never assigns to a multi-word lemma --
@@ -2615,15 +2610,15 @@ export class WordSeeder {
     // only multi-word closed-class entries in the bundled Common
     // Vocabulary Cache at all (subordinating_conjunctions.json's own 19
     // multi-word CONJUNCTION entries are the only other kind, and
-    // PhraseType has no CONJUNCTION shape to assign). `verbLemmas`/
-    // `nounLemmas` are passed empty rather than threaded in from
-    // seedWordNet's own precomputed sets: classifyPhraseType()'s own
-    // "to " + verb-lemma and Determiner Phrase structural checks both
-    // require `partOfSpeech` to be ADJECTIVE/ADVERB/absent-of-PRONOUN-
-    // override to fire at all, so an empty set here changes nothing for
-    // the PRONOUN case this call site actually reaches -- it still falls
-    // straight through to that same PRONOUN -> NOUN_PHRASE mapping.
-    const phraseType = classifyPhraseType(entry.text ?? entry.lexical_form, partOfSpeech, new Set(), new Set());
+    // PhraseType has no CONJUNCTION shape to assign). `nounLemmas` is
+    // passed empty rather than threaded in from seedWordNet's own
+    // precomputed set: classifyPhraseType()'s own Determiner Phrase
+    // structural check requires `partOfSpeech` to be
+    // ADJECTIVE/ADVERB/absent-of-PRONOUN-override to fire at all, so an
+    // empty set here changes nothing for the PRONOUN case this call site
+    // actually reaches -- it still falls straight through to that same
+    // PRONOUN -> NOUN_PHRASE mapping.
+    const phraseType = classifyPhraseType(entry.text ?? entry.lexical_form, partOfSpeech, new Set());
 
     const sourceReferences = (entry.source_references ?? []).map((ref) => ({
       sourceName: { value: ref.source_name },

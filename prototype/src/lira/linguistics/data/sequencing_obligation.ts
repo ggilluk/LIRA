@@ -7,7 +7,14 @@ import type { LinguisticScope } from "./linguistic_scope";
  * GrammarConfigurator.obligationDischarges names which PartOfSpeech
  * values discharge each kind. RELATIVE_PRONOUN_OPENS_RELATIVE_CLAUSE,
  * QUOTATION_MUST_CLOSE, and PARENTHETICAL_MUST_CLOSE are defined for a
- * stable value space but not yet raised by any rule in this phase.
+ * stable value space but not yet raised by any rule in this phase --
+ * INFINITIVE_MARKER_REQUIRES_BASE_VERB is the inverse case, no longer
+ * raised by any rule: it used to be raised by the INFINITIVE_PHRASE
+ * PhraseGrammar's own marker-step mechanism, both now removed
+ * (grammar_configurator.ts's own "Remove InfinitivePhrase" design log
+ * entry) -- kept defined, not deleted or renumbered, the same "every
+ * value here is a tensor code" reasoning LinguisticScope's own identical
+ * gap has (linguistic_scope.ts).
  *
  * Ported from linguistics/data/sequencing_obligation.py. */
 export enum ObligationKind {

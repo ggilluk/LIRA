@@ -269,8 +269,8 @@ export interface Phrase extends LinguisticUnit {
    * `PHRASE_TYPE_DETAILS[...].allowedTypes` (data/enums/phrase_type.ts --
    * NounPhrase, AdjectivePhrase, PrepositionalPhrase today) narrows this
    * down to that row's own specific constituent type(s); VerbPhrase/
-   * AdverbPhrase/InfinitivePhrase declare no such row and so never
-   * populate this beyond an empty array. Unlike `preModifier`/
+   * AdverbPhrase declare no such row and so never populate this beyond
+   * an empty array. Unlike `preModifier`/
    * `postModifier`/`determiner`, this stays an array -- a Phrase's own
    * structure only ever has at most one Complement span in practice
    * today (`complementStartIndex()`'s own docstring,

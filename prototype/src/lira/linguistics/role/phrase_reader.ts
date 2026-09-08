@@ -24,7 +24,6 @@ export interface TraceToken {
   text: string;
   partOfSpeech: string | null;
   isUnknown: boolean;
-  isMarker: boolean;
 }
 
 /** PhraseReader: spec 12.3's actual readPhrase() implementation -- the
@@ -45,11 +44,13 @@ export interface TraceToken {
 // dedicated kind of its own (an auxiliary chain with no following verb
 // just fails to produce a valid VERB_PHRASE sequence at all), so it
 // falls back to the generic NO_VALID_PHRASE_SEQUENCE.
+// INFINITIVE_MARKER_REQUIRES_BASE_VERB has no entry -- it's no longer
+// raised at all, INFINITIVE_PHRASE removed (sequencing_obligation.ts's
+// own docstring).
 const OBLIGATION_ERROR_KIND: Partial<Record<ObligationKind, ReadingErrorKind>> = {
   [ObligationKind.DETERMINER_REQUIRES_NOMINAL_HEAD]: ReadingErrorKind.INCOMPLETE_DETERMINER_SEQUENCE,
   [ObligationKind.PREPOSITION_REQUIRES_OBJECT]: ReadingErrorKind.PREPOSITION_MISSING_OBJECT,
   [ObligationKind.AUXILIARY_REQUIRES_COMPATIBLE_VERB_FORM]: ReadingErrorKind.NO_VALID_PHRASE_SEQUENCE,
-  [ObligationKind.INFINITIVE_MARKER_REQUIRES_BASE_VERB]: ReadingErrorKind.INFINITIVE_MISSING_VERB,
   [ObligationKind.CONJUNCTION_REQUIRES_COORDINATED_ELEMENT]: ReadingErrorKind.INCOMPLETE_COORDINATION,
 };
 
@@ -169,17 +170,8 @@ export class PhraseReader {
 
   private materialiseStep(token: TokenReading, step: SequenceStep): Word {
     let selected;
-    if (!step.isUnknown) {
-      if (step.isMarker) {
-        // A lexical marker (e.g. infinitive "to") is matched by text,
-        // not by the POS it was seeded under -- its own top-ranked
-        // seeded sense is still the right one to materialise. The
-        // phrase's own phraseType is what records its role here as an
-        // infinitive marker, not a relabelled POS.
-        selected = token.candidates.length > 0 ? token.candidates[0] : undefined;
-      } else if (step.partOfSpeech !== undefined) {
-        selected = identificationFor(token, step.partOfSpeech);
-      }
+    if (!step.isUnknown && step.partOfSpeech !== undefined) {
+      selected = identificationFor(token, step.partOfSpeech);
     }
     return this.graphProcessor.materialiseToken(token, token.tokenIndex, selected);
   }
@@ -188,7 +180,7 @@ export class PhraseReader {
     for (const preferred of phraseGrammar.headPreference) {
       for (let i = path.steps.length - 1; i >= 0; i--) {
         const step = path.steps[i];
-        if (!step.isUnknown && !step.isMarker && step.partOfSpeech === preferred) return step;
+        if (!step.isUnknown && step.partOfSpeech === preferred) return step;
       }
     }
     // Nothing in headPreference matched (e.g. "the cat" with "cat"
@@ -309,18 +301,15 @@ export class PhraseReader {
    * own candidatePartsOfSpeech, which only covers the position's first
    * token), but the specific one this completion committed to at every
    * token it covers, including a PREPOSITIONAL_PHRASE completion's
-   * nested NOUN_PHRASE steps. A marker step (e.g. INFINITIVE_PHRASE's
-   * "to") has no POS state of its own (SequenceStep's own docstring);
-   * an unknown step is an unseeded token the grammar's absorption rule
-   * let through -- both report `partOfSpeech: null`, distinguished by
-   * `isMarker`/`isUnknown` so the UI can label them instead of showing
-   * a blank. */
+   * nested NOUN_PHRASE steps. An unknown step is an unseeded token the
+   * grammar's absorption rule let through -- it reports
+   * `partOfSpeech: null`, distinguished by `isUnknown` so the UI can
+   * label it instead of showing a blank. */
   private pathPartsOfSpeech(path: SequencePath, tokens: readonly TokenReading[]): TraceToken[] {
     const entries: TraceToken[] = path.steps.map((step) => ({
       text: tokens[step.tokenIndex].text,
       partOfSpeech: step.partOfSpeech !== undefined ? PartOfSpeech[step.partOfSpeech] : null,
       isUnknown: step.isUnknown,
-      isMarker: step.isMarker,
     }));
     for (const nested of path.nestedPaths) entries.push(...this.pathPartsOfSpeech(nested, tokens));
     return entries;
@@ -336,15 +325,8 @@ export class PhraseReader {
     for (const [phraseType, phraseGrammar] of grammar.phraseGrammars) {
       const paths = perTypeCandidates.get(phraseType) ?? [];
 
-      let requiredStart: string[];
-      let startMatch: boolean;
-      if (phraseGrammar.markerForms.size > 0) {
-        requiredStart = [...phraseGrammar.markerForms].sort();
-        startMatch = token !== undefined && phraseGrammar.markerForms.has(token.text.toLowerCase());
-      } else {
-        requiredStart = [...phraseGrammar.startStates].map((pos) => PartOfSpeech[pos]).sort();
-        startMatch = token !== undefined && isKnown(token) && candidatePartsOfSpeech(token).some((pos) => phraseGrammar.startStates.has(pos));
-      }
+      const requiredStart = [...phraseGrammar.startStates].map((pos) => PartOfSpeech[pos]).sort();
+      const startMatch = token !== undefined && isKnown(token) && candidatePartsOfSpeech(token).some((pos) => phraseGrammar.startStates.has(pos));
 
       const completions = paths.map((path) => ({
         text: this.pathText(path, tokens),
@@ -360,8 +342,6 @@ export class PhraseReader {
         rejectionReason = null;
       } else if (token === undefined) {
         rejectionReason = "no token at this position";
-      } else if (phraseGrammar.markerForms.size > 0) {
-        rejectionReason = `token text does not match the required marker form(s) ${JSON.stringify(requiredStart)}`;
       } else if (!isKnown(token)) {
         rejectionReason = `"${token.text}" is unseeded -- no candidate part of speech to match a required start state`;
       } else if (!startMatch) {

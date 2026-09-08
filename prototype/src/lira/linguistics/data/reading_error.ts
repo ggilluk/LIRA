@@ -5,7 +5,13 @@ import type { ObligationKind } from "./sequencing_obligation";
 
 /** All sixteen kinds spec 21 requires, defined from the outset so the
  * values are stable across phases -- the four marked Phase 2 below are
- * simply never emitted until their constructs exist.
+ * simply never emitted until their constructs exist. INFINITIVE_MISSING_VERB
+ * is the inverse case: it used to be emitted, for the INFINITIVE_PHRASE
+ * PhraseGrammar's own marker-step mechanism, both now removed
+ * (grammar_configurator.ts's own "Remove InfinitivePhrase" design log
+ * entry) -- kept defined at its own stable value, not deleted or
+ * renumbered, the same reasoning ObligationKind's/LinguisticScope's own
+ * identical gaps have (sequencing_obligation.ts, linguistic_scope.ts).
  *
  * Ported from linguistics/data/reading_error.py. */
 export enum ReadingErrorKind {
@@ -15,7 +21,7 @@ export enum ReadingErrorKind {
   MISSING_PHRASE_HEAD = 3,
   INCOMPLETE_DETERMINER_SEQUENCE = 4,
   PREPOSITION_MISSING_OBJECT = 5,
-  INFINITIVE_MISSING_VERB = 6,
+  INFINITIVE_MISSING_VERB = 6, // No longer emitted -- INFINITIVE_PHRASE removed.
   NO_VALID_CLAUSE_SEQUENCE = 7,
   MISSING_PREDICATE = 8,
   MISSING_FINITE_VERB = 9,

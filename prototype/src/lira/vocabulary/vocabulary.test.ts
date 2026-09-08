@@ -47,9 +47,7 @@ import { ModifierRole } from "./data/enums/modifier_role";
 import { isNounPhrase } from "./data/entities/noun_phrase";
 import { isVerbPhrase } from "./data/entities/verb_phrase";
 import { isAdjectivePhrase } from "./data/entities/adjective_phrase";
-import { isAdverbPhrase } from "./data/entities/adverb_phrase";
 import { isPrepositionalPhrase } from "./data/entities/prepositional_phrase";
-import { isInfinitivePhrase } from "./data/entities/infinitive_phrase";
 import { createSense, graphUuid as senseGraphUuid } from "./role/sense_processor";
 import { Senses, memberUuid } from "./data/senses";
 import { AsyncDictionaryHydrator } from "./role/dictionary_hydrator";
@@ -152,13 +150,12 @@ function seededVocabularyFixture() {
 }
 
 describe("PhraseType", () => {
-  it("carries the same six numeric codes, in the same order, as Linguistics' own PhraseType", () => {
+  it("carries the same five numeric codes, in the same order, as Linguistics' own PhraseType", () => {
     expect(PhraseType.NOUN_PHRASE).toBe(0);
     expect(PhraseType.VERB_PHRASE).toBe(1);
     expect(PhraseType.ADJECTIVE_PHRASE).toBe(2);
     expect(PhraseType.ADVERB_PHRASE).toBe(3);
     expect(PhraseType.PREPOSITIONAL_PHRASE).toBe(4);
-    expect(PhraseType.INFINITIVE_PHRASE).toBe(5);
   });
 
   it("PHRASE_TYPE_DETAILS has a populated definition/structure/example for every PhraseType value", () => {
@@ -197,10 +194,6 @@ describe("PhraseType", () => {
       [ModifierRole.MODIFIER]: ["Adverb", "AdverbPhrase"],
       [ModifierRole.COMPLEMENT]: ["NounPhrase", "Pronoun", "Adverb", "AdverbPhrase", "PrepositionalPhrase", "Clause"],
     });
-    // INFINITIVE_PHRASE carries no Phrase Role Allowed Types row in that
-    // document, the same reason it carries no Phrase Type Classes row --
-    // PHRASE_TYPE_DETAILS's own docstring on why.
-    expect(PHRASE_TYPE_DETAILS[PhraseType.INFINITIVE_PHRASE].allowedTypes).toEqual({});
   });
 
   it("a Phrase can carry a phraseType, defaulting to undefined when not classified", () => {
@@ -216,55 +209,47 @@ describe("PhraseType", () => {
 });
 
 describe("classifyPhraseType", () => {
-  const verbLemmas = new Set(["be", "begin", "boot", "date", "advantage"]);
   // Every single-word NOUN-tagged lemma classifyDeterminerPhrase()'s own
-  // tests below need real Noun coverage for -- verbLemmas' own exact
-  // counterpart, built the identical way word_seeder.ts's own
-  // seedWordNet() builds it (from the synset list, not a live
-  // Dictionary -- classifyDeterminerPhrase()'s own docstring on why).
+  // tests below need real Noun coverage for, built the identical way
+  // word_seeder.ts's own seedWordNet() builds it (from the synset list,
+  // not a live Dictionary -- classifyDeterminerPhrase()'s own docstring
+  // on why).
   const nounLemmas = new Set(["bit", "few", "lot", "little", "deal", "trifle", "times", "couple", "capella", "carte", "mode"]);
 
   it("maps NOUN/VERB straight to NOUN_PHRASE/VERB_PHRASE, even when the lemma opens with a preposition-lookalike word", () => {
     // "down payment"/"near miss" are compound nouns (down/near modify
     // the head noun), not prepositional phrases -- the real reason
     // classifyPhraseType never applies the preposition check to NOUN.
-    expect(classifyPhraseType("down payment", PartOfSpeech.NOUN, verbLemmas, nounLemmas)).toBe(PhraseType.NOUN_PHRASE);
-    expect(classifyPhraseType("toy poodle", PartOfSpeech.NOUN, verbLemmas, nounLemmas)).toBe(PhraseType.NOUN_PHRASE);
+    expect(classifyPhraseType("down payment", PartOfSpeech.NOUN, nounLemmas)).toBe(PhraseType.NOUN_PHRASE);
+    expect(classifyPhraseType("toy poodle", PartOfSpeech.NOUN, nounLemmas)).toBe(PhraseType.NOUN_PHRASE);
     // "abide by"/"out in" are phrasal verbs -- still verb-headed.
-    expect(classifyPhraseType("abide by", PartOfSpeech.VERB, verbLemmas, nounLemmas)).toBe(PhraseType.VERB_PHRASE);
-    expect(classifyPhraseType("out in", PartOfSpeech.VERB, verbLemmas, nounLemmas)).toBe(PhraseType.VERB_PHRASE);
+    expect(classifyPhraseType("abide by", PartOfSpeech.VERB, nounLemmas)).toBe(PhraseType.VERB_PHRASE);
+    expect(classifyPhraseType("out in", PartOfSpeech.VERB, nounLemmas)).toBe(PhraseType.VERB_PHRASE);
   });
 
   it("reclassifies an ADJECTIVE/ADVERB lemma opening with a preposition as PREPOSITIONAL_PHRASE", () => {
-    expect(classifyPhraseType("at fault", PartOfSpeech.ADJECTIVE, verbLemmas, nounLemmas)).toBe(PhraseType.PREPOSITIONAL_PHRASE);
-    expect(classifyPhraseType("out of print", PartOfSpeech.ADJECTIVE, verbLemmas, nounLemmas)).toBe(PhraseType.PREPOSITIONAL_PHRASE);
-    expect(classifyPhraseType("by hand", PartOfSpeech.ADVERB, verbLemmas, nounLemmas)).toBe(PhraseType.PREPOSITIONAL_PHRASE);
-    expect(classifyPhraseType("in the meantime", PartOfSpeech.ADVERB, verbLemmas, nounLemmas)).toBe(PhraseType.PREPOSITIONAL_PHRASE);
+    expect(classifyPhraseType("at fault", PartOfSpeech.ADJECTIVE, nounLemmas)).toBe(PhraseType.PREPOSITIONAL_PHRASE);
+    expect(classifyPhraseType("out of print", PartOfSpeech.ADJECTIVE, nounLemmas)).toBe(PhraseType.PREPOSITIONAL_PHRASE);
+    expect(classifyPhraseType("by hand", PartOfSpeech.ADVERB, nounLemmas)).toBe(PhraseType.PREPOSITIONAL_PHRASE);
+    expect(classifyPhraseType("in the meantime", PartOfSpeech.ADVERB, nounLemmas)).toBe(PhraseType.PREPOSITIONAL_PHRASE);
   });
 
   it("falls back to the plain POS-based mapping for ADJECTIVE/ADVERB lemmas that don't open with a preposition or the indefinite article", () => {
-    expect(classifyPhraseType("Central American", PartOfSpeech.ADJECTIVE, verbLemmas, nounLemmas)).toBe(PhraseType.ADJECTIVE_PHRASE);
+    expect(classifyPhraseType("Central American", PartOfSpeech.ADJECTIVE, nounLemmas)).toBe(PhraseType.ADJECTIVE_PHRASE);
     // "any longer" opens with a Determiner ("any"), just not the
     // indefinite article classifyDeterminerPhrase() is deliberately
     // scoped to (that function's own docstring on why) -- stays
     // ADVERB_PHRASE regardless of nounLemmas' own contents.
-    expect(classifyPhraseType("any longer", PartOfSpeech.ADVERB, verbLemmas, nounLemmas)).toBe(PhraseType.ADVERB_PHRASE);
+    expect(classifyPhraseType("any longer", PartOfSpeech.ADVERB, nounLemmas)).toBe(PhraseType.ADVERB_PHRASE);
   });
 
-  it("recognises a genuine infinitive (\"to\" + a real verb lemma) as INFINITIVE_PHRASE, ahead of the preposition check", () => {
-    expect(classifyPhraseType("to be sure", PartOfSpeech.ADVERB, verbLemmas, nounLemmas)).toBe(PhraseType.INFINITIVE_PHRASE);
-    expect(classifyPhraseType("to begin with", PartOfSpeech.ADVERB, verbLemmas, nounLemmas)).toBe(PhraseType.INFINITIVE_PHRASE);
-  });
-
-  it("does not mistake 'to' + a non-verb, or a denylisted to-lookalike, for an infinitive -- both fall through to PREPOSITIONAL_PHRASE", () => {
-    // "a" isn't a verb -- "to a fault"/"to a T" are prepositional, not infinitival.
-    expect(classifyPhraseType("to a fault", PartOfSpeech.ADVERB, verbLemmas, nounLemmas)).toBe(PhraseType.PREPOSITIONAL_PHRASE);
-    // "date"/"boot"/"advantage" ARE real WordNet verbs, but these three
-    // specific lemmas are denylisted -- "to date"/"to boot"/"to
-    // advantage" use "to" as a preposition, not an infinitive marker.
-    expect(classifyPhraseType("to date", PartOfSpeech.ADVERB, verbLemmas, nounLemmas)).toBe(PhraseType.PREPOSITIONAL_PHRASE);
-    expect(classifyPhraseType("to boot", PartOfSpeech.ADVERB, verbLemmas, nounLemmas)).toBe(PhraseType.PREPOSITIONAL_PHRASE);
-    expect(classifyPhraseType("to advantage", PartOfSpeech.ADVERB, verbLemmas, nounLemmas)).toBe(PhraseType.PREPOSITIONAL_PHRASE);
+  it("classifies every genuine WordNet infinitive as PREPOSITIONAL_PHRASE too -- 'to' is itself one of PHRASE_TYPE_PREPOSITIONS' own closed set, and this codebase draws no distinct structural shape for an infinitive at all (there's no WordNet ss_type to key one off)", () => {
+    expect(classifyPhraseType("to be sure", PartOfSpeech.ADVERB, nounLemmas)).toBe(PhraseType.PREPOSITIONAL_PHRASE);
+    expect(classifyPhraseType("to begin with", PartOfSpeech.ADVERB, nounLemmas)).toBe(PhraseType.PREPOSITIONAL_PHRASE);
+    expect(classifyPhraseType("to a fault", PartOfSpeech.ADVERB, nounLemmas)).toBe(PhraseType.PREPOSITIONAL_PHRASE);
+    expect(classifyPhraseType("to date", PartOfSpeech.ADVERB, nounLemmas)).toBe(PhraseType.PREPOSITIONAL_PHRASE);
+    expect(classifyPhraseType("to boot", PartOfSpeech.ADVERB, nounLemmas)).toBe(PhraseType.PREPOSITIONAL_PHRASE);
+    expect(classifyPhraseType("to advantage", PartOfSpeech.ADVERB, nounLemmas)).toBe(PhraseType.PREPOSITIONAL_PHRASE);
   });
 
   it("reclassifies a WordNet-tagged ADJECTIVE/ADVERB lemma as NOUN_PHRASE when it's structurally a Determiner + Noun-quantifier (\"a bit\", \"a few\"), ahead of both the preposition and plain POS-based checks", () => {
@@ -275,16 +260,16 @@ describe("classifyPhraseType", () => {
     // -- linkPhraseWords()'s own docstring) and "a few" resolved the
     // wrong PhraseType even though it did get a Head ("few" itself is
     // also independently WordNet-tagged ADJECTIVE).
-    expect(classifyPhraseType("a bit", PartOfSpeech.ADVERB, verbLemmas, nounLemmas)).toBe(PhraseType.NOUN_PHRASE);
-    expect(classifyPhraseType("a few", PartOfSpeech.ADJECTIVE, verbLemmas, nounLemmas)).toBe(PhraseType.NOUN_PHRASE);
+    expect(classifyPhraseType("a bit", PartOfSpeech.ADVERB, nounLemmas)).toBe(PhraseType.NOUN_PHRASE);
+    expect(classifyPhraseType("a few", PartOfSpeech.ADJECTIVE, nounLemmas)).toBe(PhraseType.NOUN_PHRASE);
     // Every other real bundled-data hit, verified by hand
     // (classifyDeterminerPhrase()'s own docstring).
-    expect(classifyPhraseType("a lot", PartOfSpeech.ADVERB, verbLemmas, nounLemmas)).toBe(PhraseType.NOUN_PHRASE);
-    expect(classifyPhraseType("a little", PartOfSpeech.ADVERB, verbLemmas, nounLemmas)).toBe(PhraseType.NOUN_PHRASE);
-    expect(classifyPhraseType("a trifle", PartOfSpeech.ADVERB, verbLemmas, nounLemmas)).toBe(PhraseType.NOUN_PHRASE);
-    expect(classifyPhraseType("a good deal", PartOfSpeech.ADVERB, verbLemmas, nounLemmas)).toBe(PhraseType.NOUN_PHRASE);
-    expect(classifyPhraseType("a hundred times", PartOfSpeech.ADVERB, verbLemmas, nounLemmas)).toBe(PhraseType.NOUN_PHRASE);
-    expect(classifyPhraseType("a couple of", PartOfSpeech.ADJECTIVE, verbLemmas, nounLemmas)).toBe(PhraseType.NOUN_PHRASE);
+    expect(classifyPhraseType("a lot", PartOfSpeech.ADVERB, nounLemmas)).toBe(PhraseType.NOUN_PHRASE);
+    expect(classifyPhraseType("a little", PartOfSpeech.ADVERB, nounLemmas)).toBe(PhraseType.NOUN_PHRASE);
+    expect(classifyPhraseType("a trifle", PartOfSpeech.ADVERB, nounLemmas)).toBe(PhraseType.NOUN_PHRASE);
+    expect(classifyPhraseType("a good deal", PartOfSpeech.ADVERB, nounLemmas)).toBe(PhraseType.NOUN_PHRASE);
+    expect(classifyPhraseType("a hundred times", PartOfSpeech.ADVERB, nounLemmas)).toBe(PhraseType.NOUN_PHRASE);
+    expect(classifyPhraseType("a couple of", PartOfSpeech.ADJECTIVE, nounLemmas)).toBe(PhraseType.NOUN_PHRASE);
   });
 
   it("does not mistake a Latin/French loan phrase for a Determiner Phrase merely because a later token happens to also be an unrelated Noun homograph", () => {
@@ -294,28 +279,28 @@ describe("classifyPhraseType", () => {
     // Phrases (classifyDeterminerPhrase()'s own docstring on why these
     // three, specifically, are denylisted by hand). Each falls through
     // to the plain POS-based mapping instead.
-    expect(classifyPhraseType("a capella", PartOfSpeech.ADJECTIVE, verbLemmas, nounLemmas)).toBe(PhraseType.ADJECTIVE_PHRASE);
-    expect(classifyPhraseType("a capella", PartOfSpeech.ADVERB, verbLemmas, nounLemmas)).toBe(PhraseType.ADVERB_PHRASE);
-    expect(classifyPhraseType("a la carte", PartOfSpeech.ADJECTIVE, verbLemmas, nounLemmas)).toBe(PhraseType.ADJECTIVE_PHRASE);
-    expect(classifyPhraseType("a la mode", PartOfSpeech.ADVERB, verbLemmas, nounLemmas)).toBe(PhraseType.ADVERB_PHRASE);
+    expect(classifyPhraseType("a capella", PartOfSpeech.ADJECTIVE, nounLemmas)).toBe(PhraseType.ADJECTIVE_PHRASE);
+    expect(classifyPhraseType("a capella", PartOfSpeech.ADVERB, nounLemmas)).toBe(PhraseType.ADVERB_PHRASE);
+    expect(classifyPhraseType("a la carte", PartOfSpeech.ADJECTIVE, nounLemmas)).toBe(PhraseType.ADJECTIVE_PHRASE);
+    expect(classifyPhraseType("a la mode", PartOfSpeech.ADVERB, nounLemmas)).toBe(PhraseType.ADVERB_PHRASE);
     // "a cappella" (double-p spelling) and "a fortiori"/"a posteriori"/
     // "a priori" need no denylist entry at all -- none of their own
     // remaining tokens resolves a real Noun in the first place.
-    expect(classifyPhraseType("a cappella", PartOfSpeech.ADVERB, verbLemmas, nounLemmas)).toBe(PhraseType.ADVERB_PHRASE);
-    expect(classifyPhraseType("a priori", PartOfSpeech.ADJECTIVE, verbLemmas, nounLemmas)).toBe(PhraseType.ADJECTIVE_PHRASE);
+    expect(classifyPhraseType("a cappella", PartOfSpeech.ADVERB, nounLemmas)).toBe(PhraseType.ADVERB_PHRASE);
+    expect(classifyPhraseType("a priori", PartOfSpeech.ADJECTIVE, nounLemmas)).toBe(PhraseType.ADJECTIVE_PHRASE);
   });
 
   it("maps PRONOUN straight to NOUN_PHRASE -- a Pronoun-headed phrase is structurally a Noun Phrase (data/phrase_type_patterns_and_word_roles.md's own NounPhrase/HEAD row: Noun, Pronoun), the same real bundled pronouns.json idioms this fixes", () => {
-    expect(classifyPhraseType("each other", PartOfSpeech.PRONOUN, verbLemmas, nounLemmas)).toBe(PhraseType.NOUN_PHRASE);
-    expect(classifyPhraseType("no one", PartOfSpeech.PRONOUN, verbLemmas, nounLemmas)).toBe(PhraseType.NOUN_PHRASE);
-    expect(classifyPhraseType("the former", PartOfSpeech.PRONOUN, verbLemmas, nounLemmas)).toBe(PhraseType.NOUN_PHRASE);
+    expect(classifyPhraseType("each other", PartOfSpeech.PRONOUN, nounLemmas)).toBe(PhraseType.NOUN_PHRASE);
+    expect(classifyPhraseType("no one", PartOfSpeech.PRONOUN, nounLemmas)).toBe(PhraseType.NOUN_PHRASE);
+    expect(classifyPhraseType("the former", PartOfSpeech.PRONOUN, nounLemmas)).toBe(PhraseType.NOUN_PHRASE);
     // "a lot"/"a bit" also appear in pronouns.json itself, opening with
     // the indefinite article classifyDeterminerPhrase() checks first --
     // still NOUN_PHRASE either way, whether that check fires (nounLemmas
     // has "lot") or falls through to the plain PRONOUN mapping (empty
     // nounLemmas, entryToPhrase()'s own real call shape, word_seeder.ts).
-    expect(classifyPhraseType("a lot", PartOfSpeech.PRONOUN, verbLemmas, nounLemmas)).toBe(PhraseType.NOUN_PHRASE);
-    expect(classifyPhraseType("a lot", PartOfSpeech.PRONOUN, verbLemmas, new Set())).toBe(PhraseType.NOUN_PHRASE);
+    expect(classifyPhraseType("a lot", PartOfSpeech.PRONOUN, nounLemmas)).toBe(PhraseType.NOUN_PHRASE);
+    expect(classifyPhraseType("a lot", PartOfSpeech.PRONOUN, new Set())).toBe(PhraseType.NOUN_PHRASE);
   });
 });
 
@@ -2441,12 +2426,10 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     expect(wordForms.findByUuid((toyPoodle!.preModifier as Identifier).value)?.text.value).toBe("toy");
     expect(toyPoodle!.postModifier).toBeUndefined();
 
-    // classifyPhraseType()'s own PREPOSITIONAL_PHRASE/INFINITIVE_PHRASE
-    // rules, spot-checked against real seeded Phrases rather than just
-    // the pure-function unit tests above -- "at fault" (01324381-s,
-    // dict/data.adj) is WordNet-tagged ADJECTIVE but structurally a
-    // Preposition + NP; "to be sure" (00151192-r, dict/data.adv) is
-    // WordNet-tagged ADVERB but structurally an infinitive.
+    // classifyPhraseType()'s own PREPOSITIONAL_PHRASE rule, spot-checked
+    // against a real seeded Phrase rather than just the pure-function
+    // unit tests above -- "at fault" (01324381-s, dict/data.adj) is
+    // WordNet-tagged ADJECTIVE but structurally a Preposition + NP.
     const atFault = phraseBook.lookupAll("at fault").find((phrase) => phraseBook.synsetIdOf(phrase)?.value === "01324381-s");
     expect(phraseBook.partOfSpeechOf(atFault!)).toBe(PartOfSpeech.ADJECTIVE);
     expect(atFault?.phraseType).toBe(PhraseType.PREPOSITIONAL_PHRASE);
@@ -2495,37 +2478,6 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     expect(atFaultComplementHead?.partOfSpeech).toBe(PartOfSpeech.NOUN);
     expect(atFaultComplement.complements).toEqual([]);
 
-    const toBeSure = phraseBook.lookupAll("to be sure").find((phrase) => phraseBook.synsetIdOf(phrase)?.value === "00151192-r");
-    expect(phraseBook.partOfSpeechOf(toBeSure!)).toBe(PartOfSpeech.ADVERB);
-    expect(toBeSure?.phraseType).toBe(PhraseType.INFINITIVE_PHRASE);
-    expect(isInfinitivePhrase(toBeSure!)).toBe(true);
-    expect(isAdverbPhrase(toBeSure!)).toBe(false);
-    // InfinitivePhrase's own fixed rule (data/entities/infinitive_phrase.ts's own
-    // docstring): "to" is always a Particle, never a Head candidate;
-    // Head is the first Verb-capable token after it ("be"). "sure"
-    // retains its own POS -- not covered by this codebase's own Word
-    // Patterns table, which has no InfinitivePhrase rows.
-    expect(classifyModifierRoles(toBeSure!.phraseType, toBeSure!.text.trim().split(/\s+/), dictionary)).toEqual([
-      ModifierRole.PARTICLE,
-      ModifierRole.HEAD,
-      undefined,
-    ]);
-    // dictionary.lookup("be")'s own arbitrary-but-deterministic
-    // first-seeded homograph would resolve to the chemical-element NOUN
-    // "Be" -- but linkPhraseWords() resolves the Head specifically via
-    // resolvedWordFor(), which searches every "be" homograph for one
-    // matching InfinitivePhrase's own Head target (VERB), so it finds
-    // the real verb sense "be" instead, not that unrelated NOUN. No
-    // MODIFIER role exists in this phrase's own wordRoles, so both
-    // modifier arrays stay empty.
-    const toBeSureHead = dictionary.findByUuid(toBeSure!.headWord!.value);
-    expect(toBeSureHead?.text).toBe("be");
-    expect(toBeSureHead?.partOfSpeech).toBe(PartOfSpeech.VERB);
-    // headWordForm resolves to that same verb "be" Word's own base-lemma
-    // WordForm, spelled "be" the same way it literally appears here.
-    expect(wordForms.findByUuid(toBeSure!.headWordForm!.value)?.text.value).toBe("be");
-    expect(toBeSure!.preModifier).toBeUndefined();
-    expect(toBeSure!.postModifier).toBeUndefined();
     expect(dictionary.lookupAll("toy poodle")).toEqual([]);
 
     const poodle = dictionary.lookupAll("poodle").find((w) => wordForms.synsetIdOf(w)?.value === "02115987-n");

@@ -2925,3 +2925,84 @@ clean "all green" verification of it.
 
 `npx tsc -b --force` clean. Full `vitest run --no-file-parallelism`:
 188/188.
+
+## Remove InfinitivePhrase
+
+Requested outright ("Remove Infinitive_phrase.ts"), then scoped via a
+follow-up question once tracing usage showed this touches 16 files across
+both layers and changes real classification/parsing behaviour, not just
+deleting one quiet file -- user chose full removal: the enum value,
+`classifyPhraseType()`'s own detection logic, the Linguistics grammar/
+sequencing machinery that read it, and the UI, not just the file and a
+minimal compile fix.
+
+**Vocabulary layer.** `data/entities/infinitive_phrase.ts` deleted.
+`PhraseType.INFINITIVE_PHRASE` removed from the enum (it was the last
+value, `= 5`, so no other member needed renumbering) and its
+`PHRASE_TYPE_DETAILS` entry dropped. `classifyPhraseType()`'s own "to" +
+real-verb-lemma detection (`role/processor/phrase_processor.ts`) removed
+entirely, along with `INFINITIVE_LOOKALIKE_DENYLIST` and the `verbLemmas`
+parameter it threaded through `word_seeder.ts` -- both now dead, since
+"to" is already one of `PHRASE_TYPE_PREPOSITIONS`' own closed set, so
+every genuine WordNet infinitive ("to be sure", "to begin with") now
+lands on the *existing* PREPOSITIONAL_PHRASE check instead, the identical
+path the three former denylist entries ("to date"/"to boot"/"to
+advantage") already took. Verified this is the actual real-seeded
+outcome, not just the pure-function unit test's prediction: live
+Playwright, after a real `seedWordNet()`, "to be sure" now resolves
+`Adverb -> Prepositional Phrase`, was `Adverb -> Infinitive Phrase`.
+`classifyModifierRoles()`'s own INFINITIVE_PHRASE branch (Head
+Identification Rule: "to" always PARTICLE, Head is the first Verb-capable
+token after it) removed along with it -- `headTargetPartsOfSpeech()`'s own
+matching case too. `word_seeder.ts`'s `nounLemmas` precompute (still
+needed, `classifyDeterminerPhrase()`'s own unrelated check) simplified
+back to a NOUN-only loop now that `verbLemmas` has no reader left.
+
+**Linguistics layer.** `data/phrase_type.ts` (the mirrored enum,
+"kept numerically identical on purpose" with Vocabulary's own) loses the
+same value the same way. `role/grammar_configurator.ts`'s own
+`grammars.set(PhraseType.INFINITIVE_PHRASE, ...)` entry removed --
+this was the *only* PhraseGrammar with non-empty `markerForms`/
+`markerNextStates`/`markerObligation` (the "lexically-anchored phrase
+marker, not a POS state" mechanism those three fields existed solely to
+support), so removing it left that whole mechanism permanently dead
+everywhere else it was threaded: `PhraseGrammar`'s own three fields,
+`SequenceStep.isMarker` and `TraceToken.isMarker` (both copies --
+`role/phrase_reader.ts`'s own and `role/web_worker/linguistics_worker_protocol.ts`'s
+independently-declared mirror), `SequenceEngine.findMarkerSequences()`,
+and every `if (...markerForms.size > 0)` branch in
+`grammar_configurator.ts`'s own `validateAgainstVocabulary()` and
+`phrase_reader.ts`'s own `materialiseStep()`/`selectHead()`/
+`positionTrace()` -- all removed rather than left as permanently-dead
+code paths, `sentence_reader_view.ts`'s own trace-token rendering
+simplified to match (no more MARKER-labelled chip).
+
+Three enum members this mechanism used to raise/emit --
+`LinguisticScope.INFINITIVE_PHRASE`, `ObligationKind.INFINITIVE_MARKER_REQUIRES_BASE_VERB`,
+`ReadingErrorKind.INFINITIVE_MISSING_VERB` -- were deliberately **not**
+deleted or renumbered: all three are documented, spec-anchored, numeric
+tensor codes (each own docstring says so directly), sitting in the middle
+of their own enum, with real, still-active members after them
+(RELATIVE_CLAUSE/COORDINATION/..., CONJUNCTION_REQUIRES_COORDINATED_ELEMENT,
+NO_VALID_CLAUSE_SEQUENCE/...). Renumbering to close the gap would silently
+change what every later value means; deleting would leave a hole a future
+reader has no way to distinguish from a typo. Left in place, each with an
+updated comment explaining it's the *inverse* of this same file's own
+existing "Phase 2, not yet raised" convention -- not "not yet", but "no
+longer", the feature that used to raise/emit it now gone.
+`buildObligationDischarges()`'s own row for
+`INFINITIVE_MARKER_REQUIRES_BASE_VERB` kept too (every ObligationKind
+member needs one, `validateAgainstVocabulary()`'s own check), its discharge
+set emptied to `new Set()` to match every other never-raised row's own
+convention.
+
+Verified real, not just type-checked: `npx tsc -b --force` clean confirmed
+every `.markerForms`/`.isMarker` access was actually reachable via the
+type system (a stale access would have been a compile error, not a silent
+miss); full `vitest run --no-file-parallelism` 187/187 (one test removed
+-- it existed specifically to demonstrate INFINITIVE_PHRASE recognition,
+nothing left to demonstrate; the "does not mistake 'to' + a non-verb..."
+test repurposed into asserting every case, denylisted or not, now lands on
+PREPOSITIONAL_PHRASE uniformly); live Playwright against the real running
+app, full `Load WordNet` (92,314 words, 70,928 phrases), confirmed no
+crash and the real reclassification above.

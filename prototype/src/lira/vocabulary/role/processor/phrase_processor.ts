@@ -51,21 +51,6 @@ const PHRASE_TYPE_PREPOSITIONS: ReadonlySet<string> = new Set([
   "unto", "up", "upon", "versus", "via", "with", "within", "without", "worth",
 ]);
 
-// classifyPhraseType()'s own small denylist of "to "-led lemmas whose
-// second token happens to also be a real WordNet verb lemma (advantage,
-// boot, date are all attested WordNet verbs), but which are genuinely
-// NOT infinitive phrases -- "to date"/"to boot"/"to advantage" use "to"
-// as a preposition ("until now", "besides", "to good effect"), not the
-// infinitive marker, unlike the genuine infinitives they'd otherwise be
-// indistinguishable from by the verbLemmas check alone ("to be sure",
-// "to begin with"). Found by enumerating every "to_"-led multi-word
-// lemma in dict/data.adv (the only file any occur in) and checking each
-// by hand -- 3 false positives out of 36 candidates. A lemma denylisted
-// here still gets classified, just via classifyPhraseType's own
-// PREPOSITIONAL_PHRASE rule below instead (correctly, in all three
-// cases: "to" + NP is exactly what these are structurally).
-const INFINITIVE_LOOKALIKE_DENYLIST: ReadonlySet<string> = new Set(["to advantage", "to boot", "to date"]);
-
 // classifyDeterminerPhrase()'s own small denylist of "a "-led lemmas
 // whose second token happens to also be a real single-word WordNet Noun
 // lemma (Capella the star; carte/mode inside the three-token "a la "
@@ -90,10 +75,10 @@ const DETERMINER_PHRASE_LOOKALIKE_DENYLIST: ReadonlySet<string> = new Set(["a ca
  * a whole by the idiomatic *function* it serves (a degree adverb, a
  * plain adjective), not by this internal *structure*, the identical
  * mismatch the PREPOSITIONAL_PHRASE check in classifyPhraseType() below
- * already corrects for. `nounLemmas` is `verbLemmas`'s own exact
- * counterpart (classifyPhraseType()'s own docstring on why a Dictionary
- * lookup can't be used here) -- every single-word NOUN-tagged lemma
- * across the whole synset list, built once up front by the same caller.
+ * already corrects for. `nounLemmas` (classifyPhraseType()'s own
+ * docstring on why a Dictionary lookup can't be used here) is every
+ * single-word NOUN-tagged lemma across the whole synset list, built once
+ * up front by the same caller.
  *
  * Deliberately scoped to "a"/"an" alone, not the full
  * PHRASE_TYPE_DETERMINERS set classifyModifierRoles() below uses --
@@ -146,18 +131,14 @@ function classifyDeterminerPhrase(tokens: readonly string[], lemma: string, noun
  *   classifyDeterminerPhrase()'s own docstring.
  * - ADVERB (~695 unique): the same PREPOSITIONAL_PHRASE pattern, more
  *   pronounced -- over half open with a preposition ("above all", "by
- *   hand", "in the meantime"). A further handful ("a bit", "a lot", "a
+ *   hand", "in the meantime"). "to" is itself one of PHRASE_TYPE_PREPOSITIONS'
+ *   own closed set, so every genuine WordNet infinitive ("to be sure",
+ *   "to begin with") lands here too -- WordNet has no "infinitive"
+ *   ss_type of its own to key off at all, so there's no distinct
+ *   structural shape checked for it. A further handful ("a bit", "a lot", "a
  *   little", "a trifle", "a good/great deal", "a hundred/million times")
  *   are Determiner Phrases WordNet tagged by their idiomatic function as
  *   degree adverbs -- classifyDeterminerPhrase() below.
- * - INFINITIVE_PHRASE has no WordNet ss_type of its own to key off at
- *   all (there's no "infinitive" synset category) -- every genuine case
- *   found ("to be sure", "to begin with") is WordNet-tagged ADVERB, so
- *   this is checked structurally, ahead of everything else: "to" as the
- *   first token, immediately followed by a real WordNet verb lemma
- *   (`verbLemmas`, built from the very same synset list this call is
- *   part of seeding), minus INFINITIVE_LOOKALIKE_DENYLIST's own three
- *   false positives.
  *
  * - PRONOUN has no WordNet ss_type of its own either (WordNet never
  *   assigns a multi-word lemma this part of speech -- dead code against
@@ -180,13 +161,9 @@ function classifyDeterminerPhrase(tokens: readonly string[], lemma: string, noun
 export function classifyPhraseType(
   lemma: string,
   partOfSpeech: PartOfSpeech,
-  verbLemmas: ReadonlySet<string>,
   nounLemmas: ReadonlySet<string>,
 ): PhraseType | undefined {
   const tokens = lemma.trim().toLowerCase().split(/\s+/);
-  if (tokens[0] === "to" && tokens.length > 1 && verbLemmas.has(tokens[1]) && !INFINITIVE_LOOKALIKE_DENYLIST.has(lemma.toLowerCase())) {
-    return PhraseType.INFINITIVE_PHRASE;
-  }
   if (classifyDeterminerPhrase(tokens, lemma, nounLemmas)) {
     return PhraseType.NOUN_PHRASE;
   }
@@ -297,7 +274,6 @@ function headTargetPartsOfSpeech(phraseType: PhraseType): ReadonlySet<PartOfSpee
     case PhraseType.ADVERB_PHRASE:
       return new Set([PartOfSpeech.ADVERB]);
     case PhraseType.VERB_PHRASE:
-    case PhraseType.INFINITIVE_PHRASE:
       return new Set([PartOfSpeech.VERB]);
     case PhraseType.PREPOSITIONAL_PHRASE:
       return new Set([PartOfSpeech.PREPOSITION]);
@@ -346,8 +322,8 @@ function firstIndexWithPos(possiblePos: readonly ReadonlySet<PartOfSpeech>[], ta
  * that actually declare a COMPLEMENT row in their own
  * `PHRASE_TYPE_DETAILS[...].allowedTypes` (data/enums/phrase_type.ts) --
  * NounPhrase, AdjectivePhrase, PrepositionalPhrase; every other
- * PhraseType (VerbPhrase, AdverbPhrase, InfinitivePhrase -- none declare
- * a COMPLEMENT row) always returns `undefined` here. `undefined` either
+ * PhraseType (VerbPhrase, AdverbPhrase -- neither declares a COMPLEMENT
+ * row) always returns `undefined` here. `undefined` either
  * way when there's no Head to complement (`headIndex === undefined`) or
  * nothing follows it.
  *
@@ -536,13 +512,6 @@ function adverbPhraseHeadIndex(possiblePos: readonly ReadonlySet<PartOfSpeech>[]
  *   PrepositionalPhrase), which gets ModifierRole.COMPLEMENT; nothing
  *   after that position carries a role of its own, the identical
  *   NounPhrase/AdjectivePhrase reasoning just above.
- * - InfinitivePhrase: "to" (position 0, guaranteed by classifyPhraseType
- *   itself) is always a Particle, never a Head candidate
- *   (data/entities/infinitive_phrase.ts's own docstring on why); Head is the
- *   first Verb-capable token after it. No Modifier/Particle/Determiner
- *   assignment beyond those two positions -- not covered by this
- *   codebase's own Word Patterns table, which has no InfinitivePhrase
- *   rows at all (that table's own note on why).
  *
  * Independent of every rule above: any token capable of reading as
  * DETERMINER always gets ModifierRole.DETERMINER, regardless of position
@@ -574,17 +543,13 @@ export function classifyModifierRoles(phraseType: PhraseType | undefined, tokens
     case PhraseType.PREPOSITIONAL_PHRASE:
       headIndex = firstIndexWithPos(possiblePos, headTargetPartsOfSpeech(phraseType), 0);
       break;
-    case PhraseType.INFINITIVE_PHRASE:
-      roles[0] = ModifierRole.PARTICLE;
-      headIndex = firstIndexWithPos(possiblePos, headTargetPartsOfSpeech(phraseType), 1);
-      break;
   }
   if (headIndex !== undefined) roles[headIndex] = ModifierRole.HEAD;
   const complementStart = complementStartIndex(phraseType, tokens, headIndex);
   if (complementStart !== undefined) roles[complementStart] = ModifierRole.COMPLEMENT;
 
   for (let i = 0; i < tokens.length; i++) {
-    if (i === headIndex || (phraseType === PhraseType.INFINITIVE_PHRASE && i === 0)) continue;
+    if (i === headIndex) continue;
     if (complementStart !== undefined && i >= complementStart) continue;
     if (possiblePos[i].has(PartOfSpeech.DETERMINER)) {
       roles[i] = ModifierRole.DETERMINER;
@@ -660,7 +625,8 @@ function nonHeadModifierRole(
  * the Head, ADJECTIVE after) -- ignored, and may be omitted, for every
  * other `phraseType`/`role` combination. Empty for a `phraseType`/`role`
  * pair no Word Role Assignment row ever assigns MODIFIER to a
- * coordinate-eligible run for (INFINITIVE_PHRASE, `undefined`) --
+ * coordinate-eligible run for (an unclassified Phrase, `phraseType`
+ * itself `undefined`) --
  * `resolvedWordFor()`'s own graceful "falls back to the first homograph"
  * behavior for an empty target set, `resolveCoordinateSide()`'s own
  * unchanged reasoning either way. */

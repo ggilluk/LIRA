@@ -814,3 +814,37 @@ subject/predicate/object breakdown for both, and `sentence.text` for
 "That the door was unlocked surprised everyone." correctly still starts
 with "That". Regression pass (the same three flagship examples) still
 unaffected.
+
+## Remove InfinitivePhrase
+
+Full write-up (the actual grammar/behaviour reasoning, and why three
+now-orphaned enum members -- `LinguisticScope.INFINITIVE_PHRASE`,
+`ObligationKind.INFINITIVE_MARKER_REQUIRES_BASE_VERB`,
+`ReadingErrorKind.INFINITIVE_MISSING_VERB` -- were deliberately left in
+place rather than deleted or renumbered) lives in the Vocabulary layer's
+own log (`vocabulary/documentation/architecture/data_entity_design_decisions_log.md`,
+"Remove InfinitivePhrase") -- requested there first (deleting
+`data/entities/infinitive_phrase.ts`), scoped to a full removal once
+tracing usage showed it reaches into this layer too.
+
+This layer's own share of it: `PhraseType.INFINITIVE_PHRASE` (mirrors
+Vocabulary's own enum "numerically identical on purpose" --
+`data/phrase_type.ts`'s own docstring); `grammar_configurator.ts`'s own
+`PhraseGrammar` entry for it, the *only* one with non-empty
+`markerForms`/`markerNextStates`/`markerObligation` -- so those three
+fields, `SequenceStep.isMarker`, `TraceToken.isMarker` (both copies), and
+`SequenceEngine.findMarkerSequences()` all became permanently dead the
+moment that one entry was removed, and were removed with it rather than
+left as unreachable code; every `markerForms.size > 0` branch in
+`validateAgainstVocabulary()` and `phrase_reader.ts`'s own
+`materialiseStep()`/`selectHead()`/`positionTrace()` simplified to their
+own always-taken branch. `sentence_reader_view.ts`'s trace-token
+rendering (the "full trace" panel this same log's earlier entries above
+reference) simplified to match -- no more MARKER-labelled chip, since no
+step is ever tagged one any more.
+
+`npx tsc -b --force` clean, full `vitest run --no-file-parallelism`
+187/187, live Playwright against the real running app (full `Load
+WordNet`, 92,314 words) confirmed no crash and the correct
+reclassification ("to be sure": Adverb -> Prepositional Phrase, was
+Adverb -> Infinitive Phrase).

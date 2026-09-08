@@ -5,8 +5,8 @@
  *
  * Relative-clause and coordinated-clause detection route through
  * ClauseType instead -- a coordinated PHRASE (e.g. "John and Mary") is
- * still one of the six types below with a coordination scope layered on
- * top, not a seventh type.
+ * still one of the five types below with a coordination scope layered on
+ * top, not a sixth type.
  *
  * Ported from linguistics/data/phrase_type.py. */
 export enum PhraseType {
@@ -15,5 +15,4 @@ export enum PhraseType {
   ADJECTIVE_PHRASE = 2,
   ADVERB_PHRASE = 3,
   PREPOSITIONAL_PHRASE = 4,
-  INFINITIVE_PHRASE = 5,
 }

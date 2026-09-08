@@ -18,9 +18,8 @@
  * for", "add up") that stay verb-headed regardless of a trailing
  * particle/preposition (that function's own docstring); WordNet's own
  * verb lemmas are never infinitive-marked either (zero "to "-led
- * VERB-tagged lemmas exist in the bundled data), so there's no
- * INFINITIVE_PHRASE ambiguity to resolve here the way ADJECTIVE/ADVERB
- * need. Never set for a Common Vocabulary Cache closed-class Phrase,
+ * VERB-tagged lemmas exist in the bundled data). Never set for a Common
+ * Vocabulary Cache closed-class Phrase,
  * which has no constituency-parsing pass of its own.
  *
  * `headWord` (data/entities/phrase.ts's own docstring on it) is a graph-reference

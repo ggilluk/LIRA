@@ -719,14 +719,13 @@ function posChip(text: string, pos: string): string {
 
 /** Renders one candidate completion's per-token part-of-speech
  * breakdown -- the sequence this specific reading committed to, not
- * just the token's candidate set. A marker token (e.g. INFINITIVE_PHRASE's
- * "to") or an unseeded token the grammar absorbed both carry
- * `partOfSpeech: null` (role/phrase_reader.ts's own TraceToken
- * docstring); labelled MARKER/UNKNOWN here instead of a blank chip. */
+ * just the token's candidate set. An unseeded token the grammar absorbed
+ * carries `partOfSpeech: null` (role/phrase_reader.ts's own TraceToken
+ * docstring); labelled UNKNOWN here instead of a blank chip. */
 function renderTraceTokens(tokens: readonly TraceToken[]): string {
   if (!tokens.length) return "";
   const chips = tokens
-    .map((token) => posChip(token.text, token.partOfSpeech ?? (token.isMarker ? "MARKER" : "UNKNOWN")))
+    .map((token) => posChip(token.text, token.partOfSpeech ?? "UNKNOWN"))
     .join("");
   return `<div class="lira-sr-trace-tokens">${chips}</div>`;
 }

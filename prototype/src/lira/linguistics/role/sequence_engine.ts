@@ -38,26 +38,23 @@ const WILDCARD = Symbol("wildcard");
 const BEAM_WIDTH = 8;
 
 /** One token's contribution to a SequencePath. Exactly one of (a real
- * seeded PartOfSpeech), isUnknown, or isMarker is true -- isUnknown
- * stands in for an unseeded token absorbed per spec 7; isMarker stands
- * in for a lexically-anchored phrase marker (e.g. INFINITIVE_PHRASE's
- * "to") that has no POS state of its own in this grammar. */
+ * seeded PartOfSpeech) or isUnknown is true -- isUnknown stands in for
+ * an unseeded token absorbed per spec 7. */
 export interface SequenceStep {
   tokenIndex: number;
   partOfSpeech?: PartOfSpeech;
   isUnknown: boolean;
-  isMarker: boolean;
 }
 
-export function createSequenceStep(tokenIndex: number, partOfSpeech?: PartOfSpeech, isUnknown = false, isMarker = false): SequenceStep {
-  return { tokenIndex, partOfSpeech, isUnknown, isMarker };
+export function createSequenceStep(tokenIndex: number, partOfSpeech?: PartOfSpeech, isUnknown = false): SequenceStep {
+  return { tokenIndex, partOfSpeech, isUnknown };
 }
 
 /** One candidate reading of a token span against one PhraseGrammar
  * (spec 10.1's "valid sequence"). Produced by
- * SequenceEngine.findValidSequences for the five phrase types whose
- * grammar is a flat POS transition table (or, for INFINITIVE_PHRASE, a
- * lexical marker); PREPOSITIONAL_PHRASE is assembled directly by
+ * SequenceEngine.findValidSequences for the four phrase types whose
+ * grammar is a flat POS transition table; PREPOSITIONAL_PHRASE is
+ * assembled directly by
  * PhraseReader instead, since its continuation is a whole nested
  * NOUN_PHRASE rather than a token-by-token transition -- `nestedPaths`
  * is where that nested SequencePath is attached once PhraseReader
@@ -138,7 +135,7 @@ export class SequenceEngine {
    * `phraseType`'s PhraseGrammar (a naive exhaustive cover search
    * explodes combinatorially, so this caps total nodes explored at
    * grammar.maxSequenceSearchNodes and keeps only the best BEAM_WIDTH
-   * partial paths per token position). Handles the five ordinary
+   * partial paths per token position). Handles the four ordinary
    * (non-nested-phrase) phrase types directly; PREPOSITIONAL_PHRASE has
    * no endStates and no transitions, so calling this with
    * PhraseType.PREPOSITIONAL_PHRASE always returns an empty array --
@@ -147,67 +144,7 @@ export class SequenceEngine {
     const phraseGrammar = this.grammar.phraseGrammars.get(phraseType);
     if (!phraseGrammar) return [];
     const resolvedEnd = endIndex ?? tokens.length;
-    if (phraseGrammar.markerForms.size > 0) {
-      return this.findMarkerSequences(tokens, startIndex, resolvedEnd, phraseGrammar);
-    }
     return this.findTransitionSequences(tokens, startIndex, resolvedEnd, phraseGrammar);
-  }
-
-  private findMarkerSequences(tokens: readonly TokenReading[], startIndex: number, endIndex: number, phraseGrammar: PhraseGrammar): readonly SequencePath[] {
-    if (startIndex >= endIndex) return [];
-    const marker = tokens[startIndex];
-    if (!phraseGrammar.markerForms.has(marker.text.toLowerCase())) return [];
-
-    let openObligations: readonly SequencingObligation[] = [];
-    if (phraseGrammar.markerObligation !== undefined) {
-      openObligations = [{
-        kind: phraseGrammar.markerObligation,
-        scope: PHRASE_SCOPE.get(phraseGrammar.phraseType) as LinguisticScope,
-        raisedAtIndex: startIndex,
-        description: `"${marker.text}" requires a base-form verb to follow`,
-      }];
-    }
-    const markerStep = createSequenceStep(startIndex, undefined, false, true);
-
-    if (startIndex + 1 >= endIndex) {
-      // Marker with nothing following -- the obligation it raised is
-      // never discharged, a definite negative conclusion.
-      return [createSequencePath({
-        phraseType: phraseGrammar.phraseType, startIndex, endIndex: startIndex + 1,
-        steps: [markerStep], openObligations,
-      })];
-    }
-
-    const nextToken = tokens[startIndex + 1];
-    const scope = PHRASE_SCOPE.get(phraseGrammar.phraseType) as LinguisticScope;
-
-    if (!isKnown(nextToken)) {
-      if (this.grammar.unknownTokenAbsorbingScopes.has(scope)) {
-        const steps = [markerStep, createSequenceStep(startIndex + 1, undefined, true)];
-        return [createSequencePath({
-          phraseType: phraseGrammar.phraseType, startIndex, endIndex: startIndex + 2,
-          steps, openObligations: [],
-        })];
-      }
-      return [createSequencePath({
-        phraseType: phraseGrammar.phraseType, startIndex, endIndex: startIndex + 1,
-        steps: [markerStep], openObligations,
-      })];
-    }
-
-    let paths = candidatePartsOfSpeech(nextToken)
-      .filter((pos) => phraseGrammar.markerNextStates.has(pos))
-      .map((pos) => createSequencePath({
-        phraseType: phraseGrammar.phraseType, startIndex, endIndex: startIndex + 2,
-        steps: [markerStep, createSequenceStep(startIndex + 1, pos)], openObligations: [],
-      }));
-    if (paths.length === 0) {
-      paths = [createSequencePath({
-        phraseType: phraseGrammar.phraseType, startIndex, endIndex: startIndex + 1,
-        steps: [markerStep], openObligations,
-      })];
-    }
-    return paths;
   }
 
   private findTransitionSequences(tokens: readonly TokenReading[], startIndex: number, endIndex: number, phraseGrammar: PhraseGrammar): readonly SequencePath[] {
@@ -336,12 +273,12 @@ export class SequenceEngine {
     // Lower is "more preferred": identifyWord's own candidate order is
     // highest-confidence first, so index 0 within a token's
     // candidatePartsOfSpeech() is its top-ranked seeded sense. Summed
-    // across every real (non-wildcard, non-marker) step so that, when
-    // nothing else distinguishes two candidate readings, the one built
-    // from more top-ranked seeded senses wins.
+    // across every real (non-wildcard) step so that, when nothing else
+    // distinguishes two candidate readings, the one built from more
+    // top-ranked seeded senses wins.
     let rankIndexSum = 0;
     for (const step of allSteps) {
-      if (step.isUnknown || step.isMarker || step.partOfSpeech === undefined) continue;
+      if (step.isUnknown || step.partOfSpeech === undefined) continue;
       const candidates = candidatePartsOfSpeech(tokens[step.tokenIndex]);
       const index = candidates.indexOf(step.partOfSpeech);
       if (index >= 0) rankIndexSum += index;
@@ -364,7 +301,7 @@ export class SequenceEngine {
    * PREPOSITIONAL_PHRASE's nested NOUN_PHRASE has its own transitions,
    * scored under its own phraseType, not the parent's) actually walks.
    * `0` throughout when no evidenceStore was ever given to this engine
-   * -- unchanged behaviour from before this store existed. A marker or
+   * -- unchanged behaviour from before this store existed. An
    * unknown-absorbed step has no real fromState/toState transition to
    * look up, so it contributes nothing and also breaks the chain (the
    * step after it starts counting again from "phrase start", since
@@ -375,7 +312,7 @@ export class SequenceEngine {
     let sum = 0;
     let fromState: PartOfSpeech | undefined;
     for (const step of path.steps) {
-      if (step.isUnknown || step.isMarker || step.partOfSpeech === undefined) {
+      if (step.isUnknown || step.partOfSpeech === undefined) {
         fromState = undefined;
         continue;
       }

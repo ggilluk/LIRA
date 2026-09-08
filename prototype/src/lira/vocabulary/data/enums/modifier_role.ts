@@ -23,8 +23,8 @@
  * (role/processor/phrase_processor.ts), for every PhraseType that
  * declares a COMPLEMENT row in its own `PHRASE_TYPE_DETAILS[...].allowedTypes`
  * (data/enums/phrase_type.ts -- NounPhrase, AdjectivePhrase,
- * PrepositionalPhrase today; VerbPhrase/AdverbPhrase/InfinitivePhrase
- * declare no such row and never assign it). Unlike MODIFIER, a
+ * PrepositionalPhrase today; VerbPhrase/AdverbPhrase declare no such row
+ * and never assign it). Unlike MODIFIER, a
  * COMPLEMENT-role token's own span is genuinely built into a real nested
  * Phrase, not just referenced by a bare WordForm Identifier --
  * `linkPhraseWords()`'s own docstring on why. Which ModifierRole values

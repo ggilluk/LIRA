@@ -199,16 +199,14 @@ export interface JsonDocument {
 
 /** One token's contribution to a completion's part-of-speech breakdown
  * -- structurally identical to role/phrase_reader.ts's own (independently
- * declared, not imported -- see that file's own note) `TraceToken`. A
- * marker step (e.g. INFINITIVE_PHRASE's "to") or an unseeded token the
- * grammar's absorption rule let through both report `partOfSpeech:
- * null`, distinguished by `isMarker`/`isUnknown` so the UI can label
- * them instead of showing a blank. */
+ * declared, not imported -- see that file's own note) `TraceToken`. An
+ * unseeded token the grammar's absorption rule let through reports
+ * `partOfSpeech: null`, distinguished by `isUnknown` so the UI can label
+ * it instead of showing a blank. */
 export interface TraceToken {
   text: string;
   partOfSpeech: string | null;
   isUnknown: boolean;
-  isMarker: boolean;
 }
 
 export interface TraceCompletion {

@@ -1,15 +1,14 @@
 import { ModifierRole } from "./modifier_role";
 
 /** The grammatical category a Phrase belongs to -- which single word
- * class (noun, verb, adjective, adverb, preposition, or an infinitive
- * verb form) the phrase as a whole functions as within a larger
- * construction. Distinct from the WordNet-tagged part of speech
- * Phrases.partOfSpeechOf() reports for this Phrase (data/phrases.ts),
- * which still names the lexical category of the phrase's own headword
- * the same way it would for an ordinary single-word Word; PhraseType
- * instead classifies the phrase's own internal shape -- how its
- * (optional) modifiers, complements, and auxiliaries arrange themselves
- * around that head.
+ * class (noun, verb, adjective, adverb, or preposition) the phrase as a
+ * whole functions as within a larger construction. Distinct from the
+ * WordNet-tagged part of speech Phrases.partOfSpeechOf() reports for
+ * this Phrase (data/phrases.ts), which still names the lexical category
+ * of the phrase's own headword the same way it would for an ordinary
+ * single-word Word; PhraseType instead classifies the phrase's own
+ * internal shape -- how its (optional) modifiers, complements, and
+ * auxiliaries arrange themselves around that head.
  * Undefined on a Phrase whose grammatical structure hasn't been
  * classified (Phrase.phraseType's own docstring).
  *
@@ -18,7 +17,7 @@ import { ModifierRole } from "./modifier_role";
  * Linguistics' own PhraseType (linguistics/data/phrase_type.ts) value
  * for value -- Linguistics classifies a phrase read live out of a
  * sentence; this classifies a Phrase as a standing Vocabulary entry --
- * but the two enumerations name literally the same six grammatical
+ * but the two enumerations name literally the same five grammatical
  * categories, so they're kept numerically identical on purpose. */
 export enum PhraseType {
   // (Determiner) + (Modifiers) + Noun/Pronoun + (Complements)
@@ -45,11 +44,6 @@ export enum PhraseType {
   // A phrase beginning with a preposition and containing its
   // complement. Example: "within the framework".
   PREPOSITIONAL_PHRASE = 4,
-
-  // to + Base-form verb + (Complements) + (Modifiers)
-  // A phrase centred on an infinitive verb and functioning nominally,
-  // adjectivally, or adverbially. Example: "to identify the cause".
-  INFINITIVE_PHRASE = 5,
 }
 
 /** PhraseType's own definition/structure/example table, exactly as
@@ -69,8 +63,7 @@ export enum PhraseType {
  * own `complementStartIndex()` mirrors this table's own COMPLEMENT rows
  * by hand, in its own `switch` over `PhraseType`, rather than looking
  * this map up at runtime, so the two must be kept in sync by eye, not by
- * construction. `INFINITIVE_PHRASE` carries no entries here, the same
- * reason it carries no row in that document's own table. */
+ * construction. */
 export const PHRASE_TYPE_DETAILS: Record<
   PhraseType,
   { definition: string; structure: string; example: string; allowedTypes: Partial<Record<ModifierRole, readonly string[]>> }
@@ -124,11 +117,5 @@ export const PHRASE_TYPE_DETAILS: Record<
       [ModifierRole.MODIFIER]: ["Adverb", "AdverbPhrase"],
       [ModifierRole.COMPLEMENT]: ["NounPhrase", "Pronoun", "Adverb", "AdverbPhrase", "PrepositionalPhrase", "Clause"],
     },
-  },
-  [PhraseType.INFINITIVE_PHRASE]: {
-    definition: "A phrase centred on an infinitive verb and functioning nominally, adjectivally, or adverbially.",
-    structure: "to + Base-form verb + (Complements) + (Modifiers)",
-    example: "to identify the cause",
-    allowedTypes: {},
   },
 };

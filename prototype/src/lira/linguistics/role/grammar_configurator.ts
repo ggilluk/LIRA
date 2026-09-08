@@ -41,19 +41,12 @@ export interface PhraseGrammar {
   // attempts a nested phrase of the given type as the continuation
   // instead of a POS transition.
   nestedPhraseAfter: ReadonlyMap<PartOfSpeech, PhraseType>;
-  // INFINITIVE_PHRASE only: token text (not POS) that starts this
-  // phrase, and the POS states allowed immediately after the marker.
-  markerForms: ReadonlySet<string>;
-  markerNextStates: ReadonlySet<PartOfSpeech>;
-  markerObligation?: ObligationKind;
 }
 
 function phraseGrammar(init: Pick<PhraseGrammar, "phraseType" | "startStates" | "transitions" | "endStates" | "headPreference"> & Partial<PhraseGrammar>): PhraseGrammar {
   return {
     obligationsRaised: new Map(),
     nestedPhraseAfter: new Map(),
-    markerForms: new Set(),
-    markerNextStates: new Set(),
     ...init,
   };
 }
@@ -190,20 +183,6 @@ function buildPhraseGrammars(): Map<PhraseType, PhraseGrammar> {
     nestedPhraseAfter: new Map([[POS.PREPOSITION, PhraseType.NOUN_PHRASE]]),
   }));
 
-  grammars.set(PhraseType.INFINITIVE_PHRASE, phraseGrammar({
-    phraseType: PhraseType.INFINITIVE_PHRASE,
-    // No seeded POS starts this phrase -- "to" is seeded only as
-    // PREPOSITION, so the marker is matched by token text, never by
-    // relabelling its seeded POS.
-    startStates: new Set(),
-    transitions: new Map(),
-    endStates: new Set([POS.VERB]),
-    headPreference: [POS.VERB],
-    markerForms: new Set(["to"]),
-    markerNextStates: new Set([POS.VERB]),
-    markerObligation: ObligationKind.INFINITIVE_MARKER_REQUIRES_BASE_VERB,
-  }));
-
   return grammars;
 }
 
@@ -318,12 +297,16 @@ function buildObligationDischarges(): Map<ObligationKind, ReadonlySet<PartOfSpee
     [ObligationKind.DETERMINER_REQUIRES_NOMINAL_HEAD, new Set([POS.NOUN, POS.PROPER_NOUN, POS.NUMERAL])],
     [ObligationKind.PREPOSITION_REQUIRES_OBJECT, new Set([POS.NOUN, POS.PROPER_NOUN, POS.PRONOUN, POS.NUMERAL])],
     [ObligationKind.AUXILIARY_REQUIRES_COMPATIBLE_VERB_FORM, new Set([POS.VERB])],
-    [ObligationKind.INFINITIVE_MARKER_REQUIRES_BASE_VERB, new Set([POS.VERB])],
     [ObligationKind.CONJUNCTION_REQUIRES_COORDINATED_ELEMENT, coordinable],
-    // Phase 2 obligations -- never raised in this phase, so an empty
-    // discharge set is never actually consulted; present so
-    // validateAgainstVocabulary() has one row per ObligationKind member
-    // to check, not just the ones this phase raises.
+    // Never raised in this phase, so an empty discharge set is never
+    // actually consulted; present so validateAgainstVocabulary() has one
+    // row per ObligationKind member to check, not just the ones this
+    // phase raises. RELATIVE_PRONOUN_OPENS_RELATIVE_CLAUSE/
+    // QUOTATION_MUST_CLOSE/PARENTHETICAL_MUST_CLOSE are Phase 2 -- not
+    // yet raised by any rule; INFINITIVE_MARKER_REQUIRES_BASE_VERB is the
+    // inverse case -- no longer raised, INFINITIVE_PHRASE removed
+    // (sequencing_obligation.ts's own docstring).
+    [ObligationKind.INFINITIVE_MARKER_REQUIRES_BASE_VERB, new Set()],
     [ObligationKind.RELATIVE_PRONOUN_OPENS_RELATIVE_CLAUSE, new Set()],
     [ObligationKind.DECLARATIVE_CLAUSE_REQUIRES_FINITE_VERB, new Set([POS.VERB])],
     [ObligationKind.QUOTATION_MUST_CLOSE, new Set()],
@@ -372,7 +355,7 @@ export class GrammarConfigurator {
         errors.push(`phraseGrammars[${PhraseType[phraseType]}].phraseType mismatch: ${PhraseType[grammar.phraseType]}`);
       }
 
-      const reachableStates = new Set<PartOfSpeech>([...grammar.startStates, ...grammar.endStates, ...grammar.markerNextStates]);
+      const reachableStates = new Set<PartOfSpeech>([...grammar.startStates, ...grammar.endStates]);
       for (const targets of grammar.transitions.values()) {
         for (const target of targets) reachableStates.add(target);
       }
@@ -383,21 +366,17 @@ export class GrammarConfigurator {
       }
 
       const hasOrdinaryEnd = grammar.endStates.size > 0;
-      const hasMarkerEnd = grammar.markerForms.size > 0 && grammar.markerNextStates.size > 0;
       // A PP-shaped phrase never ends on its own POS at all -- it ends
       // when the nested phrase its trigger POS opens ends.
       const hasNestedEnd = grammar.nestedPhraseAfter.size > 0;
-      if (!hasOrdinaryEnd && !hasMarkerEnd && !hasNestedEnd) {
-        errors.push(`${PhraseType[phraseType]}: no endStates, marker-based end, or nested-phrase end -- this phrase type can never validly close`);
+      if (!hasOrdinaryEnd && !hasNestedEnd) {
+        errors.push(`${PhraseType[phraseType]}: no endStates or nested-phrase end -- this phrase type can never validly close`);
       }
 
       for (const [pos, kind] of grammar.obligationsRaised) {
         if (!this.obligationDischarges.has(kind)) {
           errors.push(`${PhraseType[phraseType]}: obligation ${ObligationKind[kind]} raised by ${PartOfSpeech[pos]} has no obligationDischarges entry`);
         }
-      }
-      if (grammar.markerObligation !== undefined && !this.obligationDischarges.has(grammar.markerObligation)) {
-        errors.push(`${PhraseType[phraseType]}: markerObligation ${ObligationKind[grammar.markerObligation]} has no obligationDischarges entry`);
       }
 
       for (const nestedType of grammar.nestedPhraseAfter.values()) {
