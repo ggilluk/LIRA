@@ -7,6 +7,7 @@ import { SemanticRelationshipProcessor } from "../role/semantic_relationship_pro
 import type { LinguisticUnit } from "../../linguistics/data/linguistic_unit";
 import { Coordinations } from "./coordinations";
 import { Dictionary } from "./dictionary";
+import { Domains } from "./domains";
 import { LexicalRelationshipStore } from "./lexical_relationship_store";
 import { LexicalRelationshipSystemPropertyTensor } from "./lexical_relationship_tensor";
 import { MorphologicalPointerRelationshipStore } from "./morphological_pointer_relationship_store";
@@ -35,6 +36,13 @@ import { WordForms } from "./word_forms";
  * -- given a real per-Domain home the same way `wordForms` was, ahead
  * of the seeding pass that will eventually write to it.
  *
+ * `domains` holds the shared, canonical registry of topic-domain tags
+ * (data/entities/domain.ts's own docstring -- NOT this class's own
+ * "knowledge-Domain" concept the constructor's `domainName` names) that
+ * Word/Sense/Phrase's own `domainTag`/`relatedDomainTags` fields
+ * reference by `Identifier` now instead of embedding the tag's own
+ * `Text` directly.
+ *
  * `morphologicalPointerRelationships`/`morphologicalPointerRelationshipProcessor`/
  * `morphologicalPointerRelationshipTensor` are seeding-internal working state now,
  * not a permanent part of this Domain's queryable model
@@ -62,6 +70,7 @@ export class VocabularyContext {
   senses = new Senses();
   wordForms = new WordForms();
   coordinations = new Coordinations<LinguisticUnit>();
+  domains = new Domains();
   hydrator: AsyncDictionaryHydrator;
   dictionaryProcessor: DictionaryProcessor;
 

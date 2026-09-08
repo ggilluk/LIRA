@@ -6,6 +6,7 @@
  * parameters. */
 
 import type { Identifier, Text } from "../../../value_objects";
+import type { Domains } from "../../data/domains";
 import type { Phrase } from "../../data/entities/phrase";
 import { isNoun } from "../../role/processor/noun_processor";
 import type { Senses } from "../../data/senses";
@@ -48,8 +49,8 @@ export function senseFieldsFor(
   entry: Word | Phrase,
   wordForms: WordForms,
 ): {
-  domainTag?: Text;
-  relatedDomainTags: readonly Text[];
+  domainTag?: Identifier;
+  relatedDomainTags: readonly Identifier[];
   definition?: Text;
   gloss?: Text;
   usageNotes: readonly Text[];
@@ -87,11 +88,14 @@ export function isRootWordFor(senses: Senses, word: Word, wordForms: WordForms):
   return sense?.isRootWord ?? (isNoun(word) && word.isRootWord);
 }
 
-export function domainLabel(senses: Senses, domainName: string, word: Word | undefined, wordForms: WordForms): string | null {
+export function domainLabel(senses: Senses, domainName: string, word: Word | undefined, wordForms: WordForms, domains: Domains): string | null {
   if (word === undefined) return null;
   if (!word.isCommon) return domainName;
   // A genuine polyseme's domainTag ("symbol.common") names its own
-  // sense-disambiguating subdomain; every other Common word reads as
-  // plain "Common", same as before this field existed.
-  return senseFieldsFor(senses, word, wordForms).domainTag?.value ?? "Common";
+  // sense-disambiguating subdomain -- a graph-reference pointer now,
+  // resolved back to its own display text via `domains`; every other
+  // Common word reads as plain "Common", same as before this field
+  // existed.
+  const domainTag = senseFieldsFor(senses, word, wordForms).domainTag;
+  return (domainTag !== undefined ? domains.findByUuid(domainTag.value)?.domainText.value : undefined) ?? "Common";
 }

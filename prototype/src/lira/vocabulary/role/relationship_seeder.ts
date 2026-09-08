@@ -11,6 +11,7 @@
  * API's `crypto.subtle.digest`, which is promise-based. */
 
 import type { Dictionary } from "../data/dictionary";
+import type { Domains } from "../data/domains";
 import { MorphologicalPointerRelationshipStore } from "../data/morphological_pointer_relationship_store";
 import { LexicalRelationshipType } from "../data/enums/lexical_relationship_type";
 import { PartOfSpeech } from "../data/enums/part_of_speech";
@@ -198,6 +199,7 @@ export class RelationshipSeeder {
         wordForms?: WordForms;
         lexicalRelationships?: LexicalRelationshipStore;
         lexicalRelationshipProcessor?: LexicalRelationshipProcessor;
+        domains?: Domains;
       };
     },
     options?: { skipUnresolvable?: boolean },
@@ -210,6 +212,7 @@ export class RelationshipSeeder {
     const semanticProcessor = domain.vocabulary.semanticRelationshipProcessor;
     const wordForms = domain.vocabulary.wordForms;
     const lexicalProcessor = domain.vocabulary.lexicalRelationshipProcessor;
+    const domains = domain.vocabulary.domains;
     const lexicalExistingEdges = new Set<string>();
     if (domain.vocabulary.lexicalRelationships !== undefined) {
       for (const relationship of domain.vocabulary.lexicalRelationships.all()) {
@@ -221,7 +224,7 @@ export class RelationshipSeeder {
 
     const resolved: Array<[Word, Word, LexicalRelationshipType]> = [];
     for (const spec of await this.loadRelationshipSpecs()) {
-      const sourceWord = this.resolve(dictionary, spec.sourceForm, spec.sourcePos, spec.sourceDomainTag);
+      const sourceWord = this.resolve(dictionary, spec.sourceForm, spec.sourcePos, spec.sourceDomainTag, domains);
       if (sourceWord === undefined) {
         if (skipUnresolvable || this.isPhraseOnly(phraseBook, spec.sourceForm, spec.sourcePos)) continue;
         throw new Error(
@@ -231,7 +234,7 @@ export class RelationshipSeeder {
             ` in Domain '${domain.name}'`,
         );
       }
-      const targetWord = this.resolve(dictionary, spec.targetForm, spec.targetPos, spec.targetDomainTag);
+      const targetWord = this.resolve(dictionary, spec.targetForm, spec.targetPos, spec.targetDomainTag, domains);
       if (targetWord === undefined) {
         if (skipUnresolvable || this.isPhraseOnly(phraseBook, spec.targetForm, spec.targetPos)) continue;
         throw new Error(
@@ -383,10 +386,13 @@ export class RelationshipSeeder {
    * picks the matching sense, ignoring load order entirely. With a
    * domainTag too, also requires the candidate's own domainTag to
    * match. */
-  private resolve(dictionary: Dictionary, lexicalForm: string, partOfSpeech?: PartOfSpeech, domainTag?: string): Word | undefined {
+  private resolve(dictionary: Dictionary, lexicalForm: string, partOfSpeech?: PartOfSpeech, domainTag?: string, domains?: Domains): Word | undefined {
     if (partOfSpeech === undefined) return dictionary.lookup(lexicalForm);
     const candidates = dictionary.lookupAll(lexicalForm).filter((word) => word.partOfSpeech === partOfSpeech);
-    return candidates.find((word) => (word.domainTag?.value ?? undefined) === domainTag);
+    return candidates.find((word) => {
+      const wordDomainTag = word.domainTag !== undefined ? domains?.findByUuid(word.domainTag.value)?.domainText.value : undefined;
+      return wordDomainTag === domainTag;
+    });
   }
 
   /** Whether `lexicalForm` (optionally narrowed by `partOfSpeech`)

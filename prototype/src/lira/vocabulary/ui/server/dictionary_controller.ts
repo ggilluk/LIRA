@@ -42,6 +42,7 @@ import type { LexicalRelationshipStore } from "../../data/lexical_relationship_s
 import type { SemanticRelationshipStore } from "../../data/semantic_relationship_store";
 import type { LinguisticUnit } from "../../../linguistics/data/linguistic_unit";
 import { Coordinations } from "../../data/coordinations";
+import { Domains } from "../../data/domains";
 import { Phrases } from "../../data/phrases";
 import { Senses } from "../../data/senses";
 import { WordForms } from "../../data/word_forms";
@@ -96,6 +97,14 @@ export interface DictionaryViewOptions {
   // own "## Coordination" section) keeps working unchanged, Phrase's
   // own identical default-empty-store convention above.
   coordinations?: Coordinations<LinguisticUnit>;
+  // Domain's own store (data/domains.ts) -- undefined/omitted means an
+  // empty Domains store, every existing caller that predates Domain
+  // (data_entity_design_decisions_log.md's own "## Domain" section)
+  // keeps working unchanged: domainLabel()/senseFieldsFor() simply
+  // never resolve a domainTag Identifier to a Domain, same
+  // "no data for this yet" degradation `senses`/`wordForms` already
+  // give a pre-Sense/pre-WordForm Domain.
+  domains?: Domains;
 }
 
 // A hard ceiling on how many Words this view will build full,
@@ -181,6 +190,7 @@ export class DictionaryView {
   private readonly wordForms: WordForms;
   private readonly lexicalRelationships: LexicalRelationshipStore | undefined;
   private readonly coordinations: Coordinations<LinguisticUnit>;
+  private readonly domains: Domains;
 
   constructor(
     private readonly dictionary: Dictionary,
@@ -195,6 +205,7 @@ export class DictionaryView {
     this.wordForms = options.wordForms ?? new WordForms();
     this.lexicalRelationships = options.lexicalRelationships;
     this.coordinations = options.coordinations ?? new Coordinations<LinguisticUnit>();
+    this.domains = options.domains ?? new Domains();
   }
 
   /** The moment render() is actually called, not construction time --
@@ -235,8 +246,9 @@ export class DictionaryView {
     const totalSenseCount = this.senses.totalEntries();
     const overCapacitySenses = totalSenseCount > MAX_INTERACTIVE_WORDS;
 
-    const words = overCapacity ? [] : wordRecords(this.dictionary, this.relationships, this.senses, this.domainName, this.wordForms);
-    const rels = overCapacity ? [] : relationshipRecords(this.relationships, this.dictionary, this.phrases, this.senses, this.domainName, this.wordForms);
+    const words = overCapacity ? [] : wordRecords(this.dictionary, this.relationships, this.senses, this.domainName, this.wordForms, this.domains);
+    const rels =
+      overCapacity ? [] : relationshipRecords(this.relationships, this.dictionary, this.phrases, this.senses, this.domainName, this.wordForms, this.domains);
     // Same overCapacity gate as `rels` just above -- LexicalRelationshipStore's
     // own scale tracks the same Dictionary this.relationships already
     // does (both are populated off the identical seeded Words), so
@@ -247,9 +259,9 @@ export class DictionaryView {
     const lexicalRels =
       overCapacity || this.lexicalRelationships === undefined
         ? []
-        : lexicalRelationshipRecords(this.lexicalRelationships, this.wordForms, this.dictionary, this.phrases, this.senses, this.domainName);
+        : lexicalRelationshipRecords(this.lexicalRelationships, this.wordForms, this.dictionary, this.phrases, this.senses, this.domainName, this.domains);
     const phrases = overCapacityPhrases ? [] : phraseRecords(this.phrases, this.senses, this.wordForms);
-    const senses = overCapacitySenses ? [] : senseRecords(this.senses, this.phrases, this.domainName);
+    const senses = overCapacitySenses ? [] : senseRecords(this.senses, this.phrases, this.domainName, this.domains);
     // No capacity gate -- coordinationRecords()'s own docstring on why
     // (a small, closed, hand-curated set today, nowhere near WordNet
     // scale).
@@ -267,7 +279,7 @@ export class DictionaryView {
     // actually being there).
     const posValues = [...new Set(allWords.map((w) => PartOfSpeech[w.partOfSpeech]))].sort();
     const domainValues = [
-      ...new Set(allWords.map((w) => domainLabel(this.senses, this.domainName, w, this.wordForms)).filter((d): d is string => d !== null)),
+      ...new Set(allWords.map((w) => domainLabel(this.senses, this.domainName, w, this.wordForms, this.domains)).filter((d): d is string => d !== null)),
     ].sort();
     // Just two labels are ever possible for one DictionaryView render
     // ("Common" and this.domainName), so a fixed two-color assignment,
@@ -391,7 +403,7 @@ export class DictionaryView {
    * duplicating domainLabel's own isCommon/domainTag logic. */
   wordDomainLabels(): Map<string, string | null> {
     const labels = new Map<string, string | null>();
-    for (const word of this.dictionary.all()) labels.set(graphUuid(word), domainLabel(this.senses, this.domainName, word, this.wordForms));
+    for (const word of this.dictionary.all()) labels.set(graphUuid(word), domainLabel(this.senses, this.domainName, word, this.wordForms, this.domains));
     return labels;
   }
 
@@ -405,7 +417,7 @@ export class DictionaryView {
     rootWordsOnly?: boolean;
     limit?: number;
   }): { words: WordRecord[]; totalMatches: number } {
-    return searchWords(this.dictionary, this.phrases, this.senses, this.relationships, this.domainName, options, this.wordForms);
+    return searchWords(this.dictionary, this.phrases, this.senses, this.relationships, this.domainName, options, this.wordForms, this.domains);
   }
 
   searchPhrases(options: { word?: string; gloss?: string; definition?: string; pos?: string; limit?: number }): {
@@ -419,11 +431,11 @@ export class DictionaryView {
     senses: SenseRecord[];
     totalMatches: number;
   } {
-    return searchSenses(this.senses, this.phrases, this.domainName, options);
+    return searchSenses(this.senses, this.phrases, this.domainName, options, this.domains);
   }
 
   searchRelationships(options: { wordId?: string; query?: string; limit?: number }): { relationships: RelationshipRecord[]; totalMatches: number } {
-    return searchRelationships(this.relationships, this.dictionary, this.phrases, this.senses, this.domainName, options, this.wordForms);
+    return searchRelationships(this.relationships, this.dictionary, this.phrases, this.senses, this.domainName, options, this.wordForms, this.domains);
   }
 
   relationshipKindCounts(): RelationshipKindCount[] {
@@ -440,7 +452,16 @@ export class DictionaryView {
     totalMatches: number;
   } {
     if (this.lexicalRelationships === undefined) return { relationships: [], totalMatches: 0 };
-    return searchLexicalRelationships(this.lexicalRelationships, this.wordForms, this.dictionary, this.phrases, this.senses, this.domainName, options);
+    return searchLexicalRelationships(
+      this.lexicalRelationships,
+      this.wordForms,
+      this.dictionary,
+      this.phrases,
+      this.senses,
+      this.domainName,
+      options,
+      this.domains,
+    );
   }
 
   lexicalRelationshipKindCounts(): LexicalRelationshipKindCount[] {
@@ -448,6 +469,6 @@ export class DictionaryView {
   }
 
   resolveHierarchy(options: { kind: string; wordId?: string; limit?: number }): HierarchyResolution {
-    return resolveHierarchy(this.relationships, this.dictionary, this.phrases, this.senses, this.domainName, options, this.wordForms);
+    return resolveHierarchy(this.relationships, this.dictionary, this.phrases, this.senses, this.domainName, options, this.wordForms, this.domains);
   }
 }

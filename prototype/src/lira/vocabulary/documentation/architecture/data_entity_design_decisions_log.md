@@ -3235,3 +3235,279 @@ page error, with the Coordinations tab rendering all 85 real
 hand-curated Word Coordinations (their own coordinator/conjunction-type
 columns populated correctly) after a full WordNet seed, the one real
 production path that constructs a `Coordination` end to end.
+
+## Add a `Domain` entity; migrate `Word`/`Sense`/`Phrase`'s `domainTag`/`relatedDomainTags` from `Text` to `Identifier`
+
+Requested directly: create `data/entities/domain.ts` with a `Domain`
+class carrying `domainId: Identifier`/`domainText: Text`, and change
+every entity attribute that referenced a topic domain by embedded text
+(`domainTag`, `relatedDomainTags`) to reference it by identifier
+instead, resolved against a store, rather than each entity carrying its
+own duplicate copy of the same string.
+
+Two decisions were made explicit with the requester before implementing,
+both preserved here since a future reader would otherwise reasonably
+guess differently:
+
+- **Naming.** `Domain` already names something else entirely in this
+  codebase's own Knowledge Layer -- a hosted vocabulary partition like
+  "Common"/"Physics" (`knowledge/data/portal_domain.ts`'s own docstring,
+  the eventual port target of `knowledge/data/domain.py`; this same
+  meaning is what `VocabularyContext`'s own constructor `domainName`
+  parameter names, and what every `data_entity_design_decisions_log.md`
+  entry above this one means by "Domain" in prose). `DomainTag` was
+  offered as a collision-free alternative; the requester chose `Domain`
+  as literally requested. The new entity is `Domain`
+  (`data/entities/domain.ts`) despite the name already being taken by a
+  different concept one layer up -- every docstring on the new type
+  spells out the distinction explicitly (dozens of lightweight
+  classification tags, each living inside a `Domains` store one specific
+  knowledge-Domain owns, vs. a knowledge-Domain itself); nothing in this
+  layer references the Knowledge Layer's own `Domain` directly, so the
+  two names never collide in one scope, but a reader skimming both
+  layers' own vocabulary should not assume they're the same thing.
+- **Scope.** The request named `Word.domainTag`/`relatedDomainTags`
+  specifically. Tracing every real reader/writer found the identical
+  field pair, identically shaped, on `Sense` and `Phrase` too -- offered
+  as a choice (Word alone vs. all three); the requester chose all three,
+  so `Sense.domainTag`/`relatedDomainTags` and
+  `Phrase.domainTag`/`relatedDomainTags` both migrated in the same pass,
+  not left as a stray `Text`-typed pair a later reader would have to
+  notice and reconcile by hand. `Sense.senseDomainTag` (Princeton
+  WordNet's own lexicographer-file category string, e.g.
+  "noun.artifact") is a distinct, unrelated concept the tracing pass
+  flagged by name specifically to avoid conflating with `domainTag` --
+  left untouched, still `Text`.
+
+### Why this needed a real call-site trace, not just a clean compile
+
+Every prior rename in this log (`entryId` -> `phraseId`/`wordId`/`senseId`/`coordinationId`)
+changed a field *name*, so a stale call site failed to compile --
+`tsc -b --force` itself was the exhaustive check. This change keeps the
+field name (`domainTag`) and only changes its *type*, `Text` ->
+`Identifier`. Both shapes carry a `.value: string`, so a stale call site
+reading `word.domainTag?.value` expecting display text ("medicine")
+still type-checks cleanly against the new `Identifier` shape -- it just
+silently reads a uuid at runtime instead. A clean `tsc -b --force`
+therefore proves nothing here; every real reader had to be traced and
+checked by hand (the same risk `endpointUuid()`'s own entry above
+identifies for a *different* reason -- there, two *different* entities'
+identically-shaped identity fields; here, one field whose own shape
+changed under a stable name). Two real bugs surfaced this way that a
+clean compile alone would never have caught (see Bugs below).
+
+### Shape
+
+`Domain` (`data/entities/domain.ts`) follows this folder's own identity-fold
+convention exactly: `domainId: Identifier`, `domainId.value` stable
+across every knowledge-Domain holding a copy, `domainId.uuid` fresh per
+copy; `domainText: Text` is its own canonical written form. `role/domain_processor.ts`
+(`createDomain()`/`copyDomainWithFreshUuid()`/`graphUuid()`) is its
+own base-entity counterpart, matching `role/sense_processor.ts`/`role/coordination_processor.ts`'s
+own shape -- kept top-level under `role/`, not `role/processor/`, for
+the identical reason those two already are (that folder holds each Word
+POS subtype's own processor; `Domain` isn't one). `data/domains.ts`'s
+`Domains` store (`append`/`findByUuid`/`findByText`/`seedFrom`/`totalEntries`)
+mirrors `Coordinations`'s own minimal shape -- case-insensitive
+`findByText` is the one addition, needed by the seeder-side "reuse
+before create" idiom below. `VocabularyContext.domains = new Domains()`
+sits alongside `coordinations`, one store per knowledge-Domain, same as
+every other entity store in that class.
+
+`Word.domainTag`/`Sense.domainTag`/`Phrase.domainTag` are now
+`Identifier | undefined`, holding `{ value: domain.domainId.uuid }` --
+the target `Domain`'s own per-knowledge-Domain graph uuid, resolved via
+`Domains.findByUuid()`, the same reference-field convention
+`Phrase.headWord` already established (an `Identifier` field that
+*points at* another entity holds that entity's own graph uuid, not its
+stable cross-Domain `.value`). `relatedDomainTags` is now
+`readonly Identifier[]`, one entry per additional topic domain, each
+resolved identically.
+
+### Seeder-side resolution: `resolveDomain()` + `applyDomainTag()`
+
+`word_seeder.ts` gets a `resolveDomain(domains: Domains, text: string): Domain`
+helper -- "find the existing `Domain` for this exact text, creating it
+the first time it's ever seen" -- the same seeder-side "reuse before
+create" idiom `registerModifierCoordination()`/`registerNestedPhrase()`
+(`role/processor/phrase_processor.ts`) already establish for their own
+stores, so every caller reaches it rather than ever constructing a
+`Domain` inline (the identical topic text always resolves to the
+identical `Domain` record). `applyDomainTag()` (shared by the
+Sense-level and Word/Phrase-level `tagTopicDomain()` paths, since all
+three entities share the identical `domainTag`/`relatedDomainTags`
+shape) turns a raw WordNet category lemma into a resolved reference via
+`resolveDomain()`, then applies first-domainTag-wins /
+append-to-relatedDomainTags-if-new exactly as before, just comparing
+`Identifier.value` (now a uuid) instead of `Text.value`.
+
+`domains?: Domains` threads through `seedWordNet()`/`seedDomain()`/`seedClosedClassWords()`
+as one more parameter in the same explicit, no-hidden-state style this
+file already threads `wordForms`/`coordinations` through (`seedPointerRelationship()`
+already carried 13+ parameters before this addition) -- optional,
+following the identical "graceful degradation when omitted" pattern
+those two establish: `tagTopicDomain()` early-returns (no-op, pointer
+left untagged) when `domains` is undefined, rather than throwing or
+resolving against nothing.
+
+`entryToWord()` (the domain-agnostic prototype-cache build pass) can't
+resolve or create a real `Domain` itself -- it has no per-knowledge-Domain
+`Domains` store to resolve against, the identical situation
+`cachePad`/`cacheWordFormAttributes`/`cacheLexicalForm` already solve:
+a new `cacheDomainTag: Map<string, string>` caches each cached entry's
+own raw `domain_tag` string, keyed by entryId, and `seedClosedClassWords()`'s
+own loop reads it back once it has both a real per-knowledge-Domain
+`copy` (post `copyWordWithFreshUuid()`) and the real `domains` store it
+was actually given, materializing `copy.domainTag` via `resolveDomain()`
+only then.
+
+### Bugs the exhaustive trace caught that a clean compile did not
+
+1. **`seedClosedClassWords()`'s own re-seed idempotency, and its `excludeOpenClasses`
+   dedup, both silently broke** the first time they were rewritten to
+   resolve `existing.domainTag` through `domains` before comparing --
+   correct in isolation, but a caller that (legitimately) omits
+   `domains` (this file's own optional-store convention) then has every
+   `domainTag` resolve to `undefined` regardless of whether the
+   underlying `Domain` reference is genuinely set, so two Words that
+   really do carry two different, real domain tags read as
+   indistinguishable and get deduplicated into each other, or -- the
+   version that actually shipped and failed three real tests -- a
+   second `seedClosedClassWords()` call re-inserts every already-present
+   domain-tagged Word as a duplicate, since "already present" no longer
+   matches "freshly cached" once neither side can be told apart without
+   `domains`. Fixed by recognising that this one dedup comparison never
+   needed `domains` at all: `existing.wordId.value` is this cache's own
+   stable entryId regardless of which knowledge-Domain it was copied
+   into (`copyWordWithFreshUuid()` only ever regenerates `.uuid`), so
+   `cacheDomainTag.get(existing.wordId.value)` recovers the exact same
+   raw text `cacheDomainTag.get(word.wordId.value)` already does for the
+   candidate side -- comparing two raw cached strings directly, with no
+   store needed for correctness at all. `domains` is still required, and
+   still optional, for the one thing it actually does: materializing a
+   *new* copy's own `domainTag` reference.
+2. **`RelationshipSeeder.resolve()`'s own domainTag-based homograph
+   disambiguation** (`role/relationship_seeder.ts`, matching a spec's
+   `sourceDomainTag`/`targetDomainTag` string against a candidate Word's
+   own domain to pick the correct one of several same-lexical-form,
+   same-part-of-speech Words) has no substitute for `domains` the way
+   the dedup above did -- resolving a *specific* domain-tagged homograph
+   genuinely requires resolving the candidate's own `Identifier` back to
+   display text and comparing it against the spec's raw string, so a
+   caller that omits `domains` here loses real disambiguation, not just
+   an optimization. Confirmed as the correct, expected behaviour (not a
+   bug to route around) by updating `vocabulary.test.ts`'s own "seeds
+   relationships that resolve against a seeded Dictionary" test to pass
+   a real `Domains` store through both `WordSeeder.seedDomain()` and
+   `RelationshipSeeder.seedDomain()`, the same way that test already
+   supplies `senses`/`wordForms` when a scenario genuinely needs them
+   resolved.
+3. **`role/web_worker/vocabulary_worker.ts`'s `handleRenderDomain()` --
+   the call site behind the Vocabulary tab's own full-page render/
+   re-render, the one that builds `DOMAIN_VALUES_JSON` (the Words tab's
+   own domain filter dropdown) -- never got the new `domains:
+   domain.vocabulary.domains` line at all**, caught only by live
+   Playwright, not by the unit suite (nothing in `vocabulary.test.ts`
+   exercises this Worker file directly). Its own `new DictionaryView(...)`
+   call is nested one indent level deeper than this file's other six
+   identical-looking call sites (inside a `try` block), so the bulk
+   `replace_all` edit that added `domains: domain.vocabulary.domains,`
+   to all seven matched only six -- the seventh's own `coordinations:
+   domain.vocabulary.coordinations,` line carried different leading
+   whitespace and simply didn't match the search string. Every *other*
+   domain-facing read in the app (a Word's own detail panel, in
+   particular) goes through a different call site (`handleSearchWords()`)
+   that did get the fix, so `domainTag`/`relatedDomainTags` themselves
+   resolved correctly everywhere live testing first looked -- only the
+   dropdown, sourced from this one specific render path, stayed stuck on
+   an empty `Domains` store (`DictionaryView`'s own default), showing
+   just "All domains"/"Common" regardless of how many real topic domains
+   a WordNet seed actually populated. Fixed by adding the missing line;
+   re-verified live afterward (Verification below).
+
+### UI read side
+
+`ui/server/resolver_domain.ts`'s `senseFieldsFor()` return type changed
+`domainTag?: Text` -> `Identifier`, `relatedDomainTags: readonly Text[]`
+-> `readonly Identifier[]` (a pure pass-through, no resolution inside
+that function itself); `domainLabel()` gained a `domains: Domains`
+parameter and now resolves via `domains.findByUuid(domainTag.value)?.domainText.value`
+instead of reading `.value` directly. Every builder that renders a
+domain-facing field threads a `domains: Domains` parameter the same
+explicit way `senses`/`wordForms` already are:
+`builder_segment.ts` (`definitionWordSegment()`/`definitionSegments()`),
+`builder_phrase.ts` (`phraseWordSegments()`/`phraseHeadWordSegment()`/`modifierUnitSegment()`/`phraseModifierSegments()`),
+`builder_word.ts` (`sensesFor()`/`wordRecordFor()`/`wordRecords()`/`searchWords()`,
+plus resolving `relatedDomainTags` element-wise before mapping to
+display text), `builder_sense.ts` (`senseRecordFor()`/`senseRecords()`/`searchSenses()`,
+which duplicates the isCommon-fallback logic `sensesFor()` above has,
+resolved identically), `builder_relationship.ts`/`builder_lexical_relationship.ts`
+(`source_domain`/`target_domain`, never `source_category`/`target_category`
+-- that pair is `Sense.senseDomainTag`, untouched), `builder_hierarchy.ts`.
+`DictionaryView` (`ui/server/dictionary_controller.ts`) gained a
+`domains?: Domains` constructor option (default `new Domains()`, the
+same empty-store default `coordinations` already gets) and a private
+`domains` field threaded into every one of its own methods that
+ultimately reaches a domain-facing builder call. `role/web_worker/vocabulary_worker.ts`'s
+seven `new DictionaryView(...)` production call sites needed no new
+parameter threading of their own beyond the one added line --
+`domain.vocabulary.domains` already exists on every real
+`VocabularyContext` instance passed in, the identical reason `handleSeedCommonVocabulary()`/`handleSeedWordNet()`
+needed no changes at all to *seed* a real `Domains` store (`WordSeeder.seedDomain()`/`seedWordNet()`
+already read `domain.vocabulary.domains` directly off whatever
+`VocabularyContext`-shaped object they're given).
+
+One known, accepted gap, consistent with an identical pre-existing one:
+`Dictionary.seedFrom()`/`Phrases.seedFrom()` (the Physics-from-Common
+one-time bootstrap snapshot, `vocabulary_worker.ts`'s own `handleSeedCommonVocabulary()`)
+copy each Word/Phrase via `copyWordWithFreshUuid()`/`copyPhraseWithFreshUuid()`,
+which regenerates only the copy's own `wordId.uuid`/`phraseId.uuid` --
+any `domainTag`/`relatedDomainTags` `Identifier` the copy carries still
+points at the *source* knowledge-Domain's own `Domains` store, which
+Physics's own (never separately seeded) `Domains` store doesn't contain.
+This is not a new gap this change introduces: `wordFormIds` already has
+the exact same cross-knowledge-Domain reference-breaking behaviour today
+(`Dictionary.seedFrom()`'s own docstring never claims to fix up
+cross-references, and `wordForms` itself is never copied into Physics
+either) -- `domainTag`/`relatedDomainTags` simply now behaves the same
+way `wordFormIds` already did, not differently.
+
+### Verification
+
+`npx tsc -b --force` clean throughout -- but per the exhaustive-trace
+discussion above, this was never treated as sufficient on its own for
+this specific change. Full `vitest run --no-file-parallelism` 187/187,
+after fixing the first two real bugs above (three idempotency-test
+failures plus one `RelationshipSeeder` resolution failure, all genuine,
+none pre-existing) -- including `vocabulary.test.ts`'s own real-seeded
+infusion/winger topic-domain assertions (now resolving through a real
+`Domains` store rather than reading `.value` directly) and the shared
+`seededVocabularyFixture()` helper (now also building and returning a
+real `Domains` store every fixture-sharing test can request).
+
+Live Playwright against the real running app is what caught the third
+bug above (`handleRenderDomain()`'s own missing `domains` line) --
+confirmed by staged verification, not a single end-state screenshot: a
+fresh "Seed Vocabulary" alone (before "Load WordNet" ever runs) already
+shows the Words tab's own domain filter dropdown listing "root_word.common"
+correctly, and searching "entity" at that point resolves it to exactly
+one Word, domain "root_word.common", showing root_words.json's own
+curated definition -- the closed-class seeding path's own `domainTag`
+resolution, working end to end on its own. After "Load WordNet" also
+runs, the dropdown grows to include every real WordNet topic domain
+("field hockey", "medicine", "soccer", ... -- confirmed empty/broken
+before the fix, confirmed fully populated after), and "winger" resolves
+to one of its four real topic domains in its detail panel with the
+other three correctly listed as related domains. Searching "entity"
+again at that point now resolves to WordNet's own "entity" synset
+instead of the closed-class one -- `seedWordNet()`'s own existing-Word
+reuse (`role/word_seeder.ts`, matching by `(text, partOfSpeech)`
+regardless of domainTag, unchanged by this migration) reuses the
+already-seeded closed-class "entity" Word rather than creating a
+second one, and its own primary-Sense-wins display logic
+(`senseFieldsFor()`, also unchanged by this migration) then favours
+whichever Sense the WordNet pass most recently linked -- a pre-existing
+Sense-primacy characteristic of the seeding pipeline, orthogonal to
+whether `domainTag` is `Text` or `Identifier`, not something this
+change altered or was asked to fix. No console error at any point in
+either staged seed or in browsing/searching afterward.

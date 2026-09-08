@@ -343,6 +343,7 @@ function handleRender(request: RenderRequest): void {
       wordForms: domain.vocabulary.wordForms,
       lexicalRelationships: domain.vocabulary.lexicalRelationships,
       coordinations: domain.vocabulary.coordinations,
+      domains: domain.vocabulary.domains,
     });
     const [style, body, script] = view.renderFragment();
     const fragment: RenderedFragment = { style, body, script };
@@ -378,6 +379,7 @@ function handleSearchWords(request: SearchWordsRequest): void {
     wordForms: domain.vocabulary.wordForms,
     lexicalRelationships: domain.vocabulary.lexicalRelationships,
     coordinations: domain.vocabulary.coordinations,
+    domains: domain.vocabulary.domains,
   });
   try {
     const { words, totalMatches } = view.searchWords({
@@ -429,6 +431,7 @@ function handleSearchPhrases(request: SearchPhrasesRequest): void {
     wordForms: domain.vocabulary.wordForms,
     lexicalRelationships: domain.vocabulary.lexicalRelationships,
     coordinations: domain.vocabulary.coordinations,
+    domains: domain.vocabulary.domains,
   });
   const { phrases, totalMatches } = view.searchPhrases({
     word: request.word,
@@ -459,6 +462,7 @@ function handleSearchSenses(request: SearchSensesRequest): void {
     wordForms: domain.vocabulary.wordForms,
     lexicalRelationships: domain.vocabulary.lexicalRelationships,
     coordinations: domain.vocabulary.coordinations,
+    domains: domain.vocabulary.domains,
   });
   const { senses, totalMatches } = view.searchSenses({
     word: request.word,
@@ -485,6 +489,7 @@ function handleSearchRelationships(request: SearchRelationshipsRequest): void {
     wordForms: domain.vocabulary.wordForms,
     lexicalRelationships: domain.vocabulary.lexicalRelationships,
     coordinations: domain.vocabulary.coordinations,
+    domains: domain.vocabulary.domains,
   });
   const { relationships, totalMatches } = view.searchRelationships({
     wordId: request.wordId,
@@ -515,6 +520,7 @@ function handleSearchLexicalRelationships(request: SearchLexicalRelationshipsReq
     wordForms: domain.vocabulary.wordForms,
     lexicalRelationships: domain.vocabulary.lexicalRelationships,
     coordinations: domain.vocabulary.coordinations,
+    domains: domain.vocabulary.domains,
   });
   const { relationships, totalMatches } = view.searchLexicalRelationships({
     wordId: request.wordId,
@@ -549,6 +555,7 @@ function handleResolveHierarchy(request: ResolveHierarchyRequest): void {
     wordForms: domain.vocabulary.wordForms,
     lexicalRelationships: domain.vocabulary.lexicalRelationships,
     coordinations: domain.vocabulary.coordinations,
+    domains: domain.vocabulary.domains,
   });
   const result = view.resolveHierarchy({ kind: request.kind, wordId: request.wordId, limit: request.limit });
   post({ type: "resolve-hierarchy-result", requestId: request.requestId, ...result });

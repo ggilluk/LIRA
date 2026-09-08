@@ -23,6 +23,7 @@ import type { Adverb } from "./data/entities/adverb";
 import { createConjunction, isConjunction } from "./role/processor/conjunction_processor";
 import type { Conjunction } from "./data/entities/conjunction";
 import { Coordinations } from "./data/coordinations";
+import { Domains } from "./data/domains";
 import type { Coordination } from "./data/entities/coordination";
 import { createCoordination, copyCoordinationWithFreshUuid, graphUuid as coordinationGraphUuid } from "./role/coordination_processor";
 import { WordCoordinationSeeder } from "./role/word_coordination_seeder";
@@ -102,6 +103,7 @@ let sharedVocabularyFixture:
       morphologicalPointerRelationshipProcessor: MorphologicalPointerRelationshipProcessor;
       semanticRelationships: SemanticRelationshipStore;
       semanticRelationshipProcessor: SemanticRelationshipProcessor;
+      domains: Domains;
     }>
   | undefined;
 
@@ -122,6 +124,7 @@ function seededVocabularyFixture() {
         semanticRelationships,
         new SemanticRelationshipSystemPropertyTensor(),
       );
+      const domains = new Domains();
       await new WordSeeder("en").seedWordNet({
         vocabulary: {
           dictionary,
@@ -132,6 +135,7 @@ function seededVocabularyFixture() {
           morphologicalPointerRelationshipProcessor,
           semanticRelationships,
           semanticRelationshipProcessor,
+          domains,
         },
       });
       return {
@@ -143,6 +147,7 @@ function seededVocabularyFixture() {
         morphologicalPointerRelationshipProcessor,
         semanticRelationships,
         semanticRelationshipProcessor,
+        domains,
       };
     })();
   }
@@ -1387,7 +1392,8 @@ describe("WordSeeder against the bundled Common Vocabulary Cache", () => {
 
   it("seedClosedClassWords({ excludeOpenClasses: true }) skips every NOUN/VERB/ADJECTIVE/ADVERB cache entry except root_words.json's own curated root-word table", () => {
     const dictionary = new Dictionary();
-    new WordSeeder("en").seedClosedClassWords(dictionary, new Phrases(), { excludeOpenClasses: true });
+    const domains = new Domains();
+    new WordSeeder("en").seedClosedClassWords(dictionary, new Phrases(), { excludeOpenClasses: true }, undefined, undefined, undefined, domains);
 
     // promoted_words.json is entirely NOUN/VERB/ADJECTIVE/ADVERB --
     // WordSeeder.seedWordNet is now this prototype's source of truth for
@@ -1409,7 +1415,7 @@ describe("WordSeeder against the bundled Common Vocabulary Cache", () => {
     if (!isNoun(entity!)) throw new Error("unreachable");
     expect(entity.isRootWord).toBe(true);
     expect(entity.hypernymRootWord).toBe(HypernymRootWord.ENTITY);
-    expect(entity.domainTag?.value).toBe("root_word.common");
+    expect(entity.domainTag !== undefined ? domains.findByUuid(entity.domainTag.value)?.domainText.value : undefined).toBe("root_word.common");
 
     // Every other closed class is unaffected.
     expect(dictionary.lookup("the")?.partOfSpeech).toBe(PartOfSpeech.DETERMINER);
@@ -1512,7 +1518,8 @@ describe("WordSeeder against the bundled Common Vocabulary Cache", () => {
     const senseStore = new Senses();
     const wordForms = new WordForms();
     const seeder = new WordSeeder("en");
-    const domain = { vocabulary: { dictionary, phrases: phraseBook, senses: senseStore, wordForms } };
+    const domains = new Domains();
+    const domain = { vocabulary: { dictionary, phrases: phraseBook, senses: senseStore, wordForms, domains } };
 
     const first = seeder.seedDomain(domain, { excludeOpenClasses: true });
     expect(first).toBeGreaterThan(0);
@@ -1530,7 +1537,9 @@ describe("WordSeeder against the bundled Common Vocabulary Cache", () => {
     expect(wordForms.senseIdsOf(entity!)).toHaveLength(1);
     const entitySense = senseStore.findByUuid(wordForms.senseIdsOf(entity!)[0].value);
     expect(entitySense).toBeDefined();
-    expect(entitySense?.domainTag?.value).toBe("root_word.common");
+    expect(entitySense?.domainTag !== undefined ? domains.findByUuid(entitySense.domainTag.value)?.domainText.value : undefined).toBe(
+      "root_word.common",
+    );
     expect(entitySense?.isCommon).toBe(true);
     expect(entitySense?.definition?.value).toBe(
       'The hypernym root word answering "what": the broadest category anything that exists falls under.',
@@ -1925,7 +1934,20 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     );
     const seeder = new WordSeeder("en");
     const wordForms = new WordForms();
-    const domain = { vocabulary: { dictionary, phrases: phraseBook, senses: senseStore, wordForms, morphologicalPointerRelationships, morphologicalPointerRelationshipProcessor, semanticRelationships, semanticRelationshipProcessor } };
+    const domains = new Domains();
+    const domain = {
+      vocabulary: {
+        dictionary,
+        phrases: phraseBook,
+        senses: senseStore,
+        wordForms,
+        morphologicalPointerRelationships,
+        morphologicalPointerRelationshipProcessor,
+        semanticRelationships,
+        semanticRelationshipProcessor,
+        domains,
+      },
+    };
 
     const first = await seeder.seedWordNet(domain);
     expect(first.wordsSeeded).toBeGreaterThan(100000);
@@ -2295,7 +2317,9 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     const infusionSenseId = senseGraphUuid(senseStore.findBySynsetId("00324358-n")!);
     expect(wordForms.senseIdsOf(infusion).map((id) => id.value)).toContain(infusionSenseId);
     const infusionSense = senseStore.findByUuid(infusionSenseId);
-    expect(infusionSense?.domainTag?.value).toBe("medicine");
+    expect(infusionSense?.domainTag !== undefined ? domains.findByUuid(infusionSense.domainTag.value)?.domainText.value : undefined).toBe(
+      "medicine",
+    );
     expect(infusionSense?.relatedDomainTags).toEqual([]);
 
     // "winger" (offset 10802147) carries FOUR topic pointers -- it's a
@@ -2310,7 +2334,8 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     expect(wordForms.senseIdsOf(winger).map((id) => id.value)).toContain(wingerSenseId);
     const wingerSense = senseStore.findByUuid(wingerSenseId);
     expect(wingerSense?.domainTag).toBeDefined();
-    const wingerDomains = [wingerSense!.domainTag!.value, ...wingerSense!.relatedDomainTags.map((tag) => tag.value)];
+    const domainText = (id: { value: string }) => domains.findByUuid(id.value)?.domainText.value;
+    const wingerDomains = [domainText(wingerSense!.domainTag!), ...wingerSense!.relatedDomainTags.map(domainText)];
     expect(wingerDomains).toHaveLength(4);
     expect(new Set(wingerDomains).size).toBe(4);
     expect(new Set(wingerDomains)).toEqual(new Set(["soccer", "field hockey", "rugby", "football"]));
@@ -2331,8 +2356,10 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // it was after the first call, not just non-decreasing.
     expect(dictionary.totalEntries() + phraseBook.totalEntries()).toBe(totalAfterFirst);
     expect(senseStore.totalEntries()).toBe(first.sensesSeeded);
-    expect(infusionSense?.domainTag?.value).toBe("medicine");
-    expect(new Set([wingerSense!.domainTag!.value, ...wingerSense!.relatedDomainTags.map((tag) => tag.value)])).toEqual(
+    expect(infusionSense?.domainTag !== undefined ? domains.findByUuid(infusionSense.domainTag.value)?.domainText.value : undefined).toBe(
+      "medicine",
+    );
+    expect(new Set([domainText(wingerSense!.domainTag!), ...wingerSense!.relatedDomainTags.map(domainText)])).toEqual(
       new Set(["soccer", "field hockey", "rugby", "football"]),
     );
     expect(morphologicalPointerRelationships.totalRelationships()).toBe(first.relationshipsSeeded);
@@ -3537,7 +3564,8 @@ describe("RelationshipSeeder against the bundled Common Relationship Cache", () 
     const wordSeeder = new WordSeeder("en");
     const dictionary = new Dictionary();
     const phrases = new Phrases();
-    wordSeeder.seedDomain({ vocabulary: { dictionary, phrases } });
+    const domains = new Domains();
+    wordSeeder.seedDomain({ vocabulary: { dictionary, phrases, domains } });
 
     const morphologicalPointerRelationships = new MorphologicalPointerRelationshipStore();
     const semanticRelationships = new SemanticRelationshipStore();
@@ -3554,6 +3582,7 @@ describe("RelationshipSeeder against the bundled Common Relationship Cache", () 
         semanticRelationships,
         new SemanticRelationshipSystemPropertyTensor(),
       ),
+      domains,
     };
 
     const relationshipSeeder = new RelationshipSeeder("en");
@@ -3760,7 +3789,7 @@ describe("DictionaryView.searchWords", () => {
   }, 30000);
 
   it("a WordRecord's own domain/related_domains read through the shared Sense, not the Word itself, for a WordNet-seeded polyseme", async () => {
-    const { dictionary, senseStore, wordForms, semanticRelationships } = await seededVocabularyFixture();
+    const { dictionary, senseStore, wordForms, semanticRelationships, domains } = await seededVocabularyFixture();
 
     // "winger" (offset 10802147) carries FOUR topic-domain pointers,
     // now stored on its own Sense, not on the Word (word_seeder.ts's own
@@ -3771,7 +3800,7 @@ describe("DictionaryView.searchWords", () => {
     expect(winger).toBeDefined();
     expect(winger?.domainTag).toBeUndefined();
 
-    const view = new DictionaryView(dictionary, semanticRelationships, { domainName: "Common", senses: senseStore, wordForms });
+    const view = new DictionaryView(dictionary, semanticRelationships, { domainName: "Common", senses: senseStore, wordForms, domains });
     const record = view.searchWords({ wordId: wordGraphUuid(winger!) }).words[0];
     expect(record.domain).not.toBeNull();
     expect(["soccer", "field hockey", "rugby", "football"]).toContain(record.domain);

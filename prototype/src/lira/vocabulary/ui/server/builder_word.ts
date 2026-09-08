@@ -7,6 +7,7 @@ import type { Identifier } from "../../../value_objects";
 import { isAdjective } from "../../role/processor/adjective_processor";
 import { isAdverb } from "../../role/processor/adverb_processor";
 import type { Dictionary } from "../../data/dictionary";
+import type { Domains } from "../../data/domains";
 import { EditorialLabel } from "../../data/enums/editorial_label";
 import { PartOfSpeech } from "../../data/enums/part_of_speech";
 import { wordFormTypeLabel, type WordFormType } from "../../data/enums/word_forms_enum";
@@ -354,13 +355,14 @@ function morphologicalDerivations(word: Word, dictionary: Dictionary, wordForms:
  * show. `synonyms` is that Sense's own membership (Senses.membersOf()),
  * `entry` itself excluded -- deliberately scoped to just this one
  * Sense, not `entry`'s other, unrelated senses. */
-function sensesFor(entry: Word | Phrase, senses: Senses, domainName: string, wordForms: WordForms): WordSenseSummary[] {
+function sensesFor(entry: Word | Phrase, senses: Senses, domainName: string, wordForms: WordForms, domains: Domains): WordSenseSummary[] {
   const summaries: WordSenseSummary[] = [];
   const senseIds = "senseIds" in entry ? entry.senseIds : wordForms.senseIdsOf(entry);
   senseIds.forEach((senseId, index) => {
     const sense = senses.findByUuid(senseId.value);
     if (sense === undefined) return;
-    const domain = !sense.isCommon ? domainName : (sense.domainTag?.value ?? "Common");
+    const domainTagText = sense.domainTag !== undefined ? domains.findByUuid(sense.domainTag.value)?.domainText.value : undefined;
+    const domain = !sense.isCommon ? domainName : (domainTagText ?? "Common");
     const { seededPleasureDispleasureWeight: p, seededArousalNonArousalWeight: a, seededDominanceSubmissiveWeight: d } = sense;
     // "senseIds" in entry distinguishes a Phrase (framesForSense() only
     // ever applies to a genuine VERB Word -- no such concept exists for
@@ -444,6 +446,7 @@ export function wordRecordFor(
   senses: Senses,
   domainName: string,
   wordForms: WordForms,
+  domains: Domains,
 ): WordRecord {
   const wordId = wordGraphUuid(word);
   const wordSenseIds = wordForms.senseIdsOf(word);
@@ -457,7 +460,7 @@ export function wordRecordFor(
     0,
   );
   const senseFields = senseFieldsFor(senses, word, wordForms);
-  const wordSenses = sensesFor(word, senses, domainName, wordForms);
+  const wordSenses = sensesFor(word, senses, domainName, wordForms, domains);
   // dialectCode/languageStyleCode both live on the base-lemma WordForm's
   // own Text now (Word.wordFormIds's own docstring), not on Word.
   const baseLemmaText = wordForms.baseLemmaFormOf(word)?.text;
@@ -478,12 +481,14 @@ export function wordRecordFor(
     is_common: word.isCommon,
     is_root_word: isRootWordFor(senses, word, wordForms),
     is_derivable_noun: isNoun(word) && word.isDerivableNoun,
-    domain: domainLabel(senses, domainName, word, wordForms),
-    related_domains: senseFields.relatedDomainTags.map((tag) => tag.value),
+    domain: domainLabel(senses, domainName, word, wordForms, domains),
+    related_domains: senseFields.relatedDomainTags
+      .map((tag) => domains.findByUuid(tag.value)?.domainText.value)
+      .filter((text): text is string => text !== undefined),
     is_fully_hydrated: word.isFullyHydrated,
     sources: word.sourceReferences.map((ref) => ref.sourceName.value),
     relationship_count: relationshipCount,
-    definition_segments: definitionSegments(word, dictionary, senses, domainName, wordForms),
+    definition_segments: definitionSegments(word, dictionary, senses, domainName, wordForms, domains),
     word_forms: wordFormsFor(word, wordForms, wordSenses),
     senses: wordSenses,
     derivations: morphologicalDerivations(word, dictionary, wordForms),
@@ -496,8 +501,9 @@ export function wordRecords(
   senses: Senses,
   domainName: string,
   wordForms: WordForms,
+  domains: Domains,
 ): WordRecord[] {
-  const records = dictionary.all().map((word) => wordRecordFor(word, dictionary, relationships, senses, domainName, wordForms));
+  const records = dictionary.all().map((word) => wordRecordFor(word, dictionary, relationships, senses, domainName, wordForms, domains));
   records.sort((a, b) => a.lexical_form.toLowerCase().localeCompare(b.lexical_form.toLowerCase()));
   return records;
 }
@@ -545,6 +551,7 @@ export function searchWords(
     limit?: number;
   },
   wordForms: WordForms,
+  domains: Domains,
 ): { words: WordRecord[]; totalMatches: number } {
   if (options.wordId !== undefined) {
     // Checked directly against the Phrase itself, not via
@@ -556,15 +563,15 @@ export function searchWords(
     // the original Phrase, not just its Word-shaped view.
     const phrase = phrases.findByUuid(options.wordId);
     if (phrase !== undefined) {
-      const record = wordRecordFor(phraseAsWord(phrase, phrases, wordForms), dictionary, relationships, senses, domainName, wordForms);
-      const modifiers = phraseModifierSegments(phrase, dictionary, senses, domainName, wordForms);
+      const record = wordRecordFor(phraseAsWord(phrase, phrases, wordForms), dictionary, relationships, senses, domainName, wordForms, domains);
+      const modifiers = phraseModifierSegments(phrase, dictionary, senses, domainName, wordForms, domains);
       return {
         words: [
           {
             ...record,
-            phrase_word_segments: phraseWordSegments(phrase, dictionary, senses, domainName, wordForms),
+            phrase_word_segments: phraseWordSegments(phrase, dictionary, senses, domainName, wordForms, domains),
             phrase_type: phraseTypeLabel(phrase),
-            head_word: phraseHeadWordSegment(phrase, dictionary, senses, domainName, wordForms),
+            head_word: phraseHeadWordSegment(phrase, dictionary, senses, domainName, wordForms, domains),
             pre_modifier: modifiers.pre,
             post_modifier: modifiers.post,
             determiner: modifiers.determiner,
@@ -575,7 +582,9 @@ export function searchWords(
       };
     }
     const word = dictionary.findByUuid(options.wordId);
-    if (word !== undefined) return { words: [wordRecordFor(word, dictionary, relationships, senses, domainName, wordForms)], totalMatches: 1 };
+    if (word !== undefined) {
+      return { words: [wordRecordFor(word, dictionary, relationships, senses, domainName, wordForms, domains)], totalMatches: 1 };
+    }
     // `wordId` may also name a Sense directly -- the Senses tab's own
     // row-click (senseRecordFor()'s own `id`), resolved to its first-
     // registered member the same way resolveEntry() falls back
@@ -588,15 +597,15 @@ export function searchWords(
     const representative = sense !== undefined ? senses.membersOf(senseGraphUuid(sense))[0] : undefined;
     if (representative !== undefined) {
       if ("senseIds" in representative) {
-        const record = wordRecordFor(phraseAsWord(representative, phrases, wordForms), dictionary, relationships, senses, domainName, wordForms);
-        const modifiers = phraseModifierSegments(representative, dictionary, senses, domainName, wordForms);
+        const record = wordRecordFor(phraseAsWord(representative, phrases, wordForms), dictionary, relationships, senses, domainName, wordForms, domains);
+        const modifiers = phraseModifierSegments(representative, dictionary, senses, domainName, wordForms, domains);
         return {
           words: [
             {
               ...record,
-              phrase_word_segments: phraseWordSegments(representative, dictionary, senses, domainName, wordForms),
+              phrase_word_segments: phraseWordSegments(representative, dictionary, senses, domainName, wordForms, domains),
               phrase_type: phraseTypeLabel(representative),
-              head_word: phraseHeadWordSegment(representative, dictionary, senses, domainName, wordForms),
+              head_word: phraseHeadWordSegment(representative, dictionary, senses, domainName, wordForms, domains),
               pre_modifier: modifiers.pre,
               post_modifier: modifiers.post,
               determiner: modifiers.determiner,
@@ -606,7 +615,7 @@ export function searchWords(
           totalMatches: 1,
         };
       }
-      return { words: [wordRecordFor(representative, dictionary, relationships, senses, domainName, wordForms)], totalMatches: 1 };
+      return { words: [wordRecordFor(representative, dictionary, relationships, senses, domainName, wordForms, domains)], totalMatches: 1 };
     }
     return { words: [], totalMatches: 0 };
   }
@@ -621,14 +630,14 @@ export function searchWords(
   for (const word of dictionary.all()) {
     if (options.pos && PartOfSpeech[word.partOfSpeech] !== options.pos) continue;
     if (options.rootWordsOnly && !isRootWordFor(senses, word, wordForms)) continue;
-    if (options.domain && domainLabel(senses, domainName, word, wordForms) !== options.domain) continue;
+    if (options.domain && domainLabel(senses, domainName, word, wordForms, domains) !== options.domain) continue;
     const lexicalForm = word.text.toLowerCase();
     if (wordQuery && !lexicalForm.includes(wordQuery)) continue;
     if (glossQuery && !(senseFieldsFor(senses, word, wordForms).gloss?.value ?? "").toLowerCase().includes(glossQuery)) continue;
     if (definitionQuery && !(senseFieldsFor(senses, word, wordForms).definition?.value ?? "").toLowerCase().includes(definitionQuery)) continue;
 
     totalMatches += 1;
-    if (matches.length < limit) matches.push(wordRecordFor(word, dictionary, relationships, senses, domainName, wordForms));
+    if (matches.length < limit) matches.push(wordRecordFor(word, dictionary, relationships, senses, domainName, wordForms, domains));
   }
   matches.sort((a, b) => a.lexical_form.toLowerCase().localeCompare(b.lexical_form.toLowerCase()));
   return { words: matches, totalMatches };

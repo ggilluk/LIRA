@@ -4,6 +4,7 @@
  * phraseHeadWordSegment and the public method searchPhrases). */
 
 import type { Dictionary } from "../../data/dictionary";
+import type { Domains } from "../../data/domains";
 import { EditorialLabel } from "../../data/enums/editorial_label";
 import { PartOfSpeech } from "../../data/enums/part_of_speech";
 import { PhraseType } from "../../data/enums/phrase_type";
@@ -152,9 +153,10 @@ export function phraseWordSegments(
   senses: Senses,
   domainName: string,
   wordForms: WordForms,
+  domains: Domains,
 ): DefinitionSegment[] {
   const tokens = phrase.text.trim().split(/\s+/).filter((token) => token.length > 0);
-  return tokens.map((token) => definitionWordSegment(token, dictionary.lookup(token), senses, domainName, wordForms));
+  return tokens.map((token) => definitionWordSegment(token, dictionary.lookup(token), senses, domainName, wordForms, domains));
 }
 
 /** `phrase.headWordForm`/`phrase.headWord` (data/entities/phrase.ts's own
@@ -176,12 +178,13 @@ export function phraseHeadWordSegment(
   senses: Senses,
   domainName: string,
   wordForms: WordForms,
+  domains: Domains,
 ): DefinitionSegment | undefined {
   if (phrase.headWordForm === undefined) return undefined;
   const form = wordForms.findByUuid(phrase.headWordForm.value);
   if (form === undefined) return undefined;
   const resolved = phrase.headWord !== undefined ? dictionary.findByUuid(phrase.headWord.value) : undefined;
-  return definitionWordSegment(form.text.value, resolved, senses, domainName, wordForms);
+  return definitionWordSegment(form.text.value, resolved, senses, domainName, wordForms, domains);
 }
 
 /** One resolved value from `phrase.preModifier`/`postModifier`/
@@ -250,6 +253,7 @@ function modifierUnitSegment(
   senses: Senses,
   domainName: string,
   wordForms: WordForms,
+  domains: Domains,
 ): ModifierSegment | undefined {
   if (value === undefined) return undefined;
   if ("text" in value) {
@@ -258,7 +262,9 @@ function modifierUnitSegment(
   }
   if ("value" in value) {
     const form = wordForms.findByUuid(value.value);
-    return form === undefined ? undefined : definitionWordSegment(form.text.value, dictionary.lookup(form.text.value), senses, domainName, wordForms);
+    return form === undefined
+      ? undefined
+      : definitionWordSegment(form.text.value, dictionary.lookup(form.text.value), senses, domainName, wordForms, domains);
   }
   return { text: coordinationText(value, wordForms) };
 }
@@ -288,11 +294,12 @@ export function phraseModifierSegments(
   senses: Senses,
   domainName: string,
   wordForms: WordForms,
+  domains: Domains,
 ): { pre?: ModifierSegment; post?: ModifierSegment; determiner?: ModifierSegment } {
   return {
-    pre: modifierUnitSegment(phrase.preModifier, dictionary, senses, domainName, wordForms),
-    post: modifierUnitSegment(phrase.postModifier, dictionary, senses, domainName, wordForms),
-    determiner: modifierUnitSegment(phrase.determiner, dictionary, senses, domainName, wordForms),
+    pre: modifierUnitSegment(phrase.preModifier, dictionary, senses, domainName, wordForms, domains),
+    post: modifierUnitSegment(phrase.postModifier, dictionary, senses, domainName, wordForms, domains),
+    determiner: modifierUnitSegment(phrase.determiner, dictionary, senses, domainName, wordForms, domains),
   };
 }
 

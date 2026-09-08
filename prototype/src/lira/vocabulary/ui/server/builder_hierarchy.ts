@@ -3,6 +3,7 @@
  * and its supporting module-level constants). */
 
 import type { Dictionary } from "../../data/dictionary";
+import type { Domains } from "../../data/domains";
 import { PartOfSpeech } from "../../data/enums/part_of_speech";
 import { SemanticRelationshipKind } from "../../data/enums/semantic_relationship_kind";
 import type { Phrases } from "../../data/phrases";
@@ -156,6 +157,7 @@ export function resolveHierarchy(
   domainName: string,
   options: { kind: string; wordId?: string; limit?: number },
   wordForms: WordForms,
+  domains: Domains,
 ): HierarchyResolution {
   const empty: HierarchyResolution = { nodes: [], edges: [], roots: [], totalEdgeCount: 0, totalNodeCount: 0, fellBack: false, truncated: false };
   const kindEnum = SemanticRelationshipKind[options.kind as keyof typeof SemanticRelationshipKind];
@@ -308,7 +310,7 @@ export function resolveHierarchy(
       id,
       lexical_form: word.text,
       pos: PartOfSpeech[word.partOfSpeech],
-      domain: domainLabel(senses, domainName, word, wordForms),
+      domain: domainLabel(senses, domainName, word, wordForms, domains),
       sense_id: wordForms.synsetIdOf(word)?.value ?? null,
     });
   }

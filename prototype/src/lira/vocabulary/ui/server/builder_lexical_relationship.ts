@@ -14,6 +14,7 @@
 import { LexicalRelationshipType, meronymKindLabel, relationshipCategory, relationshipGroup } from "../../data/enums/lexical_relationship_type";
 import { PartOfSpeech } from "../../data/enums/part_of_speech";
 import type { Dictionary } from "../../data/dictionary";
+import type { Domains } from "../../data/domains";
 import type { LexicalRelationship } from "../../data/lexical_relationship";
 import type { LexicalRelationshipStore } from "../../data/lexical_relationship_store";
 import type { Phrases } from "../../data/phrases";
@@ -89,6 +90,7 @@ export function lexicalRelationshipRecordFor(
   phrases: Phrases,
   senses: Senses,
   domainName: string,
+  domains: Domains,
 ): LexicalRelationshipRecord {
   const sourceForm = wordForms.findByUuid(rel.sourceWordFormId.value);
   const targetForm = wordForms.findByUuid(rel.targetWordFormId.value);
@@ -102,7 +104,7 @@ export function lexicalRelationshipRecordFor(
     source_word_form_id: rel.sourceWordFormId.value,
     source_text: sourceForm?.text.value ?? source?.text ?? "?",
     source_pos: source ? PartOfSpeech[source.partOfSpeech] : null,
-    source_domain: domainLabel(senses, domainName, source, wordForms),
+    source_domain: domainLabel(senses, domainName, source, wordForms, domains),
     source_sense_id: (source !== undefined ? wordForms.synsetIdOf(source) : undefined)?.value ?? null,
     source_category: sourceSense?.senseDomainTag?.value ?? null,
     source_gloss: sourceSense?.gloss?.value ?? sourceSense?.definition?.value ?? null,
@@ -110,7 +112,7 @@ export function lexicalRelationshipRecordFor(
     target_word_form_id: rel.targetWordFormId.value,
     target_text: targetForm?.text.value ?? target?.text ?? "?",
     target_pos: target ? PartOfSpeech[target.partOfSpeech] : null,
-    target_domain: domainLabel(senses, domainName, target, wordForms),
+    target_domain: domainLabel(senses, domainName, target, wordForms, domains),
     target_sense_id: (target !== undefined ? wordForms.synsetIdOf(target) : undefined)?.value ?? null,
     target_category: targetSense?.senseDomainTag?.value ?? null,
     target_gloss: targetSense?.gloss?.value ?? targetSense?.definition?.value ?? null,
@@ -130,8 +132,9 @@ export function lexicalRelationshipRecords(
   phrases: Phrases,
   senses: Senses,
   domainName: string,
+  domains: Domains,
 ): LexicalRelationshipRecord[] {
-  return relationships.all().map((rel) => lexicalRelationshipRecordFor(rel, wordForms, dictionary, phrases, senses, domainName));
+  return relationships.all().map((rel) => lexicalRelationshipRecordFor(rel, wordForms, dictionary, phrases, senses, domainName, domains));
 }
 
 /** `senseExpandedRelationships()`'s own exact mirror -- `word`'s own
@@ -208,6 +211,7 @@ export function searchLexicalRelationships(
   senses: Senses,
   domainName: string,
   options: { wordId?: string; query?: string; limit?: number },
+  domains: Domains,
 ): { relationships: LexicalRelationshipRecord[]; totalMatches: number } {
   const limit = options.limit ?? 1000;
   const query = options.query?.trim().toLowerCase();
@@ -240,7 +244,7 @@ export function searchLexicalRelationships(
   const seen = new Set<string>();
   let totalMatches = 0;
   for (const rel of candidates) {
-    const record = lexicalRelationshipRecordFor(rel, wordForms, dictionary, phrases, senses, domainName);
+    const record = lexicalRelationshipRecordFor(rel, wordForms, dictionary, phrases, senses, domainName, domains);
     const senseId = viaSenseId.get(rel.uuid.value);
     if (senseId !== undefined) record.via_sense_id = senseId;
     const dedupeKey = `${record.via_sense_id ?? ""}|${record.kind}|${record.source_word_form_id}|${record.target_word_form_id}`;

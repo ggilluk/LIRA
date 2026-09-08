@@ -8,6 +8,7 @@ import { meronymKindLabel } from "../../data/enums/lexical_relationship_type";
 import { SemanticRelationshipKind } from "../../data/enums/semantic_relationship_kind";
 import { PartOfSpeech } from "../../data/enums/part_of_speech";
 import type { Dictionary } from "../../data/dictionary";
+import type { Domains } from "../../data/domains";
 import type { Phrases } from "../../data/phrases";
 import type { Senses } from "../../data/senses";
 import type { Sense } from "../../data/entities/sense";
@@ -144,6 +145,7 @@ export function relationshipRecordFor(
   senses: Senses,
   domainName: string,
   wordForms: WordForms,
+  domains: Domains,
 ): RelationshipRecord {
   const source = resolveEntry(dictionary, phrases, senses, rel.sourceSenseId.value, wordForms);
   const target = resolveEntry(dictionary, phrases, senses, rel.targetSenseId.value, wordForms);
@@ -154,14 +156,14 @@ export function relationshipRecordFor(
     source_id: rel.sourceSenseId.value,
     source_text: source?.text ?? "?",
     source_pos: source ? PartOfSpeech[source.partOfSpeech] : null,
-    source_domain: domainLabel(senses, domainName, source, wordForms),
+    source_domain: domainLabel(senses, domainName, source, wordForms, domains),
     source_sense_id: (source !== undefined ? wordForms.synsetIdOf(source) : undefined)?.value ?? null,
     source_category: sourceSense?.senseDomainTag?.value ?? null,
     source_gloss: sourceSense?.gloss?.value ?? sourceSense?.definition?.value ?? null,
     target_id: rel.targetSenseId.value,
     target_text: target?.text ?? "?",
     target_pos: target ? PartOfSpeech[target.partOfSpeech] : null,
-    target_domain: domainLabel(senses, domainName, target, wordForms),
+    target_domain: domainLabel(senses, domainName, target, wordForms, domains),
     target_sense_id: (target !== undefined ? wordForms.synsetIdOf(target) : undefined)?.value ?? null,
     target_category: targetSense?.senseDomainTag?.value ?? null,
     target_gloss: targetSense?.gloss?.value ?? targetSense?.definition?.value ?? null,
@@ -181,8 +183,9 @@ export function relationshipRecords(
   senses: Senses,
   domainName: string,
   wordForms: WordForms,
+  domains: Domains,
 ): RelationshipRecord[] {
-  return relationships.all().map((rel) => relationshipRecordFor(rel, dictionary, phrases, senses, domainName, wordForms));
+  return relationships.all().map((rel) => relationshipRecordFor(rel, dictionary, phrases, senses, domainName, wordForms, domains));
 }
 
 /** `word`'s own Sense-level relationships, expanded back out to one
@@ -261,6 +264,7 @@ export function searchRelationships(
   domainName: string,
   options: { wordId?: string; query?: string; limit?: number },
   wordForms: WordForms,
+  domains: Domains,
 ): { relationships: RelationshipRecord[]; totalMatches: number } {
   const limit = options.limit ?? 1000;
   const query = options.query?.trim().toLowerCase();
@@ -285,7 +289,7 @@ export function searchRelationships(
   const matches: RelationshipRecord[] = [];
   let totalMatches = 0;
   for (const rel of candidates) {
-    const record = relationshipRecordFor(rel, dictionary, phrases, senses, domainName, wordForms);
+    const record = relationshipRecordFor(rel, dictionary, phrases, senses, domainName, wordForms, domains);
     const senseId = viaSenseId.get(rel.uuid.value);
     if (senseId !== undefined) record.via_sense_id = senseId;
     if (query) {

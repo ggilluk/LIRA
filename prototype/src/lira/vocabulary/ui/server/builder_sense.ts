@@ -3,6 +3,7 @@
  * method senseRecordFor and the public method searchSenses). */
 
 import { PartOfSpeech } from "../../data/enums/part_of_speech";
+import type { Domains } from "../../data/domains";
 import type { Sense } from "../../data/entities/sense";
 import type { Phrases } from "../../data/phrases";
 import type { Senses } from "../../data/senses";
@@ -47,10 +48,11 @@ export interface SenseRecord {
  * straight off `sense` itself rather than through senseFieldsFor(),
  * since a Sense already *is* the thing senseFieldsFor() resolves a
  * Word/Phrase through. */
-export function senseRecordFor(sense: Sense, senses: Senses, phrases: Phrases, domainName: string): SenseRecord {
+export function senseRecordFor(sense: Sense, senses: Senses, phrases: Phrases, domainName: string, domains: Domains): SenseRecord {
   const senseUuid = graphUuid(sense);
   const members = senses.membersOf(senseUuid);
-  const domain = !sense.isCommon ? domainName : (sense.domainTag?.value ?? "Common");
+  const domainTagText = sense.domainTag !== undefined ? domains.findByUuid(sense.domainTag.value)?.domainText.value : undefined;
+  const domain = !sense.isCommon ? domainName : (domainTagText ?? "Common");
   const firstMember = members[0];
   const firstMemberPos = firstMember !== undefined ? ("senseIds" in firstMember ? phrases.partOfSpeechOf(firstMember) : firstMember.partOfSpeech) : undefined;
   return {
@@ -64,7 +66,9 @@ export function senseRecordFor(sense: Sense, senses: Senses, phrases: Phrases, d
     is_common: sense.isCommon,
     is_root_word: sense.isRootWord,
     domain,
-    related_domains: sense.relatedDomainTags.map((tag) => tag.value),
+    related_domains: sense.relatedDomainTags
+      .map((tag) => domains.findByUuid(tag.value)?.domainText.value)
+      .filter((text): text is string => text !== undefined),
     member_count: members.length,
     members: members.map((member) => member.text),
     sources: sense.sourceReferences.map((ref) => ref.sourceName.value),
@@ -75,8 +79,8 @@ export function senseRecordFor(sense: Sense, senses: Senses, phrases: Phrases, d
 /** phraseRecords()'s own exact counterpart for the Senses tab -- every
  * Sense in this Domain's Senses store, as a SenseRecord, only ever run
  * under MAX_INTERACTIVE_WORDS (render()'s own overCapacitySenses). */
-export function senseRecords(senses: Senses, phrases: Phrases, domainName: string): SenseRecord[] {
-  const records = senses.all().map((sense) => senseRecordFor(sense, senses, phrases, domainName));
+export function senseRecords(senses: Senses, phrases: Phrases, domainName: string, domains: Domains): SenseRecord[] {
+  const records = senses.all().map((sense) => senseRecordFor(sense, senses, phrases, domainName, domains));
   records.sort((a, b) => a.lexical_form.toLowerCase().localeCompare(b.lexical_form.toLowerCase()));
   return records;
 }
@@ -97,6 +101,7 @@ export function searchSenses(
   phrases: Phrases,
   domainName: string,
   options: { word?: string; gloss?: string; definition?: string; pos?: string; limit?: number },
+  domains: Domains,
 ): {
   senses: SenseRecord[];
   totalMatches: number;
@@ -111,7 +116,7 @@ export function searchSenses(
   for (const sense of senses.all()) {
     if (glossQuery && !(sense.gloss?.value ?? "").toLowerCase().includes(glossQuery)) continue;
     if (definitionQuery && !(sense.definition?.value ?? "").toLowerCase().includes(definitionQuery)) continue;
-    const record = senseRecordFor(sense, senses, phrases, domainName);
+    const record = senseRecordFor(sense, senses, phrases, domainName, domains);
     if (options.pos && record.pos !== options.pos) continue;
     if (wordQuery && !record.lexical_form.toLowerCase().includes(wordQuery)) continue;
 

@@ -67,6 +67,9 @@ import type { LinguisticUnit } from "../../linguistics/data/linguistic_unit";
 import { createSense, graphUuid as senseGraphUuid } from "./sense_processor";
 import type { Sense } from "../data/entities/sense";
 import type { Senses } from "../data/senses";
+import { createDomain } from "./domain_processor";
+import type { Domain } from "../data/entities/domain";
+import type { Domains } from "../data/domains";
 import type { WordForms } from "../data/word_forms";
 import { graphUuid, type WordFormAttributes } from "./word_form_processor";
 import type { SourceReference } from "../data/source_reference";
@@ -572,6 +575,24 @@ function memberPartOfSpeech(member: Word | Phrase, phraseBook: Phrases): PartOfS
   return "senseIds" in member ? phraseBook.partOfSpeechOf(member)! : member.partOfSpeech;
 }
 
+/** Finds the one canonical `Domain` (data/entities/domain.ts) for
+ * `text` in `domains`, creating it the first time this exact text is
+ * ever seen -- the seeder-side "reuse before create" idiom
+ * `registerModifierCoordination()`/`registerNestedPhrase()`
+ * (role/processor/phrase_processor.ts) already establish for their own
+ * store, adapted to `Domains.findByText()`'s own case-insensitive
+ * lookup. Every caller below reaches this rather than ever constructing
+ * a `Domain` inline, so the same topic-domain text ("medicine") always
+ * resolves to the identical `Domain` record, regardless of how many
+ * separate Words/Senses/Phrases end up referencing it. */
+function resolveDomain(domains: Domains, text: string): Domain {
+  const existing = domains.findByText(text);
+  if (existing !== undefined) return existing;
+  const created = createDomain({ domainText: { value: text } });
+  domains.append(created);
+  return created;
+}
+
 /** Applies one topic-domain tag to `target` -- shared by tagTopicDomain's
  * own Sense-level (synset-wide `;c`/`-c` pointer) and Word/Phrase-level
  * (word-specific pointer) paths, since Sense/Word/Phrase all share the
@@ -579,12 +600,20 @@ function memberPartOfSpeech(member: Word | Phrase, phraseBook: Phrases): PartOfS
  * `target` sets domainTag; any different one after that is appended to
  * relatedDomainTags instead of silently dropped. Idempotent on a re-seed
  * with the identical tag -- both branches are no-ops the second time,
- * so no separate "already processed" tracking is needed. */
-function applyDomainTag(target: { domainTag?: Text; relatedDomainTags: readonly Text[] }, categoryLemma: string): void {
+ * so no separate "already processed" tracking is needed.
+ *
+ * `target.domainTag`/`relatedDomainTags` hold `Identifier`s pointing at
+ * a `Domain` in `domains` now, not an embedded `Text` copy of
+ * `categoryLemma` itself (data/entities/domain.ts's own docstring on
+ * why) -- `resolveDomain()` above is what turns the raw WordNet lemma
+ * string into that reference, resolved (or, the first time, created)
+ * once per call rather than assumed already in `domains`. */
+function applyDomainTag(domains: Domains, target: { domainTag?: Identifier; relatedDomainTags: readonly Identifier[] }, categoryLemma: string): void {
+  const domainId = { value: resolveDomain(domains, categoryLemma).domainId.uuid! };
   if (target.domainTag === undefined) {
-    target.domainTag = { value: categoryLemma };
-  } else if (target.domainTag.value !== categoryLemma && !target.relatedDomainTags.some((tag) => tag.value === categoryLemma)) {
-    target.relatedDomainTags = [...target.relatedDomainTags, { value: categoryLemma }];
+    target.domainTag = domainId;
+  } else if (target.domainTag.value !== domainId.value && !target.relatedDomainTags.some((tag) => tag.value === domainId.value)) {
+    target.relatedDomainTags = [...target.relatedDomainTags, domainId];
   }
 }
 
@@ -782,6 +811,18 @@ export class WordSeeder {
   // seedClosedClassWords() prefers this over the Word's own `definition`
   // whenever a Word's entryId has an entry here.
   private cacheSenses = new Map<string, Text[]>();
+  // Every cached entry's own raw `domain_tag` string (root_words.json's
+  // own 25 entries, currently the only real source of this in the
+  // Common Vocabulary Cache), keyed by entryId -- entryToWord()
+  // populates this instead of setting a Word's own `domainTag` directly
+  // (cachePad's own identical reasoning): `domainTag` now holds an
+  // `Identifier` referencing a `Domain` (data/entities/domain.ts), and
+  // resolving/creating that `Domain` needs a real per-knowledge-Domain
+  // `Domains` store this domain-agnostic prototype cache has no access
+  // to -- seedClosedClassWords() reads this back, against the real
+  // `domains` store it *was* given, once it has a real per-knowledge-
+  // Domain `copy` to set `domainTag` on.
+  private cacheDomainTag = new Map<string, string>();
   private promotedOverlay: PromotedDoc | null = null;
 
   constructor(
@@ -1089,6 +1130,7 @@ export class WordSeeder {
     senseStore?: Senses,
     wordForms?: WordForms,
     coordinations?: Coordinations<LinguisticUnit>,
+    domains?: Domains,
   ): number {
     const excludeOpenClasses = options?.excludeOpenClasses ?? false;
     new AuxiliarySeeder(dictionary, senseStore, wordForms).seed();
@@ -1096,13 +1138,28 @@ export class WordSeeder {
     let seeded = 0;
     const insertedByWordId = new Map<string, Word>();
     for (const word of this.loadCache()) {
-      if (excludeOpenClasses && OPEN_CLASSES.includes(word.partOfSpeech) && word.domainTag?.value !== ROOT_WORD_DOMAIN_TAG) continue;
-      const wordDomainTag = word.domainTag?.value;
+      const wordDomainTagText = this.cacheDomainTag.get(word.wordId.value);
+      if (excludeOpenClasses && OPEN_CLASSES.includes(word.partOfSpeech) && wordDomainTagText !== ROOT_WORD_DOMAIN_TAG) continue;
+      // `existing.wordId.value` is this cache's own stable entryId
+      // (copyWordWithFreshUuid only ever regenerates `.uuid`, never
+      // `.value`), so `cacheDomainTag` -- keyed by that same entryId --
+      // resolves an already-inserted copy's own raw domain-tag text
+      // directly, without needing `domains` at all: a `Domains` store
+      // is only required to materialize a *new* copy's own `domainTag`
+      // reference below, never to re-derive one an earlier call already
+      // set. `existing` from an unrelated source (e.g. WordNet, which
+      // never sets Word.domainTag directly -- Sense.domainTag's own
+      // docstring on why) simply isn't in this map, reading undefined,
+      // the identical "no domain tag" reading its own `undefined`
+      // field already gave before this migration.
       const alreadyPresent = dictionary
         .lookupAll(word.text)
-        .some((existing) => existing.partOfSpeech === word.partOfSpeech && existing.domainTag?.value === wordDomainTag);
+        .some((existing) => existing.partOfSpeech === word.partOfSpeech && this.cacheDomainTag.get(existing.wordId.value) === wordDomainTagText);
       if (alreadyPresent) continue;
       let copy = copyWordWithFreshUuid(word);
+      if (wordDomainTagText !== undefined && domains !== undefined) {
+        copy = { ...copy, domainTag: { value: resolveDomain(domains, wordDomainTagText).domainId.uuid! } };
+      }
       // Open-class generation happens here, against `copy` -- not back
       // in entryToWord() against the cached, domain-agnostic prototype
       // `word` -- for the same reason registerUniqueSense() just below
@@ -1206,7 +1263,14 @@ export class WordSeeder {
 
   seedDomain(
     domain: {
-      vocabulary: { dictionary: Dictionary; phrases: Phrases; senses?: Senses; wordForms?: WordForms; coordinations?: Coordinations<LinguisticUnit> };
+      vocabulary: {
+        dictionary: Dictionary;
+        phrases: Phrases;
+        senses?: Senses;
+        wordForms?: WordForms;
+        coordinations?: Coordinations<LinguisticUnit>;
+        domains?: Domains;
+      };
     },
     options?: { excludeOpenClasses?: boolean },
   ): number {
@@ -1217,6 +1281,7 @@ export class WordSeeder {
       domain.vocabulary.senses,
       domain.vocabulary.wordForms,
       domain.vocabulary.coordinations,
+      domain.vocabulary.domains,
     );
   }
 
@@ -1288,6 +1353,7 @@ export class WordSeeder {
         senses: Senses;
         wordForms?: WordForms;
         coordinations?: Coordinations<LinguisticUnit>;
+        domains?: Domains;
         morphologicalPointerRelationships: MorphologicalPointerRelationshipStore;
         morphologicalPointerRelationshipProcessor: MorphologicalPointerRelationshipProcessor;
         semanticRelationships: SemanticRelationshipStore;
@@ -1302,6 +1368,7 @@ export class WordSeeder {
     const phraseBook = domain.vocabulary.phrases;
     const senseStore = domain.vocabulary.senses;
     const wordForms = domain.vocabulary.wordForms;
+    const domains = domain.vocabulary.domains;
     const coordinations = domain.vocabulary.coordinations;
     const store = domain.vocabulary.morphologicalPointerRelationships;
     const processor = domain.vocabulary.morphologicalPointerRelationshipProcessor;
@@ -1549,6 +1616,7 @@ export class WordSeeder {
             lexicalProcessor,
             lexicalExistingEdges,
             wordForms,
+            domains,
           );
         }
       }
@@ -1661,12 +1729,13 @@ export class WordSeeder {
     lexicalProcessor: LexicalRelationshipProcessor | undefined,
     lexicalExistingEdges: Set<string>,
     wordForms: WordForms | undefined,
+    domains: Domains | undefined,
   ): number {
     const targetMembers = synsetMembersById.get(pointer.targetSynsetId);
     if (targetMembers === undefined || targetMembers.length === 0) return 0;
 
     if (pointer.symbol === ";c" || pointer.symbol === "-c") {
-      this.tagTopicDomain(synset, sourceMembers, targetMembers, pointer, senseStore);
+      this.tagTopicDomain(synset, sourceMembers, targetMembers, pointer, senseStore, domains);
       return 0;
     }
 
@@ -1940,7 +2009,13 @@ export class WordSeeder {
     targetMembers: readonly (Word | Phrase)[],
     pointer: WordNetPointer,
     senseStore: Senses,
+    domains: Domains | undefined,
   ): void {
+    // No Domains store to resolve a topic-category lemma against --
+    // `Domains`'s own docstring, the same optional-store fallback
+    // wordForms/coordinations already have -- so this pointer is left
+    // untagged rather than resolved against nothing.
+    if (domains === undefined) return;
     const sourceWords = pointer.sourceWordIndex === 0 ? sourceMembers : indexedWord(sourceMembers, pointer.sourceWordIndex);
     const targetWords = pointer.targetWordIndex === 0 ? targetMembers : indexedWord(targetMembers, pointer.targetWordIndex);
 
@@ -1954,11 +2029,11 @@ export class WordSeeder {
       const taggedSynsetId = pointer.symbol === ";c" ? synset.synsetId : pointer.targetSynsetId;
       const sense = senseStore.findBySynsetId(taggedSynsetId);
       if (sense !== undefined) {
-        applyDomainTag(sense, categoryLemma);
+        applyDomainTag(domains, sense, categoryLemma);
         return;
       }
     }
-    for (const word of taggedWords) applyDomainTag(word, categoryLemma);
+    for (const word of taggedWords) applyDomainTag(domains, word, categoryLemma);
   }
 
   /** Creates a MorphologicalPointerRelationship for every (source, target) pair not
@@ -2370,19 +2445,19 @@ export class WordSeeder {
    * version, this never writes promoted_words.json to disk -- the
    * effect lasts only for this WordSeeder instance's remaining
    * lifetime (see this module's own docstring). */
-  promoteWord(word: Word, referenceCount: number): boolean {
+  promoteWord(word: Word, referenceCount: number, domains?: Domains): boolean {
     if (!OPEN_CLASSES.includes(word.partOfSpeech)) return false;
     if (referenceCount <= this.promotionThreshold) return false;
 
     const doc = this.loadPromotedDoc();
-    const domainTag = word.domainTag?.value ?? null;
+    const domainTag = (word.domainTag !== undefined ? domains?.findByUuid(word.domainTag.value)?.domainText.value : undefined) ?? null;
     const alreadyPromoted = doc.words.some(
       (entry) => entry.lexical_form === word.text && entry.part_of_speech === PartOfSpeech[word.partOfSpeech]
         && (entry.domain_tag ?? null) === domainTag,
     );
     if (alreadyPromoted) return false;
 
-    const entry: PromotedDocEntry = { ...this.wordToEntry(word), closed_class: false, reference_count: referenceCount };
+    const entry: PromotedDocEntry = { ...this.wordToEntry(word, domains), closed_class: false, reference_count: referenceCount };
     doc.words.push(entry);
     doc.count = doc.words.length;
     this.cache = null;
@@ -2485,6 +2560,7 @@ export class WordSeeder {
     if (entry.senses !== undefined && entry.senses.length > 0) {
       this.cacheSenses.set(entry.entry_id, entry.senses.map((value) => ({ value })));
     }
+    if (entry.domain_tag) this.cacheDomainTag.set(entry.entry_id, entry.domain_tag);
 
     const sourceReferences = (entry.source_references ?? []).map((ref) => ({
       sourceName: { value: ref.source_name },
@@ -2506,7 +2582,6 @@ export class WordSeeder {
       firstRecordedUse: optText(entry.first_recorded_use),
       sourceReferences,
       isCommon: true,
-      domainTag: optText(entry.domain_tag),
       isRootWord: entry.is_root_word ?? false,
       interrogativeRootWord: entry.interrogative_root_word
         ? InterrogativeRootWord[entry.interrogative_root_word as keyof typeof InterrogativeRootWord]
@@ -2674,7 +2749,7 @@ export class WordSeeder {
     });
   }
 
-  private wordToEntry(word: Word): WordFileEntry {
+  private wordToEntry(word: Word, domains?: Domains): WordFileEntry {
     // Root-word status and isDerivableNoun live on Noun now, not Word
     // (Noun's own docstring on why) -- `nounFields` is undefined for
     // every other POS subtype, so each of the six reads below falls
@@ -2683,7 +2758,7 @@ export class WordSeeder {
     const nounFields = isNoun(word) ? word : undefined;
     return {
       entry_id: word.wordId.value,
-      domain_tag: word.domainTag?.value ?? null,
+      domain_tag: (word.domainTag !== undefined ? domains?.findByUuid(word.domainTag.value)?.domainText.value : undefined) ?? null,
       // lexicalForm/version/language_code/script_code all live on the
       // base-lemma WordForm now (WordForm's own docstring), not on
       // Word -- same "only ever receives a bare Word, with no

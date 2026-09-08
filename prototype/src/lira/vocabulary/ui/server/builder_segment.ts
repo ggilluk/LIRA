@@ -8,6 +8,7 @@
  * definitionWordSegment). */
 
 import type { Dictionary } from "../../data/dictionary";
+import type { Domains } from "../../data/domains";
 import { PartOfSpeech } from "../../data/enums/part_of_speech";
 import { wordFormTypeLabel, type WordFormType } from "../../data/enums/word_forms_enum";
 import type { Senses } from "../../data/senses";
@@ -67,6 +68,7 @@ export function definitionWordSegment(
   senses: Senses,
   domainName: string,
   wordForms: WordForms,
+  domains: Domains,
 ): DefinitionSegment {
   if (resolved === undefined) return { text: surfaceText, word: true, resolved: false };
   const fields = senseFieldsFor(senses, resolved, wordForms);
@@ -78,7 +80,7 @@ export function definitionWordSegment(
     word_id: graphUuid(resolved),
     lexical_form: resolved.text,
     pos: PartOfSpeech[resolved.partOfSpeech],
-    domain: domainLabel(senses, domainName, resolved, wordForms),
+    domain: domainLabel(senses, domainName, resolved, wordForms, domains),
     gloss: fields.gloss?.value ?? fields.definition?.value ?? "",
     word_form: matchingForm && { field: matchingForm.formType, label: wordFormTypeLabel(matchingForm.formType), value: matchingForm.text.value },
   };
@@ -94,7 +96,14 @@ export function definitionWordSegment(
  * detail panel can render the definition with each word individually
  * identifiable (a tooltip popup), without re-deriving the resolution
  * itself in client JS. Empty when there's no definition. */
-export function definitionSegments(word: Word, dictionary: Dictionary, senses: Senses, domainName: string, wordForms: WordForms): DefinitionSegment[] {
+export function definitionSegments(
+  word: Word,
+  dictionary: Dictionary,
+  senses: Senses,
+  domainName: string,
+  wordForms: WordForms,
+  domains: Domains,
+): DefinitionSegment[] {
   const definition = senseFieldsFor(senses, word, wordForms).definition;
   if (definition === undefined) return [];
   const text = definition.value;
@@ -108,7 +117,7 @@ export function definitionSegments(word: Word, dictionary: Dictionary, senses: S
     referenceIndex += 1;
     const start = match.index ?? 0;
     if (start > lastEnd) segments.push({ text: text.slice(lastEnd, start) });
-    segments.push(definitionWordSegment(match[0], reference.word, senses, domainName, wordForms));
+    segments.push(definitionWordSegment(match[0], reference.word, senses, domainName, wordForms, domains));
     lastEnd = start + match[0].length;
   }
   if (lastEnd < text.length) segments.push({ text: text.slice(lastEnd) });

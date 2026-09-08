@@ -71,20 +71,24 @@ export interface Word extends LinguisticUnit {
 
   /**
    * Subdomain distinguishing this Word's own sense from another sense
-   * sharing the same lexical form and part of speech.
+   * sharing the same lexical form and part of speech -- a graph-reference
+   * pointer to the one `Domain` (data/entities/domain.ts) this fact
+   * names, resolved against a `Domains` store (`Domains.findByUuid()`),
+   * not an embedded `Text` copy of the tag itself.
    *
    * Undefined when this Word's own sense needs no such distinction.
    */
-  domainTag?: Text;
+  domainTag?: Identifier;
 
   /**
    * Every additional topic domain this Word's own sense belongs to,
-   * beyond the one named by `domainTag`.
+   * beyond the one named by `domainTag` -- each entry `domainTag`'s own
+   * identical by-reference resolution, one `Domain` per entry.
    *
    * Empty when this Word's own sense belongs to at most one topic
    * domain.
    */
-  relatedDomainTags: readonly Text[];
+  relatedDomainTags: readonly Identifier[];
 
 
   // ── References ───────────────────────────────────────────
