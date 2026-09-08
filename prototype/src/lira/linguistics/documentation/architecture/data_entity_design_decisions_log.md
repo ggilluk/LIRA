@@ -848,3 +848,71 @@ step is ever tagged one any more.
 WordNet`, 92,314 words) confirmed no crash and the correct
 reclassification ("to be sure": Adverb -> Prepositional Phrase, was
 Adverb -> Infinitive Phrase).
+
+## Document structure tree: nest Clause/Phrase under each Sentence
+
+Requested directly: "show Clause (Nested) and then phrase (nested) under
+each sentence in the document structure." Before this, `sentence_reader_view.ts`'s
+own Document structure tree (Document -> Paragraph -> Sentence) treated
+every Sentence row as a plain, non-foldable leaf -- its predicted
+Clause/Phrase breakdown only ever appeared off to the side, in the
+separate Winner panel, once selected. This makes that same breakdown part
+of the tree itself, directly beneath the Sentence it belongs to.
+
+A Sentence row now carries its own fold toggle (`renderSentenceNode()`),
+matching Paragraph rows. Expanded, it renders the Sentence's own
+`JsonSentence.clauses` as Clause child nodes (`renderClauseNode()`), each
+decomposed into its own subject/predicate/object/complement/modifier
+children -- the exact same role list the Winner panel's own `roleRow()`
+already builds, reused rather than a second flattening of `clause.phrases`,
+so the tree and the Winner panel never disagree about what a Clause
+"contains". A role filled by an ordinary Phrase recurses into
+`renderPhraseNode()`, which in turn recurses into that Phrase's own
+`nestedPhrases` (most commonly a NounPhrase/AdjectivePhrase's own
+COMPLEMENT) -- "Phrase (nested)". A role filled by a real embedded nominal
+Clause (clause_embedding.ts's own DEPENDENT subordinate clause,
+"That the door was unlocked surprised everyone." filling SUBJECT) recurses
+back into `renderClauseNode()` itself instead, labelled with that role --
+"Clause (nested)".
+
+This tree only exists once a Sentence's own full detail
+(`ReadResult.predicted.clauses`) has actually been fetched -- unlike
+Document/Paragraph, whose children are already in the `read-document`
+result up front. `selectSentenceNode()` now also adds the Sentence's own
+node key to `expandedNodes` (so selecting a Sentence unfolds its
+Clause/Phrase tree automatically, no separate toggle click needed) and
+re-renders the tree a second time once the fetch resolves (the first
+render, right after selection, only has the fetch's own "Loading…"
+placeholder to show). `toggleNode()` gained a Sentence-specific branch:
+opening a Sentence node whose detail isn't cached yet delegates to
+`selectSentenceNode()` (the same fetch a row click already triggers,
+so the tree and the right-hand panels end up showing the same Sentence
+together); opening one that's already cached (previously selected, then
+folded) just reveals it again without disturbing what's currently
+selected. `handleTreeKeydown()` needed a matching fix -- the new toggle
+button nested inside a `[data-kind="sentence"]` row meant a keyboard
+Enter/Space on the toggle was also being caught by the row's own
+selection shortcut, double-firing toggle-and-select; guarded by checking
+for a `[data-action="toggle-node"]` ancestor first, the same precedence
+`handleTreeClick()`'s own delegated listener already gives the toggle
+button over row selection.
+
+Live Playwright against the real running app (full `Load WordNet`,
+closed-class seed) verified both cases at once with
+"That the door was unlocked surprised everyone. The word wants to use the
+meaning.": Sentence 1's tree shows Clause (INDEPENDENT) -> SUBJECT -> a
+real nested Clause (DEPENDENT, "the door was unlocked") -> its own
+SUBJECT/PREDICATE Phrases, then back up to the outer Clause's own
+PREDICATE ("surprised") and OBJECT ("everyone") -- the embedded-clause
+case. Sentence 2's tree shows Clause -> MODIFIER -> Phrase
+(PREPOSITIONAL_PHRASE, "to use") -> a nested Phrase (NOUN_PHRASE, "use")
+under it -- the nested-Phrase-complement case (the "to be sure"/"to use"
+reclassification the InfinitivePhrase removal above already established).
+Folding Sentence 1 removed its Clause/Phrase children from the tree;
+re-expanding it immediately restored the same tree from `detailCache`
+with no re-fetch, and Sentence 2's own already-expanded tree was
+undisturbed throughout.
+
+`npx tsc -b --force` clean, full `vitest run --no-file-parallelism`
+187/187 (no test changes -- this is a UI-only rendering change, no data/
+role-layer behaviour moved).

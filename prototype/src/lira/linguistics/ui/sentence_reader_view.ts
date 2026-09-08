@@ -171,16 +171,40 @@ export class SentenceReaderView {
 
   private handleTreeKeydown(event: KeyboardEvent): void {
     if (event.key !== "Enter" && event.key !== " ") return;
-    const row = (event.target as HTMLElement).closest<HTMLElement>('.lira-tree-row[data-kind="sentence"]');
+    const target = event.target as HTMLElement;
+    // A Sentence row now carries its own toggle button (renderSentenceNode's
+    // own docstring below) nested inside it -- the button's native
+    // Enter/Space handling already produced a "click" handleTreeClick's
+    // own toggle branch will act on, so this handler must not also treat
+    // the same keypress as a row selection, or opening/closing the
+    // Clause/Phrase tree would also steal the sentence selection.
+    if (target.closest('[data-action="toggle-node"]')) return;
+    const row = target.closest<HTMLElement>('.lira-tree-row[data-kind="sentence"]');
     if (!row) return;
     event.preventDefault();
     void this.selectSentenceNode(row.dataset.node ?? "");
   }
 
+  /** Folds/unfolds a node. For an ordinary Document/Paragraph node this
+   * is the whole story -- their children are already in hand from the
+   * `read-document` result. Opening a Sentence node for the first time is
+   * different: its Clause/Phrase children only exist once that Sentence's
+   * own full detail has been fetched (`detailCache`), so that case
+   * delegates to `selectSentenceNode()` instead, the same fetch a row
+   * click already triggers -- the tree and the right-hand panels end up
+   * showing the same Sentence together rather than the tree silently
+   * fetching its own separate copy. Re-opening a Sentence whose detail is
+   * already cached (previously selected, then folded) just reveals it
+   * without changing what's selected. */
   private toggleNode(key: string): void {
     if (!key || !this.documentResult) return;
-    if (this.expandedNodes.has(key)) this.expandedNodes.delete(key);
-    else this.expandedNodes.add(key);
+    const opening = !this.expandedNodes.has(key);
+    if (opening) this.expandedNodes.add(key);
+    else this.expandedNodes.delete(key);
+    if (opening && parseSentenceKey(key) && !this.detailCache.has(key)) {
+      void this.selectSentenceNode(key);
+      return;
+    }
     this.renderTreeInPlace();
   }
 
@@ -209,6 +233,10 @@ export class SentenceReaderView {
 
     this.selectedKey = key;
     this.expandedNodes.add(`b${parsed.blockIndex}`);
+    // Also unfolds the Sentence node itself, so its Clause (nested) /
+    // Phrase (nested) tree appears in the Document structure panel the
+    // moment it's selected, not only after a separate toggle click.
+    this.expandedNodes.add(key);
     this.renderTreeInPlace();
 
     const cached = this.detailCache.get(key);
@@ -225,6 +253,10 @@ export class SentenceReaderView {
       const result = await this.client.read(summary.text, learningEnabled, true);
       if (token !== this.detailToken || !this.container) return;
       this.detailCache.set(key, result);
+      // The tree's own Clause/Phrase children for this node only became
+      // renderable now that `detailCache` has this Sentence's full
+      // predicted structure -- re-render it alongside the right-hand panels.
+      this.renderTreeInPlace();
       this.renderDetail(result);
     } catch (error) {
       if (token !== this.detailToken || !this.container) return;
@@ -365,7 +397,7 @@ export class SentenceReaderView {
         <div class="lira-sr-workspace">
           <section class="lira-sr-tree-panel">
             <h3>Document structure</h3>
-            <p class="lira-sr-panel-sub">Document &rarr; Paragraph &rarr; Sentence. Select a sentence to see it on the right.</p>
+            <p class="lira-sr-panel-sub">Document &rarr; Paragraph &rarr; Sentence &rarr; Clause &rarr; Phrase. Select a sentence to see it on the right; its clause/phrase structure unfolds beneath once read.</p>
             <div class="lira-sr-tree"><div class="lira-sr-placeholder">Read some text to see its structure.</div></div>
           </section>
           <div class="lira-sr-panels">
@@ -456,18 +488,99 @@ export class SentenceReaderView {
       </li>`;
   }
 
+  /** A Sentence leaf is now also a fold point: expanded, it shows the
+   * Sentence's own Clause(s) beneath it (`renderClauseNode()`), each of
+   * which nests its own Phrase(s) (`renderPhraseNode()`) -- and, for a
+   * real embedded nominal subject clause (clause_embedding.ts), a nested
+   * Clause in place of a Phrase for that one role. That tree only exists
+   * once this Sentence's own full detail has been fetched
+   * (`detailCache`, via `selectSentenceNode()`/`toggleNode()`'s own
+   * fetch-on-open path below) -- a "Loading…" row stands in for the
+   * brief gap between opening the node and the fetch resolving. */
   private renderSentenceNode(sentence: JsonSentenceSummary, blockKey: string, index: number): string {
     const key = `${blockKey}s${index}`;
     const color = VALIDATION_COLORS[sentence.validation] ?? "#7A7A7A";
+    const expanded = this.expandedNodes.has(key);
+    const detail = this.detailCache.get(key);
+    const children = expanded
+      ? `<ul>${
+          detail
+            ? detail.predicted.clauses.map((clause, clauseIndex) => this.renderClauseNode(clause, `${key}c${clauseIndex}`)).join("")
+            : `<li class="lira-tree-node"><div class="lira-tree-row"><span class="lira-tree-spacer"></span><span class="lira-tree-summary">Loading…</span></div></li>`
+        }</ul>`
+      : "";
     return `
-      <li class="lira-tree-node lira-tree-leaf">
+      <li class="lira-tree-node">
         <div class="lira-tree-row ${this.selectedKey === key ? "selected" : ""}" data-node="${key}" data-kind="sentence" role="button" tabindex="0">
-          <span class="lira-tree-spacer"></span>
+          ${treeToggle(key, expanded)}
           <span class="lira-tree-dot" style="background:${color}"></span>
           <span class="lira-tree-label">Sentence ${index + 1}</span>
           <span class="lira-tree-snippet">${escapeHtml(truncate(sentence.text, 40))}</span>
           ${sentence.errors.length ? `<span class="lira-tree-error-count">${sentence.errors.length}</span>` : ""}
         </div>
+        ${children}
+      </li>`;
+  }
+
+  /** One Clause node under a Sentence (or, recursively, under another
+   * Clause's own `subject` role when it's a real embedded nominal Clause
+   * rather than a Phrase) -- decomposed into subject/predicate/object/
+   * complement/modifier children exactly the way the Winner panel's own
+   * `roleRow()` already does, reused here rather than a second flattening
+   * of `clause.phrases`, so both surfaces agree on what a Clause
+   * "contains". A role filled by a Phrase recurses into
+   * `renderPhraseNode()`; a role filled by a nested Clause recurses back
+   * into this same method with that role's name as its label. */
+  private renderClauseNode(clause: JsonClause, key: string, role?: string): string {
+    const color = VALIDATION_COLORS[clause.validation] ?? "#7A7A7A";
+    const roles: [string, JsonPhrase | JsonClause | null][] = [
+      ["subject", clause.subject],
+      ["predicate", clause.predicate],
+      ["object", clause.object],
+      ["complement", clause.complement],
+      ...clause.modifiers.map((modifier): [string, JsonPhrase | JsonClause | null] => ["modifier", modifier]),
+    ];
+    const children = roles
+      .filter((entry): entry is [string, JsonPhrase | JsonClause] => entry[1] !== null)
+      .map(([roleLabel, value], index) =>
+        isJsonClause(value)
+          ? this.renderClauseNode(value, `${key}r${index}`, roleLabel)
+          : this.renderPhraseNode(value, `${key}r${index}`, roleLabel))
+      .join("");
+    return `
+      <li class="lira-tree-node">
+        <div class="lira-tree-row" data-node="${key}" data-kind="clause">
+          <span class="lira-tree-spacer"></span>
+          <span class="lira-tree-dot" style="background:${color}"></span>
+          ${role ? `<span class="lira-tree-role-pill">${escapeHtml(role)}</span>` : ""}
+          <span class="lira-tree-label">Clause</span>
+          <span class="lira-tree-summary">${escapeHtml(clause.clauseType ?? "?")}</span>
+          <span class="lira-tree-snippet">${escapeHtml(truncate(clause.text, 40))}</span>
+        </div>
+        ${children ? `<ul>${children}</ul>` : ""}
+      </li>`;
+  }
+
+  /** One Phrase node, under a Clause role or (recursively) under another
+   * Phrase's own `nestedPhrases` -- most commonly a NounPhrase/
+   * AdjectivePhrase's own COMPLEMENT (phrase_processor.ts's own
+   * "COMPLEMENT detection" work). */
+  private renderPhraseNode(phrase: JsonPhrase, key: string, role?: string): string {
+    const color = VALIDATION_COLORS[phrase.validation] ?? "#7A7A7A";
+    const children = phrase.nestedPhrases
+      .map((nested, index) => this.renderPhraseNode(nested, `${key}n${index}`))
+      .join("");
+    return `
+      <li class="lira-tree-node">
+        <div class="lira-tree-row" data-node="${key}" data-kind="phrase">
+          <span class="lira-tree-spacer"></span>
+          <span class="lira-tree-dot" style="background:${color}"></span>
+          ${role ? `<span class="lira-tree-role-pill">${escapeHtml(role)}</span>` : ""}
+          <span class="lira-tree-label">Phrase</span>
+          <span class="lira-tree-summary">${escapeHtml(phrase.phraseType ?? "?")}</span>
+          <span class="lira-tree-snippet">${escapeHtml(truncate(phrase.text, 40))}</span>
+        </div>
+        ${children ? `<ul>${children}</ul>` : ""}
       </li>`;
   }
 
@@ -906,6 +1019,10 @@ const CSS = `
 .lira-tree-heading-pill {
   flex: none; font-size: 0.62rem; font-weight: 700; letter-spacing: 0.03em; color: var(--ink-muted);
   background: var(--surface-2); padding: 0.02rem 0.4rem; border-radius: 4px; font-family: var(--font-mono);
+}
+.lira-tree-role-pill {
+  flex: none; font-size: 0.58rem; font-weight: 700; letter-spacing: 0.03em; text-transform: uppercase;
+  color: var(--ink-muted); background: var(--surface-2); padding: 0.02rem 0.35rem; border-radius: 4px;
 }
 
 /* Winner summary card. */
