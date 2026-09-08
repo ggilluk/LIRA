@@ -2470,7 +2470,7 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // any deeper.
     expect(atFault!.complements).toHaveLength(1);
     const atFaultComplement = atFault!.complements![0];
-    if (!("entryId" in atFaultComplement)) throw new Error("expected an embedded Phrase, not an Identifier");
+    if (!("phraseId" in atFaultComplement)) throw new Error("expected an embedded Phrase, not an Identifier");
     expect(atFaultComplement.text).toBe("fault");
     expect(isNounPhrase(atFaultComplement)).toBe(true);
     const atFaultComplementHead = dictionary.findByUuid(atFaultComplement.headWord!.value);
@@ -2702,7 +2702,7 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     expect(inTheMeantime!.determiner).toBeUndefined();
     expect(inTheMeantime!.complements).toHaveLength(1);
     const inTheMeantimeComplement = inTheMeantime!.complements![0];
-    if (!("entryId" in inTheMeantimeComplement)) throw new Error("expected an embedded Phrase, not an Identifier");
+    if (!("phraseId" in inTheMeantimeComplement)) throw new Error("expected an embedded Phrase, not an Identifier");
     expect(inTheMeantimeComplement.text).toBe("the meantime");
     expect(isNounPhrase(inTheMeantimeComplement)).toBe(true);
     const inTheMeantimeComplementHead = dictionary.findByUuid(inTheMeantimeComplement.headWord!.value);
@@ -2796,7 +2796,7 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // data/enums/phrase_type.ts -- `["PrepositionalPhrase", "Clause"]`).
     expect(abatement.complements).toHaveLength(1);
     const ofANuisance = abatement.complements![0];
-    if (!("entryId" in ofANuisance)) throw new Error("expected an embedded Phrase, not an Identifier");
+    if (!("phraseId" in ofANuisance)) throw new Error("expected an embedded Phrase, not an Identifier");
     expect(ofANuisance.text).toBe("of a nuisance");
     expect(ofANuisance.phraseType).toBe(PhraseType.PREPOSITIONAL_PHRASE);
     expect(isPrepositionalPhrase(ofANuisance)).toBe(true);
@@ -2816,7 +2816,7 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // default branch (role/processor/phrase_processor.ts).
     expect(ofANuisance.complements).toHaveLength(1);
     const aNuisance = ofANuisance.complements![0];
-    if (!("entryId" in aNuisance)) throw new Error("expected an embedded Phrase, not an Identifier");
+    if (!("phraseId" in aNuisance)) throw new Error("expected an embedded Phrase, not an Identifier");
     expect(aNuisance.text).toBe("a nuisance");
     expect(aNuisance.phraseType).toBe(PhraseType.NOUN_PHRASE);
     expect(isNounPhrase(aNuisance)).toBe(true);
@@ -2879,7 +2879,7 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // independent WordForm references.
     expect(attributiveGenitiveCase!.preModifier).toBeDefined();
     const attributiveGenitive = attributiveGenitiveCase!.preModifier as Phrase;
-    if (!("entryId" in attributiveGenitive)) throw new Error("expected an embedded Phrase, not an Identifier");
+    if (!("phraseId" in attributiveGenitive)) throw new Error("expected an embedded Phrase, not an Identifier");
     expect(attributiveGenitive.text).toBe("attributive genitive");
     expect(attributiveGenitive.phraseType).toBe(PhraseType.ADJECTIVE_PHRASE);
     expect(isAdjectivePhrase(attributiveGenitive)).toBe(true);

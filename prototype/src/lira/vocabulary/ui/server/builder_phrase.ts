@@ -64,7 +64,7 @@ export function phraseRecordFor(phrase: Phrase, phrases: Phrases, senses: Senses
   const senseFields = senseFieldsFor(senses, phrase, wordForms);
   return {
     id: graphUuid(phrase),
-    entry_id: phrase.entryId.value,
+    entry_id: phrase.phraseId.value,
     lexical_form: phrase.lexicalForm?.value ?? phrase.text,
     text: phrase.text,
     pos: PartOfSpeech[phrases.partOfSpeechOf(phrase)!],
@@ -114,7 +114,7 @@ export interface PhraseComplementSegment {
 }
 
 /** `phrase.complements`, as the client-facing shape above -- one entry
- * per embedded Phrase (`"entryId" in entry` narrows out the `Identifier`/
+ * per embedded Phrase (`"phraseId" in entry` narrows out the `Identifier`/
  * `Clause` branches `Phrase.complements`'s own type still carries, the
  * same narrowing `vocabulary.test.ts`'s own complement assertions
  * already use; neither branch is ever actually constructed today,
@@ -128,7 +128,7 @@ export interface PhraseComplementSegment {
  * itself doesn't already carry. */
 export function phraseComplementSegments(phrase: Phrase): PhraseComplementSegment[] {
   return (phrase.complements ?? [])
-    .filter((entry): entry is Phrase => "entryId" in entry)
+    .filter((entry): entry is Phrase => "phraseId" in entry)
     .map((complement) => ({ id: graphUuid(complement), text: complement.text, phrase_type: phraseTypeLabel(complement) }));
 }
 
@@ -228,10 +228,20 @@ function coordinationText(coordination: Coordination<Word | Phrase>, wordForms: 
  * each happens). A `Clause` value is never actually constructed by
  * `buildModifierUnit()` today (the same "documented ahead of
  * construction" status `phraseComplementSegments()`'s own docstring
- * already notes for its own identical `Clause` branch); `Clause` carries
- * no `entryId` of its own (linguistics/data/clause.ts), so should one
- * ever appear it falls into the `Identifier` branch below by the same
- * `"entryId" in value` test, fails `wordForms.findByUuid()`, and
+ * already notes for its own identical `Clause` branch).
+ *
+ * Discriminates by checking `"text" in value` first (true for Phrase and
+ * Clause alike, false for Identifier and Coordination), then a second
+ * field within each half -- `"phraseId" in value` to tell Phrase from
+ * Clause (Clause carries no identity field of its own,
+ * linguistics/data/clause.ts), `"value" in value` to tell Identifier
+ * from Coordination. Phrase and Coordination no longer share one
+ * identity field name to check first the way they did before Phrase's
+ * own `entryId` was renamed to `phraseId` (both used to carry `entryId`,
+ * letting a single up-front check bucket {Phrase, Coordination} apart
+ * from {Identifier, Clause} -- Phrase's own design log entry on the
+ * rename), so this now checks the field each *shape* is defined by
+ * instead. A Clause that reaches the first branch without a `phraseId`
  * resolves to `undefined` -- silently dropped, the same as any other
  * unresolvable single-token case. */
 function modifierUnitSegment(
@@ -242,12 +252,14 @@ function modifierUnitSegment(
   wordForms: WordForms,
 ): ModifierSegment | undefined {
   if (value === undefined) return undefined;
-  if (!("entryId" in value)) {
-    if (!("value" in value)) return undefined; // Clause -- no entryId, no `value` either; never actually constructed here.
+  if ("text" in value) {
+    if (!("phraseId" in value)) return undefined; // Clause -- no phraseId; never actually constructed here.
+    return { id: graphUuid(value), text: value.text, phrase_type: phraseTypeLabel(value) };
+  }
+  if ("value" in value) {
     const form = wordForms.findByUuid(value.value);
     return form === undefined ? undefined : definitionWordSegment(form.text.value, dictionary.lookup(form.text.value), senses, domainName, wordForms);
   }
-  if ("text" in value) return { id: graphUuid(value), text: value.text, phrase_type: phraseTypeLabel(value) };
   return { text: coordinationText(value, wordForms) };
 }
 

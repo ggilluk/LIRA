@@ -10,6 +10,7 @@ import type { Conjunction } from "../../data/entities/conjunction";
 import type { WordForms } from "../../data/word_forms";
 import { graphUuid as wordGraphUuid } from "../word_processor";
 import { graphUuid as wordFormGraphUuid } from "../word_form_processor";
+import { graphUuid as phraseGraphUuid } from "../../data/entities/phrase";
 import { createNounPhrase } from "../../data/entities/noun_phrase";
 import { createAdjectivePhrase } from "../../data/entities/adjective_phrase";
 import { createAdverbPhrase } from "../../data/entities/adverb_phrase";
@@ -935,15 +936,29 @@ function resolveCoordinateSide(
   return buildNestedPhrase(tokens, classifyModifierPhraseType(tokens, dictionary), dictionary, wordForms, phrases, coordinations);
 }
 
+/** `entry`'s own graph-identity uuid, whichever of Word's own `entryId`
+ * or Phrase's own `phraseId` it actually carries -- `registerModifierCoordination()`'s
+ * own dedup helper below, needed because Word and Phrase no longer share
+ * one identity field name to duck-type against (Phrase's own "rename
+ * entryId to phraseId" design log entry). `"phraseId" in entry`
+ * mirrors every other Phrase-vs-Word discriminator in this codebase
+ * (`memberUuid()`, `endpointUuid()`, word_seeder.ts) -- just keyed on
+ * the field itself rather than `senseIds`, since a bare cast (not a
+ * real `Word | Phrase` union) is all `coordinations.all()`'s own broad
+ * `Coordination<LinguisticUnit>` typing gives here. */
+function coordinateGraphUuid(entry: Word | Phrase): string {
+  return "phraseId" in entry ? phraseGraphUuid(entry) : wordGraphUuid(entry);
+}
+
 /** Finds or creates a `Coordination` for `coordinates`/`coordinator` in
  * `coordinations` -- `Coordinations` has no text index at all
  * (documented design choice, data/coordinations.ts: "a Coordination
  * carries no `text` of its own to index"), so dedup here is a linear
- * scan comparing each coordinate's own `entryId.uuid` in order (a Word,
- * Phrase, and nested Coordination alike all carry that field) plus the
- * coordinator's own `value` -- cheap, a real Coordinations store stays
- * small. `registerNestedPhrase()`'s own reuse-before-create shape,
- * adapted to the store this actually has. Builds via `createCoordination()`
+ * scan comparing each coordinate's own graph-identity uuid in order
+ * (`coordinateGraphUuid()` just above) plus the coordinator's own
+ * `value` -- cheap, a real Coordinations store stays small.
+ * `registerNestedPhrase()`'s own reuse-before-create shape, adapted to
+ * the store this actually has. Builds via `createCoordination()`
  * (role/coordination_processor.ts) when no match is found. `coordinator`
  * is resolved by the caller against the *existing* WordForm on the
  * matched Conjunction Word (`singleTokenModifierId()`) -- this function
@@ -957,13 +972,12 @@ function registerModifierCoordination(
   // `coordinations.all()` is typed `Coordination<LinguisticUnit>` (the
   // store's own broad, mixed-specialisation shape, data/coordinations.ts's
   // own docstring) -- every coordinate here is in fact a Word or Phrase
-  // (this function's own real callers, `buildModifierUnit()`), both of
-  // which genuinely carry `entryId` despite `LinguisticUnit` itself not
-  // declaring it, so the cast below is safe at runtime.
+  // (this function's own real callers, `buildModifierUnit()`), so the
+  // cast to `Word | Phrase` below is safe at runtime.
   const existing = coordinations.all().find((candidate) => {
     if (candidate.coordinates.length !== coordinates.length) return false;
     if ((candidate.coordinator?.value ?? undefined) !== (coordinator?.value ?? undefined)) return false;
-    return candidate.coordinates.every((entry, i) => (entry as { entryId: Identifier }).entryId.uuid === coordinates[i].entryId.uuid);
+    return candidate.coordinates.every((entry, i) => coordinateGraphUuid(entry as Word | Phrase) === coordinateGraphUuid(coordinates[i]));
   });
   if (existing !== undefined) return existing as unknown as Coordination<Word | Phrase>;
   const created = createCoordination<Word | Phrase>({ coordinates, coordinator });

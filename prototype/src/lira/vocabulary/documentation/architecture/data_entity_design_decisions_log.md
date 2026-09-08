@@ -3006,3 +3006,91 @@ test repurposed into asserting every case, denylisted or not, now lands on
 PREPOSITIONAL_PHRASE uniformly); live Playwright against the real running
 app, full `Load WordNet` (92,314 words, 70,928 phrases), confirmed no
 crash and the real reclassification above.
+
+## Rename `Phrase.entryId` to `Phrase.phraseId`
+
+Requested directly, scoped to `Phrase` alone -- the same "one entity's own
+field, not a blanket rename across every entity sharing the name" scope
+the immediately preceding `WordForm.entryId` -> `wordFormId` rename above
+was given. `entryId` was still the shared name Word/Phrase/Sense/
+Coordination all carried after that rename; this narrows it further,
+leaving Word/Sense/Coordination's own `entryId` untouched.
+
+Every real call site found by tracing actual field access (not a blind
+text search across `entryId`, which also matches the same field name on
+three other entities, several `Map<string, ...>` caches in
+`word_seeder.ts` keyed by the *raw* `WordFileEntry.entry_id` JSON string
+rather than any entity's own field, and `FormLink`'s own Word-only
+`baseEntryId`/`formEntryId`, all deliberately left alone):
+`data/entities/phrase.ts`'s own field declaration, `createPhrase()`,
+`copyPhraseWithFreshUuid()`, `graphUuid()`; `toSyntheticWord()`/
+`phraseAsWord()` in the same file still write Word's own `entryId:` key
+(unchanged) but now read its value from `phrase.phraseId` rather than
+`phrase.entryId`, since they're populating a *different* entity's
+identically-named field, not this one; `word_seeder.ts`'s own
+`entryToPhrase()` (the actual `createPhrase({ phraseId: ... })` call site)
+and the two `phrase.phraseId.value` cache lookups in
+`seedClosedClassWords()`; `builder_phrase.ts`'s own `phraseRecordFor()`
+(`entry_id: phrase.phraseId.value` -- `PhraseRecord.entry_id`, the
+client-facing JSON key, stays `entry_id` unchanged, same as
+`WordRecord.entry_id` did across the WordForm rename: only the internal
+TypeScript field name changed, not the wire shape); five identical
+`"entryId" in <embedded Phrase>` type-narrowing checks across
+`vocabulary.test.ts` (complement/preModifier assertions) and one in
+`builder_phrase.ts`'s own `phraseComplementSegments()`, all now
+`"phraseId" in ...`.
+
+Two real, behaviour-affecting fixes this rename forced, not just renamed
+field reads -- found by tracing every place something duck-typed *across*
+Word and Phrase using the field name they used to share, not just places
+reading `Phrase.entryId` directly:
+
+- `phrase_processor.ts`'s own `registerModifierCoordination()` (the
+  dedup lookup a coordinated modifier run like "big and red" goes
+  through, `buildModifierUnit()`'s own call site) cast each coordinate to
+  `{ entryId: Identifier }` and compared `.entryId.uuid` -- safe before
+  this rename, since Word and Phrase genuinely shared that field name;
+  after it, a real Phrase coordinate has no `.entryId` at all, so the old
+  cast would have silently read `undefined.uuid` and thrown. Fixed by
+  adding a small `coordinateGraphUuid()` helper (`"phraseId" in entry ?
+  phraseGraphUuid(entry) : wordGraphUuid(entry)`, the same
+  `memberUuid()`/`endpointUuid()` discriminator shape already used
+  elsewhere in this codebase) and importing Phrase's own `graphUuid` the
+  same aliased-import way `builder_word.ts`/`builder_relationship.ts`/
+  `data/senses.ts` already do.
+- `builder_phrase.ts`'s own `modifierUnitSegment()` (renders
+  `preModifier`/`postModifier`/`determiner`) discriminated its
+  `Identifier | Phrase | Coordination<Word | Phrase> | Clause` union with
+  one up-front `"entryId" in value` check -- before this rename, that
+  check happened to cleanly bucket {Phrase, Coordination} (both carried
+  `entryId`) apart from {Identifier, Clause} (neither did); after it,
+  Phrase no longer belongs in the first bucket, so a real embedded Phrase
+  modifier would have wrongly fallen into the Identifier/Clause branch
+  and silently resolved to `undefined`, dropping a real modifier from the
+  UI with no error. Restructured to check `"text" in value` first
+  (Phrase and Clause both have it, Identifier and Coordination don't),
+  then `"phraseId" in value` within that half (Phrase vs. Clause) and
+  `"value" in value` within the other (Identifier vs. Coordination) --
+  same four-way outcome, just discriminated on each shape's own field
+  now that Phrase and Coordination no longer share one.
+
+Four duplicate copies of the same `memberUuid()` docstring (`data/senses.ts`,
+`word_seeder.ts`, `builder_relationship.ts`, `builder_word.ts` -- each an
+independently-declared function body, this codebase's established
+"no cross-importing UI/role helpers" precedent) said "Phrase's own
+entryId now carries the identical two-role shape Word's own does";
+updated to say `phraseId` instead. Their function bodies needed no change
+-- all four already called through the exported `graphUuid()` functions
+rather than reading `.entryId`/`.phraseId` directly.
+
+`npx tsc -b --force` clean -- confirms every real field-access call site
+above, not just the ones grep happened to find, since a stale
+`.entryId` read on a `Phrase`-typed value is a compile error now, not a
+silent `undefined`. Full `vitest run --no-file-parallelism` 187/187 (no
+test behaviour changed, only the "entryId"/"phraseId" narrowing key five
+tests use). Live Playwright against the real running app, full `Load
+WordNet` (92,314 words, 70,928 phrases, 175,513 relationships, 85
+hand-curated Word Coordinations) -- confirmed no crash across real
+`entryToPhrase()`/`linkPhraseWords()`/`registerModifierCoordination()`
+construction of every one of those 70,928 Phrases, which would have
+thrown immediately had the `coordinateGraphUuid()` fix above been wrong.

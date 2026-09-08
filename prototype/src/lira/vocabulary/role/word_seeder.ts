@@ -538,8 +538,8 @@ function indexedWord(members: readonly (Word | Phrase)[], oneBasedIndex: number)
   return word === undefined ? [] : [word];
 }
 
-/** `member`'s own per-Domain graph identity -- Phrase's own entryId
- * now carries the identical two-role shape Word's own does (both
+/** `member`'s own per-Domain graph identity -- Phrase's own phraseId
+ * carries the identical two-role shape Word's own entryId does (both
  * folded from Identifier.uuid, `data/entities/word.ts`'s own
  * docstring), so this just picks which of the two matching graphUuid()
  * functions to call. `data/senses.ts`'s own identical `memberUuid()`. */
@@ -1147,7 +1147,7 @@ export class WordSeeder {
     // domainTag to further disambiguate with, since none of today's
     // real multi-word entries are ever true dictionary polysemes.
     for (const phrase of this.loadPhrases()) {
-      const partOfSpeech = this.cachePhrasePartOfSpeech.get(phrase.entryId.value)!;
+      const partOfSpeech = this.cachePhrasePartOfSpeech.get(phrase.phraseId.value)!;
       if (excludeOpenClasses && OPEN_CLASSES.includes(partOfSpeech)) continue;
       const alreadyPresent = phraseBook
         .lookupAll(phrase.text)
@@ -1158,7 +1158,7 @@ export class WordSeeder {
       // wordForms omitted here -- registerUniqueSense()'s own "Word,
       // not Phrase" guard would skip it anyway, but a Phrase has no
       // base-lemma WordForm concept to register in the first place.
-      if (senseStore !== undefined) registerUniqueSense(senseStore, phraseCopy, this.cachePad.get(phrase.entryId.value));
+      if (senseStore !== undefined) registerUniqueSense(senseStore, phraseCopy, this.cachePad.get(phrase.phraseId.value));
       // linkPhraseWords() -- seedWordNet()'s own call site's exact
       // counterpart, not previously called here at all: `headWord`/
       // `headWordForm`/`preModifiers`/`postModifiers`/`determiners` used
@@ -2645,7 +2645,7 @@ export class WordSeeder {
     };
     return createPhrase({
       text: entry.text ?? entry.lexical_form,
-      entryId: { value: entry.entry_id },
+      phraseId: { value: entry.entry_id },
       lexicalForm,
       ...(phraseType !== undefined ? { phraseType } : {}),
       definition: optText(entry.definition),

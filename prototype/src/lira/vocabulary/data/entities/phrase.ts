@@ -35,12 +35,12 @@ export interface Phrase extends LinguisticUnit {
    * Identifier of the underlying multi-word lexicon entry this Phrase
    * represents.
    *
-   * `entryId.value` is stable across every Domain that holds a copy of
-   * this Phrase; `entryId.uuid` is this Phrase's own unique identifier
+   * `phraseId.value` is stable across every Domain that holds a copy of
+   * this Phrase; `phraseId.uuid` is this Phrase's own unique identifier
    * within its own Domain, freshly regenerated every time this Phrase
    * is copied into another Domain.
    */
-  entryId: Identifier;
+  phraseId: Identifier;
 
 
   // ── Classification ───────────────────────────────────────
@@ -306,7 +306,7 @@ export function createPhrase(init: PhraseInit): Phrase {
     relatedDomainTags: [],
     senseIds: [],
     isCommon: false,
-    entryId: init.entryId ?? identifier(crypto.randomUUID()),
+    phraseId: init.phraseId ?? identifier(crypto.randomUUID()),
     ...init,
   };
   if (phrase.lexicalForm === undefined) phrase.lexicalForm = { value: phrase.text };
@@ -314,16 +314,16 @@ export function createPhrase(init: PhraseInit): Phrase {
 }
 
 /** A shallow copy of `phrase`, sharing every field's own object identity
- * except `entryId.uuid`, which becomes a fresh uuid. The Phrase
+ * except `phraseId.uuid`, which becomes a fresh uuid. The Phrase
  * counterpart of copyWordWithFreshUuid (role/word_processor.ts). */
 export function copyPhraseWithFreshUuid(phrase: Phrase): Phrase {
-  return { ...phrase, entryId: { ...phrase.entryId, uuid: crypto.randomUUID() } };
+  return { ...phrase, phraseId: { ...phrase.phraseId, uuid: crypto.randomUUID() } };
 }
 
 /** `phrase`'s own per-Domain graph identity. Word's own identical
  * graphUuid() (role/word_processor.ts). */
 export function graphUuid(phrase: Phrase): string {
-  return phrase.entryId.uuid!;
+  return phrase.phraseId.uuid!;
 }
 
 /** Materialises `phrase` as a synthetic, one-off Word -- never inserted
@@ -337,7 +337,7 @@ export function graphUuid(phrase: Phrase): string {
 export function toSyntheticWord(phrase: Phrase, phrases: Phrases): Word {
   return createWord({
     text: phrase.text,
-    entryId: { ...phrase.entryId, uuid: crypto.randomUUID() },
+    entryId: { ...phrase.phraseId, uuid: crypto.randomUUID() },
     partOfSpeech: phrases.partOfSpeechOf(phrase)!,
     definition: phrase.definition,
     usageNotes: phrase.usageNotes,
@@ -357,7 +357,7 @@ export function toSyntheticWord(phrase: Phrase, phrases: Phrases): Word {
 export function phraseAsWord(phrase: Phrase, phrases: Phrases, wordForms?: WordForms): Word {
   const word = createWord({
     text: phrase.text,
-    entryId: phrase.entryId,
+    entryId: phrase.phraseId,
     partOfSpeech: phrases.partOfSpeechOf(phrase)!,
     definition: phrase.definition,
     usageNotes: phrase.usageNotes,
