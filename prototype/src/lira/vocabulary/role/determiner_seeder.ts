@@ -29,7 +29,7 @@ interface DeterminerFormSeed {
 interface DeterminerLemmaSeed {
   // Reused from the now-retired determiners.json's own entry_id where
   // that lexical form already existed as its own top-level entry there
-  // (e.g. "the", "this") -- entryId's own stability contract (Word.entryId's
+  // (e.g. "the", "this") -- entryId's own stability contract (Word.wordId's
   // docstring, data/entities/word.ts) is about *this* underlying
   // vocabulary entry keeping its identity across a format change, the
   // same precedent AuxiliarySeeder's own entryId reuse set. A lemma with
@@ -611,11 +611,11 @@ export class DeterminerSeeder {
         // identifier(), not a bare `{ value }` literal -- see
         // AuxiliarySeeder's own identical fix (role/auxiliary_seeder.ts)
         // for the full explanation: createWord()'s own defaulting only
-        // auto-generates a fresh `uuid` when `entryId` is omitted
+        // auto-generates a fresh `uuid` when `wordId` is omitted
         // entirely, so a bare `{ value }` here would leave every lemma
-        // below sharing one `undefined` `entryId.uuid`, silently
+        // below sharing one `undefined` `wordId.uuid`, silently
         // colliding in Dictionary.byUuid and WordForms.formsByWordId.
-        entryId: identifier(lemmaSeed.entryId),
+        wordId: identifier(lemmaSeed.entryId),
         definition: { value: lemmaSeed.definition },
         isCommon: true,
       });

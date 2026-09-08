@@ -100,13 +100,31 @@ type RelationshipEndpoint = Word | Phrase | Sense;
 /** `endpoint`'s own per-Domain graph identity, whichever of the three
  * RelationshipEndpoint shapes it actually is -- narrowed first via
  * `"senseIds" in endpoint` the same way every other Phrase-vs-Word check
- * in this codebase does; `isRootWord` is Sense-only (never a Word
- * field, even after root-word status moved onto Noun specifically) so
- * it's what distinguishes the remaining two. */
+ * in this codebase does, then `"partOfSpeech" in endpoint` (Word's own
+ * required field, never present on Phrase or Sense) to pick out Word,
+ * leaving Sense as the final fallback.
+ *
+ * NOT `"isRootWord" in endpoint`, this function's own previous
+ * discriminator, despite what its own docstring used to claim
+ * ("isRootWord is Sense-only, never a Word field") -- that was already
+ * false by the time it was written: entryToWord()'s own `fields` object
+ * sets `isRootWord` unconditionally for every closed-class Word
+ * regardless of part of speech (not just Noun), and createNoun()
+ * (role/processor/noun_processor.ts) defaults every WordNet-seeded
+ * Noun's own `isRootWord` to `false` too -- so `"isRootWord" in
+ * endpoint` was actually true for the large majority of real Noun
+ * endpoints, silently misrouting them into senseGraphUuid() instead of
+ * wordGraphUuid(). Harmless purely by accident while Word and Sense
+ * still shared one `entryId` field name/shape (`senseGraphUuid()`
+ * reading `.entryId.uuid` off a mistyped Noun still happened to return
+ * the right uuid) -- would have become a real, reachable crash
+ * (`undefined.uuid`, on essentially every real WordNet Noun-to-Noun
+ * relationship) the moment `Word.entryId` became `Word.wordId` below,
+ * had this not been caught and fixed in the same pass. */
 function endpointUuid(endpoint: RelationshipEndpoint): string {
   if ("senseIds" in endpoint) return phraseGraphUuid(endpoint);
-  if ("isRootWord" in endpoint) return senseGraphUuid(endpoint);
-  return wordGraphUuid(endpoint);
+  if ("partOfSpeech" in endpoint) return wordGraphUuid(endpoint);
+  return senseGraphUuid(endpoint);
 }
 
 /** One flattened nested form's link back to its base lemma, keyed by
@@ -539,7 +557,7 @@ function indexedWord(members: readonly (Word | Phrase)[], oneBasedIndex: number)
 }
 
 /** `member`'s own per-Domain graph identity -- Phrase's own phraseId
- * carries the identical two-role shape Word's own entryId does (both
+ * carries the identical two-role shape Word's own wordId does (both
  * folded from Identifier.uuid, `data/entities/word.ts`'s own
  * docstring), so this just picks which of the two matching graphUuid()
  * functions to call. `data/senses.ts`'s own identical `memberUuid()`. */
@@ -1076,7 +1094,7 @@ export class WordSeeder {
     new AuxiliarySeeder(dictionary, senseStore, wordForms).seed();
     new DeterminerSeeder(dictionary, senseStore, wordForms).seed();
     let seeded = 0;
-    const insertedByEntryId = new Map<string, Word>();
+    const insertedByWordId = new Map<string, Word>();
     for (const word of this.loadCache()) {
       if (excludeOpenClasses && OPEN_CLASSES.includes(word.partOfSpeech) && word.domainTag?.value !== ROOT_WORD_DOMAIN_TAG) continue;
       const wordDomainTag = word.domainTag?.value;
@@ -1092,7 +1110,7 @@ export class WordSeeder {
       // generateXForms() onto WordForms.registerNamedForm(), a call made
       // against `word` would register real WordForm records under a
       // uuid no real Domain's own copy ever has (WordForms indexes by
-      // each Word's own per-Domain graph uuid, `word.entryId.uuid`, and
+      // each Word's own per-Domain graph uuid, `word.wordId.uuid`, and
       // `copyWordWithFreshUuid` mints a fresh one here). An ADJECTIVE/ADVERB still only gets its own Positive
       // Degree Form this early -- synsetMemberToWord()'s own docstring
       // on why Comparative/Superlative wait for the deferred
@@ -1104,28 +1122,28 @@ export class WordSeeder {
       // section by accident. Idempotent, so registerUniqueSense()'s own
       // later registerBaseLemmaForm() call (inside it) just finds this
       // same WordForm again.
-      wordForms?.registerBaseLemmaForm(copy, this.cacheLexicalForm.get(copy.entryId.value), this.cacheWordFormAttributes.get(copy.entryId.value));
+      wordForms?.registerBaseLemmaForm(copy, this.cacheLexicalForm.get(copy.wordId.value), this.cacheWordFormAttributes.get(copy.wordId.value));
       if (isNoun(copy)) copy = generateNounForms(copy, wordForms);
       else if (isVerb(copy)) copy = generateVerbForms(copy, wordForms);
       else if (isAdjective(copy)) copy = generateAdjectiveForms(copy, false, wordForms);
       else if (isAdverb(copy)) copy = generateAdverbForms(copy, false, wordForms);
       dictionary.append(copy);
-      insertedByEntryId.set(word.entryId.value, copy);
+      insertedByWordId.set(word.wordId.value, copy);
       if (senseStore !== undefined) {
-        const senses = this.cacheSenses.get(word.entryId.value);
+        const senses = this.cacheSenses.get(word.wordId.value);
         if (senses !== undefined) {
           for (const senseText of senses) {
-            registerUniqueSense(senseStore, copy, this.cachePad.get(word.entryId.value), wordForms, senseText);
+            registerUniqueSense(senseStore, copy, this.cachePad.get(word.wordId.value), wordForms, senseText);
           }
         } else {
-          registerUniqueSense(senseStore, copy, this.cachePad.get(word.entryId.value), wordForms, copy.definition);
+          registerUniqueSense(senseStore, copy, this.cachePad.get(word.wordId.value), wordForms, copy.definition);
         }
       }
       seeded += 1;
     }
     for (const link of this.cacheFormLinks) {
-      const base = insertedByEntryId.get(link.baseEntryId);
-      const form = insertedByEntryId.get(link.formEntryId);
+      const base = insertedByWordId.get(link.baseEntryId);
+      const form = insertedByWordId.get(link.formEntryId);
       if (base && form) dictionary.linkForm(base, form, link.derivationKinds);
     }
     // ContractionSeeder (role/contraction_seeder.ts): "not"/"n't" plus
@@ -2479,7 +2497,7 @@ export class WordSeeder {
     const partOfSpeech = PartOfSpeech[entry.part_of_speech as keyof typeof PartOfSpeech];
     const fields = {
       text: entry.text ?? entry.lexical_form,
-      entryId: { value: entry.entry_id },
+      wordId: { value: entry.entry_id },
       partOfSpeech,
       definition: optText(entry.definition),
       usageNotes: (entry.usage_notes ?? []).map((note) => ({ value: note })),
@@ -2664,7 +2682,7 @@ export class WordSeeder {
     // failing to compile against a field Word no longer has.
     const nounFields = isNoun(word) ? word : undefined;
     return {
-      entry_id: word.entryId.value,
+      entry_id: word.wordId.value,
       domain_tag: word.domainTag?.value ?? null,
       // lexicalForm/version/language_code/script_code all live on the
       // base-lemma WordForm now (WordForm's own docstring), not on

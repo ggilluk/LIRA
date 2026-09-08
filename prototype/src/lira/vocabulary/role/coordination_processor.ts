@@ -18,7 +18,7 @@ export function createCoordination<T extends LinguisticUnit>(init: CoordinationI
     // identifier()'s own auto-assigned `uuid` (value_objects/data/identifier.ts)
     // is this Coordination's own per-Domain identity -- entryId's own
     // identical two-role shape every other entity in this folder
-    // already has (Sense.entryId's own docstring on the fold this
+    // already has (Sense.senseId's own docstring on the fold this
     // mirrors).
     entryId: init.entryId ?? identifier(crypto.randomUUID()),
     ...init,

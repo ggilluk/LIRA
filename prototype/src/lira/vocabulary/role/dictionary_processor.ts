@@ -159,7 +159,7 @@ export class DictionaryProcessor {
    * both, tell them apart by identity" resolution path for a
    * word-sense conflict. `word.text` is never touched: both senses keep
    * the identical, unmangled spelling, and stay distinguishable by their
-   * own `entryId` instead. */
+   * own `wordId` instead. */
   registerConflictingSense(word: Word): Word {
     this.dictionary.append(word);
     return word;

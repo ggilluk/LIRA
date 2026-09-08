@@ -55,7 +55,7 @@ export function senseRecordFor(sense: Sense, senses: Senses, phrases: Phrases, d
   const firstMemberPos = firstMember !== undefined ? ("senseIds" in firstMember ? phrases.partOfSpeechOf(firstMember) : firstMember.partOfSpeech) : undefined;
   return {
     id: senseUuid,
-    entry_id: sense.entryId.value,
+    entry_id: sense.senseId.value,
     synset_id: senses.synsetIdOf(sense)?.value ?? null,
     lexical_form: members.map((member) => member.text).join(", "),
     pos: firstMemberPos !== undefined ? PartOfSpeech[firstMemberPos] : null,

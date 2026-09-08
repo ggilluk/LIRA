@@ -886,7 +886,7 @@ describe("generate<Class>Forms() -- deriving *_Form values from a base lemma", (
 
     const comma = dictionary.lookupAll("comma").find(isNoun);
     const commaUuid = comma && wordGraphUuid(comma);
-    const commaEntryId = comma?.entryId.value;
+    const commaEntryId = comma?.wordId.value;
     const commaSenseIds = comma && wordForms.senseIdsOf(comma);
     const brace = dictionary.lookupAll("brace").find(isNoun);
     const originalDogCount = dictionary.lookupAll("dog").filter(isNoun).length;
@@ -900,7 +900,7 @@ describe("generate<Class>Forms() -- deriving *_Form values from a base lemma", (
     expect(dictionary.lookupAll("comma").filter(isNoun)).toHaveLength(1);
     expect(comma?.wordCharacterForms).toEqual([{ value: "," }]);
     expect(comma && wordGraphUuid(comma)).toBe(commaUuid);
-    expect(comma?.entryId.value).toBe(commaEntryId);
+    expect(comma?.wordId.value).toBe(commaEntryId);
     expect(comma && wordForms.senseIdsOf(comma)).toEqual(commaSenseIds);
 
     // A paired-mark lemma gets BOTH of its glyphs merged onto the one
@@ -950,7 +950,7 @@ describe("Dictionary", () => {
     expect(dictionary.lookup("that")?.partOfSpeech).toBe(PartOfSpeech.DETERMINER);
   });
 
-  it("seedFrom copies every Word with a fresh uuid but the same entryId", () => {
+  it("seedFrom copies every Word with a fresh uuid but the same wordId", () => {
     const source = new Dictionary();
     const word = createWord({ text: "be", partOfSpeech: PartOfSpeech.AUXILIARY });
     source.append(word);
@@ -960,7 +960,7 @@ describe("Dictionary", () => {
 
     const copied = target.all()[0];
     expect(wordGraphUuid(copied)).not.toBe(wordGraphUuid(word));
-    expect(copied.entryId.value).toBe(word.entryId.value);
+    expect(copied.wordId.value).toBe(word.wordId.value);
   });
 
   it("linkForm/formsOf/lemmaOf record and query the lemma index", () => {
@@ -1019,7 +1019,7 @@ describe("Dictionary", () => {
 });
 
 describe("Coordinations", () => {
-  it("createCoordination/graphUuid/copyCoordinationWithFreshUuid mirror Word's/Sense's own entryId fold", () => {
+  it("createCoordination/graphUuid/copyCoordinationWithFreshUuid mirror Word's own wordId / Sense's own senseId fold", () => {
     const red = createAdjective({ text: "red" });
     const white = createAdjective({ text: "white" });
     const coordination = createCoordination<Adjective>({ coordinates: [red, white] });

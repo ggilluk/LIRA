@@ -18,7 +18,7 @@ export interface Interpretation {
   // One entry per token in the span, index-aligned with the
   // TokenReading sequence this interpretation was read from.
   selectedPartsOfSpeech: readonly PartOfSpeech[];
-  // Word.entryId.value per token, same index alignment -- undefined for
+  // Word.wordId.value per token, same index alignment -- undefined for
   // an unresolved token, so a materialiser can re-find the exact seeded
   // sense without re-running identifyWord.
   selectedEntryIds: readonly (string | undefined)[];

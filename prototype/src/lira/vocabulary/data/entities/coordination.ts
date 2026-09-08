@@ -23,10 +23,10 @@ export interface Coordination<T extends LinguisticUnit> {
 
   /**
    * Identifier of the underlying coordination this record represents --
-   * Word/Phrase's own `entryId` shape (see either one's own docstring),
-   * mirrored here so a Coordination can be addressed, copied across
-   * Domains, and (once a store exists for it) looked up the same way
-   * every other entity in this folder already is.
+   * Word's own `wordId` / Phrase's own `phraseId` shape (see either
+   * one's own docstring), mirrored here so a Coordination can be
+   * addressed, copied across Domains, and (once a store exists for it)
+   * looked up the same way every other entity in this folder already is.
    *
    * `entryId.value` is stable across every Domain that holds a copy of
    * this Coordination; `entryId.uuid` is this Coordination's own unique

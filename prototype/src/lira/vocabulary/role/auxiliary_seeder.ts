@@ -37,7 +37,7 @@ interface AuxiliaryFormSeed {
 interface AuxiliaryLemmaSeed {
   // Reused from the now-retired auxiliaries.json's own entry_id for
   // this exact lemma, not freshly generated -- entryId's own stability
-  // contract (Word.entryId's docstring, data/entities/word.ts) is about
+  // contract (Word.wordId's docstring, data/entities/word.ts) is about
   // *this* underlying vocabulary entry keeping its identity across a
   // format change, not just across an ordinary re-seed; "be" was
   // already a real, referenced entryId under the old flat model, and
@@ -465,17 +465,17 @@ export class AuxiliarySeeder {
       const word = createAuxiliary({
         text: lemmaSeed.lemma,
         // identifier(), not a bare `{ value }` literal -- createWord()'s
-        // own defaulting (`init.entryId ?? identifier(crypto.randomUUID())`)
-        // only auto-generates a fresh `uuid` when `entryId` is omitted
-        // entirely; a caller-supplied partial entryId is trusted as-is.
+        // own defaulting (`init.wordId ?? identifier(crypto.randomUUID())`)
+        // only auto-generates a fresh `uuid` when `wordId` is omitted
+        // entirely; a caller-supplied partial wordId is trusted as-is.
         // Every other Word-creation path in this codebase either omits
-        // entryId (letting createWord() generate one outright) or is a
+        // wordId (letting createWord() generate one outright) or is a
         // `copyWordWithFreshUuid()` result (always overwrites `uuid`
         // explicitly) -- this seeder is neither, so it must build a
         // real, complete Identifier itself, or every lemma below shares
-        // one `undefined` `entryId.uuid`, silently colliding in
+        // one `undefined` `wordId.uuid`, silently colliding in
         // Dictionary.byUuid and WordForms.formsByWordId alike.
-        entryId: identifier(lemmaSeed.entryId),
+        wordId: identifier(lemmaSeed.entryId),
         definition: { value: lemmaSeed.definition },
         isCommon: true,
       });

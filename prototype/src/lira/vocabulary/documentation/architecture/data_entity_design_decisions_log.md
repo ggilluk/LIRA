@@ -3094,3 +3094,97 @@ hand-curated Word Coordinations) -- confirmed no crash across real
 `entryToPhrase()`/`linkPhraseWords()`/`registerModifierCoordination()`
 construction of every one of those 70,928 Phrases, which would have
 thrown immediately had the `coordinateGraphUuid()` fix above been wrong.
+
+## Rename `Word.entryId` to `Word.wordId`, `Sense.entryId` to `Sense.senseId`
+
+Requested directly, both in one turn: two more of the four entities that
+used to share the one `entryId` field name, narrowed the same way the
+two renames above already were -- `Word`'s own field becomes `wordId`,
+`Sense`'s own becomes `senseId`, `Coordination` keeps `entryId`
+unchanged (nothing asked it to change, and nothing else in this folder
+still shares a name with it now).
+
+Traced exhaustively before editing anything (two parallel research
+passes, one per entity, each tracing every real `entryId` occurrence in
+the codebase and classifying it: direct field access, generic/duck-typed
+code touching `.entryId` across a union, raw-JSON/cache keys that only
+coincidentally share the name, comments, and client-facing `entry_id`
+wire keys) -- the same discipline the two renames above already
+established, since a blind text search across `entryId` also matches
+`WordFileEntry.entry_id` (the raw source JSON field, several
+`Map<string, ...>` caches in `word_seeder.ts` keyed by that raw string,
+`AuxiliaryLemmaSeed.entryId`/`DeterminerLemmaSeed.entryId`, local
+seed-schema fields holding hardcoded UUIDs, never the `Word`/`Sense`
+entity's own field) alongside every other entity's identical name.
+
+Real edits: `data/entities/word.ts`/`data/entities/sense.ts`'s own field
+declarations and docstrings; `role/word_processor.ts`/`role/sense_processor.ts`'s
+`createWord()`/`createSense()`, `copyWordWithFreshUuid()`/
+`copySenseWithFreshUuid()`, `graphUuid()`; `data/entities/phrase.ts`'s
+`toSyntheticWord()`/`phraseAsWord()` (both build a *Word* via
+`createWord({ entryId: ... })` -- the object-literal key itself had to
+become `wordId:` since it's populating Word's own field, independent of
+`phrase.phraseId` already feeding its value, unrelated to this rename);
+`word_seeder.ts`'s `entryToWord()` construction site and every
+`word.wordId.value`/`copy.wordId.value` cache-key read in
+`seedClosedClassWords()` (renamed the local `insertedByEntryId` Map to
+`insertedByWordId` too, for accuracy -- private variable, no external
+contract); `auxiliary_seeder.ts`/`determiner_seeder.ts`'s own
+`createAuxiliary({ entryId: ... })`/`createDeterminer({ entryId: ... })`
+call sites (their own `AuxiliaryLemmaSeed.entryId`/`DeterminerLemmaSeed.entryId`
+seed-schema fields keep that name -- only the object-literal key
+populating Word's own field changed); `builder_word.ts`'s
+`wordRecordFor()`/`builder_sense.ts`'s `senseRecordFor()` (`WordRecord.entry_id`/
+`SenseRecord.entry_id`, the client-facing wire keys, stay `entry_id`
+unchanged -- `PhraseRecord.entry_id`'s own identical precedent above --
+only the internal `.entryId` read the value comes from changed);
+`vocabulary.test.ts`'s Word/Sense-typed assertions and two test titles
+naming "entryId" in prose.
+
+One real, behaviour-affecting bug found and fixed alongside the rename,
+not just a rename -- the same "generic duck-typed code relying on a
+field name two entities used to share" shape `phrase_processor.ts`'s
+`registerModifierCoordination()` and `builder_phrase.ts`'s
+`modifierUnitSegment()` turned out to be during the Phrase rename above,
+but latent *before* this rename too, not only introduced by it:
+`word_seeder.ts`'s own `endpointUuid()` (dispatches a `Word | Phrase |
+Sense` relationship endpoint to the right `graphUuid()` function)
+discriminated Sense from Word via `"isRootWord" in endpoint`, on the
+strength of its own docstring's claim that `isRootWord` is
+"Sense-only... even after root-word status moved onto Noun
+specifically". That claim was already false: `createNoun()`
+(`role/processor/noun_processor.ts`) defaults *every* Noun's own
+`isRootWord` to `false` when unset -- not just the 25 real root words --
+so every real Noun, WordNet-seeded or closed-class, carries `isRootWord`
+as a genuine own-property. `"isRootWord" in endpoint` was therefore
+`true` for the large majority of real Noun relationship endpoints
+(essentially every WordNet hypernym/hyponym/meronym pair), silently
+misrouting them into `senseGraphUuid(nounEndpoint)` instead of
+`wordGraphUuid(nounEndpoint)` -- harmless purely by accident while `Word`
+and `Sense` still shared one `entryId` field name and shape (reading
+`.entryId.uuid` off a mistyped Noun still returned the correct uuid).
+The moment `Word.entryId` became `Word.wordId`, that same call would
+have read `undefined.uuid` and thrown -- a real, reachable crash on
+essentially every Noun-to-Noun WordNet relationship, immediately on the
+next `Load WordNet`.
+
+Fixed by discriminating Word via `"partOfSpeech" in endpoint` instead --
+`partOfSpeech: PartOfSpeech` is `Word`'s own required (non-optional)
+field (`WordInit = Pick<Word, "text" | "partOfSpeech"> & Partial<...>`,
+so every real `Word` genuinely has it), and neither `Phrase` nor `Sense`
+ever declares a field by that name -- checked before falling through to
+Sense as the final case, the same "positively identify, don't guess"
+shape `memberUuid()`'s own `"senseIds" in member` check already uses one
+line above it. `endpointUuid()`'s own docstring rewritten to explain
+both the new discriminator and why the old one was already wrong, not
+just newly broken.
+
+`npx tsc -b --force` clean. Full `vitest run --no-file-parallelism`
+187/187 -- this alone exercises `endpointUuid()` against real WordNet
+Noun-to-Noun relationship pairs (`seedWordNet()`'s own relationship-graph
+tests), so a wrong fix would have failed loudly, not silently. Live
+Playwright against the real running app, full `Load WordNet` (92,714
+words, 70,928 phrases, 118,423 senses, 144,614 relationships) --
+confirmed no crash and no page error building all 144,614 real
+relationships, which is exactly the path `endpointUuid()`'s own fix
+needed to survive.

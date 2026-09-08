@@ -936,7 +936,7 @@ function resolveCoordinateSide(
   return buildNestedPhrase(tokens, classifyModifierPhraseType(tokens, dictionary), dictionary, wordForms, phrases, coordinations);
 }
 
-/** `entry`'s own graph-identity uuid, whichever of Word's own `entryId`
+/** `entry`'s own graph-identity uuid, whichever of Word's own `wordId`
  * or Phrase's own `phraseId` it actually carries -- `registerModifierCoordination()`'s
  * own dedup helper below, needed because Word and Phrase no longer share
  * one identity field name to duck-type against (Phrase's own "rename

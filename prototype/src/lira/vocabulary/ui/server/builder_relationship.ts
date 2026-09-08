@@ -21,7 +21,7 @@ import { resolveEntry } from "./resolver_entity";
 import { domainLabel } from "./resolver_domain";
 
 /** `member`'s own per-Domain graph identity -- Phrase's own phraseId
- * carries the identical two-role shape Word's own entryId does (both
+ * carries the identical two-role shape Word's own wordId does (both
  * folded from Identifier.uuid, data/entities/word.ts's own docstring),
  * so this just picks which of the two matching graphUuid() functions
  * to call. `data/senses.ts`'s own identical `memberUuid()`. */

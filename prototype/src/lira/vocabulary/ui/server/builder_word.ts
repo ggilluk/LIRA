@@ -33,7 +33,7 @@ import { definitionSegments, formFieldLabel, type DefinitionSegment } from "./bu
 import { domainLabel, isRootWordFor, senseFieldsFor } from "./resolver_domain";
 
 /** `member`'s own per-Domain graph identity -- Phrase's own phraseId
- * carries the identical two-role shape Word's own entryId does (both
+ * carries the identical two-role shape Word's own wordId does (both
  * folded from Identifier.uuid, data/entities/word.ts's own docstring),
  * so this just picks which of the two matching graphUuid() functions
  * to call. `data/senses.ts`'s own identical `memberUuid()`. */
@@ -465,7 +465,7 @@ export function wordRecordFor(
   const languageStyleCode = baseLemmaText?.languageStyleCode;
   return {
     id: wordId,
-    entry_id: word.entryId.value,
+    entry_id: word.wordId.value,
     lexical_form: word.text,
     text: word.text,
     pos: PartOfSpeech[word.partOfSpeech],

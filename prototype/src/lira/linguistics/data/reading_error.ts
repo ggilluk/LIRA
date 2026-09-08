@@ -35,7 +35,7 @@ export enum ReadingErrorKind {
 
 /** One structured error (spec 21: "each error must identify where
  * applicable" the fields below). wordEntryId is a reference
- * (Word.entryId.value), never a copy of vocabulary data -- consistent
+ * (Word.wordId.value), never a copy of vocabulary data -- consistent
  * with Phrase/Clause/Sentence referencing Vocabulary Words rather than
  * duplicating their fields (spec 4, 12.2). */
 export interface ReadingError {

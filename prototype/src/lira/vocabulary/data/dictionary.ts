@@ -51,8 +51,8 @@ export interface LemmaFormLink {
  * edges (that store, and Word's own related-word derived properties,
  * are untouched -- this index is purely additive). Keyed by each
  * Word's own per-Domain graph uuid (`graphUuid()`, role/word_processor.ts
- * -- `entryId.uuid`, this Dictionary's own runtime identity for each
- * Word, not the persistent `entryId.value`), since formsOf/lemmaOf
+ * -- `wordId.uuid`, this Dictionary's own runtime identity for each
+ * Word, not the persistent `wordId.value`), since formsOf/lemmaOf
  * take and return live Word instances that must actually belong to
  * this Dictionary. */
 export class Dictionary {
@@ -95,7 +95,7 @@ export class Dictionary {
    * partOfSpeech) (a word-sense conflict, 9.2), is modelled as multiple
    * Word entries (4.1: "one lexical form in one language and one
    * grammatical category"), each sharing the same unmodified `text`
-   * but each with its own `entryId` -- lookup() only ever surfaces the
+   * but each with its own `wordId` -- lookup() only ever surfaces the
    * first such entry; this is how the rest become visible too. */
   lookupAll(text: string): readonly Word[] {
     return this.byText.get(text.toLowerCase())?.slice() ?? [];
@@ -155,11 +155,11 @@ export class Dictionary {
    * used to seed a newly created Domain's Dictionary from the reserved
    * Common Domain's Dictionary. Each Word is shallow-copied so the two
    * Domains never share a mutable Word instance, and given a freshly
-   * generated `entryId.uuid` (copyWordWithFreshUuid(), role/word_processor.ts)
-   * -- a shallow copy shares the *same* `entryId` object (and so the
+   * generated `wordId.uuid` (copyWordWithFreshUuid(), role/word_processor.ts)
+   * -- a shallow copy shares the *same* `wordId` object (and so the
    * same graph uuid) as the original otherwise, which would give two
    * different Domains' copies of "be" the identical per-Domain-graph
-   * identity. `entryId.value` is deliberately left untouched by the
+   * identity. `wordId.value` is deliberately left untouched by the
    * shallow copy: it's the stable Qualified Word Identity, the same
    * underlying Common Vocabulary Cache entry regardless of how many
    * Domains hold their own runtime copy of it.

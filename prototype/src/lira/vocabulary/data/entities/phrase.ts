@@ -329,7 +329,7 @@ export function graphUuid(phrase: Phrase): string {
 /** Materialises `phrase` as a synthetic, one-off Word -- never inserted
  * into any Dictionary, only ever handed to a Linguistics-facing caller
  * that expects a WordIdentifier's own `.word: Word` field. A fresh
- * `entryId.uuid` on every call is correct, not a bug: this Word is a
+ * `wordId.uuid` on every call is correct, not a bug: this Word is a
  * token, never persisted or looked up again by identity. `phrases` is
  * the store `phrase` itself came from -- its own `partOfSpeechOf()` is
  * where `phrase`'s WordNet-tagged part of speech actually lives now,
@@ -337,7 +337,7 @@ export function graphUuid(phrase: Phrase): string {
 export function toSyntheticWord(phrase: Phrase, phrases: Phrases): Word {
   return createWord({
     text: phrase.text,
-    entryId: { ...phrase.phraseId, uuid: crypto.randomUUID() },
+    wordId: { ...phrase.phraseId, uuid: crypto.randomUUID() },
     partOfSpeech: phrases.partOfSpeechOf(phrase)!,
     definition: phrase.definition,
     usageNotes: phrase.usageNotes,
@@ -357,7 +357,7 @@ export function toSyntheticWord(phrase: Phrase, phrases: Phrases): Word {
 export function phraseAsWord(phrase: Phrase, phrases: Phrases, wordForms?: WordForms): Word {
   const word = createWord({
     text: phrase.text,
-    entryId: phrase.phraseId,
+    wordId: phrase.phraseId,
     partOfSpeech: phrases.partOfSpeechOf(phrase)!,
     definition: phrase.definition,
     usageNotes: phrase.usageNotes,

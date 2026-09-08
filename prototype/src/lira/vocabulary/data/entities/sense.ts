@@ -30,12 +30,12 @@ export interface Sense {
   /**
    * Identifier of the underlying Sense entry this record represents.
    *
-   * `entryId.value` is stable across every Domain that holds a copy
-   * of this Sense; `entryId.uuid` is this Sense's own unique
+   * `senseId.value` is stable across every Domain that holds a copy
+   * of this Sense; `senseId.uuid` is this Sense's own unique
    * identifier within its own Domain, freshly regenerated every time
    * this Sense is copied into another Domain.
    */
-  entryId: Identifier;
+  senseId: Identifier;
 
 
   // ── Classification ───────────────────────────────────────

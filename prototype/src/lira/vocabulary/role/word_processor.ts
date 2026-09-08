@@ -60,39 +60,39 @@ export function createWord(init: WordInit): Word {
     isCommon: false,
     isFullyHydrated: true,
     // identifier()'s own auto-assigned `uuid` (value_objects/data/identifier.ts)
-    // is this Word's own per-Domain identity -- folded into `entryId`
+    // is this Word's own per-Domain identity -- folded into `wordId`
     // itself now that Identifier carries a `uuid` of its own, no
     // reason for a second Identifier-typed field to exist alongside it
     // (WordForm's own identical fold, role/word_form_processor.ts).
-    entryId: init.entryId ?? identifier(crypto.randomUUID()),
+    wordId: init.wordId ?? identifier(crypto.randomUUID()),
     ...init,
   };
   return word;
 }
 
 /** A shallow copy of `word`, sharing every field's own object identity
- * except `entryId.uuid`, which becomes a fresh uuid -- `entryId.value`
+ * except `wordId.uuid`, which becomes a fresh uuid -- `wordId.value`
  * (and every other field) stays the same, so this copy is still
  * recognisably the same underlying Word, just a distinct graph node --
  * the same shape as Python's `copy.copy(word)` followed by a `uuid`
  * reassignment, used by Dictionary.seedFrom and
  * WordSeeder.seedClosedClassWords/loadCache. */
 export function copyWordWithFreshUuid(word: Word): Word {
-  return { ...word, entryId: { ...word.entryId, uuid: crypto.randomUUID() } };
+  return { ...word, wordId: { ...word.wordId, uuid: crypto.randomUUID() } };
 }
 
-/** `word`'s own per-Domain graph identity -- `word.entryId.uuid`,
+/** `word`'s own per-Domain graph identity -- `word.wordId.uuid`,
  * always set for a real Word (createWord()/copyWordWithFreshUuid()
  * above are its only two constructors, and both always assign it);
  * the assertion here just names that guarantee once instead of
  * repeating it at every call site that needs a Word's own identity as
  * a plain string (Dictionary's own byUuid map key, ...).
- * `entryId.value` is the stable, cross-Domain identity -- deliberately
+ * `wordId.value` is the stable, cross-Domain identity -- deliberately
  * not what this reads (data/entities/word.ts's own docstring on the
- * two roles `entryId` now plays). WordForm's own identical
+ * two roles `wordId` now plays). WordForm's own identical
  * graphUuid() (role/word_form_processor.ts). */
 export function graphUuid(word: Word): string {
-  return word.entryId.uuid!;
+  return word.wordId.uuid!;
 }
 
 /** `code`'s own ISO 639-1 `LanguageCode` (value_objects/data/code/languageCode.ts)

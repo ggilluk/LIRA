@@ -26,17 +26,17 @@ export function createSense(init: SenseInit = {}): Sense {
     isCommon: false,
     isRootWord: false,
     // identifier()'s own auto-assigned `uuid` (value_objects/data/identifier.ts)
-    // is this Sense's own per-Domain identity -- folded into `entryId`
+    // is this Sense's own per-Domain identity -- folded into `senseId`
     // itself now that Identifier carries a `uuid` of its own, no
     // reason for a second Identifier-typed field to exist alongside it
     // (WordForm's own identical fold, role/word_form_processor.ts).
-    entryId: init.entryId ?? identifier(crypto.randomUUID()),
+    senseId: init.senseId ?? identifier(crypto.randomUUID()),
     ...init,
   };
 }
 
 /** A shallow copy of `sense`, sharing every field's own object identity
- * except `entryId.uuid`, which becomes a fresh uuid -- `entryId.value`
+ * except `senseId.uuid`, which becomes a fresh uuid -- `senseId.value`
  * (and every other field) stays the same, so this copy is still
  * recognisably the same underlying Sense, just a distinct graph node --
  * copyWordForm/copyWordWithFreshUuid's own exact counterpart
@@ -44,18 +44,18 @@ export function createSense(init: SenseInit = {}): Sense {
  * reason: two Domains' independent copies of the same sense must never
  * be confused as the same graph node. */
 export function copySenseWithFreshUuid(sense: Sense): Sense {
-  return { ...sense, entryId: { ...sense.entryId, uuid: crypto.randomUUID() } };
+  return { ...sense, senseId: { ...sense.senseId, uuid: crypto.randomUUID() } };
 }
 
-/** `sense`'s own per-Domain graph identity -- `sense.entryId.uuid`,
+/** `sense`'s own per-Domain graph identity -- `sense.senseId.uuid`,
  * always set for a real Sense (createSense()/copySenseWithFreshUuid()
  * above are its only two constructors, and both always assign it);
  * the assertion here just names that guarantee once instead of
  * repeating it at every call site that needs a Sense's own identity as
- * a plain string. `entryId.value` is the stable, cross-Domain identity
+ * a plain string. `senseId.value` is the stable, cross-Domain identity
  * -- deliberately not what this reads (data/entities/sense.ts's own
- * docstring on the two roles `entryId` now plays). Word's own
+ * docstring on the two roles `senseId` now plays). Word's own
  * identical graphUuid() (role/word_processor.ts). */
 export function graphUuid(sense: Sense): string {
-  return sense.entryId.uuid!;
+  return sense.senseId.uuid!;
 }
