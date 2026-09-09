@@ -3511,3 +3511,40 @@ Sense-primacy characteristic of the seeding pipeline, orthogonal to
 whether `domainTag` is `Text` or `Identifier`, not something this
 change altered or was asked to fix. No console error at any point in
 either staged seed or in browsing/searching afterward.
+
+## Rename `WordFormRow.field` to `WordFormRow.wordformType` in `pos_vs_wordform_matrice.ts`
+
+Requested directly. `WordFormRow.field` (`data/matrices/pos_vs_wordform_matrice.ts`)
+is the Word Form to Part of Speech Matrix's own row-level `WordFormType`
+value (e.g. `PLURAL_NUMBER_FORM`) -- a generic name that read ambiguously
+next to `WordFormRule`'s own several genuinely different "field"-shaped
+columns (`format`, `baseLemmaPattern`, `stringPattern`, ...) sharing the
+same file. Renamed to `wordformType`, matching this codebase's own
+established convention for the identical value elsewhere (`WordForm.formType`,
+`data/entities/word_form.ts`) closely enough to read as the same concept
+under a related name, while staying distinct from that field's own exact
+spelling since a `WordFormRow` and a `WordForm` are different things (a
+matrix row describing every POS's own rules for one `WordFormType`, vs.
+one real per-Word spelling record) -- conflating the two names outright
+would have implied a closer relationship than actually exists.
+
+Scoped entirely to this one file: the interface field itself, all 27 row
+literals' own `field: WordFormType.XXX`, `stringPatternsFor()`'s own
+parameter (`field` -> `wordformType`) and its `row.field`/`r.field`
+lookup, `fieldsFor()`'s own `row.field` read, and the one docstring
+prose reference to the renamed parameter. Confirmed via a codebase-wide
+search that nothing outside this file ever reads `.field` off a
+`WordFormRow`/`WORD_FORM_MATRIX` row directly -- every external
+reference to this matrix goes through `stringPatternsFor()`/`fieldsFor()`
+(both call sites unaffected by an internal parameter rename) or names
+the file/constant only in prose/comments, never the row shape itself.
+
+`npx tsc -b --force` clean -- a genuine proof of completeness here,
+unlike the `Domain` migration just above: this rename changes a field
+*name*, so any stale reference would have failed to compile, not silently
+kept compiling against a same-shaped-but-differently-meant value. Full
+`vitest run --no-file-parallelism` 187/187, including `stringPatternsFor()`'s
+own direct test coverage in `vocabulary.test.ts`. No live Playwright
+verification -- this attribute is a pure internal matrix-lookup key with
+no UI-facing text or behavior derived from its name, so the type-checked
+rename plus the existing test suite already prove correctness end to end.
