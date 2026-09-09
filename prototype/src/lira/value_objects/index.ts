@@ -25,10 +25,4 @@ export {
   dialectCodeFor,
   scriptCodeFor,
   languageStyleCodeFor,
-  endsInConsonantY,
-  shouldDoubleFinalConsonant,
-  regularDegreeForm,
-  syllableCount,
-  isPeriphrasticComparison,
-  periphrasticDegreeForm,
 } from "./data/text";

@@ -6,8 +6,14 @@ import type { Senses } from "../../data/senses";
 import type { SemanticRelationshipStore } from "../../data/semantic_relationship_store";
 import type { Word } from "../../data/entities/word";
 import type { WordForms } from "../../data/word_forms";
-import { createWord, validateFormText, type WordFormIssue } from "../word_processor";
-import { isPeriphrasticComparison, periphrasticDegreeForm, regularDegreeForm } from "../../../value_objects";
+import {
+  createWord,
+  isPeriphrasticComparison,
+  periphrasticDegreeForm,
+  regularDegreeForm,
+  validateFormText,
+  type WordFormIssue,
+} from "../word_processor";
 import type { Adverb } from "../../data/entities/adverb";
 import { stringPatternsFor } from "../../data/matrices/pos_vs_wordform_matrice";
 import { WordFormType } from "../../data/enums/word_forms_enum";
@@ -102,19 +108,18 @@ export function determineGradability(
 }
 
 // "-ly" is English's productive adverb-forming suffix (quickly,
-// obviously, scarcely, ...) -- value_objects/data/text.ts's own
-// isPeriphrasticComparison() would otherwise route a lemma like
-// "scarcely" through endsInConsonantY()'s "y" rule (also text.ts), the
-// one built for a short Adjective's own "y" ending (happy -> happier,
-// ugly -> uglier), since "-ly" happens to match that same consonant+y
-// spelling. But no real "-ly" adverb takes "-ier"/"-iest" the way
-// "happy"/"ugly" do -- there is no "quicklier" -- so Adverb's own
-// comparison-strategy decision treats any "-ly"-ending lemma as
-// periphrastic outright, ahead of text.ts's own shared check, rather
-// than inheriting Adjective's "y" rule unmodified. This is
-// Adverb-specific (text.ts's own isPeriphrasticComparison() stays
-// correct for Adjective, unchanged), so it lives here rather than in
-// the shared spelling primitives.
+// obviously, scarcely, ...) -- word_processor.ts's own isPeriphrasticComparison()
+// would otherwise route a lemma like "scarcely" through
+// endsInConsonantY()'s "y" rule (word_processor.ts), the one built for a short
+// Adjective's own "y" ending (happy -> happier, ugly -> uglier), since
+// "-ly" happens to match that same consonant+y spelling. But no real
+// "-ly" adverb takes "-ier"/"-iest" the way "happy"/"ugly" do -- there
+// is no "quicklier" -- so Adverb's own comparison-strategy decision
+// treats any "-ly"-ending lemma as periphrastic outright, ahead of
+// word_processor.ts's own shared check, rather than inheriting Adjective's "y"
+// rule unmodified. This is Adverb-specific (word_processor.ts's own
+// isPeriphrasticComparison() stays correct for Adjective, unchanged),
+// so it lives here rather than in the shared spelling primitives.
 function isAdverbPeriphrasticComparison(lemma: string): boolean {
   return /ly$/i.test(lemma) || isPeriphrasticComparison(lemma);
 }
@@ -122,11 +127,11 @@ function isAdverbPeriphrasticComparison(lemma: string): boolean {
 /** Adjective's own generateAdjectiveForms() (adjective_processor.ts),
  * Adverb's counterpart -- both classes' degree paradigm is spelled from
  * the same primitives (regularDegreeForm/periphrasticDegreeForm,
- * value_objects/data/text.ts) and both are gated on `gradable` the same
- * way; see generateAdjectiveForms() for the full reasoning behind that
+ * ../word_processor.ts) and both are gated on `gradable` the same way; see
+ * generateAdjectiveForms() for the full reasoning behind that
  * parameter, not repeated here. The one real difference is the
  * comparison-strategy decision itself -- isAdverbPeriphrasticComparison()
- * above, not text.ts's own isPeriphrasticComparison() directly.
+ * above, not word_processor.ts's own isPeriphrasticComparison() directly.
  * WordSeeder's own seeding entry points (role/word_seeder.ts) call this.
  * No-op when `wordForms` is undefined, same convention as
  * generateAdjectiveForms(). Fields are registered in the Word Form

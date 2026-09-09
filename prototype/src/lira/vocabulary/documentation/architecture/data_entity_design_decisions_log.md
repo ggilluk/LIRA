@@ -3628,3 +3628,77 @@ completeness guarantee the `wordformType` rename just above had. Full
 pure relocation, no logic touched). No live Playwright verification --
 same reasoning as the rename above: this is an internal module
 reorganization with no UI-facing surface of its own.
+
+## Correction: move the eight spelling primitives back from `value_objects/data/text.ts` to `role/word_processor.ts`
+
+The move immediately above was wrong for eight of its twelve functions,
+caught in review before it shipped any further and corrected here. The
+four Text-metadata code resolvers (`languageCodeFor()` and its three
+siblings) stay in `value_objects/data/text.ts` -- that half of the
+previous entry's reasoning holds. The eight regular-English-suffix
+spelling primitives (`endsInConsonantY()`, `endsInCvc()`,
+`isMonosyllabic()`, `shouldDoubleFinalConsonant()` and its
+`NON_DOUBLING_MULTISYLLABLE_VERBS` set, `regularDegreeForm()`,
+`syllableCount()`, `isPeriphrasticComparison()` and its
+`SYNTHETIC_TWO_SYLLABLE_ENDINGS` set, `periphrasticDegreeForm()`) move
+back to `word_processor.ts`, where they originally were.
+
+The error was measuring `word_processor.ts` against the wrong sibling
+files. `word_form_processor.ts`/`sense_processor.ts`/`coordination_processor.ts`/`domain_processor.ts`
+are each a *leaf* entity's own processor -- WordForm/Sense/Coordination/Domain
+have no subtypes of their own, so "Init type + create + copy +
+graphUuid, nothing else" is genuinely their whole correct scope; there
+is no such thing as "logic shared across WordForm's subtypes" because
+WordForm has none. `Word` is not a leaf -- it is the one entity in this
+codebase with a real subtype family (Noun/Verb/Adjective/Adverb/... ,
+each with its own `role/processor/*_processor.ts`), and `word_processor.ts`'s
+own docstring already said as much before any of this ("the base-class
+counterpart to each POS subtype's own role/processor/*_processor.ts").
+Holding logic reused *across that subtype family* is exactly what a
+base-class processor is for -- the same reason an abstract base class
+holds a method its subclasses would otherwise each reimplement -- and
+that is precisely why the spelling primitives were there to begin with:
+"lives here once rather than duplicated across those four files"
+(noun.ts/verb.ts/adjective.ts/adverb.ts's own `generate<Class>Forms()`)
+was never a convenience shortcut, it was the correct application of the
+base-class convention, measured against the right yardstick. Applying
+the leaf-entity convention to `Word` instead -- as the previous entry
+did -- treated `Word` as symmetric with its four peer files when it
+structurally isn't, and concluded from a `string`-in-`string`/`Text`-out
+type signature alone that these belonged with `Text`, when what
+actually determines the right home is *who reuses the function*, not
+what type happens to pass through it. `Text` itself never generates a
+comparative degree form, checks final-consonant doubling, or counts
+syllables outside of an open-class POS subtype's own `generate<Class>Forms()`
+context -- every real caller is one of those four generators, not a
+generic `Text` operation.
+
+The four code resolvers survive the correction because they fail that
+same test the other way: no POS subtype processor ever called them --
+only `word_seeder.ts`/`dictionary_hydrator.ts`, at ingestion time,
+entirely outside the subtype-processor family `word_processor.ts`
+exists to serve. They were never shared-across-subtypes logic to begin
+with, just riding along in the same file for the same one-time-import
+convenience the spelling primitives were mistakenly credited with too.
+
+Mechanically the exact reverse of the move above: the "Regular English
+suffix generation" section (all eight functions/consts, docstrings
+carried over verbatim) removed from `text.ts` and reinstated in
+`word_processor.ts`; `value_objects/index.ts`'s barrel drops the eight
+re-exports, keeping only the four code resolvers; every real call site
+(`noun_processor.ts`, `verb_processor.ts`, `adjective_processor.ts`,
+`adverb_processor.ts`) reverted to importing them from `../word_processor`
+again; the handful of doc-comment cross-references naming
+`value_objects/data/text.ts`/`text.ts` (in `adjective_processor.ts`/`adverb_processor.ts`,
+caught by the same grep discipline as the original move) restored to
+name `word_processor.ts` instead. `word_processor.ts`'s own top-of-file
+docstring rewritten a second time, this time to state the actual
+governing principle directly (base-class-for-a-subtype-family vs.
+leaf-entity-processor) rather than merely describing what stayed
+and what left, so a future reader measuring this file against its
+siblings doesn't repeat the same category error.
+
+`npx tsc -b --force` clean, full `vitest run --no-file-parallelism`
+187/187 -- both changed, both a pure relocation with no logic touched,
+so behaviourally identical to before either move. No live Playwright
+verification, same reasoning as both entries above.
