@@ -3548,3 +3548,83 @@ own direct test coverage in `vocabulary.test.ts`. No live Playwright
 verification -- this attribute is a pure internal matrix-lookup key with
 no UI-facing text or behavior derived from its name, so the type-checked
 rename plus the existing test suite already prove correctness end to end.
+
+## Move `role/word_processor.ts`'s Text-metadata code resolvers and spelling primitives to `value_objects/data/text.ts`
+
+Requested after a review of `role/word_processor.ts` found it was really
+three files sharing one name: Word's own base-entity trio
+(`createWord()`/`copyWordWithFreshUuid()`/`graphUuid()`, the exact scope
+every other entity's own `role/<entity>_processor.ts` -- `word_form_processor.ts`,
+`sense_processor.ts`, `coordination_processor.ts`, `domain_processor.ts` --
+already keeps to), a Dictionary-resolved definition-word breakdown, a
+Word Form Matrix validation pair, and -- the two groups moved here --
+four `Text`-metadata code resolvers (`languageCodeFor()`/`dialectCodeFor()`/
+`scriptCodeFor()`/`languageStyleCodeFor()`) and eight regular-English-
+suffix spelling primitives (`endsInConsonantY()`, `shouldDoubleFinalConsonant()`
+and its `NON_DOUBLING_MULTISYLLABLE_VERBS` exception set, `regularDegreeForm()`,
+`syllableCount()`, `isPeriphrasticComparison()` and its
+`SYNTHETIC_TWO_SYLLABLE_ENDINGS` set, `periphrasticDegreeForm()`, plus
+the two private helpers `endsInCvc()`/`isMonosyllabic()`). None of these
+twelve ever took or returned a `Word` -- every one is a plain
+`string`/`Text` in, `boolean`/`string`/`number`/`Text` out -- they lived
+in `word_processor.ts` only because every POS subtype's own processor
+already imported `createWord()` from that file, so borrowing it for
+these too "added no new cross-file dependency" (that file's own former
+docstring, verbatim). Proximity to a one-time import, not a genuine
+`Word`-entity concern.
+
+Moved to `value_objects/data/text.ts` instead, by explicit instruction:
+that file already holds `Text`'s own interface plus its constructor and
+two case-folding helpers (`text()`, `textToLowerCase()`,
+`textToUpperCase()`), directly in `data/`, not behind a separate
+`role/` file -- value objects don't get the `role/<entity>_processor.ts`
+treatment a Vocabulary-layer entity does (confirmed by
+`value_objects/role/` existing today only as an empty, reserved
+directory -- a `.gitkeep`, no file in it). The twelve relocated
+functions/consts follow that same convention: plain exported helpers
+sitting directly beside the `Text` interface they construct or decorate,
+under two new section comments ("Text metadata resolution", "Regular
+English suffix generation") mirroring the section structure
+`word_processor.ts` itself used to have for these two groups.
+
+Every docstring moved verbatim, with only the handful of cross-references
+that named `word_processor.ts`/`../word_processor.ts` by path corrected
+to `value_objects/data/text.ts`/`text.ts` (`word_processor.ts`'s own new
+top-of-file docstring paragraph explaining the move; two lingering
+mentions each in `adjective_processor.ts` and `adverb_processor.ts`,
+caught by a codebase-wide grep after the move, not assumed complete from
+the file list alone).
+
+Every real call site updated to import from `value_objects` (via its own
+barrel, `value_objects/index.ts`, the same `export { ... } from "./data/text"`
+line the three pre-existing helpers already sit in) instead of
+`./word_processor`/`../word_processor`: `word_seeder.ts` (merged into an
+already-present `value_objects` import rather than adding a second one),
+`dictionary_hydrator.ts`, and the four POS processors that use one or
+more of the spelling primitives directly (`noun_processor.ts`,
+`verb_processor.ts`, `adjective_processor.ts`, `adverb_processor.ts`) --
+each split its old combined `from "../word_processor"` import into two,
+one for what's staying (`createWord`/`graphUuid`/`validateFormText`/
+`WordFormIssue`) and one for what moved. `vocabulary/index.ts`'s own
+public barrel needed no change -- it never re-exported any of these
+twelve to begin with, only `WordInit`/`createWord`/`copyWordWithFreshUuid`/
+`definitionWords`.
+
+What stayed in `word_processor.ts`, confirmed still correct by the same
+review: the base-entity trio; `definitionTokens()`/`definitionWords()`
+(needs a `Dictionary` to resolve tokens against, so it's Dictionary/
+Vocabulary-level derived behaviour, not a `Text`-only primitive --
+doesn't cleanly fit `text.ts` either, noted as a still-open question, not
+resolved by this move); `WordFormIssue`/`parseFormatPattern()`/
+`validateFormText()` (Word Form Matrix validation, keyed to a `WordForm`'s
+own `formType`/`text` fields at every real call site -- arguably
+`word_form_processor.ts` material rather than `word_processor.ts`, but
+that's a separate move from this one, not requested here).
+
+`npx tsc -b --force` clean -- every one of the twelve functions changed
+file, so a stale import anywhere would have failed to compile, the same
+completeness guarantee the `wordformType` rename just above had. Full
+`vitest run --no-file-parallelism` 187/187, unchanged behaviourally (a
+pure relocation, no logic touched). No live Playwright verification --
+same reasoning as the rename above: this is an internal module
+reorganization with no UI-facing surface of its own.

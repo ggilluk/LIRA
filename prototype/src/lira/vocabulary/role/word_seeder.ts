@@ -53,7 +53,15 @@ import { HypernymRootWord } from "../data/enums/hypernym_root_word";
 import { InterrogativeRootWord } from "../data/enums/interrogative_root_word";
 import { VectorPrimitiveRootWord } from "../data/enums/vector_primitive_root_word";
 import { VERB_FRAME_TEXT } from "../data/enums/verb_framed_example_template";
-import { LanguageStyleCodelist, type Identifier, type Text } from "../../value_objects";
+import {
+  LanguageStyleCodelist,
+  dialectCodeFor,
+  languageCodeFor,
+  languageStyleCodeFor,
+  scriptCodeFor,
+  type Identifier,
+  type Text,
+} from "../../value_objects";
 import type { Dictionary } from "../data/dictionary";
 import { MorphologicalPointerRelationshipStore } from "../data/morphological_pointer_relationship_store";
 import type { LexicalRelationshipStore } from "../data/lexical_relationship_store";
@@ -75,7 +83,7 @@ import { graphUuid, type WordFormAttributes } from "./word_form_processor";
 import type { SourceReference } from "../data/source_reference";
 import { createVerb, generateVerbForms, isVerb } from "./processor/verb_processor";
 import type { Word } from "../data/entities/word";
-import { copyWordWithFreshUuid, createWord, dialectCodeFor, graphUuid as wordGraphUuid, languageCodeFor, languageStyleCodeFor, scriptCodeFor } from "./word_processor";
+import { copyWordWithFreshUuid, createWord, graphUuid as wordGraphUuid } from "./word_processor";
 import type { SemanticRelationshipStore } from "../data/semantic_relationship_store";
 import {
   languageHasCommonCache,

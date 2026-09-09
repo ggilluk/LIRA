@@ -1,16 +1,9 @@
-import type { Text } from "../../../value_objects";
+import { endsInConsonantY, shouldDoubleFinalConsonant, type Text } from "../../../value_objects";
 import { PartOfSpeech } from "../../data/enums/part_of_speech";
 import type { Senses } from "../../data/senses";
 import type { Word } from "../../data/entities/word";
 import type { WordForms } from "../../data/word_forms";
-import {
-  createWord,
-  endsInConsonantY,
-  graphUuid,
-  shouldDoubleFinalConsonant,
-  validateFormText,
-  type WordFormIssue,
-} from "../word_processor";
+import { createWord, graphUuid, validateFormText, type WordFormIssue } from "../word_processor";
 import type { Verb } from "../../data/entities/verb";
 import { stringPatternsFor } from "../../data/matrices/pos_vs_wordform_matrice";
 import { WordFormType } from "../../data/enums/word_forms_enum";

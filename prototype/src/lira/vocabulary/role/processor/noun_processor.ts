@@ -1,8 +1,8 @@
-import type { Text } from "../../../value_objects";
+import { endsInConsonantY, type Text } from "../../../value_objects";
 import { PartOfSpeech } from "../../data/enums/part_of_speech";
 import type { Word } from "../../data/entities/word";
 import type { WordForms } from "../../data/word_forms";
-import { createWord, endsInConsonantY, validateFormText, type WordFormIssue } from "../word_processor";
+import { createWord, validateFormText, type WordFormIssue } from "../word_processor";
 import type { Noun } from "../../data/entities/noun";
 import { stringPatternsFor } from "../../data/matrices/pos_vs_wordform_matrice";
 import { WordFormType } from "../../data/enums/word_forms_enum";

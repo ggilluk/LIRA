@@ -16,4 +16,19 @@ export { ScriptCodelist, scriptCodelistFromCode } from "./data/enum/scriptCodeli
 export { LanguageStyleCodelist } from "./data/enum/languageStyleCodelist";
 export { type Identifier, identifier } from "./data/identifier";
 export { type Number_, number } from "./data/number";
-export { type Text, text, textToLowerCase, textToUpperCase } from "./data/text";
+export {
+  type Text,
+  text,
+  textToLowerCase,
+  textToUpperCase,
+  languageCodeFor,
+  dialectCodeFor,
+  scriptCodeFor,
+  languageStyleCodeFor,
+  endsInConsonantY,
+  shouldDoubleFinalConsonant,
+  regularDegreeForm,
+  syllableCount,
+  isPeriphrasticComparison,
+  periphrasticDegreeForm,
+} from "./data/text";
