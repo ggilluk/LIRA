@@ -3,7 +3,7 @@ import { toSyntheticWord } from "../data/entities/phrase";
 import type { Phrases } from "../data/phrases";
 import type { Senses } from "../data/senses";
 import type { Word } from "../data/entities/word";
-import { definitionWords } from "./processor/word_processor";
+import { recogniseDefinitionWords } from "./processor/word_processor";
 import { createWordLookupContext } from "../data/word_lookup_context";
 import type { AsyncDictionaryHydrator } from "./dictionary_hydrator";
 import { PartOfSpeechIdentifier } from "./part_of_speech_identifier";
@@ -120,7 +120,7 @@ export class DictionaryProcessor {
         followingWords: rawTokens.slice(startIndex + span),
       });
       const candidates = [
-        ...this.phraseIdentifications(context.normalisedText),
+        ...this.recognisePhraseIdentifications(context.normalisedText),
         ...this.partOfSpeechIdentifier.identifySeeded(context),
       ];
       if (candidates.length > 0) return { candidates, tokenSpan: span };
@@ -144,7 +144,7 @@ export class DictionaryProcessor {
    * PartOfSpeechIdentifier.identifySeeded gives PROPER_NOUN/SYMBOL --
    * no real Phrase is ever seeded as either, so there's nothing for
    * casing to support. */
-  private phraseIdentifications(normalisedText: string): readonly WordIdentifier[] {
+  private recognisePhraseIdentifications(normalisedText: string): readonly WordIdentifier[] {
     return this.phraseBook.lookupAll(normalisedText).map((phrase) => ({
       word: toSyntheticWord(phrase, this.phraseBook),
       partOfSpeech: this.phraseBook.partOfSpeechOf(phrase)!,
@@ -160,12 +160,12 @@ export class DictionaryProcessor {
    * word-sense conflict. `word.text` is never touched: both senses keep
    * the identical, unmangled spelling, and stay distinguishable by their
    * own `wordId` instead. */
-  registerConflictingSense(word: Word): Word {
+  createConflictingSenseWord(word: Word): Word {
     this.dictionary.append(word);
     return word;
   }
 
-  /** Walks `definitionWords()` and queues external hydration for every
+  /** Walks `recogniseDefinitionWords()` and queues external hydration for every
    * token that came back unresolved. A gap in one Word's own definition
    * is treated as a discovery signal, not a blocker. Returns the
    * distinct surface forms actually queued, in first-seen order; a form
@@ -178,12 +178,12 @@ export class DictionaryProcessor {
    * (Sense's own docstring on why). Undefined, same as no definition at
    * all, when `word` has no base-lemma WordForm registered yet or no
    * matching Sense resolves. */
-  queueDefinitionHydration(word: Word, senses: Senses, wordForms: WordForms): readonly string[] {
+  createDefinitionHydrationRequests(word: Word, senses: Senses, wordForms: WordForms): readonly string[] {
     const queued: string[] = [];
     const seen = new Set<string>();
     const primarySenseId = wordForms.senseIdsOf(word)[0];
     const definition = primarySenseId !== undefined ? senses.findByUuid(primarySenseId.value)?.definition : undefined;
-    for (const reference of definitionWords(definition, this.dictionary)) {
+    for (const reference of recogniseDefinitionWords(definition, this.dictionary)) {
       if (reference.word !== undefined) continue;
       const normalisedText = reference.text.toLowerCase();
       if (seen.has(normalisedText)) continue;

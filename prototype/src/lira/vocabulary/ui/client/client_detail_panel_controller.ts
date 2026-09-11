@@ -234,7 +234,7 @@ function headwordHTML(word) {
 // render (those fields' own docstrings, builder_word.ts) -- at most one
 // entry each now, not a numbered list: a run of two or more MODIFIER- or
 // DETERMINER-role tokens collapses into one nested Phrase or Coordination
-// at seed time (buildModifierUnit()'s own docstring, role/processor/phrase_processor.ts),
+// at seed time (createModifierRunValue()'s own docstring, role/processor/phrase_processor.ts),
 // so there's never more than one pre-Modifier/post-Modifier/Determiner
 // constituent to show. Branches on the segment's own shape
 // (ModifierSegment's own docstring, builder_phrase.ts): a plain
@@ -262,7 +262,7 @@ function modifierRowHTML(segment, label) {
 // phrase.complements's own render (that field's own docstring,
 // builder_word.ts; PhraseComplementSegment's own docstring,
 // builder_phrase.ts) -- always a real, independently-registered Phrase
-// of its own (registerNestedPhrase(), role/processor/phrase_processor.ts),
+// of its own (createStoredNestedPhrase(), role/processor/phrase_processor.ts),
 // unlike modifierEntryHTML() above whose \`.id\`-shaped branch is only one
 // of three possible shapes, so this links to it unconditionally with the
 // identical clickable \`<button class="link-btn" data-pivot-id="...">\`
@@ -343,7 +343,7 @@ function phraseDetailHTML(phrase, rels, lexicalRels) {
 // whether the resolved record actually came from a Word or a Phrase
 // now goes through this instead. word.phrase_word_segments's own
 // presence is the discriminator, not word.phrase_type (a WordNet-seeded
-// Phrase classifyPhraseType() couldn't classify has no phrase_type
+// Phrase recogniseLemmaPhraseType() couldn't classify has no phrase_type
 // either, but is still a Phrase, not a Word) -- that field's own
 // docstring already documents it as set "only when this record was
 // resolved from a Phrase", exactly the distinction needed here.

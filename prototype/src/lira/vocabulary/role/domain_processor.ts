@@ -28,17 +28,17 @@ export function createDomain(init: DomainInit): Domain {
  * except `domainId.uuid`, which becomes a fresh uuid -- `domainId.value`
  * (and every other field) stays the same, so this copy is still
  * recognisably the same underlying Domain, just a distinct graph node.
- * copySenseWithFreshUuid/copyWordWithFreshUuid's own exact counterpart
+ * createFreshUuidSenseCopy/createFreshUuidWordCopy's own exact counterpart
  * (role/processor/sense_processor.ts, role/processor/word_processor.ts), used by
  * Domains.seedFrom for the same reason: two knowledge-Domains'
  * independent copies of the same topic-domain tag must never be
  * confused as the same graph node. */
-export function copyDomainWithFreshUuid(domain: Domain): Domain {
+export function createFreshUuidDomainCopy(domain: Domain): Domain {
   return { ...domain, domainId: { ...domain.domainId, uuid: crypto.randomUUID() } };
 }
 
 /** `domain`'s own per-knowledge-Domain graph identity -- `domainId.uuid`,
- * always set for a real Domain (createDomain()/copyDomainWithFreshUuid()
+ * always set for a real Domain (createDomain()/createFreshUuidDomainCopy()
  * above are its only two constructors, and both always assign it).
  * Word/Sense/Coordination's own identical graphUuid()
  * (role/processor/word_processor.ts, role/processor/sense_processor.ts,

@@ -2,7 +2,7 @@ import { PartOfSpeech } from "../../data/enums/part_of_speech";
 import type { Word } from "../../data/entities/word";
 import type { WordForms } from "../../data/word_forms";
 import { createWord } from "./word_processor";
-import { validateFormText, type WordFormIssue } from "./word_form_processor";
+import { recogniseFormTextIssue, type WordFormIssue } from "./word_form_processor";
 import type { Determiner } from "../../data/entities/determiner";
 import { stringPatternsFor } from "../../data/matrices/pos_vs_wordform_matrice";
 
@@ -23,14 +23,14 @@ export function isDeterminer(word: Word): word is Determiner {
  * (data/matrices/pos_vs_wordform_matrice.ts). Returns every issue
  * found, not just the first; empty means every populated field is
  * internally consistent with the matrix, not that every field is
- * populated. validateAuxiliary()'s own exact shape
+ * populated. recogniseAuxiliaryFormIssues()'s own exact shape
  * (role/processor/auxiliary_processor.ts) -- `role/determiner_seeder.ts`
  * is this Determiner's own production write site now (that seeder's
  * own docstring). */
-export function validateDeterminer(determiner: Determiner, wordForms: WordForms): readonly WordFormIssue[] {
+export function recogniseDeterminerFormIssues(determiner: Determiner, wordForms: WordForms): readonly WordFormIssue[] {
   const issues: WordFormIssue[] = [];
   for (const form of wordForms.formsOf(determiner)) {
-    const issue = validateFormText(form.formType, form.text, stringPatternsFor(form.formType, PartOfSpeech.DETERMINER));
+    const issue = recogniseFormTextIssue(form.formType, form.text, stringPatternsFor(form.formType, PartOfSpeech.DETERMINER));
     if (issue !== undefined) issues.push(issue);
   }
   return issues;

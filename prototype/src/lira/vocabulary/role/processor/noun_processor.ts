@@ -2,8 +2,8 @@ import type { Text } from "../../../value_objects";
 import { PartOfSpeech } from "../../data/enums/part_of_speech";
 import type { Word } from "../../data/entities/word";
 import type { WordForms } from "../../data/word_forms";
-import { createWord, endsInConsonantY } from "./word_processor";
-import { validateFormText, type WordFormIssue } from "./word_form_processor";
+import { createWord, isConsonantYEnding } from "./word_processor";
+import { recogniseFormTextIssue, type WordFormIssue } from "./word_form_processor";
 import type { Noun } from "../../data/entities/noun";
 import { stringPatternsFor } from "../../data/matrices/pos_vs_wordform_matrice";
 import { WordFormType } from "../../data/enums/word_forms_enum";
@@ -30,12 +30,12 @@ export function isNoun(word: Word): word is Noun {
  * NOUN rules (data/matrices/pos_vs_wordform_matrice.ts). Returns every
  * issue found, not just the first; empty means every populated field
  * is internally consistent with the matrix, not that every field is
- * populated. validateAuxiliary()'s own exact shape
+ * populated. recogniseAuxiliaryFormIssues()'s own exact shape
  * (role/processor/auxiliary_processor.ts). */
-export function validateNoun(noun: Noun, wordForms: WordForms): readonly WordFormIssue[] {
+export function recogniseNounFormIssues(noun: Noun, wordForms: WordForms): readonly WordFormIssue[] {
   const issues: WordFormIssue[] = [];
   for (const form of wordForms.formsOf(noun)) {
-    const issue = validateFormText(form.formType, form.text, stringPatternsFor(form.formType, PartOfSpeech.NOUN));
+    const issue = recogniseFormTextIssue(form.formType, form.text, stringPatternsFor(form.formType, PartOfSpeech.NOUN));
     if (issue !== undefined) issues.push(issue);
   }
   return issues;
@@ -66,9 +66,9 @@ export function validateNoun(noun: Noun, wordForms: WordForms): readonly WordFor
  * (PLURAL_NUMBER_FORM of "i") that out-competed its own real AUXILIARY/
  * VERB reading whenever no valid VERB_PHRASE completion happened to be
  * available to out-rank it. */
-function generatedPluralNumberForm(lemma: string): Text | undefined {
+function createPluralNumberForm(lemma: string): Text | undefined {
   if (lemma.length <= 1) return undefined;
-  if (endsInConsonantY(lemma)) return { value: `${lemma.slice(0, -1)}ies`, formats: ["/ies$/i"] };
+  if (isConsonantYEnding(lemma)) return { value: `${lemma.slice(0, -1)}ies`, formats: ["/ies$/i"] };
   if (/(s|x|z|ch|sh)$/i.test(lemma)) return { value: `${lemma}es`, formats: ["/es$/i"] };
   if (/(f|fe)$/i.test(lemma)) return undefined;
   return { value: `${lemma}s`, formats: ["/s$/i"] };
@@ -89,20 +89,20 @@ function generatedPluralNumberForm(lemma: string): Text | undefined {
  * explicitly-registered value (from an earlier call, or hand-curated
  * seeding) is never overwritten. Every value this produces is provably
  * one of that field's own recognised String Patterns (WORD_FORM_MATRIX's
- * own NOUN rules), by construction -- generateNounForms() and
- * validateNoun() are built from the exact same matrix rules, so a
- * freshly-generated Noun always passes its own validateNoun() unchanged.
+ * own NOUN rules), by construction -- createNounForms() and
+ * recogniseNounFormIssues() are built from the exact same matrix rules, so a
+ * freshly-generated Noun always passes its own recogniseNounFormIssues() unchanged.
  * Fields are registered in the same order they're declared on Noun
  * (singular, plural, possessive) so Word Forms UI display order stays
  * unaffected by this migration. Returns `noun` unchanged -- registration
  * is a side effect on `wordForms`, not a copy of `noun` itself. */
-export function generateNounForms(noun: Noun, wordForms: WordForms | undefined): Noun {
+export function createNounForms(noun: Noun, wordForms: WordForms | undefined): Noun {
   if (wordForms === undefined) return noun;
   const lemma = noun.text;
   const has = (field: WordFormType): boolean => wordForms.formsOf(noun).some((form) => form.formType === field);
   if (!has(WordFormType.SINGULAR_NUMBER_FORM)) wordForms.registerNamedForm(noun, WordFormType.SINGULAR_NUMBER_FORM, { value: lemma });
   if (!has(WordFormType.PLURAL_NUMBER_FORM)) {
-    const plural = generatedPluralNumberForm(lemma);
+    const plural = createPluralNumberForm(lemma);
     if (plural !== undefined) wordForms.registerNamedForm(noun, WordFormType.PLURAL_NUMBER_FORM, plural);
   }
   if (!has(WordFormType.POSSESSIVE_CASE_FORM))

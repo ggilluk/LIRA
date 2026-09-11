@@ -18,7 +18,7 @@
  * only, never that WordNet-tagged part of speech.
  *
  * Genuinely seeded today, not "declared before it's populated":
- * WordSeeder.seedWordNet's own classifyPhraseType() (role/word_seeder.ts)
+ * WordSeeder.seedWordNet's own recogniseLemmaPhraseType() (role/word_seeder.ts)
  * checks whether an ADJECTIVE- or ADVERB-tagged multi-word lemma's own
  * first token is one of a verified closed set of ~80 real English
  * prepositions (PHRASE_TYPE_PREPOSITIONS, role/word_seeder.ts) before
@@ -28,7 +28,7 @@
  * Deliberately never checked for NOUN (compound nouns sharing a leading
  * word with the preposition set, like "down payment"/"near miss", are
  * modifier + head nouns, not prepositional in structure -- verified
- * against the bundled dict/data.noun, not guessed, classifyPhraseType's
+ * against the bundled dict/data.noun, not guessed, recogniseLemmaPhraseType's
  * own docstring). Never set for a Common Vocabulary Cache closed-class
  * Phrase, which has no constituency-parsing pass of its own.
  *
@@ -41,7 +41,7 @@
  * any other Word subtype (data/phrase_type_patterns_and_word_roles.md's
  * own "Phrase Role Allowed Types" table, PrepositionalPhrase/HEAD row).
  * Genuinely populated today, for every real seeded multi-word WordNet
- * PrepositionalPhrase, by linkPhraseWords()
+ * PrepositionalPhrase, by updatePhraseWordLinks()
  * (role/processor/phrase_processor.ts).
  *
  * `preModifier` narrows Phrase's own same-named field (data/entities/phrase.ts's
@@ -49,7 +49,7 @@
  * `Adverb`-capable token's own WordForm reference for the single-token
  * case, or an `AdverbPhrase`/`Coordination` sub-constituent for a run of
  * two or more MODIFIER-role tokens (real constituency parsing now,
- * `buildModifierUnit()`'s own docstring, role/processor/phrase_processor.ts)
+ * `createModifierRunValue()`'s own docstring, role/processor/phrase_processor.ts)
  * -- `headWord`'s own "an Identifier carries no type to narrow"
  * reasoning, narrowing only the embedded-subtype half of the union. A
  * single MODIFIER-role token whose own resolved Word carries no
@@ -60,23 +60,23 @@
  * own docstring on it) down to that exact same constituent set --
  * PrepositionalPhrase's own structure ("Preposition + Noun
  * phrase/complement + (Modifiers)") in fact places its real Modifiers
- * after the Head, so this is the field linkPhraseWords() actually
+ * after the Head, so this is the field updatePhraseWordLinks() actually
  * populates in practice for a real PrepositionalPhrase, with
  * `preModifier` staying available (and populated the same way, should a
  * Modifier ever precede the Head) for the rarer pre-Head case.
  *
  * `complements` narrows Phrase's own same-named field (data/entities/phrase.ts's
  * own docstring on it) down to PrepositionalPhraseComplement above.
- * Genuinely the field `linkPhraseWords()` populates for *every* real
+ * Genuinely the field `updatePhraseWordLinks()` populates for *every* real
  * multi-word PrepositionalPhrase that has more than one token:
  * PREPOSITIONAL_PHRASE's own structure places its whole complement
  * immediately after the Head ("within [the framework]", "out of
- * [print]"), so `linkPhraseWords()` treats everything from `headWord`'s
+ * [print]"), so `updatePhraseWordLinks()` treats everything from `headWord`'s
  * own position onward as one embedded sub-Phrase -- a nested
  * PrepositionalPhrase when that span itself opens with another
  * Preposition-capable token ("out of [of print]" -> "print" nested one
  * PrepositionalPhrase deeper still), a NounPhrase otherwise (the
- * overwhelmingly common real case, `classifyComplementPhraseType()`'s
+ * overwhelmingly common real case, `recogniseComplementPhraseType()`'s
  * own docstring, role/processor/phrase_processor.ts) -- never a bare
  * `Identifier`, a `Pronoun`/`Adverb`/`AdverbPhrase`/`Clause` complement,
  * or empty, for a genuine multi-word PrepositionalPhrase today: only
@@ -84,7 +84,7 @@
  * constructed. A single-token PrepositionalPhrase built directly
  * (`createPrepositionalPhrase()`, never through `seedWordNet()`, which
  * never seeds a one-word Phrase at all) stays empty, the same "nothing
- * to link" case every other `linkPhraseWords()`-populated field already
+ * to link" case every other `updatePhraseWordLinks()`-populated field already
  * has. */
 
 import { PhraseType } from "../enums/phrase_type";

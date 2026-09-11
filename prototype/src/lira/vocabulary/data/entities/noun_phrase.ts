@@ -15,30 +15,30 @@
  *
  * Genuinely seeded today, not "declared before it's populated" the way
  * most POS-subtype-only fields on Word still are: WordSeeder.seedWordNet's
- * own classifyPhraseType() (role/word_seeder.ts) maps every real
+ * own recogniseLemmaPhraseType() (role/word_seeder.ts) maps every real
  * multi-word WordNet NOUN lemma straight to NOUN_PHRASE with no
  * override -- verified against the bundled dict/ files, ~60,400 unique
  * lemmas, essentially all plain noun compounds ("18-karat gold", "toy
  * poodle"), including the ~50 that happen to share a leading word with
- * classifyPhraseType's own preposition set ("down payment", "near
+ * recogniseLemmaPhraseType's own preposition set ("down payment", "near
  * miss") without actually being prepositional in structure (that
  * function's own docstring). A further handful of WordNet-tagged
  * ADJECTIVE/ADVERB lemmas also land here -- genuine Determiner +
  * Noun-quantifier constructions WordNet tags by the idiomatic function
  * they serve rather than their own internal structure ("a bit", "a
  * few", "a lot"), reclassified the same structural-override way
- * classifyDeterminerPhrase() (role/processor/phrase_processor.ts)
+ * isDeterminerPhrase() (role/processor/phrase_processor.ts)
  * corrects for. Also genuinely set for a Common Vocabulary Cache
  * closed-class Phrase now, but only a PRONOUN-tagged one --
  * word_seeder.ts's own entryToPhrase() calls the identical
- * classifyPhraseType(), whose own PRONOUN case maps straight to
+ * recogniseLemmaPhraseType(), whose own PRONOUN case maps straight to
  * NOUN_PHRASE too (pronouns.json's 17 real multi-word idioms: "each
  * other", "no one", "the former", ...) -- a Pronoun-headed phrase
  * genuinely is structurally a Noun Phrase, this subtype's own
  * "Noun/Pronoun" head shape below. `headWord`/`headWordForm`/
  * `preModifier`/`postModifier` are genuinely populated for these too
  * now -- `seedClosedClassWords()`'s own Phrase loop
- * (role/word_seeder.ts) calls linkPhraseWords() there as well, the
+ * (role/word_seeder.ts) calls updatePhraseWordLinks() there as well, the
  * identical call seedWordNet() already makes for a WordNet-seeded
  * NounPhrase, below. "each other" is the one real exception: neither
  * "each" nor "other" resolves to a Noun or Pronoun Word on its own (both
@@ -65,8 +65,8 @@
  *
  * ModifierRole.COMPLEMENT is genuinely assigned now, not just declared
  * ahead of a seeder (`complements`' own docstring below,
- * role/processor/phrase_processor.ts's own `classifyModifierRoles()`/
- * `complementStartIndex()`) -- "abatement of a nuisance" (00362285-n,
+ * role/processor/phrase_processor.ts's own `recogniseModifierRoles()`/
+ * `recogniseComplementStartIndex()`) -- "abatement of a nuisance" (00362285-n,
  * dict/data.noun) was the reported case that surfaced the gap: a
  * post-Head "Preposition + complement" span like "of a nuisance" used
  * to be silently dropped entirely (no role, no field, nowhere), rather
@@ -83,7 +83,7 @@
  * (the "ModifierRole values valid within a NounPhrase" note above, HEAD
  * row). Genuinely populated today, for every real seeded multi-word
  * WordNet NounPhrase and every PRONOUN-tagged Common Vocabulary Cache
- * one alike, by linkPhraseWords() (role/processor/phrase_processor.ts) --
+ * one alike, by updatePhraseWordLinks() (role/processor/phrase_processor.ts) --
  * `seedWordNet()`'s and `seedClosedClassWords()`'s own call sites,
  * word_seeder.ts.
  *
@@ -95,7 +95,7 @@
  * single-token case, or an `AdjectivePhrase | NounPhrase | AdverbPhrase |
  * PrepositionalPhrase | Coordination | Clause` sub-constituent for a run
  * of two or more MODIFIER-role tokens (real constituency parsing now,
- * `buildModifierUnit()`'s own docstring, role/processor/phrase_processor.ts)
+ * `createModifierRunValue()`'s own docstring, role/processor/phrase_processor.ts)
  * -- the same "an Identifier carries no type of its own to narrow"
  * reasoning `headWord` above already has, so this narrows the embedded-
  * subtype half of the union only, never the `Identifier` half. A single
@@ -111,7 +111,7 @@
  *
  * `complements` narrows Phrase's own same-named field (data/entities/phrase.ts's
  * own docstring on it) down to NounPhraseComplement above. Genuinely
- * populated by `linkPhraseWords()` for the real case this subtype's own
+ * populated by `updatePhraseWordLinks()` for the real case this subtype's own
  * structure comment already named: a token immediately after the Head
  * capable of reading as a Preposition starts this NounPhrase's own
  * complement, running to the end of `text` -- built as one nested
@@ -121,7 +121,7 @@
  * token exists).
  * A `Clause` complement is never constructed -- this codebase performs
  * no clause-level parsing within a Phrase's own text at all, only the
- * PrepositionalPhrase case `classifyComplementPhraseType()`'s own
+ * PrepositionalPhrase case `recogniseComplementPhraseType()`'s own
  * docstring covers (role/processor/phrase_processor.ts). */
 
 import { PhraseType } from "../enums/phrase_type";

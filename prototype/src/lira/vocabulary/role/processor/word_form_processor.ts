@@ -14,14 +14,14 @@
  * role/domain_processor.ts -- these last two remain top-level role/
  * files, not yet moved here).
  *
- * `WordFormIssue`/`parseFormatPattern()`/`validateFormText()` moved
+ * `WordFormIssue`/`createFormatPatternRegExp()`/`recogniseFormTextIssue()` moved
  * here from role/processor/word_processor.ts, which held them only because every
  * POS subtype's own processor already imported `createWord` from that
  * file, so borrowing it for Matrix validation too "added no new
  * cross-file dependency" (that file's own former docstring, verbatim)
  * -- proximity to a one-time import, not a genuine Word-entity concern.
  * Every real call site validates one WordForm's own `formType`/`text`
- * (e.g. `validateFormText(form.formType, form.text, stringPatternsFor(...))`
+ * (e.g. `recogniseFormTextIssue(form.formType, form.text, stringPatternsFor(...))`
  * in each POS processor's own `validate<Class>()`), so this is WordForm's
  * own behaviour, not Word's -- unlike the regular-English-suffix
  * spelling primitives (role/processor/word_processor.ts's own docstring), which
@@ -31,10 +31,10 @@
  * Known, approved exception to the usual data/-depends-on-role/-never
  * rule (data/entities/word.ts's own docstring; word_processor.ts's own
  * docstring for the precedent this follows): data/word_forms.ts's own
- * `WordForms` store calls createWordForm()/copyWordFormWithFreshUuid()
+ * `WordForms` store calls createWordForm()/createFreshUuidWordFormCopy()
  * directly, so that data/ file ends up importing from here -- the same
  * reason data/entities/phrase.ts and data/dictionary.ts already import
- * createWord()/copyWordWithFreshUuid() from role/processor/word_processor.ts. */
+ * createWord()/createFreshUuidWordCopy() from role/processor/word_processor.ts. */
 
 import { identifier, type Text } from "../../../value_objects";
 import type { WordForm } from "../../data/entities/word_form";
@@ -71,17 +71,17 @@ export function createWordForm(init: WordFormInit): WordForm {
  * except `wordFormId.uuid`, which becomes a fresh uuid -- `wordFormId.value`
  * (and every other field) stays the same, so this copy is still
  * recognisably the same underlying WordForm, just a distinct graph
- * node -- copySense/copyWordWithFreshUuid's own exact counterpart,
+ * node -- copySense/createFreshUuidWordCopy's own exact counterpart,
  * used by WordForms.seedFrom for the same reason: two Domains'
  * independent copies of the same form must never be confused as the
  * same graph node. */
-export function copyWordFormWithFreshUuid(form: WordForm): WordForm {
+export function createFreshUuidWordFormCopy(form: WordForm): WordForm {
   return { ...form, wordFormId: { ...form.wordFormId, uuid: crypto.randomUUID() } };
 }
 
 /** `form`'s own per-Domain graph identity -- `form.wordFormId.uuid`,
  * always set for a real WordForm (createWordForm()/
- * copyWordFormWithFreshUuid() above are its only two constructors, and
+ * createFreshUuidWordFormCopy() above are its only two constructors, and
  * both always assign it); the assertion here just names that guarantee
  * once instead of repeating it at every call site that needs a
  * WordForm's own identity as a plain string (WordForms's own `byUuid`
@@ -102,7 +102,7 @@ export function graphUuid(form: WordForm): string {
 // into a real RegExp, and checking one field's Text against one known
 // pattern set.
 
-/** One validation failure from validateFormText/validate<Class> below --
+/** One validation failure from recogniseFormTextIssue/validate<Class> below --
  * `field` names which WordFormType the issue is on, `reason` says
  * which of the two ways a claimed Text.formats entry failed (its own
  * message text names `field` via `wordFormTypeLabel()`,
@@ -120,8 +120,8 @@ export interface WordFormIssue {
  * defines). Throws on a malformed pattern string (no leading "/") --
  * deliberately, since a caller passing one is a programming error, not
  * a validation outcome to report gracefully the way an unrecognised
- * *pattern* (validateFormText's own concern) is. */
-export function parseFormatPattern(pattern: string): RegExp {
+ * *pattern* (recogniseFormTextIssue's own concern) is. */
+export function createFormatPatternRegExp(pattern: string): RegExp {
   if (!pattern.startsWith("/")) throw new Error(`not a "/pattern/flags"-shaped format string: '${pattern}'`);
   const lastSlash = pattern.lastIndexOf("/");
   return new RegExp(pattern.slice(1, lastSlash), pattern.slice(lastSlash + 1));
@@ -141,7 +141,7 @@ export function parseFormatPattern(pattern: string): RegExp {
  * `text.value` itself doesn't actually match it (stale data -- the
  * value changed after `formats` was set, or the two were never
  * consistent to begin with). */
-export function validateFormText(field: WordFormType, text: Text, known: readonly string[]): WordFormIssue | undefined {
+export function recogniseFormTextIssue(field: WordFormType, text: Text, known: readonly string[]): WordFormIssue | undefined {
   if (text.formats === undefined) return undefined;
   for (const claimed of text.formats) {
     if (!known.includes(claimed)) {
@@ -150,7 +150,7 @@ export function validateFormText(field: WordFormType, text: Text, known: readonl
         reason: `'${claimed}' is not a recognised String Pattern for '${wordFormTypeLabel(field)}' (word_form_part_of_speech_matrix.md)`,
       };
     }
-    if (!parseFormatPattern(claimed).test(text.value)) {
+    if (!createFormatPatternRegExp(claimed).test(text.value)) {
       return { field, reason: `'${text.value}' does not match its own claimed format '${claimed}'` };
     }
   }

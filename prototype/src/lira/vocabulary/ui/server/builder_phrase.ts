@@ -37,7 +37,7 @@ export interface PhraseRecord {
   // PhraseType[...] convention WordRecord.phrase_type already uses --
   // undefined for a Phrase whose own phraseType is itself undefined
   // (every Common Vocabulary Cache closed-class Phrase, and any
-  // WordNet-seeded one classifyPhraseType() couldn't classify,
+  // WordNet-seeded one recogniseLemmaPhraseType() couldn't classify,
   // word_seeder.ts).
   phrase_type?: string;
   definition: string;
@@ -53,7 +53,7 @@ export interface PhraseRecord {
  * own PhraseType[...] convention, WordRecord.phrase_type's own
  * docstring) -- `undefined` for a Phrase whose phraseType is itself
  * undefined (every Common Vocabulary Cache closed-class Phrase, and
- * any WordNet-seeded one classifyPhraseType() couldn't classify),
+ * any WordNet-seeded one recogniseLemmaPhraseType() couldn't classify),
  * kept as its own small function purely so both wordId-resolution call
  * sites in builder_word.ts read the identical one-liner
  * phraseWordSegments() already gets its own for. */
@@ -119,7 +119,7 @@ export interface PhraseComplementSegment {
  * `Clause` branches `Phrase.complements`'s own type still carries, the
  * same narrowing `vocabulary.test.ts`'s own complement assertions
  * already use; neither branch is ever actually constructed today,
- * `classifyComplementPhraseType()`'s own docstring, role/processor/phrase_processor.ts).
+ * `recogniseComplementPhraseType()`'s own docstring, role/processor/phrase_processor.ts).
  * Reads `phrase.complements` directly rather than recomputing (unlike
  * `phraseWordSegments()`/`phraseModifierSegments()` below, which
  * recompute from `text` because a WordForm reference alone drops a
@@ -134,14 +134,14 @@ export function phraseComplementSegments(phrase: Phrase): PhraseComplementSegmen
 }
 
 /** `phrase`'s own headword (`text`) broken into one DefinitionSegment
- * per whitespace token, in the same order linkPhraseWords()
+ * per whitespace token, in the same order updatePhraseWordLinks()
  * (role/processor/phrase_processor.ts) itself walks them -- reusing
  * definitionWordSegment() as-is, so a Phrase's own headword links to
  * its constituent Words exactly the way a Word's own definition text
  * already links to the Words *it* mentions (same hover-tooltip
  * rendering client-side, this file's own embedded client script).
  * Re-resolves each token against `dictionary` fresh (`dictionary.lookup()`,
- * the identical case-insensitive first-homograph pick linkPhraseWords()
+ * the identical case-insensitive first-homograph pick updatePhraseWordLinks()
  * itself makes) rather than reading a stored per-token reference --
  * Phrase carries no such array of its own any more
  * (data_entity_design_decisions_log.md on why `words`/`wordRoles` were
@@ -197,7 +197,7 @@ export function phraseHeadWordSegment(
  * independently-registered nested Phrase now -- `phraseComplementSegments()`'s
  * own identical shape and reasoning, since `preModifier`/`postModifier`/
  * `determiner` collapse a whole multi-token span into one nested Phrase
- * the exact same way `complements` already does, `buildNestedPhrase()`'s
+ * the exact same way `complements` already does, `createLinkedNestedPhrase()`'s
  * own docstring, role/processor/phrase_processor.ts). */
 export type ModifierSegment = DefinitionSegment | PhraseComplementSegment;
 
@@ -209,9 +209,9 @@ export type ModifierSegment = DefinitionSegment | PhraseComplementSegment;
  * seeder/UI consumer of its own"), so unlike a nested Phrase this can
  * never render as a clickable pivot link -- there is nowhere for it to
  * pivot to. Each coordinate is in practice always a Word or Phrase, both
- * of which carry `text` (`resolveCoordinateSide()`'s own docstring,
+ * of which carry `text` (`createCoordinateSide()`'s own docstring,
  * role/processor/phrase_processor.ts -- a coordinate is never itself a
- * nested Coordination in anything `buildModifierUnit()` constructs
+ * nested Coordination in anything `createModifierRunValue()` constructs
  * today); the `"text" in coordinate` guard covers that theoretical case
  * gracefully anyway rather than throwing. */
 function coordinationText(coordination: Coordination<Word | Phrase>, wordForms: WordForms): string {
@@ -229,7 +229,7 @@ function coordinationText(coordination: Coordination<Word | Phrase>, wordForms: 
  * identified for this span, or its resolved Word carries no WordForm
  * spelled the way it appears here -- `phrase.ts`'s own docstring on when
  * each happens). A `Clause` value is never actually constructed by
- * `buildModifierUnit()` today (the same "documented ahead of
+ * `createModifierRunValue()` today (the same "documented ahead of
  * construction" status `phraseComplementSegments()`'s own docstring
  * already notes for its own identical `Clause` branch).
  *

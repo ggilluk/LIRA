@@ -63,7 +63,7 @@ interface WordCoordinationDocument {
 /** The one homograph `dictionary.lookupAll(text)` returns whose own
  * `partOfSpeech` is exactly `partOfSpeech` -- `undefined` when none
  * match, never a fallback to some other homograph. Deliberately
- * stricter than `phrase_processor.ts`'s own `resolvedWordFor()`: that
+ * stricter than `phrase_processor.ts`'s own `recogniseMatchingTokenHomograph()`: that
  * function always returns *something* (a Head position always has a
  * real token to resolve, best-effort), but a coordinate here should
  * make this whole entry seed nothing at all rather than silently

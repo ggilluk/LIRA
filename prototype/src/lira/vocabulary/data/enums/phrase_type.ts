@@ -60,7 +60,7 @@ export enum PhraseType {
  * subtype, a Phrase subtype, or Clause, named by its own type name)
  * may fill that role. Still plain data, not read programmatically by
  * anything in this codebase -- `role/processor/phrase_processor.ts`'s
- * own `complementStartIndex()` mirrors this table's own COMPLEMENT rows
+ * own `recogniseComplementStartIndex()` mirrors this table's own COMPLEMENT rows
  * by hand, in its own `switch` over `PhraseType`, rather than looking
  * this map up at runtime, so the two must be kept in sync by eye, not by
  * construction. */

@@ -1,9 +1,9 @@
 import type { Word } from "./entities/word";
 // Known, approved exception to data/ never importing role/ -- see
-// role/processor/word_processor.ts's own docstring: copyWordWithFreshUuid() is
+// role/processor/word_processor.ts's own docstring: createFreshUuidWordCopy() is
 // Word's own base-entity copier, needed here the same way every POS
 // processor already needs it.
-import { copyWordWithFreshUuid, graphUuid } from "../role/processor/word_processor";
+import { createFreshUuidWordCopy, graphUuid } from "../role/processor/word_processor";
 
 /** One inflected form linked to a base lemma (or, from lemmaOf's own
  * side, one base lemma linked to a form) -- Dictionary.linkForm/
@@ -155,7 +155,7 @@ export class Dictionary {
    * used to seed a newly created Domain's Dictionary from the reserved
    * Common Domain's Dictionary. Each Word is shallow-copied so the two
    * Domains never share a mutable Word instance, and given a freshly
-   * generated `wordId.uuid` (copyWordWithFreshUuid(), role/processor/word_processor.ts)
+   * generated `wordId.uuid` (createFreshUuidWordCopy(), role/processor/word_processor.ts)
    * -- a shallow copy shares the *same* `wordId` object (and so the
    * same graph uuid) as the original otherwise, which would give two
    * different Domains' copies of "be" the identical per-Domain-graph
@@ -173,7 +173,7 @@ export class Dictionary {
   seedFrom(other: Dictionary): void {
     const copyByOriginalUuid = new Map<string, Word>();
     for (const word of other.words) {
-      const copy = copyWordWithFreshUuid(word);
+      const copy = createFreshUuidWordCopy(word);
       this.append(copy);
       copyByOriginalUuid.set(graphUuid(word), copy);
     }

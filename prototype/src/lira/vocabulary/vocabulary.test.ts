@@ -13,34 +13,34 @@ import { ConjunctionType } from "./data/enums/conjunction_type";
 import { WordFormType, wordFormTypeLabel } from "./data/enums/word_forms_enum";
 import type { Word } from "./data/entities/word";
 import { createWord, graphUuid as wordGraphUuid } from "./role/processor/word_processor";
-import { validateFormText } from "./role/processor/word_form_processor";
+import { recogniseFormTextIssue } from "./role/processor/word_form_processor";
 import { graphUuid as formGraphUuid } from "./role/processor/word_form_processor";
 import { stringPatternsFor } from "./data/matrices/pos_vs_wordform_matrice";
 import { AdjectivePosition } from "./data/enums/adjective_position";
-import { createAdjective, determineGradability, generateAdjectiveForms, isAdjective, syntacticPositionForSense, validateAdjective } from "./role/processor/adjective_processor";
+import { createAdjective, isAdjectiveGradable, createAdjectiveForms, isAdjective, identifySyntacticPositionForSense, recogniseAdjectiveFormIssues } from "./role/processor/adjective_processor";
 import type { Adjective } from "./data/entities/adjective";
-import { createAdverb, determineGradability as determineAdverbGradability, generateAdverbForms, isAdverb, validateAdverb } from "./role/processor/adverb_processor";
+import { createAdverb, isAdverbGradable, createAdverbForms, isAdverb, recogniseAdverbFormIssues } from "./role/processor/adverb_processor";
 import type { Adverb } from "./data/entities/adverb";
 import { createConjunction, isConjunction } from "./role/processor/conjunction_processor";
 import type { Conjunction } from "./data/entities/conjunction";
 import { Coordinations } from "./data/coordinations";
 import { Domains } from "./data/domains";
 import type { Coordination } from "./data/entities/coordination";
-import { createCoordination, copyCoordinationWithFreshUuid, graphUuid as coordinationGraphUuid } from "./role/coordination_processor";
+import { createCoordination, createFreshUuidCoordinationCopy, graphUuid as coordinationGraphUuid } from "./role/coordination_processor";
 import { WordCoordinationSeeder } from "./role/word_coordination_seeder";
 import { coordinationRecords } from "./ui/server/builder_coordination";
 import type { LinguisticUnit } from "../linguistics/data/linguistic_unit";
-import { createDeterminer, isDeterminer, validateDeterminer } from "./role/processor/determiner_processor";
+import { createDeterminer, isDeterminer, recogniseDeterminerFormIssues } from "./role/processor/determiner_processor";
 import { HypernymRootWord } from "./data/enums/hypernym_root_word";
 import { isInterjection } from "./role/processor/interjection_processor";
-import { createNoun, generateNounForms, isNoun, validateNoun } from "./role/processor/noun_processor";
+import { createNoun, createNounForms, isNoun, recogniseNounFormIssues } from "./role/processor/noun_processor";
 import type { Noun } from "./data/entities/noun";
 import { WordForms } from "./data/word_forms";
 import { isNumeral } from "./role/processor/numeral_processor";
 import { isPreposition } from "./role/processor/preposition_processor";
-import { createPronoun, isPronoun, validatePronoun } from "./role/processor/pronoun_processor";
+import { createPronoun, isPronoun, recognisePronounFormIssues } from "./role/processor/pronoun_processor";
 import { isAuxiliary } from "./role/processor/auxiliary_processor";
-import { createVerb, framesForSense, generateVerbForms, isVerb, validateVerb } from "./role/processor/verb_processor";
+import { createVerb, identifyFramesForSense, createVerbForms, isVerb, recogniseVerbFormIssues } from "./role/processor/verb_processor";
 import type { Verb } from "./data/entities/verb";
 import { createPhrase, graphUuid as phraseGraphUuid, type Phrase } from "./data/entities/phrase";
 import { Phrases } from "./data/phrases";
@@ -57,7 +57,7 @@ import { DictionaryProcessor } from "./role/dictionary_processor";
 import { MorphologicalPointerRelationshipProcessor } from "./role/morphological_pointer_relationship_processor";
 import { RelationshipSeeder } from "./role/relationship_seeder";
 import { WordSeeder } from "./role/word_seeder";
-import { classifyModifierRoles, classifyPhraseType, linkPhraseWords } from "./role/processor/phrase_processor";
+import { recogniseModifierRoles, recogniseLemmaPhraseType, updatePhraseWordLinks } from "./role/processor/phrase_processor";
 import { NounCharacterFormSeeder } from "./role/noun_character_form_seeder";
 import { PrepositionSenseSeeder } from "./role/preposition_sense_seeder";
 import { IdentificationSource } from "./role/word_identifier";
@@ -214,138 +214,138 @@ describe("PhraseType", () => {
   });
 });
 
-describe("classifyPhraseType", () => {
-  // Every single-word NOUN-tagged lemma classifyDeterminerPhrase()'s own
+describe("recogniseLemmaPhraseType", () => {
+  // Every single-word NOUN-tagged lemma isDeterminerPhrase()'s own
   // tests below need real Noun coverage for, built the identical way
   // word_seeder.ts's own seedWordNet() builds it (from the synset list,
-  // not a live Dictionary -- classifyDeterminerPhrase()'s own docstring
+  // not a live Dictionary -- isDeterminerPhrase()'s own docstring
   // on why).
   const nounLemmas = new Set(["bit", "few", "lot", "little", "deal", "trifle", "times", "couple", "capella", "carte", "mode"]);
 
   it("maps NOUN/VERB straight to NOUN_PHRASE/VERB_PHRASE, even when the lemma opens with a preposition-lookalike word", () => {
     // "down payment"/"near miss" are compound nouns (down/near modify
     // the head noun), not prepositional phrases -- the real reason
-    // classifyPhraseType never applies the preposition check to NOUN.
-    expect(classifyPhraseType("down payment", PartOfSpeech.NOUN, nounLemmas)).toBe(PhraseType.NOUN_PHRASE);
-    expect(classifyPhraseType("toy poodle", PartOfSpeech.NOUN, nounLemmas)).toBe(PhraseType.NOUN_PHRASE);
+    // recogniseLemmaPhraseType never applies the preposition check to NOUN.
+    expect(recogniseLemmaPhraseType("down payment", PartOfSpeech.NOUN, nounLemmas)).toBe(PhraseType.NOUN_PHRASE);
+    expect(recogniseLemmaPhraseType("toy poodle", PartOfSpeech.NOUN, nounLemmas)).toBe(PhraseType.NOUN_PHRASE);
     // "abide by"/"out in" are phrasal verbs -- still verb-headed.
-    expect(classifyPhraseType("abide by", PartOfSpeech.VERB, nounLemmas)).toBe(PhraseType.VERB_PHRASE);
-    expect(classifyPhraseType("out in", PartOfSpeech.VERB, nounLemmas)).toBe(PhraseType.VERB_PHRASE);
+    expect(recogniseLemmaPhraseType("abide by", PartOfSpeech.VERB, nounLemmas)).toBe(PhraseType.VERB_PHRASE);
+    expect(recogniseLemmaPhraseType("out in", PartOfSpeech.VERB, nounLemmas)).toBe(PhraseType.VERB_PHRASE);
   });
 
   it("reclassifies an ADJECTIVE/ADVERB lemma opening with a preposition as PREPOSITIONAL_PHRASE", () => {
-    expect(classifyPhraseType("at fault", PartOfSpeech.ADJECTIVE, nounLemmas)).toBe(PhraseType.PREPOSITIONAL_PHRASE);
-    expect(classifyPhraseType("out of print", PartOfSpeech.ADJECTIVE, nounLemmas)).toBe(PhraseType.PREPOSITIONAL_PHRASE);
-    expect(classifyPhraseType("by hand", PartOfSpeech.ADVERB, nounLemmas)).toBe(PhraseType.PREPOSITIONAL_PHRASE);
-    expect(classifyPhraseType("in the meantime", PartOfSpeech.ADVERB, nounLemmas)).toBe(PhraseType.PREPOSITIONAL_PHRASE);
+    expect(recogniseLemmaPhraseType("at fault", PartOfSpeech.ADJECTIVE, nounLemmas)).toBe(PhraseType.PREPOSITIONAL_PHRASE);
+    expect(recogniseLemmaPhraseType("out of print", PartOfSpeech.ADJECTIVE, nounLemmas)).toBe(PhraseType.PREPOSITIONAL_PHRASE);
+    expect(recogniseLemmaPhraseType("by hand", PartOfSpeech.ADVERB, nounLemmas)).toBe(PhraseType.PREPOSITIONAL_PHRASE);
+    expect(recogniseLemmaPhraseType("in the meantime", PartOfSpeech.ADVERB, nounLemmas)).toBe(PhraseType.PREPOSITIONAL_PHRASE);
   });
 
   it("falls back to the plain POS-based mapping for ADJECTIVE/ADVERB lemmas that don't open with a preposition or the indefinite article", () => {
-    expect(classifyPhraseType("Central American", PartOfSpeech.ADJECTIVE, nounLemmas)).toBe(PhraseType.ADJECTIVE_PHRASE);
+    expect(recogniseLemmaPhraseType("Central American", PartOfSpeech.ADJECTIVE, nounLemmas)).toBe(PhraseType.ADJECTIVE_PHRASE);
     // "any longer" opens with a Determiner ("any"), just not the
-    // indefinite article classifyDeterminerPhrase() is deliberately
+    // indefinite article isDeterminerPhrase() is deliberately
     // scoped to (that function's own docstring on why) -- stays
     // ADVERB_PHRASE regardless of nounLemmas' own contents.
-    expect(classifyPhraseType("any longer", PartOfSpeech.ADVERB, nounLemmas)).toBe(PhraseType.ADVERB_PHRASE);
+    expect(recogniseLemmaPhraseType("any longer", PartOfSpeech.ADVERB, nounLemmas)).toBe(PhraseType.ADVERB_PHRASE);
   });
 
   it("classifies every genuine WordNet infinitive as PREPOSITIONAL_PHRASE too -- 'to' is itself one of PHRASE_TYPE_PREPOSITIONS' own closed set, and this codebase draws no distinct structural shape for an infinitive at all (there's no WordNet ss_type to key one off)", () => {
-    expect(classifyPhraseType("to be sure", PartOfSpeech.ADVERB, nounLemmas)).toBe(PhraseType.PREPOSITIONAL_PHRASE);
-    expect(classifyPhraseType("to begin with", PartOfSpeech.ADVERB, nounLemmas)).toBe(PhraseType.PREPOSITIONAL_PHRASE);
-    expect(classifyPhraseType("to a fault", PartOfSpeech.ADVERB, nounLemmas)).toBe(PhraseType.PREPOSITIONAL_PHRASE);
-    expect(classifyPhraseType("to date", PartOfSpeech.ADVERB, nounLemmas)).toBe(PhraseType.PREPOSITIONAL_PHRASE);
-    expect(classifyPhraseType("to boot", PartOfSpeech.ADVERB, nounLemmas)).toBe(PhraseType.PREPOSITIONAL_PHRASE);
-    expect(classifyPhraseType("to advantage", PartOfSpeech.ADVERB, nounLemmas)).toBe(PhraseType.PREPOSITIONAL_PHRASE);
+    expect(recogniseLemmaPhraseType("to be sure", PartOfSpeech.ADVERB, nounLemmas)).toBe(PhraseType.PREPOSITIONAL_PHRASE);
+    expect(recogniseLemmaPhraseType("to begin with", PartOfSpeech.ADVERB, nounLemmas)).toBe(PhraseType.PREPOSITIONAL_PHRASE);
+    expect(recogniseLemmaPhraseType("to a fault", PartOfSpeech.ADVERB, nounLemmas)).toBe(PhraseType.PREPOSITIONAL_PHRASE);
+    expect(recogniseLemmaPhraseType("to date", PartOfSpeech.ADVERB, nounLemmas)).toBe(PhraseType.PREPOSITIONAL_PHRASE);
+    expect(recogniseLemmaPhraseType("to boot", PartOfSpeech.ADVERB, nounLemmas)).toBe(PhraseType.PREPOSITIONAL_PHRASE);
+    expect(recogniseLemmaPhraseType("to advantage", PartOfSpeech.ADVERB, nounLemmas)).toBe(PhraseType.PREPOSITIONAL_PHRASE);
   });
 
   it("reclassifies a WordNet-tagged ADJECTIVE/ADVERB lemma as NOUN_PHRASE when it's structurally a Determiner + Noun-quantifier (\"a bit\", \"a few\"), ahead of both the preposition and plain POS-based checks", () => {
     // The reported bug: WordNet tags "a bit" ADVERB (its idiomatic
     // function, "to a small degree") and "a few" ADJECTIVE ("a_few(a)")
     // -- neither is headed by an Adverb/Adjective at all, so without
-    // this override "a bit" resolved no Head whatsoever (adverbPhraseHeadIndex
-    // -- linkPhraseWords()'s own docstring) and "a few" resolved the
+    // this override "a bit" resolved no Head whatsoever (recogniseAdverbHeadIndex
+    // -- updatePhraseWordLinks()'s own docstring) and "a few" resolved the
     // wrong PhraseType even though it did get a Head ("few" itself is
     // also independently WordNet-tagged ADJECTIVE).
-    expect(classifyPhraseType("a bit", PartOfSpeech.ADVERB, nounLemmas)).toBe(PhraseType.NOUN_PHRASE);
-    expect(classifyPhraseType("a few", PartOfSpeech.ADJECTIVE, nounLemmas)).toBe(PhraseType.NOUN_PHRASE);
+    expect(recogniseLemmaPhraseType("a bit", PartOfSpeech.ADVERB, nounLemmas)).toBe(PhraseType.NOUN_PHRASE);
+    expect(recogniseLemmaPhraseType("a few", PartOfSpeech.ADJECTIVE, nounLemmas)).toBe(PhraseType.NOUN_PHRASE);
     // Every other real bundled-data hit, verified by hand
-    // (classifyDeterminerPhrase()'s own docstring).
-    expect(classifyPhraseType("a lot", PartOfSpeech.ADVERB, nounLemmas)).toBe(PhraseType.NOUN_PHRASE);
-    expect(classifyPhraseType("a little", PartOfSpeech.ADVERB, nounLemmas)).toBe(PhraseType.NOUN_PHRASE);
-    expect(classifyPhraseType("a trifle", PartOfSpeech.ADVERB, nounLemmas)).toBe(PhraseType.NOUN_PHRASE);
-    expect(classifyPhraseType("a good deal", PartOfSpeech.ADVERB, nounLemmas)).toBe(PhraseType.NOUN_PHRASE);
-    expect(classifyPhraseType("a hundred times", PartOfSpeech.ADVERB, nounLemmas)).toBe(PhraseType.NOUN_PHRASE);
-    expect(classifyPhraseType("a couple of", PartOfSpeech.ADJECTIVE, nounLemmas)).toBe(PhraseType.NOUN_PHRASE);
+    // (isDeterminerPhrase()'s own docstring).
+    expect(recogniseLemmaPhraseType("a lot", PartOfSpeech.ADVERB, nounLemmas)).toBe(PhraseType.NOUN_PHRASE);
+    expect(recogniseLemmaPhraseType("a little", PartOfSpeech.ADVERB, nounLemmas)).toBe(PhraseType.NOUN_PHRASE);
+    expect(recogniseLemmaPhraseType("a trifle", PartOfSpeech.ADVERB, nounLemmas)).toBe(PhraseType.NOUN_PHRASE);
+    expect(recogniseLemmaPhraseType("a good deal", PartOfSpeech.ADVERB, nounLemmas)).toBe(PhraseType.NOUN_PHRASE);
+    expect(recogniseLemmaPhraseType("a hundred times", PartOfSpeech.ADVERB, nounLemmas)).toBe(PhraseType.NOUN_PHRASE);
+    expect(recogniseLemmaPhraseType("a couple of", PartOfSpeech.ADJECTIVE, nounLemmas)).toBe(PhraseType.NOUN_PHRASE);
   });
 
   it("does not mistake a Latin/French loan phrase for a Determiner Phrase merely because a later token happens to also be an unrelated Noun homograph", () => {
     // "capella"/"carte"/"mode" are all real, independent WordNet Nouns
     // (a star; a menu; a fashion) -- coincidentally, not because "a
     // capella"/"a la carte"/"a la mode" are genuinely Determiner
-    // Phrases (classifyDeterminerPhrase()'s own docstring on why these
+    // Phrases (isDeterminerPhrase()'s own docstring on why these
     // three, specifically, are denylisted by hand). Each falls through
     // to the plain POS-based mapping instead.
-    expect(classifyPhraseType("a capella", PartOfSpeech.ADJECTIVE, nounLemmas)).toBe(PhraseType.ADJECTIVE_PHRASE);
-    expect(classifyPhraseType("a capella", PartOfSpeech.ADVERB, nounLemmas)).toBe(PhraseType.ADVERB_PHRASE);
-    expect(classifyPhraseType("a la carte", PartOfSpeech.ADJECTIVE, nounLemmas)).toBe(PhraseType.ADJECTIVE_PHRASE);
-    expect(classifyPhraseType("a la mode", PartOfSpeech.ADVERB, nounLemmas)).toBe(PhraseType.ADVERB_PHRASE);
+    expect(recogniseLemmaPhraseType("a capella", PartOfSpeech.ADJECTIVE, nounLemmas)).toBe(PhraseType.ADJECTIVE_PHRASE);
+    expect(recogniseLemmaPhraseType("a capella", PartOfSpeech.ADVERB, nounLemmas)).toBe(PhraseType.ADVERB_PHRASE);
+    expect(recogniseLemmaPhraseType("a la carte", PartOfSpeech.ADJECTIVE, nounLemmas)).toBe(PhraseType.ADJECTIVE_PHRASE);
+    expect(recogniseLemmaPhraseType("a la mode", PartOfSpeech.ADVERB, nounLemmas)).toBe(PhraseType.ADVERB_PHRASE);
     // "a cappella" (double-p spelling) and "a fortiori"/"a posteriori"/
     // "a priori" need no denylist entry at all -- none of their own
     // remaining tokens resolves a real Noun in the first place.
-    expect(classifyPhraseType("a cappella", PartOfSpeech.ADVERB, nounLemmas)).toBe(PhraseType.ADVERB_PHRASE);
-    expect(classifyPhraseType("a priori", PartOfSpeech.ADJECTIVE, nounLemmas)).toBe(PhraseType.ADJECTIVE_PHRASE);
+    expect(recogniseLemmaPhraseType("a cappella", PartOfSpeech.ADVERB, nounLemmas)).toBe(PhraseType.ADVERB_PHRASE);
+    expect(recogniseLemmaPhraseType("a priori", PartOfSpeech.ADJECTIVE, nounLemmas)).toBe(PhraseType.ADJECTIVE_PHRASE);
   });
 
   it("maps PRONOUN straight to NOUN_PHRASE -- a Pronoun-headed phrase is structurally a Noun Phrase (data/phrase_type_patterns_and_word_roles.md's own NounPhrase/HEAD row: Noun, Pronoun), the same real bundled pronouns.json idioms this fixes", () => {
-    expect(classifyPhraseType("each other", PartOfSpeech.PRONOUN, nounLemmas)).toBe(PhraseType.NOUN_PHRASE);
-    expect(classifyPhraseType("no one", PartOfSpeech.PRONOUN, nounLemmas)).toBe(PhraseType.NOUN_PHRASE);
-    expect(classifyPhraseType("the former", PartOfSpeech.PRONOUN, nounLemmas)).toBe(PhraseType.NOUN_PHRASE);
+    expect(recogniseLemmaPhraseType("each other", PartOfSpeech.PRONOUN, nounLemmas)).toBe(PhraseType.NOUN_PHRASE);
+    expect(recogniseLemmaPhraseType("no one", PartOfSpeech.PRONOUN, nounLemmas)).toBe(PhraseType.NOUN_PHRASE);
+    expect(recogniseLemmaPhraseType("the former", PartOfSpeech.PRONOUN, nounLemmas)).toBe(PhraseType.NOUN_PHRASE);
     // "a lot"/"a bit" also appear in pronouns.json itself, opening with
-    // the indefinite article classifyDeterminerPhrase() checks first --
+    // the indefinite article isDeterminerPhrase() checks first --
     // still NOUN_PHRASE either way, whether that check fires (nounLemmas
     // has "lot") or falls through to the plain PRONOUN mapping (empty
     // nounLemmas, entryToPhrase()'s own real call shape, word_seeder.ts).
-    expect(classifyPhraseType("a lot", PartOfSpeech.PRONOUN, nounLemmas)).toBe(PhraseType.NOUN_PHRASE);
-    expect(classifyPhraseType("a lot", PartOfSpeech.PRONOUN, new Set())).toBe(PhraseType.NOUN_PHRASE);
+    expect(recogniseLemmaPhraseType("a lot", PartOfSpeech.PRONOUN, nounLemmas)).toBe(PhraseType.NOUN_PHRASE);
+    expect(recogniseLemmaPhraseType("a lot", PartOfSpeech.PRONOUN, new Set())).toBe(PhraseType.NOUN_PHRASE);
   });
 });
 
-describe("validateFormText (role/processor/word_form_processor.ts) -- the mechanism every POS class's own validate<Class>() reuses", () => {
+describe("recogniseFormTextIssue (role/processor/word_form_processor.ts) -- the mechanism every POS class's own validate<Class>() reuses", () => {
   it("treats an unset formats as always valid -- no claim made, nothing to check", () => {
-    expect(validateFormText(WordFormType.PLURAL_NUMBER_FORM, { value: "dogs" }, stringPatternsFor(WordFormType.PLURAL_NUMBER_FORM, PartOfSpeech.NOUN))).toBeUndefined();
+    expect(recogniseFormTextIssue(WordFormType.PLURAL_NUMBER_FORM, { value: "dogs" }, stringPatternsFor(WordFormType.PLURAL_NUMBER_FORM, PartOfSpeech.NOUN))).toBeUndefined();
   });
 
   it("accepts a recognised pattern that actually matches the value", () => {
     expect(
-      validateFormText(WordFormType.PLURAL_NUMBER_FORM, { value: "dogs", formats: ["/s$/i"] }, stringPatternsFor(WordFormType.PLURAL_NUMBER_FORM, PartOfSpeech.NOUN)),
+      recogniseFormTextIssue(WordFormType.PLURAL_NUMBER_FORM, { value: "dogs", formats: ["/s$/i"] }, stringPatternsFor(WordFormType.PLURAL_NUMBER_FORM, PartOfSpeech.NOUN)),
     ).toBeUndefined();
   });
 
   it("flags a recognised pattern that does not match the value", () => {
-    const issue = validateFormText(WordFormType.PLURAL_NUMBER_FORM, { value: "dog", formats: ["/s$/i"] }, stringPatternsFor(WordFormType.PLURAL_NUMBER_FORM, PartOfSpeech.NOUN));
+    const issue = recogniseFormTextIssue(WordFormType.PLURAL_NUMBER_FORM, { value: "dog", formats: ["/s$/i"] }, stringPatternsFor(WordFormType.PLURAL_NUMBER_FORM, PartOfSpeech.NOUN));
     expect(issue?.reason).toContain("does not match its own claimed format");
   });
 
   it("flags a format string that isn't a recognised String Pattern for that field", () => {
     // /ed$/i is a real pattern -- just not one of Noun.pluralNumberForm's own.
-    const issue = validateFormText(WordFormType.PLURAL_NUMBER_FORM, { value: "walked", formats: ["/ed$/i"] }, stringPatternsFor(WordFormType.PLURAL_NUMBER_FORM, PartOfSpeech.NOUN));
+    const issue = recogniseFormTextIssue(WordFormType.PLURAL_NUMBER_FORM, { value: "walked", formats: ["/ed$/i"] }, stringPatternsFor(WordFormType.PLURAL_NUMBER_FORM, PartOfSpeech.NOUN));
     expect(issue?.reason).toContain("is not a recognised String Pattern");
   });
 
   it("flags any claimed format on a field the matrix marks fully N/A (empty pattern array)", () => {
-    const issue = validateFormText(WordFormType.BASE_LEMMA_CANONICAL_FORM, { value: "dog", formats: ["/s$/i"] }, []);
+    const issue = recogniseFormTextIssue(WordFormType.BASE_LEMMA_CANONICAL_FORM, { value: "dog", formats: ["/s$/i"] }, []);
     expect(issue?.reason).toContain("is not a recognised String Pattern");
   });
 
   it("scopes patterns per (class, field), not just per field name -- Noun's own apostrophe rule is not valid on Pronoun's identically-named field", () => {
     // Noun.possessiveCaseForm genuinely accepts this (the apostrophe rule).
     expect(
-      validateFormText(WordFormType.POSSESSIVE_CASE_FORM, { value: "dog's", formats: ["/'s$/i"] }, stringPatternsFor(WordFormType.POSSESSIVE_CASE_FORM, PartOfSpeech.NOUN)),
+      recogniseFormTextIssue(WordFormType.POSSESSIVE_CASE_FORM, { value: "dog's", formats: ["/'s$/i"] }, stringPatternsFor(WordFormType.POSSESSIVE_CASE_FORM, PartOfSpeech.NOUN)),
     ).toBeUndefined();
     // Pronoun.possessiveCaseForm only recognises the closed fixed-word
     // lookup (rule #3) -- the apostrophe rule is Noun's own case, not
     // Pronoun's (pronoun.ts's own docstring).
-    const issue = validateFormText(
+    const issue = recogniseFormTextIssue(
       WordFormType.POSSESSIVE_CASE_FORM,
       { value: "dog's", formats: ["/'s$/i"] },
       stringPatternsFor(WordFormType.POSSESSIVE_CASE_FORM, PartOfSpeech.PRONOUN),
@@ -355,7 +355,7 @@ describe("validateFormText (role/processor/word_form_processor.ts) -- the mechan
 
   it("recognises the doubled-final-consonant pattern (Past Tense Form rule #4)", () => {
     expect(
-      validateFormText(
+      recogniseFormTextIssue(
         WordFormType.PAST_TENSE_FORM,
         { value: "stopped", formats: ["/([bcdfghjklmnpqrstvwxyz])\\1ed$/i"] },
         stringPatternsFor(WordFormType.PAST_TENSE_FORM, PartOfSpeech.VERB),
@@ -366,7 +366,7 @@ describe("validateFormText (role/processor/word_form_processor.ts) -- the mechan
 
 describe("validate<Class>() -- each POS class's own attribute validation", () => {
   it("returns no issues for a Word with nothing populated", () => {
-    expect(validateNoun(createNoun({ text: "dog" }), new WordForms())).toEqual([]);
+    expect(recogniseNounFormIssues(createNoun({ text: "dog" }), new WordForms())).toEqual([]);
   });
 
   it("returns no issues when every populated field's formats are internally consistent", () => {
@@ -374,7 +374,7 @@ describe("validate<Class>() -- each POS class's own attribute validation", () =>
     const wordForms = new WordForms();
     wordForms.registerNamedForm(dog, WordFormType.PLURAL_NUMBER_FORM, { value: "dogs", formats: ["/s$/i"] });
     wordForms.registerNamedForm(dog, WordFormType.POSSESSIVE_CASE_FORM, { value: "dog's", formats: ["/'s$/i"] });
-    expect(validateNoun(dog, wordForms)).toEqual([]);
+    expect(recogniseNounFormIssues(dog, wordForms)).toEqual([]);
   });
 
   it("collects every issue found, not just the first", () => {
@@ -382,7 +382,7 @@ describe("validate<Class>() -- each POS class's own attribute validation", () =>
     const wordForms = new WordForms();
     wordForms.registerNamedForm(dog, WordFormType.PLURAL_NUMBER_FORM, { value: "dog", formats: ["/s$/i"] }); // value doesn't match
     wordForms.registerNamedForm(dog, WordFormType.POSSESSIVE_CASE_FORM, { value: "dog's", formats: ["/self$/i"] }); // unrecognised pattern for this field
-    const issues = validateNoun(dog, wordForms);
+    const issues = recogniseNounFormIssues(dog, wordForms);
     expect(issues).toHaveLength(2);
     expect(issues.map((i) => i.field)).toEqual([WordFormType.PLURAL_NUMBER_FORM, WordFormType.POSSESSIVE_CASE_FORM]);
   });
@@ -391,52 +391,52 @@ describe("validate<Class>() -- each POS class's own attribute validation", () =>
     const run = createVerb({ text: "run" });
     const runWordForms = new WordForms();
     runWordForms.registerNamedForm(run, WordFormType.PRESENT_PARTICIPLE_FORM, { value: "running", formats: ["/([bcdfghjklmnpqrstvwxyz])\\1ing$/i"] });
-    expect(validateVerb(run, runWordForms)).toEqual([]);
+    expect(recogniseVerbFormIssues(run, runWordForms)).toEqual([]);
 
     const badRun = createVerb({ text: "run" });
     const badRunWordForms = new WordForms();
     badRunWordForms.registerNamedForm(badRun, WordFormType.PRESENT_PARTICIPLE_FORM, { value: "runing", formats: ["/([bcdfghjklmnpqrstvwxyz])\\1ing$/i"] });
-    expect(validateVerb(badRun, badRunWordForms)).toHaveLength(1);
+    expect(recogniseVerbFormIssues(badRun, badRunWordForms)).toHaveLength(1);
   });
 
   it("checks an Adjective's degree forms", () => {
     const big = createAdjective({ text: "big" });
     const bigWordForms = new WordForms();
     bigWordForms.registerNamedForm(big, WordFormType.COMPARATIVE_DEGREE_FORM, { value: "bigger", formats: ["/([bcdfghjklmnpqrstvwxyz])\\1er$/i"] });
-    expect(validateAdjective(big, bigWordForms)).toEqual([]);
+    expect(recogniseAdjectiveFormIssues(big, bigWordForms)).toEqual([]);
   });
 
   it("checks a Pronoun's own closed fixed-word-lookup fields", () => {
     const she = createPronoun({ text: "she" });
     const sheWordForms = new WordForms();
     sheWordForms.registerNamedForm(she, WordFormType.SUBJECTIVE_CASE_FORM, { value: "she", formats: ["/^(I|we|you|he|she|it|they)$/i"] });
-    expect(validatePronoun(she, sheWordForms)).toEqual([]);
+    expect(recognisePronounFormIssues(she, sheWordForms)).toEqual([]);
 
     const badShe = createPronoun({ text: "she" });
     const badSheWordForms = new WordForms();
     badSheWordForms.registerNamedForm(badShe, WordFormType.SUBJECTIVE_CASE_FORM, { value: "her", formats: ["/^(I|we|you|he|she|it|they)$/i"] });
-    expect(validatePronoun(badShe, badSheWordForms)).toHaveLength(1);
+    expect(recognisePronounFormIssues(badShe, badSheWordForms)).toHaveLength(1);
   });
 
   it("checks a Determiner's own possessive field, scoped to only the fixed-word rule", () => {
     const their = createDeterminer({ text: "their" });
     const theirWordForms = new WordForms();
     theirWordForms.registerNamedForm(their, WordFormType.POSSESSIVE_CASE_FORM, { value: "their", formats: ["/^(my|mine|your|yours|his|her|hers|its|our|ours|their|theirs)$/i"] });
-    expect(validateDeterminer(their, theirWordForms)).toEqual([]);
+    expect(recogniseDeterminerFormIssues(their, theirWordForms)).toEqual([]);
   });
 
   it("checks baseLemmaCanonicalForm regardless of POS subtype, via the same per-form loop every validate<Class>() already runs (it's a real WordForm now, not a scalar Word field)", () => {
     const dog = createNoun({ text: "dog" });
     const dogWordForms = new WordForms();
     dogWordForms.registerNamedForm(dog, WordFormType.BASE_LEMMA_CANONICAL_FORM, { value: "dog", formats: ["/s$/i"] });
-    expect(validateNoun(dog, dogWordForms)).toHaveLength(1);
+    expect(recogniseNounFormIssues(dog, dogWordForms)).toHaveLength(1);
   });
 
   it("checks an Adverb's degree forms the same way as Adjective's", () => {
     const fast = createAdverb({ text: "fast" });
     const fastWordForms = new WordForms();
     fastWordForms.registerNamedForm(fast, WordFormType.SUPERLATIVE_DEGREE_FORM, { value: "fastest", formats: ["/est$/i"] });
-    expect(validateAdverb(fast, fastWordForms)).toEqual([]);
+    expect(recogniseAdverbFormIssues(fast, fastWordForms)).toEqual([]);
   });
 });
 
@@ -446,9 +446,9 @@ describe("generate<Class>Forms() -- deriving *_Form values from a base lemma", (
     const box = createNoun({ text: "box" });
     const city = createNoun({ text: "city" });
     const wordForms = new WordForms();
-    generateNounForms(dog, wordForms);
-    generateNounForms(box, wordForms);
-    generateNounForms(city, wordForms);
+    createNounForms(dog, wordForms);
+    createNounForms(box, wordForms);
+    createNounForms(city, wordForms);
     expect(formTextOf(wordForms, dog, WordFormType.PLURAL_NUMBER_FORM)).toEqual({ value: "dogs", formats: ["/s$/i"] });
     expect(formTextOf(wordForms, box, WordFormType.PLURAL_NUMBER_FORM)).toEqual({ value: "boxes", formats: ["/es$/i"] });
     expect(formTextOf(wordForms, city, WordFormType.PLURAL_NUMBER_FORM)).toEqual({ value: "cities", formats: ["/ies$/i"] });
@@ -460,8 +460,8 @@ describe("generate<Class>Forms() -- deriving *_Form values from a base lemma", (
     const knife = createNoun({ text: "knife" });
     const roof = createNoun({ text: "roof" });
     const wordForms = new WordForms();
-    generateNounForms(knife, wordForms);
-    generateNounForms(roof, wordForms);
+    createNounForms(knife, wordForms);
+    createNounForms(roof, wordForms);
     expect(formTextOf(wordForms, knife, WordFormType.PLURAL_NUMBER_FORM)).toBeUndefined();
     expect(formTextOf(wordForms, roof, WordFormType.PLURAL_NUMBER_FORM)).toBeUndefined();
   });
@@ -470,8 +470,8 @@ describe("generate<Class>Forms() -- deriving *_Form values from a base lemma", (
     const i = createNoun({ text: "i" });
     const u = createNoun({ text: "u" });
     const wordForms = new WordForms();
-    generateNounForms(i, wordForms);
-    generateNounForms(u, wordForms);
+    createNounForms(i, wordForms);
+    createNounForms(u, wordForms);
     expect(formTextOf(wordForms, i, WordFormType.PLURAL_NUMBER_FORM)).toBeUndefined();
     expect(formTextOf(wordForms, u, WordFormType.PLURAL_NUMBER_FORM)).toBeUndefined();
     // Singular/possessive are unaffected -- only the collision-prone
@@ -484,19 +484,19 @@ describe("generate<Class>Forms() -- deriving *_Form values from a base lemma", (
     const child = createNoun({ text: "child" });
     const wordForms = new WordForms();
     wordForms.registerNamedForm(child, WordFormType.PLURAL_NUMBER_FORM, { value: "children" });
-    generateNounForms(child, wordForms);
+    createNounForms(child, wordForms);
     expect(formTextOf(wordForms, child, WordFormType.PLURAL_NUMBER_FORM)).toEqual({ value: "children" });
   });
 
   it("Noun: no-ops with no WordForms store -- produces a Noun with no inflected forms registered anywhere", () => {
     const dog = createNoun({ text: "dog" });
-    expect(generateNounForms(dog, undefined)).toBe(dog);
+    expect(createNounForms(dog, undefined)).toBe(dog);
   });
 
   it("Verb: regular past/participle/third-person/present-participle rules", () => {
     const walk = createVerb({ text: "walk" });
     const walkForms = new WordForms();
-    generateVerbForms(walk, walkForms);
+    createVerbForms(walk, walkForms);
     expect(formTextOf(walkForms, walk, WordFormType.PAST_TENSE_FORM)).toEqual({ value: "walked", formats: ["/ed$/i"] });
     expect(formTextOf(walkForms, walk, WordFormType.PAST_PARTICIPLE_FORM)).toEqual({ value: "walked", formats: ["/ed$/i"] });
     expect(formTextOf(walkForms, walk, WordFormType.THIRD_PERSON_SINGULAR_PRESENT_FORM)).toEqual({ value: "walks", formats: ["/s$/i"] });
@@ -506,12 +506,12 @@ describe("generate<Class>Forms() -- deriving *_Form values from a base lemma", (
 
     const love = createVerb({ text: "love" });
     const loveForms = new WordForms();
-    generateVerbForms(love, loveForms);
+    createVerbForms(love, loveForms);
     expect(formTextOf(loveForms, love, WordFormType.PAST_TENSE_FORM)).toEqual({ value: "loved", formats: ["/ed$/i"] });
 
     const try_ = createVerb({ text: "try" });
     const tryForms = new WordForms();
-    generateVerbForms(try_, tryForms);
+    createVerbForms(try_, tryForms);
     expect(formTextOf(tryForms, try_, WordFormType.PAST_TENSE_FORM)).toEqual({ value: "tried", formats: ["/ied$/i"] });
     expect(formTextOf(tryForms, try_, WordFormType.THIRD_PERSON_SINGULAR_PRESENT_FORM)).toEqual({ value: "tries", formats: ["/ies$/i"] });
   });
@@ -519,7 +519,7 @@ describe("generate<Class>Forms() -- deriving *_Form values from a base lemma", (
   it("Verb: doubles the final consonant for a monosyllabic CVC lemma, but abstains for a polysyllabic one that ends the same way", () => {
     const stop = createVerb({ text: "stop" });
     const stopForms = new WordForms();
-    generateVerbForms(stop, stopForms);
+    createVerbForms(stop, stopForms);
     expect(formTextOf(stopForms, stop, WordFormType.PAST_TENSE_FORM)).toEqual({ value: "stopped", formats: ["/([bcdfghjklmnpqrstvwxyz])\\1ed$/i"] });
     expect(formTextOf(stopForms, stop, WordFormType.PRESENT_PARTICIPLE_FORM)).toEqual({ value: "stopping", formats: ["/([bcdfghjklmnpqrstvwxyz])\\1ing$/i"] });
 
@@ -533,7 +533,7 @@ describe("generate<Class>Forms() -- deriving *_Form values from a base lemma", (
     // is deliberately left out of that carve-out).
     const cancel = createVerb({ text: "cancel" });
     const cancelForms = new WordForms();
-    generateVerbForms(cancel, cancelForms);
+    createVerbForms(cancel, cancelForms);
     expect(formTextOf(cancelForms, cancel, WordFormType.PAST_TENSE_FORM)).toBeUndefined();
     expect(formTextOf(cancelForms, cancel, WordFormType.PRESENT_PARTICIPLE_FORM)).toBeUndefined();
   });
@@ -547,7 +547,7 @@ describe("generate<Class>Forms() -- deriving *_Form values from a base lemma", (
     // them with confidence rather than leaving them abstained.
     const happen = createVerb({ text: "happen" });
     const happenForms = new WordForms();
-    generateVerbForms(happen, happenForms);
+    createVerbForms(happen, happenForms);
     expect(formTextOf(happenForms, happen, WordFormType.PAST_TENSE_FORM)).toEqual({ value: "happened", formats: ["/ed$/i"] });
     expect(formTextOf(happenForms, happen, WordFormType.PRESENT_PARTICIPLE_FORM)).toEqual({ value: "happening", formats: ["/ing$/i"] });
 
@@ -557,19 +557,19 @@ describe("generate<Class>Forms() -- deriving *_Form values from a base lemma", (
     // isn't monosyllabic; still correctly abstains.
     const occur = createVerb({ text: "occur" });
     const occurForms = new WordForms();
-    generateVerbForms(occur, occurForms);
+    createVerbForms(occur, occurForms);
     expect(formTextOf(occurForms, occur, WordFormType.PAST_TENSE_FORM)).toBeUndefined();
   });
 
   it("Verb: presentParticipleForm's ie -> ying rule, and abstains on the vowel-before-e silent-e ambiguity", () => {
     const lie = createVerb({ text: "lie" });
     const lieForms = new WordForms();
-    generateVerbForms(lie, lieForms);
+    createVerbForms(lie, lieForms);
     expect(formTextOf(lieForms, lie, WordFormType.PRESENT_PARTICIPLE_FORM)).toEqual({ value: "lying", formats: ["/ying$/i"] });
 
     const tie = createVerb({ text: "tie" });
     const tieForms = new WordForms();
-    generateVerbForms(tie, tieForms);
+    createVerbForms(tie, tieForms);
     expect(formTextOf(tieForms, tie, WordFormType.PRESENT_PARTICIPLE_FORM)).toEqual({ value: "tying", formats: ["/ying$/i"] });
 
     // "agree"/"argue" both end in a vowel immediately before the final
@@ -578,25 +578,25 @@ describe("generate<Class>Forms() -- deriving *_Form values from a base lemma", (
     // this codebase doesn't have, so both abstain rather than guess.
     const agree = createVerb({ text: "agree" });
     const agreeForms = new WordForms();
-    generateVerbForms(agree, agreeForms);
+    createVerbForms(agree, agreeForms);
     expect(formTextOf(agreeForms, agree, WordFormType.PRESENT_PARTICIPLE_FORM)).toBeUndefined();
 
     const argue = createVerb({ text: "argue" });
     const argueForms = new WordForms();
-    generateVerbForms(argue, argueForms);
+    createVerbForms(argue, argueForms);
     expect(formTextOf(argueForms, argue, WordFormType.PRESENT_PARTICIPLE_FORM)).toBeUndefined();
   });
 
   it("Verb: checks IRREGULAR_VERB_FORMS before ever falling through to the regular -ed rules", () => {
     const eat = createVerb({ text: "eat" });
     const eatForms = new WordForms();
-    generateVerbForms(eat, eatForms);
+    createVerbForms(eat, eatForms);
     expect(formTextOf(eatForms, eat, WordFormType.PAST_TENSE_FORM)).toEqual({ value: "ate" });
     expect(formTextOf(eatForms, eat, WordFormType.PAST_PARTICIPLE_FORM)).toEqual({ value: "eaten" });
 
     const run = createVerb({ text: "run" });
     const runForms = new WordForms();
-    generateVerbForms(run, runForms);
+    createVerbForms(run, runForms);
     expect(formTextOf(runForms, run, WordFormType.PAST_TENSE_FORM)).toEqual({ value: "ran" });
     expect(formTextOf(runForms, run, WordFormType.PAST_PARTICIPLE_FORM)).toEqual({ value: "run" });
   });
@@ -604,13 +604,13 @@ describe("generate<Class>Forms() -- deriving *_Form values from a base lemma", (
   it("Verb: \"have\" and \"be\" both get hand-written irregular values no general rule could produce", () => {
     const have = createVerb({ text: "have" });
     const haveForms = new WordForms();
-    generateVerbForms(have, haveForms);
+    createVerbForms(have, haveForms);
     expect(formTextOf(haveForms, have, WordFormType.PAST_TENSE_FORM)).toEqual({ value: "had" });
     expect(formTextOf(haveForms, have, WordFormType.THIRD_PERSON_SINGULAR_PRESENT_FORM)).toEqual({ value: "has" });
 
     const be = createVerb({ text: "be" });
     const beForms = new WordForms();
-    generateVerbForms(be, beForms);
+    createVerbForms(be, beForms);
     expect(formTextOf(beForms, be, WordFormType.PAST_TENSE_FORM)).toBeUndefined();
     expect(formTextOf(beForms, be, WordFormType.PAST_PARTICIPLE_FORM)).toBeUndefined();
     expect(formTextOf(beForms, be, WordFormType.THIRD_PERSON_SINGULAR_PRESENT_FORM)).toBeUndefined();
@@ -619,34 +619,34 @@ describe("generate<Class>Forms() -- deriving *_Form values from a base lemma", (
 
   it("Verb: no-ops with no WordForms store -- produces a Verb with no inflected forms registered anywhere", () => {
     const run = createVerb({ text: "run" });
-    expect(generateVerbForms(run, undefined)).toBe(run);
+    expect(createVerbForms(run, undefined)).toBe(run);
   });
 
   it("Adjective/Adverb: regular comparative/superlative rules, including the shared doubling and y-ending cases", () => {
     // gradable=true throughout -- this test is only about which
-    // orthographic rule regularDegreeForm() picks once synthetic
+    // orthographic rule createRegularDegreeForm() picks once synthetic
     // comparison has already been decided, not about
-    // determineGradability() itself (its own dedicated tests below).
+    // isAdjectiveGradable() itself (its own dedicated tests below).
     const big = createAdjective({ text: "big" });
     const bigForms = new WordForms();
-    generateAdjectiveForms(big, true, bigForms);
+    createAdjectiveForms(big, true, bigForms);
     expect(formTextOf(bigForms, big, WordFormType.COMPARATIVE_DEGREE_FORM)).toEqual({ value: "bigger", formats: ["/([bcdfghjklmnpqrstvwxyz])\\1er$/i"] });
     expect(formTextOf(bigForms, big, WordFormType.SUPERLATIVE_DEGREE_FORM)).toEqual({ value: "biggest", formats: ["/([bcdfghjklmnpqrstvwxyz])\\1est$/i"] });
 
     const happy = createAdjective({ text: "happy" });
     const happyForms = new WordForms();
-    generateAdjectiveForms(happy, true, happyForms);
+    createAdjectiveForms(happy, true, happyForms);
     expect(formTextOf(happyForms, happy, WordFormType.COMPARATIVE_DEGREE_FORM)).toEqual({ value: "happier", formats: ["/ier$/i"] });
     expect(formTextOf(happyForms, happy, WordFormType.SUPERLATIVE_DEGREE_FORM)).toEqual({ value: "happiest", formats: ["/iest$/i"] });
 
     const large = createAdjective({ text: "large" });
     const largeForms = new WordForms();
-    generateAdjectiveForms(large, true, largeForms);
+    createAdjectiveForms(large, true, largeForms);
     expect(formTextOf(largeForms, large, WordFormType.COMPARATIVE_DEGREE_FORM)).toEqual({ value: "larger", formats: ["/er$/i"] });
 
     const fast = createAdverb({ text: "fast" });
     const fastForms = new WordForms();
-    generateAdverbForms(fast, true, fastForms);
+    createAdverbForms(fast, true, fastForms);
     expect(formTextOf(fastForms, fast, WordFormType.COMPARATIVE_DEGREE_FORM)).toEqual({ value: "faster", formats: ["/er$/i"] });
     expect(formTextOf(fastForms, fast, WordFormType.SUPERLATIVE_DEGREE_FORM)).toEqual({ value: "fastest", formats: ["/est$/i"] });
   });
@@ -654,18 +654,18 @@ describe("generate<Class>Forms() -- deriving *_Form values from a base lemma", (
   it("Adjective: a non-gradable adjective only ever gets a Positive Degree Form -- no mechanically well-formed but invalid Comparative/Superlative", () => {
     const ablative = createAdjective({ text: "ablative" });
     const ablativeForms = new WordForms();
-    generateAdjectiveForms(ablative, false, ablativeForms);
+    createAdjectiveForms(ablative, false, ablativeForms);
     expect(formTextOf(ablativeForms, ablative, WordFormType.POSITIVE_DEGREE_FORM)).toEqual({ value: "ablative" });
     expect(formTextOf(ablativeForms, ablative, WordFormType.COMPARATIVE_DEGREE_FORM)).toBeUndefined();
     expect(formTextOf(ablativeForms, ablative, WordFormType.SUPERLATIVE_DEGREE_FORM)).toBeUndefined();
-    expect(validateAdjective(ablative, ablativeForms)).toEqual([]);
+    expect(recogniseAdjectiveFormIssues(ablative, ablativeForms)).toEqual([]);
   });
 
   it("Adjective: isPeriphrasticComparison picks more/most for longer adjectives, -er/-est for shorter ones, matching the matrix's own examples", () => {
     // 1 syllable -- synthetic.
     const tall = createAdjective({ text: "tall" });
     const tallForms = new WordForms();
-    generateAdjectiveForms(tall, true, tallForms);
+    createAdjectiveForms(tall, true, tallForms);
     expect(formTextOf(tallForms, tall, WordFormType.COMPARATIVE_DEGREE_FORM)).toEqual({ value: "taller", formats: ["/er$/i"] });
     expect(formTextOf(tallForms, tall, WordFormType.SUPERLATIVE_DEGREE_FORM)).toEqual({ value: "tallest", formats: ["/est$/i"] });
 
@@ -673,71 +673,71 @@ describe("generate<Class>Forms() -- deriving *_Form values from a base lemma", (
     // own real exceptions to "long words use more/most".
     const narrow = createAdjective({ text: "narrow" });
     const narrowForms = new WordForms();
-    generateAdjectiveForms(narrow, true, narrowForms);
+    createAdjectiveForms(narrow, true, narrowForms);
     expect(formTextOf(narrowForms, narrow, WordFormType.COMPARATIVE_DEGREE_FORM)).toEqual({ value: "narrower", formats: ["/er$/i"] });
     expect(formTextOf(narrowForms, narrow, WordFormType.SUPERLATIVE_DEGREE_FORM)).toEqual({ value: "narrowest", formats: ["/est$/i"] });
 
     // 3 syllables, no synthetic-eligible ending -- periphrastic.
     const accepting = createAdjective({ text: "accepting" });
     const acceptingForms = new WordForms();
-    generateAdjectiveForms(accepting, true, acceptingForms);
+    createAdjectiveForms(accepting, true, acceptingForms);
     expect(formTextOf(acceptingForms, accepting, WordFormType.COMPARATIVE_DEGREE_FORM)).toEqual({ value: "more accepting", formats: ["/^more\\s+.+$/i"] });
     expect(formTextOf(acceptingForms, accepting, WordFormType.SUPERLATIVE_DEGREE_FORM)).toEqual({ value: "most accepting", formats: ["/^most\\s+.+$/i"] });
-    expect(validateAdjective(accepting, acceptingForms)).toEqual([]);
+    expect(recogniseAdjectiveFormIssues(accepting, acceptingForms)).toEqual([]);
   });
 
   it("Adverb: a non-gradable adverb only ever gets a Positive Degree Form, same gating as Adjective", () => {
     const anisotropically = createAdverb({ text: "anisotropically" });
     const anisotropicallyForms = new WordForms();
-    generateAdverbForms(anisotropically, false, anisotropicallyForms);
+    createAdverbForms(anisotropically, false, anisotropicallyForms);
     expect(formTextOf(anisotropicallyForms, anisotropically, WordFormType.POSITIVE_DEGREE_FORM)).toEqual({ value: "anisotropically" });
     expect(formTextOf(anisotropicallyForms, anisotropically, WordFormType.COMPARATIVE_DEGREE_FORM)).toBeUndefined();
     expect(formTextOf(anisotropicallyForms, anisotropically, WordFormType.SUPERLATIVE_DEGREE_FORM)).toBeUndefined();
-    expect(validateAdverb(anisotropically, anisotropicallyForms)).toEqual([]);
+    expect(recogniseAdverbFormIssues(anisotropically, anisotropicallyForms)).toEqual([]);
   });
 
   it("Adverb: a lemma ending \"-ly\" is always periphrastic, never routed through Adjective's own \"y\" rule (there is no \"quicklier\")", () => {
     const scarcely = createAdverb({ text: "scarcely" });
     const scarcelyForms = new WordForms();
-    generateAdverbForms(scarcely, true, scarcelyForms);
+    createAdverbForms(scarcely, true, scarcelyForms);
     expect(formTextOf(scarcelyForms, scarcely, WordFormType.COMPARATIVE_DEGREE_FORM)).toEqual({ value: "more scarcely", formats: ["/^more\\s+.+$/i"] });
     expect(formTextOf(scarcelyForms, scarcely, WordFormType.SUPERLATIVE_DEGREE_FORM)).toEqual({ value: "most scarcely", formats: ["/^most\\s+.+$/i"] });
-    expect(validateAdverb(scarcely, scarcelyForms)).toEqual([]);
+    expect(recogniseAdverbFormIssues(scarcely, scarcelyForms)).toEqual([]);
 
     // A non-"-ly" adverb still goes through the ordinary synthetic path.
     const fast = createAdverb({ text: "fast" });
     const fastForms = new WordForms();
-    generateAdverbForms(fast, true, fastForms);
+    createAdverbForms(fast, true, fastForms);
     expect(formTextOf(fastForms, fast, WordFormType.COMPARATIVE_DEGREE_FORM)).toEqual({ value: "faster", formats: ["/er$/i"] });
     expect(formTextOf(fastForms, fast, WordFormType.SUPERLATIVE_DEGREE_FORM)).toEqual({ value: "fastest", formats: ["/est$/i"] });
   });
 
   it("Adjective/Adverb: no-ops with no WordForms store -- produce a Word with no inflected forms registered anywhere", () => {
     const happy = createAdjective({ text: "happy" });
-    expect(generateAdjectiveForms(happy, true, undefined)).toBe(happy);
+    expect(createAdjectiveForms(happy, true, undefined)).toBe(happy);
     const fast = createAdverb({ text: "fast" });
-    expect(generateAdverbForms(fast, true, undefined)).toBe(fast);
+    expect(createAdverbForms(fast, true, undefined)).toBe(fast);
   });
 
   it("every generated Word passes its own validate<Class>() unchanged -- generation and validation are built from the same matrix rows", () => {
     const city = createNoun({ text: "city" });
     const cityWordForms = new WordForms();
-    expect(validateNoun(generateNounForms(city, cityWordForms), cityWordForms)).toEqual([]);
+    expect(recogniseNounFormIssues(createNounForms(city, cityWordForms), cityWordForms)).toEqual([]);
     const stop = createVerb({ text: "stop" });
     const stopWordForms = new WordForms();
-    expect(validateVerb(generateVerbForms(stop, stopWordForms), stopWordForms)).toEqual([]);
+    expect(recogniseVerbFormIssues(createVerbForms(stop, stopWordForms), stopWordForms)).toEqual([]);
     const eat = createVerb({ text: "eat" });
     const eatWordForms = new WordForms();
-    expect(validateVerb(generateVerbForms(eat, eatWordForms), eatWordForms)).toEqual([]);
+    expect(recogniseVerbFormIssues(createVerbForms(eat, eatWordForms), eatWordForms)).toEqual([]);
     const happy = createAdjective({ text: "happy" });
     const happyWordForms = new WordForms();
-    expect(validateAdjective(generateAdjectiveForms(happy, true, happyWordForms), happyWordForms)).toEqual([]);
+    expect(recogniseAdjectiveFormIssues(createAdjectiveForms(happy, true, happyWordForms), happyWordForms)).toEqual([]);
     const fast = createAdverb({ text: "fast" });
     const fastWordForms = new WordForms();
-    expect(validateAdverb(generateAdverbForms(fast, true, fastWordForms), fastWordForms)).toEqual([]);
+    expect(recogniseAdverbFormIssues(createAdverbForms(fast, true, fastWordForms), fastWordForms)).toEqual([]);
   });
 
-  it("Adjective: determineGradability checks every sense, not just the primary one, is direction-agnostic, and requires nothing more than the Attribute pointer itself", () => {
+  it("Adjective: isAdjectiveGradable checks every sense, not just the primary one, is direction-agnostic, and requires nothing more than the Attribute pointer itself", () => {
     const senses = new Senses();
     const wordForms = new WordForms();
     const relationships = new SemanticRelationshipStore();
@@ -747,7 +747,7 @@ describe("generate<Class>Forms() -- deriving *_Form values from a base lemma", (
     // and Sense 2 (carries a real Attribute pointer). Gradability must
     // be found from Sense 2 even though it is never the primary sense --
     // no Hypernym climbing is needed or attempted any more (the pointer
-    // itself is the signal, determineGradability()'s own docstring on
+    // itself is the signal, isAdjectiveGradable()'s own docstring on
     // why an earlier, narrower version of this function wrongly called
     // "tall" itself non-gradable).
     const grandiloquent = createAdjective({ text: "grandiloquent" });
@@ -766,7 +766,7 @@ describe("generate<Class>Forms() -- deriving *_Form values from a base lemma", (
     senses.append(elevationSense);
     senses.registerMember(elevationSense, elevation);
     processor.create({ sourceSenseId: senseGraphUuid(scalarSense), targetSenseId: senseGraphUuid(elevationSense), relationshipType: SemanticRelationshipKind.ATTRIBUTE, sourceReferences: [] });
-    expect(determineGradability(relationships, grandiloquent, wordForms)).toBe(true);
+    expect(isAdjectiveGradable(relationships, grandiloquent, wordForms)).toBe(true);
 
     // Direction-agnostic: ATTRIBUTE is one of WordSeeder's own
     // SYMMETRIC_RELATIONSHIP_KINDS (role/word_seeder.ts), so a real
@@ -779,7 +779,7 @@ describe("generate<Class>Forms() -- deriving *_Form values from a base lemma", (
     senses.registerMember(reversedSense, reversed);
     wordForms.registerSense(wordForms.registerBaseLemmaForm(reversed), reversedSense);
     processor.create({ sourceSenseId: senseGraphUuid(elevationSense), targetSenseId: senseGraphUuid(reversedSense), relationshipType: SemanticRelationshipKind.ATTRIBUTE, sourceReferences: [] });
-    expect(determineGradability(relationships, reversed, wordForms)).toBe(true);
+    expect(isAdjectiveGradable(relationships, reversed, wordForms)).toBe(true);
 
     // "wooden" -- no Attribute pointer at all -- non-gradable.
     const wooden = createAdjective({ text: "wooden" });
@@ -787,10 +787,10 @@ describe("generate<Class>Forms() -- deriving *_Form values from a base lemma", (
     senses.append(woodenSense);
     senses.registerMember(woodenSense, wooden);
     wordForms.registerSense(wordForms.registerBaseLemmaForm(wooden), woodenSense);
-    expect(determineGradability(relationships, wooden, wordForms)).toBe(false);
+    expect(isAdjectiveGradable(relationships, wooden, wordForms)).toBe(false);
   });
 
-  it("Adverb: determineGradability inherits from a Pertainym-linked Adjective (read from a genuine SemanticRelationship, Sense-to-Sense), or falls back to a same-spelling flat Adjective when there's no Pertainym fact at all", () => {
+  it("Adverb: isAdverbGradable inherits from a Pertainym-linked Adjective (read from a genuine SemanticRelationship, Sense-to-Sense), or falls back to a same-spelling flat Adjective when there's no Pertainym fact at all", () => {
     const dictionary = new Dictionary();
     const senses = new Senses();
     const wordForms = new WordForms();
@@ -821,7 +821,7 @@ describe("generate<Class>Forms() -- deriving *_Form values from a base lemma", (
     senses.registerMember(quicklySense, quickly);
     wordForms.registerSense(wordForms.registerBaseLemmaForm(quickly), quicklySense);
     processor.create({ sourceSenseId: senseGraphUuid(quicklySense), targetSenseId: senseGraphUuid(quickSense), relationshipType: SemanticRelationshipKind.PERTAINYM, sourceReferences: [] });
-    expect(determineAdverbGradability(relationships, dictionary, senses, quickly, wordForms)).toBe(true);
+    expect(isAdverbGradable(relationships, dictionary, senses, quickly, wordForms)).toBe(true);
 
     // Flat-adverb case: "wide" (adverb) has no Pertainym fact of its
     // own at all, but shares its exact spelling with a gradable "wide"
@@ -839,12 +839,12 @@ describe("generate<Class>Forms() -- deriving *_Form values from a base lemma", (
     senses.append(widthSense);
     senses.registerMember(widthSense, width);
     processor.create({ sourceSenseId: senseGraphUuid(wideSense), targetSenseId: senseGraphUuid(widthSense), relationshipType: SemanticRelationshipKind.ATTRIBUTE, sourceReferences: [] });
-    expect(determineAdverbGradability(relationships, dictionary, senses, wideAdverb, wordForms)).toBe(true);
+    expect(isAdverbGradable(relationships, dictionary, senses, wideAdverb, wordForms)).toBe(true);
 
     // No Pertainym fact and no same-spelling Adjective at all --
     // nothing to inherit from, stays non-gradable.
     const somehow = createAdverb({ text: "somehow" });
-    expect(determineAdverbGradability(relationships, dictionary, senses, somehow, wordForms)).toBe(false);
+    expect(isAdverbGradable(relationships, dictionary, senses, somehow, wordForms)).toBe(false);
   });
 
   it("WordSeeder.seedWordNet wires generation in automatically -- a real seeded Noun/Verb gets its regular-case forms populated, and a real irregular verb gets its true irregular form, not a spelling-rule guess", async () => {
@@ -1025,7 +1025,7 @@ describe("Dictionary", () => {
 });
 
 describe("Coordinations", () => {
-  it("createCoordination/graphUuid/copyCoordinationWithFreshUuid mirror Word's own wordId / Sense's own senseId fold, via Coordination's own coordinationId", () => {
+  it("createCoordination/graphUuid/createFreshUuidCoordinationCopy mirror Word's own wordId / Sense's own senseId fold, via Coordination's own coordinationId", () => {
     const red = createAdjective({ text: "red" });
     const white = createAdjective({ text: "white" });
     const coordination = createCoordination<Adjective>({ coordinates: [red, white] });
@@ -1036,7 +1036,7 @@ describe("Coordinations", () => {
     expect(coordination.coordinates).toEqual([red, white]);
     expect(coordination.coordinator).toBeUndefined();
 
-    const copy = copyCoordinationWithFreshUuid(coordination);
+    const copy = createFreshUuidCoordinationCopy(coordination);
     expect(coordinationGraphUuid(copy)).not.toBe(coordinationGraphUuid(coordination));
     expect(copy.coordinationId.value).toBe(coordination.coordinationId.value);
     // A shallow copy -- coordinates is the same array reference, not a
@@ -1178,8 +1178,8 @@ describe("DictionaryProcessor.identifyPhrase", () => {
 // describe block here -- rotated through Verb, then Adjective, then
 // Pronoun as each POS subtype it had been fixtured against migrated
 // its own generated forms onto the WordForms store instead
-// (generateNounForms()'s/generateVerbForms()'s/generateAdjectiveForms()'s/
-// generateAdverbForms()'s own docstrings). Pronoun/Determiner's own
+// (createNounForms()'s/createVerbForms()'s/createAdjectiveForms()'s/
+// createAdverbForms()'s own docstrings). Pronoun/Determiner's own
 // migration (data/entities/pronoun.ts's own docstring) was the last POS
 // pair with any scalar `*_Form` field left to fixture against -- every
 // POS subtype now registers real WordForm records instead, so this
@@ -1197,7 +1197,7 @@ describe("PartOfSpeechIdentifier / DictionaryProcessor: inflected-form fallback"
     const wordForms = new WordForms();
     const run = createVerb({ text: "run" });
     dictionary.append(run);
-    generateVerbForms(run, wordForms);
+    createVerbForms(run, wordForms);
     const processor = new DictionaryProcessor(dictionary, new Phrases(), new AsyncDictionaryHydrator(dictionary), "Common", wordForms);
 
     const candidates = processor.identifyWord("ran");
@@ -1213,7 +1213,7 @@ describe("PartOfSpeechIdentifier / DictionaryProcessor: inflected-form fallback"
     const wordForms = new WordForms();
     const run = createVerb({ text: "run" });
     dictionary.append(run);
-    generateVerbForms(run, wordForms);
+    createVerbForms(run, wordForms);
 
     expect(dictionary.lookupAll("ran")).toEqual([]);
     const matches = wordForms.lookupByText("ran");
@@ -1227,7 +1227,7 @@ describe("PartOfSpeechIdentifier / DictionaryProcessor: inflected-form fallback"
     const wordForms = new WordForms();
     const run = createVerb({ text: "run" });
     dictionary.append(run);
-    generateVerbForms(run, wordForms);
+    createVerbForms(run, wordForms);
     // A second, unrelated Word whose own BASE spelling happens to equal
     // "run"'s own pastTenseForm -- contrived, but exactly the real
     // "surprised" (ADJECTIVE lemma) / "surprise" (VERB, own past-
@@ -1264,7 +1264,7 @@ describe("PartOfSpeechIdentifier / DictionaryProcessor: inflected-form fallback"
     const wordForms = new WordForms();
     const dog = createNoun({ text: "dog" });
     dictionary.append(dog);
-    generateNounForms(dog, wordForms);
+    createNounForms(dog, wordForms);
     const processor = new DictionaryProcessor(dictionary, new Phrases(), new AsyncDictionaryHydrator(dictionary), "Common", wordForms);
 
     expect(dictionary.lookupAll("dogs")).toEqual([]);
@@ -1463,7 +1463,7 @@ describe("WordSeeder against the bundled Common Vocabulary Cache", () => {
     expect(she.wordFormIds).toEqual([]);
   });
 
-  it("DeterminerSeeder registers Base Lemma Canonical Form for every lemma, not just Singular/Plural Number Form and Consonant/Vowel-Sound Form -- WORD_FORM_MATRIX's own BASE_LEMMA_CANONICAL_FORM row applies to DETERMINER (validateDeterminer()'s own docstring already documented this seeder as the writer)", () => {
+  it("DeterminerSeeder registers Base Lemma Canonical Form for every lemma, not just Singular/Plural Number Form and Consonant/Vowel-Sound Form -- WORD_FORM_MATRIX's own BASE_LEMMA_CANONICAL_FORM row applies to DETERMINER (recogniseDeterminerFormIssues()'s own docstring already documented this seeder as the writer)", () => {
     const dictionary = new Dictionary();
     const wordForms = new WordForms();
     new WordSeeder("en").seedClosedClassWords(dictionary, new Phrases(), undefined, undefined, wordForms);
@@ -1478,7 +1478,7 @@ describe("WordSeeder against the bundled Common Vocabulary Cache", () => {
     // Form -- the same "keep it the first WordForm on record" ordering
     // every other seeded POS already follows.
     expect(forms[0]?.formType).toBe(WordFormType.BASE_LEMMA_CANONICAL_FORM);
-    expect(validateDeterminer(the, wordForms)).toEqual([]);
+    expect(recogniseDeterminerFormIssues(the, wordForms)).toEqual([]);
 
     // "a" -- a lemma whose own Singular Number Form differs from its
     // canonical spelling only in the sense that it also carries a
@@ -1636,7 +1636,7 @@ describe("WordSeeder against the bundled Common Vocabulary Cache", () => {
     const noOneElse = phraseBook.lookup("no one else");
     expect(phraseBook.partOfSpeechOf(noOneElse!)).toBe(PartOfSpeech.PRONOUN);
     // The reported bug this fixes: a Pronoun-headed multi-word Phrase is
-    // structurally a Noun Phrase (classifyPhraseType()'s own PRONOUN
+    // structurally a Noun Phrase (recogniseLemmaPhraseType()'s own PRONOUN
     // case, data/entities/noun_phrase.ts's own docstring) -- entryToPhrase()
     // now genuinely classifies it as one, rather than leaving phraseType
     // undefined for every closed-class Phrase the way it used to
@@ -1763,7 +1763,7 @@ describe("WordSeeder against the bundled Common Vocabulary Cache", () => {
     expect(texts).toEqual(["is", "n't"]);
   });
 
-  it("attaches a real headWord/headWordForm to a PRONOUN-headed closed-class Phrase, not just a phraseType -- the reported follow-up bug (linkPhraseWords() itself only ever ran for a WordNet-seeded Phrase before this)", () => {
+  it("attaches a real headWord/headWordForm to a PRONOUN-headed closed-class Phrase, not just a phraseType -- the reported follow-up bug (updatePhraseWordLinks() itself only ever ran for a WordNet-seeded Phrase before this)", () => {
     const dictionary = new Dictionary();
     const phraseBook = new Phrases();
     const wordForms = new WordForms();
@@ -1789,7 +1789,7 @@ describe("WordSeeder against the bundled Common Vocabulary Cache", () => {
     // role at all" case a WordNet-seeded Phrase can already hit
     // (Phrase.headWord's own docstring), not a seeding gap. Both tokens
     // are DETERMINER-role, spanning the whole Phrase -- the one
-    // deliberate exception `linkPhraseWords()` never collapses into a
+    // deliberate exception `updatePhraseWordLinks()` never collapses into a
     // nested Phrase (that would build a Phrase whose own `text` equals
     // its parent's, recursing forever), so `determiner` resolves to just
     // the run's first token, "each", not a two-element list.
@@ -1813,7 +1813,7 @@ describe("WordSeeder against the bundled Common Vocabulary Cache", () => {
     // attributively) and, since this JSON fix, its own standalone
     // PRONOUN too ("A small number of, used pronominally", the assets/
     // common/en/README.md's own "asset_version 1.29.0" Version entry) --
-    // `resolvedWordFor()` (role/processor/phrase_processor.ts) searches
+    // `recogniseMatchingTokenHomograph()` (role/processor/phrase_processor.ts) searches
     // every one of "few"'s own homographs for the one actually matching
     // NOUN_PHRASE's own Head target (Noun or Pronoun), rather than
     // `dictionary.lookup()`'s single first-seeded pick (which would
@@ -1864,7 +1864,7 @@ describe("WordSeeder against the bundled Common Vocabulary Cache", () => {
     // own re-link pass (over every Phrase already in `phraseBook`, not
     // just its own newly-created ones) runs again regardless, but "a
     // few" itself already resolved correctly before WordNet ever
-    // loaded, and `resolvedWordFor()`'s own "first homograph actually
+    // loaded, and `recogniseMatchingTokenHomograph()`'s own "first homograph actually
     // matching the target, in Dictionary insertion order" rule keeps it
     // that way: the closed-class PRONOUN "few" (seeded well before
     // WordNet) still wins over WordNet's own later, unrelated NOUN one
@@ -2117,7 +2117,7 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
 
     // Adjective Gradability Update: "big"/"large" (01385012-a) carries a
     // real WordNet Attribute pointer to "size" (05106204-n) --
-    // determineGradability() (role/processor/adjective_processor.ts) requires nothing more
+    // isAdjectiveGradable() (role/processor/adjective_processor.ts) requires nothing more
     // than the pointer itself -- so seedWordNet's own post-relationships
     // pass should have populated both Degree Form fields, synthetically
     // (monosyllabic -> "-er"/"-est", isPeriphrasticComparison's own
@@ -2131,7 +2131,7 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // "stature, height" (05009517-n) -- this is this feature's own
     // worked example ("Tall[Adjective, Sense 4] -> Attribute ->
     // Height[Noun] -> Scalar Dimension" => "Gradable(tall) = true"), and
-    // a genuine regression check: an earlier version of determineGradability()
+    // a genuine regression check: an earlier version of isAdjectiveGradable()
     // required climbing "stature, height"'s own Hypernym chain to one of
     // two narrow anchor synsets, but that chain climbs to
     // "bodily_property" -> "property" instead -- a sibling branch that
@@ -2185,7 +2185,7 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // base Adjective ("wide roads"/"wandered wide") rather than a "-ly"
     // derivation -- and carries no Pertainym fact of its own at all
     // (verified directly against the bundled dict/data.adv). Adverb's
-    // own determineGradability() falls back to the same-spelling
+    // own isAdverbGradable() falls back to the same-spelling
     // Adjective ("wide", 02571278-a, which carries its own real
     // Attribute pointer to "width") for exactly this case.
     const wideAdverb = dictionary.lookupAll("wide").find((w) => isAdverb(w)) as Adverb;
@@ -2420,18 +2420,18 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // already give Word.
     expect(isNounPhrase(toyPoodle!)).toBe(true);
     expect(isVerbPhrase(toyPoodle!)).toBe(false);
-    // classifyModifierRoles()'s own NounPhrase Head rule -- "poodle" (the
+    // recogniseModifierRoles()'s own NounPhrase Head rule -- "poodle" (the
     // last Noun-capable token, no Preposition present) is the Head;
     // "toy" precedes it, so it's a Modifier (data/entities/noun_phrase.ts's own
-    // "toy" is genuinely a Noun/Verb homograph, but classifyModifierRoles
+    // "toy" is genuinely a Noun/Verb homograph, but recogniseModifierRoles
     // checks every possible part of speech, not just dictionary.lookup's
     // own arbitrary single pick, so this holds regardless of which one
     // that pick happened to land on).
-    // classifyModifierRoles() is called fresh here (not read off a
+    // recogniseModifierRoles() is called fresh here (not read off a
     // stored Phrase field -- data/entities/phrase.ts's own docstring on why
     // `words`/`wordRoles` don't exist on Phrase any more), over the
-    // same tokenization linkPhraseWords() itself used at seed time.
-    expect(classifyModifierRoles(toyPoodle!.phraseType, toyPoodle!.text.trim().split(/\s+/), dictionary)).toEqual([
+    // same tokenization updatePhraseWordLinks() itself used at seed time.
+    expect(recogniseModifierRoles(toyPoodle!.phraseType, toyPoodle!.text.trim().split(/\s+/), dictionary)).toEqual([
       ModifierRole.MODIFIER,
       ModifierRole.HEAD,
     ]);
@@ -2454,7 +2454,7 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     expect(wordForms.findByUuid((toyPoodle!.preModifier as Identifier).value)?.text.value).toBe("toy");
     expect(toyPoodle!.postModifier).toBeUndefined();
 
-    // classifyPhraseType()'s own PREPOSITIONAL_PHRASE rule, spot-checked
+    // recogniseLemmaPhraseType()'s own PREPOSITIONAL_PHRASE rule, spot-checked
     // against a real seeded Phrase rather than just the pure-function
     // unit tests above -- "at fault" (01324381-s, dict/data.adj) is
     // WordNet-tagged ADJECTIVE but structurally a Preposition + NP.
@@ -2467,17 +2467,17 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // AdjectivePhrase, precisely because its own internal structure is
     // Preposition + NP, not (Degree modifiers) + Adjective.
     expect(isAdjectivePhrase(atFault!)).toBe(false);
-    // "at" resolves to Head via classifyModifierRoles()'s own
+    // "at" resolves to Head via recogniseModifierRoles()'s own
     // PHRASE_TYPE_PREPOSITIONS closed set regardless of whether the
     // Dictionary itself has an "at" sense -- it happens to have one here
     // too (index.noun lists a real, obscure "at" noun homograph), but
     // that's incidental to *why* it's the Head, not the reason. "fault"
     // starts PrepositionalPhrase's own Complement span -- always
-    // everything right after the Head (complementStartIndex()'s own
+    // everything right after the Head (recogniseComplementStartIndex()'s own
     // docstring, role/processor/phrase_processor.ts) -- rather than
     // retaining only its own POS with no role at all, this feature's own
     // fix.
-    expect(classifyModifierRoles(atFault!.phraseType, atFault!.text.trim().split(/\s+/), dictionary)).toEqual([ModifierRole.HEAD, ModifierRole.COMPLEMENT]);
+    expect(recogniseModifierRoles(atFault!.phraseType, atFault!.text.trim().split(/\s+/), dictionary)).toEqual([ModifierRole.HEAD, ModifierRole.COMPLEMENT]);
     // headWord still resolves here since "at" happens to have its own
     // (obscure) Dictionary entry -- that same obscure "at" NOUN
     // homograph. No MODIFIER-role position exists in this phrase's own
@@ -2492,7 +2492,7 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     expect(atFault!.preModifier).toBeUndefined();
     expect(atFault!.postModifier).toBeUndefined();
     // "fault" alone -- a single token, no leading Preposition of its own
-    // -- becomes one nested NounPhrase (classifyComplementPhraseType()'s
+    // -- becomes one nested NounPhrase (recogniseComplementPhraseType()'s
     // own default), correctly resolving "fault"'s own NOUN homograph as
     // that nested Phrase's own Head in turn, with nothing left to nest
     // any deeper.
@@ -2517,7 +2517,7 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     const toy = dictionary.lookup("toy");
     expect(toy).toBeDefined();
     // toyPoodle's own headWord already resolves to this exact "poodle"
-    // Word (checked above), confirming linkPhraseWords()'s own per-token
+    // Word (checked above), confirming updatePhraseWordLinks()'s own per-token
     // resolution -- exactly what toyPoodle's own preModifiers[0] resolves
     // back to for "toy".
     expect(toyPoodle!.headWord?.value).toBe(wordGraphUuid(poodle!));
@@ -2613,7 +2613,7 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     expect(view.searchWords({ wordId: wordGraphUuid(poodle!) }).words[0].head_word).toBeUndefined();
   }, 60000);
 
-  it("classifyModifierRoles() assigns Head/Modifier/Particle/Determiner per data/phrase_type_patterns_and_word_roles.md's own per-PhraseType rules, against real seeded WordNet Phrases", async () => {
+  it("recogniseModifierRoles() assigns Head/Modifier/Particle/Determiner per data/phrase_type_patterns_and_word_roles.md's own per-PhraseType rules, against real seeded WordNet Phrases", async () => {
     const { dictionary, phraseBook, wordForms } = await seededVocabularyFixture();
 
     // "give up" (02686624-v, dict/data.verb) -- VerbPhrase's own "Adverb
@@ -2621,15 +2621,15 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // fire here (nothing follows "up"), so it's a Modifier instead;
     // "give" is the Head even though dictionary.lookup("give") alone
     // would arbitrarily resolve to give's own rare NOUN sense ("there's
-    // a lot of give in the rope") -- classifyModifierRoles() checks every
+    // a lot of give in the rope") -- recogniseModifierRoles() checks every
     // possible part of speech per token, not that one arbitrary pick,
     // so it still finds "give"'s VERB sense and heads it correctly.
     const giveUp = phraseBook.lookupAll("give up").find((phrase) => phraseBook.synsetIdOf(phrase)?.value === "02686624-v");
     expect(giveUp?.phraseType).toBe(PhraseType.VERB_PHRASE);
-    expect(classifyModifierRoles(giveUp!.phraseType, giveUp!.text.trim().split(/\s+/), dictionary)).toEqual([ModifierRole.HEAD, ModifierRole.MODIFIER]);
+    expect(recogniseModifierRoles(giveUp!.phraseType, giveUp!.text.trim().split(/\s+/), dictionary)).toEqual([ModifierRole.HEAD, ModifierRole.MODIFIER]);
     // headWord resolves to "give"'s own VERB sense, not that rare NOUN
-    // homograph -- linkPhraseWords() resolves the Head specifically via
-    // resolvedWordFor(), which searches every "give" homograph for one
+    // homograph -- updatePhraseWordLinks() resolves the Head specifically via
+    // recogniseMatchingTokenHomograph(), which searches every "give" homograph for one
     // matching VerbPhrase's own Head target (VERB), so the rare NOUN
     // sense never wins here even though it happens to be seeded first.
     // "up" sits after the Head with a MODIFIER role, so it lands in
@@ -2651,7 +2651,7 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // atFault's own trailing "fault" above.
     const lookUpTo = phraseBook.lookupAll("look up to").find((phrase) => phraseBook.synsetIdOf(phrase)?.value === "01831800-v");
     expect(lookUpTo?.phraseType).toBe(PhraseType.VERB_PHRASE);
-    expect(classifyModifierRoles(lookUpTo!.phraseType, lookUpTo!.text.trim().split(/\s+/), dictionary)).toEqual([
+    expect(recogniseModifierRoles(lookUpTo!.phraseType, lookUpTo!.text.trim().split(/\s+/), dictionary)).toEqual([
       ModifierRole.HEAD,
       ModifierRole.PARTICLE,
       undefined,
@@ -2660,7 +2660,7 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // above), so it's excluded from both modifier arrays -- "to" gets
     // no role at all, same reason. Both stay empty. headWord resolves to
     // "look"'s own VERB sense, not its unrelated NOUN homograph ("a look
-    // of surprise") -- the same resolvedWordFor() Head-specific
+    // of surprise") -- the same recogniseMatchingTokenHomograph() Head-specific
     // resolution "give up" above already exercises.
     const lookUpToHead = dictionary.findByUuid(lookUpTo!.headWord!.value);
     expect(lookUpToHead?.text).toBe("look");
@@ -2676,11 +2676,11 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // Adverb-capability does here -- is a Modifier.
     const longAgo = phraseBook.lookupAll("long ago").find((phrase) => phraseBook.synsetIdOf(phrase)?.value === "00022855-r");
     expect(longAgo?.phraseType).toBe(PhraseType.ADVERB_PHRASE);
-    expect(classifyModifierRoles(longAgo!.phraseType, longAgo!.text.trim().split(/\s+/), dictionary)).toEqual([ModifierRole.MODIFIER, ModifierRole.HEAD]);
+    expect(recogniseModifierRoles(longAgo!.phraseType, longAgo!.text.trim().split(/\s+/), dictionary)).toEqual([ModifierRole.MODIFIER, ModifierRole.HEAD]);
     // dictionary.lookup("ago")'s own arbitrary-but-deterministic
     // first-seeded homograph would land on an ADJECTIVE sense, not the
     // ADVERB one the phrase's own AdverbPhrase structure suggests -- but
-    // resolvedWordFor() resolves the Head specifically to a homograph
+    // recogniseMatchingTokenHomograph() resolves the Head specifically to a homograph
     // matching AdverbPhrase's own Head target (ADVERB), so it correctly
     // finds "ago"'s ADVERB sense instead, the same Head-specific
     // resolution "give up"/"look up to" above already exercise. "long"
@@ -2705,7 +2705,7 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // nested Phrase, not flattened into the outer one).
     const inTheMeantime = phraseBook.lookupAll("in the meantime").find((phrase) => phraseBook.synsetIdOf(phrase)?.value === "00065346-r");
     expect(inTheMeantime?.phraseType).toBe(PhraseType.PREPOSITIONAL_PHRASE);
-    expect(classifyModifierRoles(inTheMeantime!.phraseType, inTheMeantime!.text.trim().split(/\s+/), dictionary)).toEqual([
+    expect(recogniseModifierRoles(inTheMeantime!.phraseType, inTheMeantime!.text.trim().split(/\s+/), dictionary)).toEqual([
       ModifierRole.HEAD,
       ModifierRole.COMPLEMENT,
       undefined,
@@ -2738,7 +2738,7 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     expect(inTheMeantimeComplementHead?.partOfSpeech).toBe(PartOfSpeech.NOUN);
     expect(inTheMeantimeComplement.headWordForm).toBeDefined();
     // "the" genuinely carries the DETERMINER role within this nested
-    // Phrase (classifyModifierRoles() run over "the meantime" alone) --
+    // Phrase (recogniseModifierRoles() run over "the meantime" alone) --
     // but still resolves no WordForm here either: WordNet lexicalizes
     // "the" as a standalone sense nowhere in the bundled data
     // (PHRASE_TYPE_DETERMINERS' own docstring), so it has no Word to
@@ -2748,7 +2748,7 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // (data_entity_design_decisions_log.md).
     expect(inTheMeantimeComplement.determiner).toBeUndefined();
 
-    // classifyModifierRoles() itself, called directly (not just through
+    // recogniseModifierRoles() itself, called directly (not just through
     // the full seeding pipeline above), for the one documented ambiguity
     // its own docstring names: two adjacent Adverb-capable tokens with
     // no Preposition are structurally identical whether premodifying
@@ -2757,13 +2757,13 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // premodifying (later token is Head) otherwise. Exercised as a pure
     // function here since no real bundled WordNet lemma happens to be
     // "X enough" as its own multi-word entry.
-    expect(classifyModifierRoles(PhraseType.ADVERB_PHRASE, ["quickly", "enough"], dictionary)).toEqual([ModifierRole.HEAD, ModifierRole.MODIFIER]);
-    expect(classifyModifierRoles(PhraseType.ADVERB_PHRASE, ["very", "quickly"], dictionary)).toEqual([ModifierRole.MODIFIER, ModifierRole.HEAD]);
+    expect(recogniseModifierRoles(PhraseType.ADVERB_PHRASE, ["quickly", "enough"], dictionary)).toEqual([ModifierRole.HEAD, ModifierRole.MODIFIER]);
+    expect(recogniseModifierRoles(PhraseType.ADVERB_PHRASE, ["very", "quickly"], dictionary)).toEqual([ModifierRole.MODIFIER, ModifierRole.HEAD]);
 
     // The reported bug this fixes: NounPhrase's own Head Identification
     // Rule allows either a Noun or a Pronoun (data/phrase_type_patterns_and_word_roles.md's
     // own NounPhrase/HEAD row, data/entities/noun_phrase.ts's own
-    // docstring), but classifyModifierRoles() used to check
+    // docstring), but recogniseModifierRoles() used to check
     // PartOfSpeech.NOUN alone -- a NounPhrase whose Head token only
     // resolves as PRONOUN (never independently NOUN too) got no Head at
     // all. "someone" is real bundled-dictionary proof: WordNet lexicalizes
@@ -2771,10 +2771,10 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // and so was never broken by this), only the Common Vocabulary
     // Cache's own PRONOUN entry (pronouns.json) is. "special" resolves
     // ADJECTIVE, correctly picked up as a pre-Head Modifier either way.
-    expect(classifyModifierRoles(PhraseType.NOUN_PHRASE, ["special", "someone"], dictionary)).toEqual([ModifierRole.MODIFIER, ModifierRole.HEAD]);
+    expect(recogniseModifierRoles(PhraseType.NOUN_PHRASE, ["special", "someone"], dictionary)).toEqual([ModifierRole.MODIFIER, ModifierRole.HEAD]);
 
     // A Common Vocabulary Cache closed-class Phrase never goes through
-    // linkPhraseWords()/classifyModifierRoles() at all (no constituency-
+    // updatePhraseWordLinks()/recogniseModifierRoles() at all (no constituency-
     // parsing pass of its own) -- headWord/headWordForm/preModifier/
     // postModifier/determiner are exactly as unpopulated as they'd be
     // if that pass had never run, since createPhrase() never defaults
@@ -2830,17 +2830,17 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     expect(isPrepositionalPhrase(ofANuisance)).toBe(true);
     // "of" -- like "the" above -- has no standalone WordNet sense of its
     // own anywhere in the bundled data, so this nested Phrase's own
-    // headWord genuinely stays undefined even though classifyModifierRoles()
+    // headWord genuinely stays undefined even though recogniseModifierRoles()
     // still correctly identifies its *position* as Head (PHRASE_TYPE_PREPOSITIONS'
     // own closed-set membership alone, never a Dictionary lookup, decides
-    // that -- `classifyPhraseType()`'s own docstring on this same
+    // that -- `recogniseLemmaPhraseType()`'s own docstring on this same
     // "structural, not lexical" reasoning).
     expect(ofANuisance.headWord).toBeUndefined();
 
     // Recursion doesn't stop at one level: "of a nuisance"'s own
     // Complement -- everything after ITS Head -- is "a nuisance",
     // itself opening with no Preposition, so it becomes one further
-    // nested NounPhrase, exactly `classifyComplementPhraseType()`'s own
+    // nested NounPhrase, exactly `recogniseComplementPhraseType()`'s own
     // default branch (role/processor/phrase_processor.ts).
     expect(ofANuisance.complements).toHaveLength(1);
     const aNuisance = ofANuisance.complements![0];
@@ -2891,9 +2891,9 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     expect(attributiveGenitiveCase).toBeDefined();
     expect(attributiveGenitiveCase!.phraseType).toBe(PhraseType.NOUN_PHRASE);
     // Both "attributive" and "genitive" are real ADJECTIVE homographs
-    // (dict/index.adj), so classifyModifierRoles() assigns MODIFIER to
+    // (dict/index.adj), so recogniseModifierRoles() assigns MODIFIER to
     // both pre-Head positions, not just the one immediately before Head.
-    expect(classifyModifierRoles(attributiveGenitiveCase!.phraseType, attributiveGenitiveCase!.text.trim().split(/\s+/), dictionary)).toEqual([
+    expect(recogniseModifierRoles(attributiveGenitiveCase!.phraseType, attributiveGenitiveCase!.text.trim().split(/\s+/), dictionary)).toEqual([
       ModifierRole.MODIFIER,
       ModifierRole.MODIFIER,
       ModifierRole.HEAD,
@@ -2916,7 +2916,7 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
 
     // Reused, not recreated: this is the exact same already-seeded
     // ADJECTIVE Phrase "attributive genitive" resolves to on its own
-    // (00174035-s, dict/data.adj) -- registerNestedPhrase()'s own
+    // (00174035-s, dict/data.adj) -- createStoredNestedPhrase()'s own
     // find-or-create dedup found it rather than building a second,
     // duplicate copy.
     const independentlySeeded = phraseBook.lookupAll("attributive genitive").find((phrase) => phraseBook.synsetIdOf(phrase)?.value === "00174035-s");
@@ -2933,10 +2933,10 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     expect(wordForms.findByUuid((attributiveGenitive.preModifier as Identifier).value)?.text.value).toBe("attributive");
   }, 60000);
 
-  it("collapses a coordinated run of MODIFIER/DETERMINER tokens (\"big and red\") into a single Coordination, bridging the embedded coordinating conjunction that classifyModifierRoles() itself never assigns a role to -- exercised as a pure function since no real bundled WordNet/Common-Vocabulary-Cache lemma contains a coordinated modifier span", () => {
+  it("collapses a coordinated run of MODIFIER/DETERMINER tokens (\"big and red\") into a single Coordination, bridging the embedded coordinating conjunction that recogniseModifierRoles() itself never assigns a role to -- exercised as a pure function since no real bundled WordNet/Common-Vocabulary-Cache lemma contains a coordinated modifier span", () => {
     // Hand-seeded, minimal Dictionary: two ADJECTIVE homographs ("big",
     // "red"), a real COORDINATING Conjunction ("and"), and a NOUN Head
-    // ("dog") -- just enough for classifyModifierRoles()/linkPhraseWords()
+    // ("dog") -- just enough for recogniseModifierRoles()/updatePhraseWordLinks()
     // to exercise the coordinated-run path over a synthetic NounPhrase
     // "big and red dog", the same shape a real "toy poodle"-style
     // pre-Head Modifier run already has, but with a genuine coordinating
@@ -2955,20 +2955,20 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     }
 
     const phrase = createPhrase({ text: "big and red dog", phraseType: PhraseType.NOUN_PHRASE });
-    // classifyModifierRoles() itself never assigns MODIFIER (or any
+    // recogniseModifierRoles() itself never assigns MODIFIER (or any
     // role) to "and" -- it's CONJUNCTION-only, not NOUN/ADJECTIVE/ADVERB
     // -- so the wordRoles array has a genuine gap at index 1 that
-    // linkPhraseWords()'s own run-detection has to bridge across to see
+    // updatePhraseWordLinks()'s own run-detection has to bridge across to see
     // "big and red" as one span, not two disconnected single-token
     // Modifiers either side of an unrecognised "and".
-    expect(classifyModifierRoles(phrase.phraseType, phrase.text.trim().split(/\s+/), dictionary)).toEqual([
+    expect(recogniseModifierRoles(phrase.phraseType, phrase.text.trim().split(/\s+/), dictionary)).toEqual([
       ModifierRole.MODIFIER,
       undefined,
       ModifierRole.MODIFIER,
       ModifierRole.HEAD,
     ]);
 
-    linkPhraseWords(phrase, dictionary, wordForms, phraseBook, coordinations);
+    updatePhraseWordLinks(phrase, dictionary, wordForms, phraseBook, coordinations);
 
     expect(phrase.headWord).toBeDefined();
     expect(dictionary.findByUuid(phrase.headWord!.value)?.text).toBe("dog");
@@ -2987,16 +2987,16 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     expect(wordForms.findByUuid(coordination.coordinator!.value)?.text.value).toBe("and");
 
     // Registered into the supplied Coordinations store, not just built
-    // in memory -- registerModifierCoordination()'s own find-or-create
+    // in memory -- createStoredModifierCoordination()'s own find-or-create
     // shape, the same store-registration precedent `phrases` above
     // already has for a nested Phrase.
     expect(coordinations.all()).toContain(coordination);
 
     // Re-linking the identical Phrase a second time finds the exact same
     // Coordination again rather than building a duplicate -- the same
-    // idempotent re-seeding guarantee every other linkPhraseWords()
+    // idempotent re-seeding guarantee every other updatePhraseWordLinks()
     // consumer already relies on.
-    linkPhraseWords(phrase, dictionary, wordForms, phraseBook, coordinations);
+    updatePhraseWordLinks(phrase, dictionary, wordForms, phraseBook, coordinations);
     expect(phrase.preModifier).toBe(coordination);
     expect(coordinations.totalEntries()).toBe(1);
   });
@@ -3016,7 +3016,7 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     expect(isVerb(breathe)).toBe(true);
     expect(isNoun(breathe)).toBe(false);
     if (!isVerb(breathe)) throw new Error("unreachable");
-    const breatheFrames = framesForSense(senseStore, breathe, senseGraphUuid(senseStore.findBySynsetId("00001740-v")!));
+    const breatheFrames = identifyFramesForSense(senseStore, breathe, senseGraphUuid(senseStore.findBySynsetId("00001740-v")!));
     expect(breatheFrames).toEqual(expect.arrayContaining(["Somebody ----s", "Somebody ----s something"]));
     expect(breatheFrames).toHaveLength(2);
 
@@ -3029,10 +3029,10 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     const stretch = wordForSynset("00027261-v", "stretch");
     const extend = wordForSynset("00027261-v", "extend");
     if (!isVerb(stretch) || !isVerb(extend)) throw new Error("unreachable");
-    const stretchFrames = framesForSense(senseStore, stretch, stretchSenseId);
+    const stretchFrames = identifyFramesForSense(senseStore, stretch, stretchSenseId);
     expect(stretchFrames).toEqual(expect.arrayContaining(["Somebody ----s something", "Somebody ----s"]));
     expect(stretchFrames).toHaveLength(2);
-    expect(framesForSense(senseStore, extend, stretchSenseId)).toEqual(["Somebody ----s something"]);
+    expect(identifyFramesForSense(senseStore, extend, stretchSenseId)).toEqual(["Somebody ----s something"]);
 
     // "stretch" is itself polysemous (Word.senseIds's own docstring) --
     // 00101188-v is a second, distinct verb sense of the identical
@@ -3043,10 +3043,10 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     expect(wordForms.senseIdsOf(stretch).length).toBeGreaterThan(1);
     const secondStretchSenseId = senseGraphUuid(senseStore.findBySynsetId("00101188-v")!);
     expect(wordForms.senseIdsOf(stretch).map((id) => id.value)).toContain(secondStretchSenseId);
-    expect(framesForSense(senseStore, stretch, secondStretchSenseId)).toEqual(["Somebody ----s"]);
+    expect(identifyFramesForSense(senseStore, stretch, secondStretchSenseId)).toEqual(["Somebody ----s"]);
     // Querying the first sense's own frames off the same Word still
     // gives the first sense's own answer, unaffected by the second.
-    expect(framesForSense(senseStore, stretch, stretchSenseId)).toEqual(stretchFrames);
+    expect(identifyFramesForSense(senseStore, stretch, stretchSenseId)).toEqual(stretchFrames);
 
     // "afraid" (00078253-a) is WordNet-marked "afraid(p)" -- predicate-
     // only. The marker itself must not survive into the spelling.
@@ -3055,14 +3055,14 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     expect(isAdjective(afraid)).toBe(true);
     if (!isAdjective(afraid)) throw new Error("unreachable");
     expect(afraid.text).toBe("afraid");
-    expect(syntacticPositionForSense(senseStore, afraid, afraidSenseId)).toBe(AdjectivePosition.PREDICATE_ONLY);
+    expect(identifySyntacticPositionForSense(senseStore, afraid, afraidSenseId)).toBe(AdjectivePosition.PREDICATE_ONLY);
 
     // "big" (01385012-a, already used elsewhere in this file) carries no
     // WordNet position marker at all -- unrestricted, not just "false".
     const bigSenseId = senseGraphUuid(senseStore.findBySynsetId("01385012-a")!);
     const big = wordForSynset("01385012-a", "big");
     if (!isAdjective(big)) throw new Error("unreachable");
-    expect(syntacticPositionForSense(senseStore, big, bigSenseId)).toBeUndefined();
+    expect(identifySyntacticPositionForSense(senseStore, big, bigSenseId)).toBeUndefined();
 
     // Every Noun/Adverb Word still narrows correctly, even with no
     // extra field of its own populated yet.
@@ -3385,8 +3385,8 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // Coordination's freshly-minted uuid, `WordCoordinationSeeder.seed()`'s
     // own docstring), but `coordinations` itself already carries 48 more
     // by this point: `seedWordNet()` above now threads `coordinations`
-    // into every `linkPhraseWords()` call (this session's own run-
-    // collapsing feature, buildModifierUnit()'s own docstring,
+    // into every `updatePhraseWordLinks()` call (this session's own run-
+    // collapsing feature, createModifierRunValue()'s own docstring,
     // role/processor/phrase_processor.ts), which auto-detects a
     // coordinating conjunction embedded in a MODIFIER/DETERMINER run
     // across the real bundled WordNet data ("National Aeronautics and

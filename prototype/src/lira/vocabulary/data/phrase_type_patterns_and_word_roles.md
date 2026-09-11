@@ -5,12 +5,12 @@ is what actually determines `Phrase.phraseType` (`data/entities/phrase.ts`,
 `enums/phrase_type.ts`), and how every other word inside the phrase gets
 assigned a Phrase Role distinct from its own stored Part of Speech.
 
-Fully implemented, not just specified: `classifyPhraseType()`
+Fully implemented, not just specified: `recogniseLemmaPhraseType()`
 (role/word_seeder.ts) assigns a Phrase's own `phraseType` from real
 WordNet data (that function's own docstring, and each `*_phrase.ts`
 subtype class's own docstring, one per row below), and
-`classifyModifierRoles()` (role/word_seeder.ts, called from
-`linkPhraseWords()` right after `phrase.words` itself is resolved)
+`recogniseModifierRoles()` (role/word_seeder.ts, called from
+`updatePhraseWordLinks()` right after `phrase.words` itself is resolved)
 assigns every constituent word its own `ModifierRole`
 (`enums/modifier_role.ts`), stored index-aligned with `words` on
 `phrase.wordRoles` (`data/entities/phrase.ts`). `Phrase.headWord`/
@@ -18,13 +18,13 @@ assigns every constituent word its own `ModifierRole`
 out explicitly -- `headWord` the resolved Word it points to (when it
 resolved against the Dictionary at all), `headWordForm` its own
 phrase-local spelling regardless -- derived directly from `wordRoles`
-in that same `linkPhraseWords()` pass rather than left for every caller
+in that same `updatePhraseWordLinks()` pass rather than left for every caller
 to re-scan for the one `ModifierRole.HEAD` position themselves. Only for a
 Phrase seeded by `WordSeeder.seedWordNet`, the same scope
 `phraseType`/`words` themselves are already limited to -- a Common
 Vocabulary Cache closed-class Phrase has no constituency-parsing pass of
 its own and so has empty `wordRoles`, `words`'s own exact counterpart
-there. `classifyModifierRoles()`'s own docstring documents the one
+there. `recogniseModifierRoles()`'s own docstring documents the one
 genuine ambiguity this table's rules alone can't resolve (two adjacent
 Adverb-capable tokens with no Preposition, AdverbPhrase's own Word
 Patterns rows 1 and 2) and how it's broken.
@@ -201,7 +201,7 @@ as a fixed particle, not a Head candidate.
 | Allowed Types | ModifierRole compatibility is defined against the linguistic unit filling that role, not merely the Part of Speech of the individual words contained inside that unit. |
 | Word Type vs Constituent Type | "Other Word Types" describes token-level POS membership inside a Phrase; "Allowed Types" describes the Word, Phrase, Coordination, or Clause type permitted to fill a ModifierRole. |
 
-The last rule (Definition) matches how `classifyPhraseType()` already
+The last rule (Definition) matches how `recogniseLemmaPhraseType()` already
 works today: it classifies from the *lemma's own tokens* and WordNet's
 own `partOfSpeech` tag on that lemma, never from `synset.definition`'s
 prose -- this table's own Head Identification Rules extend that same

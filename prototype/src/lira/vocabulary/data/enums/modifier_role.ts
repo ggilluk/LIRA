@@ -19,7 +19,7 @@
  * unassigned, rather than being forced into one of these five values.
  *
  * COMPLEMENT: a grammatical complement of the Phrase Head -- genuinely
- * assigned now, by `classifyModifierRoles()`'s own `complementStartIndex()`
+ * assigned now, by `recogniseModifierRoles()`'s own `recogniseComplementStartIndex()`
  * (role/processor/phrase_processor.ts), for every PhraseType that
  * declares a COMPLEMENT row in its own `PHRASE_TYPE_DETAILS[...].allowedTypes`
  * (data/enums/phrase_type.ts -- NounPhrase, AdjectivePhrase,
@@ -27,7 +27,7 @@
  * and never assign it). Unlike MODIFIER, a
  * COMPLEMENT-role token's own span is genuinely built into a real nested
  * Phrase, not just referenced by a bare WordForm Identifier --
- * `linkPhraseWords()`'s own docstring on why. Which ModifierRole values
+ * `updatePhraseWordLinks()`'s own docstring on why. Which ModifierRole values
  * a given PhraseType actually allows is documented per subtype, not here
  * -- see e.g. data/entities/noun_phrase.ts's own docstring for
  * NOUN_PHRASE's own allowed set (Head/Modifier/Determiner/Complement)

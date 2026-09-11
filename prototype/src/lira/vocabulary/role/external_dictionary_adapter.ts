@@ -157,7 +157,7 @@ export class ExternalDictionaryAdapter {
   /** One candidate per grammatical category -- LIRA models different
    * POS as separate Word records, but not a same-form/same-POS meaning
    * conflict (that needs explicit sense handling, see
-   * DictionaryProcessor.registerConflictingSense), so within one
+   * DictionaryProcessor.createConflictingSenseWord), so within one
    * external POS category only the highest-ranked candidate
    * survives. */
   private static deduplicate(candidates: readonly ExternalWordCandidate[]): readonly ExternalWordCandidate[] {

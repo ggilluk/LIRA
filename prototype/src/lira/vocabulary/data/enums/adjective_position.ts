@@ -1,5 +1,5 @@
 // WordNet's own three syntactic-position restrictions for an adjective
-// sense -- undefined (syntacticPositionForSense's own return) means
+// sense -- undefined (identifySyntacticPositionForSense's own return) means
 // unrestricted (attributive AND predicative both fine), the common
 // case; only ~4% of dict/data.adj's own lemmas carry one of these three
 // markers at all.

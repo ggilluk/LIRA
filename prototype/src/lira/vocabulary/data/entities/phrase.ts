@@ -147,14 +147,14 @@ export interface Phrase extends LinguisticUnit {
 
   /**
    * The one Word, among this Phrase's own `text` broken into its
-   * whitespace-separated tokens, whose position `classifyModifierRoles()`
+   * whitespace-separated tokens, whose position `recogniseModifierRoles()`
    * (role/processor/phrase_processor.ts) assigns ModifierRole.HEAD -- a
    * graph-reference pointer, resolved against a Dictionary
    * (`Dictionary.findByUuid()`), not an embedded copy of the Word itself.
    *
    * Undefined whenever no token carries the HEAD role at all -- either
    * because this Phrase's own `phraseType` is itself undefined
-   * (`classifyModifierRoles()`'s own early-return guard never assigns
+   * (`recogniseModifierRoles()`'s own early-return guard never assigns
    * any role without one, `phraseType`'s own docstring above on which
    * closed-class Phrases that is), or because `phraseType` is set but no
    * token resolves to a Word capable of the matching part of speech
@@ -162,7 +162,7 @@ export interface Phrase extends LinguisticUnit {
    * on its own, both being DETERMINER_LEMMAS entries instead,
    * role/determiner_seeder.ts). Every per-token
    * resolution and role assignment this field (and every field below)
-   * derives from is computed fresh by `linkPhraseWords()`, not stored on
+   * derives from is computed fresh by `updatePhraseWordLinks()`, not stored on
    * the Phrase itself -- see that function's own docstring on why: once
    * `headWord`/`headWordForm`/`preModifier`/`postModifier`/`determiner`
    * exist as their own typed fields, keeping the full per-token
@@ -189,7 +189,7 @@ export interface Phrase extends LinguisticUnit {
    * list: every consecutive run of MODIFIER-role tokens (before the
    * Head) collapses into exactly one value, the same real constituency
    * parsing `complements` below already performs for a post-Head
-   * Preposition span (`buildModifierUnit()`'s own docstring,
+   * Preposition span (`createModifierRunValue()`'s own docstring,
    * role/processor/phrase_processor.ts, on why -- the reported case:
    * "attributive genitive case" used to give two independent
    * `preModifiers` entries, "attributive" and "genitive", even though
@@ -213,7 +213,7 @@ export interface Phrase extends LinguisticUnit {
    * `undefined` when no token carries the MODIFIER role at all -- always
    * true when `phraseType` is itself undefined (`phraseType`'s own
    * docstring above on which closed-class Phrases that still is), since
-   * most PhraseType branches of `classifyModifierRoles()` only ever
+   * most PhraseType branches of `recogniseModifierRoles()` only ever
    * assign MODIFIER relative to an identified Head position.
    */
   preModifier?: Identifier | Phrase | Coordination<Word | Phrase> | Clause;
@@ -246,7 +246,7 @@ export interface Phrase extends LinguisticUnit {
    * Phrase's own `text` would be identical to this Phrase's own and
    * recursively linking it would never terminate. That one case instead
    * resolves to the run's own first token alone, as a bare `Identifier`
-   * (`buildModifierUnit()`'s own docstring, role/processor/phrase_processor.ts,
+   * (`createModifierRunValue()`'s own docstring, role/processor/phrase_processor.ts,
    * on this guard).
    *
    * `undefined` far more often than `preModifier`/`postModifier` are for a
@@ -279,21 +279,21 @@ export interface Phrase extends LinguisticUnit {
    * an empty array. Unlike `preModifier`/
    * `postModifier`/`determiner`, this stays an array -- a Phrase's own
    * structure only ever has at most one Complement span in practice
-   * today (`complementStartIndex()`'s own docstring,
+   * today (`recogniseComplementStartIndex()`'s own docstring,
    * role/processor/phrase_processor.ts), but the shape was never
    * narrowed to a single value the way those three now are.
    *
-   * `linkPhraseWords()` (role/processor/phrase_processor.ts) performs
+   * `updatePhraseWordLinks()` (role/processor/phrase_processor.ts) performs
    * real constituency parsing to populate this field, `preModifier`/
    * `postModifier`/`determiner`'s own identical treatment now (this log's
    * own "Phrase.complements" and "preModifier/postModifier/determiner"
    * sections, data_entity_design_decisions_log.md): a post-Head span of
    * `text` shaped like a genuine Preposition + complement is recognised
    * structurally (the same closed-set `PHRASE_TYPE_PREPOSITIONS` check
-   * `classifyPhraseType()` itself already uses one level up) and
+   * `recogniseLemmaPhraseType()` itself already uses one level up) and
    * recursively built into its own nested Phrase, complete with its own
    * `headWord`/`preModifier`/`postModifier`/`determiner`/`complements`.
-   * See `complementStartIndex()`'s own docstring for exactly which
+   * See `recogniseComplementStartIndex()`'s own docstring for exactly which
    * post-Head span, per PhraseType, is recognised this way.
    *
    * Empty whenever no such span exists -- true for the large majority of
@@ -321,7 +321,7 @@ export function createPhrase(init: PhraseInit): Phrase {
 
 /** A shallow copy of `phrase`, sharing every field's own object identity
  * except `phraseId.uuid`, which becomes a fresh uuid. The Phrase
- * counterpart of copyWordWithFreshUuid (role/processor/word_processor.ts). */
+ * counterpart of createFreshUuidWordCopy (role/processor/word_processor.ts). */
 export function copyPhraseWithFreshUuid(phrase: Phrase): Phrase {
   return { ...phrase, phraseId: { ...phrase.phraseId, uuid: crypto.randomUUID() } };
 }

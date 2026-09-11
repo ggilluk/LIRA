@@ -11,7 +11,7 @@
  * never that WordNet-tagged part of speech.
  *
  * Genuinely seeded today, not "declared before it's populated":
- * WordSeeder.seedWordNet's own classifyPhraseType() (role/word_seeder.ts)
+ * WordSeeder.seedWordNet's own recogniseLemmaPhraseType() (role/word_seeder.ts)
  * maps every real multi-word WordNet VERB lemma straight to VERB_PHRASE
  * with no override -- verified against the bundled dict/ files, ~2,840
  * unique lemmas, overwhelmingly phrasal verbs ("abide by", "account
@@ -31,14 +31,14 @@
  * (data/phrase_type_patterns_and_word_roles.md's own "Phrase Role
  * Allowed Types" table, VerbPhrase/HEAD row). Genuinely populated
  * today, for every real seeded multi-word WordNet VerbPhrase, by
- * linkPhraseWords() (role/processor/phrase_processor.ts).
+ * updatePhraseWordLinks() (role/processor/phrase_processor.ts).
  *
  * `preModifier` narrows Phrase's own same-named field (data/entities/phrase.ts's
  * own docstring on it) down to `VerbPhraseModifier` below: an `Adverb`-
  * capable token's own WordForm reference for the single-token case, or
  * an `AdverbPhrase`/`Coordination` sub-constituent for a run of two or
  * more MODIFIER-role tokens (real constituency parsing now,
- * `buildModifierUnit()`'s own docstring, role/processor/phrase_processor.ts)
+ * `createModifierRunValue()`'s own docstring, role/processor/phrase_processor.ts)
  * -- `headWord`'s own "an Identifier carries no type to narrow"
  * reasoning, narrowing only the embedded-subtype half of the union. A
  * single MODIFIER-role token whose own resolved Word carries no
@@ -49,7 +49,7 @@
  * own docstring on it) down to that exact same constituent set --
  * VerbPhrase's own structure ("... + (Complements) + (Modifiers)") in
  * fact places its real Modifiers after the Head, so this is the field
- * linkPhraseWords() actually populates in practice for a real
+ * updatePhraseWordLinks() actually populates in practice for a real
  * VerbPhrase, with `preModifier` staying available (and populated the
  * same way, should a Modifier ever precede the Head) for the rarer
  * pre-Head case. */

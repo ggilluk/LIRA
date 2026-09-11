@@ -624,7 +624,7 @@ export class DeterminerSeeder {
       // Base Lemma Canonical Form -- WORD_FORM_MATRIX's own
       // BASE_LEMMA_CANONICAL_FORM row applies to DETERMINER just like
       // every other open/closed class it lists (pos_vs_wordform_matrice.ts),
-      // and validateDeterminer()'s own docstring already documented this
+      // and recogniseDeterminerFormIssues()'s own docstring already documented this
       // seeder as registering it -- registered first, before the
       // Singular/Plural/Consonant/Vowel-Sound forms below, the same
       // "keep it the first WordForm on record" ordering WordSeeder's own

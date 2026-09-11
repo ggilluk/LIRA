@@ -12,18 +12,18 @@
  * never that WordNet-tagged part of speech.
  *
  * Genuinely seeded today, not "declared before it's populated":
- * WordSeeder.seedWordNet's own classifyPhraseType() (role/word_seeder.ts)
+ * WordSeeder.seedWordNet's own recogniseLemmaPhraseType() (role/word_seeder.ts)
  * maps a real multi-word WordNet ADJECTIVE lemma to ADJECTIVE_PHRASE by
  * default -- but about a quarter of the bundled dict/ files' own ~510
  * unique ADJECTIVE-tagged multi-word lemmas open with a preposition
  * ("at fault", "in advance", "out of print"): WordNet tags these
  * ADJECTIVE because that's the function they serve, but their internal
- * structure is Preposition + NP, so classifyPhraseType() checks for
+ * structure is Preposition + NP, so recogniseLemmaPhraseType() checks for
  * that PREPOSITIONAL_PHRASE shape first and only falls back to this
  * class for the rest (that function's own docstring). A couple more
  * ("a few", "a couple of") are Determiner + Noun-quantifier
  * constructions instead, checked the same structural way
- * (classifyDeterminerPhrase(), role/processor/phrase_processor.ts) and
+ * (isDeterminerPhrase(), role/processor/phrase_processor.ts) and
  * reclassified as NOUN_PHRASE, not this class. Never set for a Common
  * Vocabulary Cache closed-class Phrase, which has no constituency-parsing
  * pass of its own.
@@ -37,14 +37,14 @@
  * (data/phrase_type_patterns_and_word_roles.md's own "Phrase Role
  * Allowed Types" table, AdjectivePhrase/HEAD row). Genuinely populated
  * today, for every real seeded multi-word WordNet AdjectivePhrase, by
- * linkPhraseWords() (role/processor/phrase_processor.ts).
+ * updatePhraseWordLinks() (role/processor/phrase_processor.ts).
  *
  * `preModifier` narrows Phrase's own same-named field (data/entities/phrase.ts's
  * own docstring on it) down to `AdjectivePhraseModifier` above: an
  * `Adverb`- or `Adjective`-capable token's own WordForm reference for
  * the single-token case, or an `AdverbPhrase`/`AdjectivePhrase`/
  * `Coordination` sub-constituent for a run of two or more MODIFIER-role
- * tokens (real constituency parsing now, `buildModifierUnit()`'s own
+ * tokens (real constituency parsing now, `createModifierRunValue()`'s own
  * docstring, role/processor/phrase_processor.ts) -- `headWord`'s own "an
  * Identifier carries no type to narrow" reasoning, narrowing only the
  * embedded-subtype half of the union. A single MODIFIER-role token whose
@@ -61,7 +61,7 @@
  * own docstring on it) down to AdjectivePhraseComplement below --
  * `PHRASE_TYPE_DETAILS[PhraseType.ADJECTIVE_PHRASE].allowedTypes`'s own
  * COMPLEMENT row, `["PrepositionalPhrase", "Clause"]`. Genuinely
- * populated by `linkPhraseWords()` the same structural way NounPhrase's
+ * populated by `updatePhraseWordLinks()` the same structural way NounPhrase's
  * own `complements` is (data/entities/noun_phrase.ts's own docstring on
  * it): a token immediately after the Head capable of reading as a
  * Preposition starts this AdjectivePhrase's own complement, running to
@@ -70,7 +70,7 @@
  * "responsible for the outcome" ("for the outcome" nested). Empty
  * whenever no such token exists (most real seeded AdjectivePhrases:
  * "highly reliable" has none). A `Clause` complement is never
- * constructed -- `classifyComplementPhraseType()`'s own docstring,
+ * constructed -- `recogniseComplementPhraseType()`'s own docstring,
  * role/processor/phrase_processor.ts. */
 
 import { PhraseType } from "../enums/phrase_type";
@@ -85,12 +85,12 @@ import type { Clause } from "../../../linguistics/data/clause";
 // Adjective is included alongside AdverbPhrase's own documented MODIFIER
 // row (`PHRASE_TYPE_DETAILS[PhraseType.ADJECTIVE_PHRASE].allowedTypes`,
 // data/enums/phrase_type.ts, lists only Adverb/AdverbPhrase) -- a pre-
-// existing gap between that table and `nonHeadModifierRole()`'s own real
+// existing gap between that table and `identifyNonHeadModifierRole()`'s own real
 // ADJECTIVE_PHRASE branch (role/processor/phrase_processor.ts), which
 // always treated an ADJECTIVE-capable pre-Head token as a genuine
 // Modifier too ("bone dry", degree-modifier-less compounding). Harmless
 // before this field could ever hold an embedded sub-Phrase; corrected
-// here since `buildModifierUnit()` can now genuinely build a nested
+// here since `createModifierRunValue()` can now genuinely build a nested
 // AdjectivePhrase for a run of 2+ such tokens.
 type AdjectivePhraseModifier = Identifier | AdjectivePhrase | AdverbPhrase | Coordination<Word | Phrase>;
 

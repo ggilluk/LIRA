@@ -24,7 +24,7 @@ export class Phrases {
   private readonly byText = new Map<string, Phrase[]>();
   private readonly byUuid = new Map<string, Phrase>();
   /** WordNet-tagged part of speech for each Phrase, keyed by graphUuid.
-   * Not a field on Phrase itself -- classifyPhraseType() already derives
+   * Not a field on Phrase itself -- recogniseLemmaPhraseType() already derives
    * `phraseType` from this same value at seeding time, and phraseType
    * cannot substitute for it as a dedup/lookup key: the PREPOSITIONAL_PHRASE
    * shape is reachable from both PartOfSpeech.ADJECTIVE and

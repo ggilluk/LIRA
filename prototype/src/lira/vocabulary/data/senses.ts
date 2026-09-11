@@ -1,6 +1,6 @@
 import type { Identifier } from "../../value_objects";
 import { graphUuid as phraseGraphUuid, type Phrase } from "./entities/phrase";
-import { copySenseWithFreshUuid, graphUuid } from "../role/processor/sense_processor";
+import { createFreshUuidSenseCopy, graphUuid } from "../role/processor/sense_processor";
 import { graphUuid as wordGraphUuid } from "../role/processor/word_processor";
 import type { Sense } from "./entities/sense";
 import type { Word } from "./entities/word";
@@ -111,7 +111,7 @@ export class Senses {
   /** Opaque, per-(Sense, member) metadata -- deliberately untyped here
    * (`Senses` sits lower in the layering than any one POS subtype, so it
    * shouldn't need to import e.g. Verb/Adjective just to type this):
-   * Verb.framesForSense()/Adjective.syntacticPositionForSense() (verb.ts/
+   * Verb.identifyFramesForSense()/Adjective.identifySyntacticPositionForSense() (verb.ts/
    * adjective.ts) are the typed readers, and WordSeeder.seedWordNet
    * (role/word_seeder.ts) is the only writer, called once per synset
    * member right after registerMember() for that same (sense, member)
@@ -142,6 +142,6 @@ export class Senses {
    * used the same way (VocabularyContext's own Physics-from-Common
    * snapshot). */
   seedFrom(other: Senses): void {
-    for (const sense of other.senses) this.append(copySenseWithFreshUuid(sense), other.synsetIdOf(sense));
+    for (const sense of other.senses) this.append(createFreshUuidSenseCopy(sense), other.synsetIdOf(sense));
   }
 }

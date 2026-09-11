@@ -644,7 +644,7 @@ lexical_form with an earlier-loaded sense never disturbs
 `v1` / `schema_version 2.0.0` / `asset_version 1.29.0` -- added `few` as
 its own standalone `PRONOUN` entry ("A small number of, used
 pronominally") -- `pronouns.json` 100 -> 101. Real bug: `role/word_seeder.ts`'s
-`linkPhraseWords()` correctly identifies "few" as `a few`'s own Head once
+`updatePhraseWordLinks()` correctly identifies "few" as `a few`'s own Head once
 its own Part of Speech resolution has a Noun-or-Pronoun-capable homograph
 to point at, but "few" had no standalone entry of its own to be one --
 only `fewer` (its own comparative) already did, `a few` itself being the

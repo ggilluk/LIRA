@@ -47,7 +47,7 @@
  * convenience.
  *
  * Word Form to Part of Speech Matrix attribute validation
- * (`WordFormIssue`/`parseFormatPattern()`/`validateFormText()`) has also
+ * (`WordFormIssue`/`createFormatPatternRegExp()`/`recogniseFormTextIssue()`) has also
  * left this file, for the same reason the code resolvers did: every
  * real call site validates one WordForm's own `formType`/`text`, not
  * anything Word-subtype-family-wide, so that's WordForm's own
@@ -61,10 +61,10 @@
  * Known, approved exception to the usual data/-depends-on-role/-never
  * rule (data/entities/word.ts's own docstring; the word_forms.ts fix,
  * commit d087fee): data/entities/phrase.ts's own phraseAsWord() and
- * data/dictionary.ts both call createWord()/copyWordWithFreshUuid()
+ * data/dictionary.ts both call createWord()/createFreshUuidWordCopy()
  * directly, so both real data/ files end up importing from here. This
  * was surfaced and explicitly accepted rather than routed around --
- * createWord()/copyWordWithFreshUuid() are Word's own base-entity
+ * createWord()/createFreshUuidWordCopy() are Word's own base-entity
  * constructor/copier, needed by data-layer code that builds or
  * duplicates Word-shaped values, the exact same reason every one of the
  * 11 POS processors already needs them too. */
@@ -77,12 +77,12 @@ import type { Word } from "../../data/entities/word";
 // Splits a definition's prose into its own word tokens -- deliberately a
 // local regex, not a Linguistics-Layer LinguisticLexer import: Vocabulary
 // must not depend on Linguistics (Linguistics depends on Vocabulary, via
-// Word), and definitionWords() only needs "the words in this string",
+// Word), and recogniseDefinitionWords() only needs "the words in this string",
 // not sentence/grammar structure. Same pattern as
 // external_dictionary_adapter.ts's wordTerms().
 const DEFINITION_WORD_PATTERN = /[^\W_]+/g;
 
-function definitionTokens(definitionText: string): string[] {
+function recogniseDefinitionTokens(definitionText: string): string[] {
   return definitionText.replace(/-/g, " ").match(DEFINITION_WORD_PATTERN) ?? [];
 }
 
@@ -115,12 +115,12 @@ export function createWord(init: WordInit): Word {
  * the same shape as Python's `copy.copy(word)` followed by a `uuid`
  * reassignment, used by Dictionary.seedFrom and
  * WordSeeder.seedClosedClassWords/loadCache. */
-export function copyWordWithFreshUuid(word: Word): Word {
+export function createFreshUuidWordCopy(word: Word): Word {
   return { ...word, wordId: { ...word.wordId, uuid: crypto.randomUUID() } };
 }
 
 /** `word`'s own per-Domain graph identity -- `word.wordId.uuid`,
- * always set for a real Word (createWord()/copyWordWithFreshUuid()
+ * always set for a real Word (createWord()/createFreshUuidWordCopy()
  * above are its only two constructors, and both always assign it);
  * the assertion here just names that guarantee once instead of
  * repeating it at every call site that needs a Word's own identity as
@@ -171,7 +171,7 @@ export function graphUuid(word: Word): string {
  * docstring on why); the caller resolves it through the Word's own
  * primary Sense first (ui/server/resolver_domain.ts's own
  * senseFieldsFor(), role/dictionary_processor.ts's own
- * queueDefinitionHydration()), keeping this function itself free of a
+ * createDefinitionHydrationRequests()), keeping this function itself free of a
  * Senses/WordForms dependency it would otherwise need just to read one
  * field.
  *
@@ -180,10 +180,10 @@ export function graphUuid(word: Word): string {
  * with `isCommon=false` if any exists, else falling back to
  * lookupAll's own first-seeded order. A token with no candidate at all
  * resolves to `word=undefined`, reported rather than guessed. */
-export function definitionWords(definitionText: Text | undefined, dictionary: Dictionary): readonly DefinitionWordReference[] {
+export function recogniseDefinitionWords(definitionText: Text | undefined, dictionary: Dictionary): readonly DefinitionWordReference[] {
   if (definitionText === undefined) return [];
   const references: DefinitionWordReference[] = [];
-  for (const token of definitionTokens(definitionText.value)) {
+  for (const token of recogniseDefinitionTokens(definitionText.value)) {
     const candidates = dictionary.lookupAll(token);
     const resolved = candidates.length > 0 ? (candidates.find((w) => !w.isCommon) ?? candidates[0]) : undefined;
     references.push({ text: token, word: resolved });
@@ -197,7 +197,7 @@ export function definitionWords(definitionText: Text | undefined, dictionary: Di
 // (a doubled final consonant works the same way whether it's feeding
 // "-ed"/"-ing" or "-er"/"-est"), so the mechanism lives here once rather
 // than duplicated across those four files. Each generator itself
-// (noun.ts's generatedPluralNumberForm, ...) stays in its own class
+// (noun.ts's createPluralNumberForm, ...) stays in its own class
 // file -- what's shared is only "is this lemma safe to double", not any
 // per-field decision of what to actually build from that answer.
 
@@ -206,7 +206,7 @@ export function definitionWords(definitionText: Text | undefined, dictionary: Di
  * before its own "y" -> "ies"/"ied"/"ier"/"iest" branch (a lemma ending
  * in a *vowel* + "y", like "play"/"grey", takes the plain "-s"/"-ed"/...
  * suffix instead: "plays", not "plaies"). */
-export function endsInConsonantY(word: string): boolean {
+export function isConsonantYEnding(word: string): boolean {
   return /[^aeiou]y$/i.test(word);
 }
 
@@ -214,17 +214,17 @@ export function endsInConsonantY(word: string): boolean {
  * consonant-vowel-consonant, where that final consonant is not w, x, or
  * y (English never doubles those: "row" -> "rowed", "fix" -> "fixed",
  * "play" -> "played"). */
-function endsInCvc(word: string): boolean {
+function isCvcEnding(word: string): boolean {
   return /(^|[^aeiou])[aeiou][bcdfghjklmnprstvz]$/i.test(word);
 }
 
 /** A purely orthographic proxy for "one syllable" -- counts contiguous
- * vowel-letter runs (`y` deliberately excluded; endsInConsonantY()
+ * vowel-letter runs (`y` deliberately excluded; isConsonantYEnding()
  * above is the branch that already handles a lemma ending in "y", so a
  * word reaching this check never needs `y` treated as a vowel of its
  * own) and treats exactly one as "monosyllabic enough to trust". Not
  * real syllabification (a vowel digraph can still throw the count off
- * for some words), but shouldDoubleFinalConsonant() below only ever
+ * for some words), but recogniseFinalConsonantDoublingStrategy() below only ever
  * uses this to decide whether to double a final consonant, and only
  * when it returns true -- an overcount would wrongly withhold doubling
  * from a genuine monosyllable, never wrongly apply it to one, so the
@@ -233,7 +233,7 @@ function isMonosyllabic(word: string): boolean {
   return (word.match(/[aeiou]+/gi) ?? []).length === 1;
 }
 
-/** shouldDoubleFinalConsonant()'s own Exception Lookup for the one
+/** recogniseFinalConsonantDoublingStrategy()'s own Exception Lookup for the one
  * narrow sliver of its "ends CVC but isn't monosyllabic" abstention it
  * can resolve with confidence -- a closed, hand-verified set of common
  * English verbs whose stress is unambiguously *not* on their final
@@ -261,7 +261,7 @@ const NON_DOUBLING_MULTISYLLABLE_VERBS: ReadonlySet<string> = new Set([
 /** Whether a *_Form generator should double `word`'s own final
  * consonant before appending a regular suffix ("run" -> "running",
  * "big" -> "bigger") -- true only when the lemma both ends
- * consonant-vowel-consonant (endsInCvc()) AND is monosyllabic by the
+ * consonant-vowel-consonant (isCvcEnding()) AND is monosyllabic by the
  * heuristic above; "abstain" for a lemma that ends CVC but isn't
  * (heuristically) monosyllabic, since real English doubling for a
  * longer word depends on which syllable is stressed, not just spelling
@@ -271,7 +271,7 @@ const NON_DOUBLING_MULTISYLLABLE_VERBS: ReadonlySet<string> = new Set([
  * hand-verified carve-out of that same abstention for lemmas this
  * function can resolve with real confidence rather than guess. Every
  * regular-suffix generator that calls this (verb_processor.ts's
- * regularEdForm/regularIngForm, this file's own regularDegreeForm
+ * createRegularEdForm/createRegularIngForm, this file's own createRegularDegreeForm
  * below) treats "not double, and not a CVC lemma at all either" as the
  * ordinary plain-suffix case, and "ends CVC but isn't monosyllabic, and
  * not in the carve-out" as an outright abstention -- the matrix's own
@@ -280,8 +280,8 @@ const NON_DOUBLING_MULTISYLLABLE_VERBS: ReadonlySet<string> = new Set([
  * word_form_part_of_speech_matrix.md) isn't data this codebase has for
  * any WordNet-seeded Word today, so guessing wrong is the one outcome
  * every caller here deliberately avoids. */
-export function shouldDoubleFinalConsonant(word: string): "double" | "abstain" | "plain" {
-  if (!endsInCvc(word)) return "plain";
+export function recogniseFinalConsonantDoublingStrategy(word: string): "double" | "abstain" | "plain" {
+  if (!isCvcEnding(word)) return "plain";
   if (NON_DOUBLING_MULTISYLLABLE_VERBS.has(word.toLowerCase())) return "plain";
   return isMonosyllabic(word) ? "double" : "abstain";
 }
@@ -291,7 +291,7 @@ export function shouldDoubleFinalConsonant(word: string): "double" | "abstain" |
  * Adverb's identical counterpart -- shared here since the two classes'
  * own degree paradigm is spelled exactly the same way, rather than
  * duplicated in both adjective.ts and adverb.ts. Returns undefined only
- * for shouldDoubleFinalConsonant()'s own "abstain" case (word_form_part_of_speech_matrix.md's
+ * for recogniseFinalConsonantDoublingStrategy()'s own "abstain" case (word_form_part_of_speech_matrix.md's
  * own rule #5, an irregular comparative/superlative like "good" ->
  * "better", is a second, separate reason no value is ever generated for
  * those lemmas -- there's no spelling signal to detect an irregular
@@ -301,16 +301,16 @@ export function shouldDoubleFinalConsonant(word: string): "double" | "abstain" |
  * OUT of periphrastic comparison -- it has no opinion of its own on
  * synthetic vs. periphrastic, only on which synthetic spelling rule
  * applies once synthetic has already been decided. */
-export function regularDegreeForm(lemma: string, comparative: boolean): Text | undefined {
+export function createRegularDegreeForm(lemma: string, comparative: boolean): Text | undefined {
   const plainSuffix = comparative ? "er" : "est";
   const eSuffix = comparative ? "r" : "st";
   const ySuffix = comparative ? "ier" : "iest";
   const doubledFormat = comparative
     ? "/([bcdfghjklmnpqrstvwxyz])\\1er$/i"
     : "/([bcdfghjklmnpqrstvwxyz])\\1est$/i";
-  if (endsInConsonantY(lemma)) return { value: `${lemma.slice(0, -1)}${ySuffix}`, formats: [`/${ySuffix}$/i`] };
+  if (isConsonantYEnding(lemma)) return { value: `${lemma.slice(0, -1)}${ySuffix}`, formats: [`/${ySuffix}$/i`] };
   if (/e$/i.test(lemma)) return { value: `${lemma}${eSuffix}`, formats: [`/${plainSuffix}$/i`] };
-  const doubling = shouldDoubleFinalConsonant(lemma);
+  const doubling = recogniseFinalConsonantDoublingStrategy(lemma);
   if (doubling === "abstain") return undefined;
   if (doubling === "double") return { value: `${lemma}${lemma.slice(-1)}${plainSuffix}`, formats: [doubledFormat] };
   return { value: `${lemma}${plainSuffix}`, formats: [`/${plainSuffix}$/i`] };
@@ -318,7 +318,7 @@ export function regularDegreeForm(lemma: string, comparative: boolean): Text | u
 
 /** A purely orthographic syllable-count proxy -- contiguous vowel-
  * letter runs (`y` counted as a vowel here, unlike isMonosyllabic()
- * above: by the time a caller reaches this function, endsInConsonantY()
+ * above: by the time a caller reaches this function, isConsonantYEnding()
  * has already claimed every lemma ending consonant+y for its own
  * "-ier"/"-iest" rule, so any `y` isPeriphrasticComparison() below still
  * sees is medial, e.g. "syllable", and does belong in the count), with a
@@ -329,9 +329,9 @@ export function regularDegreeForm(lemma: string, comparative: boolean): Text | u
  * comparison-strategy choice ("Degree Strategy Classification") isn't
  * real curated data this codebase has, so this is the same "best
  * available spelling signal" approach isMonosyllabic()/
- * shouldDoubleFinalConsonant() above already take, scoped to the one
+ * recogniseFinalConsonantDoublingStrategy() above already take, scoped to the one
  * question isPeriphrasticComparison() actually needs answered. */
-export function syllableCount(word: string): number {
+export function recogniseSyllableCount(word: string): number {
   const trimmed = /[^aeiou]e$/i.test(word) ? word.slice(0, -1) : word;
   const runs = trimmed.match(/[aeiouy]+/gi) ?? [];
   return Math.max(runs.length, 1);
@@ -351,17 +351,17 @@ const SYNTHETIC_TWO_SYLLABLE_ENDINGS = /(er|le|ow)$/i;
  * strategies (word_form_part_of_speech_matrix.md's own "Comparative/
  * Superlative Periphrastic Form" rows: "more beautiful"/"most
  * beautiful" for longer adjectives, alongside "-er"/"-est" for shorter
- * ones) -- called before regularDegreeForm() above, never after: which
+ * ones) -- called before createRegularDegreeForm() above, never after: which
  * one applies must be settled before any orthographic transformation is
  * attempted (Required Processing Order), not inferred from whichever
  * one happens to produce a well-formed spelling. `false` (synthetic)
- * doesn't guarantee regularDegreeForm() actually returns a value --
+ * doesn't guarantee createRegularDegreeForm() actually returns a value --
  * that function can still abstain on its own separate spelling grounds
  * (its own docstring) -- it only means periphrastic comparison is not
  * the right strategy for this lemma. */
 export function isPeriphrasticComparison(lemma: string): boolean {
-  if (endsInConsonantY(lemma)) return false;
-  const syllables = syllableCount(lemma);
+  if (isConsonantYEnding(lemma)) return false;
+  const syllables = recogniseSyllableCount(lemma);
   if (syllables <= 1) return false;
   if (syllables === 2 && SYNTHETIC_TWO_SYLLABLE_ENDINGS.test(lemma)) return false;
   return true;
@@ -370,10 +370,10 @@ export function isPeriphrasticComparison(lemma: string): boolean {
 /** Adjective.comparativeDegreeForm/superlativeDegreeForm's own
  * periphrastic Generation Transform -- only ever called once
  * isPeriphrasticComparison() above has already said `true`. Unlike
- * regularDegreeForm(), never abstains: "more"/"most" prefixing has no
+ * createRegularDegreeForm(), never abstains: "more"/"most" prefixing has no
  * spelling precondition of its own, the way doubling a final consonant
  * does. */
-export function periphrasticDegreeForm(lemma: string, comparative: boolean): Text {
+export function createPeriphrasticDegreeForm(lemma: string, comparative: boolean): Text {
   const adverb = comparative ? "more" : "most";
   const format = comparative ? "/^more\\s+.+$/i" : "/^most\\s+.+$/i";
   return { value: `${adverb} ${lemma}`, formats: [format] };

@@ -107,7 +107,7 @@ function coordinatorFor(coordination: Coordination<LinguisticUnit>, dictionary: 
  * Clause sub-constituent) -- no real seeder produces either shape yet
  * (word_coordination_seeder.ts's own docstring), so this skips rather
  * than guesses at a display for a shape nothing has ever actually
- * produced, the same "skip, don't guess" discipline linkPhraseWords()
+ * produced, the same "skip, don't guess" discipline updatePhraseWordLinks()
  * already has for a sub-Phrase/Clause modifier it can't resolve a
  * WordForm for (role/processor/phrase_processor.ts). */
 export function coordinationRecordFor(coordination: Coordination<LinguisticUnit>, dictionary: Dictionary, wordForms: WordForms): CoordinationRecord | undefined {

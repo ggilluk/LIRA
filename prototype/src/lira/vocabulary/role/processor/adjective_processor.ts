@@ -8,10 +8,10 @@ import {
   createWord,
   graphUuid,
   isPeriphrasticComparison,
-  periphrasticDegreeForm,
-  regularDegreeForm,
+  createPeriphrasticDegreeForm,
+  createRegularDegreeForm,
 } from "./word_processor";
-import { validateFormText, type WordFormIssue } from "./word_form_processor";
+import { recogniseFormTextIssue, type WordFormIssue } from "./word_form_processor";
 import type { Adjective } from "../../data/entities/adjective";
 import { AdjectivePosition } from "../../data/enums/adjective_position";
 import { stringPatternsFor } from "../../data/matrices/pos_vs_wordform_matrice";
@@ -39,7 +39,7 @@ export function isAdjective(word: Word): word is Adjective {
  * docstring on why an Adjective can carry more than one); passing a
  * senseId this Adjective doesn't actually lexicalize just returns
  * undefined, the same as no restriction ever having been recorded. */
-export function syntacticPositionForSense(senses: Senses, adjective: Adjective, senseId: string): AdjectivePosition | undefined {
+export function identifySyntacticPositionForSense(senses: Senses, adjective: Adjective, senseId: string): AdjectivePosition | undefined {
   return senses.metadataFor(senseId, graphUuid(adjective))?.syntacticPosition as AdjectivePosition | undefined;
 }
 
@@ -50,12 +50,12 @@ export function syntacticPositionForSense(senses: Senses, adjective: Adjective, 
  * (data/matrices/pos_vs_wordform_matrice.ts). Returns every issue
  * found, not just the first; empty means every populated field is
  * internally consistent with the matrix, not that every field is
- * populated. validateAuxiliary()'s own exact shape
+ * populated. recogniseAuxiliaryFormIssues()'s own exact shape
  * (role/processor/auxiliary_processor.ts). */
-export function validateAdjective(adjective: Adjective, wordForms: WordForms): readonly WordFormIssue[] {
+export function recogniseAdjectiveFormIssues(adjective: Adjective, wordForms: WordForms): readonly WordFormIssue[] {
   const issues: WordFormIssue[] = [];
   for (const form of wordForms.formsOf(adjective)) {
-    const issue = validateFormText(form.formType, form.text, stringPatternsFor(form.formType, PartOfSpeech.ADJECTIVE));
+    const issue = recogniseFormTextIssue(form.formType, form.text, stringPatternsFor(form.formType, PartOfSpeech.ADJECTIVE));
     if (issue !== undefined) issues.push(issue);
   }
   return issues;
@@ -66,7 +66,7 @@ export function validateAdjective(adjective: Adjective, wordForms: WordForms): r
  * Senses (never the primary sense alone, `adjective.senseIds`'s own
  * full list) carries a WordNet Attribute pointer at all. Must be
  * settled before any *_Form generation is attempted (Required
- * Processing Order) -- generateAdjectiveForms() below takes this as an
+ * Processing Order) -- createAdjectiveForms() below takes this as an
  * explicit precomputed argument rather than discovering it itself
  * precisely so that ordering can't be skipped by accident.
  *
@@ -111,7 +111,7 @@ export function validateAdjective(adjective: Adjective, wordForms: WordForms): r
  * therefore which direction the one stored edge ends up facing --
  * depends on synset file order, not on anything this function should
  * have to know or care about. */
-export function determineGradability(relationships: SemanticRelationshipStore, adjective: Adjective, wordForms: WordForms | undefined): boolean {
+export function isAdjectiveGradable(relationships: SemanticRelationshipStore, adjective: Adjective, wordForms: WordForms | undefined): boolean {
   for (const senseId of wordForms?.senseIdsOf(adjective) ?? []) {
     const edges = [...relationships.outgoing(senseId.value), ...relationships.incoming(senseId.value)];
     if (edges.some((edge) => edge.relationshipType === SemanticRelationshipKind.ATTRIBUTE)) return true;
@@ -132,7 +132,7 @@ export function determineGradability(relationships: SemanticRelationshipStore, a
  * idempotent find-or-create -- an explicitly-registered value (from an
  * earlier call) is never overwritten.
  *
- * `gradable` is `determineGradability()`'s own precomputed answer for
+ * `gradable` is `isAdjectiveGradable()`'s own precomputed answer for
  * this Adjective (Required Processing Order: Gradability must already
  * be settled by the time this runs, not decided here). When `false`,
  * Positive Degree Form is the only field this ever registers --
@@ -141,22 +141,22 @@ export function determineGradability(relationships: SemanticRelationshipStore, a
  * ("wooden" -> "woodener"), the exact bug this parameter exists to
  * close. When `true`, isPeriphrasticComparison() (./word_processor.ts)
  * picks the comparison strategy (synthetic "-er"/"-est" vs. periphrastic
- * "more"/"most") and regularDegreeForm()/periphrasticDegreeForm()
+ * "more"/"most") and createRegularDegreeForm()/createPeriphrasticDegreeForm()
  * (./word_processor.ts) produce the actual spelling for whichever one
- * applies -- regularDegreeForm() can still abstain on its own separate
+ * applies -- createRegularDegreeForm() can still abstain on its own separate
  * spelling grounds (its own docstring), so a gradable Adjective can
  * legitimately end up with Positive Degree Form only too, same as a
  * non-gradable one, just for a different reason. Every value this
  * produces is provably one of that field's own recognised String
  * Patterns (WORD_FORM_MATRIX's own ADJECTIVE rules), by construction --
- * generateAdjectiveForms() and validateAdjective() both draw on the
+ * createAdjectiveForms() and recogniseAdjectiveFormIssues() both draw on the
  * exact same matrix rows, so a freshly-generated Adjective always
- * passes its own validateAdjective() unchanged. Fields are registered in
+ * passes its own recogniseAdjectiveFormIssues() unchanged. Fields are registered in
  * the Word Form Matrix's own row order (positive, comparative,
  * superlative) so Word Forms UI display order stays unaffected by this
  * migration. Returns `adjective` unchanged -- registration is a side
  * effect on `wordForms`, not a copy of `adjective` itself. */
-export function generateAdjectiveForms(adjective: Adjective, gradable: boolean, wordForms: WordForms | undefined): Adjective {
+export function createAdjectiveForms(adjective: Adjective, gradable: boolean, wordForms: WordForms | undefined): Adjective {
   if (wordForms === undefined) return adjective;
   const lemma = adjective.text;
   const has = (field: WordFormType): boolean => wordForms.formsOf(adjective).some((form) => form.formType === field);
@@ -166,11 +166,11 @@ export function generateAdjectiveForms(adjective: Adjective, gradable: boolean, 
   if (gradable) {
     const periphrastic = isPeriphrasticComparison(lemma);
     if (!has(WordFormType.COMPARATIVE_DEGREE_FORM)) {
-      const comparative = periphrastic ? periphrasticDegreeForm(lemma, true) : regularDegreeForm(lemma, true);
+      const comparative = periphrastic ? createPeriphrasticDegreeForm(lemma, true) : createRegularDegreeForm(lemma, true);
       if (comparative !== undefined) wordForms.registerNamedForm(adjective, WordFormType.COMPARATIVE_DEGREE_FORM, comparative);
     }
     if (!has(WordFormType.SUPERLATIVE_DEGREE_FORM)) {
-      const superlative = periphrastic ? periphrasticDegreeForm(lemma, false) : regularDegreeForm(lemma, false);
+      const superlative = periphrastic ? createPeriphrasticDegreeForm(lemma, false) : createRegularDegreeForm(lemma, false);
       if (superlative !== undefined) wordForms.registerNamedForm(adjective, WordFormType.SUPERLATIVE_DEGREE_FORM, superlative);
     }
   }

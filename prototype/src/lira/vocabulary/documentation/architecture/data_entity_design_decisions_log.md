@@ -55,13 +55,13 @@ entry above for the shape this mirrors.
 
 `phraseType` (the grammatical shape a Phrase's own words take -- noun
 phrase, verb phrase, etc.) is populated by `WordSeeder.seedWordNet`'s own
-`classifyPhraseType()` (`role/processor/phrase_processor.ts`) for every
+`recogniseLemmaPhraseType()` (`role/processor/phrase_processor.ts`) for every
 multi-word WordNet synset lemma, derived structurally from the lemma's own
 tokens and part of speech, not guessed -- that function's own docstring
 documents the real `dict/` distribution this classification was built from.
 It's undefined for a Common Vocabulary Cache closed-class Phrase, which has
 no constituency-parsing pass of its own, and for the handful of WordNet
-parts of speech `classifyPhraseType()` itself never maps (dead code against
+parts of speech `recogniseLemmaPhraseType()` itself never maps (dead code against
 real WordNet data today -- every real multi-word lemma is
 NOUN/VERB/ADJECTIVE/ADVERB).
 
@@ -72,7 +72,7 @@ and its own siblings narrow a Word down by `partOfSpeech`.
 ### The WordNet-tagged part of speech: `Phrases`'s own side index, not a Phrase field
 
 Phrase originally carried its own `partOfSpeech` field, mirroring Word's --
-the WordNet-tagged lexical category `classifyPhraseType()` takes as *input*
+the WordNet-tagged lexical category `recogniseLemmaPhraseType()` takes as *input*
 to derive `phraseType` as *output* (the section above). The two were never
 independent facts, so once `phraseType` existed there was no remaining
 reason for a Phrase to carry both a structural classification and the raw
@@ -80,7 +80,7 @@ tag it was derived from.
 
 The naive fix -- drop the field, let `phraseType` stand in for it wherever
 the seeder needed to tell two same-spelled Phrases apart -- doesn't work:
-`classifyPhraseType()`'s own PHRASE_TYPE_PREPOSITIONS rule sends *both*
+`recogniseLemmaPhraseType()`'s own PHRASE_TYPE_PREPOSITIONS rule sends *both*
 `PartOfSpeech.ADJECTIVE` and `PartOfSpeech.ADVERB` to the identical
 `PhraseType.PREPOSITIONAL_PHRASE` for a lemma opening with a preposition
 ("at fault" ADJECTIVE, "by hand" ADVERB, both PREPOSITIONAL_PHRASE) -- so
@@ -133,7 +133,7 @@ composition need of its own.
 ### `wordRoles`, `unresolvedHeadWord`, `headWordForm`, `headWord`: the linking pass
 
 `wordRoles` assigns a `ModifierRole` to each position in `words`, computed by
-`classifyModifierRoles()` (`role/processor/phrase_processor.ts`, that
+`recogniseModifierRoles()` (`role/processor/phrase_processor.ts`, that
 function's own docstring for the full per-`PhraseType` Head/Modifier/
 Particle/Determiner rules -- `data/phrase_type_patterns_and_word_roles.md`'s
 own tables). A position is left `undefined` under the "No Role" Common Rule
@@ -147,7 +147,7 @@ that document's own "Head" Common Rule.
 
 `unresolvedHeadWord` is `words[wordRoles.indexOf(ModifierRole.HEAD)]` --
 kept as its own field rather than left for every caller to re-derive by
-scanning `wordRoles`, since `linkPhraseWords()` already knows the Head's own
+scanning `wordRoles`, since `updatePhraseWordLinks()` already knows the Head's own
 index the moment it computes `wordRoles` and sets both in the same pass. It
 is named `unresolvedHeadWord`, not `headWord`, because an `Identifier` is a
 graph-reference pointer a caller still has to resolve against a Dictionary
@@ -155,7 +155,7 @@ graph-reference pointer a caller still has to resolve against a Dictionary
 the resolved Word entity itself.
 
 `headWordForm` is `unresolvedHeadWord`'s own literal spelling as it actually
-appears in this Phrase's own `text` -- the token `classifyModifierRoles()`
+appears in this Phrase's own `text` -- the token `recogniseModifierRoles()`
 identified as the Head, before Dictionary resolution ("at" in "at fault",
 never resolved to any Word at all, but `headWordForm` still names which
 token filled that role). Distinct from `headWord`'s own resolved
@@ -166,7 +166,7 @@ of the same fact.
 
 `headWord` is `unresolvedHeadWord` resolved via `Dictionary.findByUuid()` --
 genuinely populated, for every real multi-word WordNet Phrase, by
-`linkPhraseWords()` right alongside `unresolvedHeadWord` itself. Every
+`updatePhraseWordLinks()` right alongside `unresolvedHeadWord` itself. Every
 `*_phrase.ts` subtype narrows this down to the specific Word subtype(s) its
 own Head Identification Rule allows -- `NounPhrase` to `Noun | Pronoun`, for
 instance -- the same way each subtype already narrows `phraseType` to one
@@ -190,7 +190,7 @@ own "(Auxiliary verbs) + Main verb + (Particles) + (Complements) +
 "Preposition + Noun phrase/complement + (Modifiers)" too), and these two
 fields name the constituent's *role*, not its *position* within `text`.
 
-Both are genuinely populated, today, by `linkPhraseWords()`, for every
+Both are genuinely populated, today, by `updatePhraseWordLinks()`, for every
 MODIFIER-role position that resolves to a real single Word -- deliberately
 Word-only: nothing in this codebase parses a phrase's own text into nested
 sub-phrase/Clause spans, so a MODIFIER that would actually be one of those
@@ -299,7 +299,7 @@ matches this Head's literal occurrence in `phrase.text` -- resolved via
 `WordForms.findByUuid()`, the same `WordForms`-store pattern
 `wordFormIds`/`baseLemmaFormOf()` already use elsewhere.
 
-`linkPhraseWords()` (role/processor/phrase_processor.ts) now takes an
+`updatePhraseWordLinks()` (role/processor/phrase_processor.ts) now takes an
 optional `wordForms: WordForms` parameter (matching every other seeding
 pass's own `Senses`/`WordForms` convention) to perform this match --
 `wordForms.formsOf(headWordEntity).find(form => form.text.value.toLowerCase()
@@ -342,17 +342,17 @@ Lemma Canonical Form: poodle), the identical rendering the old embedded-copy
 shape produced, confirming the by-reference resolution is behaviorally
 transparent to this UI.
 
-### `classifyDeterminerPhrase()`: "a bit"/"a few" as NOUN_PHRASE, not their WordNet-tagged function
+### `isDeterminerPhrase()`: "a bit"/"a few" as NOUN_PHRASE, not their WordNet-tagged function
 
 Reported bug: "a bit" and "a few" weren't recognised as NounPhrases.
-`classifyPhraseType()` (role/processor/phrase_processor.ts) trusted
+`recogniseLemmaPhraseType()` (role/processor/phrase_processor.ts) trusted
 WordNet's own synset tag for the *whole* multi-word lemma with only two
 structural overrides ahead of it (PREPOSITIONAL_PHRASE, INFINITIVE_PHRASE)
 -- neither applied here, so each fell straight through to the POS-based
 switch keyed on the idiomatic *function* WordNet tagged it by, not its
 actual *structure*. WordNet tags "a bit" ADVERB ("to a small degree"), so
 it became ADVERB_PHRASE -- and since neither "a" nor "bit" is
-Adverb-capable, `adverbPhraseHeadIndex` found no Head at all (confirmed
+Adverb-capable, `recogniseAdverbHeadIndex` found no Head at all (confirmed
 directly: `wordRoles = [DETERMINER, undefined]`, `headWord`/`headWordForm`
 both stayed undefined). WordNet tags "a few" ADJECTIVE (`a_few(a)`'s own
 satellite synset), so it became ADJECTIVE_PHRASE -- and did resolve a Head
@@ -361,7 +361,7 @@ PhraseType. Both are structurally `Determiner + Noun-quantifier` --
 literally NOUN_PHRASE's own documented shape, `"(Determiner) +
 (Modifiers) + Noun/Pronoun + (Complements)"`.
 
-Fixed with a new `classifyDeterminerPhrase(tokens, lemma, nounLemmas)`
+Fixed with a new `isDeterminerPhrase(tokens, lemma, nounLemmas)`
 check in the identical "structural override ahead of the POS-based
 switch" slot the PREPOSITIONAL_PHRASE/INFINITIVE_PHRASE checks already
 occupy: `tokens[0]` is the indefinite article ("a"/"an") and a real Noun
@@ -379,13 +379,13 @@ exactly the same reason `verbLemmas` isn't a `dictionary.lookup()` check
 either (that field's own pre-existing docstring) -- a Phrase like "a bit"
 can be processed before the standalone "bit" synset, in whatever order
 `loadWordNetSynsets()` itself returns, so a live Dictionary lookup would
-give a different, seeding-order-dependent answer. `classifyPhraseType()`
+give a different, seeding-order-dependent answer. `recogniseLemmaPhraseType()`
 itself gained a fourth `nounLemmas: ReadonlySet<string>` parameter for
 this; `synsetMemberToPhrase()` (word_seeder.ts, its own one real call
 site) threads it through the same way it already threads `verbLemmas`.
 
 Deliberately scoped to the indefinite article ("a"/"an") alone, not the
-full `PHRASE_TYPE_DETERMINERS` set `classifyModifierRoles()` uses --
+full `PHRASE_TYPE_DETERMINERS` set `recogniseModifierRoles()` uses --
 verified directly against every real bundled ADJECTIVE/ADVERB multi-word
 lemma opening with any of those determiners (not guessed): broadening to
 "all"/"every"/"each"/"the"/"many"/"that"/"what" would pull in over a
@@ -413,7 +413,7 @@ independently-real WordNet Noun -- "Capella" the star, "carte"/"mode" the
 common nouns (verified directly: `index.noun` lists all three). "a
 cappella" (double-p) and "a fortiori"/"a posteriori"/"a priori" need no
 denylist entry -- none of their own remaining tokens resolves a real Noun
-in the first place, so `classifyDeterminerPhrase()` already excludes them
+in the first place, so `isDeterminerPhrase()` already excludes them
 on its own.
 
 ### `synsetId`: a side index, not a field, everywhere it appeared
@@ -491,10 +491,10 @@ own `languageCode`/`dialectCode` the same way `text` itself now can),
 rather than reintroducing a bespoke value object to hold what `Text`
 already expresses.
 
-### `syllableRepresentation`/`syllableCount`/`stressPattern`: removed, unlike `frequencyValue`/`frequencyScale`
+### `syllableRepresentation`/`recogniseSyllableCount`/`stressPattern`: removed, unlike `frequencyValue`/`frequencyScale`
 
 `WordForm` originally carried five curated-attribute fields side by side:
-`syllableRepresentation`/`syllableCount`/`stressPattern` and
+`syllableRepresentation`/`recogniseSyllableCount`/`stressPattern` and
 `frequencyValue`/`frequencyScale`. The first three are gone; the frequency
 pair stays. The difference isn't producer/consumer symmetry the way
 `Pronunciation`'s removal above was (every producer/consumer pair there
@@ -565,16 +565,16 @@ those fields existed in the first place): `Phrase` no longer carries
 own typed, purpose-built fields, the full per-token `words`/`wordRoles`
 arrays were pure duplication -- every real field derived from them, and no
 other consumer read either one directly (confirmed by a repo-wide grep
-before removing: only `linkPhraseWords()` itself, `phraseWordSegments()`/
+before removing: only `updatePhraseWordLinks()` itself, `phraseWordSegments()`/
 `phraseModifierSegments()` in `ui/server/builder_phrase.ts`, and this
 codebase's own tests ever touched either field).
 
-`linkPhraseWords()` (role/processor/phrase_processor.ts) still computes an
+`updatePhraseWordLinks()` (role/processor/phrase_processor.ts) still computes an
 equivalent `words`/`wordRoles` pair, but as local variables scoped to that
 one function call, never written back onto the `Phrase`. `phraseWordSegments()`/
 `phraseModifierSegments()` (ui/server/builder_phrase.ts) now recompute the
 identical facts fresh at render time instead -- `dictionary.lookup(token)`
-per token for the former, a direct `classifyModifierRoles()` call for the
+per token for the former, a direct `recogniseModifierRoles()` call for the
 latter -- rather than reading a stored array. This isn't a new pattern for
 either function: `phraseModifierSegments()` already recomputed from
 `phrase.text`/`phrase.wordRoles`/`phrase.words` rather than reading
@@ -609,7 +609,7 @@ at the one WordForm (data/entities/word_form.ts), owned by that
 MODIFIER-role token's own resolved Word, whose own spelling matches this
 token's literal occurrence in `phrase.text` -- `headWordForm`'s own exact
 resolution rule, one ModifierRole over, via the same `matchingFormId()`
-helper `linkPhraseWords()` now shares across `headWordForm`/`preModifiers`/
+helper `updatePhraseWordLinks()` now shares across `headWordForm`/`preModifiers`/
 `postModifiers`/`determiners` alike. A MODIFIER-role token whose own
 resolved Word carries no WordForm spelled the way it appears here is left
 out of `preModifiers`/`postModifiers` entirely now, rather than included
@@ -869,10 +869,10 @@ so too ("Structure: (Determiner) + (Modifiers) + Noun/Pronoun + (Complements)")
 -- but the actual code never implemented the Pronoun half of that rule in two
 separate places, and a third place never even got the chance to try.
 
-**`role/processor/phrase_processor.ts`'s `classifyModifierRoles()`** --
-NounPhrase's own Head Identification Rule was `lastTargetPosBeforeFirstPreposition(possiblePos,
+**`role/processor/phrase_processor.ts`'s `recogniseModifierRoles()`** --
+NounPhrase's own Head Identification Rule was `recogniseGeneralHeadIndex(possiblePos,
 PartOfSpeech.NOUN)`, checking `PartOfSpeech.NOUN` alone. Fixed by giving
-`lastTargetPosBeforeFirstPreposition()` an optional second target POS
+`recogniseGeneralHeadIndex()` an optional second target POS
 parameter (`alsoTargetPos`), and passing `PartOfSpeech.PRONOUN` for
 NounPhrase specifically -- AdjectivePhrase/AdverbPhrase's own call sites are
 unaffected, still single-target. In practice this rarely bit a real
@@ -899,14 +899,14 @@ scope -- PhraseType has no CONJUNCTION shape to assign). So this "never
 classified" behavior, while general in how it was written, only ever had
 one real consequence in the bundled data: every Pronoun-headed idiom
 showed no Phrase Type at all. `entryToPhrase()` now calls the identical
-`classifyPhraseType()` synsetMemberToPhrase() already uses for the
+`recogniseLemmaPhraseType()` synsetMemberToPhrase() already uses for the
 WordNet path, with `verbLemmas`/`nounLemmas` passed as empty `Set`s
-(deliberately -- classifyPhraseType()'s own structural overrides for "to
+(deliberately -- recogniseLemmaPhraseType()'s own structural overrides for "to
 "+verb and Determiner-Phrase-shaped ADJECTIVE/ADVERB lemmas only ever fire
 for those other parts of speech, so an empty set changes nothing for the
 PRONOUN case this call site actually reaches).
 
-**`role/processor/phrase_processor.ts`'s `classifyPhraseType()` itself** --
+**`role/processor/phrase_processor.ts`'s `recogniseLemmaPhraseType()` itself** --
 its own switch had no `PartOfSpeech.PRONOUN` case at all, falling through
 to `default: return undefined`, with a docstring explicitly framing that as
 correct ("dead code against real WordNet data today"). Added `case
@@ -918,24 +918,24 @@ the function's own "total mapping over PartOfSpeech" docstring claim is
 accurate again.
 
 `headWord`/`preModifiers`/`postModifiers`/`determiners` still never get a
-*stored* value for one of these closed-class Phrases -- `linkPhraseWords()`
+*stored* value for one of these closed-class Phrases -- `updatePhraseWordLinks()`
 is still never called outside `seedWordNet()`, untouched by this fix, so
 that half of `Phrase.headWord`'s own documented "undefined... or for a
 Common Vocabulary Cache closed-class Phrase" case stays true. But the
 Phrases tab's own detail panel doesn't read a stored value for any of
 these fields at all -- `phraseWordSegments()`/`phraseModifierSegments()`
-(`ui/server/builder_phrase.ts`) recompute `classifyModifierRoles()` fresh
+(`ui/server/builder_phrase.ts`) recompute `recogniseModifierRoles()` fresh
 at render time (this same log's own "`words`/`wordRoles`..." section, on
 why) -- so fixing `phraseType` alone was enough to also unlock a correct,
 live-computed Determiners row for these phrases in the UI, with no
-`linkPhraseWords()` call needed.
+`updatePhraseWordLinks()` call needed.
 
 Verified end-to-end against the real bundled Common Vocabulary Cache
 (Playwright): "each other" and "no one" both now show a "Noun Phrase" tag
 in both the Phrases tab's own table and detail panel (previously blank),
 and "each other"'s own detail panel additionally now renders a correct,
 live-computed "Determiners: #1 each #2 other" row it couldn't show at all
-before (`classifyModifierRoles()` returns every role `undefined` outright
+before (`recogniseModifierRoles()` returns every role `undefined` outright
 when `phraseType` itself is `undefined` -- the early-return guard at the
 top of that function).
 
@@ -945,17 +945,17 @@ Immediate follow-up bug report on the fix above, confirmed the same way:
 the Phrases tab's own detail panel showed "Noun Phrase" and a correct,
 live-computed "Determiners" row for "no one" -- but no "Head Word: one"
 row at all, even though "one" is a real Word (both NOUN, from WordNet, and
-PRONOUN, from pronouns.json) that `classifyModifierRoles()`'s own
+PRONOUN, from pronouns.json) that `recogniseModifierRoles()`'s own
 NounPhrase Head Identification Rule (fixed in the section above) can
 already resolve.
 
 Root cause: `ui/server/builder_phrase.ts`'s `phraseHeadWordSegment()` --
 unlike `phraseModifierSegments()` right next to it, which deliberately
-recomputes `classifyModifierRoles()` fresh at render time -- reads
+recomputes `recogniseModifierRoles()` fresh at render time -- reads
 `phrase.headWord`/`phrase.headWordForm` as *stored* fields directly
 (`if (phrase.headWordForm === undefined) return undefined; ...`). Those
-two fields are only ever written by `linkPhraseWords()`
-(role/processor/phrase_processor.ts), and `linkPhraseWords()` was only
+two fields are only ever written by `updatePhraseWordLinks()`
+(role/processor/phrase_processor.ts), and `updatePhraseWordLinks()` was only
 ever called from `seedWordNet()` -- never from `seedClosedClassWords()`'s
 own Phrase loop. So even with `phraseType` and the live-recomputed
 Modifiers/Determiners rows both correctly fixed, `headWord`/`headWordForm`
@@ -964,7 +964,7 @@ Pronoun-headed ones included -- a second, independent gap behind the same
 user-visible symptom ("pronouns are not being attached to the head"),
 not something the first fix could reach on its own.
 
-Fixed by calling `linkPhraseWords(phraseCopy, dictionary, wordForms)`
+Fixed by calling `updatePhraseWordLinks(phraseCopy, dictionary, wordForms)`
 inside `seedClosedClassWords()`'s own Phrase loop (`role/word_seeder.ts`),
 `seedWordNet()`'s own call site's exact counterpart. Safe unconditionally:
 `dictionary` already carries every closed-class Word this same seeding
@@ -972,8 +972,8 @@ pass inserted moments earlier (the Word loop always runs before the
 Phrase loop within one `seedClosedClassWords()` call), and for a Phrase
 whose own `phraseType` stays `undefined` (every CONJUNCTION-tagged one,
 subordinating_conjunctions.json -- PhraseType has no CONJUNCTION shape)
-`classifyModifierRoles()`'s own early-return guard leaves every field
-`linkPhraseWords()` sets at its own harmless empty/undefined default,
+`recogniseModifierRoles()`'s own early-return guard leaves every field
+`updatePhraseWordLinks()` sets at its own harmless empty/undefined default,
 identical to today's behaviour for those.
 
 "each other" surfaced a genuinely different, harder case while verifying
@@ -1008,7 +1008,7 @@ correctly for "no one"/"each other". Three distinct, independently-verified
 root causes, not one:
 
 **1. Seeding order.** The follow-up fix above added a
-`linkPhraseWords(phraseCopy, dictionary, wordForms)` call inside
+`updatePhraseWordLinks(phraseCopy, dictionary, wordForms)` call inside
 `seedClosedClassWords()`'s own Phrase loop -- but that loop runs once, at
 Common Vocabulary Cache seeding time, before `seedWordNet()` has added
 anything to `dictionary` at all. For "few" specifically this matters more
@@ -1018,7 +1018,7 @@ resolves to only one homograph -- `role/determiner_seeder.ts`'s own
 attributively") -- since pronouns.json's own "few" entry (added in fix #3
 below) doesn't exist in the seeded Dictionary until `seedWordNet()` runs
 its own closed-class pass moments later in the real seeding pipeline order,
-and even then `linkPhraseWords()` was never called again afterward to
+and even then `updatePhraseWordLinks()` was never called again afterward to
 pick it up. Confirmed directly: a diagnostic test read `dictionary.lookupAll("few").map(w
 => w.partOfSpeech)` before/after `seedWordNet()` and saw `[DETERMINER]`
 then `[DETERMINER, PRONOUN, NOUN, ADJECTIVE]` -- the PRONOUN sense
@@ -1028,7 +1028,7 @@ got resolved and permanently stored.
 Fixed in `role/word_seeder.ts`'s `seedWordNet()`: its own linking pass
 used to loop only `newPhrases` (Phrases created by *this* WordNet-seeding
 call). Changed to loop `phraseBook.all()` instead -- re-running
-`linkPhraseWords()` against every Phrase already in `phraseBook`,
+`updatePhraseWordLinks()` against every Phrase already in `phraseBook`,
 including every closed-class one `seedClosedClassWords()` seeded earlier,
 now that `dictionary` carries WordNet's full homograph set too. The
 now-fully-dead `newPhrases` array (and its one push site) was removed
@@ -1037,13 +1037,13 @@ outright rather than left as an unused intermediate.
 **2. Wrong-homograph resolution -- the deeper, structural bug.** Fixing
 (1) alone was not enough: even re-run after WordNet loads, "a few"'s own
 `headWord` still resolved to the *Determiner* "few", not the Pronoun one.
-`classifyModifierRoles()` already had the discipline to check every
+`recogniseModifierRoles()` already had the discipline to check every
 possible part of speech per token rather than one arbitrary pick (its own
 docstring's "give" example, and this log's own first section above) -- but
-`linkPhraseWords()`'s *own* `words[]` construction never inherited that
+`updatePhraseWordLinks()`'s *own* `words[]` construction never inherited that
 discipline. It resolved every token, Head included, via plain
 `dictionary.lookup(token)` -- first-seeded-homograph-wins, completely
-disconnected from which homograph `classifyModifierRoles()` had actually
+disconnected from which homograph `recogniseModifierRoles()` had actually
 matched the Head position against. For "few" specifically, the Determiner
 homograph happens to be seeded first (closed-class pass runs before
 WordNet), so it silently won every time, regardless of role.
@@ -1065,26 +1065,26 @@ Pronoun does.
 
 Fixed by adding two new functions to `role/processor/phrase_processor.ts`:
 
-- `headTargetPartsOfSpeech(phraseType)` -- returns the `ReadonlySet<PartOfSpeech>`
+- `identifyHeadTargetPartsOfSpeech(phraseType)` -- returns the `ReadonlySet<PartOfSpeech>`
   a given PhraseType's own Head Identification Rule targets (NounPhrase:
   Noun/Pronoun; AdjectivePhrase: Adjective; AdverbPhrase: Adverb;
   VerbPhrase/InfinitivePhrase: Verb; PrepositionalPhrase: Preposition) --
-  extracted from `classifyModifierRoles()`'s own switch (which already
+  extracted from `recogniseModifierRoles()`'s own switch (which already
   computed this per-branch inline) so both that switch and the new
   resolution step below share one definition and can never drift apart.
-- `resolvedWordFor(token, targetPos, dictionary)` -- searches every
+- `recogniseMatchingTokenHomograph(token, targetPos, dictionary)` -- searches every
   homograph `dictionary.lookupAll(token)` returns for one whose own
   `partOfSpeech` is in `targetPos`, falling back to the old
   `dictionary.lookup(token)` first-seeded pick only when no homograph
   matches (the correct behaviour for every non-Head position, and for a
   Head with no matching homograph at all -- unchanged from before).
 
-`linkPhraseWords()` now computes `wordRoles`/`headIndex` first, then
-resolves only the Head token through `resolvedWordFor()` (using
-`headTargetPartsOfSpeech(phrase.phraseType)`); every other position keeps
+`updatePhraseWordLinks()` now computes `wordRoles`/`headIndex` first, then
+resolves only the Head token through `recogniseMatchingTokenHomograph()` (using
+`identifyHeadTargetPartsOfSpeech(phrase.phraseType)`); every other position keeps
 resolving via plain `dictionary.lookup()`, matching this codebase's
 existing, otherwise-accepted arbitrary-but-deterministic convention for
-non-Head positions (`definitionWords()`, `word_processor.ts`).
+non-Head positions (`recogniseDefinitionWords()`, `word_processor.ts`).
 
 The two pre-existing tests documenting "give up"/"look up to"'s NOUN
 mis-resolution and "to be sure"/"long ago"'s wrong-homograph resolution as
@@ -1093,7 +1093,7 @@ resolutions instead, with comments explaining why the change is a fix, not
 a regression.
 
 **3. "few" itself needed its own PRONOUN sense.** Fixing (1) and (2) still
-left one gap specific to "few": once `resolvedWordFor()` correctly prefers
+left one gap specific to "few": once `recogniseMatchingTokenHomograph()` correctly prefers
 a PRONOUN- or NOUN-tagged homograph for a NounPhrase Head, it can only find
 one if one actually exists. WordNet's own real NOUN sense for "few" is "a
 small elite group" ("it was designed for the discriminating few") --
@@ -1250,7 +1250,7 @@ construct/copy them -- every other entity in `data/entities/` has both
 Coordination didn't.
 
 Added `role/coordination_processor.ts` (`createCoordination`,
-`copyCoordinationWithFreshUuid`, `graphUuid`) -- `sense_processor.ts`'s
+`createFreshUuidCoordinationCopy`, `graphUuid`) -- `sense_processor.ts`'s
 own exact shape and placement rationale (a top-level `role/` file, not
 `role/processor/`, since Coordination isn't a Word POS subtype either).
 `CoordinationInit<T>` requires `coordinates` (`Pick`), leaves
@@ -1301,7 +1301,7 @@ family a store and processor, and was out of scope here (a small,
 closed-set seeder follows in the section below). Verified via direct
 construction instead (`vocabulary.test.ts`'s own new
 `describe("Coordinations", ...)` block): `createCoordination()`/
-`copyCoordinationWithFreshUuid()`/`graphUuid()` against a synthetic
+`createFreshUuidCoordinationCopy()`/`graphUuid()` against a synthetic
 `Coordination<Adjective>`, the `Coordinations` store's own CRUD/seedFrom
 round-trip, and one test tying `coordinator`/`ConjunctionType` together
 end-to-end -- "red, white, and blue" as a single three-element
@@ -1354,7 +1354,7 @@ an error" outcome `skipUnresolvable` already gives an ordinary
 unresolvable relationship spec.
 
 Resolution deliberately does NOT reuse `phrase_processor.ts`'s own
-`resolvedWordFor()` -- that function always returns *some* Word (a Head
+`recogniseMatchingTokenHomograph()` -- that function always returns *some* Word (a Head
 position always has a real token to resolve, best-effort, falling back
 to the first-seeded homograph when no exact match exists). A
 coordinate here needs the opposite contract: `wordWithPartOfSpeech()`
@@ -1375,7 +1375,7 @@ twice) -- `PrepositionSenseSeeder`'s own identical guard shape.
 `entryId` itself is built via `identifier(entry.entry_id)` (not the
 `{ value: entry.entry_id }` object literal `entryToWord()`/
 `entryToPhrase()` use) -- those two deliberately leave `entryId.uuid`
-unset, fixed up later by `copyWordWithFreshUuid()`/
+unset, fixed up later by `createFreshUuidWordCopy()`/
 `copyPhraseWithFreshUuid()` once `seedClosedClassWords()`'s own per-
 Domain loop has a real `copy` to mint a fresh uuid for (word_seeder.ts's
 own cached, domain-agnostic prototype pattern) -- `WordCoordinationSeeder`
@@ -1502,7 +1502,7 @@ hardcoded.
 Client-side (`client_coordinations_tab_view.ts`), `coordinatesText()`
 now branches on `pos === "CONJUNCTION"`: a Conjunction-itself row
 rejoins its own token(s) with plain spaces ("as" + "long" + "as" ->
-"as long as", the same text `linkPhraseWords()` itself split it from),
+"as long as", the same text `updatePhraseWordLinks()` itself split it from),
 while a real coordinate pair still gets the "and"/Oxford-comma join
 `coordinatesText()` already had. Added a "Conjunction type" column
 (`conjunctionTypePill()`, new -- Coordinating/Subordinating, its own
@@ -1617,7 +1617,7 @@ B". `coordinator` still names the second half ("or"/"and"/"nor") --
 `correlative` is additive, not a replacement.
 
 Purely additive to the entity: `createCoordination()`/
-`copyCoordinationWithFreshUuid()` (`role/coordination_processor.ts`)
+`createFreshUuidCoordinationCopy()` (`role/coordination_processor.ts`)
 both already build/copy a `Coordination` generically (`Partial<Omit<...>>`
 spread and a full object spread, respectively), so neither needed a
 change to carry the new optional field. No seeder populates it yet --
@@ -1627,21 +1627,21 @@ a producer is written for it, the same "documented ahead of a real
 producer" state `coordinator` itself started in before
 `WordCoordinationSeeder` existed.
 
-## `Phrase.complements`: real constituency parsing for the one gap `linkPhraseWords()` always had
+## `Phrase.complements`: real constituency parsing for the one gap `updatePhraseWordLinks()` always had
 
 ### The reported bug: "abatement of a nuisance" silently dropped its own "of a nuisance"
 
 "abatement of a nuisance" (00362285-n, dict/data.noun, synonymous with
 "nuisance_abatement") seeds as a real NounPhrase, head "abatement" --
 but its own trailing "of a nuisance" span went nowhere at all.
-`classifyModifierRoles()`'s own NounPhrase branch only ever assigns
+`recogniseModifierRoles()`'s own NounPhrase branch only ever assigns
 MODIFIER *before* the Head; nothing assigns any role to a token after
 it. `ModifierRole.COMPLEMENT` existed in the enum and NounPhrase's own
 COMPLEMENT allowed-types row already named `PrepositionalPhrase`/`Clause`
 as valid fillers (`PHRASE_TYPE_DETAILS[PhraseType.NOUN_PHRASE].allowedTypes`,
 data/enums/phrase_type.ts) -- but nothing in the codebase ever assigned
 that role or built such a Phrase (`data/enums/modifier_role.ts`'s own
-former docstring said so outright). `linkPhraseWords()`'s own former
+former docstring said so outright). `updatePhraseWordLinks()`'s own former
 docstring was equally explicit: "nothing in this codebase performs
 constituency parsing within a phrase's own text ... a MODIFIER token
 that resolves to a Phrase/Clause span rather than a single Word is left
@@ -1662,19 +1662,19 @@ imports fixed for the new depth, and its 4 external importers
 is now the only `*_phrase.ts` file still awaiting this same move --
 out of scope here, untouched.
 
-### `complementStartIndex()`/`classifyComplementPhraseType()`: deciding whether a Complement span exists, and what shape it takes
+### `recogniseComplementStartIndex()`/`recogniseComplementPhraseType()`: deciding whether a Complement span exists, and what shape it takes
 
 Added to `role/processor/phrase_processor.ts`, alongside
-`classifyModifierRoles()`'s existing Head-finding helpers, for the
+`recogniseModifierRoles()`'s existing Head-finding helpers, for the
 three PhraseTypes that actually declare a COMPLEMENT row in their own
 `PHRASE_TYPE_DETAILS[...].allowedTypes` -- NounPhrase, AdjectivePhrase,
 PrepositionalPhrase (VerbPhrase/AdverbPhrase/InfinitivePhrase declare
-none, so `complementStartIndex()` always returns `undefined` for them,
+none, so `recogniseComplementStartIndex()` always returns `undefined` for them,
 unchanged):
 
 - NounPhrase/AdjectivePhrase: the first post-Head token capable of
   reading as a Preposition (`PHRASE_TYPE_PREPOSITIONS`'s own closed
-  set, the same membership `classifyPhraseType()` itself already checks
+  set, the same membership `recogniseLemmaPhraseType()` itself already checks
   one Phrase-structure level up) starts the Complement, running to the
   end of the token list. `undefined` when no such token exists -- the
   overwhelmingly common case ("toy poodle", "highly reliable").
@@ -1682,7 +1682,7 @@ unchanged):
   any token follows the Head -- PrepositionalPhrase's own structure
   ("Preposition + Noun phrase/complement + (Modifiers)") places its
   Complement immediately after its own Preposition Head, every time.
-  This makes the post-Head Modifier rule `nonHeadModifierRole()` still
+  This makes the post-Head Modifier rule `identifyNonHeadModifierRole()` still
   carries for PrepositionalPhrase permanently unreachable in practice
   (verified: no real bundled-data test ever exercised it, only
   `postModifiers.toEqual([])` assertions) -- left in place rather than
@@ -1690,7 +1690,7 @@ unchanged):
   real data never exercises" precedent for a couple of its other
   fallback branches.
 
-`classifyComplementPhraseType()` decides the nested shape structurally,
+`recogniseComplementPhraseType()` decides the nested shape structurally,
 never from a WordNet-tagged part of speech (there is none for an
 internal span this codebase invents): a nested PrepositionalPhrase when
 the span itself opens with another Preposition-capable token ("out of
@@ -1717,18 +1717,18 @@ subtype's own MODIFIER row already does). `VerbPhrase`/`AdverbPhrase`/
 `InfinitivePhrase` are untouched -- no COMPLEMENT row, no narrowing.
 
 Unlike `preModifiers`/`postModifiers`, this is a field
-`linkPhraseWords()` genuinely builds a real nested Phrase for, not just
-an `Identifier` or a left-out gap: when `classifyModifierRoles()` finds
+`updatePhraseWordLinks()` genuinely builds a real nested Phrase for, not just
+an `Identifier` or a left-out gap: when `recogniseModifierRoles()` finds
 a COMPLEMENT position, every token from there to the end is re-joined
 into text and recursively linked into a brand-new Phrase
-(`buildComplementPhrase()`) via a recursive `linkPhraseWords()` call --
+(`buildComplementPhrase()`) via a recursive `updatePhraseWordLinks()` call --
 complete with its own `headWord`/`preModifiers`/`postModifiers`/
 `determiners`/`complements`, so a span nested two Prepositions deep
 resolves correctly with no separate recursion limit needed. Every token
 at or past the Complement's own start index is excluded from the outer
 Phrase's flat `preModifiers`/`postModifiers`/`determiners` loop --
 already true for free, since none of those tokens carry MODIFIER/
-DETERMINER roles any more once `classifyModifierRoles()` marks them
+DETERMINER roles any more once `recogniseModifierRoles()` marks them
 COMPLEMENT-owned; no separate skip logic was needed in that loop.
 
 ### Verified end-to-end against real seeded WordNet data (`vocabulary.test.ts`)
@@ -1741,7 +1741,7 @@ other real preposition), whose own `complements` = one further nested
 NounPhrase ("a nuisance", head "nuisance", `determiners` = one real
 WordForm reference for "a") -- recursion terminates there, "nuisance"
 alone opens no trailing Preposition span. Two existing tests' own
-`classifyModifierRoles()` assertions updated for the same underlying
+`recogniseModifierRoles()` assertions updated for the same underlying
 behavior change: "at fault" (`[HEAD, undefined]` -> `[HEAD, COMPLEMENT]`,
 its own single-token Complement "fault" resolving as a nested NounPhrase
 in turn) and "in the meantime" (`[HEAD, DETERMINER, undefined]` ->
@@ -1770,25 +1770,25 @@ whether a Complement should become its own independently-listed,
 independently-searchable Phrases-tab entry, or stay a detail-panel-only
 structural fact -- the answer was both.
 
-**Registration** (`role/processor/phrase_processor.ts`): `linkPhraseWords()`/
+**Registration** (`role/processor/phrase_processor.ts`): `updatePhraseWordLinks()`/
 `buildComplementPhrase()` both take a new optional `phrases: Phrases`
 parameter -- the same optional-store convention `wordForms` already
 has. When supplied, `registerComplementPhrase()` finds-or-creates the
 Complement directly *in* that store (`Phrases.append()`, tagged with a
 new synthetic `partOfSpeech`: NOUN for a NounPhrase complement, matching
-`classifyPhraseType()`'s own NOUN -> NOUN_PHRASE default; PREPOSITION
+`recogniseLemmaPhraseType()`'s own NOUN -> NOUN_PHRASE default; PREPOSITION
 for a PrepositionalPhrase one -- genuinely used for once, since no real
 WordNet-tagged Phrase is ever PREPOSITION-tagged). Dedup key: (`text`,
 `phraseType`, that synthetic `partOfSpeech`) -- the identical (text, tag)
 shape `word_seeder.ts`'s own WordNet Phrase append site already uses.
 
 This dedup is what keeps the whole feature idempotent, and it had to
-be: `linkPhraseWords()` already runs more than once over the same real
+be: `updatePhraseWordLinks()` already runs more than once over the same real
 Phrase within a single `seedWordNet()` call (the closed-class-then-
 WordNet re-link pass, this log's own earlier section on it) and again
 on every repeat `seedWordNet()` call -- without reuse, each of those
 would have appended its own fresh duplicate "of a nuisance" every
-single time. `word_seeder.ts`'s own two real `linkPhraseWords()` call
+single time. `word_seeder.ts`'s own two real `updatePhraseWordLinks()` call
 sites now both pass `phraseBook` through. Verified directly
 (`vocabulary.test.ts`): the "seeds every synset member... stays
 idempotent" test's own `dictionary.totalEntries() + phraseBook.totalEntries()`
@@ -1864,7 +1864,7 @@ alongside its existing `Identifier`/embedded-Phrase branches.
 branch while already being touched here -- correcting a pre-existing,
 harmless gap between `PHRASE_TYPE_DETAILS[ADJECTIVE_PHRASE].allowedTypes.MODIFIER`
 (which only ever listed `["Adverb", "AdverbPhrase"]`) and the real
-runtime `nonHeadModifierRole()` ADJECTIVE_PHRASE branch (which already
+runtime `identifyNonHeadModifierRole()` ADJECTIVE_PHRASE branch (which already
 treated an ADJECTIVE-capable pre-Head token as a genuine Modifier too,
 "bone dry" -- degree-modifier-less compounding). `complements` is
 untouched -- it stays an array, `Phrase.complements`'s own docstring on
@@ -1873,24 +1873,24 @@ even though the field's own shape doesn't structurally forbid it.
 
 ### Run-collapsing algorithm (`role/processor/phrase_processor.ts`)
 
-`preHeadModifierRun()`/`postHeadModifierRun()`/`determinerRun()` find
+`recognisePreHeadModifierRun()`/`recognisePostHeadModifierRun()`/`recogniseDeterminerRun()` find
 the maximal contiguous same-role token span adjacent to (or, for
-`determinerRun()`, anywhere in) `wordRoles` -- `[start, end)` indices,
-`undefined` when no run exists. `buildModifierUnit()` resolves one such
-span: length 1 -> `singleTokenModifierId()` (unchanged, the pre-existing
-per-token WordForm-reference resolution `linkPhraseWords()`'s own local
+`recogniseDeterminerRun()`, anywhere in) `wordRoles` -- `[start, end)` indices,
+`undefined` when no run exists. `createModifierRunValue()` resolves one such
+span: length 1 -> `recogniseTokenWordFormId()` (unchanged, the pre-existing
+per-token WordForm-reference resolution `updatePhraseWordLinks()`'s own local
 `matchingFormId()` closure already did, pulled out standalone since this
 function now operates on an arbitrary token sub-span, not a whole-phrase
-index); length 2+ -> `coordinatingConjunctionIndex()` first (below),
-falling back to `classifyModifierPhraseType()` + `buildNestedPhrase()`
-(one flat nested Phrase for the whole run, `registerNestedPhrase()`'s
+index); length 2+ -> `recogniseCoordinatingConjunctionIndex()` first (below),
+falling back to `recogniseModifierPhraseType()` + `createLinkedNestedPhrase()`
+(one flat nested Phrase for the whole run, `createStoredNestedPhrase()`'s
 own find-or-create dedup against `phrases` when supplied -- the exact
 mechanism `Phrase.complements`'s own `registerComplementPhrase()`
 already established one section up, generalised here beyond just
 Complements and renamed to match: `partOfSpeechForComplementPhraseType()`
--> `partOfSpeechForPhraseType()`, `registerComplementPhrase()`/
-`buildComplementPhrase()` -> `registerNestedPhrase()`/`buildNestedPhrase()`).
-`classifyModifierPhraseType()` picks the new nested Phrase's own
+-> `identifySyntheticPartOfSpeech()`, `registerComplementPhrase()`/
+`buildComplementPhrase()` -> `createStoredNestedPhrase()`/`createLinkedNestedPhrase()`).
+`recogniseModifierPhraseType()` picks the new nested Phrase's own
 `phraseType` structurally from the run's own tokens (ADJECTIVE_PHRASE if
 any token is ADJECTIVE-capable, else NOUN_PHRASE if any is NOUN-capable,
 else ADVERB_PHRASE, else NOUN_PHRASE default) -- verified this picks
@@ -1904,17 +1904,17 @@ outside it by construction. A DETERMINER run *can*: "each other"
 spanning 100% of `tokens`. Collapsing that would build a nested Phrase
 whose own `text` equals its parent's, and recursively linking it would
 never terminate (an identical child containing an identical child,
-forever). `linkPhraseWords()` checks for this one case explicitly
+forever). `updatePhraseWordLinks()` checks for this one case explicitly
 (`detRun[0] === 0 && detRun[1] === tokens.length`) and falls back to the
-run's own first token alone via `singleTokenModifierId()` instead of
+run's own first token alone via `recogniseTokenWordFormId()` instead of
 collapsing -- a narrow, deliberate compromise scoped to this one real
 idiom shape, not a general non-collapsing rule (verified: "each other"
 own updated test now asserts `determiner` resolves "each" alone, not a
 nested "each other" Phrase).
 
-### Coordination detection: `coordinatingConjunctionIndex()`, and why it needed run-detection changes of its own
+### Coordination detection: `recogniseCoordinatingConjunctionIndex()`, and why it needed run-detection changes of its own
 
-`coordinatingConjunctionIndex()` finds the one token index (strictly
+`recogniseCoordinatingConjunctionIndex()` finds the one token index (strictly
 between a run's own first and last position) whose own
 `dictionary.lookupAll(token)` includes a real `Conjunction` Word with
 `conjunctionType === ConjunctionType.COORDINATING` (`isConjunction()`,
@@ -1924,10 +1924,10 @@ split only ("X and Y") -- no comma-aware N-ary coordination, matching
 the scope of the one real precedent this mirrors (`WordCoordinationSeeder`
 handles N-ary via structured JSON `coordinates`, not free-text parsing).
 Found -> split the run around it, resolve each side
-(`resolveCoordinateSide()`: length 1 -> `resolvedWordFor()` against the
+(`createCoordinateSide()`: length 1 -> `recogniseMatchingTokenHomograph()` against the
 run's own target POS below; length 2+ -> one further nested Phrase, one
 level only -- a coordinate side is never itself searched for a second,
-nested coordination), `registerModifierCoordination(coordinations,
+nested coordination), `createStoredModifierCoordination(coordinations,
 coordinates, coordinator)` finds-or-creates the `Coordination` in the
 supplied `Coordinations` store (a linear scan over `coordinations.all()`
 comparing each coordinate's own `entryId.uuid` in order plus
@@ -1938,25 +1938,25 @@ or builds a bare, unregistered one via `createCoordination()` when
 `wordForms`/`phrases` already have.
 
 Getting the run itself to include the embedded coordinator at all needed
-its own fix. `classifyModifierRoles()` never assigns MODIFIER or
+its own fix. `recogniseModifierRoles()` never assigns MODIFIER or
 DETERMINER to a Conjunction-only token ("and"/"or"/... resolve to
 CONJUNCTION alone, never alongside NOUN/ADJECTIVE/ADVERB/DETERMINER), so
 a naive contiguous-role scan stops dead at the coordinator -- "big and
 red" would scan as one lone MODIFIER ("red") immediately before the
 Head, with "big" and "and" left outside the run entirely, coordination
-detection never even reached. `extendRunBackward()`/`extendRunForward()`
+detection never even reached. `recogniseBackwardRoleRunBoundary()`/`recogniseForwardRoleRunBoundary()`
 (shared by all three run-finding functions) bridge exactly one such gap:
 after an ordinary same-role token, also accept a real coordinating
 conjunction (`isCoordinatingConjunctionToken()`, the membership check
-`coordinatingConjunctionIndex()` itself already made, pulled out so both
+`recogniseCoordinatingConjunctionIndex()` itself already made, pulled out so both
 call sites share it) immediately followed by one more same-role token
 beyond it -- one bridge deep on either side, matching
-`coordinatingConjunctionIndex()`'s own binary-split-only scope.
+`recogniseCoordinatingConjunctionIndex()`'s own binary-split-only scope.
 
 **Coordinate resolution needed its own target-POS fix, not
-`classifyModifierPhraseType()`'s.** The first working version resolved
-each coordinate side against `headTargetPartsOfSpeech(classifyModifierPhraseType(tokens))`
--- reusing the same heuristic `buildNestedPhrase()`'s own non-coordination
+`recogniseModifierPhraseType()`'s.** The first working version resolved
+each coordinate side against `identifyHeadTargetPartsOfSpeech(recogniseModifierPhraseType(tokens))`
+-- reusing the same heuristic `createLinkedNestedPhrase()`'s own non-coordination
 branch already uses to pick a brand new nested Phrase's own `phraseType`.
 That's the wrong POS source for a coordinate Word specifically: a
 coordinate's own correct POS is already pinned down by the *role* this
@@ -1965,24 +1965,24 @@ post-Head Modifier run), not by re-guessing from the coordinate tokens'
 own ambiguous homograph set -- and the two disagree often enough to
 matter. Caught live against the real bundled data: `move_back_and_forth`
 (01880523-v) is a real four-token VerbPhrase ("move" Head, "back and
-forth" one post-Head Modifier run); `classifyModifierPhraseType(["back",
+forth" one post-Head Modifier run); `recogniseModifierPhraseType(["back",
 "forth"])` picked NOUN_PHRASE (both tokens are *also* real NOUN
 homographs -- "forth" names a river, capitalized "Forth"), so the
 coordinate resolution searched for a NOUN "forth" and silently returned
 the wrong homograph -- a Scottish river standing in for the adverb.
-Fixed by adding `modifierRunTargetPos(phraseType, role, isPreHead?)`,
-`nonHeadModifierRole()`'s own per-`phraseType` MODIFIER/DETERMINER
+Fixed by adding `identifyModifierRunTargetPos(phraseType, role, isPreHead?)`,
+`identifyNonHeadModifierRole()`'s own per-`phraseType` MODIFIER/DETERMINER
 switch re-expressed as an allowed-POS *set* instead of a per-token role
 decision (NOUN_PHRASE -> `{NOUN, ADJECTIVE, ADVERB}`; VERB_PHRASE/
 ADVERB_PHRASE -> `{ADVERB}`; ADJECTIVE_PHRASE -> `{ADVERB, ADJECTIVE}`;
 PREPOSITIONAL_PHRASE -> `{ADVERB}` pre-Head / `{ADJECTIVE}` post-Head;
 DETERMINER role, any `phraseType` -> `{DETERMINER}`), computed once in
-`linkPhraseWords()` from the enclosing Phrase's own `phraseType` and
-passed into `buildModifierUnit()`/`resolveCoordinateSide()` directly --
-`classifyModifierPhraseType()` stays exactly as it was, still used
+`updatePhraseWordLinks()` from the enclosing Phrase's own `phraseType` and
+passed into `createModifierRunValue()`/`createCoordinateSide()` directly --
+`recogniseModifierPhraseType()` stays exactly as it was, still used
 (correctly) for the non-coordination nested-Phrase-`phraseType` decision
 one branch over, since that nested Phrase gets its own full recursive
-`linkPhraseWords()` pass afterward to self-correct any imprecision there,
+`updatePhraseWordLinks()` pass afterward to self-correct any imprecision there,
 the same safety net a directly-embedded `Coordination` Word never gets.
 
 ### Verified against real seeded WordNet + Common Vocabulary Cache data, not just synthetic tests
@@ -2013,7 +2013,7 @@ This interaction changed two pre-existing `WordCoordinationSeeder`/
 `coordinationRecords()` test expectations that had implicitly assumed
 `coordinations` stayed empty until `WordCoordinationSeeder` ran: it
 doesn't any more, since `seedWordNet()` now threads `coordinations`
-through every `linkPhraseWords()` call
+through every `updatePhraseWordLinks()` call
 (role/word_seeder.ts's own `seedClosedClassWords()`/`seedWordNet()`,
 both gaining an optional `coordinations?: Coordinations<LinguisticUnit>`
 parameter, `VocabularyContext.coordinations` already existed and needed
@@ -2033,7 +2033,7 @@ that guard, leaving 33 that render.
 ### UI (`ui/server/builder_phrase.ts`/`builder_word.ts`, `ui/client/client_detail_panel_controller.ts`)
 
 `phraseModifierSegments()` no longer recomputes from `phrase.text` via a
-fresh `classifyModifierRoles()` pass the way its array-shaped
+fresh `recogniseModifierRoles()` pass the way its array-shaped
 predecessor did (that recomputation existed only to recover a token's
 own plain surface text when no WordForm matched it, an `Identifier`-only
 concern) -- now that a multi-token span is a real, independently-built
@@ -2071,7 +2071,7 @@ a single entry rather than an indexed list.
 169/169 passing, including a new dedicated "attributive genitive case"
 test (verifying `preModifier` is the exact same already-seeded
 "attributive genitive" AdjectivePhrase object, not a fresh duplicate --
-`registerNestedPhrase()`'s own dedup working end to end against real
+`createStoredNestedPhrase()`'s own dedup working end to end against real
 WordNet data) and a new synthetic Coordination test ("big and red dog"
 against a hand-seeded Dictionary, verifying `coordinates`/`coordinator`/
 store-registration/idempotent re-linking). Live Playwright check against
@@ -2306,7 +2306,7 @@ covers `WordFormField` at all).
 **Real call sites updated, beyond the enum's own file**:
 `wordFormsFor()`/`builder_word.ts` and `definitionWordSegment()`/
 `builder_segment.ts` (both switched to `wordFormFieldLabel()` for their
-label text, per above); `validateFormText()`/`role/word_processor.ts`
+label text, per above); `recogniseFormTextIssue()`/`role/word_processor.ts`
 (`WordFormIssue.reason`'s own diagnostic message interpolates a
 `field` value into human-readable text -- switched to
 `wordFormFieldLabel(field)` so the message still reads e.g. "...for
@@ -2388,7 +2388,7 @@ lemma form must be set. There are entries with it not set." Confirmed:
 `WORD_FORM_MATRIX`'s own `BASE_LEMMA_CANONICAL_FORM` row (`data/matrices/pos_vs_wordform_matrice.ts`)
 lists `DETERMINER` in its `appliesTo` set, alongside NOUN/VERB/ADJECTIVE/
 ADVERB/PRONOUN/PREPOSITION/CONJUNCTION/INTERJECTION/NUMERAL --
-`validateDeterminer()`'s own docstring (`role/processor/determiner_processor.ts`)
+`recogniseDeterminerFormIssues()`'s own docstring (`role/processor/determiner_processor.ts`)
 even already documented `DeterminerSeeder` as this Word's own writer for
 "Singular/Plural Number Form and Consonant/Vowel-Sound Form, plus
 baseLemmaCanonicalForm" -- but `DeterminerSeeder.seed()`
@@ -2421,7 +2421,7 @@ exactly as reported.
 `npx tsc -b --force` clean. Full `vitest run --no-file-parallelism`:
 181/181 (180 prior + one new test asserting `wordForms.formsOf(the)`
 now includes a `BASE_LEMMA_CANONICAL_FORM` WordForm, that it's the
-first form registered, that `validateDeterminer()` still reports no
+first form registered, that `recogniseDeterminerFormIssues()` still reports no
 issues, and that "a"'s own Base Lemma Canonical Form is "a" rather than
 "an").
 
@@ -2634,7 +2634,7 @@ and every direct construction/read of it -- `WordFormInit`
 (`data/word_forms.ts`, both their own `field` parameter and internal
 `form.field` reads renamed to `formType`, since these are the core
 Vocabulary Layer API real callers interact with directly), every POS
-processor's own `validateFormText(form.field, ...)`/`stringPatternsFor(form.field,
+processor's own `recogniseFormTextIssue(form.field, ...)`/`stringPatternsFor(form.field,
 ...)` call (all seven `role/processor/*_processor.ts` files),
 `word_seeder.ts`'s `hasBothDegreeForms()`, `part_of_speech_identifier.ts`'s
 inflected-form fallback, `auxiliary_seeder.ts`'s direct `createWordForm()`
@@ -2684,15 +2684,15 @@ neither is really about clause embedding itself, but each independently
 blocked one of the two sentences from resolving correctly, so both were
 root-caused and fixed here before that feature could be verified.
 
-**Gap 1 -- `shouldDoubleFinalConsonant()`'s own "abstain" case was
+**Gap 1 -- `recogniseFinalConsonantDoublingStrategy()`'s own "abstain" case was
 correct but too broad.** "Did what happened yesterday surprise you?"
 read `UNRESOLVED`: `"happened" has no seeded or hydrated part of speech
-yet`. Traced to `generatedVerbForms()` -> `regularEdForm("happen")` ->
-`shouldDoubleFinalConsonant("happen")`: "happen" ends
+yet`. Traced to `generatedVerbForms()` -> `createRegularEdForm("happen")` ->
+`recogniseFinalConsonantDoublingStrategy("happen")`: "happen" ends
 consonant-vowel-consonant but isn't monosyllabic, so the function
 correctly abstains rather than guess whether it doubles ("occur" ->
 "occurred" does, "happen" -> "happened" doesn't, identical spelling
-test, genuinely different stress) -- but `regularEdForm` treats "abstain"
+test, genuinely different stress) -- but `createRegularEdForm` treats "abstain"
 as "generate nothing at all", so "happen" (a hugely common, everyday
 regular verb) never got a past-tense WordForm registered, period.
 
@@ -2710,7 +2710,7 @@ common verbs -- "happen", "open", "enter", "answer", "offer", "suffer",
 "gather", "listen", "differ", "wonder", "murder", "order", "cover",
 "discover", "remember", "consider", "deliver", "visit", "limit",
 "profit", "benefit", "develop", "gossip"), checked by
-`shouldDoubleFinalConsonant()` before it abstains -- the same "closed,
+`recogniseFinalConsonantDoublingStrategy()` before it abstains -- the same "closed,
 well-known set... not an open curation project" reasoning
 `IRREGULAR_VERB_FORMS` (verb_processor.ts) already gives for a different
 problem (irregular spelling, not stress), applied here for stress. Every
@@ -2901,7 +2901,7 @@ Every real call site found by tracing actual field access (not a blind
 text search across `entryId`, which also matches every other entity's own
 identical field name): `data/entities/word_form.ts`'s own declaration,
 `role/word_form_processor.ts`'s three functions (`createWordForm()`,
-`copyWordFormWithFreshUuid()`, `graphUuid()`), one direct field read each
+`createFreshUuidWordFormCopy()`, `graphUuid()`), one direct field read each
 in `role/word_coordination_seeder.ts` (`coordinatorForm.wordFormId.uuid`)
 and `vocabulary.test.ts` (`andForm.wordFormId.uuid`) -- both resolving a
 `WordForm` via `WordForms.baseLemmaFormOf()`/`registerBaseLemmaForm()` to
@@ -2932,14 +2932,14 @@ Requested outright ("Remove Infinitive_phrase.ts"), then scoped via a
 follow-up question once tracing usage showed this touches 16 files across
 both layers and changes real classification/parsing behaviour, not just
 deleting one quiet file -- user chose full removal: the enum value,
-`classifyPhraseType()`'s own detection logic, the Linguistics grammar/
+`recogniseLemmaPhraseType()`'s own detection logic, the Linguistics grammar/
 sequencing machinery that read it, and the UI, not just the file and a
 minimal compile fix.
 
 **Vocabulary layer.** `data/entities/infinitive_phrase.ts` deleted.
 `PhraseType.INFINITIVE_PHRASE` removed from the enum (it was the last
 value, `= 5`, so no other member needed renumbering) and its
-`PHRASE_TYPE_DETAILS` entry dropped. `classifyPhraseType()`'s own "to" +
+`PHRASE_TYPE_DETAILS` entry dropped. `recogniseLemmaPhraseType()`'s own "to" +
 real-verb-lemma detection (`role/processor/phrase_processor.ts`) removed
 entirely, along with `INFINITIVE_LOOKALIKE_DENYLIST` and the `verbLemmas`
 parameter it threaded through `word_seeder.ts` -- both now dead, since
@@ -2951,11 +2951,11 @@ advantage") already took. Verified this is the actual real-seeded
 outcome, not just the pure-function unit test's prediction: live
 Playwright, after a real `seedWordNet()`, "to be sure" now resolves
 `Adverb -> Prepositional Phrase`, was `Adverb -> Infinitive Phrase`.
-`classifyModifierRoles()`'s own INFINITIVE_PHRASE branch (Head
+`recogniseModifierRoles()`'s own INFINITIVE_PHRASE branch (Head
 Identification Rule: "to" always PARTICLE, Head is the first Verb-capable
-token after it) removed along with it -- `headTargetPartsOfSpeech()`'s own
+token after it) removed along with it -- `identifyHeadTargetPartsOfSpeech()`'s own
 matching case too. `word_seeder.ts`'s `nounLemmas` precompute (still
-needed, `classifyDeterminerPhrase()`'s own unrelated check) simplified
+needed, `isDeterminerPhrase()`'s own unrelated check) simplified
 back to a NOUN-only loop now that `verbLemmas` has no reader left.
 
 **Linguistics layer.** `data/phrase_type.ts` (the mirrored enum,
@@ -3045,9 +3045,9 @@ field reads -- found by tracing every place something duck-typed *across*
 Word and Phrase using the field name they used to share, not just places
 reading `Phrase.entryId` directly:
 
-- `phrase_processor.ts`'s own `registerModifierCoordination()` (the
+- `phrase_processor.ts`'s own `createStoredModifierCoordination()` (the
   dedup lookup a coordinated modifier run like "big and red" goes
-  through, `buildModifierUnit()`'s own call site) cast each coordinate to
+  through, `createModifierRunValue()`'s own call site) cast each coordinate to
   `{ entryId: Identifier }` and compared `.entryId.uuid` -- safe before
   this rename, since Word and Phrase genuinely shared that field name;
   after it, a real Phrase coordinate has no `.entryId` at all, so the old
@@ -3091,7 +3091,7 @@ test behaviour changed, only the "entryId"/"phraseId" narrowing key five
 tests use). Live Playwright against the real running app, full `Load
 WordNet` (92,314 words, 70,928 phrases, 175,513 relationships, 85
 hand-curated Word Coordinations) -- confirmed no crash across real
-`entryToPhrase()`/`linkPhraseWords()`/`registerModifierCoordination()`
+`entryToPhrase()`/`updatePhraseWordLinks()`/`createStoredModifierCoordination()`
 construction of every one of those 70,928 Phrases, which would have
 thrown immediately had the `coordinateGraphUuid()` fix above been wrong.
 
@@ -3119,8 +3119,8 @@ entity's own field) alongside every other entity's identical name.
 
 Real edits: `data/entities/word.ts`/`data/entities/sense.ts`'s own field
 declarations and docstrings; `role/word_processor.ts`/`role/sense_processor.ts`'s
-`createWord()`/`createSense()`, `copyWordWithFreshUuid()`/
-`copySenseWithFreshUuid()`, `graphUuid()`; `data/entities/phrase.ts`'s
+`createWord()`/`createSense()`, `createFreshUuidWordCopy()`/
+`createFreshUuidSenseCopy()`, `graphUuid()`; `data/entities/phrase.ts`'s
 `toSyntheticWord()`/`phraseAsWord()` (both build a *Word* via
 `createWord({ entryId: ... })` -- the object-literal key itself had to
 become `wordId:` since it's populating Word's own field, independent of
@@ -3144,7 +3144,7 @@ naming "entryId" in prose.
 One real, behaviour-affecting bug found and fixed alongside the rename,
 not just a rename -- the same "generic duck-typed code relying on a
 field name two entities used to share" shape `phrase_processor.ts`'s
-`registerModifierCoordination()` and `builder_phrase.ts`'s
+`createStoredModifierCoordination()` and `builder_phrase.ts`'s
 `modifierUnitSegment()` turned out to be during the Phrase rename above,
 but latent *before* this rename too, not only introduced by it:
 `word_seeder.ts`'s own `endpointUuid()` (dispatches a `Word | Phrase |
@@ -3213,14 +3213,14 @@ the `Word`/`Sense` rename's `endpointUuid()` fix.
 
 Real edits: `data/entities/coordination.ts`'s own field declaration and
 docstring; `role/coordination_processor.ts`'s `createCoordination()`,
-`copyCoordinationWithFreshUuid()`, `graphUuid()`, and their docstrings;
+`createFreshUuidCoordinationCopy()`, `graphUuid()`, and their docstrings;
 `role/word_coordination_seeder.ts`'s own `existingEntryValues` dedup
 read and its `createCoordination<Word>({ coordinationId: ... })`
 construction call (the one real seeder that builds a Coordination
 directly, `WordCoordinationSeeder`'s own 85 hand-curated entries);
 `vocabulary.test.ts`'s `describe("Coordinations", ...)` block (four
 direct field reads, two test titles naming "entryId" in prose).
-`registerModifierCoordination()` (`phrase_processor.ts`) needed no
+`createStoredModifierCoordination()` (`phrase_processor.ts`) needed no
 change at all -- it never reads `.entryId`/`.coordinationId` directly,
 only through the already-generic `createCoordination()`/`coordinations.append()`
 calls, and its own `coordinateGraphUuid()` dedup helper (added during
@@ -3302,7 +3302,7 @@ clean compile alone would never have caught (see Bugs below).
 convention exactly: `domainId: Identifier`, `domainId.value` stable
 across every knowledge-Domain holding a copy, `domainId.uuid` fresh per
 copy; `domainText: Text` is its own canonical written form. `role/domain_processor.ts`
-(`createDomain()`/`copyDomainWithFreshUuid()`/`graphUuid()`) is its
+(`createDomain()`/`createFreshUuidDomainCopy()`/`graphUuid()`) is its
 own base-entity counterpart, matching `role/sense_processor.ts`/`role/coordination_processor.ts`'s
 own shape -- kept top-level under `role/`, not `role/processor/`, for
 the identical reason those two already are (that folder holds each Word
@@ -3329,7 +3329,7 @@ resolved identically.
 `word_seeder.ts` gets a `resolveDomain(domains: Domains, text: string): Domain`
 helper -- "find the existing `Domain` for this exact text, creating it
 the first time it's ever seen" -- the same seeder-side "reuse before
-create" idiom `registerModifierCoordination()`/`registerNestedPhrase()`
+create" idiom `createStoredModifierCoordination()`/`createStoredNestedPhrase()`
 (`role/processor/phrase_processor.ts`) already establish for their own
 stores, so every caller reaches it rather than ever constructing a
 `Domain` inline (the identical topic text always resolves to the
@@ -3357,7 +3357,7 @@ resolve or create a real `Domain` itself -- it has no per-knowledge-Domain
 a new `cacheDomainTag: Map<string, string>` caches each cached entry's
 own raw `domain_tag` string, keyed by entryId, and `seedClosedClassWords()`'s
 own loop reads it back once it has both a real per-knowledge-Domain
-`copy` (post `copyWordWithFreshUuid()`) and the real `domains` store it
+`copy` (post `createFreshUuidWordCopy()`) and the real `domains` store it
 was actually given, materializing `copy.domainTag` via `resolveDomain()`
 only then.
 
@@ -3379,7 +3379,7 @@ only then.
    `domains`. Fixed by recognising that this one dedup comparison never
    needed `domains` at all: `existing.wordId.value` is this cache's own
    stable entryId regardless of which knowledge-Domain it was copied
-   into (`copyWordWithFreshUuid()` only ever regenerates `.uuid`), so
+   into (`createFreshUuidWordCopy()` only ever regenerates `.uuid`), so
    `cacheDomainTag.get(existing.wordId.value)` recovers the exact same
    raw text `cacheDomainTag.get(word.wordId.value)` already does for the
    candidate side -- comparing two raw cached strings directly, with no
@@ -3460,7 +3460,7 @@ already read `domain.vocabulary.domains` directly off whatever
 One known, accepted gap, consistent with an identical pre-existing one:
 `Dictionary.seedFrom()`/`Phrases.seedFrom()` (the Physics-from-Common
 one-time bootstrap snapshot, `vocabulary_worker.ts`'s own `handleSeedCommonVocabulary()`)
-copy each Word/Phrase via `copyWordWithFreshUuid()`/`copyPhraseWithFreshUuid()`,
+copy each Word/Phrase via `createFreshUuidWordCopy()`/`copyPhraseWithFreshUuid()`,
 which regenerates only the copy's own `wordId.uuid`/`phraseId.uuid` --
 any `domainTag`/`relatedDomainTags` `Identifier` the copy carries still
 points at the *source* knowledge-Domain's own `Domains` store, which
@@ -3553,18 +3553,18 @@ rename plus the existing test suite already prove correctness end to end.
 
 Requested after a review of `role/word_processor.ts` found it was really
 three files sharing one name: Word's own base-entity trio
-(`createWord()`/`copyWordWithFreshUuid()`/`graphUuid()`, the exact scope
+(`createWord()`/`createFreshUuidWordCopy()`/`graphUuid()`, the exact scope
 every other entity's own `role/<entity>_processor.ts` -- `word_form_processor.ts`,
 `sense_processor.ts`, `coordination_processor.ts`, `domain_processor.ts` --
 already keeps to), a Dictionary-resolved definition-word breakdown, a
 Word Form Matrix validation pair, and -- the two groups moved here --
 four `Text`-metadata code resolvers (`languageCodeFor()`/`dialectCodeFor()`/
 `scriptCodeFor()`/`languageStyleCodeFor()`) and eight regular-English-
-suffix spelling primitives (`endsInConsonantY()`, `shouldDoubleFinalConsonant()`
-and its `NON_DOUBLING_MULTISYLLABLE_VERBS` exception set, `regularDegreeForm()`,
-`syllableCount()`, `isPeriphrasticComparison()` and its
-`SYNTHETIC_TWO_SYLLABLE_ENDINGS` set, `periphrasticDegreeForm()`, plus
-the two private helpers `endsInCvc()`/`isMonosyllabic()`). None of these
+suffix spelling primitives (`isConsonantYEnding()`, `recogniseFinalConsonantDoublingStrategy()`
+and its `NON_DOUBLING_MULTISYLLABLE_VERBS` exception set, `createRegularDegreeForm()`,
+`recogniseSyllableCount()`, `isPeriphrasticComparison()` and its
+`SYNTHETIC_TWO_SYLLABLE_ENDINGS` set, `createPeriphrasticDegreeForm()`, plus
+the two private helpers `isCvcEnding()`/`isMonosyllabic()`). None of these
 twelve ever took or returned a `Word` -- every one is a plain
 `string`/`Text` in, `boolean`/`string`/`number`/`Text` out -- they lived
 in `word_processor.ts` only because every POS subtype's own processor
@@ -3604,19 +3604,19 @@ already-present `value_objects` import rather than adding a second one),
 more of the spelling primitives directly (`noun_processor.ts`,
 `verb_processor.ts`, `adjective_processor.ts`, `adverb_processor.ts`) --
 each split its old combined `from "../word_processor"` import into two,
-one for what's staying (`createWord`/`graphUuid`/`validateFormText`/
+one for what's staying (`createWord`/`graphUuid`/`recogniseFormTextIssue`/
 `WordFormIssue`) and one for what moved. `vocabulary/index.ts`'s own
 public barrel needed no change -- it never re-exported any of these
-twelve to begin with, only `WordInit`/`createWord`/`copyWordWithFreshUuid`/
-`definitionWords`.
+twelve to begin with, only `WordInit`/`createWord`/`createFreshUuidWordCopy`/
+`recogniseDefinitionWords`.
 
 What stayed in `word_processor.ts`, confirmed still correct by the same
-review: the base-entity trio; `definitionTokens()`/`definitionWords()`
+review: the base-entity trio; `recogniseDefinitionTokens()`/`recogniseDefinitionWords()`
 (needs a `Dictionary` to resolve tokens against, so it's Dictionary/
 Vocabulary-level derived behaviour, not a `Text`-only primitive --
 doesn't cleanly fit `text.ts` either, noted as a still-open question, not
-resolved by this move); `WordFormIssue`/`parseFormatPattern()`/
-`validateFormText()` (Word Form Matrix validation, keyed to a `WordForm`'s
+resolved by this move); `WordFormIssue`/`createFormatPatternRegExp()`/
+`recogniseFormTextIssue()` (Word Form Matrix validation, keyed to a `WordForm`'s
 own `formType`/`text` fields at every real call site -- arguably
 `word_form_processor.ts` material rather than `word_processor.ts`, but
 that's a separate move from this one, not requested here).
@@ -3636,11 +3636,11 @@ caught in review before it shipped any further and corrected here. The
 four Text-metadata code resolvers (`languageCodeFor()` and its three
 siblings) stay in `value_objects/data/text.ts` -- that half of the
 previous entry's reasoning holds. The eight regular-English-suffix
-spelling primitives (`endsInConsonantY()`, `endsInCvc()`,
-`isMonosyllabic()`, `shouldDoubleFinalConsonant()` and its
-`NON_DOUBLING_MULTISYLLABLE_VERBS` set, `regularDegreeForm()`,
-`syllableCount()`, `isPeriphrasticComparison()` and its
-`SYNTHETIC_TWO_SYLLABLE_ENDINGS` set, `periphrasticDegreeForm()`) move
+spelling primitives (`isConsonantYEnding()`, `isCvcEnding()`,
+`isMonosyllabic()`, `recogniseFinalConsonantDoublingStrategy()` and its
+`NON_DOUBLING_MULTISYLLABLE_VERBS` set, `createRegularDegreeForm()`,
+`recogniseSyllableCount()`, `isPeriphrasticComparison()` and its
+`SYNTHETIC_TWO_SYLLABLE_ENDINGS` set, `createPeriphrasticDegreeForm()`) move
 back to `word_processor.ts`, where they originally were.
 
 The error was measuring `word_processor.ts` against the wrong sibling
@@ -3703,21 +3703,21 @@ siblings doesn't repeat the same category error.
 so behaviourally identical to before either move. No live Playwright
 verification, same reasoning as both entries above.
 
-## Move Word Form Matrix validation (`WordFormIssue`/`parseFormatPattern()`/`validateFormText()`) from `role/word_processor.ts` to `role/word_form_processor.ts`
+## Move Word Form Matrix validation (`WordFormIssue`/`createFormatPatternRegExp()`/`recogniseFormTextIssue()`) from `role/word_processor.ts` to `role/word_form_processor.ts`
 
 The correction above settled where the eight spelling primitives belong,
 but left one open thread from the same file: `WordFormIssue`,
-`parseFormatPattern()`, and `validateFormText()` stayed in
+`createFormatPatternRegExp()`, and `recogniseFormTextIssue()` stayed in
 `word_processor.ts`, on the sole grounds that every POS subtype's own
 processor already imported `createWord` from that file, so importing
-`validateFormText` from the same place too "added no new cross-file
+`recogniseFormTextIssue` from the same place too "added no new cross-file
 dependency" -- that file's own former docstring, verbatim. Put under the
 same scrutiny the spelling primitives just got, that reasoning doesn't
 hold: proximity to an existing import is not the test. The test is who
 actually reuses the function. Every real call site
-(`validateAdjective()`, `validateVerb()`, and their siblings across every
+(`recogniseAdjectiveFormIssues()`, `recogniseVerbFormIssues()`, and their siblings across every
 `role/processor/*_processor.ts`) validates one `WordForm`'s own
-`formType`/`text` pair -- e.g. `validateFormText(form.formType, form.text,
+`formType`/`text` pair -- e.g. `recogniseFormTextIssue(form.formType, form.text,
 stringPatternsFor(...))` inside a loop over `wordForms.formsOf(word)` --
 never anything about `Word` itself or shared across the POS subtype
 family the way the spelling primitives genuinely are. This is `WordForm`'s
@@ -3740,7 +3740,7 @@ directly (`AskUserQuestion`): merge the three symbols into the existing
 top-level `role/word_form_processor.ts`, or create a new file elsewhere.
 The user chose the existing file.
 
-Mechanically: `WordFormIssue`/`parseFormatPattern()`/`validateFormText()`
+Mechanically: `WordFormIssue`/`createFormatPatternRegExp()`/`recogniseFormTextIssue()`
 (docstrings carried over verbatim, only the file-relative cross-references
 inside them updated) moved from `word_processor.ts` into
 `word_form_processor.ts`, appended after that file's existing
@@ -3759,11 +3759,11 @@ again. Every real call site (`noun_processor.ts`, `verb_processor.ts`,
 `auxiliary_processor.ts`, `pronoun_processor.ts`, plus `vocabulary.test.ts`)
 split its combined `from "../word_processor"` (or `from "./role/word_processor"`)
 import into two -- one for what's staying (`createWord`/`graphUuid`/the
-spelling primitives, as applicable per file), one for `validateFormText`/
+spelling primitives, as applicable per file), one for `recogniseFormTextIssue`/
 `WordFormIssue` from `../word_form_processor` (`./role/word_form_processor`
 in the test file). The one stray doc-comment cross-reference in
 `data/matrices/pos_vs_wordform_matrice.ts` naming `role/word_processor.ts's
-validateFormText()` corrected to name `word_form_processor.ts` instead.
+recogniseFormTextIssue()` corrected to name `word_form_processor.ts` instead.
 
 `npx tsc -b --force` clean, full `vitest run --no-file-parallelism`
 187/187 -- a pure relocation, no logic touched, so behaviourally
@@ -3831,3 +3831,127 @@ reference, no logic touched, so behaviourally identical to before the
 move. No live Playwright verification -- same reasoning as every entry
 above: an internal module reorganization with no UI-facing surface of
 its own.
+
+## Rename every function across all 21 vocabulary-layer `*_processor.ts` files to a fixed six-verb vocabulary
+
+Requested directly, following two design-only (no-code) review passes on
+`phrase_processor.ts`'s own naming that arrived at the same conclusion:
+function names across this codebase were inconsistent about whether they
+led with a verb at all, and where they did, used a wide, ad hoc set of
+verbs (`classify`/`resolve`/`find`/`build`/`register`/`generate`/
+`validate`/`determine`/`queue`/`copy`/...). This pass fixes both
+problems at once, across every `*_processor.ts` file under
+`vocabulary/role/` (21 files; the 48 unrelated `linguistics/role/html/**/*_processor.ts`
+files were explicitly scoped out -- a different concern, HTML element
+processing, never part of this naming discussion).
+
+Every function name was remapped onto exactly six verbs, chosen to be
+mutually exclusive by return shape/effect rather than by feel:
+
+- **Is** -- returns `boolean`.
+- **Create** -- constructs a new domain object, or finds-or-creates one
+  in a store (the old `register`/`build` family folds in here: from a
+  caller's perspective, both are "give me an object for this input,"
+  whether or not one already existed).
+- **Update** -- mutates fields on an existing object in place, `void`
+  return, side effect. Exactly one function in scope fits this:
+  `linkPhraseWords()` -> `updatePhraseWordLinks()`.
+- **Identify** -- a pure switch/map over an already-known enum value,
+  with no token/array scanning involved (a deterministic lookup from a
+  known list).
+- **Recognise** -- scans a token array, homograph list, or index
+  sequence to detect a position, span, candidate set, or category from
+  real surface text (heuristic/convention-driven, the old
+  `classify`/`validate`/`generate`-as-"detect an issue" family).
+- **Delete** -- not used anywhere in this pass; nothing in these 21
+  files deletes anything.
+
+63 functions renamed across the 21 files (940 total text substitutions,
+53 files touched once cross-file imports, call sites, and doc-comment
+cross-references throughout the rest of the codebase -- `linguistics/`
+included -- are counted). The full old-name -> new-name table isn't
+reproduced here in full (see the commit diff); the noteworthy groups:
+
+- The `validate<Class>()` family (`validateAdjective`, `validateAdverb`,
+  `validateAuxiliary`, `validateDeterminer`, `validateNoun`,
+  `validatePronoun`, `validateVerb`) -> `recognise<Class>FormIssues()`.
+  Same for the shared low-level check they all call,
+  `validateFormText()` -> `recogniseFormTextIssue()`.
+- The `generate<Class>Forms()` family (Adjective/Adverb/Noun/Verb) ->
+  `create<Class>Forms()`.
+- The `copy<Entity>WithFreshUuid()` family (Word/Sense/WordForm/Domain/
+  Coordination) -> `createFreshUuid<Entity>Copy()` -- "copy" moved from
+  verb to noun position, `create` supplies the now-mandatory verb,
+  "FreshUuid" kept as the adjective (word order matches the originally
+  requested Verb+Adjective+Noun shape, not just a trailing qualifier).
+- `phrase_processor.ts`'s own 26 renames, carried over unchanged from
+  the two prior no-code review passes on this exact file (see those
+  entries above) -- including the noun-clarity fixes that review
+  surfaced, e.g. `extendRunBackward()`/`extendRunForward()` ->
+  `recogniseBackwardRoleRunBoundary()`/`recogniseForwardRoleRunBoundary()`
+  (the old noun didn't say *which* run -- it's role-generic, shared by
+  MODIFIER and DETERMINER runs alike, not just Modifier runs the old
+  name implied).
+
+**`determineGradability()` needed special handling, not a blind
+find-and-replace**: this exact name was independently declared in both
+`adjective_processor.ts` and `adverb_processor.ts` -- two different
+functions answering the same question for two different POS classes,
+not one function reused. A global rename would have collided them under
+one identical new name. Resolved per-file: `adjective_processor.ts`'s
+own declaration became `isAdjectiveGradable()` -- already the exact
+alias `adverb_processor.ts` used at its one real cross-file import
+(`import { determineGradability as isAdjectiveGradable, ... }`), so this
+makes an already-established de facto name canonical rather than
+inventing a new one. `adverb_processor.ts`'s own declaration became
+`isAdverbGradable()`, replacing a different ad hoc alias
+(`determineGradability as determineAdverbGradability`) two call sites
+(`word_seeder.ts`, `vocabulary.test.ts`) had been using -- `determine`
+isn't in the six-verb set either, so that alias needed to change too,
+not just the bare name.
+
+**One deliberate, standing exception, not renamed**: the `graphUuid()`
+family (`word_processor.ts`, `sense_processor.ts`,
+`word_form_processor.ts`, `domain_processor.ts`,
+`coordination_processor.ts`, plus `data/entities/phrase.ts`'s own) stays
+a bare-noun accessor name, not verbed. This is a pre-existing,
+deliberate, pervasive convention across six files (identically named in
+each, several imported side-by-side under aliases like `wordGraphUuid`/
+`phraseGraphUuid` in files that need more than one), documented in each
+file's own docstring as the accessor for "this entity's own per-Domain
+graph identity." Forcing it into the six-verb scheme inside this pass
+alone (e.g. `identifyGraphUuid()`) would make it inconsistent with the
+five siblings it's directly modeled on everywhere else it appears --
+that's a decision about the `graphUuid` convention itself, flagged in
+both prior no-code reviews, not something a processor-scoped renaming
+pass should resolve unilaterally. `coordinateGraphUuid()`
+(`phrase_processor.ts`, a local dispatcher choosing which of the five to
+call) stays alongside it for the same reason.
+
+The three relationship-processor classes (`LexicalRelationshipProcessor`,
+`MorphologicalPointerRelationshipProcessor`,
+`SemanticRelationshipProcessor`, each a thin class wrapping one
+`create(options)` method) needed no renaming at all -- `create` already
+complies, and the object each one creates is supplied by the class name
+itself (`lexicalRelationshipProcessor.create(...)`), not by the method
+name; repeating it there (`createLexicalRelationship()`) would be
+redundant stutter, not clarity. `DictionaryProcessor`'s own three
+methods did need renaming, since none of them had an enclosing type name
+to lean on for real clarity: `phraseIdentifications()` (no verb at all)
+-> `recognisePhraseIdentifications()`; `registerConflictingSense()`
+(`register` isn't in the six-verb set) -> `createConflictingSenseWord()`;
+`queueDefinitionHydration()` (`queue` isn't either) ->
+`createDefinitionHydrationRequests()`.
+
+`npx tsc -b --force` clean on the first attempt after the full pass
+(word-boundary text substitution across every `.ts`/`.md` file under
+`src/lira`, not just `vocabulary/`, so cross-layer references in
+`linguistics/` and historical prose in both design-decision logs stayed
+in sync too) -- every real import/call site was genuinely unique text,
+confirmed by checking for new-name/old-name collisions across the full
+63-entry rename table before running it, so one pass was safe. Full
+`vitest run --no-file-parallelism` 187/187, unchanged -- a pure rename,
+no logic touched anywhere. No live Playwright verification -- same
+reasoning as every reorganization entry above: no UI-facing surface of
+its own (this doesn't touch any UI-layer file's own exported names, only
+internal `vocabulary/role/` ones and the cross-references to them).

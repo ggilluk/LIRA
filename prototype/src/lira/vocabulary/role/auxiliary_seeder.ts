@@ -470,7 +470,7 @@ export class AuxiliarySeeder {
         // entirely; a caller-supplied partial wordId is trusted as-is.
         // Every other Word-creation path in this codebase either omits
         // wordId (letting createWord() generate one outright) or is a
-        // `copyWordWithFreshUuid()` result (always overwrites `uuid`
+        // `createFreshUuidWordCopy()` result (always overwrites `uuid`
         // explicitly) -- this seeder is neither, so it must build a
         // real, complete Identifier itself, or every lemma below shares
         // one `undefined` `wordId.uuid`, silently colliding in

@@ -14,7 +14,7 @@ import { wordFormTypeLabel, type WordFormType } from "../../data/enums/word_form
 import type { Senses } from "../../data/senses";
 import type { Word } from "../../data/entities/word";
 import type { WordForms } from "../../data/word_forms";
-import { definitionWords, graphUuid } from "../../role/processor/word_processor";
+import { recogniseDefinitionWords, graphUuid } from "../../role/processor/word_processor";
 import { domainLabel, senseFieldsFor } from "./resolver_domain";
 
 export const DEFINITION_TOKEN_PATTERN = /[^\W_]+/g;
@@ -92,7 +92,7 @@ export function definitionWordSegment(
  * `definition` when its Sense doesn't resolve in this Domain) as an
  * ordered list of segments -- plain text
  * (punctuation, whitespace) interleaved with word-token segments
- * carrying each token's own resolution from definitionWords() -- so the
+ * carrying each token's own resolution from recogniseDefinitionWords() -- so the
  * detail panel can render the definition with each word individually
  * identifiable (a tooltip popup), without re-deriving the resolution
  * itself in client JS. Empty when there's no definition. */
@@ -107,7 +107,7 @@ export function definitionSegments(
   const definition = senseFieldsFor(senses, word, wordForms).definition;
   if (definition === undefined) return [];
   const text = definition.value;
-  const references = definitionWords(definition, dictionary);
+  const references = recogniseDefinitionWords(definition, dictionary);
   const segments: DefinitionSegment[] = [];
   let lastEnd = 0;
   let referenceIndex = 0;

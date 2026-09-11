@@ -3,7 +3,7 @@
 // itself, not bundled data of our own; dict/data.verb's own frame
 // records (WordNetSynset.frames, role/wordnet_loader.ts) name one of these
 // by number only, "----" standing in for the verb itself. Read by
-// role/word_seeder.ts's own synsetMemberToWord() (Verb.framesForSense()'s
+// role/word_seeder.ts's own synsetMemberToWord() (Verb.identifyFramesForSense()'s
 // own docstring, role/processor/verb_processor.ts, on how a synset's own applicable frame
 // numbers resolve against this table and land on the Senses store as
 // per-membership metadata) and substituted with the real Word's own

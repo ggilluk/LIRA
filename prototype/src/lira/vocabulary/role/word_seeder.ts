@@ -26,21 +26,21 @@
  * formsOf/lemmaOf) once both ends of a link have actually been
  * inserted. */
 
-import { createAdjective, determineGradability, generateAdjectiveForms, isAdjective } from "./processor/adjective_processor";
+import { createAdjective, isAdjectiveGradable, createAdjectiveForms, isAdjective } from "./processor/adjective_processor";
 import { createAdjectivePhrase } from "../data/entities/adjective_phrase";
-import { createAdverb, determineGradability as determineAdverbGradability, generateAdverbForms, isAdverb } from "./processor/adverb_processor";
+import { createAdverb, isAdverbGradable, createAdverbForms, isAdverb } from "./processor/adverb_processor";
 import { createAdverbPhrase } from "../data/entities/adverb_phrase";
 import { createConjunction } from "./processor/conjunction_processor";
 import { createNounPhrase } from "../data/entities/noun_phrase";
 import { createPrepositionalPhrase } from "../data/entities/prepositional_phrase";
 import { createVerbPhrase } from "../data/entities/verb_phrase";
-import { classifyPhraseType, linkPhraseWords } from "./processor/phrase_processor";
+import { recogniseLemmaPhraseType, updatePhraseWordLinks } from "./processor/phrase_processor";
 import { createDeterminer } from "./processor/determiner_processor";
 import { AuxiliarySeeder } from "./auxiliary_seeder";
 import { DeterminerSeeder } from "./determiner_seeder";
 import { ContractionSeeder } from "./contraction_seeder";
 import { createInterjection } from "./processor/interjection_processor";
-import { createNoun, generateNounForms, isNoun } from "./processor/noun_processor";
+import { createNoun, createNounForms, isNoun } from "./processor/noun_processor";
 import { createNumeral } from "./processor/numeral_processor";
 import { PartOfSpeech } from "../data/enums/part_of_speech";
 import { ConjunctionType } from "../data/enums/conjunction_type";
@@ -81,9 +81,9 @@ import type { Domains } from "../data/domains";
 import type { WordForms } from "../data/word_forms";
 import { graphUuid, type WordFormAttributes } from "./processor/word_form_processor";
 import type { SourceReference } from "../data/source_reference";
-import { createVerb, generateVerbForms, isVerb } from "./processor/verb_processor";
+import { createVerb, createVerbForms, isVerb } from "./processor/verb_processor";
 import type { Word } from "../data/entities/word";
-import { copyWordWithFreshUuid, createWord, graphUuid as wordGraphUuid } from "./processor/word_processor";
+import { createFreshUuidWordCopy, createWord, graphUuid as wordGraphUuid } from "./processor/word_processor";
 import type { SemanticRelationshipStore } from "../data/semantic_relationship_store";
 import {
   languageHasCommonCache,
@@ -586,7 +586,7 @@ function memberPartOfSpeech(member: Word | Phrase, phraseBook: Phrases): PartOfS
 /** Finds the one canonical `Domain` (data/entities/domain.ts) for
  * `text` in `domains`, creating it the first time this exact text is
  * ever seen -- the seeder-side "reuse before create" idiom
- * `registerModifierCoordination()`/`registerNestedPhrase()`
+ * `createStoredModifierCoordination()`/`createStoredNestedPhrase()`
  * (role/processor/phrase_processor.ts) already establish for their own
  * store, adapted to `Domains.findByText()`'s own case-insensitive
  * lookup. Every caller below reaches this rather than ever constructing
@@ -989,9 +989,9 @@ export class WordSeeder {
     if (entry.vector_primitive_root_word && !(entry.vector_primitive_root_word in VectorPrimitiveRootWord)) {
       throw new Error(`${filename}: '${entry.lexical_form}' has unknown vector_primitive_root_word '${entry.vector_primitive_root_word}'`);
     }
-    const syllableCount = entry.syllable_count;
-    if (syllableCount !== undefined && syllableCount !== null && (!Number.isInteger(syllableCount) || syllableCount < 1)) {
-      throw new Error(`${filename}: '${entry.lexical_form}' has an invalid syllable_count ${JSON.stringify(syllableCount)}`);
+    const recogniseSyllableCount = entry.syllable_count;
+    if (recogniseSyllableCount !== undefined && recogniseSyllableCount !== null && (!Number.isInteger(recogniseSyllableCount) || recogniseSyllableCount < 1)) {
+      throw new Error(`${filename}: '${entry.lexical_form}' has an invalid syllable_count ${JSON.stringify(recogniseSyllableCount)}`);
     }
   }
 
@@ -1149,7 +1149,7 @@ export class WordSeeder {
       const wordDomainTagText = this.cacheDomainTag.get(word.wordId.value);
       if (excludeOpenClasses && OPEN_CLASSES.includes(word.partOfSpeech) && wordDomainTagText !== ROOT_WORD_DOMAIN_TAG) continue;
       // `existing.wordId.value` is this cache's own stable entryId
-      // (copyWordWithFreshUuid only ever regenerates `.uuid`, never
+      // (createFreshUuidWordCopy only ever regenerates `.uuid`, never
       // `.value`), so `cacheDomainTag` -- keyed by that same entryId --
       // resolves an already-inserted copy's own raw domain-tag text
       // directly, without needing `domains` at all: a `Domains` store
@@ -1164,7 +1164,7 @@ export class WordSeeder {
         .lookupAll(word.text)
         .some((existing) => existing.partOfSpeech === word.partOfSpeech && this.cacheDomainTag.get(existing.wordId.value) === wordDomainTagText);
       if (alreadyPresent) continue;
-      let copy = copyWordWithFreshUuid(word);
+      let copy = createFreshUuidWordCopy(word);
       if (wordDomainTagText !== undefined && domains !== undefined) {
         copy = { ...copy, domainTag: { value: resolveDomain(domains, wordDomainTagText).domainId.uuid! } };
       }
@@ -1176,7 +1176,7 @@ export class WordSeeder {
       // against `word` would register real WordForm records under a
       // uuid no real Domain's own copy ever has (WordForms indexes by
       // each Word's own per-Domain graph uuid, `word.wordId.uuid`, and
-      // `copyWordWithFreshUuid` mints a fresh one here). An ADJECTIVE/ADVERB still only gets its own Positive
+      // `createFreshUuidWordCopy` mints a fresh one here). An ADJECTIVE/ADVERB still only gets its own Positive
       // Degree Form this early -- synsetMemberToWord()'s own docstring
       // on why Comparative/Superlative wait for the deferred
       // post-relationship-graph pass further down this file.
@@ -1188,10 +1188,10 @@ export class WordSeeder {
       // later registerBaseLemmaForm() call (inside it) just finds this
       // same WordForm again.
       wordForms?.registerBaseLemmaForm(copy, this.cacheLexicalForm.get(copy.wordId.value), this.cacheWordFormAttributes.get(copy.wordId.value));
-      if (isNoun(copy)) copy = generateNounForms(copy, wordForms);
-      else if (isVerb(copy)) copy = generateVerbForms(copy, wordForms);
-      else if (isAdjective(copy)) copy = generateAdjectiveForms(copy, false, wordForms);
-      else if (isAdverb(copy)) copy = generateAdverbForms(copy, false, wordForms);
+      if (isNoun(copy)) copy = createNounForms(copy, wordForms);
+      else if (isVerb(copy)) copy = createVerbForms(copy, wordForms);
+      else if (isAdjective(copy)) copy = createAdjectiveForms(copy, false, wordForms);
+      else if (isAdverb(copy)) copy = createAdverbForms(copy, false, wordForms);
       dictionary.append(copy);
       insertedByWordId.set(word.wordId.value, copy);
       if (senseStore !== undefined) {
@@ -1242,7 +1242,7 @@ export class WordSeeder {
       // not Phrase" guard would skip it anyway, but a Phrase has no
       // base-lemma WordForm concept to register in the first place.
       if (senseStore !== undefined) registerUniqueSense(senseStore, phraseCopy, this.cachePad.get(phrase.phraseId.value));
-      // linkPhraseWords() -- seedWordNet()'s own call site's exact
+      // updatePhraseWordLinks() -- seedWordNet()'s own call site's exact
       // counterpart, not previously called here at all: `headWord`/
       // `headWordForm`/`preModifiers`/`postModifiers`/`determiners` used
       // to stay permanently unset for every closed-class Phrase, the
@@ -1261,9 +1261,9 @@ export class WordSeeder {
       // entries are always seeded before this Phrase loop runs), and for
       // a Phrase whose own `phraseType` stays undefined (every
       // CONJUNCTION-tagged one, subordinating_conjunctions.json)
-      // classifyModifierRoles()'s own early-return guard leaves every
+      // recogniseModifierRoles()'s own early-return guard leaves every
       // field it sets here at its own harmless empty/undefined default.
-      linkPhraseWords(phraseCopy, dictionary, wordForms, phraseBook, coordinations);
+      updatePhraseWordLinks(phraseCopy, dictionary, wordForms, phraseBook, coordinations);
       seeded += 1;
     }
     return seeded;
@@ -1422,7 +1422,7 @@ export class WordSeeder {
     let relationshipsSeeded = 0;
 
     const synsets = await loadWordNetSynsets();
-    // classifyPhraseType()'s own Determiner Phrase check -- every
+    // recogniseLemmaPhraseType()'s own Determiner Phrase check -- every
     // single-word NOUN-tagged lemma across the whole dataset, lower-cased,
     // built once up front rather than per-Phrase: this is the exact same
     // synset list pass 1 is about to walk, so there's no
@@ -1432,7 +1432,7 @@ export class WordSeeder {
     // like "a bit" can be processed before the standalone "bit" synset, in
     // whatever order loadWordNetSynsets() itself returns, the
     // linking-loop's own docstring below on the identical hazard for
-    // linkPhraseWords()).
+    // updatePhraseWordLinks()).
     const nounLemmas = new Set<string>();
     for (const synset of synsets) {
       if (synset.partOfSpeech !== PartOfSpeech.NOUN) continue;
@@ -1441,7 +1441,7 @@ export class WordSeeder {
       }
     }
     const synsetMembersById = new Map<string, Array<Word | Phrase>>();
-    // linkPhraseWords() (below, over the whole of `phraseBook`, not just
+    // updatePhraseWordLinks() (below, over the whole of `phraseBook`, not just
     // this pass's own newly-created Phrases) can only resolve a Phrase's
     // own constituent Words correctly once pass 1 has finished seeding
     // every single-word synset member (a phrase like "toy poodle" can be
@@ -1512,8 +1512,8 @@ export class WordSeeder {
         // reuses the identical Word across every synset it turns out to
         // lexicalize, rather than getting a separate Word per synset the
         // way this used to work (this switch's own former synsetId
-        // condition). frames/syntacticPosition (Verb.framesForSense()/
-        // Adjective.syntacticPositionForSense()) are captured below
+        // condition). frames/syntacticPosition (Verb.identifyFramesForSense()/
+        // Adjective.identifySyntacticPositionForSense()) are captured below
         // either way, new Word or reused -- they're a fact about this one
         // (word, sense) pairing specifically, not about the Word alone.
         // `word.text === lemma` on top of Dictionary.lookupAll()'s own
@@ -1571,7 +1571,7 @@ export class WordSeeder {
 
     // Every single-word synset member is seeded by now (the loop above
     // ran to completion), so every Phrase's own constituent Words can be
-    // resolved with full Dictionary coverage -- linkPhraseWords()'s own
+    // resolved with full Dictionary coverage -- updatePhraseWordLinks()'s own
     // docstring on why this can't happen inline, above. Re-links every
     // Phrase already in `phraseBook`, not just this pass's own newly-
     // created ones -- a closed-class (Common Vocabulary Cache) Phrase
@@ -1585,9 +1585,9 @@ export class WordSeeder {
     // synset for "few", "a small elite group"), so its own Head stayed
     // unresolved, both tokens falling back to Determiner-only, until
     // this re-link picks it up. Idempotent and harmless for a Phrase
-    // that already resolved correctly -- linkPhraseWords() simply
+    // that already resolved correctly -- updatePhraseWordLinks() simply
     // recomputes the identical result again.
-    for (const phrase of phraseBook.all()) linkPhraseWords(phrase, dictionary, wordForms, phraseBook, coordinations);
+    for (const phrase of phraseBook.all()) updatePhraseWordLinks(phrase, dictionary, wordForms, phraseBook, coordinations);
 
     // senseIds accumulates in whatever order pass 1's own synset loop
     // above happened to visit each one -- byte-offset order within a
@@ -1651,7 +1651,7 @@ export class WordSeeder {
     // is decided here, not back in pass 1's own synsetMemberToWord() --
     // only now, with every Sense fully wired to every Word that
     // lexicalizes it (senseIds) and every Attribute/Hypernym/Pertainym
-    // pointer above actually seeded, are determineGradability()
+    // pointer above actually seeded, are isAdjectiveGradable()
     // (role/processor/adjective_processor.ts) and its Adverb counterpart
     // (role/processor/adverb_processor.ts -- that file's own docstring on why
     // gradability is derived differently there, via Pertainym rather
@@ -1659,7 +1659,7 @@ export class WordSeeder {
     // Processing Order, role/processor/adjective_processor.ts's own docstring). Skips a Word already carrying
     // both WordForms -- a curated value (a future Common Vocabulary Cache
     // override, say) is never overwritten, matching
-    // generateAdjectiveForms()'s/generateAdverbForms()'s own "only fills
+    // createAdjectiveForms()'s/createAdverbForms()'s own "only fills
     // what's still undefined" contract; also just a re-seed performance
     // guard -- generateXForms() itself is idempotent either way, this
     // only saves recomputing gradability for a Word that doesn't need it.
@@ -1670,12 +1670,12 @@ export class WordSeeder {
     for (const word of dictionary.all()) {
       if (isAdjective(word)) {
         if (hasBothDegreeForms(word)) continue;
-        const gradable = determineGradability(semanticStore, word, wordForms);
-        generateAdjectiveForms(word, gradable, wordForms);
+        const gradable = isAdjectiveGradable(semanticStore, word, wordForms);
+        createAdjectiveForms(word, gradable, wordForms);
       } else if (isAdverb(word)) {
         if (hasBothDegreeForms(word)) continue;
-        const gradable = determineAdverbGradability(semanticStore, dictionary, senseStore, word, wordForms);
-        generateAdverbForms(word, gradable, wordForms);
+        const gradable = isAdverbGradable(semanticStore, dictionary, senseStore, word, wordForms);
+        createAdverbForms(word, gradable, wordForms);
       }
     }
 
@@ -2285,7 +2285,7 @@ export class WordSeeder {
    * (word, sense) pairing, new Word or reused.
    *
    * An ADJECTIVE gets only its Positive Degree Form here
-   * (generateAdjectiveForms(..., false)) -- determineGradability()
+   * (createAdjectiveForms(..., false)) -- isAdjectiveGradable()
    * (role/processor/adjective_processor.ts) needs this Word's own full senseIds list and the
    * WordNet Attribute/Hypernym relationship graph, neither of which
    * exists yet this early (this method runs during pass 1, seneIds and
@@ -2320,40 +2320,40 @@ export class WordSeeder {
     const synsetId: Identifier = { value: synset.synsetId, ...WORDNET_SYNSET_ID_SCHEME };
     switch (synset.partOfSpeech) {
       case PartOfSpeech.VERB: {
-        // registerBaseLemmaForm() first, before generateVerbForms() --
+        // registerBaseLemmaForm() first, before createVerbForms() --
         // Noun's own case just below, same "keep base lemma the *first*
         // WordForm on record" reasoning.
         const verb = createVerb(shared);
         wordForms?.registerBaseLemmaForm(verb, lexicalForm, undefined, synsetId);
-        return generateVerbForms(verb, wordForms);
+        return createVerbForms(verb, wordForms);
       }
       case PartOfSpeech.ADJECTIVE: {
         const adjective = createAdjective(shared);
         wordForms?.registerBaseLemmaForm(adjective, lexicalForm, undefined, synsetId);
-        return generateAdjectiveForms(adjective, false, wordForms);
+        return createAdjectiveForms(adjective, false, wordForms);
       }
       case PartOfSpeech.ADVERB: {
         // Same deferral as ADJECTIVE just above, for the same reason --
-        // Adverb's own determineGradability() (role/processor/adverb_processor.ts) needs
+        // Adverb's own isAdverbGradable() (role/processor/adverb_processor.ts) needs
         // this Word's own Pertainym edges, which don't exist yet this
         // early (pass 2 hasn't run). The post-relationships pass below
         // (this method's own final loop) revisits every seeded Adverb
         // too, once relationships are fully wired.
         const adverb = createAdverb(shared);
         wordForms?.registerBaseLemmaForm(adverb, lexicalForm, undefined, synsetId);
-        return generateAdverbForms(adverb, false, wordForms);
+        return createAdverbForms(adverb, false, wordForms);
       }
       case PartOfSpeech.NOUN: {
-        // registerBaseLemmaForm() first, before generateNounForms() --
+        // registerBaseLemmaForm() first, before createNounForms() --
         // both are idempotent find-or-create, but registering base
         // lemma first here keeps it the *first* WordForm on record for
         // this Word (the Word Form Matrix's own first row, every other
         // seeding path's own convention too), rather than letting
-        // whichever POS-specific field generateNounForms() adds land
+        // whichever POS-specific field createNounForms() adds land
         // ahead of it and reorder the Word Forms section for no reason.
         const noun = createNoun(shared);
         wordForms?.registerBaseLemmaForm(noun, lexicalForm, undefined, synsetId);
-        return generateNounForms(noun, wordForms);
+        return createNounForms(noun, wordForms);
       }
       default: {
         // posForSsType (wordnet_loader.ts) only ever produces NOUN/VERB/
@@ -2363,7 +2363,7 @@ export class WordSeeder {
         // PartOfSpeech's other 12 values.
         const noun = createNoun(shared);
         wordForms?.registerBaseLemmaForm(noun, lexicalForm, undefined, synsetId);
-        return generateNounForms(noun, wordForms);
+        return createNounForms(noun, wordForms);
       }
     }
   }
@@ -2404,11 +2404,11 @@ export class WordSeeder {
    * definition/examples/synsetId/isCommon/sourceReferences, same
    * eligibility for pass 2's pointer-relationship and topic-domain
    * wiring (both now typed Word | Phrase throughout). Also, unlike a
-   * Word, gets a phraseType -- classifyPhraseType()'s own docstring on
+   * Word, gets a phraseType -- recogniseLemmaPhraseType()'s own docstring on
    * the ruleset, devised against this exact bundled dataset -- and,
    * unlike synsetMemberToWord's own switch on the statically-known
    * synset.partOfSpeech, dispatches on that *result* (only knowable at
-   * runtime, and possibly undefined -- classifyPhraseType()'s own
+   * runtime, and possibly undefined -- recogniseLemmaPhraseType()'s own
    * docstring on the few PartOfSpeech values it never maps) to the
    * matching data/*_phrase.ts constructor, the same "every PhraseType
    * gets its own narrowed subtype" mirror data/entities/noun.ts and its four
@@ -2425,7 +2425,7 @@ export class WordSeeder {
       isCommon: true,
       sourceReferences: [WORDNET_SOURCE_REFERENCE],
     };
-    switch (classifyPhraseType(lemma, synset.partOfSpeech, nounLemmas)) {
+    switch (recogniseLemmaPhraseType(lemma, synset.partOfSpeech, nounLemmas)) {
       case PhraseType.NOUN_PHRASE:
         return createNounPhrase(shared);
       case PhraseType.VERB_PHRASE:
@@ -2437,7 +2437,7 @@ export class WordSeeder {
       case PhraseType.PREPOSITIONAL_PHRASE:
         return createPrepositionalPhrase(shared);
       default:
-        // classifyPhraseType()'s own docstring: undefined only for a
+        // recogniseLemmaPhraseType()'s own docstring: undefined only for a
         // partOfSpeech WordNet never assigns to a multi-word lemma --
         // dead code against real WordNet data today, kept only so this
         // switch has a total, not partial, mapping over its own result.
@@ -2535,8 +2535,8 @@ export class WordSeeder {
    * path's exact counterpart -- and to plain createWord() for every
    * other (closed) PartOfSpeech, which has no subtype of its own.
    * `frames`/`syntacticPosition` are never set here (both fields'
-   * own docstrings, role/processor/verb_processor.ts's own framesForSense() and
-   * role/processor/adjective_processor.ts's own syntacticPositionForSense()) -- neither is
+   * own docstrings, role/processor/verb_processor.ts's own identifyFramesForSense() and
+   * role/processor/adjective_processor.ts's own identifySyntacticPositionForSense()) -- neither is
    * part of WordFileEntry's own schema, since only WordNet's dict/
    * files carry that data; a Common Vocabulary Cache Verb/Adjective
    * still gets its subtype's own type (for isVerb()/isAdjective()
@@ -2607,9 +2607,9 @@ export class WordSeeder {
     };
     switch (partOfSpeech) {
       case PartOfSpeech.NOUN:
-        // generateNounForms() no longer runs here -- this method builds
+        // createNounForms() no longer runs here -- this method builds
         // the cached, domain-agnostic prototype Word every Domain's own
-        // seedClosedClassWords() later copies via copyWordWithFreshUuid();
+        // seedClosedClassWords() later copies via createFreshUuidWordCopy();
         // open-class generation now runs there instead, against each
         // Domain's own copy (that method's own comment on why).
         return createNoun(fields);
@@ -2618,7 +2618,7 @@ export class WordSeeder {
       case PartOfSpeech.ADJECTIVE:
         // No WordNet Attribute/Hypernym relationship graph exists for a
         // Common Vocabulary Cache entry (this whole path is a hand-
-        // curated words.json, not a WordNet synset) -- determineGradability()
+        // curated words.json, not a WordNet synset) -- isAdjectiveGradable()
         // (role/processor/adjective_processor.ts) has nothing to check, so
         // seedClosedClassWords()'s own generation call always passes
         // `gradable: false` for this path, same as before (Gradability
@@ -2631,7 +2631,7 @@ export class WordSeeder {
       case PartOfSpeech.ADVERB:
         // Same reasoning as ADJECTIVE just above: no WordNet Pertainym
         // graph exists for a hand-curated Common Vocabulary Cache entry,
-        // so Adverb.determineGradability() (role/processor/adverb_processor.ts)
+        // so Adverb.isAdverbGradable() (role/processor/adverb_processor.ts)
         // has nothing to check either -- defaults to non-gradable.
         return createAdverb(fields);
       case PartOfSpeech.PRONOUN:
@@ -2683,20 +2683,20 @@ export class WordSeeder {
    * of the two this entry became.
    *
    * `phraseType`, unlike every field above, is genuinely computed here
-   * via classifyPhraseType() (role/processor/phrase_processor.ts), the
+   * via recogniseLemmaPhraseType() (role/processor/phrase_processor.ts), the
    * same function synsetMemberToPhrase() calls for a WordNet-seeded
    * Phrase -- not left permanently undefined the way it once was for
    * every closed-class Phrase. In practice this only ever resolves
-   * PRONOUN entries to NOUN_PHRASE (classifyPhraseType()'s own docstring
+   * PRONOUN entries to NOUN_PHRASE (recogniseLemmaPhraseType()'s own docstring
    * on why: pronouns.json's 17 real multi-word PRONOUN idioms are the
    * only closed-class entries this ever fires for) -- a Pronoun-headed
    * phrase genuinely is structurally a Noun Phrase
    * (data/entities/noun_phrase.ts's own docstring). `headWord`/
    * `headWordForm`/`preModifiers`/`postModifiers`/`determiners`
    * themselves are populated by `seedClosedClassWords()`'s own Phrase
-   * loop calling linkPhraseWords() against the returned Phrase, the
+   * loop calling updatePhraseWordLinks() against the returned Phrase, the
    * identical call seedWordNet() already makes for a WordNet-seeded one
-   * -- not computed here, since `linkPhraseWords()` needs the
+   * -- not computed here, since `updatePhraseWordLinks()` needs the
    * already-populated `dictionary`/`wordForms` this method itself has no
    * access to. */
   private entryToPhrase(entry: WordFileEntry): Phrase {
@@ -2704,7 +2704,7 @@ export class WordSeeder {
     this.recordPad(entry);
     const partOfSpeech = PartOfSpeech[entry.part_of_speech as keyof typeof PartOfSpeech];
     this.cachePhrasePartOfSpeech.set(entry.entry_id, partOfSpeech);
-    // classifyPhraseType()'s own PRONOUN case (role/processor/phrase_processor.ts)
+    // recogniseLemmaPhraseType()'s own PRONOUN case (role/processor/phrase_processor.ts)
     // is the only branch a closed-class entry's own `partOfSpeech` can
     // ever actually reach here -- pronouns.json's 17 real multi-word
     // PRONOUN idioms ("each other", "no one", "the former", ...) are the
@@ -2713,13 +2713,13 @@ export class WordSeeder {
     // multi-word CONJUNCTION entries are the only other kind, and
     // PhraseType has no CONJUNCTION shape to assign). `nounLemmas` is
     // passed empty rather than threaded in from seedWordNet's own
-    // precomputed set: classifyPhraseType()'s own Determiner Phrase
+    // precomputed set: recogniseLemmaPhraseType()'s own Determiner Phrase
     // structural check requires `partOfSpeech` to be
     // ADJECTIVE/ADVERB/absent-of-PRONOUN-override to fire at all, so an
     // empty set here changes nothing for the PRONOUN case this call site
     // actually reaches -- it still falls straight through to that same
     // PRONOUN -> NOUN_PHRASE mapping.
-    const phraseType = classifyPhraseType(entry.text ?? entry.lexical_form, partOfSpeech, new Set());
+    const phraseType = recogniseLemmaPhraseType(entry.text ?? entry.lexical_form, partOfSpeech, new Set());
 
     const sourceReferences = (entry.source_references ?? []).map((ref) => ({
       sourceName: { value: ref.source_name },

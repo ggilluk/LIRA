@@ -67,7 +67,7 @@ export interface ClauseReadOptions {
   // recognise "what" as a trigger all over again and recurse forever.
   // The same "one level only" scoping this session's own Coordination
   // work already settled on for a coordinate side
-  // (resolveCoordinateSide(), vocabulary/role/processor/phrase_processor.ts) --
+  // (createCoordinateSide(), vocabulary/role/processor/phrase_processor.ts) --
   // an embedded clause is never itself searched for a second, nested
   // embedded clause.
   allowEmbedding?: boolean;

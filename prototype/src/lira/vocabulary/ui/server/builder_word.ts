@@ -16,7 +16,7 @@ import { graphUuid as phraseGraphUuid, phraseAsWord, type Phrase } from "../../d
 import type { Phrases } from "../../data/phrases";
 import type { Senses } from "../../data/senses";
 import type { SemanticRelationshipStore } from "../../data/semantic_relationship_store";
-import { framesForSense, isVerb } from "../../role/processor/verb_processor";
+import { identifyFramesForSense, isVerb } from "../../role/processor/verb_processor";
 import type { Word } from "../../data/entities/word";
 import type { WordForms } from "../../data/word_forms";
 import { graphUuid as wordGraphUuid } from "../../role/processor/word_processor";
@@ -109,7 +109,7 @@ export interface WordRecord {
   // ordinary Word, which has no sub-word composition of its own to show.
   phrase_word_segments?: DefinitionSegment[];
   // phrase_word_segments's own exact counterpart for Phrase.phraseType
-  // (word_seeder.ts's own classifyPhraseType, WordSeeder.seedWordNet) --
+  // (word_seeder.ts's own recogniseLemmaPhraseType, WordSeeder.seedWordNet) --
   // the enum's own key string (e.g. "PREPOSITIONAL_PHRASE"), same
   // PhraseType[...] convention `pos` above already uses for
   // PartOfSpeech -- the client applies titleCase() at render time, not
@@ -117,7 +117,7 @@ export interface WordRecord {
   // HAS a phraseType; undefined for an ordinary Word (no such concept
   // applies) and for a Phrase whose own phraseType is itself undefined
   // (every Common Vocabulary Cache closed-class Phrase, and any
-  // WordNet-seeded one classifyPhraseType() couldn't classify -- neither
+  // WordNet-seeded one recogniseLemmaPhraseType() couldn't classify -- neither
   // exists in the bundled data today, but the field stays optional
   // either way).
   phrase_type?: string;
@@ -138,7 +138,7 @@ export interface WordRecord {
   // ModifierSegment (modifierUnitSegment()'s own docstring,
   // builder_phrase.ts), not an array any more: a run of two or more
   // MODIFIER-role tokens collapses into one nested Phrase or Coordination
-  // now (buildModifierUnit()'s own docstring, role/processor/phrase_processor.ts),
+  // now (createModifierRunValue()'s own docstring, role/processor/phrase_processor.ts),
   // so there's at most one pre-Head and one post-Head constituent to
   // report, never a numbered list of independent single-word entries.
   // Present only when this record was resolved from a Phrase; undefined
@@ -259,7 +259,7 @@ export interface WordSenseSummary {
   // (wireDetailPivotButtons(), ui/client/'s own embedded client script).
   synonyms: { id: string; text: string }[];
   // The real WordNet verb-frame sentences ("Somebody ----s something")
-  // this specific (Verb, Sense) pairing was tagged with -- Verb.framesForSense()'s
+  // this specific (Verb, Sense) pairing was tagged with -- Verb.identifyFramesForSense()'s
   // own docstring (role/processor/verb_processor.ts) on why this lives as loose per-membership
   // Senses metadata rather than a typed field on Verb itself: a frame can
   // genuinely differ between two members of the same synset (WordNetFrame's
@@ -364,10 +364,10 @@ function sensesFor(entry: Word | Phrase, senses: Senses, domainName: string, wor
     const domainTagText = sense.domainTag !== undefined ? domains.findByUuid(sense.domainTag.value)?.domainText.value : undefined;
     const domain = !sense.isCommon ? domainName : (domainTagText ?? "Common");
     const { seededPleasureDispleasureWeight: p, seededArousalNonArousalWeight: a, seededDominanceSubmissiveWeight: d } = sense;
-    // "senseIds" in entry distinguishes a Phrase (framesForSense() only
+    // "senseIds" in entry distinguishes a Phrase (identifyFramesForSense() only
     // ever applies to a genuine VERB Word -- no such concept exists for
     // a multi-word Phrase entry).
-    const frames = !("senseIds" in entry) && isVerb(entry) ? framesForSense(senses, entry, senseId.value) : undefined;
+    const frames = !("senseIds" in entry) && isVerb(entry) ? identifyFramesForSense(senses, entry, senseId.value) : undefined;
     summaries.push({
       id: senseId.value,
       is_primary: index === 0,

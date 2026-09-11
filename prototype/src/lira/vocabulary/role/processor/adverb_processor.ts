@@ -1,4 +1,4 @@
-import { determineGradability as isAdjectiveGradable, isAdjective } from "./adjective_processor";
+import { isAdjectiveGradable, isAdjective } from "./adjective_processor";
 import type { Dictionary } from "../../data/dictionary";
 import { SemanticRelationshipKind } from "../../data/enums/semantic_relationship_kind";
 import { PartOfSpeech } from "../../data/enums/part_of_speech";
@@ -9,10 +9,10 @@ import type { WordForms } from "../../data/word_forms";
 import {
   createWord,
   isPeriphrasticComparison,
-  periphrasticDegreeForm,
-  regularDegreeForm,
+  createPeriphrasticDegreeForm,
+  createRegularDegreeForm,
 } from "./word_processor";
-import { validateFormText, type WordFormIssue } from "./word_form_processor";
+import { recogniseFormTextIssue, type WordFormIssue } from "./word_form_processor";
 import type { Adverb } from "../../data/entities/adverb";
 import { stringPatternsFor } from "../../data/matrices/pos_vs_wordform_matrice";
 import { WordFormType } from "../../data/enums/word_forms_enum";
@@ -35,18 +35,18 @@ export function isAdverb(word: Word): word is Adverb {
  * ADVERB rules (data/matrices/pos_vs_wordform_matrice.ts). Returns
  * every issue found, not just the first; empty means every populated
  * field is internally consistent with the matrix, not that every
- * field is populated. validateAuxiliary()'s own exact shape
+ * field is populated. recogniseAuxiliaryFormIssues()'s own exact shape
  * (role/processor/auxiliary_processor.ts). */
-export function validateAdverb(adverb: Adverb, wordForms: WordForms): readonly WordFormIssue[] {
+export function recogniseAdverbFormIssues(adverb: Adverb, wordForms: WordForms): readonly WordFormIssue[] {
   const issues: WordFormIssue[] = [];
   for (const form of wordForms.formsOf(adverb)) {
-    const issue = validateFormText(form.formType, form.text, stringPatternsFor(form.formType, PartOfSpeech.ADVERB));
+    const issue = recogniseFormTextIssue(form.formType, form.text, stringPatternsFor(form.formType, PartOfSpeech.ADVERB));
     if (issue !== undefined) issues.push(issue);
   }
   return issues;
 }
 
-/** Adverb's own counterpart to determineGradability() (adjective_processor.ts)
+/** Adverb's own counterpart to isAdjectiveGradable() (adjective_processor.ts)
  * -- gradability isn't determined the same way here, so this lives in
  * Adverb's own processor rather than being shared: WordNet gives an
  * adverb no Attribute pointer of its own at all (verified directly
@@ -65,7 +65,7 @@ export function validateAdverb(adverb: Adverb, wordForms: WordForms): readonly W
  * Adjective(s) that actually lexicalize the target meaning are read
  * back out from there. This Adverb's own gradability is inherited from
  * whichever Pertainym-linked Adjective(s), across every one of its own
- * senses, are themselves gradable (determineGradability(),
+ * senses, are themselves gradable (isAdjectiveGradable(),
  * adjective_processor.ts) -- true as soon as one is, the same "any one
  * is enough, not just the first" shape that function's own "not the
  * primary sense alone" rule has. An Adverb with no Pertainym fact at
@@ -73,7 +73,7 @@ export function validateAdverb(adverb: Adverb, wordForms: WordForms): readonly W
  * nothing to inherit from and comes out non-gradable, matching
  * Gradability Evaluation step 6's own default (adjective_processor.ts's
  * docstring): no established scalar dimension means Gradable = false. */
-export function determineGradability(
+export function isAdverbGradable(
   relationships: SemanticRelationshipStore,
   dictionary: Dictionary,
   senses: Senses,
@@ -109,7 +109,7 @@ export function determineGradability(
 // "-ly" is English's productive adverb-forming suffix (quickly,
 // obviously, scarcely, ...) -- word_processor.ts's own isPeriphrasticComparison()
 // would otherwise route a lemma like "scarcely" through
-// endsInConsonantY()'s "y" rule (word_processor.ts), the one built for a short
+// isConsonantYEnding()'s "y" rule (word_processor.ts), the one built for a short
 // Adjective's own "y" ending (happy -> happier, ugly -> uglier), since
 // "-ly" happens to match that same consonant+y spelling. But no real
 // "-ly" adverb takes "-ier"/"-iest" the way "happy"/"ugly" do -- there
@@ -123,20 +123,20 @@ function isAdverbPeriphrasticComparison(lemma: string): boolean {
   return /ly$/i.test(lemma) || isPeriphrasticComparison(lemma);
 }
 
-/** Adjective's own generateAdjectiveForms() (adjective_processor.ts),
+/** Adjective's own createAdjectiveForms() (adjective_processor.ts),
  * Adverb's counterpart -- both classes' degree paradigm is spelled from
- * the same primitives (regularDegreeForm/periphrasticDegreeForm,
+ * the same primitives (createRegularDegreeForm/createPeriphrasticDegreeForm,
  * ./word_processor.ts) and both are gated on `gradable` the same way; see
- * generateAdjectiveForms() for the full reasoning behind that
+ * createAdjectiveForms() for the full reasoning behind that
  * parameter, not repeated here. The one real difference is the
  * comparison-strategy decision itself -- isAdverbPeriphrasticComparison()
  * above, not word_processor.ts's own isPeriphrasticComparison() directly.
  * WordSeeder's own seeding entry points (role/word_seeder.ts) call this.
  * No-op when `wordForms` is undefined, same convention as
- * generateAdjectiveForms(). Fields are registered in the Word Form
+ * createAdjectiveForms(). Fields are registered in the Word Form
  * Matrix's own row order (positive, comparative, superlative). Returns
  * `adverb` unchanged. */
-export function generateAdverbForms(adverb: Adverb, gradable: boolean, wordForms: WordForms | undefined): Adverb {
+export function createAdverbForms(adverb: Adverb, gradable: boolean, wordForms: WordForms | undefined): Adverb {
   if (wordForms === undefined) return adverb;
   const lemma = adverb.text;
   const has = (field: WordFormType): boolean => wordForms.formsOf(adverb).some((form) => form.formType === field);
@@ -146,11 +146,11 @@ export function generateAdverbForms(adverb: Adverb, gradable: boolean, wordForms
   if (gradable) {
     const periphrastic = isAdverbPeriphrasticComparison(lemma);
     if (!has(WordFormType.COMPARATIVE_DEGREE_FORM)) {
-      const comparative = periphrastic ? periphrasticDegreeForm(lemma, true) : regularDegreeForm(lemma, true);
+      const comparative = periphrastic ? createPeriphrasticDegreeForm(lemma, true) : createRegularDegreeForm(lemma, true);
       if (comparative !== undefined) wordForms.registerNamedForm(adverb, WordFormType.COMPARATIVE_DEGREE_FORM, comparative);
     }
     if (!has(WordFormType.SUPERLATIVE_DEGREE_FORM)) {
-      const superlative = periphrastic ? periphrasticDegreeForm(lemma, false) : regularDegreeForm(lemma, false);
+      const superlative = periphrastic ? createPeriphrasticDegreeForm(lemma, false) : createRegularDegreeForm(lemma, false);
       if (superlative !== undefined) wordForms.registerNamedForm(adverb, WordFormType.SUPERLATIVE_DEGREE_FORM, superlative);
     }
   }

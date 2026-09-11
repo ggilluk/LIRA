@@ -18,7 +18,7 @@ export { SemanticRelationshipProcessor } from "./role/semantic_relationship_proc
 export { PartOfSpeechIdentifier } from "./role/part_of_speech_identifier";
 export { RelationshipSeeder } from "./role/relationship_seeder";
 export { WordSeeder } from "./role/word_seeder";
-export { type WordInit, createWord, copyWordWithFreshUuid, definitionWords } from "./role/processor/word_processor";
+export { type WordInit, createWord, createFreshUuidWordCopy, recogniseDefinitionWords } from "./role/processor/word_processor";
 export { loadWordNetSynsets, type WordNetSynset } from "./role/wordnet_loader";
 
 export { type DefinitionWordReference, isResolved } from "./data/definition_word_reference";

@@ -29,18 +29,18 @@ export function createCoordination<T extends LinguisticUnit>(init: CoordinationI
 
 /** A shallow copy of `coordination`, sharing every field's own object
  * identity except `coordinationId.uuid`, which becomes a fresh uuid --
- * copySenseWithFreshUuid/copyWordWithFreshUuid's own exact counterpart
+ * createFreshUuidSenseCopy/createFreshUuidWordCopy's own exact counterpart
  * (role/processor/sense_processor.ts, role/processor/word_processor.ts), used by
  * Coordinations.seedFrom for the same reason: two Domains' independent
  * copies of the same coordination must never be confused as the same
  * graph node. */
-export function copyCoordinationWithFreshUuid<T extends LinguisticUnit>(coordination: Coordination<T>): Coordination<T> {
+export function createFreshUuidCoordinationCopy<T extends LinguisticUnit>(coordination: Coordination<T>): Coordination<T> {
   return { ...coordination, coordinationId: { ...coordination.coordinationId, uuid: crypto.randomUUID() } };
 }
 
 /** `coordination`'s own per-Domain graph identity -- `coordinationId.uuid`,
  * always set for a real Coordination (createCoordination()/
- * copyCoordinationWithFreshUuid() above are its only two constructors,
+ * createFreshUuidCoordinationCopy() above are its only two constructors,
  * and both always assign it). Sense/Word's own identical graphUuid()
  * (role/processor/sense_processor.ts, role/processor/word_processor.ts). */
 export function graphUuid<T extends LinguisticUnit>(coordination: Coordination<T>): string {

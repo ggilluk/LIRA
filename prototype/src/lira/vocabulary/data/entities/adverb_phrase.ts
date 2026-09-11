@@ -11,13 +11,13 @@
  * that WordNet-tagged part of speech.
  *
  * Genuinely seeded today, not "declared before it's populated":
- * WordSeeder.seedWordNet's own classifyPhraseType() (role/word_seeder.ts)
+ * WordSeeder.seedWordNet's own recogniseLemmaPhraseType() (role/word_seeder.ts)
  * maps a real multi-word WordNet ADVERB lemma to ADVERB_PHRASE by
  * default -- but the same preposition-opening pattern ADJECTIVE shows
  * (that subtype's own docstring) is more pronounced here: over half of
  * the bundled dict/ files' own ~695 unique ADVERB-tagged multi-word
  * lemmas open with a preposition ("above all", "by hand", "in the
- * meantime"), so classifyPhraseType() checks for PREPOSITIONAL_PHRASE
+ * meantime"), so recogniseLemmaPhraseType() checks for PREPOSITIONAL_PHRASE
  * first -- "to" is itself one of that check's own closed-set
  * prepositions, so every genuine WordNet infinitive ("to be sure", "to
  * begin with") also lands here rather than as some distinct shape of its
@@ -25,7 +25,7 @@
  * place -- and for the Determiner + Noun-quantifier DETERMINER_PHRASE
  * shape too ("a bit", "a lot", "a little",
  * "a trifle", "a good/great deal", "a hundred/million times" --
- * classifyDeterminerPhrase(), role/processor/phrase_processor.ts --
+ * isDeterminerPhrase(), role/processor/phrase_processor.ts --
  * reclassified as NOUN_PHRASE, not this class), before falling back to
  * this class for the rest (that function's own docstring). Never set for
  * a Common Vocabulary Cache closed-class Phrase, which has no
@@ -40,14 +40,14 @@
  * (data/phrase_type_patterns_and_word_roles.md's own "Phrase Role
  * Allowed Types" table, AdverbPhrase/HEAD row). Genuinely populated
  * today, for every real seeded multi-word WordNet AdverbPhrase, by
- * linkPhraseWords() (role/processor/phrase_processor.ts).
+ * updatePhraseWordLinks() (role/processor/phrase_processor.ts).
  *
  * `preModifier` narrows Phrase's own same-named field (data/entities/phrase.ts's
  * own docstring on it) down to `AdverbPhraseModifier` below: an
  * `Adverb`-capable token's own WordForm reference for the single-token
  * case, or a self-referential `AdverbPhrase`/`Coordination`
  * sub-constituent for a run of two or more MODIFIER-role tokens (real
- * constituency parsing now, `buildModifierUnit()`'s own docstring,
+ * constituency parsing now, `createModifierRunValue()`'s own docstring,
  * role/processor/phrase_processor.ts) -- an AdverbPhrase can itself
  * modify another AdverbPhrase's own Head -- `headWord`'s own "an
  * Identifier carries no type to narrow" reasoning, narrowing only the

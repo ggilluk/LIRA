@@ -1,4 +1,4 @@
-import { copyDomainWithFreshUuid, graphUuid } from "../role/domain_processor";
+import { createFreshUuidDomainCopy, graphUuid } from "../role/domain_processor";
 import type { Domain } from "./entities/domain";
 
 /** Domain storage: Coordinations's own counterpart for Domain
@@ -51,6 +51,6 @@ export class Domains {
    * Coordinations.seedFrom's own exact counterpart, used the same way
    * (VocabularyContext's own Physics-from-Common snapshot). */
   seedFrom(other: Domains): void {
-    for (const domain of other.domains) this.append(copyDomainWithFreshUuid(domain));
+    for (const domain of other.domains) this.append(createFreshUuidDomainCopy(domain));
   }
 }

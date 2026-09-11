@@ -492,7 +492,7 @@ absent from the read Sentence's own token array, not merely mis-scored.
 Traced first to a real, separate bug (below), then to the actual root
 cause once that was fixed and the symptom persisted.
 
-**Real bug #1, fixed in passing**: `generatedPluralNumberForm()`
+**Real bug #1, fixed in passing**: `createPluralNumberForm()`
 (`vocabulary/role/processor/noun_processor.ts`) naively pluralized
 *every* lemma with plain `-s` outside its f/fe/s/x/z/ch/sh special
 cases -- including WordNet's own single-character NOUN lemmas (WordNet
@@ -507,7 +507,7 @@ own "Linguistic Service resolves words via the Vocabulary Service"
 section) -- a spurious NOUN candidate for "is" could now out-compete its
 real AUXILIARY reading whenever no valid `VERB_PHRASE` completion
 happened to be available to outrank it. Fixed: a single-character lemma
-is now also a "don't guess" case for `generatedPluralNumberForm()`,
+is now also a "don't guess" case for `createPluralNumberForm()`,
 alongside the existing f/fe abstention.
 
 **Real bug #2, the actual root cause**: fixing bug #1 did *not* fully
@@ -706,7 +706,7 @@ exceeded`, live, against "Did what happened yesterday surprise you?").
 Fixed with a new `ClauseReadOptions.allowEmbedding` flag, `false` on the
 one recursive call `read()` makes for a candidate span -- the same "one
 level only" scoping this session's own Coordination work already settled
-on for a coordinate side (`resolveCoordinateSide()`,
+on for a coordinate side (`createCoordinateSide()`,
 vocabulary/role/processor/phrase_processor.ts): an embedded clause is
 never itself searched for a second, nested embedded clause.
 

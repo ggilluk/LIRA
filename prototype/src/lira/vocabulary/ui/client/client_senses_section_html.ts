@@ -58,7 +58,7 @@ function padMeterRow(posLabel, negLabel, value) {
 // thirdPersonSingularPresentForm, falling back to naive lemma+suffix
 // concatenation only for the pathological case neither *_Form entry is
 // present in word.word_forms (shouldn't happen for a real seeded Verb --
-// generateVerbForms() always populates both). Reads word.word_forms
+// createVerbForms() always populates both). Reads word.word_forms
 // (already sent to the client for the Word Forms section) rather than
 // requiring WordSenseSummary to carry its own copy of the same two
 // values.

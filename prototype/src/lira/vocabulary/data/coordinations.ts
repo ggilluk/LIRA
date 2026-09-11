@@ -1,4 +1,4 @@
-import { copyCoordinationWithFreshUuid, graphUuid } from "../role/coordination_processor";
+import { createFreshUuidCoordinationCopy, graphUuid } from "../role/coordination_processor";
 import type { LinguisticUnit } from "../../linguistics/data/linguistic_unit";
 import type { Coordination } from "./entities/coordination";
 
@@ -46,6 +46,6 @@ export class Coordinations<T extends LinguisticUnit> {
    * Senses.seedFrom's own exact counterpart, used the same way
    * (VocabularyContext's own Physics-from-Common snapshot). */
   seedFrom(other: Coordinations<T>): void {
-    for (const coordination of other.coordinations) this.append(copyCoordinationWithFreshUuid(coordination));
+    for (const coordination of other.coordinations) this.append(createFreshUuidCoordinationCopy(coordination));
   }
 }

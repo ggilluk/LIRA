@@ -5,11 +5,11 @@ import type { Word } from "../../data/entities/word";
 import type { WordForms } from "../../data/word_forms";
 import {
   createWord,
-  endsInConsonantY,
+  isConsonantYEnding,
   graphUuid,
-  shouldDoubleFinalConsonant,
+  recogniseFinalConsonantDoublingStrategy,
 } from "./word_processor";
-import { validateFormText, type WordFormIssue } from "./word_form_processor";
+import { recogniseFormTextIssue, type WordFormIssue } from "./word_form_processor";
 import type { Verb } from "../../data/entities/verb";
 import { stringPatternsFor } from "../../data/matrices/pos_vs_wordform_matrice";
 import { WordFormType } from "../../data/enums/word_forms_enum";
@@ -37,7 +37,7 @@ export function isVerb(word: Word): word is Verb {
  * ever having been set. Undefined for a Verb that didn't come from
  * WordSeeder.seedWordNet (every Common Vocabulary Cache entry, which has
  * no frame data of its own). */
-export function framesForSense(senses: Senses, verb: Verb, senseId: string): readonly string[] | undefined {
+export function identifyFramesForSense(senses: Senses, verb: Verb, senseId: string): readonly string[] | undefined {
   return senses.metadataFor(senseId, graphUuid(verb))?.frames as readonly string[] | undefined;
 }
 
@@ -47,12 +47,12 @@ export function framesForSense(senses: Senses, verb: Verb, senseId: string): rea
  * VERB rules (data/matrices/pos_vs_wordform_matrice.ts). Returns every
  * issue found, not just the first; empty means every populated field
  * is internally consistent with the matrix, not that every field is
- * populated. validateAuxiliary()'s own exact shape
+ * populated. recogniseAuxiliaryFormIssues()'s own exact shape
  * (role/processor/auxiliary_processor.ts). */
-export function validateVerb(verb: Verb, wordForms: WordForms): readonly WordFormIssue[] {
+export function recogniseVerbFormIssues(verb: Verb, wordForms: WordForms): readonly WordFormIssue[] {
   const issues: WordFormIssue[] = [];
   for (const form of wordForms.formsOf(verb)) {
-    const issue = validateFormText(form.formType, form.text, stringPatternsFor(form.formType, PartOfSpeech.VERB));
+    const issue = recogniseFormTextIssue(form.formType, form.text, stringPatternsFor(form.formType, PartOfSpeech.VERB));
     if (issue !== undefined) issues.push(issue);
   }
   return issues;
@@ -63,16 +63,16 @@ export function validateVerb(verb: Verb, wordForms: WordForms): readonly WordFor
  * spell both identically ("walk" -> "walked" is both at once, "stop" ->
  * "stopped" is both at once), so both fields below reuse this one
  * function. Covers every regular-case rule (`/e$/i`, `/[^aeiou]y$/i`,
- * and the doubled-final-consonant case via shouldDoubleFinalConsonant())
+ * and the doubled-final-consonant case via recogniseFinalConsonantDoublingStrategy())
  * for both fields alike; every remaining rule on either field's own row
  * is an irregular or unchanged form with no spelling signal to detect,
  * and the doubling case itself is left undefined for a lemma
- * shouldDoubleFinalConsonant() can't confidently call either way (that
+ * recogniseFinalConsonantDoublingStrategy() can't confidently call either way (that
  * function's own docstring, ./word_processor.ts). */
-function regularEdForm(lemma: string): Text | undefined {
-  if (endsInConsonantY(lemma)) return { value: `${lemma.slice(0, -1)}ied`, formats: ["/ied$/i"] };
+function createRegularEdForm(lemma: string): Text | undefined {
+  if (isConsonantYEnding(lemma)) return { value: `${lemma.slice(0, -1)}ied`, formats: ["/ied$/i"] };
   if (/e$/i.test(lemma)) return { value: `${lemma}d`, formats: ["/ed$/i"] };
-  const doubling = shouldDoubleFinalConsonant(lemma);
+  const doubling = recogniseFinalConsonantDoublingStrategy(lemma);
   if (doubling === "abstain") return undefined;
   if (doubling === "double") return { value: `${lemma}${lemma.slice(-1)}ed`, formats: ["/([bcdfghjklmnpqrstvwxyz])\\1ed$/i"] };
   return { value: `${lemma}ed`, formats: ["/ed$/i"] };
@@ -83,8 +83,8 @@ function regularEdForm(lemma: string): Text | undefined {
  * spelling signal to detect, so a lemma always falls through to one of
  * the first three (this field has no doubling rule of its own, unlike
  * pastTenseForm, so every lemma gets a value here). */
-function regularThirdPersonSingularForm(lemma: string): Text {
-  if (endsInConsonantY(lemma)) return { value: `${lemma.slice(0, -1)}ies`, formats: ["/ies$/i"] };
+function createRegularThirdPersonSingularForm(lemma: string): Text {
+  if (isConsonantYEnding(lemma)) return { value: `${lemma.slice(0, -1)}ies`, formats: ["/ies$/i"] };
   if (/(s|x|z|ch|sh|o)$/i.test(lemma)) return { value: `${lemma}es`, formats: ["/es$/i"] };
   return { value: `${lemma}s`, formats: ["/s$/i"] };
 }
@@ -92,7 +92,7 @@ function regularThirdPersonSingularForm(lemma: string): Text {
 /** presentParticipleForm's own Generation Transform -- regular-case
  * rules #1-4 (`/ie$/i` -> "ying"; a consonant immediately before a
  * final silent `e` -> drop it and add "ing"; the doubled-final-
- * consonant case via shouldDoubleFinalConsonant(); plain "-ing"
+ * consonant case via recogniseFinalConsonantDoublingStrategy(); plain "-ing"
  * otherwise). A lemma ending in `e` preceded by a *vowel* ("agree",
  * "argue", "dye") is genuinely ambiguous by spelling alone -- English
  * keeps the `e` for some ("agreeing") and drops it for others
@@ -100,11 +100,11 @@ function regularThirdPersonSingularForm(lemma: string): Text {
  * Classification / Pronunciation data (../../data/matrices/word_form_part_of_speech_matrix.md),
  * which doesn't exist in this codebase -- so that case is left
  * undefined rather than guessed either way. */
-function regularIngForm(lemma: string): Text | undefined {
+function createRegularIngForm(lemma: string): Text | undefined {
   if (/ie$/i.test(lemma)) return { value: `${lemma.slice(0, -2)}ying`, formats: ["/ying$/i"] };
   if (/[^aeiouy]e$/i.test(lemma)) return { value: `${lemma.slice(0, -1)}ing`, formats: ["/ing$/i"] };
   if (/e$/i.test(lemma)) return undefined;
-  const doubling = shouldDoubleFinalConsonant(lemma);
+  const doubling = recogniseFinalConsonantDoublingStrategy(lemma);
   if (doubling === "abstain") return undefined;
   if (doubling === "double") return { value: `${lemma}${lemma.slice(-1)}ing`, formats: ["/([bcdfghjklmnpqrstvwxyz])\\1ing$/i"] };
   return { value: `${lemma}ing`, formats: ["/ing$/i"] };
@@ -116,7 +116,7 @@ function regularIngForm(lemma: string): Text | undefined {
  * English grammar reference agrees on, so unlike the matrix's other
  * named Exception Lookup tables (gradability, person/case, ...) this
  * one is a fact of English, not an open curation project, and
- * generateVerbForms() below checks it before ever falling through to
+ * createVerbForms() below checks it before ever falling through to
  * the regular -ed rules -- without it, a genuinely irregular lemma like
  * "eat" would get a spelling-rule guess ("eated") instead of its real
  * form ("ate"/"eaten").
@@ -131,7 +131,7 @@ function regularIngForm(lemma: string): Text | undefined {
  * this codebase doesn't have. (2) "be" is deliberately absent -- its
  * own past tense is "was"/"were" depending on grammatical number, which
  * this table's single-value-per-lemma shape can't express;
- * generateVerbForms() skips pastTenseForm/pastParticipleForm generation
+ * createVerbForms() skips pastTenseForm/pastParticipleForm generation
  * for "be" outright instead of guessing. */
 const IRREGULAR_VERB_FORMS: Readonly<Record<string, { past: string; pastParticiple: string }>> = {
   arise: { past: "arose", pastParticiple: "arisen" },
@@ -289,16 +289,16 @@ const IRREGULAR_VERB_FORMS: Readonly<Record<string, { past: string; pastParticip
  * recognised String Patterns (WORD_FORM_MATRIX's own VERB rules,
  * data/matrices/pos_vs_wordform_matrice.ts) or, for an irregular form, no
  * claimed format at all (matching the matrix's own N/A String Pattern
- * for every irregular rule) -- generateVerbForms() and validateVerb()
+ * for every irregular rule) -- createVerbForms() and recogniseVerbFormIssues()
  * are built from the exact same matrix rows, so a freshly-generated
- * Verb always passes its own validateVerb() unchanged. Fields are
+ * Verb always passes its own recogniseVerbFormIssues() unchanged. Fields are
  * registered in the Word Form Matrix's own row order (present, past,
  * third-person-singular, present-participle, past-participle, bare
  * infinitive), not this function's own computation order, so Word Forms
  * UI display order stays unaffected by this migration. Returns `verb`
  * unchanged -- registration is a side effect on `wordForms`, not a copy
  * of `verb` itself. */
-export function generateVerbForms(verb: Verb, wordForms: WordForms | undefined): Verb {
+export function createVerbForms(verb: Verb, wordForms: WordForms | undefined): Verb {
   if (wordForms === undefined) return verb;
   const lemma = verb.text;
   const irregular = IRREGULAR_VERB_FORMS[lemma];
@@ -309,7 +309,7 @@ export function generateVerbForms(verb: Verb, wordForms: WordForms | undefined):
   if (!has(WordFormType.PAST_TENSE_FORM)) {
     if (irregular !== undefined) wordForms.registerNamedForm(verb, WordFormType.PAST_TENSE_FORM, { value: irregular.past });
     else if (lemma !== "be") {
-      const pastTense = regularEdForm(lemma);
+      const pastTense = createRegularEdForm(lemma);
       if (pastTense !== undefined) wordForms.registerNamedForm(verb, WordFormType.PAST_TENSE_FORM, pastTense);
     }
   }
@@ -318,12 +318,12 @@ export function generateVerbForms(verb: Verb, wordForms: WordForms | undefined):
     wordForms.registerNamedForm(
       verb,
       WordFormType.THIRD_PERSON_SINGULAR_PRESENT_FORM,
-      lemma === "have" ? { value: "has" } : regularThirdPersonSingularForm(lemma),
+      lemma === "have" ? { value: "has" } : createRegularThirdPersonSingularForm(lemma),
     );
   }
 
   if (!has(WordFormType.PRESENT_PARTICIPLE_FORM)) {
-    // "be" is the one lemma regularIngForm() gets wrong: its own
+    // "be" is the one lemma createRegularIngForm() gets wrong: its own
     // consonant-before-silent-e branch assumes there's a real stem left
     // once the "e" is dropped ("writ" + "ing"), but "be" is nothing but
     // that one consonant + "e" -- stripping it leaves "b", not a stem,
@@ -332,7 +332,7 @@ export function generateVerbForms(verb: Verb, wordForms: WordForms | undefined):
     // one-lemma exception, not a flaw in the general rule.
     if (lemma === "be") wordForms.registerNamedForm(verb, WordFormType.PRESENT_PARTICIPLE_FORM, { value: "being", formats: ["/ing$/i"] });
     else {
-      const presentParticiple = regularIngForm(lemma);
+      const presentParticiple = createRegularIngForm(lemma);
       if (presentParticiple !== undefined) wordForms.registerNamedForm(verb, WordFormType.PRESENT_PARTICIPLE_FORM, presentParticiple);
     }
   }
@@ -340,7 +340,7 @@ export function generateVerbForms(verb: Verb, wordForms: WordForms | undefined):
   if (!has(WordFormType.PAST_PARTICIPLE_FORM)) {
     if (irregular !== undefined) wordForms.registerNamedForm(verb, WordFormType.PAST_PARTICIPLE_FORM, { value: irregular.pastParticiple });
     else if (lemma !== "be") {
-      const pastParticiple = regularEdForm(lemma);
+      const pastParticiple = createRegularEdForm(lemma);
       if (pastParticiple !== undefined) wordForms.registerNamedForm(verb, WordFormType.PAST_PARTICIPLE_FORM, pastParticiple);
     }
   }

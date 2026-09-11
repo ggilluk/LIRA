@@ -12,10 +12,10 @@
  * Known, approved exception to the usual data/-depends-on-role/-never
  * rule (data/entities/word.ts's own docstring; word_processor.ts's own
  * docstring for the precedent this follows): data/senses.ts's own
- * `Senses` store calls copySenseWithFreshUuid() directly, so that
+ * `Senses` store calls createFreshUuidSenseCopy() directly, so that
  * data/ file ends up importing from here -- the same reason
  * data/entities/phrase.ts and data/dictionary.ts already import
- * createWord()/copyWordWithFreshUuid() from role/processor/word_processor.ts. */
+ * createWord()/createFreshUuidWordCopy() from role/processor/word_processor.ts. */
 
 import { identifier } from "../../../value_objects";
 import type { Sense } from "../../data/entities/sense";
@@ -43,16 +43,16 @@ export function createSense(init: SenseInit = {}): Sense {
  * except `senseId.uuid`, which becomes a fresh uuid -- `senseId.value`
  * (and every other field) stays the same, so this copy is still
  * recognisably the same underlying Sense, just a distinct graph node --
- * copyWordForm/copyWordWithFreshUuid's own exact counterpart
+ * copyWordForm/createFreshUuidWordCopy's own exact counterpart
  * (role/processor/word_processor.ts), used by Senses.seedFrom for the same
  * reason: two Domains' independent copies of the same sense must never
  * be confused as the same graph node. */
-export function copySenseWithFreshUuid(sense: Sense): Sense {
+export function createFreshUuidSenseCopy(sense: Sense): Sense {
   return { ...sense, senseId: { ...sense.senseId, uuid: crypto.randomUUID() } };
 }
 
 /** `sense`'s own per-Domain graph identity -- `sense.senseId.uuid`,
- * always set for a real Sense (createSense()/copySenseWithFreshUuid()
+ * always set for a real Sense (createSense()/createFreshUuidSenseCopy()
  * above are its only two constructors, and both always assign it);
  * the assertion here just names that guarantee once instead of
  * repeating it at every call site that needs a Sense's own identity as

@@ -24,7 +24,7 @@
  *
  * Only one column of the matrix is mechanically consumed by code
  * today -- String Pattern (via stringPatternsFor(), validateX()'s own
- * check() closure, role/processor/word_form_processor.ts's validateFormText()); POS
+ * check() closure, role/processor/word_form_processor.ts's recogniseFormTextIssue()); POS
  * applicability (fieldsFor()) no longer has a caller now that every POS
  * subtype registers real `WordForm` records instead of scalar `*_Form`
  * fields. Every other column (Base Lemma Preconditions,
@@ -36,7 +36,7 @@
  * Exception Lookup tables named here exist in this codebase yet," are
  * still true, and the real Generation/Reduction Transform logic stays
  * exactly where it already lives (role/processor/*_processor.ts's own
- * generateXForms()/regularEdForm()/etc.), described here only in
+ * generateXForms()/createRegularEdForm()/etc.), described here only in
  * prose, not duplicated as a second implementation.
  *
  * `appliesTo` lives on each *rule*, not on the row -- verified against
@@ -1037,7 +1037,7 @@ export const WORD_FORM_MATRIX: readonly WordFormRow[] = [
  * `appliesTo` includes `pos`, deduplicated (the old per-POS constants
  * were themselves already deduplicated -- e.g. Past Tense Form's rules
  * 1 and 2 both give "/ed$/i", and VERB_FORM_PATTERNS.pastTenseForm
- * only ever listed it once; validateFormText()'s own check is a
+ * only ever listed it once; recogniseFormTextIssue()'s own check is a
  * membership test, `known.includes(claimed)`, so duplicates would
  * never have changed correctness, only the array's own length --
  * deduplicating here keeps this a true behavioral match rather than a

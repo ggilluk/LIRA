@@ -2,7 +2,7 @@ import { PartOfSpeech } from "../../data/enums/part_of_speech";
 import type { Word } from "../../data/entities/word";
 import type { WordForms } from "../../data/word_forms";
 import { createWord } from "./word_processor";
-import { validateFormText, type WordFormIssue } from "./word_form_processor";
+import { recogniseFormTextIssue, type WordFormIssue } from "./word_form_processor";
 import type { Pronoun } from "../../data/entities/pronoun";
 import { stringPatternsFor } from "../../data/matrices/pos_vs_wordform_matrice";
 
@@ -22,14 +22,14 @@ export function isPronoun(word: Word): word is Pronoun {
  * PRONOUN rules (data/matrices/pos_vs_wordform_matrice.ts). Returns
  * every issue found, not just the first; empty means every populated
  * field is internally consistent with the matrix, not that every
- * field is populated. validateAuxiliary()'s own exact shape
+ * field is populated. recogniseAuxiliaryFormIssues()'s own exact shape
  * (role/processor/auxiliary_processor.ts) -- a no-op against real data
  * today, since no production write site populates a Pronoun's own
  * WordForms yet (Pronoun's own docstring, data/entities/pronoun.ts). */
-export function validatePronoun(pronoun: Pronoun, wordForms: WordForms): readonly WordFormIssue[] {
+export function recognisePronounFormIssues(pronoun: Pronoun, wordForms: WordForms): readonly WordFormIssue[] {
   const issues: WordFormIssue[] = [];
   for (const form of wordForms.formsOf(pronoun)) {
-    const issue = validateFormText(form.formType, form.text, stringPatternsFor(form.formType, PartOfSpeech.PRONOUN));
+    const issue = recogniseFormTextIssue(form.formType, form.text, stringPatternsFor(form.formType, PartOfSpeech.PRONOUN));
     if (issue !== undefined) issues.push(issue);
   }
   return issues;
