@@ -24,7 +24,7 @@
  *
  * Only one column of the matrix is mechanically consumed by code
  * today -- String Pattern (via stringPatternsFor(), validateX()'s own
- * check() closure, role/word_processor.ts's validateFormText()); POS
+ * check() closure, role/word_form_processor.ts's validateFormText()); POS
  * applicability (fieldsFor()) no longer has a caller now that every POS
  * subtype registers real `WordForm` records instead of scalar `*_Form`
  * fields. Every other column (Base Lemma Preconditions,

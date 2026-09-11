@@ -3702,3 +3702,71 @@ siblings doesn't repeat the same category error.
 187/187 -- both changed, both a pure relocation with no logic touched,
 so behaviourally identical to before either move. No live Playwright
 verification, same reasoning as both entries above.
+
+## Move Word Form Matrix validation (`WordFormIssue`/`parseFormatPattern()`/`validateFormText()`) from `role/word_processor.ts` to `role/word_form_processor.ts`
+
+The correction above settled where the eight spelling primitives belong,
+but left one open thread from the same file: `WordFormIssue`,
+`parseFormatPattern()`, and `validateFormText()` stayed in
+`word_processor.ts`, on the sole grounds that every POS subtype's own
+processor already imported `createWord` from that file, so importing
+`validateFormText` from the same place too "added no new cross-file
+dependency" -- that file's own former docstring, verbatim. Put under the
+same scrutiny the spelling primitives just got, that reasoning doesn't
+hold: proximity to an existing import is not the test. The test is who
+actually reuses the function. Every real call site
+(`validateAdjective()`, `validateVerb()`, and their siblings across every
+`role/processor/*_processor.ts`) validates one `WordForm`'s own
+`formType`/`text` pair -- e.g. `validateFormText(form.formType, form.text,
+stringPatternsFor(...))` inside a loop over `wordForms.formsOf(word)` --
+never anything about `Word` itself or shared across the POS subtype
+family the way the spelling primitives genuinely are. This is `WordForm`'s
+own behaviour, not a base-class-for-a-subtype-family concern, so it
+belongs with `WordForm`, not with `Word`.
+
+`WordForm` itself, unlike `Word`, has no subtype family of its own --
+it's a leaf entity, a peer of `Sense`/`Coordination`/`Domain`, each with
+its own single `role/<entity>_processor.ts` holding only construction/
+copy/identity. That raised a genuine naming question before any code
+moved: `role/processor/` is the folder that holds each of `Word`'s own
+11 POS-subtype processors (`noun_processor.ts`, `verb_processor.ts`,
+...), and creating a `role/processor/word_form_processor.ts` there would
+collide in basename with the pre-existing top-level `role/word_form_processor.ts`
+-- which explicitly documents itself as *not* belonging under
+`role/processor/`, since `WordForm` has no subtype family the way `Word`
+does. Rather than guess a third time after two consecutive
+categorization corrections in this same area, this was put to the user
+directly (`AskUserQuestion`): merge the three symbols into the existing
+top-level `role/word_form_processor.ts`, or create a new file elsewhere.
+The user chose the existing file.
+
+Mechanically: `WordFormIssue`/`parseFormatPattern()`/`validateFormText()`
+(docstrings carried over verbatim, only the file-relative cross-references
+inside them updated) moved from `word_processor.ts` into
+`word_form_processor.ts`, appended after that file's existing
+`graphUuid()`; the three new imports this required
+(`Text`/`wordFormTypeLabel`/`WordFormType`) added to that file's import
+list. `word_processor.ts` lost the "Word Form to Part of Speech Matrix
+attribute validation" section entirely (including the trailing
+`baseLemmaCanonicalForm` comment explaining why that one `*_Form` field
+needs no separate validation function) and its now-unused
+`wordFormTypeLabel`/`WordFormType` import; its top-of-file docstring
+gained a paragraph documenting the move and explicitly rejecting the
+"proximity to a one-time import" reasoning that had justified keeping
+these three here, so a future reader doesn't reach for that argument
+again. Every real call site (`noun_processor.ts`, `verb_processor.ts`,
+`adjective_processor.ts`, `adverb_processor.ts`, `determiner_processor.ts`,
+`auxiliary_processor.ts`, `pronoun_processor.ts`, plus `vocabulary.test.ts`)
+split its combined `from "../word_processor"` (or `from "./role/word_processor"`)
+import into two -- one for what's staying (`createWord`/`graphUuid`/the
+spelling primitives, as applicable per file), one for `validateFormText`/
+`WordFormIssue` from `../word_form_processor` (`./role/word_form_processor`
+in the test file). The one stray doc-comment cross-reference in
+`data/matrices/pos_vs_wordform_matrice.ts` naming `role/word_processor.ts's
+validateFormText()` corrected to name `word_form_processor.ts` instead.
+
+`npx tsc -b --force` clean, full `vitest run --no-file-parallelism`
+187/187 -- a pure relocation, no logic touched, so behaviourally
+identical to before the move. No live Playwright verification -- same
+reasoning as every entry above: an internal module reorganization with
+no UI-facing surface of its own.

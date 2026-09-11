@@ -10,9 +10,8 @@ import {
   isPeriphrasticComparison,
   periphrasticDegreeForm,
   regularDegreeForm,
-  validateFormText,
-  type WordFormIssue,
 } from "../word_processor";
+import { validateFormText, type WordFormIssue } from "../word_form_processor";
 import type { Adjective } from "../../data/entities/adjective";
 import { AdjectivePosition } from "../../data/enums/adjective_position";
 import { stringPatternsFor } from "../../data/matrices/pos_vs_wordform_matrice";

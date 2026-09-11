@@ -1,8 +1,8 @@
 /** The behavior that operates on a bare Word (data/entities/word.ts) --
- * construction/copying, definition-word breakdown, Word Form to Part of
- * Speech Matrix validation, and the regular-English-suffix spelling
- * primitives every open-class POS subtype's own processor
- * (role/processor/*.ts) builds its own generate<Class>Forms() from.
+ * construction/copying, definition-word breakdown, and the regular-
+ * English-suffix spelling primitives every open-class POS subtype's own
+ * processor (role/processor/*.ts) builds its own generate<Class>Forms()
+ * from.
  *
  * This file is `Word`'s own base-class counterpart to each POS
  * subtype's own role/processor/*_processor.ts -- Word itself isn't one
@@ -39,6 +39,18 @@
  * just riding along in the same file for the same one-time-import
  * convenience.
  *
+ * Word Form to Part of Speech Matrix attribute validation
+ * (`WordFormIssue`/`parseFormatPattern()`/`validateFormText()`) has also
+ * left this file, for the same reason the code resolvers did: every
+ * real call site validates one WordForm's own `formType`/`text`, not
+ * anything Word-subtype-family-wide, so that's WordForm's own
+ * behaviour, not a base-class concern this file should hold. It now
+ * lives in role/word_form_processor.ts (that file's own docstring).
+ * Briefly kept here on a "proximity to a one-time createWord import"
+ * argument before this move -- rejected on reflection, since that
+ * reasoning would justify parking almost anything in whichever file
+ * happens to already be imported nearby.
+ *
  * Known, approved exception to the usual data/-depends-on-role/-never
  * rule (data/entities/word.ts's own docstring; the word_forms.ts fix,
  * commit d087fee): data/entities/phrase.ts's own phraseAsWord() and
@@ -54,7 +66,6 @@ import { identifier, type Text } from "../../value_objects";
 import type { Dictionary } from "../data/dictionary";
 import type { DefinitionWordReference } from "../data/definition_word_reference";
 import type { Word } from "../data/entities/word";
-import { wordFormTypeLabel, type WordFormType } from "../data/enums/word_forms_enum";
 
 // Splits a definition's prose into its own word tokens -- deliberately a
 // local regex, not a Linguistics-Layer LinguisticLexer import: Vocabulary
@@ -172,85 +183,6 @@ export function definitionWords(definitionText: Text | undefined, dictionary: Di
   }
   return references;
 }
-
-// -- Word Form to Part of Speech Matrix attribute validation (data/matrices/word_form_part_of_speech_matrix.md) --
-// Each POS subtype (noun.ts, verb.ts, ...) owns its own row of the
-// matrix's String Pattern column and its own validate<Class>() -- there
-// is deliberately no single file holding every class's patterns. What's
-// shared here is only the generic mechanism every one of those
-// validate<Class>() functions reuses: parsing a `Text.formats` entry
-// into a real RegExp, and checking one field's Text against one known
-// pattern set. This lives here alongside Word's own createWord(), not
-// split out further, because every POS subtype's own processor
-// (role/processor/*_processor.ts) already imports from this file for
-// `createWord` itself, so this adds no new cross-file dependency.
-
-/** One validation failure from validateFormText/validate<Class> below --
- * `field` names which WordFormType the issue is on, `reason` says
- * which of the two ways a claimed Text.formats entry failed (its own
- * message text names `field` via `wordFormTypeLabel()`,
- * data/enums/word_forms_enum.ts, not `field` itself -- a numeric,
- * tensor-coded enum value has no readable text of its own any more). */
-export interface WordFormIssue {
-  field: WordFormType;
-  reason: string;
-}
-
-/** Parses one `Text.formats` entry ("/s$/i") into a real RegExp --
- * splits on the *last* "/" as the flags delimiter (none of any POS
- * class's own word-form patterns ever contain a literal "/" in their
- * body, so this is unambiguous for every pattern this codebase actually
- * defines). Throws on a malformed pattern string (no leading "/") --
- * deliberately, since a caller passing one is a programming error, not
- * a validation outcome to report gracefully the way an unrecognised
- * *pattern* (validateFormText's own concern) is. */
-export function parseFormatPattern(pattern: string): RegExp {
-  if (!pattern.startsWith("/")) throw new Error(`not a "/pattern/flags"-shaped format string: '${pattern}'`);
-  const lastSlash = pattern.lastIndexOf("/");
-  return new RegExp(pattern.slice(1, lastSlash), pattern.slice(lastSlash + 1));
-}
-
-/** Checks one Text value's own `formats` (if set at all -- unset is
- * always valid, the same "no claim made" reading Text.formats's own
- * docstring gives it) against `known`, the calling POS class's own
- * recognised String Patterns for this one field (WORD_FORM_MATRIX's
- * own rules for that (field, PartOfSpeech) pair,
- * data/matrices/pos_vs_wordform_matrice.ts, via that file's
- * own stringPatternsFor()). Two distinct ways to fail: a
- * claimed format isn't one of the patterns this (class, field) pair
- * actually recognises at all (a typo, a pattern copied from the wrong
- * field, or a field the matrix marks fully N/A/lexical, whose own array
- * is always empty); or the claimed format IS recognised, but
- * `text.value` itself doesn't actually match it (stale data -- the
- * value changed after `formats` was set, or the two were never
- * consistent to begin with). */
-export function validateFormText(field: WordFormType, text: Text, known: readonly string[]): WordFormIssue | undefined {
-  if (text.formats === undefined) return undefined;
-  for (const claimed of text.formats) {
-    if (!known.includes(claimed)) {
-      return {
-        field,
-        reason: `'${claimed}' is not a recognised String Pattern for '${wordFormTypeLabel(field)}' (word_form_part_of_speech_matrix.md)`,
-      };
-    }
-    if (!parseFormatPattern(claimed).test(text.value)) {
-      return { field, reason: `'${text.value}' does not match its own claimed format '${claimed}'` };
-    }
-  }
-  return undefined;
-}
-
-// baseLemmaCanonicalForm -- the one *_Form field every POS subtype
-// shares via Word itself -- used to be a scalar field validated here
-// (validateWordFormAttributes(), removed). It's a real WordForm now
-// (WordForms.registerBaseLemmaForm(), data/word_forms.ts), so every
-// POS subtype's own validate<Class>() already checks it: it's simply
-// one of the entries `wordForms.formsOf(word)` returns, run through
-// the exact same stringPatternsFor(field, pos) check every other
-// WordForm gets -- WORD_FORM_MATRIX's own baseLemmaCanonicalForm row
-// declares no String Pattern for any part of speech, so that check
-// still reports an issue whenever a populated value's own `formats` is
-// set to anything, with no separate function needed to say so.
 
 // -- Regular English suffix generation, shared by every open-class POS
 // subtype's own generate<Class>Forms() (noun.ts, verb.ts, adjective.ts,

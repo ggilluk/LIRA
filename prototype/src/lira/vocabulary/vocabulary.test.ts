@@ -12,7 +12,8 @@ import { PartOfSpeech } from "./data/enums/part_of_speech";
 import { ConjunctionType } from "./data/enums/conjunction_type";
 import { WordFormType, wordFormTypeLabel } from "./data/enums/word_forms_enum";
 import type { Word } from "./data/entities/word";
-import { createWord, graphUuid as wordGraphUuid, validateFormText } from "./role/word_processor";
+import { createWord, graphUuid as wordGraphUuid } from "./role/word_processor";
+import { validateFormText } from "./role/word_form_processor";
 import { graphUuid as formGraphUuid } from "./role/word_form_processor";
 import { stringPatternsFor } from "./data/matrices/pos_vs_wordform_matrice";
 import { AdjectivePosition } from "./data/enums/adjective_position";
@@ -309,7 +310,7 @@ describe("classifyPhraseType", () => {
   });
 });
 
-describe("validateFormText (role/word_processor.ts) -- the mechanism every POS class's own validate<Class>() reuses", () => {
+describe("validateFormText (role/word_form_processor.ts) -- the mechanism every POS class's own validate<Class>() reuses", () => {
   it("treats an unset formats as always valid -- no claim made, nothing to check", () => {
     expect(validateFormText(WordFormType.PLURAL_NUMBER_FORM, { value: "dogs" }, stringPatternsFor(WordFormType.PLURAL_NUMBER_FORM, PartOfSpeech.NOUN))).toBeUndefined();
   });

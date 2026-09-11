@@ -8,9 +8,8 @@ import {
   endsInConsonantY,
   graphUuid,
   shouldDoubleFinalConsonant,
-  validateFormText,
-  type WordFormIssue,
 } from "../word_processor";
+import { validateFormText, type WordFormIssue } from "../word_form_processor";
 import type { Verb } from "../../data/entities/verb";
 import { stringPatternsFor } from "../../data/matrices/pos_vs_wordform_matrice";
 import { WordFormType } from "../../data/enums/word_forms_enum";
