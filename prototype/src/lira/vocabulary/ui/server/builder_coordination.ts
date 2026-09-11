@@ -94,7 +94,7 @@ function isWord(coordinate: LinguisticUnit | Coordination<LinguisticUnit>): coor
  * itself is undefined, or fails to resolve at all. */
 function coordinatorFor(coordination: Coordination<LinguisticUnit>, dictionary: Dictionary, wordForms: WordForms) {
   if (coordination.coordinator === undefined) return undefined;
-  const form = wordForms.findByUuid(coordination.coordinator.value);
+  const form = wordForms.findByUuid(Number(coordination.coordinator.value));
   if (form === undefined) return undefined;
   return dictionary
     .lookupAll(form.text.value)
@@ -119,7 +119,7 @@ export function coordinationRecordFor(coordination: Coordination<LinguisticUnit>
   if (words.length === 0) return undefined;
   const coordinatorWord = coordinatorFor(coordination, dictionary, wordForms);
   return {
-    id: graphUuid(coordination),
+    id: String(graphUuid(coordination)),
     coordinates: words.map((word) => word.text),
     pos: PartOfSpeech[words[0].partOfSpeech],
     coordinator: coordinatorWord?.text,
@@ -137,7 +137,7 @@ export function coordinationRecordFor(coordination: Coordination<LinguisticUnit>
  * things," which is exactly what being a Conjunction means here. */
 function conjunctionWordRecord(word: Conjunction): CoordinationRecord {
   return {
-    id: wordGraphUuid(word),
+    id: String(wordGraphUuid(word)),
     coordinates: [],
     pos: PartOfSpeech[PartOfSpeech.CONJUNCTION],
     coordinator: word.text,
@@ -161,7 +161,7 @@ function conjunctionWordRecord(word: Conjunction): CoordinationRecord {
  * has, rather than staying hardcoded here. */
 function conjunctionPhraseRecord(phrase: Phrase): CoordinationRecord {
   return {
-    id: phraseGraphUuid(phrase),
+    id: String(phraseGraphUuid(phrase)),
     coordinates: [],
     pos: PartOfSpeech[PartOfSpeech.CONJUNCTION],
     coordinator: phrase.text,

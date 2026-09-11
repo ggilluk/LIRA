@@ -501,7 +501,7 @@ export class AuxiliarySeeder {
           const sense = createSense({ definition: { value: definition }, gloss: { value: definition }, isCommon: true });
           this.senses.append(sense);
           this.senses.registerMember(sense, word);
-          form.senseIds = [...form.senseIds, { value: graphUuid(sense) }];
+          form.senseIds = [...form.senseIds, { value: String(graphUuid(sense)) }];
         }
       }
     }

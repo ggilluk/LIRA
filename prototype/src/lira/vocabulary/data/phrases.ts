@@ -22,20 +22,20 @@ import type { PartOfSpeech } from "./enums/part_of_speech";
 export class Phrases {
   private phrases: Phrase[] = [];
   private readonly byText = new Map<string, Phrase[]>();
-  private readonly byUuid = new Map<string, Phrase>();
+  private readonly byUuid = new Map<number, Phrase>();
   /** WordNet-tagged part of speech for each Phrase, keyed by graphUuid.
    * Not a field on Phrase itself -- recogniseLemmaPhraseType() already derives
    * `phraseType` from this same value at seeding time, and phraseType
    * cannot substitute for it as a dedup/lookup key: the PREPOSITIONAL_PHRASE
    * shape is reachable from both PartOfSpeech.ADJECTIVE and
    * PartOfSpeech.ADVERB, so only the original tag can tell those apart. */
-  private readonly partOfSpeechByUuid = new Map<string, PartOfSpeech>();
+  private readonly partOfSpeechByUuid = new Map<number, PartOfSpeech>();
   // WordNet's own synset identifier for each Phrase that has one, keyed
   // by graphUuid -- synsetIdOf()'s own backing store. Not a field on
   // Phrase itself (Phrase's own docstring on why): it's an externally-
   // defined WordNet attribute, mapped onto senseIds[0] rather than
   // duplicated as a scalar field.
-  private readonly synsetIdByUuid = new Map<string, Identifier>();
+  private readonly synsetIdByUuid = new Map<number, Identifier>();
   private maxSpan = 0;
 
   all(): readonly Phrase[] {
@@ -63,7 +63,7 @@ export class Phrases {
     return this.byText.get(text.toLowerCase())?.slice() ?? [];
   }
 
-  findByUuid(phraseId: string): Phrase | undefined {
+  findByUuid(phraseId: number): Phrase | undefined {
     return this.byUuid.get(phraseId);
   }
 

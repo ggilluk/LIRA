@@ -39,7 +39,7 @@ export function isAdjective(word: Word): word is Adjective {
  * docstring on why an Adjective can carry more than one); passing a
  * senseId this Adjective doesn't actually lexicalize just returns
  * undefined, the same as no restriction ever having been recorded. */
-export function identifySyntacticPositionForSense(senses: Senses, adjective: Adjective, senseId: string): AdjectivePosition | undefined {
+export function identifySyntacticPositionForSense(senses: Senses, adjective: Adjective, senseId: number): AdjectivePosition | undefined {
   return senses.metadataFor(senseId, graphUuid(adjective))?.syntacticPosition as AdjectivePosition | undefined;
 }
 

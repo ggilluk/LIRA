@@ -11,7 +11,7 @@
  * for the design history behind this shape.
  */
 
-import { identifier, type Identifier, type Text } from "../../../value_objects";
+import { identifier, randomGraphUuid, type Identifier, type Text } from "../../../value_objects";
 import type { Clause } from "../../../linguistics/data/clause";
 import type { LinguisticUnit } from "../../../linguistics/data/linguistic_unit";
 import type { EditorialLabel } from "../enums/editorial_label";
@@ -323,12 +323,12 @@ export function createPhrase(init: PhraseInit): Phrase {
  * except `phraseId.uuid`, which becomes a fresh uuid. The Phrase
  * counterpart of createFreshUuidWordCopy (role/processor/word_processor.ts). */
 export function copyPhraseWithFreshUuid(phrase: Phrase): Phrase {
-  return { ...phrase, phraseId: { ...phrase.phraseId, uuid: crypto.randomUUID() } };
+  return { ...phrase, phraseId: { ...phrase.phraseId, uuid: randomGraphUuid() } };
 }
 
 /** `phrase`'s own per-Domain graph identity. Word's own identical
  * graphUuid() (role/processor/word_processor.ts). */
-export function graphUuid(phrase: Phrase): string {
+export function graphUuid(phrase: Phrase): number {
   return phrase.phraseId.uuid!;
 }
 
@@ -343,7 +343,7 @@ export function graphUuid(phrase: Phrase): string {
 export function toSyntheticWord(phrase: Phrase, phrases: Phrases): Word {
   return createWord({
     text: phrase.text,
-    wordId: { ...phrase.phraseId, uuid: crypto.randomUUID() },
+    wordId: { ...phrase.phraseId, uuid: randomGraphUuid() },
     partOfSpeech: phrases.partOfSpeechOf(phrase)!,
     definition: phrase.definition,
     usageNotes: phrase.usageNotes,

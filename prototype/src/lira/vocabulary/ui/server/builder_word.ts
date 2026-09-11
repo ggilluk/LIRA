@@ -38,7 +38,7 @@ import { domainLabel, isRootWordFor, senseFieldsFor } from "./resolver_domain";
  * folded from Identifier.uuid, data/entities/word.ts's own docstring),
  * so this just picks which of the two matching graphUuid() functions
  * to call. `data/senses.ts`'s own identical `memberUuid()`. */
-function memberUuid(member: Word | Phrase): string {
+function memberUuid(member: Word | Phrase): number {
   return "senseIds" in member ? phraseGraphUuid(member) : wordGraphUuid(member);
 }
 
@@ -309,12 +309,12 @@ function morphologicalDerivations(word: Word, dictionary: Dictionary, wordForms:
     // each a WordForm of "be"/"have"), so this tries Dictionary first and
     // WordForms on a miss, rather than silently dropping the WordForm half
     // as an unresolved pointer.
-    const wordTarget = dictionary.findByUuid(pointer.value);
+    const wordTarget = dictionary.findByUuid(Number(pointer.value));
     if (wordTarget !== undefined) {
-      derivations.push({ attribute, label: formFieldLabel(attribute), target: { id: wordGraphUuid(wordTarget), text: wordTarget.text } });
+      derivations.push({ attribute, label: formFieldLabel(attribute), target: { id: String(wordGraphUuid(wordTarget)), text: wordTarget.text } });
       return;
     }
-    const formTarget = wordForms.findByUuid(pointer.value);
+    const formTarget = wordForms.findByUuid(Number(pointer.value));
     if (formTarget === undefined) return;
     derivations.push({ attribute, label: formFieldLabel(attribute), target: { id: pointer.value, text: formTarget.text.value } });
   };
@@ -359,15 +359,15 @@ function sensesFor(entry: Word | Phrase, senses: Senses, domainName: string, wor
   const summaries: WordSenseSummary[] = [];
   const senseIds = "senseIds" in entry ? entry.senseIds : wordForms.senseIdsOf(entry);
   senseIds.forEach((senseId, index) => {
-    const sense = senses.findByUuid(senseId.value);
+    const sense = senses.findByUuid(Number(senseId.value));
     if (sense === undefined) return;
-    const domainTagText = sense.domainTag !== undefined ? domains.findByUuid(sense.domainTag.value)?.domainText.value : undefined;
+    const domainTagText = sense.domainTag !== undefined ? domains.findByUuid(Number(sense.domainTag.value))?.domainText.value : undefined;
     const domain = !sense.isCommon ? domainName : (domainTagText ?? "Common");
     const { seededPleasureDispleasureWeight: p, seededArousalNonArousalWeight: a, seededDominanceSubmissiveWeight: d } = sense;
     // "senseIds" in entry distinguishes a Phrase (identifyFramesForSense() only
     // ever applies to a genuine VERB Word -- no such concept exists for
     // a multi-word Phrase entry).
-    const frames = !("senseIds" in entry) && isVerb(entry) ? identifyFramesForSense(senses, entry, senseId.value) : undefined;
+    const frames = !("senseIds" in entry) && isVerb(entry) ? identifyFramesForSense(senses, entry, Number(senseId.value)) : undefined;
     summaries.push({
       id: senseId.value,
       is_primary: index === 0,
@@ -377,9 +377,9 @@ function sensesFor(entry: Word | Phrase, senses: Senses, domainName: string, wor
       frequency: sense.senseFrequency ?? null,
       pad: p !== undefined && a !== undefined && d !== undefined ? { pleasure: p.value, arousal: a.value, dominance: d.value } : null,
       synonyms: senses
-        .membersOf(senseId.value)
+        .membersOf(Number(senseId.value))
         .filter((member) => memberUuid(member) !== memberUuid(entry))
-        .map((member) => ({ id: memberUuid(member), text: member.text })),
+        .map((member) => ({ id: String(memberUuid(member)), text: member.text })),
       ...(frames !== undefined && frames.length > 0 ? { frames: [...frames] } : {}),
     });
   });
@@ -448,7 +448,7 @@ export function wordRecordFor(
   wordForms: WordForms,
   domains: Domains,
 ): WordRecord {
-  const wordId = wordGraphUuid(word);
+  const wordId = String(wordGraphUuid(word));
   const wordSenseIds = wordForms.senseIdsOf(word);
   // SemanticRelationshipStore is Sense-keyed, not Word-keyed (every
   // fact this view reads through it now, DictionaryView's own class
@@ -483,7 +483,7 @@ export function wordRecordFor(
     is_derivable_noun: isNoun(word) && word.isDerivableNoun,
     domain: domainLabel(senses, domainName, word, wordForms, domains),
     related_domains: senseFields.relatedDomainTags
-      .map((tag) => domains.findByUuid(tag.value)?.domainText.value)
+      .map((tag) => domains.findByUuid(Number(tag.value))?.domainText.value)
       .filter((text): text is string => text !== undefined),
     is_fully_hydrated: word.isFullyHydrated,
     sources: word.sourceReferences.map((ref) => ref.sourceName.value),
@@ -561,7 +561,7 @@ export function searchWords(
     // building the phrase_word_segments a Phrase's own detail-panel
     // headword needs (phraseWordSegments()'s own docstring) requires
     // the original Phrase, not just its Word-shaped view.
-    const phrase = phrases.findByUuid(options.wordId);
+    const phrase = phrases.findByUuid(Number(options.wordId));
     if (phrase !== undefined) {
       const record = wordRecordFor(phraseAsWord(phrase, phrases, wordForms), dictionary, relationships, senses, domainName, wordForms, domains);
       const modifiers = phraseModifierSegments(phrase, dictionary, senses, domainName, wordForms, domains);
@@ -581,7 +581,7 @@ export function searchWords(
         totalMatches: 1,
       };
     }
-    const word = dictionary.findByUuid(options.wordId);
+    const word = dictionary.findByUuid(Number(options.wordId));
     if (word !== undefined) {
       return { words: [wordRecordFor(word, dictionary, relationships, senses, domainName, wordForms, domains)], totalMatches: 1 };
     }
@@ -593,7 +593,7 @@ export function searchWords(
     // branch's own Phrase-vs-Word handling for whichever kind the
     // representative turns out to be, so a Sense whose one member is a
     // Phrase still gets its own phrase_word_segments.
-    const sense = senses.findByUuid(options.wordId);
+    const sense = senses.findByUuid(Number(options.wordId));
     const representative = sense !== undefined ? senses.membersOf(senseGraphUuid(sense))[0] : undefined;
     if (representative !== undefined) {
       if ("senseIds" in representative) {

@@ -36,11 +36,12 @@ import { graphUuid } from "../../role/processor/sense_processor";
  * picking just one, since that path already has the querying Word on
  * hand to reconstruct the full fan-out around. */
 export function resolveEntry(dictionary: Dictionary, phrases: Phrases, senses: Senses, id: string, wordForms: WordForms): Word | undefined {
-  const word = dictionary.findByUuid(id);
+  const numericId = Number(id);
+  const word = dictionary.findByUuid(numericId);
   if (word !== undefined) return word;
-  const phrase = phrases.findByUuid(id);
+  const phrase = phrases.findByUuid(numericId);
   if (phrase !== undefined) return phraseAsWord(phrase, phrases, wordForms);
-  const sense = senses.findByUuid(id);
+  const sense = senses.findByUuid(numericId);
   if (sense === undefined) return undefined;
   const representative = senses.membersOf(graphUuid(sense))[0];
   if (representative === undefined) return undefined;

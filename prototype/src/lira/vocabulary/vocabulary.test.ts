@@ -759,13 +759,13 @@ describe("generate<Class>Forms() -- deriving *_Form values from a base lemma", (
     senses.registerMember(scalarSense, grandiloquent);
     wordForms.registerSense(wordForms.registerBaseLemmaForm(grandiloquent), primarySense);
     wordForms.registerSense(wordForms.registerBaseLemmaForm(grandiloquent), scalarSense);
-    expect(wordForms.senseIdsOf(grandiloquent)[0].value).toBe(senseGraphUuid(primarySense));
+    expect(wordForms.senseIdsOf(grandiloquent)[0].value).toBe(String(senseGraphUuid(primarySense)));
 
     const elevation = createNoun({ text: "elevation" });
     const elevationSense = createSense({ definition: { value: "the degree to which something is elevated" } });
     senses.append(elevationSense);
     senses.registerMember(elevationSense, elevation);
-    processor.create({ sourceSenseId: senseGraphUuid(scalarSense), targetSenseId: senseGraphUuid(elevationSense), relationshipType: SemanticRelationshipKind.ATTRIBUTE, sourceReferences: [] });
+    processor.create({ sourceSenseId: String(senseGraphUuid(scalarSense)), targetSenseId: String(senseGraphUuid(elevationSense)), relationshipType: SemanticRelationshipKind.ATTRIBUTE, sourceReferences: [] });
     expect(isAdjectiveGradable(relationships, grandiloquent, wordForms)).toBe(true);
 
     // Direction-agnostic: ATTRIBUTE is one of WordSeeder's own
@@ -778,7 +778,7 @@ describe("generate<Class>Forms() -- deriving *_Form values from a base lemma", (
     senses.append(reversedSense);
     senses.registerMember(reversedSense, reversed);
     wordForms.registerSense(wordForms.registerBaseLemmaForm(reversed), reversedSense);
-    processor.create({ sourceSenseId: senseGraphUuid(elevationSense), targetSenseId: senseGraphUuid(reversedSense), relationshipType: SemanticRelationshipKind.ATTRIBUTE, sourceReferences: [] });
+    processor.create({ sourceSenseId: String(senseGraphUuid(elevationSense)), targetSenseId: String(senseGraphUuid(reversedSense)), relationshipType: SemanticRelationshipKind.ATTRIBUTE, sourceReferences: [] });
     expect(isAdjectiveGradable(relationships, reversed, wordForms)).toBe(true);
 
     // "wooden" -- no Attribute pointer at all -- non-gradable.
@@ -815,12 +815,12 @@ describe("generate<Class>Forms() -- deriving *_Form values from a base lemma", (
     const speedSense = createSense({ definition: { value: "a rate of moving" } });
     senses.append(speedSense);
     senses.registerMember(speedSense, speed);
-    processor.create({ sourceSenseId: senseGraphUuid(quickSense), targetSenseId: senseGraphUuid(speedSense), relationshipType: SemanticRelationshipKind.ATTRIBUTE, sourceReferences: [] });
+    processor.create({ sourceSenseId: String(senseGraphUuid(quickSense)), targetSenseId: String(senseGraphUuid(speedSense)), relationshipType: SemanticRelationshipKind.ATTRIBUTE, sourceReferences: [] });
     const quicklySense = createSense({ definition: { value: "with rapidity" } });
     senses.append(quicklySense);
     senses.registerMember(quicklySense, quickly);
     wordForms.registerSense(wordForms.registerBaseLemmaForm(quickly), quicklySense);
-    processor.create({ sourceSenseId: senseGraphUuid(quicklySense), targetSenseId: senseGraphUuid(quickSense), relationshipType: SemanticRelationshipKind.PERTAINYM, sourceReferences: [] });
+    processor.create({ sourceSenseId: String(senseGraphUuid(quicklySense)), targetSenseId: String(senseGraphUuid(quickSense)), relationshipType: SemanticRelationshipKind.PERTAINYM, sourceReferences: [] });
     expect(isAdverbGradable(relationships, dictionary, senses, quickly, wordForms)).toBe(true);
 
     // Flat-adverb case: "wide" (adverb) has no Pertainym fact of its
@@ -838,7 +838,7 @@ describe("generate<Class>Forms() -- deriving *_Form values from a base lemma", (
     const widthSense = createSense({ definition: { value: "the extent of something from side to side" } });
     senses.append(widthSense);
     senses.registerMember(widthSense, width);
-    processor.create({ sourceSenseId: senseGraphUuid(wideSense), targetSenseId: senseGraphUuid(widthSense), relationshipType: SemanticRelationshipKind.ATTRIBUTE, sourceReferences: [] });
+    processor.create({ sourceSenseId: String(senseGraphUuid(wideSense)), targetSenseId: String(senseGraphUuid(widthSense)), relationshipType: SemanticRelationshipKind.ATTRIBUTE, sourceReferences: [] });
     expect(isAdverbGradable(relationships, dictionary, senses, wideAdverb, wordForms)).toBe(true);
 
     // No Pertainym fact and no same-spelling Adjective at all --
@@ -869,7 +869,7 @@ describe("generate<Class>Forms() -- deriving *_Form values from a base lemma", (
     // A VERB sense gets its own, differently-prefixed category too --
     // never truncated to the bare "communication"/"artifact" half.
     const run = dictionary.lookupAll("run").find(isVerb);
-    const runSense = run && senseStore.findByUuid(wordForms.senseIdsOf(run)[0]?.value ?? "");
+    const runSense = run && senseStore.findByUuid(Number(wordForms.senseIdsOf(run)[0]?.value ?? NaN));
     expect(runSense?.senseDomainTag?.value).toMatch(/^verb\./);
   }, 30000);
 
@@ -1056,7 +1056,7 @@ describe("Coordinations", () => {
     expect(coordinations.totalEntries()).toBe(1);
     expect(coordinations.all()).toEqual([coordination]);
     expect(coordinations.findByUuid(coordinationGraphUuid(coordination))).toBe(coordination);
-    expect(coordinations.findByUuid("no-such-uuid")).toBeUndefined();
+    expect(coordinations.findByUuid(-1)).toBeUndefined();
   });
 
   it("seedFrom copies every Coordination with a fresh uuid but the same coordinationId", () => {
@@ -1092,13 +1092,13 @@ describe("Coordinations", () => {
     // conjunction/right shape couldn't represent this at all).
     const coordination = createCoordination<Adjective>({
       coordinates: [red, white, blue],
-      coordinator: { value: andForm.wordFormId.uuid! },
+      coordinator: { value: String(andForm.wordFormId.uuid!) },
     });
 
     expect(coordination.coordinates).toHaveLength(3);
     // coordinator resolves via WordForms.findByUuid(), Phrase.headWordForm's
     // own identical by-reference pattern -- not an embedded copy.
-    const resolvedForm = wordForms.findByUuid(coordination.coordinator!.value);
+    const resolvedForm = wordForms.findByUuid(Number(coordination.coordinator!.value));
     expect(resolvedForm?.text.value).toBe("and");
     // The resolved WordForm's own owning Word (`and`, already in hand
     // here -- WordForm carries no back-reference of its own to resolve
@@ -1303,14 +1303,14 @@ describe("Word derived properties", () => {
     const store = new SemanticRelationshipStore();
     const processor = new SemanticRelationshipProcessor(store, new SemanticRelationshipSystemPropertyTensor());
     processor.create({
-      sourceSenseId: senseGraphUuid(bigSense),
-      targetSenseId: senseGraphUuid(sizeableSense),
+      sourceSenseId: String(senseGraphUuid(bigSense)),
+      targetSenseId: String(senseGraphUuid(sizeableSense)),
       relationshipType: SemanticRelationshipKind.HYPERNYM,
       sourceReferences: [],
     });
-    const hypernymEdge = store.outgoing(senseGraphUuid(bigSense))[0];
+    const hypernymEdge = store.outgoing(String(senseGraphUuid(bigSense)))[0];
     expect(hypernymEdge.relationshipType).toBe(SemanticRelationshipKind.HYPERNYM);
-    expect(senses.membersOf(hypernymEdge.targetSenseId.value).map((w) => w.text)).toEqual(["sizeable"]);
+    expect(senses.membersOf(Number(hypernymEdge.targetSenseId.value)).map((w) => w.text)).toEqual(["sizeable"]);
   });
 });
 
@@ -1369,7 +1369,7 @@ describe("WordSeeder against the bundled Common Vocabulary Cache", () => {
     expect(achieve).toBeDefined();
     expect((achieve as unknown as Record<string, unknown>).seededPleasureDispleasureWeight).toBeUndefined();
 
-    const sense = senseStore.findByUuid(wordForms.senseIdsOf(achieve)[0]!.value)!;
+    const sense = senseStore.findByUuid(Number(wordForms.senseIdsOf(achieve)[0]!.value))!;
     expect(sense).toBeDefined();
     expect(sense.seededPleasureDispleasureWeight?.value).toBe(0.6);
     expect(sense.seededArousalNonArousalWeight?.value).toBe(0.4);
@@ -1379,7 +1379,7 @@ describe("WordSeeder against the bundled Common Vocabulary Cache", () => {
     // WordRecord.senses[i].pad) resolves through the Sense the identical
     // way -- per sense, not a single word-level reading any more.
     const view = new DictionaryView(dictionary, new SemanticRelationshipStore(), { domainName: "Common", senses: senseStore, wordForms });
-    const record = view.searchWords({ wordId: wordGraphUuid(achieve) }).words[0];
+    const record = view.searchWords({ wordId: String(wordGraphUuid(achieve)) }).words[0];
     expect(record.senses[0].pad).toEqual({ pleasure: 0.6, arousal: 0.4, dominance: 0.5 });
 
     // A genuinely neutral word ("word"/NOUN, metalinguistic_nouns.json,
@@ -1387,7 +1387,7 @@ describe("WordSeeder against the bundled Common Vocabulary Cache", () => {
     // seeded neutral reading, distinct from no PAD ever having been
     // assigned at all.
     const word = dictionary.lookupAll("word").find((w) => w.partOfSpeech === PartOfSpeech.NOUN)!;
-    const wordSense = senseStore.findByUuid(wordForms.senseIdsOf(word)[0]!.value)!;
+    const wordSense = senseStore.findByUuid(Number(wordForms.senseIdsOf(word)[0]!.value))!;
     expect(wordSense.seededPleasureDispleasureWeight?.value).toBe(0.0);
   });
 
@@ -1416,7 +1416,7 @@ describe("WordSeeder against the bundled Common Vocabulary Cache", () => {
     if (!isNoun(entity!)) throw new Error("unreachable");
     expect(entity.isRootWord).toBe(true);
     expect(entity.hypernymRootWord).toBe(HypernymRootWord.ENTITY);
-    expect(entity.domainTag !== undefined ? domains.findByUuid(entity.domainTag.value)?.domainText.value : undefined).toBe("root_word.common");
+    expect(entity.domainTag !== undefined ? domains.findByUuid(Number(entity.domainTag.value))?.domainText.value : undefined).toBe("root_word.common");
 
     // Every other closed class is unaffected.
     expect(dictionary.lookup("the")?.partOfSpeech).toBe(PartOfSpeech.DETERMINER);
@@ -1536,9 +1536,9 @@ describe("WordSeeder against the bundled Common Vocabulary Cache", () => {
     // A hand-curated entry gets exactly one, private Sense of its own
     // (registerUniqueSense's own docstring) -- senseIds[0] is it.
     expect(wordForms.senseIdsOf(entity!)).toHaveLength(1);
-    const entitySense = senseStore.findByUuid(wordForms.senseIdsOf(entity!)[0].value);
+    const entitySense = senseStore.findByUuid(Number(wordForms.senseIdsOf(entity!)[0].value));
     expect(entitySense).toBeDefined();
-    expect(entitySense?.domainTag !== undefined ? domains.findByUuid(entitySense.domainTag.value)?.domainText.value : undefined).toBe(
+    expect(entitySense?.domainTag !== undefined ? domains.findByUuid(Number(entitySense.domainTag.value))?.domainText.value : undefined).toBe(
       "root_word.common",
     );
     expect(entitySense?.isCommon).toBe(true);
@@ -1556,8 +1556,8 @@ describe("WordSeeder against the bundled Common Vocabulary Cache", () => {
     const she = dictionary.lookup("she");
     expect(wordForms.senseIdsOf(she!)).toHaveLength(1);
     expect(wordForms.senseIdsOf(she!)[0].value).not.toBe(wordForms.senseIdsOf(entity!)[0].value);
-    expect(senseStore.membersOf(wordForms.senseIdsOf(she!)[0].value)).toEqual([she]);
-    expect(senseStore.findByUuid(wordForms.senseIdsOf(she!)[0].value)?.isRootWord).toBe(false);
+    expect(senseStore.membersOf(Number(wordForms.senseIdsOf(she!)[0].value))).toEqual([she]);
+    expect(senseStore.findByUuid(Number(wordForms.senseIdsOf(she!)[0].value))?.isRootWord).toBe(false);
 
     // A Phrase gets one too, same as a Word -- but never a root-word
     // one, since Phrase has no such concept at all (registerUniqueSense's
@@ -1565,7 +1565,7 @@ describe("WordSeeder against the bundled Common Vocabulary Cache", () => {
     // (unlike Word, whose senses moved onto its base-lemma WordForm).
     const eachOther = phraseBook.lookup("each other");
     expect(eachOther?.senseIds).toHaveLength(1);
-    const eachOtherSense = senseStore.findByUuid(eachOther!.senseIds[0].value);
+    const eachOtherSense = senseStore.findByUuid(Number(eachOther!.senseIds[0].value));
     expect(eachOtherSense).toBeDefined();
     expect(eachOtherSense?.isRootWord).toBe(false);
 
@@ -1577,7 +1577,7 @@ describe("WordSeeder against the bundled Common Vocabulary Cache", () => {
     const about = dictionary.lookup("about");
     const aboutSenseIds = wordForms.senseIdsOf(about!);
     expect(aboutSenseIds).toHaveLength(7);
-    const aboutSenses = aboutSenseIds.map((id) => senseStore.findByUuid(id.value));
+    const aboutSenses = aboutSenseIds.map((id) => senseStore.findByUuid(Number(id.value)));
     expect(aboutSenses.every((sense) => sense !== undefined)).toBe(true);
     expect(aboutSenses[0]?.definition?.value).toBe("Around/on all sides of");
     expect(aboutSenses[6]?.definition?.value).toBe("Approximately in position/time");
@@ -1680,7 +1680,7 @@ describe("WordSeeder against the bundled Common Vocabulary Cache", () => {
     expect(nApostropheT).toBeDefined();
     const nApostropheTForm = wordForms.baseLemmaFormOf(nApostropheT!);
     expect(nApostropheTForm?.contractionOf).toHaveLength(1);
-    expect(nApostropheTForm!.contractionOf[0].value).toBe(wordGraphUuid(not!));
+    expect(nApostropheTForm!.contractionOf[0].value).toBe(String(wordGraphUuid(not!)));
 
     const doWord = dictionary.lookupAll("do").find(isAuxiliary)!;
     const canWord = dictionary.lookupAll("can").find(isAuxiliary)!;
@@ -1700,11 +1700,11 @@ describe("WordSeeder against the bundled Common Vocabulary Cache", () => {
     const dont = dictionary.lookupAll("don't").find(isAuxiliary)!;
     expect(dont).toBeDefined();
     const dontComponents = wordForms.baseLemmaFormOf(dont)!.contractionOf;
-    expect(dontComponents.map((id) => id.value).sort()).toEqual([wordGraphUuid(doWord), wordGraphUuid(nApostropheT!)].sort());
+    expect(dontComponents.map((id) => id.value).sort()).toEqual([String(wordGraphUuid(doWord)), String(wordGraphUuid(nApostropheT!))].sort());
 
     const cant = dictionary.lookupAll("can't").find(isAuxiliary)!;
     const cantComponents = wordForms.baseLemmaFormOf(cant)!.contractionOf;
-    expect(cantComponents.map((id) => id.value).sort()).toEqual([wordGraphUuid(canWord), wordGraphUuid(nApostropheT!)].sort());
+    expect(cantComponents.map((id) => id.value).sort()).toEqual([String(wordGraphUuid(canWord)), String(wordGraphUuid(nApostropheT!))].sort());
 
     // isn't/wasn't/hadn't: "is"/"was"/"had" are inflected spellings of the
     // "be"/"have" lemma, not independently addressable Words any more
@@ -1714,15 +1714,15 @@ describe("WordSeeder against the bundled Common Vocabulary Cache", () => {
     // couldn't distinguish 3rd-singular "is" from "was"/"were"/"am"/"are").
     const isnt = dictionary.lookupAll("isn't").find(isAuxiliary)!;
     const isntComponents = wordForms.baseLemmaFormOf(isnt)!.contractionOf;
-    expect(isntComponents.map((id) => id.value).sort()).toEqual([formGraphUuid(isForm), wordGraphUuid(nApostropheT!)].sort());
+    expect(isntComponents.map((id) => id.value).sort()).toEqual([String(formGraphUuid(isForm)), String(wordGraphUuid(nApostropheT!))].sort());
 
     const wasnt = dictionary.lookupAll("wasn't").find(isAuxiliary)!;
     const wasntComponents = wordForms.baseLemmaFormOf(wasnt)!.contractionOf;
-    expect(wasntComponents.map((id) => id.value).sort()).toEqual([formGraphUuid(wasForm), wordGraphUuid(nApostropheT!)].sort());
+    expect(wasntComponents.map((id) => id.value).sort()).toEqual([String(formGraphUuid(wasForm)), String(wordGraphUuid(nApostropheT!))].sort());
 
     const hadnt = dictionary.lookupAll("hadn't").find(isAuxiliary)!;
     const hadntComponents = wordForms.baseLemmaFormOf(hadnt)!.contractionOf;
-    expect(hadntComponents.map((id) => id.value).sort()).toEqual([formGraphUuid(hadForm), wordGraphUuid(nApostropheT!)].sort());
+    expect(hadntComponents.map((id) => id.value).sort()).toEqual([String(formGraphUuid(hadForm)), String(wordGraphUuid(nApostropheT!))].sort());
 
     // Subject Pronoun + finite Auxiliary (I'm, it's): Clause-shaped, not
     // Phrase-shaped, in any grammar -- and this codebase has no persisted,
@@ -1732,11 +1732,11 @@ describe("WordSeeder against the bundled Common Vocabulary Cache", () => {
     // Auxiliary + Negator group above, not forced into a fabricated Phrase.
     const im = dictionary.lookupAll("I'm").find(isAuxiliary)!;
     const imComponents = wordForms.baseLemmaFormOf(im)!.contractionOf;
-    expect(imComponents.map((id) => id.value).sort()).toEqual([wordGraphUuid(iWord), formGraphUuid(amForm)].sort());
+    expect(imComponents.map((id) => id.value).sort()).toEqual([String(wordGraphUuid(iWord)), String(formGraphUuid(amForm))].sort());
 
     const its = dictionary.lookupAll("it's").find(isAuxiliary)!;
     const itsComponents = wordForms.baseLemmaFormOf(its)!.contractionOf;
-    expect(itsComponents.map((id) => id.value).sort()).toEqual([wordGraphUuid(itWord), formGraphUuid(isForm)].sort());
+    expect(itsComponents.map((id) => id.value).sort()).toEqual([String(wordGraphUuid(itWord)), String(formGraphUuid(isForm))].sort());
 
     // Idempotent: re-seeding neither duplicates the 9 new Words nor
     // reassigns contractionOf to a fresh (and now-mismatched) uuid.
@@ -1756,7 +1756,7 @@ describe("WordSeeder against the bundled Common Vocabulary Cache", () => {
 
     const isnt = dictionary.lookupAll("isn't").find(isAuxiliary)!;
     const view = new DictionaryView(dictionary, new SemanticRelationshipStore(), { domainName: "Common", phrases: phraseBook, senses: senseStore, wordForms });
-    const record = view.searchWords({ wordId: wordGraphUuid(isnt) }).words[0];
+    const record = view.searchWords({ wordId: String(wordGraphUuid(isnt)) }).words[0];
 
     expect(record.derivations).toHaveLength(2);
     const texts = record.derivations.map((d) => d.target.text).sort();
@@ -1774,13 +1774,13 @@ describe("WordSeeder against the bundled Common Vocabulary Cache", () => {
     const noOne = phraseBook.lookup("no one")!;
     expect(noOne.phraseType).toBe(PhraseType.NOUN_PHRASE);
     expect(noOne.headWord).toBeDefined();
-    const head = dictionary.findByUuid(noOne.headWord!.value);
+    const head = dictionary.findByUuid(Number(noOne.headWord!.value));
     expect(head?.text).toBe("one");
     expect(head?.partOfSpeech).toBe(PartOfSpeech.PRONOUN);
     expect(noOne.headWordForm).toBeDefined();
-    expect(wordForms.findByUuid(noOne.headWordForm!.value)?.text.value).toBe("one");
+    expect(wordForms.findByUuid(Number(noOne.headWordForm!.value))?.text.value).toBe("one");
     expect(noOne.determiner).toBeDefined();
-    expect(wordForms.findByUuid((noOne.determiner as Identifier).value)?.text.value).toBe("no");
+    expect(wordForms.findByUuid(Number((noOne.determiner as Identifier).value))?.text.value).toBe("no");
 
     // "each other" -- neither "each" nor "other" is a Noun or Pronoun
     // Word on its own (both are DETERMINER_LEMMAS entries instead), so
@@ -1798,7 +1798,7 @@ describe("WordSeeder against the bundled Common Vocabulary Cache", () => {
     expect(eachOther.headWord).toBeUndefined();
     expect(eachOther.headWordForm).toBeUndefined();
     expect(eachOther.determiner).toBeDefined();
-    expect(wordForms.findByUuid((eachOther.determiner as Identifier).value)?.text.value).toBe("each");
+    expect(wordForms.findByUuid(Number((eachOther.determiner as Identifier).value))?.text.value).toBe("each");
   });
 
   it("resolves \"a few\"'s own Head to its own standalone PRONOUN Word for \"few\", not the unrelated closed-class DETERMINER homograph of the same lexical form -- the reported bug", () => {
@@ -1823,15 +1823,15 @@ describe("WordSeeder against the bundled Common Vocabulary Cache", () => {
     const afew = phraseBook.lookup("a few")!;
     expect(afew.phraseType).toBe(PhraseType.NOUN_PHRASE);
     expect(afew.headWord).toBeDefined();
-    const head = dictionary.findByUuid(afew.headWord!.value);
+    const head = dictionary.findByUuid(Number(afew.headWord!.value));
     expect(head?.text).toBe("few");
     expect(head?.partOfSpeech).toBe(PartOfSpeech.PRONOUN);
     expect(afew.headWordForm).toBeDefined();
-    expect(wordForms.findByUuid(afew.headWordForm!.value)?.text.value).toBe("few");
+    expect(wordForms.findByUuid(Number(afew.headWordForm!.value))?.text.value).toBe("few");
     // "a" is the one remaining Determiner -- "few" no longer among them
     // now that it correctly carries the Head role instead.
     expect(afew.determiner).toBeDefined();
-    expect(wordForms.findByUuid((afew.determiner as Identifier).value)?.text.value).toBe("a");
+    expect(wordForms.findByUuid(Number((afew.determiner as Identifier).value))?.text.value).toBe("a");
   });
 
   it("re-links every closed-class Phrase's own headWord once seedWordNet() gives its constituent Words full Dictionary coverage, without ever letting a later, unrelated WordNet homograph override an already-correct closed-class resolution", async () => {
@@ -1874,7 +1874,7 @@ describe("WordSeeder against the bundled Common Vocabulary Cache", () => {
     // the actual insertion-order-first rule, not merely "some match".
     expect(dictionary.lookupAll("few").map((w) => w.partOfSpeech)).toEqual([PartOfSpeech.DETERMINER, PartOfSpeech.PRONOUN, PartOfSpeech.NOUN, PartOfSpeech.ADJECTIVE]);
     const afew = phraseBook.lookup("a few")!;
-    const head = dictionary.findByUuid(afew.headWord!.value);
+    const head = dictionary.findByUuid(Number(afew.headWord!.value));
     expect(head?.text).toBe("few");
     expect(head?.partOfSpeech).toBe(PartOfSpeech.PRONOUN);
   }, 60000);
@@ -2016,7 +2016,7 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
       const seen = new Set([memberUuid(entry)]);
       const result: (Word | Phrase)[] = [];
       for (const senseId of senseIdsOf(wordForms, entry)) {
-        for (const member of senseStore.membersOf(senseId.value)) {
+        for (const member of senseStore.membersOf(Number(senseId.value))) {
           if (seen.has(memberUuid(member))) continue;
           seen.add(memberUuid(member));
           result.push(member);
@@ -2041,7 +2041,7 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
         for (const edge of edges) {
           if (edge.relationshipType !== kind) continue;
           const otherSenseId = edge.sourceSenseId.value === senseId.value ? edge.targetSenseId.value : edge.sourceSenseId.value;
-          for (const member of senseStore.membersOf(otherSenseId)) {
+          for (const member of senseStore.membersOf(Number(otherSenseId))) {
             if (seen.has(memberUuid(member))) continue;
             seen.add(memberUuid(member));
             result.push(member);
@@ -2072,8 +2072,8 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     const large = wordForSynset("01385012-a", "large");
     expect(wordForms.senseIdsOf(big).length).toBeGreaterThan(0);
     const bigSenseId = senseGraphUuid(senseStore.findBySynsetId("01385012-a")!);
-    expect(wordForms.senseIdsOf(big).map((id) => id.value)).toContain(bigSenseId);
-    expect(wordForms.senseIdsOf(large).map((id) => id.value)).toContain(bigSenseId);
+    expect(wordForms.senseIdsOf(big).map((id) => id.value)).toContain(String(bigSenseId));
+    expect(wordForms.senseIdsOf(large).map((id) => id.value)).toContain(String(bigSenseId));
     // The sense-scoped synonym fact: every fellow member of *this one*
     // Sense, not big's own other, unrelated senses.
     expect(senseStore.membersOf(bigSenseId).map((m) => m.text)).toEqual(expect.arrayContaining(["big", "large"]));
@@ -2110,9 +2110,9 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // reading direction="both" would still pass even if both directions
     // were separately stored, so this checks the underlying store directly).
     const antonymEdgesBetween = [
-      ...morphologicalPointerRelationships.outgoing(wordGraphUuid(able!)),
-      ...morphologicalPointerRelationships.incoming(wordGraphUuid(able!)),
-    ].filter((r) => r.relationshipType === LexicalRelationshipType.ANTONYM && (r.sourceWordId.value === wordGraphUuid(unable!) || r.targetWordId.value === wordGraphUuid(unable!)));
+      ...morphologicalPointerRelationships.outgoing(String(wordGraphUuid(able!))),
+      ...morphologicalPointerRelationships.incoming(String(wordGraphUuid(able!))),
+    ].filter((r) => r.relationshipType === LexicalRelationshipType.ANTONYM && (r.sourceWordId.value === String(wordGraphUuid(unable!)) || r.targetWordId.value === String(wordGraphUuid(unable!))));
     expect(antonymEdgesBetween).toHaveLength(1);
 
     // Adjective Gradability Update: "big"/"large" (01385012-a) carries a
@@ -2276,12 +2276,12 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
       .find(
         (r) =>
           r.relationshipType === LexicalRelationshipType.MERONYM &&
-          ((r.sourceWordId.value === senseGraphUuid(handSense) && r.targetWordId.value === senseGraphUuid(fingerSense)) ||
-            (r.sourceWordId.value === senseGraphUuid(fingerSense) && r.targetWordId.value === senseGraphUuid(handSense))),
+          ((r.sourceWordId.value === String(senseGraphUuid(handSense)) && r.targetWordId.value === String(senseGraphUuid(fingerSense))) ||
+            (r.sourceWordId.value === String(senseGraphUuid(fingerSense)) && r.targetWordId.value === String(senseGraphUuid(handSense)))),
       );
     expect(handFingerEdge).toBeDefined();
-    expect(handFingerEdge?.sourceWordId.value).toBe(senseGraphUuid(fingerSense));
-    expect(handFingerEdge?.targetWordId.value).toBe(senseGraphUuid(handSense));
+    expect(handFingerEdge?.sourceWordId.value).toBe(String(senseGraphUuid(fingerSense)));
+    expect(handFingerEdge?.targetWordId.value).toBe(String(senseGraphUuid(handSense)));
     // meronyms()/holonyms() (role/processor/word_processor.ts) already expand a Sense-to-Sense
     // edge back out to its member Words on read (relatedWords()'s own
     // senseStore-aware branch) -- reading that same stored direction
@@ -2304,9 +2304,9 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     const hegira = wordForSynset("00061368-n", "Hegira");
     const flight = wordForSynset("00059563-n", "flight");
     const hegiraFlightEdges = [
-      ...morphologicalPointerRelationships.outgoing(wordGraphUuid(hegira)),
-      ...morphologicalPointerRelationships.incoming(wordGraphUuid(hegira)),
-    ].filter((r) => r.sourceWordId.value === wordGraphUuid(flight) || r.targetWordId.value === wordGraphUuid(flight));
+      ...morphologicalPointerRelationships.outgoing(String(wordGraphUuid(hegira))),
+      ...morphologicalPointerRelationships.incoming(String(wordGraphUuid(hegira))),
+    ].filter((r) => r.sourceWordId.value === String(wordGraphUuid(flight)) || r.targetWordId.value === String(wordGraphUuid(flight)));
     expect(hegiraFlightEdges).toEqual([]);
 
     // Topic-domain pointers (`;c`/`-c`) tag the shared Sense now, once
@@ -2316,9 +2316,9 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // "medicine" (medical_specialty) category.
     const infusion = wordForSynset("00324358-n", "infusion");
     const infusionSenseId = senseGraphUuid(senseStore.findBySynsetId("00324358-n")!);
-    expect(wordForms.senseIdsOf(infusion).map((id) => id.value)).toContain(infusionSenseId);
+    expect(wordForms.senseIdsOf(infusion).map((id) => id.value)).toContain(String(infusionSenseId));
     const infusionSense = senseStore.findByUuid(infusionSenseId);
-    expect(infusionSense?.domainTag !== undefined ? domains.findByUuid(infusionSense.domainTag.value)?.domainText.value : undefined).toBe(
+    expect(infusionSense?.domainTag !== undefined ? domains.findByUuid(Number(infusionSense.domainTag.value))?.domainText.value : undefined).toBe(
       "medicine",
     );
     expect(infusionSense?.relatedDomainTags).toEqual([]);
@@ -2332,10 +2332,10 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // `-c` pointer back to winger.
     const winger = wordForSynset("10802147-n", "winger");
     const wingerSenseId = senseGraphUuid(senseStore.findBySynsetId("10802147-n")!);
-    expect(wordForms.senseIdsOf(winger).map((id) => id.value)).toContain(wingerSenseId);
+    expect(wordForms.senseIdsOf(winger).map((id) => id.value)).toContain(String(wingerSenseId));
     const wingerSense = senseStore.findByUuid(wingerSenseId);
     expect(wingerSense?.domainTag).toBeDefined();
-    const domainText = (id: { value: string }) => domains.findByUuid(id.value)?.domainText.value;
+    const domainText = (id: { value: string }) => domains.findByUuid(Number(id.value))?.domainText.value;
     const wingerDomains = [domainText(wingerSense!.domainTag!), ...wingerSense!.relatedDomainTags.map(domainText)];
     expect(wingerDomains).toHaveLength(4);
     expect(new Set(wingerDomains).size).toBe(4);
@@ -2357,7 +2357,7 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // it was after the first call, not just non-decreasing.
     expect(dictionary.totalEntries() + phraseBook.totalEntries()).toBe(totalAfterFirst);
     expect(senseStore.totalEntries()).toBe(first.sensesSeeded);
-    expect(infusionSense?.domainTag !== undefined ? domains.findByUuid(infusionSense.domainTag.value)?.domainText.value : undefined).toBe(
+    expect(infusionSense?.domainTag !== undefined ? domains.findByUuid(Number(infusionSense.domainTag.value))?.domainText.value : undefined).toBe(
       "medicine",
     );
     expect(new Set([domainText(wingerSense!.domainTag!), ...wingerSense!.relatedDomainTags.map(domainText)])).toEqual(
@@ -2366,7 +2366,7 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     expect(morphologicalPointerRelationships.totalRelationships()).toBe(first.relationshipsSeeded);
     // Re-seeding never disturbs an already-assigned senseIds either --
     // "big"/"large" still share the identical Sense they did before.
-    expect(wordForms.senseIdsOf(wordForSynset("01385012-a", "big")).map((id) => id.value)).toContain(senseGraphUuid(bigSense!));
+    expect(wordForms.senseIdsOf(wordForSynset("01385012-a", "big")).map((id) => id.value)).toContain(String(senseGraphUuid(bigSense!)));
   }, 60000);
 
   it("a word's own relationships never show both a hypernym/hyponym (or antonym/meronym/...) fact and its reciprocal listing as two separate entries", async () => {
@@ -2381,10 +2381,10 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // (semanticRelationships is Sense-keyed, not Word-keyed).
     const senseIdsOfWord = (word: Word): string[] => wordForms.senseIdsOf(word).map((id) => id.value);
     const dogHypernyms = senseIdsOfWord(dog!).flatMap((senseId) =>
-      semanticRelationships.outgoing(senseId).filter((r) => r.relationshipType === SemanticRelationshipKind.HYPERNYM).flatMap((r) => senseStore.membersOf(r.targetSenseId.value).map((m) => m.text)),
+      semanticRelationships.outgoing(senseId).filter((r) => r.relationshipType === SemanticRelationshipKind.HYPERNYM).flatMap((r) => senseStore.membersOf(Number(r.targetSenseId.value)).map((m) => m.text)),
     );
     const dogHyponyms = senseIdsOfWord(dog!).flatMap((senseId) =>
-      semanticRelationships.incoming(senseId).filter((r) => r.relationshipType === SemanticRelationshipKind.HYPERNYM).flatMap((r) => senseStore.membersOf(r.sourceSenseId.value).map((m) => m.text)),
+      semanticRelationships.incoming(senseId).filter((r) => r.relationshipType === SemanticRelationshipKind.HYPERNYM).flatMap((r) => senseStore.membersOf(Number(r.sourceSenseId.value)).map((m) => m.text)),
     );
     expect(dogHypernyms).toContain("canine");
     expect(dogHyponyms).toContain("poodle");
@@ -2437,21 +2437,21 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     ]);
     // Phrase.headWord -- a graph-reference pointer, resolved here via
     // Dictionary.findByUuid(), naming the same real "poodle" Word (NOUN).
-    const toyPoodleHead = dictionary.findByUuid(toyPoodle!.headWord!.value);
+    const toyPoodleHead = dictionary.findByUuid(Number(toyPoodle!.headWord!.value));
     expect(toyPoodleHead?.text).toBe("poodle");
     expect(toyPoodleHead?.partOfSpeech).toBe(PartOfSpeech.NOUN);
     // Phrase.headWordForm -- the one WordForm on that same "poodle" Word
     // whose own spelling matches the Head's literal occurrence in
     // toyPoodle's own text -- its base-lemma WordForm, since "poodle"
     // appears here unmodified.
-    const toyPoodleHeadForm = wordForms.findByUuid(toyPoodle!.headWordForm!.value);
+    const toyPoodleHeadForm = wordForms.findByUuid(Number(toyPoodle!.headWordForm!.value));
     expect(toyPoodleHeadForm?.text.value).toBe("poodle");
     expect(toyPoodleHeadForm?.formType).toBe(WordFormType.BASE_LEMMA_CANONICAL_FORM);
     // Phrase.preModifier -- the one Modifier position ("toy") resolved
     // to the one WordForm on its own resolved Word spelled "toy"; nothing
     // sits after the Head, so postModifier stays undefined.
     expect(toyPoodle!.preModifier).toBeDefined();
-    expect(wordForms.findByUuid((toyPoodle!.preModifier as Identifier).value)?.text.value).toBe("toy");
+    expect(wordForms.findByUuid(Number((toyPoodle!.preModifier as Identifier).value))?.text.value).toBe("toy");
     expect(toyPoodle!.postModifier).toBeUndefined();
 
     // recogniseLemmaPhraseType()'s own PREPOSITIONAL_PHRASE rule, spot-checked
@@ -2483,12 +2483,12 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // homograph. No MODIFIER-role position exists in this phrase's own
     // wordRoles above, so both modifier arrays stay empty.
     expect(atFault!.headWord).toBeDefined();
-    const atFaultHead = dictionary.findByUuid(atFault!.headWord!.value);
+    const atFaultHead = dictionary.findByUuid(Number(atFault!.headWord!.value));
     expect(atFaultHead?.text).toBe("at");
     expect(atFaultHead?.partOfSpeech).toBe(PartOfSpeech.NOUN);
     // headWordForm resolves to that same "at" Word's own base-lemma
     // WordForm, spelled "at" the same way it literally appears here.
-    expect(wordForms.findByUuid(atFault!.headWordForm!.value)?.text.value).toBe("at");
+    expect(wordForms.findByUuid(Number(atFault!.headWordForm!.value))?.text.value).toBe("at");
     expect(atFault!.preModifier).toBeUndefined();
     expect(atFault!.postModifier).toBeUndefined();
     // "fault" alone -- a single token, no leading Preposition of its own
@@ -2501,7 +2501,7 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     if (!("phraseId" in atFaultComplement)) throw new Error("expected an embedded Phrase, not an Identifier");
     expect(atFaultComplement.text).toBe("fault");
     expect(isNounPhrase(atFaultComplement)).toBe(true);
-    const atFaultComplementHead = dictionary.findByUuid(atFaultComplement.headWord!.value);
+    const atFaultComplementHead = dictionary.findByUuid(Number(atFaultComplement.headWord!.value));
     expect(atFaultComplementHead?.text).toBe("fault");
     expect(atFaultComplementHead?.partOfSpeech).toBe(PartOfSpeech.NOUN);
     expect(atFaultComplement.complements).toEqual([]);
@@ -2520,7 +2520,7 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // Word (checked above), confirming updatePhraseWordLinks()'s own per-token
     // resolution -- exactly what toyPoodle's own preModifiers[0] resolves
     // back to for "toy".
-    expect(toyPoodle!.headWord?.value).toBe(wordGraphUuid(poodle!));
+    expect(toyPoodle!.headWord?.value).toBe(String(wordGraphUuid(poodle!)));
 
     // Seeded exactly like a Word: a genuine SemanticRelationship works
     // with the Phrase's own Sense as its own subject exactly like a
@@ -2533,7 +2533,7 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
       semanticRelationships
         .outgoing(senseId.value)
         .filter((r) => r.relationshipType === SemanticRelationshipKind.HYPERNYM)
-        .flatMap((r) => senseStore.membersOf(r.targetSenseId.value).map((m) => m.text)),
+        .flatMap((r) => senseStore.membersOf(Number(r.targetSenseId.value)).map((m) => m.text)),
     );
     expect(toyPoodleHypernyms.sort()).toEqual(["poodle", "poodle dog"]);
     // And the reverse direction resolves the Phrase back too.
@@ -2541,7 +2541,7 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
       semanticRelationships
         .incoming(senseId.value)
         .filter((r) => r.relationshipType === SemanticRelationshipKind.HYPERNYM)
-        .flatMap((r) => senseStore.membersOf(r.sourceSenseId.value).map((m) => m.text)),
+        .flatMap((r) => senseStore.membersOf(Number(r.sourceSenseId.value)).map((m) => m.text)),
     );
     expect(poodleHyponyms).toContain("toy poodle");
 
@@ -2556,27 +2556,27 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // docstring -- "panel === 'phrases' always falls through to
     // wordLookupCache"), so phrase_type has to survive this exact
     // round trip, not just the raw Phrase object checked above.
-    const atFaultSearch = view.searchWords({ wordId: phraseGraphUuid(atFault!) });
+    const atFaultSearch = view.searchWords({ wordId: String(phraseGraphUuid(atFault!)) });
     expect(atFaultSearch.words).toHaveLength(1);
     expect(atFaultSearch.words[0].phrase_type).toBe("PREPOSITIONAL_PHRASE");
 
-    const toyPoodleSearch = view.searchWords({ wordId: phraseGraphUuid(toyPoodle!) });
+    const toyPoodleSearch = view.searchWords({ wordId: String(phraseGraphUuid(toyPoodle!)) });
     expect(toyPoodleSearch.words[0].phrase_type).toBe("NOUN_PHRASE");
 
     // The Phrases tab's own row list (searchPhrases(), the over-capacity
     // counterpart to phraseRecords()' embedded array) carries phrase_type
     // too, not just the detail-panel's own wordId path above.
-    const atFaultRow = view.searchPhrases({ word: "at fault" }).phrases.find((p) => p.id === phraseGraphUuid(atFault!));
+    const atFaultRow = view.searchPhrases({ word: "at fault" }).phrases.find((p) => p.id === String(phraseGraphUuid(atFault!)));
     expect(atFaultRow?.phrase_type).toBe("PREPOSITIONAL_PHRASE");
 
-    const forToyPoodle = view.searchRelationships({ wordId: phraseGraphUuid(toyPoodle!) });
+    const forToyPoodle = view.searchRelationships({ wordId: String(phraseGraphUuid(toyPoodle!)) });
     expect(forToyPoodle.totalMatches).toBeGreaterThan(0);
     const hypernymRow = forToyPoodle.relationships.find((r) => r.kind === "HYPERNYM");
     expect(hypernymRow).toBeDefined();
     expect(hypernymRow?.source_text).toBe("toy poodle");
     expect(hypernymRow?.target_text).toBe("poodle");
 
-    const hierarchy = view.resolveHierarchy({ kind: "HYPERNYM", wordId: phraseGraphUuid(toyPoodle!), limit: 50 });
+    const hierarchy = view.resolveHierarchy({ kind: "HYPERNYM", wordId: String(phraseGraphUuid(toyPoodle!)), limit: 50 });
     expect(hierarchy.fellBack).toBe(false);
     // This kind's own graph is keyed by Sense uuid for a synset-wide
     // fact (WordSeeder.seedPointerRelationship's own docstring) -- "toy
@@ -2597,20 +2597,20 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // resolved record came from a Phrase, built by re-resolving each of
     // the Phrase's own tokens against `dictionary` fresh
     // (phraseWordSegments()'s own docstring).
-    const detail = view.searchWords({ wordId: phraseGraphUuid(toyPoodle!) }).words[0];
+    const detail = view.searchWords({ wordId: String(phraseGraphUuid(toyPoodle!)) }).words[0];
     expect(detail.phrase_word_segments).toHaveLength(2);
-    expect(detail.phrase_word_segments![0]).toMatchObject({ text: "toy", word: true, resolved: true, word_id: wordGraphUuid(toy!) });
-    expect(detail.phrase_word_segments![1]).toMatchObject({ text: "poodle", word: true, resolved: true, word_id: wordGraphUuid(poodle!), lexical_form: "poodle" });
+    expect(detail.phrase_word_segments![0]).toMatchObject({ text: "toy", word: true, resolved: true, word_id: String(wordGraphUuid(toy!)) });
+    expect(detail.phrase_word_segments![1]).toMatchObject({ text: "poodle", word: true, resolved: true, word_id: String(wordGraphUuid(poodle!)), lexical_form: "poodle" });
     // An ordinary Word's own record never carries this field.
-    expect(view.searchWords({ wordId: wordGraphUuid(poodle!) }).words[0].phrase_word_segments).toBeUndefined();
+    expect(view.searchWords({ wordId: String(wordGraphUuid(poodle!)) }).words[0].phrase_word_segments).toBeUndefined();
 
     // head_word (phraseHeadWordSegment()'s own docstring) -- one
     // DefinitionSegment singling out the Head among phrase_word_segments
     // above, "poodle" here (toyPoodle's own headWord already confirmed
     // this). An ordinary Word's own record never carries this field
     // either.
-    expect(detail.head_word).toMatchObject({ text: "poodle", word: true, resolved: true, word_id: wordGraphUuid(poodle!), lexical_form: "poodle" });
-    expect(view.searchWords({ wordId: wordGraphUuid(poodle!) }).words[0].head_word).toBeUndefined();
+    expect(detail.head_word).toMatchObject({ text: "poodle", word: true, resolved: true, word_id: String(wordGraphUuid(poodle!)), lexical_form: "poodle" });
+    expect(view.searchWords({ wordId: String(wordGraphUuid(poodle!)) }).words[0].head_word).toBeUndefined();
   }, 60000);
 
   it("recogniseModifierRoles() assigns Head/Modifier/Particle/Determiner per data/phrase_type_patterns_and_word_roles.md's own per-PhraseType rules, against real seeded WordNet Phrases", async () => {
@@ -2634,13 +2634,13 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // sense never wins here even though it happens to be seeded first.
     // "up" sits after the Head with a MODIFIER role, so it lands in
     // postModifier, not preModifier.
-    const giveUpHead = dictionary.findByUuid(giveUp!.headWord!.value);
+    const giveUpHead = dictionary.findByUuid(Number(giveUp!.headWord!.value));
     expect(giveUpHead?.text).toBe("give");
     expect(giveUpHead?.partOfSpeech).toBe(PartOfSpeech.VERB);
-    expect(wordForms.findByUuid(giveUp!.headWordForm!.value)?.text.value).toBe("give");
+    expect(wordForms.findByUuid(Number(giveUp!.headWordForm!.value))?.text.value).toBe("give");
     expect(giveUp!.preModifier).toBeUndefined();
     expect(giveUp!.postModifier).toBeDefined();
-    expect(wordForms.findByUuid((giveUp!.postModifier as Identifier).value)?.text.value).toBe("up");
+    expect(wordForms.findByUuid(Number((giveUp!.postModifier as Identifier).value))?.text.value).toBe("up");
 
     // "look up to" (01831800-v, dict/data.verb) -- same Head rule as
     // "give up", but here "up" *is* immediately followed by a token
@@ -2662,10 +2662,10 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // "look"'s own VERB sense, not its unrelated NOUN homograph ("a look
     // of surprise") -- the same recogniseMatchingTokenHomograph() Head-specific
     // resolution "give up" above already exercises.
-    const lookUpToHead = dictionary.findByUuid(lookUpTo!.headWord!.value);
+    const lookUpToHead = dictionary.findByUuid(Number(lookUpTo!.headWord!.value));
     expect(lookUpToHead?.text).toBe("look");
     expect(lookUpToHead?.partOfSpeech).toBe(PartOfSpeech.VERB);
-    expect(wordForms.findByUuid(lookUpTo!.headWordForm!.value)?.text.value).toBe("look");
+    expect(wordForms.findByUuid(Number(lookUpTo!.headWordForm!.value))?.text.value).toBe("look");
     expect(lookUpTo!.preModifier).toBeUndefined();
     expect(lookUpTo!.postModifier).toBeUndefined();
 
@@ -2686,12 +2686,12 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // resolution "give up"/"look up to" above already exercise. "long"
     // is the one premodifying Modifier, so it's the sole preModifier
     // value; nothing sits after the Head.
-    const longAgoHead = dictionary.findByUuid(longAgo!.headWord!.value);
+    const longAgoHead = dictionary.findByUuid(Number(longAgo!.headWord!.value));
     expect(longAgoHead?.text).toBe("ago");
     expect(longAgoHead?.partOfSpeech).toBe(PartOfSpeech.ADVERB);
-    expect(wordForms.findByUuid(longAgo!.headWordForm!.value)?.text.value).toBe("ago");
+    expect(wordForms.findByUuid(Number(longAgo!.headWordForm!.value))?.text.value).toBe("ago");
     expect(longAgo!.preModifier).toBeDefined();
-    expect(wordForms.findByUuid((longAgo!.preModifier as Identifier).value)?.text.value).toBe("long");
+    expect(wordForms.findByUuid(Number((longAgo!.preModifier as Identifier).value))?.text.value).toBe("long");
     expect(longAgo!.postModifier).toBeUndefined();
 
     // "in the meantime" (00065346-r, dict/data.adv) -- PrepositionalPhrase
@@ -2715,13 +2715,13 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // here (Indiana's own postal code, a real WordNet noun sense), the
     // same structural-not-semantic pick every headWord resolution above
     // already exercises.
-    const inTheMeantimeHead = dictionary.findByUuid(inTheMeantime!.headWord!.value);
+    const inTheMeantimeHead = dictionary.findByUuid(Number(inTheMeantime!.headWord!.value));
     expect(inTheMeantimeHead?.text).toBe("IN");
     expect(inTheMeantimeHead?.partOfSpeech).toBe(PartOfSpeech.NOUN);
     // headWordForm still resolves ("IN"'s own base-lemma WordForm) even
     // though its own spelling's case ("IN") differs from this literal
     // occurrence's own ("in") -- the match is case-insensitive.
-    expect(wordForms.findByUuid(inTheMeantime!.headWordForm!.value)?.text.value).toBe("IN");
+    expect(wordForms.findByUuid(Number(inTheMeantime!.headWordForm!.value))?.text.value).toBe("IN");
     expect(inTheMeantime!.preModifier).toBeUndefined();
     expect(inTheMeantime!.postModifier).toBeUndefined();
     // No token belongs to this outer PrepositionalPhrase's own
@@ -2733,7 +2733,7 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     if (!("phraseId" in inTheMeantimeComplement)) throw new Error("expected an embedded Phrase, not an Identifier");
     expect(inTheMeantimeComplement.text).toBe("the meantime");
     expect(isNounPhrase(inTheMeantimeComplement)).toBe(true);
-    const inTheMeantimeComplementHead = dictionary.findByUuid(inTheMeantimeComplement.headWord!.value);
+    const inTheMeantimeComplementHead = dictionary.findByUuid(Number(inTheMeantimeComplement.headWord!.value));
     expect(inTheMeantimeComplementHead?.text).toBe("meantime");
     expect(inTheMeantimeComplementHead?.partOfSpeech).toBe(PartOfSpeech.NOUN);
     expect(inTheMeantimeComplement.headWordForm).toBeDefined();
@@ -2807,10 +2807,10 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     expect(abatement.phraseType).toBe(PhraseType.NOUN_PHRASE);
     expect(isNounPhrase(abatement)).toBe(true);
 
-    const abatementHead = dictionary.findByUuid(abatement.headWord!.value);
+    const abatementHead = dictionary.findByUuid(Number(abatement.headWord!.value));
     expect(abatementHead?.text).toBe("abatement");
     expect(abatementHead?.partOfSpeech).toBe(PartOfSpeech.NOUN);
-    expect(wordForms.findByUuid(abatement.headWordForm!.value)?.text.value).toBe("abatement");
+    expect(wordForms.findByUuid(Number(abatement.headWordForm!.value))?.text.value).toBe("abatement");
     // Nothing precedes the Head here, so preModifier/postModifier/
     // determiner all stay undefined -- "of a nuisance" is a Complement,
     // not a Modifier or Determiner of this outer NounPhrase at all.
@@ -2848,7 +2848,7 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     expect(aNuisance.text).toBe("a nuisance");
     expect(aNuisance.phraseType).toBe(PhraseType.NOUN_PHRASE);
     expect(isNounPhrase(aNuisance)).toBe(true);
-    const nuisanceHead = dictionary.findByUuid(aNuisance.headWord!.value);
+    const nuisanceHead = dictionary.findByUuid(Number(aNuisance.headWord!.value));
     expect(nuisanceHead?.text).toBe("nuisance");
     expect(nuisanceHead?.partOfSpeech).toBe(PartOfSpeech.NOUN);
     // "a" genuinely resolves as this innermost NounPhrase's own
@@ -2899,7 +2899,7 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
       ModifierRole.HEAD,
     ]);
 
-    const head = dictionary.findByUuid(attributiveGenitiveCase!.headWord!.value);
+    const head = dictionary.findByUuid(Number(attributiveGenitiveCase!.headWord!.value));
     expect(head?.text).toBe("case");
     expect(head?.partOfSpeech).toBe(PartOfSpeech.NOUN);
 
@@ -2926,11 +2926,11 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
 
     // Its own internal structure resolved too, recursively: "genitive"
     // is its own Head, "attributive" its own sole preModifier.
-    const attributiveGenitiveHead = dictionary.findByUuid(attributiveGenitive.headWord!.value);
+    const attributiveGenitiveHead = dictionary.findByUuid(Number(attributiveGenitive.headWord!.value));
     expect(attributiveGenitiveHead?.text).toBe("genitive");
     expect(attributiveGenitiveHead?.partOfSpeech).toBe(PartOfSpeech.ADJECTIVE);
     expect(attributiveGenitive.preModifier).toBeDefined();
-    expect(wordForms.findByUuid((attributiveGenitive.preModifier as Identifier).value)?.text.value).toBe("attributive");
+    expect(wordForms.findByUuid(Number((attributiveGenitive.preModifier as Identifier).value))?.text.value).toBe("attributive");
   }, 60000);
 
   it("collapses a coordinated run of MODIFIER/DETERMINER tokens (\"big and red\") into a single Coordination, bridging the embedded coordinating conjunction that recogniseModifierRoles() itself never assigns a role to -- exercised as a pure function since no real bundled WordNet/Common-Vocabulary-Cache lemma contains a coordinated modifier span", () => {
@@ -2971,7 +2971,7 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     updatePhraseWordLinks(phrase, dictionary, wordForms, phraseBook, coordinations);
 
     expect(phrase.headWord).toBeDefined();
-    expect(dictionary.findByUuid(phrase.headWord!.value)?.text).toBe("dog");
+    expect(dictionary.findByUuid(Number(phrase.headWord!.value))?.text).toBe("dog");
     expect(phrase.postModifier).toBeUndefined();
     expect(phrase.determiner).toBeUndefined();
 
@@ -2984,7 +2984,7 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     expect((coordination.coordinates[0] as Word).text).toBe("big");
     expect((coordination.coordinates[1] as Word).text).toBe("red");
     expect(coordination.coordinator).toBeDefined();
-    expect(wordForms.findByUuid(coordination.coordinator!.value)?.text.value).toBe("and");
+    expect(wordForms.findByUuid(Number(coordination.coordinator!.value))?.text.value).toBe("and");
 
     // Registered into the supplied Coordinations store, not just built
     // in memory -- createStoredModifierCoordination()'s own find-or-create
@@ -3042,7 +3042,7 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // proving frames are stored per (word, sense), not per Word.
     expect(wordForms.senseIdsOf(stretch).length).toBeGreaterThan(1);
     const secondStretchSenseId = senseGraphUuid(senseStore.findBySynsetId("00101188-v")!);
-    expect(wordForms.senseIdsOf(stretch).map((id) => id.value)).toContain(secondStretchSenseId);
+    expect(wordForms.senseIdsOf(stretch).map((id) => id.value)).toContain(String(secondStretchSenseId));
     expect(identifyFramesForSense(senseStore, stretch, secondStretchSenseId)).toEqual(["Somebody ----s"]);
     // Querying the first sense's own frames off the same Word still
     // gives the first sense's own answer, unaffected by the second.
@@ -3099,16 +3099,16 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     for (const word of [able, ability, respire, respiratory, unbearable, unbearably, hyperventilate, hyperventilation]) expect(word).toBeDefined();
 
     // Verb.isNominalised / Noun.isDerivedFromVerb (NOMINALISATION).
-    expect(hyperventilate!.isNominalised?.value).toBe(wordGraphUuid(hyperventilation!));
+    expect(hyperventilate!.isNominalised?.value).toBe(String(wordGraphUuid(hyperventilation!)));
     expect(hyperventilate!.isNominalisedIndicator).toBe(true);
-    expect(hyperventilation!.isDerivedFromVerb?.value).toBe(wordGraphUuid(hyperventilate!));
+    expect(hyperventilation!.isDerivedFromVerb?.value).toBe(String(wordGraphUuid(hyperventilate!)));
     expect(hyperventilation!.isDerivedFromVerbIndicator).toBe(true);
     // Reading the pointer back never creates a second, redundant edge --
     // exactly one NOMINALISATION edge exists between this one pair.
     expect(
       morphologicalPointerRelationships
-        .outgoing(wordGraphUuid(hyperventilate!))
-        .filter((edge) => edge.relationshipType === LexicalRelationshipType.NOMINALISATION && edge.targetWordId.value === wordGraphUuid(hyperventilation!)),
+        .outgoing(String(wordGraphUuid(hyperventilate!)))
+        .filter((edge) => edge.relationshipType === LexicalRelationshipType.NOMINALISATION && edge.targetWordId.value === String(wordGraphUuid(hyperventilation!))),
     ).toHaveLength(1);
     // Noun no longer has an isVerbalised field, and Verb no longer has
     // isDerivedFromNoun -- both removed, each an earlier iteration's
@@ -3121,9 +3121,9 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // (NOMINALISATION, source=Adjective this time -- the exact
     // disambiguation findDerivationTarget()'s own otherPos check exists
     // for, since this is the identical relationship kind checked above).
-    expect(able!.isNominalised?.value).toBe(wordGraphUuid(ability!));
+    expect(able!.isNominalised?.value).toBe(String(wordGraphUuid(ability!)));
     expect(able!.isNominalisedIndicator).toBe(true);
-    expect(ability!.isDerivedFromAdjective?.value).toBe(wordGraphUuid(able!));
+    expect(ability!.isDerivedFromAdjective?.value).toBe(String(wordGraphUuid(able!)));
     expect(ability!.isDerivedFromAdjectiveIndicator).toBe(true);
     // Noun no longer has an isAdjectivised field, and Adjective no
     // longer has isDerivedFromNoun -- both removed as this same pair's
@@ -3135,9 +3135,9 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // (ADJECTIVAL_DERIVATION, source=Verb -- disambiguated from a
     // Noun-sourced ADJECTIVAL_DERIVATION edge the same way the two
     // NOMINALISATION checks above disambiguate by source).
-    expect(respire!.isAdjectivised?.value).toBe(wordGraphUuid(respiratory!));
+    expect(respire!.isAdjectivised?.value).toBe(String(wordGraphUuid(respiratory!)));
     expect(respire!.isAdjectivisedIndicator).toBe(true);
-    expect(respiratory!.isDerivedFromVerb?.value).toBe(wordGraphUuid(respire!));
+    expect(respiratory!.isDerivedFromVerb?.value).toBe(String(wordGraphUuid(respire!)));
     expect(respiratory!.isDerivedFromVerbIndicator).toBe(true);
     // Adjective no longer has an isVerbalised field, and Verb no longer
     // has isDerivedFromAdjective -- both removed as this same pair's own
@@ -3147,9 +3147,9 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
 
     // Adjective.isAdverbialised / Adverb.isDerivedFromAdjective
     // (ADVERBIAL_DERIVATION).
-    expect(unbearable!.isAdverbialised?.value).toBe(wordGraphUuid(unbearably!));
+    expect(unbearable!.isAdverbialised?.value).toBe(String(wordGraphUuid(unbearably!)));
     expect(unbearable!.isAdverbialisedIndicator).toBe(true);
-    expect(unbearably!.isDerivedFromAdjective?.value).toBe(wordGraphUuid(unbearable!));
+    expect(unbearably!.isDerivedFromAdjective?.value).toBe(String(wordGraphUuid(unbearable!)));
     expect(unbearably!.isDerivedFromAdjectiveIndicator).toBe(true);
     // Adverb no longer has an isAdjectivised field, and Adjective no
     // longer has isDerivedFromAdverb -- both removed as this same
@@ -3191,14 +3191,14 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // not just relabelled. An ordinary closed-class Adjective carries
     // none.
     const view = new DictionaryView(dictionary, semanticRelationships, { domainName: "Common", phrases: phraseBook, senses: senseStore });
-    const hyperventilationRecord = view.searchWords({ wordId: wordGraphUuid(hyperventilation!) }).words[0];
+    const hyperventilationRecord = view.searchWords({ wordId: String(wordGraphUuid(hyperventilation!)) }).words[0];
     expect(hyperventilationRecord.derivations).toEqual([
-      { attribute: "isDerivedFromVerb", label: "Is Derived From Verb", target: { id: wordGraphUuid(hyperventilate!), text: "hyperventilate" } },
+      { attribute: "isDerivedFromVerb", label: "Is Derived From Verb", target: { id: String(wordGraphUuid(hyperventilate!)), text: "hyperventilate" } },
     ]);
 
     const someClosedClassAdjective = createAdjective({ text: "sample-adjective" });
     dictionary.append(someClosedClassAdjective);
-    const closedClassRecord = view.searchWords({ wordId: wordGraphUuid(someClosedClassAdjective) }).words[0];
+    const closedClassRecord = view.searchWords({ wordId: String(wordGraphUuid(someClosedClassAdjective)) }).words[0];
     expect(closedClassRecord.derivations).toEqual([]);
   }, 60000);
 
@@ -3214,7 +3214,7 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     expect(bigs).toHaveLength(1);
     const big = bigs[0];
     expect(wordForms.senseIdsOf(big).length).toBeGreaterThan(1);
-    const bigSenses = wordForms.senseIdsOf(big).map((id) => senseStore.findByUuid(id.value)!);
+    const bigSenses = wordForms.senseIdsOf(big).map((id) => senseStore.findByUuid(Number(id.value))!);
     expect(bigSenses.every((sense) => sense !== undefined)).toBe(true);
     // Every sense is genuinely distinct -- no duplicate Sense uuids, and
     // no two carry the identical definition text.
@@ -3228,7 +3228,7 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // seeding order (WordSeeder.seedWordNet's own orderSensesByFrequency).
     // synsetId's own "primary sense snapshot" reading (WordForms.synsetIdOf()'s
     // own docstring) matches senseIds[0] as a result.
-    const bigPrimarySense = senseStore.findByUuid(wordForms.senseIdsOf(big)[0].value);
+    const bigPrimarySense = senseStore.findByUuid(Number(wordForms.senseIdsOf(big)[0].value));
     expect(wordForms.synsetIdOf(big)?.value).toBe(bigPrimarySense !== undefined ? senseStore.synsetIdOf(bigPrimarySense)?.value : undefined);
   }, 60000);
 
@@ -3250,7 +3250,7 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     expect(bank).toBeDefined();
     expect(wordForms.senseIdsOf(bank).length).toBeGreaterThanOrEqual(4);
     const orderedSynsetIds = wordForms.senseIdsOf(bank).map((id) => {
-      const sense = senseStore.findByUuid(id.value);
+      const sense = senseStore.findByUuid(Number(id.value));
       return sense !== undefined ? senseStore.synsetIdOf(sense)?.value : undefined;
     });
     expect(orderedSynsetIds.slice(0, 4)).toEqual(["09236472-n", "08437235-n", "09236341-n", "08479077-n"]);
@@ -3268,7 +3268,7 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // The UI-facing read side (DictionaryView.sensesFor()) agrees:
     // entry 1 is marked primary and carries the same frequency value.
     const view = new DictionaryView(dictionary, semanticRelationships, { domainName: "Common", senses: senseStore, wordForms });
-    const record = view.searchWords({ wordId: wordGraphUuid(bank) }).words[0];
+    const record = view.searchWords({ wordId: String(wordGraphUuid(bank)) }).words[0];
     expect(record.senses[0].is_primary).toBe(true);
     expect(record.senses[0].frequency).toBe(25);
     expect(record.senses[1].frequency).toBe(20);
@@ -3325,12 +3325,12 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     const outgoing = semanticRelationships.outgoing(onSenseId);
     expect(
       outgoing.some(
-        (r) => r.targetSenseId.value === senseGraphUuid(lieSense) && r.relationshipType === SemanticRelationshipKind.RELATED,
+        (r) => r.targetSenseId.value === String(senseGraphUuid(lieSense)) && r.relationshipType === SemanticRelationshipKind.RELATED,
       ),
     ).toBe(true);
     expect(
       outgoing.some(
-        (r) => r.targetSenseId.value === senseGraphUuid(positionSense) && r.relationshipType === SemanticRelationshipKind.RELATED,
+        (r) => r.targetSenseId.value === String(senseGraphUuid(positionSense)) && r.relationshipType === SemanticRelationshipKind.RELATED,
       ),
     ).toBe(true);
 
@@ -3407,7 +3407,7 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // coordinator resolves via WordForms.findByUuid(), Coordination's own
     // by-reference pattern (data/entities/coordination.ts) -- not an
     // embedded copy.
-    const coordinatorForm = wordForms.findByUuid(saltAndPepper!.coordinator!.value);
+    const coordinatorForm = wordForms.findByUuid(Number(saltAndPepper!.coordinator!.value));
     expect(coordinatorForm?.text.value).toBe("and");
 
     // "back and forth" -- same shape, ADVERB instead of NOUN, confirming
@@ -3428,7 +3428,7 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     expect(redWhiteBlue!.coordinates).toHaveLength(3);
     expect((redWhiteBlue!.coordinates as Word[]).map((w) => w.text)).toEqual(["red", "white", "blue"]);
     expect((redWhiteBlue!.coordinates[0] as Word).partOfSpeech).toBe(PartOfSpeech.ADJECTIVE);
-    const redWhiteBlueCoordinatorForm = wordForms.findByUuid(redWhiteBlue!.coordinator!.value);
+    const redWhiteBlueCoordinatorForm = wordForms.findByUuid(Number(redWhiteBlue!.coordinator!.value));
     expect(redWhiteBlueCoordinatorForm?.text.value).toBe("and");
 
     // Idempotent -- a second call against the same, already-seeded
@@ -3727,14 +3727,14 @@ describe("DictionaryView.searchWords", () => {
     dictionary.append(large);
     const view = new DictionaryView(dictionary, new SemanticRelationshipStore(), { domainName: "Common" });
 
-    const found = view.searchWords({ wordId: wordGraphUuid(large) });
+    const found = view.searchWords({ wordId: String(wordGraphUuid(large)) });
     expect(found.totalMatches).toBe(1);
     expect(found.words.map((w) => w.lexical_form)).toEqual(["large"]);
 
     // Every other filter is ignored once wordId is set -- this would
     // match nothing by pos alone (both Words here are ADJECTIVE), but
     // wordId still resolves the exact Word asked for.
-    const ignoresOtherFilters = view.searchWords({ wordId: wordGraphUuid(big), pos: "NOUN" });
+    const ignoresOtherFilters = view.searchWords({ wordId: String(wordGraphUuid(big)), pos: "NOUN" });
     expect(ignoresOtherFilters.words.map((w) => w.lexical_form)).toEqual(["big"]);
 
     expect(view.searchWords({ wordId: "not-a-real-id" }).totalMatches).toBe(0);
@@ -3764,14 +3764,14 @@ describe("DictionaryView.searchWords", () => {
     wordForms.registerNamedForm(dog, WordFormType.POSSESSIVE_CASE_FORM, { value: "dog's", formats: ["/'s$/i"] });
     const view = new DictionaryView(dictionary, new SemanticRelationshipStore(), { domainName: "Common", wordForms });
 
-    const dogRecord = view.searchWords({ wordId: wordGraphUuid(dog) }).words[0];
+    const dogRecord = view.searchWords({ wordId: String(wordGraphUuid(dog)) }).words[0];
     expect(dogRecord.word_forms).toEqual([
       { field: WordFormType.BASE_LEMMA_CANONICAL_FORM, label: "Base Lemma Canonical Form", value: "dog", senses: [] },
       { field: WordFormType.PLURAL_NUMBER_FORM, label: "Plural Number Form", value: "dogs", senses: [] },
       { field: WordFormType.POSSESSIVE_CASE_FORM, label: "Possessive Case Form", value: "dog's", senses: [] },
     ]);
 
-    const catRecord = view.searchWords({ wordId: wordGraphUuid(cat) }).words[0];
+    const catRecord = view.searchWords({ wordId: String(wordGraphUuid(cat)) }).words[0];
     expect(catRecord.word_forms).toEqual([]);
   });
 
@@ -3802,7 +3802,7 @@ describe("DictionaryView.searchWords", () => {
     expect(winger?.domainTag).toBeUndefined();
 
     const view = new DictionaryView(dictionary, semanticRelationships, { domainName: "Common", senses: senseStore, wordForms, domains });
-    const record = view.searchWords({ wordId: wordGraphUuid(winger!) }).words[0];
+    const record = view.searchWords({ wordId: String(wordGraphUuid(winger!)) }).words[0];
     expect(record.domain).not.toBeNull();
     expect(["soccer", "field hockey", "rugby", "football"]).toContain(record.domain);
     expect(new Set([record.domain, ...record.related_domains])).toEqual(new Set(["soccer", "field hockey", "rugby", "football"]));
@@ -3817,7 +3817,7 @@ describe("DictionaryView.searchWords", () => {
 
     const entity = dictionary.lookupAll("entity").find((w) => w.partOfSpeech === PartOfSpeech.NOUN);
     expect(entity).toBeDefined();
-    const entityDefinition = senseStore.findByUuid(wordForms.senseIdsOf(entity!)[0].value)?.definition?.value;
+    const entityDefinition = senseStore.findByUuid(Number(wordForms.senseIdsOf(entity!)[0].value))?.definition?.value;
     expect(entityDefinition).toBeTruthy();
 
     // With the matching Senses: is_root_word comes back true (read
@@ -3830,7 +3830,7 @@ describe("DictionaryView.searchWords", () => {
       senses: senseStore,
       wordForms,
     });
-    const recordWithSenses = withSenses.searchWords({ wordId: wordGraphUuid(entity!) }).words[0];
+    const recordWithSenses = withSenses.searchWords({ wordId: String(wordGraphUuid(entity!)) }).words[0];
     expect(recordWithSenses.is_root_word).toBe(true);
     expect(recordWithSenses.definition).toBe(entityDefinition);
     expect(withSenses.searchWords({ rootWordsOnly: true }).words.map((w) => w.lexical_form)).toContain("entity");
@@ -3849,7 +3849,7 @@ describe("DictionaryView.searchWords", () => {
       senses: new Senses(),
       wordForms,
     });
-    const recordWithoutSenses = withoutSenses.searchWords({ wordId: wordGraphUuid(entity!) }).words[0];
+    const recordWithoutSenses = withoutSenses.searchWords({ wordId: String(wordGraphUuid(entity!)) }).words[0];
     expect(recordWithoutSenses.is_root_word).toBe(true);
     expect(recordWithoutSenses.definition).toBe(entityDefinition);
     expect(withoutSenses.searchWords({ rootWordsOnly: true }).words.map((w) => w.lexical_form)).toContain("entity");
@@ -3888,16 +3888,16 @@ describe("DictionaryView.searchWords", () => {
     wordForms.registerSense(wordForms.registerBaseLemmaForm(enceinte), pregnantSense);
 
     const view = new DictionaryView(dictionary, new SemanticRelationshipStore(), { domainName: "Common", senses: senseStore, wordForms });
-    const record = view.searchWords({ wordId: wordGraphUuid(big) }).words[0];
+    const record = view.searchWords({ wordId: String(wordGraphUuid(big)) }).words[0];
 
     expect(record.senses).toHaveLength(2);
     expect(record.senses[0]).toMatchObject({ is_primary: true, definition: "above average in size" });
-    expect(record.senses[0].synonyms).toEqual([{ id: wordGraphUuid(large), text: "large" }]);
+    expect(record.senses[0].synonyms).toEqual([{ id: String(wordGraphUuid(large)), text: "large" }]);
     expect(record.senses[1]).toMatchObject({ is_primary: false, definition: "in an advanced stage of pregnancy" });
-    expect(record.senses[1].synonyms).toEqual([{ id: wordGraphUuid(enceinte), text: "enceinte" }]);
+    expect(record.senses[1].synonyms).toEqual([{ id: String(wordGraphUuid(enceinte)), text: "enceinte" }]);
 
     // A monosemous Word still gets exactly one entry, still marked primary.
-    const largeRecord = view.searchWords({ wordId: wordGraphUuid(large) }).words[0];
+    const largeRecord = view.searchWords({ wordId: String(wordGraphUuid(large)) }).words[0];
     expect(largeRecord.senses).toEqual([expect.objectContaining({ is_primary: true, definition: "above average in size" })]);
   });
 
@@ -3935,12 +3935,12 @@ describe("DictionaryView.searchWords", () => {
 
     const semanticStore = new SemanticRelationshipStore();
     const semanticProcessor = new SemanticRelationshipProcessor(semanticStore, new SemanticRelationshipSystemPropertyTensor());
-    semanticProcessor.create({ sourceSenseId: senseGraphUuid(auraSense), targetSenseId: senseGraphUuid(auraNounSense), relationshipType: SemanticRelationshipKind.PERTAINYM, sourceReferences: [] });
-    semanticProcessor.create({ sourceSenseId: senseGraphUuid(hearingSense), targetSenseId: senseGraphUuid(earNounSense), relationshipType: SemanticRelationshipKind.PERTAINYM, sourceReferences: [] });
+    semanticProcessor.create({ sourceSenseId: String(senseGraphUuid(auraSense)), targetSenseId: String(senseGraphUuid(auraNounSense)), relationshipType: SemanticRelationshipKind.PERTAINYM, sourceReferences: [] });
+    semanticProcessor.create({ sourceSenseId: String(senseGraphUuid(hearingSense)), targetSenseId: String(senseGraphUuid(earNounSense)), relationshipType: SemanticRelationshipKind.PERTAINYM, sourceReferences: [] });
 
     const view = new DictionaryView(dictionary, semanticStore, { domainName: "Common", senses: senseStore, wordForms });
-    const record = view.searchWords({ wordId: wordGraphUuid(aural) }).words[0];
-    const rels = view.searchRelationships({ wordId: wordGraphUuid(aural) }).relationships;
+    const record = view.searchWords({ wordId: String(wordGraphUuid(aural)) }).words[0];
+    const rels = view.searchRelationships({ wordId: String(wordGraphUuid(aural)) }).relationships;
 
     expect(record.senses).toHaveLength(2);
     expect(rels.filter((r) => r.via_sense_id === record.senses[0].id).map((r) => r.target_text)).toEqual(["aura"]);
@@ -3953,8 +3953,8 @@ describe("DictionaryView.searchWords", () => {
     senseStore.append(woodenSense);
     senseStore.registerMember(woodenSense, wooden);
     wordForms.registerSense(wordForms.registerBaseLemmaForm(wooden), woodenSense);
-    const woodenRecord = view.searchWords({ wordId: wordGraphUuid(wooden) }).words[0];
-    const woodenRels = view.searchRelationships({ wordId: wordGraphUuid(wooden) }).relationships;
+    const woodenRecord = view.searchWords({ wordId: String(wordGraphUuid(wooden)) }).words[0];
+    const woodenRels = view.searchRelationships({ wordId: String(wordGraphUuid(wooden)) }).relationships;
     expect(woodenRels.filter((r) => r.via_sense_id === woodenRecord.senses[0].id)).toEqual([]);
   });
 
@@ -3969,7 +3969,7 @@ describe("DictionaryView.searchWords", () => {
     senseStore.registerMember(sense, toyPoodle);
 
     const view = new DictionaryView(dictionary, new SemanticRelationshipStore(), { domainName: "Common", phrases: phraseBook, senses: senseStore });
-    const record = view.searchWords({ wordId: phraseGraphUuid(toyPoodle) }).words[0];
+    const record = view.searchWords({ wordId: String(phraseGraphUuid(toyPoodle)) }).words[0];
     expect(record.senses).toEqual([expect.objectContaining({ is_primary: true, definition: "a small breed of poodle" })]);
   });
 });
@@ -4099,8 +4099,8 @@ describe("DictionaryView.searchRelationships", () => {
 
     const store = new SemanticRelationshipStore();
     const processor = new SemanticRelationshipProcessor(store, new SemanticRelationshipSystemPropertyTensor());
-    processor.create({ sourceSenseId: senseGraphUuid(bigSense), targetSenseId: senseGraphUuid(largeSense), relationshipType: SemanticRelationshipKind.SYNONYM, sourceReferences: [] });
-    processor.create({ sourceSenseId: senseGraphUuid(bigSense), targetSenseId: senseGraphUuid(smallSense), relationshipType: SemanticRelationshipKind.ANTONYM, sourceReferences: [] });
+    processor.create({ sourceSenseId: String(senseGraphUuid(bigSense)), targetSenseId: String(senseGraphUuid(largeSense)), relationshipType: SemanticRelationshipKind.SYNONYM, sourceReferences: [] });
+    processor.create({ sourceSenseId: String(senseGraphUuid(bigSense)), targetSenseId: String(senseGraphUuid(smallSense)), relationshipType: SemanticRelationshipKind.ANTONYM, sourceReferences: [] });
 
     const view = new DictionaryView(dictionary, store, { domainName: "Common", senses, wordForms });
     return { view, big, large, small };
@@ -4109,17 +4109,17 @@ describe("DictionaryView.searchRelationships", () => {
   it("resolves every relationship touching `wordId`, both outgoing and incoming", () => {
     const { view, big, large, small } = buildFixture();
 
-    const forBig = view.searchRelationships({ wordId: wordGraphUuid(big) });
+    const forBig = view.searchRelationships({ wordId: String(wordGraphUuid(big)) });
     expect(forBig.totalMatches).toBe(2);
     expect(forBig.relationships.map((r) => r.kind).sort()).toEqual(["ANTONYM", "SYNONYM"]);
 
-    const forLarge = view.searchRelationships({ wordId: wordGraphUuid(large) });
+    const forLarge = view.searchRelationships({ wordId: String(wordGraphUuid(large)) });
     expect(forLarge.totalMatches).toBe(1);
     expect(forLarge.relationships[0].kind).toBe("SYNONYM");
     expect(forLarge.relationships[0].source_text).toBe("big");
     expect(forLarge.relationships[0].target_text).toBe("large");
 
-    expect(view.searchRelationships({ wordId: wordGraphUuid(small) }).totalMatches).toBe(1);
+    expect(view.searchRelationships({ wordId: String(wordGraphUuid(small)) }).totalMatches).toBe(1);
   });
 
   it("via_sense_id names which of a polysemous Word's own several Senses a Sense-expanded relationship came from -- distinct per sense, not one shared value", () => {
@@ -4156,16 +4156,16 @@ describe("DictionaryView.searchRelationships", () => {
     // Two facts, from two different Senses of the same polysemous "big" --
     // each one's own row must be tagged with the Sense that actually
     // produced it, not conflated into one.
-    processor.create({ sourceSenseId: senseGraphUuid(sizeSense), targetSenseId: senseGraphUuid(smallSense), relationshipType: SemanticRelationshipKind.ANTONYM, sourceReferences: [] });
-    processor.create({ sourceSenseId: senseGraphUuid(pregnantSense), targetSenseId: senseGraphUuid(petiteSense), relationshipType: SemanticRelationshipKind.SIMILAR_TO, sourceReferences: [] });
+    processor.create({ sourceSenseId: String(senseGraphUuid(sizeSense)), targetSenseId: String(senseGraphUuid(smallSense)), relationshipType: SemanticRelationshipKind.ANTONYM, sourceReferences: [] });
+    processor.create({ sourceSenseId: String(senseGraphUuid(pregnantSense)), targetSenseId: String(senseGraphUuid(petiteSense)), relationshipType: SemanticRelationshipKind.SIMILAR_TO, sourceReferences: [] });
 
     const view = new DictionaryView(dictionary, store, { domainName: "Common", senses: senseStore, wordForms });
-    const result = view.searchRelationships({ wordId: wordGraphUuid(big) });
+    const result = view.searchRelationships({ wordId: String(wordGraphUuid(big)) });
 
     const antonymRow = result.relationships.find((r) => r.kind === "ANTONYM");
-    expect(antonymRow?.via_sense_id).toBe(senseGraphUuid(sizeSense));
+    expect(antonymRow?.via_sense_id).toBe(String(senseGraphUuid(sizeSense)));
     const similarRow = result.relationships.find((r) => r.kind === "SIMILAR_TO");
-    expect(similarRow?.via_sense_id).toBe(senseGraphUuid(pregnantSense));
+    expect(similarRow?.via_sense_id).toBe(String(senseGraphUuid(pregnantSense)));
     expect(antonymRow?.via_sense_id).not.toBe(similarRow?.via_sense_id);
   });
 
@@ -4193,7 +4193,7 @@ describe("DictionaryView.searchRelationships", () => {
     const store = new SemanticRelationshipStore();
     const processor = new SemanticRelationshipProcessor(store, new SemanticRelationshipSystemPropertyTensor());
     for (let i = 0; i < words.length - 1; i++) {
-      processor.create({ sourceSenseId: senseGraphUuid(wordSenses[i]), targetSenseId: senseGraphUuid(wordSenses[i + 1]), relationshipType: SemanticRelationshipKind.SYNONYM, sourceReferences: [] });
+      processor.create({ sourceSenseId: String(senseGraphUuid(wordSenses[i])), targetSenseId: String(senseGraphUuid(wordSenses[i + 1])), relationshipType: SemanticRelationshipKind.SYNONYM, sourceReferences: [] });
     }
 
     const view = new DictionaryView(dictionary, store, { domainName: "Common", senses });
@@ -4209,10 +4209,10 @@ describe("DictionaryView.searchRelationships", () => {
     const large = dictionary.lookup("large");
     expect(large).toBeDefined();
 
-    const result = view.searchRelationships({ wordId: wordGraphUuid(large!), limit: 25 });
+    const result = view.searchRelationships({ wordId: String(wordGraphUuid(large!)), limit: 25 });
     expect(result.totalMatches).toBeGreaterThan(0);
     expect(result.relationships.length).toBeLessThanOrEqual(25);
-    expect(result.relationships.every((r) => r.source_id === wordGraphUuid(large!) || r.target_id === wordGraphUuid(large!))).toBe(true);
+    expect(result.relationships.every((r) => r.source_id === String(wordGraphUuid(large!)) || r.target_id === String(wordGraphUuid(large!)))).toBe(true);
     // Both sides of a WordNet-seeded relationship carry their own
     // sense_id (source_sense_id/target_sense_id) -- the vocabulary UI's
     // detail panel shows this next to each related word.
@@ -4251,7 +4251,7 @@ describe("DictionaryView.resolveHierarchy", () => {
     const store = new SemanticRelationshipStore();
     const processor = new SemanticRelationshipProcessor(store, new SemanticRelationshipSystemPropertyTensor());
     const hypernym = (child: string, parent: string) =>
-      processor.create({ sourceSenseId: senseGraphUuid(senses[child]), targetSenseId: senseGraphUuid(senses[parent]), relationshipType: SemanticRelationshipKind.HYPERNYM, sourceReferences: [] });
+      processor.create({ sourceSenseId: String(senseGraphUuid(senses[child])), targetSenseId: String(senseGraphUuid(senses[parent])), relationshipType: SemanticRelationshipKind.HYPERNYM, sourceReferences: [] });
     hypernym("car", "vehicle");
     hypernym("sedan", "car");
     hypernym("truck", "vehicle");
@@ -4266,7 +4266,7 @@ describe("DictionaryView.resolveHierarchy", () => {
     const { view, senses } = buildTreeFixture();
     const result = view.resolveHierarchy({ kind: "HYPERNYM" });
     expect(result.fellBack).toBe(false);
-    expect(result.roots).toEqual([senseGraphUuid(senses.vehicle)]);
+    expect(result.roots).toEqual([String(senseGraphUuid(senses.vehicle))]);
     expect(result.totalEdgeCount).toBe(5);
     expect(result.totalNodeCount).toBe(7);
     // The whole subtree under vehicle is included -- car, sedan, truck, boat.
@@ -4307,7 +4307,7 @@ describe("DictionaryView.resolveHierarchy", () => {
     const store = new SemanticRelationshipStore();
     const processor = new SemanticRelationshipProcessor(store, new SemanticRelationshipSystemPropertyTensor());
     const hypernym = (child: string, parent: string) =>
-      processor.create({ sourceSenseId: senseGraphUuid(senses[child]), targetSenseId: senseGraphUuid(senses[parent]), relationshipType: SemanticRelationshipKind.HYPERNYM, sourceReferences: [] });
+      processor.create({ sourceSenseId: String(senseGraphUuid(senses[child])), targetSenseId: String(senseGraphUuid(senses[parent])), relationshipType: SemanticRelationshipKind.HYPERNYM, sourceReferences: [] });
     for (const child of ["w1", "w2", "w3", "w4"]) hypernym(child, "wide_shallow");
     hypernym("d1", "deep_narrow");
     for (let i = 0; i < 10; i++) hypernym(`d1${String.fromCharCode(97 + i)}`, "d1");
@@ -4317,16 +4317,16 @@ describe("DictionaryView.resolveHierarchy", () => {
     // wide_shallow has 4 direct children (more than deep_narrow's 1),
     // but only 5 total descendants; deep_narrow has 12. The broadest
     // root must be deep_narrow.
-    expect(result.roots).toEqual([senseGraphUuid(senses.deep_narrow)]);
+    expect(result.roots).toEqual([String(senseGraphUuid(senses.deep_narrow))]);
   });
 
   it("with a wordId, builds the ancestor chain up to the root plus that word's own descendants", () => {
     const { view, words, senses } = buildTreeFixture();
-    const result = view.resolveHierarchy({ kind: "HYPERNYM", wordId: wordGraphUuid(words.sedan) });
-    expect(result.roots).toEqual([senseGraphUuid(senses.vehicle)]);
+    const result = view.resolveHierarchy({ kind: "HYPERNYM", wordId: String(wordGraphUuid(words.sedan)) });
+    expect(result.roots).toEqual([String(senseGraphUuid(senses.vehicle))]);
     const edgePairs = result.edges.map((e) => [e.parentId, e.childId]);
-    expect(edgePairs).toContainEqual([senseGraphUuid(senses.vehicle), senseGraphUuid(senses.car)]);
-    expect(edgePairs).toContainEqual([senseGraphUuid(senses.car), senseGraphUuid(senses.sedan)]);
+    expect(edgePairs).toContainEqual([String(senseGraphUuid(senses.vehicle)), String(senseGraphUuid(senses.car))]);
+    expect(edgePairs).toContainEqual([String(senseGraphUuid(senses.car)), String(senseGraphUuid(senses.sedan))]);
     // Nothing from the unrelated fruit/apple branch leaks in.
     expect(result.nodes.map((n) => n.lexical_form)).not.toContain("fruit");
   });
@@ -4353,8 +4353,8 @@ describe("DictionaryView.resolveHierarchy", () => {
     senseStore.registerMember(smallSense, small);
     const store = new SemanticRelationshipStore();
     const processor = new SemanticRelationshipProcessor(store, new SemanticRelationshipSystemPropertyTensor());
-    processor.create({ sourceSenseId: senseGraphUuid(bigSense), targetSenseId: senseGraphUuid(smallSense), relationshipType: SemanticRelationshipKind.ANTONYM, sourceReferences: [] });
-    processor.create({ sourceSenseId: senseGraphUuid(smallSense), targetSenseId: senseGraphUuid(bigSense), relationshipType: SemanticRelationshipKind.ANTONYM, sourceReferences: [] });
+    processor.create({ sourceSenseId: String(senseGraphUuid(bigSense)), targetSenseId: String(senseGraphUuid(smallSense)), relationshipType: SemanticRelationshipKind.ANTONYM, sourceReferences: [] });
+    processor.create({ sourceSenseId: String(senseGraphUuid(smallSense)), targetSenseId: String(senseGraphUuid(bigSense)), relationshipType: SemanticRelationshipKind.ANTONYM, sourceReferences: [] });
 
     const view = new DictionaryView(dictionary, store, { domainName: "Common", senses: senseStore });
     const result = view.resolveHierarchy({ kind: "ANTONYM" });
@@ -4387,7 +4387,7 @@ describe("DictionaryView.resolveHierarchy", () => {
     senseStore.registerMember(smallSense, small);
     const store = new SemanticRelationshipStore();
     const processor = new SemanticRelationshipProcessor(store, new SemanticRelationshipSystemPropertyTensor());
-    processor.create({ sourceSenseId: senseGraphUuid(bigSense), targetSenseId: senseGraphUuid(smallSense), relationshipType: SemanticRelationshipKind.ANTONYM, sourceReferences: [] });
+    processor.create({ sourceSenseId: String(senseGraphUuid(bigSense)), targetSenseId: String(senseGraphUuid(smallSense)), relationshipType: SemanticRelationshipKind.ANTONYM, sourceReferences: [] });
 
     const view = new DictionaryView(dictionary, store, { domainName: "Common", senses: senseStore });
     const result = view.resolveHierarchy({ kind: "ANTONYM" });
@@ -4409,7 +4409,7 @@ describe("DictionaryView.resolveHierarchy", () => {
     senseStore2.registerMember(felineSense, feline);
     const store2 = new SemanticRelationshipStore();
     const processor2 = new SemanticRelationshipProcessor(store2, new SemanticRelationshipSystemPropertyTensor());
-    processor2.create({ sourceSenseId: senseGraphUuid(catSense), targetSenseId: senseGraphUuid(felineSense), relationshipType: SemanticRelationshipKind.SYNONYM, sourceReferences: [] });
+    processor2.create({ sourceSenseId: String(senseGraphUuid(catSense)), targetSenseId: String(senseGraphUuid(felineSense)), relationshipType: SemanticRelationshipKind.SYNONYM, sourceReferences: [] });
 
     const view2 = new DictionaryView(dictionary2, store2, { domainName: "Common", senses: senseStore2 });
     const result2 = view2.resolveHierarchy({ kind: "SYNONYM" });
@@ -4423,7 +4423,7 @@ describe("DictionaryView.resolveHierarchy", () => {
     const poodle = dictionary.lookupAll("poodle").find((w) => w.partOfSpeech === PartOfSpeech.NOUN);
     expect(poodle).toBeDefined();
 
-    const result = view.resolveHierarchy({ kind: "HYPERNYM", wordId: wordGraphUuid(poodle!), limit: 200 });
+    const result = view.resolveHierarchy({ kind: "HYPERNYM", wordId: String(wordGraphUuid(poodle!)), limit: 200 });
     expect(result.fellBack).toBe(false);
     expect(result.nodes.length).toBeGreaterThan(0);
     // poodle itself is a leaf, not a root -- its own root should be a

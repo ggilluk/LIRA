@@ -23,8 +23,8 @@ import { WordFormType } from "./enums/word_forms_enum";
  * own thin wrapper below). */
 export class WordForms {
   private forms: WordForm[] = [];
-  private readonly byUuid = new Map<string, WordForm>();
-  private readonly formsByWordId = new Map<string, WordForm[]>();
+  private readonly byUuid = new Map<number, WordForm>();
+  private readonly formsByWordId = new Map<number, WordForm[]>();
   // Case-insensitive text -> every (form, owning word) pair whose own
   // `text.value` equals that text -- built eagerly as forms are
   // registered rather than as a deferred batch pass: unlike Adjective/
@@ -42,13 +42,13 @@ export class WordForms {
   // on WordForm itself (WordForm's own docstring on why): it's an
   // externally-defined WordNet attribute, mapped onto the base-lemma
   // form's own senseIds[0] rather than duplicated as a scalar field.
-  private readonly synsetIdByUuid = new Map<string, Identifier>();
+  private readonly synsetIdByUuid = new Map<number, Identifier>();
 
   all(): readonly WordForm[] {
     return this.forms.slice();
   }
 
-  findByUuid(formId: string): WordForm | undefined {
+  findByUuid(formId: number): WordForm | undefined {
     return this.byUuid.get(formId);
   }
 
@@ -66,8 +66,8 @@ export class WordForms {
    * the `wordFormIds` entry or the text index entry. */
   registerMember(form: WordForm, word: Word): void {
     const uuid = graphUuid(form);
-    if (!word.wordFormIds.some((id) => id.value === uuid)) {
-      word.wordFormIds = [...word.wordFormIds, { value: uuid }];
+    if (!word.wordFormIds.some((id) => Number(id.value) === uuid)) {
+      word.wordFormIds = [...word.wordFormIds, { value: String(uuid) }];
     }
     const wordBucket = this.formsByWordId.get(wordGraphUuid(word));
     if (wordBucket === undefined) {
@@ -254,8 +254,8 @@ export class WordForms {
    * again for the same (form, sense) pair on a re-seed. */
   registerSense(form: WordForm, sense: Sense): void {
     const senseUuid = senseGraphUuid(sense);
-    if (!form.senseIds.some((id) => id.value === senseUuid)) {
-      form.senseIds = [...form.senseIds, { value: senseUuid }];
+    if (!form.senseIds.some((id) => Number(id.value) === senseUuid)) {
+      form.senseIds = [...form.senseIds, { value: String(senseUuid) }];
     }
   }
 

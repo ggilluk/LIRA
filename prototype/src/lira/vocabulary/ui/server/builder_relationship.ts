@@ -26,7 +26,7 @@ import { domainLabel } from "./resolver_domain";
  * folded from Identifier.uuid, data/entities/word.ts's own docstring),
  * so this just picks which of the two matching graphUuid() functions
  * to call. `data/senses.ts`'s own identical `memberUuid()`. */
-function memberUuid(member: Word | Phrase): string {
+function memberUuid(member: Word | Phrase): number {
   return "senseIds" in member ? phraseGraphUuid(member) : wordGraphUuid(member);
 }
 
@@ -115,11 +115,11 @@ export interface RelationshipKindCount {
  * kind of representative simplification resolveEntry() already makes
  * for source_text/target_text on the exact same rows. */
 function resolveSenseFor(id: string, dictionary: Dictionary, phrases: Phrases, senses: Senses, wordForms: WordForms): Sense | undefined {
-  const direct = senses.findByUuid(id);
+  const direct = senses.findByUuid(Number(id));
   if (direct !== undefined) return direct;
   const entity = resolveEntry(dictionary, phrases, senses, id, wordForms);
   const primarySenseId = entity !== undefined ? wordForms.senseIdsOf(entity)[0]?.value : undefined;
-  return primarySenseId !== undefined ? senses.findByUuid(primarySenseId) : undefined;
+  return primarySenseId !== undefined ? senses.findByUuid(Number(primarySenseId)) : undefined;
 }
 
 /** One SemanticRelationship's full RelationshipRecord -- shared by
@@ -227,14 +227,14 @@ function senseExpandedRelationships(
     for (const rel of [...relationships.outgoing(senseId), ...relationships.incoming(senseId)]) {
       const outgoingFromSense = rel.sourceSenseId.value === senseId;
       const otherSenseId = outgoingFromSense ? rel.targetSenseId.value : rel.sourceSenseId.value;
-      for (const member of senses.membersOf(otherSenseId)) {
-        const memberId = { value: memberUuid(member) };
+      for (const member of senses.membersOf(Number(otherSenseId))) {
+        const memberId = { value: String(memberUuid(member)) };
         const uuid = { value: `${rel.uuid.value}:${memberId.value}` };
         expanded.push({
           ...rel,
           uuid,
-          sourceSenseId: outgoingFromSense ? { value: wordGraphUuid(word) } : memberId,
-          targetSenseId: outgoingFromSense ? memberId : { value: wordGraphUuid(word) },
+          sourceSenseId: outgoingFromSense ? { value: String(wordGraphUuid(word)) } : memberId,
+          targetSenseId: outgoingFromSense ? memberId : { value: String(wordGraphUuid(word)) },
         });
         viaSenseId.set(uuid.value, senseId);
       }

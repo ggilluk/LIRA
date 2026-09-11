@@ -401,8 +401,8 @@ export class DictionaryView {
    * Dictionary -- Concept-to-Domain lookups for a page composing this
    * view with another (knowledge/ui/knowledge_view.ts), without
    * duplicating domainLabel's own isCommon/domainTag logic. */
-  wordDomainLabels(): Map<string, string | null> {
-    const labels = new Map<string, string | null>();
+  wordDomainLabels(): Map<number, string | null> {
+    const labels = new Map<number, string | null>();
     for (const word of this.dictionary.all()) labels.set(graphUuid(word), domainLabel(this.senses, this.domainName, word, this.wordForms, this.domains));
     return labels;
   }

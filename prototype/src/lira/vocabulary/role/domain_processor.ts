@@ -7,7 +7,7 @@
  * exclusively -- this file and role/coordination_processor.ts weren't
  * part of that move and remain top-level role/ files. */
 
-import { identifier } from "../../value_objects";
+import { identifier, randomGraphUuid } from "../../value_objects";
 import type { Domain } from "../data/entities/domain";
 
 export type DomainInit = Pick<Domain, "domainText"> & Partial<Omit<Domain, "domainText">>;
@@ -34,7 +34,7 @@ export function createDomain(init: DomainInit): Domain {
  * independent copies of the same topic-domain tag must never be
  * confused as the same graph node. */
 export function createFreshUuidDomainCopy(domain: Domain): Domain {
-  return { ...domain, domainId: { ...domain.domainId, uuid: crypto.randomUUID() } };
+  return { ...domain, domainId: { ...domain.domainId, uuid: randomGraphUuid() } };
 }
 
 /** `domain`'s own per-knowledge-Domain graph identity -- `domainId.uuid`,
@@ -43,6 +43,6 @@ export function createFreshUuidDomainCopy(domain: Domain): Domain {
  * Word/Sense/Coordination's own identical graphUuid()
  * (role/processor/word_processor.ts, role/processor/sense_processor.ts,
  * role/coordination_processor.ts). */
-export function graphUuid(domain: Domain): string {
+export function graphUuid(domain: Domain): number {
   return domain.domainId.uuid!;
 }

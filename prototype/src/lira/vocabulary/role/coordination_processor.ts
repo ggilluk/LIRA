@@ -9,7 +9,7 @@
  * folder used to hold exclusively; this file wasn't part of that
  * move. */
 
-import { identifier } from "../../value_objects";
+import { identifier, randomGraphUuid } from "../../value_objects";
 import type { LinguisticUnit } from "../../linguistics/data/linguistic_unit";
 import type { Coordination } from "../data/entities/coordination";
 
@@ -35,7 +35,7 @@ export function createCoordination<T extends LinguisticUnit>(init: CoordinationI
  * copies of the same coordination must never be confused as the same
  * graph node. */
 export function createFreshUuidCoordinationCopy<T extends LinguisticUnit>(coordination: Coordination<T>): Coordination<T> {
-  return { ...coordination, coordinationId: { ...coordination.coordinationId, uuid: crypto.randomUUID() } };
+  return { ...coordination, coordinationId: { ...coordination.coordinationId, uuid: randomGraphUuid() } };
 }
 
 /** `coordination`'s own per-Domain graph identity -- `coordinationId.uuid`,
@@ -43,6 +43,6 @@ export function createFreshUuidCoordinationCopy<T extends LinguisticUnit>(coordi
  * createFreshUuidCoordinationCopy() above are its only two constructors,
  * and both always assign it). Sense/Word's own identical graphUuid()
  * (role/processor/sense_processor.ts, role/processor/word_processor.ts). */
-export function graphUuid<T extends LinguisticUnit>(coordination: Coordination<T>): string {
+export function graphUuid<T extends LinguisticUnit>(coordination: Coordination<T>): number {
   return coordination.coordinationId.uuid!;
 }

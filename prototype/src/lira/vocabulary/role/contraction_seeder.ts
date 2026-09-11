@@ -145,7 +145,7 @@ export class ContractionSeeder {
     created += notWord.created;
     const nApostropheTWord = this.upsert(NEGATOR_WORDS[1], isAdverb, createAdverb);
     created += nApostropheTWord.created;
-    this.setContractionOf(nApostropheTWord.word, [{ value: wordGraphUuid(notWord.word) }]);
+    this.setContractionOf(nApostropheTWord.word, [{ value: String(wordGraphUuid(notWord.word)) }]);
 
     const doWord = this.dictionary.lookupAll("do").find(isAuxiliary);
     const canWord = this.dictionary.lookupAll("can").find(isAuxiliary);
@@ -159,8 +159,8 @@ export class ContractionSeeder {
     const hadForm = haveWord !== undefined ? this.namedFormOf(haveWord, "had") : undefined;
     const nApostropheT = nApostropheTWord.word;
 
-    const wordId = (word: Word | undefined): Identifier | undefined => (word !== undefined ? { value: wordGraphUuid(word) } : undefined);
-    const formId = (form: WordForm | undefined): Identifier | undefined => (form !== undefined ? { value: formGraphUuid(form) } : undefined);
+    const wordId = (word: Word | undefined): Identifier | undefined => (word !== undefined ? { value: String(wordGraphUuid(word)) } : undefined);
+    const formId = (form: WordForm | undefined): Identifier | undefined => (form !== undefined ? { value: String(formGraphUuid(form)) } : undefined);
     const pair = (a: Identifier | undefined, b: Identifier | undefined): readonly Identifier[] | undefined => (a !== undefined && b !== undefined ? [a, b] : undefined);
 
     const componentsByLemma: Record<string, readonly Identifier[] | undefined> = {
@@ -209,7 +209,7 @@ export class ContractionSeeder {
       this.senses.append(sense);
       this.senses.registerMember(sense, word);
       const form = this.wordForms?.registerBaseLemmaForm(word);
-      if (form !== undefined) form.senseIds = [...form.senseIds, { value: senseGraphUuid(sense) }];
+      if (form !== undefined) form.senseIds = [...form.senseIds, { value: String(senseGraphUuid(sense)) }];
     }
 
     return { word, created: 1 };

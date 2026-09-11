@@ -58,9 +58,9 @@ export interface LemmaFormLink {
 export class Dictionary {
   private words: Word[] = [];
   private readonly byText = new Map<string, Word[]>();
-  private readonly byUuid = new Map<string, Word>();
-  private readonly formsByBase = new Map<string, LemmaFormLink[]>();
-  private readonly baseByForm = new Map<string, LemmaFormLink>();
+  private readonly byUuid = new Map<number, Word>();
+  private readonly formsByBase = new Map<number, LemmaFormLink[]>();
+  private readonly baseByForm = new Map<number, LemmaFormLink>();
   private maxPhraseSpan = 1;
 
   all(): readonly Word[] {
@@ -101,7 +101,7 @@ export class Dictionary {
     return this.byText.get(text.toLowerCase())?.slice() ?? [];
   }
 
-  findByUuid(wordId: string): Word | undefined {
+  findByUuid(wordId: number): Word | undefined {
     return this.byUuid.get(wordId);
   }
 
@@ -171,7 +171,7 @@ export class Dictionary {
    * formsOf/lemmaOf link Common had, even though every Word itself
    * carried over correctly. */
   seedFrom(other: Dictionary): void {
-    const copyByOriginalUuid = new Map<string, Word>();
+    const copyByOriginalUuid = new Map<number, Word>();
     for (const word of other.words) {
       const copy = createFreshUuidWordCopy(word);
       this.append(copy);

@@ -36,7 +36,7 @@
  * reason data/entities/phrase.ts and data/dictionary.ts already import
  * createWord()/createFreshUuidWordCopy() from role/processor/word_processor.ts. */
 
-import { identifier, type Text } from "../../../value_objects";
+import { identifier, randomGraphUuid, type Text } from "../../../value_objects";
 import type { WordForm } from "../../data/entities/word_form";
 import { wordFormTypeLabel, type WordFormType } from "../../data/enums/word_forms_enum";
 
@@ -76,7 +76,7 @@ export function createWordForm(init: WordFormInit): WordForm {
  * independent copies of the same form must never be confused as the
  * same graph node. */
 export function createFreshUuidWordFormCopy(form: WordForm): WordForm {
-  return { ...form, wordFormId: { ...form.wordFormId, uuid: crypto.randomUUID() } };
+  return { ...form, wordFormId: { ...form.wordFormId, uuid: randomGraphUuid() } };
 }
 
 /** `form`'s own per-Domain graph identity -- `form.wordFormId.uuid`,
@@ -89,7 +89,7 @@ export function createFreshUuidWordFormCopy(form: WordForm): WordForm {
  * ...). `wordFormId.value` is the stable, cross-Domain identity --
  * deliberately not what this reads (data/entities/word_form.ts's own
  * docstring on the two roles `wordFormId` now plays). */
-export function graphUuid(form: WordForm): string {
+export function graphUuid(form: WordForm): number {
   return form.wordFormId.uuid!;
 }
 

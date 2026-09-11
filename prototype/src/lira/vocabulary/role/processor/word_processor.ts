@@ -69,7 +69,7 @@
  * duplicates Word-shaped values, the exact same reason every one of the
  * 11 POS processors already needs them too. */
 
-import { identifier, type Text } from "../../../value_objects";
+import { identifier, randomGraphUuid, type Text } from "../../../value_objects";
 import type { Dictionary } from "../../data/dictionary";
 import type { DefinitionWordReference } from "../../data/definition_word_reference";
 import type { Word } from "../../data/entities/word";
@@ -116,7 +116,7 @@ export function createWord(init: WordInit): Word {
  * reassignment, used by Dictionary.seedFrom and
  * WordSeeder.seedClosedClassWords/loadCache. */
 export function createFreshUuidWordCopy(word: Word): Word {
-  return { ...word, wordId: { ...word.wordId, uuid: crypto.randomUUID() } };
+  return { ...word, wordId: { ...word.wordId, uuid: randomGraphUuid() } };
 }
 
 /** `word`'s own per-Domain graph identity -- `word.wordId.uuid`,
@@ -129,7 +129,7 @@ export function createFreshUuidWordCopy(word: Word): Word {
  * not what this reads (data/entities/word.ts's own docstring on the
  * two roles `wordId` now plays). WordForm's own identical
  * graphUuid() (role/processor/word_form_processor.ts). */
-export function graphUuid(word: Word): string {
+export function graphUuid(word: Word): number {
   return word.wordId.uuid!;
 }
 

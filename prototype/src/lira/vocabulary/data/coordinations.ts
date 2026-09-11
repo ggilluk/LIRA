@@ -22,13 +22,13 @@ import type { Coordination } from "./entities/coordination";
  * its own). */
 export class Coordinations<T extends LinguisticUnit> {
   private coordinations: Coordination<T>[] = [];
-  private readonly byUuid = new Map<string, Coordination<T>>();
+  private readonly byUuid = new Map<number, Coordination<T>>();
 
   all(): readonly Coordination<T>[] {
     return this.coordinations.slice();
   }
 
-  findByUuid(coordinationId: string): Coordination<T> | undefined {
+  findByUuid(coordinationId: number): Coordination<T> | undefined {
     return this.byUuid.get(coordinationId);
   }
 

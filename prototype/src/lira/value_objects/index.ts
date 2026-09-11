@@ -14,7 +14,7 @@ export { LanguageCodelist, languageCodelistFromCode } from "./data/enum/language
 export { DialectCodelist, dialectCodelistFromCode } from "./data/enum/dialectCodelist";
 export { ScriptCodelist, scriptCodelistFromCode } from "./data/enum/scriptCodelist";
 export { LanguageStyleCodelist } from "./data/enum/languageStyleCodelist";
-export { type Identifier, identifier } from "./data/identifier";
+export { type Identifier, identifier, randomGraphUuid } from "./data/identifier";
 export { type Number_, number } from "./data/number";
 export {
   type Text,

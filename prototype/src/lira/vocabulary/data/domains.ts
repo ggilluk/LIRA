@@ -18,14 +18,14 @@ import type { Domain } from "./entities/domain";
  * carries no homograph concept the way a lexical form does. */
 export class Domains {
   private domains: Domain[] = [];
-  private readonly byUuid = new Map<string, Domain>();
+  private readonly byUuid = new Map<number, Domain>();
   private readonly byText = new Map<string, Domain>();
 
   all(): readonly Domain[] {
     return this.domains.slice();
   }
 
-  findByUuid(domainId: string): Domain | undefined {
+  findByUuid(domainId: number): Domain | undefined {
     return this.byUuid.get(domainId);
   }
 

@@ -17,7 +17,7 @@
  * data/entities/phrase.ts and data/dictionary.ts already import
  * createWord()/createFreshUuidWordCopy() from role/processor/word_processor.ts. */
 
-import { identifier } from "../../../value_objects";
+import { identifier, randomGraphUuid } from "../../../value_objects";
 import type { Sense } from "../../data/entities/sense";
 
 export type SenseInit = Partial<Sense>;
@@ -48,7 +48,7 @@ export function createSense(init: SenseInit = {}): Sense {
  * reason: two Domains' independent copies of the same sense must never
  * be confused as the same graph node. */
 export function createFreshUuidSenseCopy(sense: Sense): Sense {
-  return { ...sense, senseId: { ...sense.senseId, uuid: crypto.randomUUID() } };
+  return { ...sense, senseId: { ...sense.senseId, uuid: randomGraphUuid() } };
 }
 
 /** `sense`'s own per-Domain graph identity -- `sense.senseId.uuid`,
@@ -60,6 +60,6 @@ export function createFreshUuidSenseCopy(sense: Sense): Sense {
  * -- deliberately not what this reads (data/entities/sense.ts's own
  * docstring on the two roles `senseId` now plays). Word's own
  * identical graphUuid() (role/processor/word_processor.ts). */
-export function graphUuid(sense: Sense): string {
+export function graphUuid(sense: Sense): number {
   return sense.senseId.uuid!;
 }

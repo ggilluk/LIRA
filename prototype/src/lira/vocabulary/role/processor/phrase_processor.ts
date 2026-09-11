@@ -798,7 +798,7 @@ function recogniseTokenWordFormId(token: string, dictionary: Dictionary, wordFor
   const word = dictionary.lookup(token);
   if (word === undefined || wordForms === undefined) return undefined;
   const form = wordForms.formsOf(word).find((candidate) => candidate.text.value.toLowerCase() === token.toLowerCase());
-  return form === undefined ? undefined : { value: wordFormGraphUuid(form) };
+  return form === undefined ? undefined : { value: String(wordFormGraphUuid(form)) };
 }
 
 /** The `partOfSpeech` a synthetic, constituency-derived nested Phrase
@@ -946,7 +946,7 @@ function createCoordinateSide(
  * the field itself rather than `senseIds`, since a bare cast (not a
  * real `Word | Phrase` union) is all `coordinations.all()`'s own broad
  * `Coordination<LinguisticUnit>` typing gives here. */
-function coordinateGraphUuid(entry: Word | Phrase): string {
+function coordinateGraphUuid(entry: Word | Phrase): number {
   return "phraseId" in entry ? phraseGraphUuid(entry) : wordGraphUuid(entry);
 }
 
@@ -1148,15 +1148,15 @@ export function updatePhraseWordLinks(
   const headTargets = headIndex !== -1 && phrase.phraseType !== undefined ? identifyHeadTargetPartsOfSpeech(phrase.phraseType) : undefined;
   const words = tokens.map((token, i) => {
     const word = i === headIndex && headTargets !== undefined ? recogniseMatchingTokenHomograph(token, headTargets, dictionary) : dictionary.lookup(token);
-    return word === undefined ? undefined : { value: wordGraphUuid(word) };
+    return word === undefined ? undefined : { value: String(wordGraphUuid(word)) };
   });
 
   const matchingFormId = (i: number): Identifier | undefined => {
     const wordId = words[i];
-    const word = wordId === undefined ? undefined : dictionary.findByUuid(wordId.value);
+    const word = wordId === undefined ? undefined : dictionary.findByUuid(Number(wordId.value));
     if (word === undefined || wordForms === undefined) return undefined;
     const form = wordForms.formsOf(word).find((candidate) => candidate.text.value.toLowerCase() === tokens[i].toLowerCase());
-    return form === undefined ? undefined : { value: wordFormGraphUuid(form) };
+    return form === undefined ? undefined : { value: String(wordFormGraphUuid(form)) };
   };
 
   phrase.headWord = headIndex === -1 ? undefined : words[headIndex];

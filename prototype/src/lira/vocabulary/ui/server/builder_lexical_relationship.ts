@@ -67,11 +67,11 @@ export interface LexicalRelationshipKindCount {
 
 /** `builder_relationship.ts`'s own `resolveSenseFor()`, verbatim. */
 function resolveSenseFor(id: string, dictionary: Dictionary, phrases: Phrases, senses: Senses, wordForms: WordForms): Sense | undefined {
-  const direct = senses.findByUuid(id);
+  const direct = senses.findByUuid(Number(id));
   if (direct !== undefined) return direct;
   const entity = resolveEntry(dictionary, phrases, senses, id, wordForms);
   const primarySenseId = entity !== undefined ? wordForms.senseIdsOf(entity)[0]?.value : undefined;
-  return primarySenseId !== undefined ? senses.findByUuid(primarySenseId) : undefined;
+  return primarySenseId !== undefined ? senses.findByUuid(Number(primarySenseId)) : undefined;
 }
 
 /** One LexicalRelationship's full LexicalRelationshipRecord --
@@ -92,8 +92,8 @@ export function lexicalRelationshipRecordFor(
   domainName: string,
   domains: Domains,
 ): LexicalRelationshipRecord {
-  const sourceForm = wordForms.findByUuid(rel.sourceWordFormId.value);
-  const targetForm = wordForms.findByUuid(rel.targetWordFormId.value);
+  const sourceForm = wordForms.findByUuid(Number(rel.sourceWordFormId.value));
+  const targetForm = wordForms.findByUuid(Number(rel.targetWordFormId.value));
   const source = resolveEntry(dictionary, phrases, senses, rel.sourceSenseId.value, wordForms);
   const target = resolveEntry(dictionary, phrases, senses, rel.targetSenseId.value, wordForms);
   const sourceSense = resolveSenseFor(rel.sourceSenseId.value, dictionary, phrases, senses, wordForms);
@@ -188,13 +188,13 @@ function senseExpandedLexicalRelationships(
     for (const rel of [...relationships.outgoing(senseId), ...relationships.incoming(senseId)]) {
       const outgoingFromSense = rel.sourceSenseId.value === senseId;
       const ownFormId = outgoingFromSense ? rel.sourceWordFormId.value : rel.targetWordFormId.value;
-      if (!ownFormIds.has(ownFormId)) continue;
+      if (!ownFormIds.has(Number(ownFormId))) continue;
       const uuid = { value: `${rel.uuid.value}:${senseId}` };
       expanded.push({
         ...rel,
         uuid,
-        sourceSenseId: outgoingFromSense ? { value: wordGraphUuid(word) } : rel.sourceSenseId,
-        targetSenseId: outgoingFromSense ? rel.targetSenseId : { value: wordGraphUuid(word) },
+        sourceSenseId: outgoingFromSense ? { value: String(wordGraphUuid(word)) } : rel.sourceSenseId,
+        targetSenseId: outgoingFromSense ? rel.targetSenseId : { value: String(wordGraphUuid(word)) },
       });
       viaSenseId.set(uuid.value, senseId);
     }

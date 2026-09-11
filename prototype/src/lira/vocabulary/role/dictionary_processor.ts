@@ -182,7 +182,7 @@ export class DictionaryProcessor {
     const queued: string[] = [];
     const seen = new Set<string>();
     const primarySenseId = wordForms.senseIdsOf(word)[0];
-    const definition = primarySenseId !== undefined ? senses.findByUuid(primarySenseId.value)?.definition : undefined;
+    const definition = primarySenseId !== undefined ? senses.findByUuid(Number(primarySenseId.value))?.definition : undefined;
     for (const reference of recogniseDefinitionWords(definition, this.dictionary)) {
       if (reference.word !== undefined) continue;
       const normalisedText = reference.text.toLowerCase();

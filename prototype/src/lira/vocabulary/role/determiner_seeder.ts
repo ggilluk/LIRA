@@ -650,7 +650,7 @@ export class DeterminerSeeder {
           languageStyleCode: new LanguageStyleCode(LanguageStyleCodelist.NEUTRAL),
         });
         if (form !== undefined && sense !== undefined) {
-          form.senseIds = [...form.senseIds, { value: graphUuid(sense) }];
+          form.senseIds = [...form.senseIds, { value: String(graphUuid(sense)) }];
         }
       }
     }

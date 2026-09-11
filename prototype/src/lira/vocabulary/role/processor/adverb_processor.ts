@@ -83,7 +83,7 @@ export function isAdverbGradable(
   for (const senseId of wordForms?.senseIdsOf(adverb) ?? []) {
     for (const edge of relationships.outgoing(senseId.value)) {
       if (edge.relationshipType !== SemanticRelationshipKind.PERTAINYM) continue;
-      for (const target of senses.membersOf(edge.targetSenseId.value)) {
+      for (const target of senses.membersOf(Number(edge.targetSenseId.value))) {
         if ("senseIds" in target || !isAdjective(target)) continue;
         if (isAdjectiveGradable(relationships, target, wordForms)) return true;
       }

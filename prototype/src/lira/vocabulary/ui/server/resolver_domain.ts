@@ -56,7 +56,7 @@ export function senseFieldsFor(
   usageNotes: readonly Text[];
 } {
   const senseId = primarySenseId(entry, wordForms);
-  const sense = senseId !== undefined ? senses.findByUuid(senseId.value) : undefined;
+  const sense = senseId !== undefined ? senses.findByUuid(Number(senseId.value)) : undefined;
   if (sense !== undefined) {
     return {
       domainTag: sense.domainTag,
@@ -84,7 +84,7 @@ export function senseFieldsFor(
  * false rather than failing to compile. */
 export function isRootWordFor(senses: Senses, word: Word, wordForms: WordForms): boolean {
   const senseId = wordForms.senseIdsOf(word)[0];
-  const sense = senseId !== undefined ? senses.findByUuid(senseId.value) : undefined;
+  const sense = senseId !== undefined ? senses.findByUuid(Number(senseId.value)) : undefined;
   return sense?.isRootWord ?? (isNoun(word) && word.isRootWord);
 }
 
@@ -97,5 +97,5 @@ export function domainLabel(senses: Senses, domainName: string, word: Word | und
   // Common word reads as plain "Common", same as before this field
   // existed.
   const domainTag = senseFieldsFor(senses, word, wordForms).domainTag;
-  return (domainTag !== undefined ? domains.findByUuid(domainTag.value)?.domainText.value : undefined) ?? "Common";
+  return (domainTag !== undefined ? domains.findByUuid(Number(domainTag.value))?.domainText.value : undefined) ?? "Common";
 }

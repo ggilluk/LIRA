@@ -132,7 +132,7 @@ type RelationshipEndpoint = Word | Phrase | Sense;
  * (`undefined.uuid`, on essentially every real WordNet Noun-to-Noun
  * relationship) the moment `Word.entryId` became `Word.wordId` below,
  * had this not been caught and fixed in the same pass. */
-function endpointUuid(endpoint: RelationshipEndpoint): string {
+function endpointUuid(endpoint: RelationshipEndpoint): number {
   if ("senseIds" in endpoint) return phraseGraphUuid(endpoint);
   if ("partOfSpeech" in endpoint) return wordGraphUuid(endpoint);
   return senseGraphUuid(endpoint);
@@ -381,10 +381,10 @@ function derivationBasePrecedence(pos: PartOfSpeech): number {
  * reads as "does the fact already exist, told from the other side." */
 function hasReciprocalDerivationEdge(
   lexicalExistingEdges: ReadonlySet<string>,
-  targetFormId: string,
-  targetSenseId: string,
-  sourceFormId: string,
-  sourceSenseId: string,
+  targetFormId: number,
+  targetSenseId: number,
+  sourceFormId: number,
+  sourceSenseId: number,
 ): boolean {
   for (const kind of DERIVATION_FAMILY) {
     if (lexicalExistingEdges.has(`${targetFormId}|${targetSenseId}|${sourceFormId}|${sourceSenseId}|${kind}`)) return true;
@@ -572,7 +572,7 @@ function indexedWord(members: readonly (Word | Phrase)[], oneBasedIndex: number)
  * folded from Identifier.uuid, `data/entities/word.ts`'s own
  * docstring), so this just picks which of the two matching graphUuid()
  * functions to call. `data/senses.ts`'s own identical `memberUuid()`. */
-function memberUuid(member: Word | Phrase): string {
+function memberUuid(member: Word | Phrase): number {
   return "senseIds" in member ? phraseGraphUuid(member) : wordGraphUuid(member);
 }
 
@@ -617,7 +617,7 @@ function resolveDomain(domains: Domains, text: string): Domain {
  * string into that reference, resolved (or, the first time, created)
  * once per call rather than assumed already in `domains`. */
 function applyDomainTag(domains: Domains, target: { domainTag?: Identifier; relatedDomainTags: readonly Identifier[] }, categoryLemma: string): void {
-  const domainId = { value: resolveDomain(domains, categoryLemma).domainId.uuid! };
+  const domainId = { value: String(resolveDomain(domains, categoryLemma).domainId.uuid!) };
   if (target.domainTag === undefined) {
     target.domainTag = domainId;
   } else if (target.domainTag.value !== domainId.value && !target.relatedDomainTags.some((tag) => tag.value === domainId.value)) {
@@ -1166,7 +1166,7 @@ export class WordSeeder {
       if (alreadyPresent) continue;
       let copy = createFreshUuidWordCopy(word);
       if (wordDomainTagText !== undefined && domains !== undefined) {
-        copy = { ...copy, domainTag: { value: resolveDomain(domains, wordDomainTagText).domainId.uuid! } };
+        copy = { ...copy, domainTag: { value: String(resolveDomain(domains, wordDomainTagText).domainId.uuid!) } };
       }
       // Open-class generation happens here, against `copy` -- not back
       // in entryToWord() against the cached, domain-agnostic prototype
@@ -1904,10 +1904,10 @@ export class WordSeeder {
       }
       lexicalExistingEdges.add(key);
       lexicalProcessor.create({
-        sourceWordFormId: sourceFormUuid,
-        sourceSenseId: sourceSideSenseUuid,
-        targetWordFormId: targetFormUuid,
-        targetSenseId: targetSideSenseUuid,
+        sourceWordFormId: String(sourceFormUuid),
+        sourceSenseId: String(sourceSideSenseUuid),
+        targetWordFormId: String(targetFormUuid),
+        targetSenseId: String(targetSideSenseUuid),
         relationshipType: resolved.kind,
         sourceReferences: [WORDNET_SOURCE_REFERENCE],
         meronymKind,
@@ -1962,8 +1962,8 @@ export class WordSeeder {
     if (semanticExistingEdges.has(key)) return;
     semanticExistingEdges.add(key);
     semanticProcessor.create({
-      sourceSenseId: sourceUuid,
-      targetSenseId: targetUuid,
+      sourceSenseId: String(sourceUuid),
+      targetSenseId: String(targetUuid),
       relationshipType: semanticKind,
       sourceReferences: [WORDNET_SOURCE_REFERENCE],
       meronymKind,
@@ -2074,8 +2074,8 @@ export class WordSeeder {
       const reverseKey = symmetric ? `${targetUuid}|${sourceUuid}|${kind}` : undefined;
       if (existingEdges.has(key) || (reverseKey !== undefined && existingEdges.has(reverseKey))) continue;
       processor.create({
-        sourceWordId: sourceUuid,
-        targetWordId: targetUuid,
+        sourceWordId: String(sourceUuid),
+        targetWordId: String(targetUuid),
         relationshipType: kind,
         sourceReferences: [WORDNET_SOURCE_REFERENCE],
         meronymKind,
@@ -2119,9 +2119,9 @@ export class WordSeeder {
    * authored, never WordNet-frequency-tagged, so this pass has nothing
    * meaningful to do for it either way. */
   private orderSensesByFrequency(entry: Word | Phrase, phraseBook: Phrases, senseStore: Senses, wordForms: WordForms | undefined): void {
-    const frequencyOf = (senseId: Identifier): number => senseStore.findByUuid(senseId.value)?.senseFrequency ?? 0;
+    const frequencyOf = (senseId: Identifier): number => senseStore.findByUuid(Number(senseId.value))?.senseFrequency ?? 0;
     const newSynsetId = (primarySenseId: Identifier): Identifier | undefined => {
-      const primarySense = senseStore.findByUuid(primarySenseId.value);
+      const primarySense = senseStore.findByUuid(Number(primarySenseId.value));
       return primarySense !== undefined ? senseStore.synsetIdOf(primarySense) : undefined;
     };
     if ("senseIds" in entry) {
@@ -2167,12 +2167,12 @@ export class WordSeeder {
     direction: "outgoing" | "incoming",
     otherPos: (candidate: Word) => boolean,
   ): Word | undefined {
-    const wordUuid = wordGraphUuid(word);
+    const wordUuid = String(wordGraphUuid(word));
     const edges = direction === "outgoing" ? relationships.outgoing(wordUuid) : relationships.incoming(wordUuid);
     for (const edge of edges) {
       if (edge.relationshipType !== kind) continue;
       const otherId = direction === "outgoing" ? edge.targetWordId : edge.sourceWordId;
-      const other = dictionary.findByUuid(otherId.value);
+      const other = dictionary.findByUuid(Number(otherId.value));
       if (other !== undefined && otherPos(other)) return other;
     }
     return undefined;
@@ -2224,7 +2224,7 @@ export class WordSeeder {
     // Identifier pointing at another Word by its own per-Domain graph
     // uuid, not a bare uuid string -- this wraps findDerivationTarget()'s
     // own `Word | undefined` result into that shape.
-    const idOf = (target: Word | undefined): Identifier | undefined => (target === undefined ? undefined : { value: wordGraphUuid(target) });
+    const idOf = (target: Word | undefined): Identifier | undefined => (target === undefined ? undefined : { value: String(wordGraphUuid(target)) });
 
     if (isNoun(word)) {
       const derivedFromVerb = this.findDerivationTarget(relationships, dictionary, word, NOMINALISATION, "incoming", isVerb);
@@ -2458,7 +2458,7 @@ export class WordSeeder {
     if (referenceCount <= this.promotionThreshold) return false;
 
     const doc = this.loadPromotedDoc();
-    const domainTag = (word.domainTag !== undefined ? domains?.findByUuid(word.domainTag.value)?.domainText.value : undefined) ?? null;
+    const domainTag = (word.domainTag !== undefined ? domains?.findByUuid(Number(word.domainTag.value))?.domainText.value : undefined) ?? null;
     const alreadyPromoted = doc.words.some(
       (entry) => entry.lexical_form === word.text && entry.part_of_speech === PartOfSpeech[word.partOfSpeech]
         && (entry.domain_tag ?? null) === domainTag,
@@ -2766,7 +2766,7 @@ export class WordSeeder {
     const nounFields = isNoun(word) ? word : undefined;
     return {
       entry_id: word.wordId.value,
-      domain_tag: (word.domainTag !== undefined ? domains?.findByUuid(word.domainTag.value)?.domainText.value : undefined) ?? null,
+      domain_tag: (word.domainTag !== undefined ? domains?.findByUuid(Number(word.domainTag.value))?.domainText.value : undefined) ?? null,
       // lexicalForm/version/language_code/script_code all live on the
       // base-lemma WordForm now (WordForm's own docstring), not on
       // Word -- same "only ever receives a bare Word, with no

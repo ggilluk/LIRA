@@ -77,7 +77,7 @@ export function definitionWordSegment(
     text: surfaceText,
     word: true,
     resolved: true,
-    word_id: graphUuid(resolved),
+    word_id: String(graphUuid(resolved)),
     lexical_form: resolved.text,
     pos: PartOfSpeech[resolved.partOfSpeech],
     domain: domainLabel(senses, domainName, resolved, wordForms, domains),

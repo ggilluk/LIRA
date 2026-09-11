@@ -37,7 +37,7 @@ export function isVerb(word: Word): word is Verb {
  * ever having been set. Undefined for a Verb that didn't come from
  * WordSeeder.seedWordNet (every Common Vocabulary Cache entry, which has
  * no frame data of its own). */
-export function identifyFramesForSense(senses: Senses, verb: Verb, senseId: string): readonly string[] | undefined {
+export function identifyFramesForSense(senses: Senses, verb: Verb, senseId: number): readonly string[] | undefined {
   return senses.metadataFor(senseId, graphUuid(verb))?.frames as readonly string[] | undefined;
 }
 

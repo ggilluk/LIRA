@@ -98,9 +98,9 @@ let nextLookupId = 0;
 // Word/Phrase/WordForm received more than once (found via more than one
 // queried text) is only ever inserted once.
 const queriedTexts = new Set<string>();
-const insertedWordIds = new Set<string>();
-const insertedFormIds = new Set<string>();
-const insertedPhraseIds = new Set<string>();
+const insertedWordIds = new Set<number>();
+const insertedFormIds = new Set<number>();
+const insertedPhraseIds = new Set<number>();
 
 // A generous, hardcoded upper bound on the multi-word span
 // DictionaryProcessor.identifyPhrase's own real search

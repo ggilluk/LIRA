@@ -1,13 +1,17 @@
 import { describe, expect, it } from "vitest";
-import { fnv1aHash, identifier } from "./identifier";
+import { fnv1aHash, identifier, randomGraphUuid } from "./identifier";
 
-const UUID_V4 = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+// Number.MAX_SAFE_INTEGER is 2^53 - 1 -- randomGraphUuid()'s own full
+// safe-integer range (that function's own docstring on why).
+const MAX_SAFE_GRAPH_UUID = 2 ** 53;
 
 describe("identifier", () => {
-  it("auto-assigns a fresh v4 uuid and a content hash of value when no extra attributes are given", () => {
+  it("auto-assigns a fresh random graph-identity number and a content hash of value when no extra attributes are given", () => {
     const id = identifier("dogs");
     expect(id.value).toBe("dogs");
-    expect(id.uuid).toMatch(UUID_V4);
+    expect(Number.isInteger(id.uuid)).toBe(true);
+    expect(id.uuid).toBeGreaterThanOrEqual(0);
+    expect(id.uuid).toBeLessThan(MAX_SAFE_GRAPH_UUID);
     expect(id.hash).toBe(fnv1aHash("dogs"));
   });
 
@@ -23,16 +27,27 @@ describe("identifier", () => {
   it("carries scheme attributes alongside the auto-assigned uuid/hash when extra is given", () => {
     const id = identifier("00061234-n", { schemeId: "wordnet-synset-id" });
     expect(id).toMatchObject({ value: "00061234-n", schemeId: "wordnet-synset-id" });
-    expect(id.uuid).toMatch(UUID_V4);
+    expect(Number.isInteger(id.uuid)).toBe(true);
     expect(id.hash).toBe(fnv1aHash("00061234-n"));
   });
 
   it("lets the caller's own extra override the auto-assigned uuid/hash", () => {
-    expect(identifier("dogs", { uuid: "fixed-uuid", hash: "fixed-hash" })).toEqual({
+    expect(identifier("dogs", { uuid: 42, hash: "fixed-hash" })).toEqual({
       value: "dogs",
-      uuid: "fixed-uuid",
+      uuid: 42,
       hash: "fixed-hash",
     });
+  });
+});
+
+describe("randomGraphUuid", () => {
+  it("returns a safe integer in [0, 2^53), a different value each call", () => {
+    const a = randomGraphUuid();
+    const b = randomGraphUuid();
+    expect(Number.isSafeInteger(a)).toBe(true);
+    expect(a).toBeGreaterThanOrEqual(0);
+    expect(a).toBeLessThan(MAX_SAFE_GRAPH_UUID);
+    expect(a).not.toBe(b);
   });
 });
 

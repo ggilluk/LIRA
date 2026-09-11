@@ -10,7 +10,7 @@ import type { Word } from "./entities/word";
  * folded from Identifier.uuid, `data/entities/word.ts`'s own
  * docstring), so this just picks which of the two matching graphUuid()
  * functions to call. */
-export function memberUuid(member: Word | Phrase): string {
+export function memberUuid(member: Word | Phrase): number {
   return "senseIds" in member ? phraseGraphUuid(member) : wordGraphUuid(member);
 }
 
@@ -33,22 +33,22 @@ export function memberUuid(member: Word | Phrase): string {
  * (word_seeder.ts's own seedWordNet, pass 1, no longer creates one). */
 export class Senses {
   private senses: Sense[] = [];
-  private readonly byUuid = new Map<string, Sense>();
+  private readonly byUuid = new Map<number, Sense>();
   private readonly bySynsetId = new Map<string, Sense>();
   // WordNet's own synset identifier for each Sense, keyed by graphUuid --
   // synsetIdOf()'s own backing store. Not a field on Sense itself
   // (Sense's own docstring on why): this is `bySynsetId`'s own reverse
   // index, letting a caller go uuid -> synsetId as easily as
   // findBySynsetId() already goes synsetId -> Sense.
-  private readonly synsetIdByUuid = new Map<string, Identifier>();
-  private readonly membersBySenseId = new Map<string, Array<Word | Phrase>>();
+  private readonly synsetIdByUuid = new Map<number, Identifier>();
+  private readonly membersBySenseId = new Map<number, Array<Word | Phrase>>();
   private readonly memberMetadata = new Map<string, Readonly<Record<string, unknown>>>();
 
   all(): readonly Sense[] {
     return this.senses.slice();
   }
 
-  findByUuid(senseId: string): Sense | undefined {
+  findByUuid(senseId: number): Sense | undefined {
     return this.byUuid.get(senseId);
   }
 
@@ -97,8 +97,8 @@ export class Senses {
    * or the membership entry. */
   registerMember(sense: Sense, member: Word | Phrase): void {
     const senseUuid = graphUuid(sense);
-    if ("senseIds" in member && !member.senseIds.some((id) => id.value === senseUuid)) {
-      member.senseIds = [...member.senseIds, { value: senseUuid }];
+    if ("senseIds" in member && !member.senseIds.some((id) => Number(id.value) === senseUuid)) {
+      member.senseIds = [...member.senseIds, { value: String(senseUuid) }];
     }
     const bucket = this.membersBySenseId.get(senseUuid);
     if (bucket === undefined) {
@@ -120,20 +120,20 @@ export class Senses {
    * genuinely a property of *this word in this sense*, not of the word
    * standing alone -- two different Senses the same Word now lexicalizes
    * (Word.senseIds's own docstring) can carry two different answers. */
-  setMemberMetadata(senseId: string, memberUuid: string, metadata: Readonly<Record<string, unknown>>): void {
+  setMemberMetadata(senseId: number, memberUuid: number, metadata: Readonly<Record<string, unknown>>): void {
     this.memberMetadata.set(`${senseId}|${memberUuid}`, metadata);
   }
 
   /** setMemberMetadata()'s own read side -- undefined when nothing was
    * ever set for this exact (senseId, memberUuid) pair. */
-  metadataFor(senseId: string, memberUuid: string): Readonly<Record<string, unknown>> | undefined {
+  metadataFor(senseId: number, memberUuid: number): Readonly<Record<string, unknown>> | undefined {
     return this.memberMetadata.get(`${senseId}|${memberUuid}`);
   }
 
   /** Every Word/Phrase registered as lexicalizing the Sense named by
    * `senseId` (a Sense's own `uuid.value`), in registration order --
    * empty for an unknown or as-yet-memberless Sense. */
-  membersOf(senseId: string): readonly (Word | Phrase)[] {
+  membersOf(senseId: number): readonly (Word | Phrase)[] {
     return this.membersBySenseId.get(senseId)?.slice() ?? [];
   }
 

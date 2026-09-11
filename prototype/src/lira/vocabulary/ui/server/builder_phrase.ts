@@ -64,7 +64,7 @@ export function phraseTypeLabel(phrase: Phrase): string | undefined {
 export function phraseRecordFor(phrase: Phrase, phrases: Phrases, senses: Senses, wordForms: WordForms): PhraseRecord {
   const senseFields = senseFieldsFor(senses, phrase, wordForms);
   return {
-    id: graphUuid(phrase),
+    id: String(graphUuid(phrase)),
     entry_id: phrase.phraseId.value,
     lexical_form: phrase.lexicalForm?.value ?? phrase.text,
     text: phrase.text,
@@ -130,7 +130,7 @@ export interface PhraseComplementSegment {
 export function phraseComplementSegments(phrase: Phrase): PhraseComplementSegment[] {
   return (phrase.complements ?? [])
     .filter((entry): entry is Phrase => "phraseId" in entry)
-    .map((complement) => ({ id: graphUuid(complement), text: complement.text, phrase_type: phraseTypeLabel(complement) }));
+    .map((complement) => ({ id: String(graphUuid(complement)), text: complement.text, phrase_type: phraseTypeLabel(complement) }));
 }
 
 /** `phrase`'s own headword (`text`) broken into one DefinitionSegment
@@ -181,9 +181,9 @@ export function phraseHeadWordSegment(
   domains: Domains,
 ): DefinitionSegment | undefined {
   if (phrase.headWordForm === undefined) return undefined;
-  const form = wordForms.findByUuid(phrase.headWordForm.value);
+  const form = wordForms.findByUuid(Number(phrase.headWordForm.value));
   if (form === undefined) return undefined;
-  const resolved = phrase.headWord !== undefined ? dictionary.findByUuid(phrase.headWord.value) : undefined;
+  const resolved = phrase.headWord !== undefined ? dictionary.findByUuid(Number(phrase.headWord.value)) : undefined;
   return definitionWordSegment(form.text.value, resolved, senses, domainName, wordForms, domains);
 }
 
@@ -216,7 +216,7 @@ export type ModifierSegment = DefinitionSegment | PhraseComplementSegment;
  * gracefully anyway rather than throwing. */
 function coordinationText(coordination: Coordination<Word | Phrase>, wordForms: WordForms): string {
   const parts = coordination.coordinates.map((coordinate) => ("text" in coordinate ? coordinate.text : "…"));
-  const coordinatorText = coordination.coordinator !== undefined ? wordForms.findByUuid(coordination.coordinator.value)?.text.value : undefined;
+  const coordinatorText = coordination.coordinator !== undefined ? wordForms.findByUuid(Number(coordination.coordinator.value))?.text.value : undefined;
   if (coordinatorText === undefined) return parts.join(", ");
   return parts.length === 2 ? `${parts[0]} ${coordinatorText} ${parts[1]}` : `${parts.slice(0, -1).join(", ")}, ${coordinatorText} ${parts[parts.length - 1]}`;
 }
@@ -258,10 +258,10 @@ function modifierUnitSegment(
   if (value === undefined) return undefined;
   if ("text" in value) {
     if (!("phraseId" in value)) return undefined; // Clause -- no phraseId; never actually constructed here.
-    return { id: graphUuid(value), text: value.text, phrase_type: phraseTypeLabel(value) };
+    return { id: String(graphUuid(value)), text: value.text, phrase_type: phraseTypeLabel(value) };
   }
   if ("value" in value) {
-    const form = wordForms.findByUuid(value.value);
+    const form = wordForms.findByUuid(Number(value.value));
     return form === undefined
       ? undefined
       : definitionWordSegment(form.text.value, dictionary.lookup(form.text.value), senses, domainName, wordForms, domains);

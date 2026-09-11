@@ -100,13 +100,13 @@ export class PrepositionSenseSeeder {
         const targetSense = senses.findBySynsetId(synsetId);
         if (targetSense === undefined) continue;
         const targetSenseUuid = senseGraphUuid(targetSense);
-        if (sourceSenseId.value === targetSenseUuid) continue;
+        if (Number(sourceSenseId.value) === targetSenseUuid) continue;
         const key = `${sourceSenseId.value}|${targetSenseUuid}|${SemanticRelationshipKind.RELATED}`;
         if (existingEdges.has(key)) continue;
         existingEdges.add(key);
         semanticRelationshipProcessor.create({
           sourceSenseId: sourceSenseId.value,
-          targetSenseId: targetSenseUuid,
+          targetSenseId: String(targetSenseUuid),
           relationshipType: SemanticRelationshipKind.RELATED,
           sourceReferences: [SOURCE_REFERENCE],
           confidence: SEEDER_DEFAULT_WEIGHT,

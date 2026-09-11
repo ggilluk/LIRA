@@ -51,12 +51,12 @@ export interface SenseRecord {
 export function senseRecordFor(sense: Sense, senses: Senses, phrases: Phrases, domainName: string, domains: Domains): SenseRecord {
   const senseUuid = graphUuid(sense);
   const members = senses.membersOf(senseUuid);
-  const domainTagText = sense.domainTag !== undefined ? domains.findByUuid(sense.domainTag.value)?.domainText.value : undefined;
+  const domainTagText = sense.domainTag !== undefined ? domains.findByUuid(Number(sense.domainTag.value))?.domainText.value : undefined;
   const domain = !sense.isCommon ? domainName : (domainTagText ?? "Common");
   const firstMember = members[0];
   const firstMemberPos = firstMember !== undefined ? ("senseIds" in firstMember ? phrases.partOfSpeechOf(firstMember) : firstMember.partOfSpeech) : undefined;
   return {
-    id: senseUuid,
+    id: String(senseUuid),
     entry_id: sense.senseId.value,
     synset_id: senses.synsetIdOf(sense)?.value ?? null,
     lexical_form: members.map((member) => member.text).join(", "),
@@ -67,7 +67,7 @@ export function senseRecordFor(sense: Sense, senses: Senses, phrases: Phrases, d
     is_root_word: sense.isRootWord,
     domain,
     related_domains: sense.relatedDomainTags
-      .map((tag) => domains.findByUuid(tag.value)?.domainText.value)
+      .map((tag) => domains.findByUuid(Number(tag.value))?.domainText.value)
       .filter((text): text is string => text !== undefined),
     member_count: members.length,
     members: members.map((member) => member.text),

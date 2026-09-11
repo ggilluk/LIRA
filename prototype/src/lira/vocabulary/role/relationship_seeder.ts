@@ -250,10 +250,10 @@ export class RelationshipSeeder {
     let seeded = 0;
     const semanticExistingEdges = new Set<string>();
     for (const [sourceWord, targetWord, relationshipType] of resolved) {
-      if (!this.relationshipExists(store, wordGraphUuid(sourceWord), wordGraphUuid(targetWord), relationshipType)) {
+      if (!this.relationshipExists(store, String(wordGraphUuid(sourceWord)), String(wordGraphUuid(targetWord)), relationshipType)) {
         processor.create({
-          sourceWordId: wordGraphUuid(sourceWord),
-          targetWordId: wordGraphUuid(targetWord),
+          sourceWordId: String(wordGraphUuid(sourceWord)),
+          targetWordId: String(wordGraphUuid(targetWord)),
           relationshipType,
           sourceReferences: [CACHE_SOURCE_REFERENCE],
           confidence: SEEDER_DEFAULT_WEIGHT,
@@ -317,8 +317,8 @@ export class RelationshipSeeder {
       // gets just below.
       const targetForm = wordForms?.registerBaseLemmaForm(targetWord);
       const sourceWordUuid = wordGraphUuid(sourceWord);
-      if (targetForm !== undefined && !targetForm.contractionOf.some((id) => id.value === sourceWordUuid)) {
-        targetForm.contractionOf = [...targetForm.contractionOf, { value: sourceWordUuid }];
+      if (targetForm !== undefined && !targetForm.contractionOf.some((id) => Number(id.value) === sourceWordUuid)) {
+        targetForm.contractionOf = [...targetForm.contractionOf, { value: String(sourceWordUuid) }];
       }
     }
 
@@ -367,9 +367,9 @@ export class RelationshipSeeder {
     if (lexicalExistingEdges.has(key)) return;
     lexicalExistingEdges.add(key);
     lexicalProcessor.create({
-      sourceWordFormId: sourceFormUuid,
+      sourceWordFormId: String(sourceFormUuid),
       sourceSenseId: sourceSenseId.value,
-      targetWordFormId: targetFormUuid,
+      targetWordFormId: String(targetFormUuid),
       targetSenseId: targetSenseId.value,
       relationshipType,
       sourceReferences: [CACHE_SOURCE_REFERENCE],
@@ -390,7 +390,7 @@ export class RelationshipSeeder {
     if (partOfSpeech === undefined) return dictionary.lookup(lexicalForm);
     const candidates = dictionary.lookupAll(lexicalForm).filter((word) => word.partOfSpeech === partOfSpeech);
     return candidates.find((word) => {
-      const wordDomainTag = word.domainTag !== undefined ? domains?.findByUuid(word.domainTag.value)?.domainText.value : undefined;
+      const wordDomainTag = word.domainTag !== undefined ? domains?.findByUuid(Number(word.domainTag.value))?.domainText.value : undefined;
       return wordDomainTag === domainTag;
     });
   }
