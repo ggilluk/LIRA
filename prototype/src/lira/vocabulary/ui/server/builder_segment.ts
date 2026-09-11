@@ -14,7 +14,7 @@ import { wordFormTypeLabel, type WordFormType } from "../../data/enums/word_form
 import type { Senses } from "../../data/senses";
 import type { Word } from "../../data/entities/word";
 import type { WordForms } from "../../data/word_forms";
-import { definitionWords, graphUuid } from "../../role/word_processor";
+import { definitionWords, graphUuid } from "../../role/processor/word_processor";
 import { domainLabel, senseFieldsFor } from "./resolver_domain";
 
 export const DEFINITION_TOKEN_PATTERN = /[^\W_]+/g;

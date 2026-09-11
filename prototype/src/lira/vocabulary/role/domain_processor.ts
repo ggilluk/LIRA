@@ -1,9 +1,11 @@
 /** The behaviour that operates on a bare Domain (data/entities/domain.ts)
  * -- construction and copying. Domain's own base-entity counterpart to
- * role/word_processor.ts, kept as a top-level role/ file rather than
- * under role/processor/ for the identical reason role/sense_processor.ts
- * and role/coordination_processor.ts already are: that folder holds
- * each Word POS subtype's own processor, and Domain is not one of them. */
+ * role/processor/word_processor.ts, kept as a top-level role/ file for
+ * now, unlike role/processor/word_processor.ts/role/processor/sense_processor.ts/
+ * role/processor/word_form_processor.ts, which moved under role/processor/
+ * alongside the Word POS subtype processors that folder used to hold
+ * exclusively -- this file and role/coordination_processor.ts weren't
+ * part of that move and remain top-level role/ files. */
 
 import { identifier } from "../../value_objects";
 import type { Domain } from "../data/entities/domain";
@@ -27,7 +29,7 @@ export function createDomain(init: DomainInit): Domain {
  * (and every other field) stays the same, so this copy is still
  * recognisably the same underlying Domain, just a distinct graph node.
  * copySenseWithFreshUuid/copyWordWithFreshUuid's own exact counterpart
- * (role/sense_processor.ts, role/word_processor.ts), used by
+ * (role/processor/sense_processor.ts, role/processor/word_processor.ts), used by
  * Domains.seedFrom for the same reason: two knowledge-Domains'
  * independent copies of the same topic-domain tag must never be
  * confused as the same graph node. */
@@ -39,7 +41,7 @@ export function copyDomainWithFreshUuid(domain: Domain): Domain {
  * always set for a real Domain (createDomain()/copyDomainWithFreshUuid()
  * above are its only two constructors, and both always assign it).
  * Word/Sense/Coordination's own identical graphUuid()
- * (role/word_processor.ts, role/sense_processor.ts,
+ * (role/processor/word_processor.ts, role/processor/sense_processor.ts,
  * role/coordination_processor.ts). */
 export function graphUuid(domain: Domain): string {
   return domain.domainId.uuid!;

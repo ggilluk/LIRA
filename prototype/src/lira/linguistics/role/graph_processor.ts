@@ -2,7 +2,7 @@ import { PartOfSpeech } from "../../vocabulary/data/enums/part_of_speech";
 import type { DictionaryProcessor } from "../../vocabulary/role/dictionary_processor";
 import type { WordIdentifier } from "../../vocabulary/role/word_identifier";
 import type { Word } from "../../vocabulary/data/entities/word";
-import { createWord } from "../../vocabulary/role/word_processor";
+import { createWord } from "../../vocabulary/role/processor/word_processor";
 import { createClause, type Clause } from "../data/clause";
 import { createDocument, type Document } from "../data/document";
 import { createHeading, matchHeadingLine, type Heading } from "../data/heading";

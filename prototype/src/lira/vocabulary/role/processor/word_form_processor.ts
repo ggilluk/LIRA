@@ -1,19 +1,21 @@
 /** The behaviour that operates on a bare WordForm
  * (data/entities/word_form.ts) -- construction/copying, and Word Form
  * to Part of Speech Matrix validation. WordForm's own base-entity
- * counterpart to role/word_processor.ts, kept as a separate top-level
- * role/ file rather than under role/processor/: that folder holds each
- * POS subtype's own processor (Noun, Verb, ... -- all Word subtypes),
- * and WordForm is a peer entity of Word, not one of its subtypes --
- * WordForm has no subtype family of its own the way Word does, so this
- * file (unlike role/word_processor.ts) never needs a "base class for a
- * subtype hierarchy" role, only the ordinary single-entity scope every
- * other leaf entity's own role/<entity>_processor.ts already has
- * (role/sense_processor.ts, role/coordination_processor.ts,
- * role/domain_processor.ts).
+ * counterpart to role/processor/word_processor.ts, and, like it, a
+ * member of role/processor/ -- that folder holds every entity's own
+ * processor now (each POS subtype's, plus Word/Sense/WordForm's own
+ * base- or leaf-entity processors), not just the 11 POS subtypes'.
+ * WordForm is a peer entity of Word, not one of its subtypes -- WordForm
+ * has no subtype family of its own the way Word does, so this file
+ * (unlike role/processor/word_processor.ts) never needs a "base class
+ * for a subtype hierarchy" role, only the ordinary single-entity scope
+ * every other leaf entity's own role/<entity>_processor.ts already has
+ * (role/processor/sense_processor.ts, role/coordination_processor.ts,
+ * role/domain_processor.ts -- these last two remain top-level role/
+ * files, not yet moved here).
  *
  * `WordFormIssue`/`parseFormatPattern()`/`validateFormText()` moved
- * here from role/word_processor.ts, which held them only because every
+ * here from role/processor/word_processor.ts, which held them only because every
  * POS subtype's own processor already imported `createWord` from that
  * file, so borrowing it for Matrix validation too "added no new
  * cross-file dependency" (that file's own former docstring, verbatim)
@@ -22,7 +24,7 @@
  * (e.g. `validateFormText(form.formType, form.text, stringPatternsFor(...))`
  * in each POS processor's own `validate<Class>()`), so this is WordForm's
  * own behaviour, not Word's -- unlike the regular-English-suffix
- * spelling primitives (role/word_processor.ts's own docstring), which
+ * spelling primitives (role/processor/word_processor.ts's own docstring), which
  * stayed on `Word`'s side because they're reused *across* the POS
  * subtype family, the base-class role only `word_processor.ts` plays.
  *
@@ -32,15 +34,15 @@
  * `WordForms` store calls createWordForm()/copyWordFormWithFreshUuid()
  * directly, so that data/ file ends up importing from here -- the same
  * reason data/entities/phrase.ts and data/dictionary.ts already import
- * createWord()/copyWordWithFreshUuid() from role/word_processor.ts. */
+ * createWord()/copyWordWithFreshUuid() from role/processor/word_processor.ts. */
 
-import { identifier, type Text } from "../../value_objects";
-import type { WordForm } from "../data/entities/word_form";
-import { wordFormTypeLabel, type WordFormType } from "../data/enums/word_forms_enum";
+import { identifier, type Text } from "../../../value_objects";
+import type { WordForm } from "../../data/entities/word_form";
+import { wordFormTypeLabel, type WordFormType } from "../../data/enums/word_forms_enum";
 
 // `formType`/`text` are the two facts every WordForm must be authored
 // with -- WordInit's own exact "Pick the real requirements, Partial the
-// rest" shape (role/word_processor.ts), not a bare `Partial<WordForm>`
+// rest" shape (role/processor/word_processor.ts), not a bare `Partial<WordForm>`
 // the way SenseInit is (every one of Sense's own fields is already
 // optional, so Partial alone is enough there).
 export type WordFormInit = Pick<WordForm, "formType" | "text"> & Partial<Omit<WordForm, "formType" | "text">>;

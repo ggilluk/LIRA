@@ -35,7 +35,7 @@ import type { Senses } from "../data/senses";
 import type { SemanticRelationshipStore } from "../data/semantic_relationship_store";
 import type { WordForms } from "../data/word_forms";
 import type { SourceReference } from "../data/source_reference";
-import { graphUuid as senseGraphUuid } from "./sense_processor";
+import { graphUuid as senseGraphUuid } from "./processor/sense_processor";
 import type { SemanticRelationshipProcessor } from "./semantic_relationship_processor";
 import { readRelationshipDirJson } from "./asset_loader";
 

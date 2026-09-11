@@ -1,6 +1,6 @@
 import type { Dictionary } from "../data/dictionary";
 import type { Senses } from "../data/senses";
-import { createSense, graphUuid } from "./sense_processor";
+import { createSense, graphUuid } from "./processor/sense_processor";
 import { createDeterminer, isDeterminer } from "./processor/determiner_processor";
 import type { WordForms } from "../data/word_forms";
 import { identifier, LanguageStyleCode, LanguageStyleCodelist } from "../../value_objects";

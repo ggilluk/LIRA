@@ -11,8 +11,8 @@ import {
   isPeriphrasticComparison,
   periphrasticDegreeForm,
   regularDegreeForm,
-} from "../word_processor";
-import { validateFormText, type WordFormIssue } from "../word_form_processor";
+} from "./word_processor";
+import { validateFormText, type WordFormIssue } from "./word_form_processor";
 import type { Adverb } from "../../data/entities/adverb";
 import { stringPatternsFor } from "../../data/matrices/pos_vs_wordform_matrice";
 import { WordFormType } from "../../data/enums/word_forms_enum";
@@ -126,7 +126,7 @@ function isAdverbPeriphrasticComparison(lemma: string): boolean {
 /** Adjective's own generateAdjectiveForms() (adjective_processor.ts),
  * Adverb's counterpart -- both classes' degree paradigm is spelled from
  * the same primitives (regularDegreeForm/periphrasticDegreeForm,
- * ../word_processor.ts) and both are gated on `gradable` the same way; see
+ * ./word_processor.ts) and both are gated on `gradable` the same way; see
  * generateAdjectiveForms() for the full reasoning behind that
  * parameter, not repeated here. The one real difference is the
  * comparison-strategy decision itself -- isAdverbPeriphrasticComparison()

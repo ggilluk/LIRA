@@ -22,8 +22,8 @@ import type { Senses } from "../../data/senses";
 import type { Sense } from "../../data/entities/sense";
 import type { Word } from "../../data/entities/word";
 import type { WordForms } from "../../data/word_forms";
-import { graphUuid } from "../../role/word_form_processor";
-import { graphUuid as wordGraphUuid } from "../../role/word_processor";
+import { graphUuid } from "../../role/processor/word_form_processor";
+import { graphUuid as wordGraphUuid } from "../../role/processor/word_processor";
 import { resolveEntry } from "./resolver_entity";
 import { domainLabel } from "./resolver_domain";
 

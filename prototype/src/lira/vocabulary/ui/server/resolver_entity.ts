@@ -11,7 +11,7 @@ import type { Phrases } from "../../data/phrases";
 import type { Senses } from "../../data/senses";
 import type { Word } from "../../data/entities/word";
 import type { WordForms } from "../../data/word_forms";
-import { graphUuid } from "../../role/sense_processor";
+import { graphUuid } from "../../role/processor/sense_processor";
 
 /** Resolves a relationship endpoint's uuid against this Domain's
  * Dictionary first, falling back to its Phrases (projected onto a

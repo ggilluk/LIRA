@@ -1,9 +1,9 @@
 import type { Word } from "./entities/word";
 // Known, approved exception to data/ never importing role/ -- see
-// role/word_processor.ts's own docstring: copyWordWithFreshUuid() is
+// role/processor/word_processor.ts's own docstring: copyWordWithFreshUuid() is
 // Word's own base-entity copier, needed here the same way every POS
 // processor already needs it.
-import { copyWordWithFreshUuid, graphUuid } from "../role/word_processor";
+import { copyWordWithFreshUuid, graphUuid } from "../role/processor/word_processor";
 
 /** One inflected form linked to a base lemma (or, from lemmaOf's own
  * side, one base lemma linked to a form) -- Dictionary.linkForm/
@@ -50,7 +50,7 @@ export interface LemmaFormLink {
  * never needs a scan over LexicalRelationshipStore's morphological
  * edges (that store, and Word's own related-word derived properties,
  * are untouched -- this index is purely additive). Keyed by each
- * Word's own per-Domain graph uuid (`graphUuid()`, role/word_processor.ts
+ * Word's own per-Domain graph uuid (`graphUuid()`, role/processor/word_processor.ts
  * -- `wordId.uuid`, this Dictionary's own runtime identity for each
  * Word, not the persistent `wordId.value`), since formsOf/lemmaOf
  * take and return live Word instances that must actually belong to
@@ -155,7 +155,7 @@ export class Dictionary {
    * used to seed a newly created Domain's Dictionary from the reserved
    * Common Domain's Dictionary. Each Word is shallow-copied so the two
    * Domains never share a mutable Word instance, and given a freshly
-   * generated `wordId.uuid` (copyWordWithFreshUuid(), role/word_processor.ts)
+   * generated `wordId.uuid` (copyWordWithFreshUuid(), role/processor/word_processor.ts)
    * -- a shallow copy shares the *same* `wordId` object (and so the
    * same graph uuid) as the original otherwise, which would give two
    * different Domains' copies of "be" the identical per-Domain-graph

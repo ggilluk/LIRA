@@ -3770,3 +3770,64 @@ validateFormText()` corrected to name `word_form_processor.ts` instead.
 identical to before the move. No live Playwright verification -- same
 reasoning as every entry above: an internal module reorganization with
 no UI-facing surface of its own.
+
+## Move `role/word_processor.ts`, `role/sense_processor.ts`, `role/word_form_processor.ts` into `role/processor/`
+
+Requested directly: move all three of Word/Sense/WordForm's own base-
+or leaf-entity processors from top-level `role/` into `role/processor/`,
+alongside the 11 POS-subtype processors that folder held exclusively
+until now. This changes what `role/processor/` means going forward --
+every entry above argued from "that folder holds each POS subtype's
+own processor, and X is not one of them" as the reason `word_processor.ts`/
+`sense_processor.ts`/`word_form_processor.ts` stayed at the top level.
+That reasoning is now superseded by direct instruction, not re-derived
+here: `role/processor/` holds every entity's own processor file, POS
+subtype or not. `role/domain_processor.ts` and `role/coordination_processor.ts`
+were not named in the request and were not moved -- they remain
+top-level `role/` files, so `role/processor/` is not (yet) exhaustive
+over every entity's processor, just these three plus the 11 POS
+subtypes.
+
+Mechanically: `git mv` for all three files into `role/processor/`. Each
+moved file's own internal imports gained one extra `../` (they now sit
+one directory deeper than before -- e.g. `word_processor.ts`'s own
+`from "../../value_objects"` became `from "../../../value_objects"`).
+Every real call site updated: the 12 POS-subtype/phrase processors
+already living in `role/processor/` now import these three as true
+siblings (`from "./word_processor"` etc., not `from "../word_processor"`);
+every top-level `role/` file that imports one of the three
+(`word_seeder.ts`, `dictionary_processor.ts`, `dictionary_hydrator.ts`,
+`contraction_seeder.ts`, `relationship_seeder.ts`, `auxiliary_seeder.ts`,
+`determiner_seeder.ts`, `preposition_sense_seeder.ts`) gained a
+`processor/` path segment; so did every `data/` file that imports one
+directly (`data/entities/phrase.ts`, `data/word_forms.ts`,
+`data/senses.ts`, `data/dictionary.ts`), every `ui/server/*.ts` builder/
+resolver file, `vocabulary/index.ts`'s own public barrel, both
+`linguistics/`-layer files that reach into Vocabulary for `graphUuid`/
+`createWord` (`linguistics_worker.ts`, `graph_processor.ts`), and
+`vocabulary.test.ts`. Every doc-comment cross-reference naming one of
+the three files by path (dozens, across `role/coordination_processor.ts`,
+`role/domain_processor.ts`, `data/senses.ts`, `data/dictionary.ts`,
+`data/entities/phrase.ts`, `data/definition_word_reference.ts`,
+`data/matrices/pos_vs_wordform_matrice.ts`,
+`data/matrices/word_form_part_of_speech_matrix.md`,
+`value_objects/data/text.ts`, `linguistics/data/token_reading.ts`, and
+the three moved files' own docstrings) updated to the new path;
+historical entries earlier in this log were deliberately left
+unchanged -- they describe a path that was accurate when written, not
+a claim this log keeps in sync going forward.
+
+Each moved file's own top-of-file docstring, and `role/domain_processor.ts`'s/
+`role/coordination_processor.ts`'s, rewritten where they had asserted
+"kept as a top-level role/ file rather than under role/processor/,
+because that folder is POS-subtype-only" -- now false for the three
+that moved, and now stated for `domain_processor.ts`/`coordination_processor.ts`
+as "not part of this move," not as a standing rule the next reader
+should expect to hold indefinitely.
+
+`npx tsc -b --force` clean, full `vitest run --no-file-parallelism`
+187/187 -- every changed line is an import path or a doc-comment cross-
+reference, no logic touched, so behaviourally identical to before the
+move. No live Playwright verification -- same reasoning as every entry
+above: an internal module reorganization with no UI-facing surface of
+its own.

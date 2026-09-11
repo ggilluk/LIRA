@@ -1,6 +1,6 @@
 import { PartOfSpeech } from "../../data/enums/part_of_speech";
 import type { Word } from "../../data/entities/word";
-import { createWord } from "../word_processor";
+import { createWord } from "./word_processor";
 import type { Interjection } from "../../data/entities/interjection";
 
 export type InterjectionInit = Pick<Interjection, "text"> & Partial<Omit<Interjection, "text" | "partOfSpeech">>;

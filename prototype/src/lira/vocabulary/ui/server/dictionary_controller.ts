@@ -61,7 +61,7 @@ import {
 import { resolveHierarchy, type HierarchyResolution } from "./builder_hierarchy";
 import { searchWords, wordRecords, type WordRecord } from "./builder_word";
 import { domainLabel } from "./resolver_domain";
-import { graphUuid } from "../../role/word_processor";
+import { graphUuid } from "../../role/processor/word_processor";
 
 export interface DictionaryViewOptions {
   title?: string;

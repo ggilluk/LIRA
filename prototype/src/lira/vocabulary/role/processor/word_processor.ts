@@ -6,21 +6,28 @@
  *
  * This file is `Word`'s own base-class counterpart to each POS
  * subtype's own role/processor/*_processor.ts -- Word itself isn't one
- * of the 11 POS subtypes those live in, so this file is a sibling of
- * role/word_seeder.ts and role/dictionary_processor.ts, not a member of
- * role/processor/. That "base class" role is why the spelling
- * primitives belong here and not in value_objects/data/text.ts (briefly
- * tried, then reverted): every one of `Word`'s peer entities in this
- * codebase (WordForm, Sense, Coordination, Domain) is a leaf with no
- * subtypes of its own, so their own role/<entity>_processor.ts files
- * correctly hold nothing but construction/copy/identity -- there is no
- * such thing as "logic shared across WordForm's subtypes" because
- * WordForm has none. `Word` is the one entity here with a real subtype
- * family (Noun/Verb/Adjective/Adverb/... in role/processor/), and this
- * file is where logic shared *across that family* belongs, the same
- * reason a base class holds a method four subclasses would otherwise
- * each reimplement -- "lives here once rather than duplicated across
- * those four files" (noun.ts/verb.ts/adjective.ts/adverb.ts's own
+ * of the 11 POS subtypes those live in, but role/processor/ now holds
+ * every entity's own processor, not just the POS subtypes': this file,
+ * role/processor/sense_processor.ts, and role/processor/word_form_processor.ts
+ * moved in alongside them (role/word_seeder.ts and
+ * role/dictionary_processor.ts remain top-level role/ files -- they
+ * operate across many entities at once, seeding/hydration-time
+ * concerns, not one entity's own construction/copy/identity the way
+ * every file under role/processor/ does). What still sets this file
+ * apart from every other processor under role/processor/ is the "base
+ * class" role explained below -- that's why the spelling primitives
+ * belong here and not in value_objects/data/text.ts (briefly tried,
+ * then reverted): every one of `Word`'s peer entities in this codebase
+ * (WordForm, Sense, Coordination, Domain) is a leaf with no subtypes of
+ * its own, so their own role/<entity>_processor.ts files correctly hold
+ * nothing but construction/copy/identity -- there is no such thing as
+ * "logic shared across WordForm's subtypes" because WordForm has none.
+ * `Word` is the one entity here with a real subtype family (Noun/Verb/
+ * Adjective/Adverb/... in role/processor/), and this file is where
+ * logic shared *across that family* belongs, the same reason a base
+ * class holds a method four subclasses would otherwise each
+ * reimplement -- "lives here once rather than duplicated across those
+ * four files" (noun.ts/verb.ts/adjective.ts/adverb.ts's own
  * generate<Class>Forms()) was always the right home for these, measured
  * against the correct convention (the base of a subtype hierarchy, not
  * a leaf entity's processor). Each function's own type signature
@@ -45,7 +52,7 @@
  * real call site validates one WordForm's own `formType`/`text`, not
  * anything Word-subtype-family-wide, so that's WordForm's own
  * behaviour, not a base-class concern this file should hold. It now
- * lives in role/word_form_processor.ts (that file's own docstring).
+ * lives in role/processor/word_form_processor.ts (that file's own docstring).
  * Briefly kept here on a "proximity to a one-time createWord import"
  * argument before this move -- rejected on reflection, since that
  * reasoning would justify parking almost anything in whichever file
@@ -62,10 +69,10 @@
  * duplicates Word-shaped values, the exact same reason every one of the
  * 11 POS processors already needs them too. */
 
-import { identifier, type Text } from "../../value_objects";
-import type { Dictionary } from "../data/dictionary";
-import type { DefinitionWordReference } from "../data/definition_word_reference";
-import type { Word } from "../data/entities/word";
+import { identifier, type Text } from "../../../value_objects";
+import type { Dictionary } from "../../data/dictionary";
+import type { DefinitionWordReference } from "../../data/definition_word_reference";
+import type { Word } from "../../data/entities/word";
 
 // Splits a definition's prose into its own word tokens -- deliberately a
 // local regex, not a Linguistics-Layer LinguisticLexer import: Vocabulary
@@ -94,7 +101,7 @@ export function createWord(init: WordInit): Word {
     // is this Word's own per-Domain identity -- folded into `wordId`
     // itself now that Identifier carries a `uuid` of its own, no
     // reason for a second Identifier-typed field to exist alongside it
-    // (WordForm's own identical fold, role/word_form_processor.ts).
+    // (WordForm's own identical fold, role/processor/word_form_processor.ts).
     wordId: init.wordId ?? identifier(crypto.randomUUID()),
     ...init,
   };
@@ -121,7 +128,7 @@ export function copyWordWithFreshUuid(word: Word): Word {
  * `wordId.value` is the stable, cross-Domain identity -- deliberately
  * not what this reads (data/entities/word.ts's own docstring on the
  * two roles `wordId` now plays). WordForm's own identical
- * graphUuid() (role/word_form_processor.ts). */
+ * graphUuid() (role/processor/word_form_processor.ts). */
 export function graphUuid(word: Word): string {
   return word.wordId.uuid!;
 }

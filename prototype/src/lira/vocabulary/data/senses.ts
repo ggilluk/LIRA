@@ -1,7 +1,7 @@
 import type { Identifier } from "../../value_objects";
 import { graphUuid as phraseGraphUuid, type Phrase } from "./entities/phrase";
-import { copySenseWithFreshUuid, graphUuid } from "../role/sense_processor";
-import { graphUuid as wordGraphUuid } from "../role/word_processor";
+import { copySenseWithFreshUuid, graphUuid } from "../role/processor/sense_processor";
+import { graphUuid as wordGraphUuid } from "../role/processor/word_processor";
 import type { Sense } from "./entities/sense";
 import type { Word } from "./entities/word";
 
@@ -25,7 +25,7 @@ export function memberUuid(member: Word | Phrase): string {
  * mirroring how it already finds-or-creates a Word/Phrase per lemma)
  * needs an O(1) synsetId lookup, not a linear scan of every seeded
  * Sense so far. Also indexes each Sense's own membership (registerMember/
- * membersOf) -- the O(1) lookup relatedWords() (role/word_processor.ts) needs to expand
+ * membersOf) -- the O(1) lookup relatedWords() (role/processor/word_processor.ts) needs to expand
  * a Sense-to-Sense relationship edge back into the specific Words/Phrases
  * that lexicalize each side, and the one synonyms() itself needs to
  * answer "every other Word/Phrase that shares this one's own Sense"

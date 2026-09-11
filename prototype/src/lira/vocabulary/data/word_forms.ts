@@ -2,9 +2,9 @@ import type { Identifier, Text } from "../../value_objects";
 import type { Word } from "./entities/word";
 import type { Sense } from "./entities/sense";
 import type { WordForm } from "./entities/word_form";
-import { copyWordFormWithFreshUuid, createWordForm, graphUuid, type WordFormAttributes } from "../role/word_form_processor";
-import { graphUuid as wordGraphUuid } from "../role/word_processor";
-import { graphUuid as senseGraphUuid } from "../role/sense_processor";
+import { copyWordFormWithFreshUuid, createWordForm, graphUuid, type WordFormAttributes } from "../role/processor/word_form_processor";
+import { graphUuid as wordGraphUuid } from "../role/processor/word_processor";
+import { graphUuid as senseGraphUuid } from "../role/processor/sense_processor";
 import { WordFormType } from "./enums/word_forms_enum";
 
 /** WordForm storage: Senses's own exact counterpart one level down

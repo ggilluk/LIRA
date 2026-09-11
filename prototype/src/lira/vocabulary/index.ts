@@ -18,7 +18,7 @@ export { SemanticRelationshipProcessor } from "./role/semantic_relationship_proc
 export { PartOfSpeechIdentifier } from "./role/part_of_speech_identifier";
 export { RelationshipSeeder } from "./role/relationship_seeder";
 export { WordSeeder } from "./role/word_seeder";
-export { type WordInit, createWord, copyWordWithFreshUuid, definitionWords } from "./role/word_processor";
+export { type WordInit, createWord, copyWordWithFreshUuid, definitionWords } from "./role/processor/word_processor";
 export { loadWordNetSynsets, type WordNetSynset } from "./role/wordnet_loader";
 
 export { type DefinitionWordReference, isResolved } from "./data/definition_word_reference";
@@ -30,7 +30,7 @@ export { HypernymRootWord } from "./data/enums/hypernym_root_word";
 export { InterrogativeRootWord } from "./data/enums/interrogative_root_word";
 export { VocabularyContext } from "./data/vocabulary_context";
 export type { WordForm } from "./data/entities/word_form";
-export { createWordForm } from "./role/word_form_processor";
+export { createWordForm } from "./role/processor/word_form_processor";
 export { WordForms } from "./data/word_forms";
 export { WordFormType } from "./data/enums/word_forms_enum";
 export type { MorphologicalPointerRelationship } from "./data/morphological_pointer_relationship";

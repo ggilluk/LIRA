@@ -72,18 +72,18 @@ import { PhraseType } from "../data/enums/phrase_type";
 import type { Phrases } from "../data/phrases";
 import type { Coordinations } from "../data/coordinations";
 import type { LinguisticUnit } from "../../linguistics/data/linguistic_unit";
-import { createSense, graphUuid as senseGraphUuid } from "./sense_processor";
+import { createSense, graphUuid as senseGraphUuid } from "./processor/sense_processor";
 import type { Sense } from "../data/entities/sense";
 import type { Senses } from "../data/senses";
 import { createDomain } from "./domain_processor";
 import type { Domain } from "../data/entities/domain";
 import type { Domains } from "../data/domains";
 import type { WordForms } from "../data/word_forms";
-import { graphUuid, type WordFormAttributes } from "./word_form_processor";
+import { graphUuid, type WordFormAttributes } from "./processor/word_form_processor";
 import type { SourceReference } from "../data/source_reference";
 import { createVerb, generateVerbForms, isVerb } from "./processor/verb_processor";
 import type { Word } from "../data/entities/word";
-import { copyWordWithFreshUuid, createWord, graphUuid as wordGraphUuid } from "./word_processor";
+import { copyWordWithFreshUuid, createWord, graphUuid as wordGraphUuid } from "./processor/word_processor";
 import type { SemanticRelationshipStore } from "../data/semantic_relationship_store";
 import {
   languageHasCommonCache,

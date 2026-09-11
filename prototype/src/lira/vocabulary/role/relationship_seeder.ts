@@ -21,8 +21,8 @@ import type { LexicalRelationshipStore } from "../data/lexical_relationship_stor
 import type { SourceReference } from "../data/source_reference";
 import type { Word } from "../data/entities/word";
 import type { WordForms } from "../data/word_forms";
-import { graphUuid } from "./word_form_processor";
-import { graphUuid as wordGraphUuid } from "./word_processor";
+import { graphUuid } from "./processor/word_form_processor";
+import { graphUuid as wordGraphUuid } from "./processor/word_processor";
 import {
   readRelationshipFile,
   readRelationshipFileRaw,

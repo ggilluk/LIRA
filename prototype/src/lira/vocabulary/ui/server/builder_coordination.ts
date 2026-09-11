@@ -29,7 +29,7 @@ import { PartOfSpeech } from "../../data/enums/part_of_speech";
 import { ConjunctionType } from "../../data/enums/conjunction_type";
 import { isConjunction } from "../../role/processor/conjunction_processor";
 import { graphUuid } from "../../role/coordination_processor";
-import { graphUuid as wordGraphUuid } from "../../role/word_processor";
+import { graphUuid as wordGraphUuid } from "../../role/processor/word_processor";
 import { graphUuid as phraseGraphUuid, type Phrase } from "../../data/entities/phrase";
 import type { Coordinations } from "../../data/coordinations";
 import type { Coordination } from "../../data/entities/coordination";

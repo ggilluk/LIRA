@@ -7,7 +7,7 @@ import type { Domains } from "../../data/domains";
 import type { Sense } from "../../data/entities/sense";
 import type { Phrases } from "../../data/phrases";
 import type { Senses } from "../../data/senses";
-import { graphUuid } from "../../role/sense_processor";
+import { graphUuid } from "../../role/processor/sense_processor";
 
 // Sense's own client-facing record -- the Senses tab's own row shape.
 // Unlike WordRecord/PhraseRecord, a Sense has no `lexical_form` of its

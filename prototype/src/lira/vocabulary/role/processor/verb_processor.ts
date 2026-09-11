@@ -8,8 +8,8 @@ import {
   endsInConsonantY,
   graphUuid,
   shouldDoubleFinalConsonant,
-} from "../word_processor";
-import { validateFormText, type WordFormIssue } from "../word_form_processor";
+} from "./word_processor";
+import { validateFormText, type WordFormIssue } from "./word_form_processor";
 import type { Verb } from "../../data/entities/verb";
 import { stringPatternsFor } from "../../data/matrices/pos_vs_wordform_matrice";
 import { WordFormType } from "../../data/enums/word_forms_enum";
@@ -68,7 +68,7 @@ export function validateVerb(verb: Verb, wordForms: WordForms): readonly WordFor
  * is an irregular or unchanged form with no spelling signal to detect,
  * and the doubling case itself is left undefined for a lemma
  * shouldDoubleFinalConsonant() can't confidently call either way (that
- * function's own docstring, ../word_processor.ts). */
+ * function's own docstring, ./word_processor.ts). */
 function regularEdForm(lemma: string): Text | undefined {
   if (endsInConsonantY(lemma)) return { value: `${lemma.slice(0, -1)}ied`, formats: ["/ied$/i"] };
   if (/e$/i.test(lemma)) return { value: `${lemma}d`, formats: ["/ed$/i"] };

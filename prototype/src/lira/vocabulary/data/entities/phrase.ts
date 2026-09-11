@@ -22,10 +22,10 @@ import type { Coordination } from "./coordination";
 import type { Phrases } from "../phrases";
 import type { WordForms } from "../word_forms";
 // Known, approved exception to data/ never importing role/ -- see
-// role/word_processor.ts's own docstring: createWord() is Word's own
+// role/processor/word_processor.ts's own docstring: createWord() is Word's own
 // base-entity constructor, needed here (toSyntheticWord/phraseAsWord
 // below) the same way every POS processor already needs it.
-import { createWord } from "../../role/word_processor";
+import { createWord } from "../../role/processor/word_processor";
 
 export interface Phrase extends LinguisticUnit {
 
@@ -321,13 +321,13 @@ export function createPhrase(init: PhraseInit): Phrase {
 
 /** A shallow copy of `phrase`, sharing every field's own object identity
  * except `phraseId.uuid`, which becomes a fresh uuid. The Phrase
- * counterpart of copyWordWithFreshUuid (role/word_processor.ts). */
+ * counterpart of copyWordWithFreshUuid (role/processor/word_processor.ts). */
 export function copyPhraseWithFreshUuid(phrase: Phrase): Phrase {
   return { ...phrase, phraseId: { ...phrase.phraseId, uuid: crypto.randomUUID() } };
 }
 
 /** `phrase`'s own per-Domain graph identity. Word's own identical
- * graphUuid() (role/word_processor.ts). */
+ * graphUuid() (role/processor/word_processor.ts). */
 export function graphUuid(phrase: Phrase): string {
   return phrase.phraseId.uuid!;
 }

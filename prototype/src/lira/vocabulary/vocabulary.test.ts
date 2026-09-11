@@ -12,9 +12,9 @@ import { PartOfSpeech } from "./data/enums/part_of_speech";
 import { ConjunctionType } from "./data/enums/conjunction_type";
 import { WordFormType, wordFormTypeLabel } from "./data/enums/word_forms_enum";
 import type { Word } from "./data/entities/word";
-import { createWord, graphUuid as wordGraphUuid } from "./role/word_processor";
-import { validateFormText } from "./role/word_form_processor";
-import { graphUuid as formGraphUuid } from "./role/word_form_processor";
+import { createWord, graphUuid as wordGraphUuid } from "./role/processor/word_processor";
+import { validateFormText } from "./role/processor/word_form_processor";
+import { graphUuid as formGraphUuid } from "./role/processor/word_form_processor";
 import { stringPatternsFor } from "./data/matrices/pos_vs_wordform_matrice";
 import { AdjectivePosition } from "./data/enums/adjective_position";
 import { createAdjective, determineGradability, generateAdjectiveForms, isAdjective, syntacticPositionForSense, validateAdjective } from "./role/processor/adjective_processor";
@@ -50,7 +50,7 @@ import { isNounPhrase } from "./data/entities/noun_phrase";
 import { isVerbPhrase } from "./data/entities/verb_phrase";
 import { isAdjectivePhrase } from "./data/entities/adjective_phrase";
 import { isPrepositionalPhrase } from "./data/entities/prepositional_phrase";
-import { createSense, graphUuid as senseGraphUuid } from "./role/sense_processor";
+import { createSense, graphUuid as senseGraphUuid } from "./role/processor/sense_processor";
 import { Senses, memberUuid } from "./data/senses";
 import { AsyncDictionaryHydrator } from "./role/dictionary_hydrator";
 import { DictionaryProcessor } from "./role/dictionary_processor";
@@ -310,7 +310,7 @@ describe("classifyPhraseType", () => {
   });
 });
 
-describe("validateFormText (role/word_form_processor.ts) -- the mechanism every POS class's own validate<Class>() reuses", () => {
+describe("validateFormText (role/processor/word_form_processor.ts) -- the mechanism every POS class's own validate<Class>() reuses", () => {
   it("treats an unset formats as always valid -- no claim made, nothing to check", () => {
     expect(validateFormText(WordFormType.PLURAL_NUMBER_FORM, { value: "dogs" }, stringPatternsFor(WordFormType.PLURAL_NUMBER_FORM, PartOfSpeech.NOUN))).toBeUndefined();
   });
@@ -529,7 +529,7 @@ describe("generate<Class>Forms() -- deriving *_Form values from a base lemma", (
     // American spelling variant ("cancelled" vs "canceled"), not just an
     // unverified stress question -- so both fields are left undefined
     // rather than guessed either way (NON_DOUBLING_MULTISYLLABLE_VERBS's
-    // own docstring, role/word_processor.ts, on why this one lemma class
+    // own docstring, role/processor/word_processor.ts, on why this one lemma class
     // is deliberately left out of that carve-out).
     const cancel = createVerb({ text: "cancel" });
     const cancelForms = new WordForms();
@@ -2006,8 +2006,8 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
       return member;
     };
     // synonyms()/hypernyms()/hyponyms()/antonyms()/meronyms()/holonyms()
-    // (role/word_processor.ts) no longer exist -- retired along with MorphologicalPointerRelationshipStore's
-    // own retirement from the permanent queryable model (role/word_processor.ts's
+    // (role/processor/word_processor.ts) no longer exist -- retired along with MorphologicalPointerRelationshipStore's
+    // own retirement from the permanent queryable model (role/processor/word_processor.ts's
     // own "Derived properties" docstring). These two local helpers read
     // the same facts back from the real thing that replaced them:
     // Senses.membersOf() for synonymy, semanticRelationships (Sense-to-
@@ -2056,7 +2056,7 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     expect(big.isCommon).toBe(true);
     expect(wordForms.synsetIdOf(big)?.schemeId).toBe("wn31");
     // synonyms() now unions every sense "big" carries (Word.senseIds's
-    // own docstring, relatedWords()'s own generalization, role/word_processor.ts) --
+    // own docstring, relatedWords()'s own generalization, role/processor/word_processor.ts) --
     // "big" ADJECTIVE is genuinely polysemous ("above average in size",
     // "pregnant", "generous", "grown up", "boastful", ...), so its own
     // Word-level synonym list is every one of those senses' synonyms
@@ -2095,7 +2095,7 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     // from "physical entity" by a second, separately-stored HYPONYM edge.
     // Resolving the Phrase-typed hyponym back into a displayable Word
     // needs the phraseBook fallback (relatedWords()'s own docstring,
-    // role/word_processor.ts) -- the whole point of this test.
+    // role/processor/word_processor.ts) -- the whole point of this test.
     const entity = wordForSynset("00001740-n", "entity");
     expect(semanticRelated(entity, SemanticRelationshipKind.HYPERNYM, "incoming").map((w) => w.text)).toContain("physical entity");
 
@@ -2282,7 +2282,7 @@ describe("WordSeeder.seedWordNet against the bundled Princeton WordNet 3.1 dict/
     expect(handFingerEdge).toBeDefined();
     expect(handFingerEdge?.sourceWordId.value).toBe(senseGraphUuid(fingerSense));
     expect(handFingerEdge?.targetWordId.value).toBe(senseGraphUuid(handSense));
-    // meronyms()/holonyms() (role/word_processor.ts) already expand a Sense-to-Sense
+    // meronyms()/holonyms() (role/processor/word_processor.ts) already expand a Sense-to-Sense
     // edge back out to its member Words on read (relatedWords()'s own
     // senseStore-aware branch) -- reading that same stored direction
     // from opposite ends: "hand"'s meronyms are its own parts (finger
@@ -4458,7 +4458,7 @@ describe("DictionaryView.resolveHierarchy", () => {
     // pass 1 relies on shared senseId alone, not a per-pair edge), so
     // this kind's own graph is simply empty now rather than falling
     // back to a cluster view -- synonymy is still fully queryable, just
-    // through synonyms() (role/word_processor.ts) and Senses.membersOf() directly,
+    // through synonyms() (role/processor/word_processor.ts) and Senses.membersOf() directly,
     // not through this edge-graph-only method.
     const synonymHierarchy = view.resolveHierarchy({ kind: "SYNONYM" });
     expect(synonymHierarchy.fellBack).toBe(false);

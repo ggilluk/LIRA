@@ -19,8 +19,8 @@ import type { SemanticRelationshipStore } from "../../data/semantic_relationship
 import { framesForSense, isVerb } from "../../role/processor/verb_processor";
 import type { Word } from "../../data/entities/word";
 import type { WordForms } from "../../data/word_forms";
-import { graphUuid as wordGraphUuid } from "../../role/word_processor";
-import { graphUuid as senseGraphUuid } from "../../role/sense_processor";
+import { graphUuid as wordGraphUuid } from "../../role/processor/word_processor";
+import { graphUuid as senseGraphUuid } from "../../role/processor/sense_processor";
 import {
   phraseComplementSegments,
   phraseHeadWordSegment,

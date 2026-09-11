@@ -17,7 +17,7 @@ import type { SemanticRelationshipStore } from "../../data/semantic_relationship
 import { graphUuid as phraseGraphUuid, type Phrase } from "../../data/entities/phrase";
 import type { Word } from "../../data/entities/word";
 import type { WordForms } from "../../data/word_forms";
-import { graphUuid as wordGraphUuid } from "../../role/word_processor";
+import { graphUuid as wordGraphUuid } from "../../role/processor/word_processor";
 import { resolveEntry } from "./resolver_entity";
 import { domainLabel } from "./resolver_domain";
 

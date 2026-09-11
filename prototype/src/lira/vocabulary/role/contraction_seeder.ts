@@ -1,12 +1,12 @@
 import type { Dictionary } from "../data/dictionary";
 import type { Senses } from "../data/senses";
 import type { WordForms } from "../data/word_forms";
-import { createSense, graphUuid as senseGraphUuid } from "./sense_processor";
+import { createSense, graphUuid as senseGraphUuid } from "./processor/sense_processor";
 import { createAdverb, isAdverb } from "./processor/adverb_processor";
 import { createAuxiliary, isAuxiliary } from "./processor/auxiliary_processor";
 import { isPronoun } from "./processor/pronoun_processor";
-import { graphUuid as wordGraphUuid } from "./word_processor";
-import { graphUuid as formGraphUuid } from "./word_form_processor";
+import { graphUuid as wordGraphUuid } from "./processor/word_processor";
+import { graphUuid as formGraphUuid } from "./processor/word_form_processor";
 import { LanguageStyleCode, LanguageStyleCodelist } from "../../value_objects";
 import type { Identifier } from "../../value_objects";
 import type { Word } from "../data/entities/word";

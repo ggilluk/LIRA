@@ -73,7 +73,7 @@ export function textToUpperCase(text: Text): string {
 // -- Text metadata resolution -----------------------------------------
 // One resolver per Text field above that specialises a raw external
 // code into its own Codelist-backed Code type -- moved here from
-// vocabulary/role/word_processor.ts, which needed all four only to
+// vocabulary/role/processor/word_processor.ts, which needed all four only to
 // populate these same Text fields and had no Word-specific reason to
 // own them (unlike the regular-English-suffix spelling primitives that
 // were briefly moved here alongside them and then moved back --

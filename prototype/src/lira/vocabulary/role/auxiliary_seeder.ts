@@ -1,8 +1,8 @@
 import type { Dictionary } from "../data/dictionary";
 import type { Senses } from "../data/senses";
-import { createSense, graphUuid } from "./sense_processor";
+import { createSense, graphUuid } from "./processor/sense_processor";
 import { createAuxiliary, isAuxiliary } from "./processor/auxiliary_processor";
-import { createWordForm } from "./word_form_processor";
+import { createWordForm } from "./processor/word_form_processor";
 import type { WordForms } from "../data/word_forms";
 import { identifier, LanguageStyleCode, LanguageStyleCodelist } from "../../value_objects";
 import { WordFormType } from "../data/enums/word_forms_enum";
