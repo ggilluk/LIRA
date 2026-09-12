@@ -256,6 +256,66 @@ const NON_DOUBLING_MULTISYLLABLE_VERBS: ReadonlySet<string> = new Set([
   "happen", "open", "enter", "answer", "offer", "suffer", "gather", "listen",
   "differ", "wonder", "murder", "order", "cover", "discover", "remember",
   "consider", "deliver", "visit", "limit", "profit", "benefit", "develop", "gossip",
+  "administer", "register", "anchor", "deposit", "redeposit", "exhibit", "inhibit",
+  "prohibit", "credit", "discredit", "edit", "audit", "inherit", "disinherit",
+  "solicit", "interpret", "misinterpret", "reinterpret", "inhabit", "cohabit",
+  "delimit", "discomfit", "dishonor", "disorder", "dissever", "distemper",
+  "disfavor", "dishearten", "dismember", "encounter", "endanger", "envelop",
+  "favor", "flavor", "discolor", "decolor", "encumber", "disencumber",
+  "overburden", "doctor", "monitor", "honor", "humor", "rumor", "tailor",
+  "mirror", "harbor", "labor", "color",
+]);
+
+/** `recogniseFinalConsonantDoublingStrategy()`'s own mirror-image
+ * Exception Lookup -- the same "abstain" carve-out as
+ * NON_DOUBLING_MULTISYLLABLE_VERBS just above, for the opposite
+ * direction: a lemma that ends CVC, isn't monosyllabic by the heuristic
+ * above, but genuinely *is* stressed on its own final syllable, and so
+ * *does* double ("occur" -> "occurred/occurring", "admit" ->
+ * "admitted/admitting") -- without this, every one of these abstains
+ * today exactly like "administer" does, just for the opposite real
+ * reason (not "no signal either way", but "the signal points to
+ * double and this codebase has no way to say so"). Same hand-verified,
+ * closed-set, non-exhaustive curation this file's own non-doubling list
+ * already is -- found the same way, by enumerating real bundled WordNet
+ * VERB lemmas this function's own "abstain" branch reaches and hand-
+ * verifying stress for this common subset alone; plenty of genuinely
+ * rare, obscure, or dialect-ambiguous multisyllable verbs (this
+ * function's own abstain branch reaches close to a thousand of them)
+ * are deliberately left abstaining, the same accepted tradeoff as
+ * before this list existed.
+ *
+ * Every entry here whose own root is otherwise irregular
+ * (verb_processor.ts's own IRREGULAR_VERB_FORMS) has that irregular
+ * compound registered there too (`overrun`, `rerun`, `outrun`,
+ * `underrun`, `reset`, `upset`, `offset`, `typeset`, `undercut`,
+ * `sublet`, `outbid`, `underbid`) -- doubling only ever changes this
+ * function's own presentParticipleForm/pastTenseForm/pastParticipleForm
+ * *spelling* rule, never which Exception Lookup a caller checks first;
+ * IRREGULAR_VERB_FORMS is still checked before either regular generator
+ * ever runs (createVerbForms()'s own docstring), so an entry appearing
+ * in both places is not a conflict -- the irregular past/participle
+ * wins there, and this set only ever supplies the (always-regular)
+ * presentParticipleForm doubling those compounds still need
+ * ("overrunning", "resetting", "subletting", ...). */
+const DOUBLING_MULTISYLLABLE_VERBS: ReadonlySet<string> = new Set([
+  "admit", "commit", "permit", "submit", "resubmit", "readmit", "transmit",
+  "retransmit", "omit", "remit",
+  "occur", "recur", "incur", "concur",
+  "refer", "prefer", "confer", "infer", "transfer",
+  "deter", "inter", "disinter", "demur",
+  "compel", "expel", "propel", "repel", "dispel", "excel", "rebel", "rappel",
+  "regret", "equip", "control", "patrol", "extol", "forbid", "begin", "forget",
+  "abhor", "abut", "allot", "annul", "rebut",
+  "debar", "unbar", "disbar", "debug", "degas",
+  "refit", "retrofit", "outfit", "recap",
+  "unwrap", "shrinkwrap", "unpin", "underpin", "unplug", "unclip", "unclog",
+  "unzip", "unknot", "unman", "unstrap",
+  "reship", "transship", "wiretap", "nonplus",
+  "sidestep", "overstep", "overlap", "overtop", "overcrop", "overbid",
+  "overrun", "rerun", "outrun", "underrun",
+  "reset", "upset", "offset", "typeset",
+  "undercut", "sublet", "outbid", "underbid",
 ]);
 
 /** Whether a *_Form generator should double `word`'s own final
@@ -265,16 +325,18 @@ const NON_DOUBLING_MULTISYLLABLE_VERBS: ReadonlySet<string> = new Set([
  * heuristic above; "abstain" for a lemma that ends CVC but isn't
  * (heuristically) monosyllabic, since real English doubling for a
  * longer word depends on which syllable is stressed, not just spelling
- * -- "occur" -> "occurred" doubles, "differ" -> "differed" doesn't, and
- * both pass the identical CVC spelling test -- except
- * NON_DOUBLING_MULTISYLLABLE_VERBS above, checked first: a small,
- * hand-verified carve-out of that same abstention for lemmas this
- * function can resolve with real confidence rather than guess. Every
- * regular-suffix generator that calls this (verb_processor.ts's
- * createRegularEdForm/createRegularIngForm, this file's own createRegularDegreeForm
- * below) treats "not double, and not a CVC lemma at all either" as the
- * ordinary plain-suffix case, and "ends CVC but isn't monosyllabic, and
- * not in the carve-out" as an outright abstention -- the matrix's own
+ * -- "administer" -> "administered" doesn't double, "commit" ->
+ * "committed" does, and both pass the identical CVC spelling test --
+ * except NON_DOUBLING_MULTISYLLABLE_VERBS and
+ * DOUBLING_MULTISYLLABLE_VERBS above, both checked first: two small,
+ * hand-verified carve-outs of that same abstention, one per direction,
+ * for lemmas this function can resolve with real confidence rather than
+ * guess. Every regular-suffix generator that calls this
+ * (verb_processor.ts's createRegularEdForm/createRegularIngForm, this
+ * file's own createRegularDegreeForm below) treats "not double, and not
+ * a CVC lemma at all either" as the ordinary plain-suffix case, and
+ * "ends CVC but isn't monosyllabic, and not in either carve-out" as an
+ * outright abstention -- the matrix's own
  * Required Linguistic Data for every rule this backs ("Syllable Count;
  * Stress Pattern; Final Phoneme/Letter Pattern",
  * word_form_part_of_speech_matrix.md) isn't data this codebase has for
@@ -282,7 +344,9 @@ const NON_DOUBLING_MULTISYLLABLE_VERBS: ReadonlySet<string> = new Set([
  * every caller here deliberately avoids. */
 export function recogniseFinalConsonantDoublingStrategy(word: string): "double" | "abstain" | "plain" {
   if (!isCvcEnding(word)) return "plain";
-  if (NON_DOUBLING_MULTISYLLABLE_VERBS.has(word.toLowerCase())) return "plain";
+  const lower = word.toLowerCase();
+  if (NON_DOUBLING_MULTISYLLABLE_VERBS.has(lower)) return "plain";
+  if (DOUBLING_MULTISYLLABLE_VERBS.has(lower)) return "double";
   return isMonosyllabic(word) ? "double" : "abstain";
 }
 

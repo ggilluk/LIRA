@@ -4055,3 +4055,88 @@ directly, which would remove the `String()`/`Number()` conversion
 boundary entirely -- a larger, independent redesign of the
 reference-pointer `Identifier` pattern, not something this bug-fix scope
 should decide unilaterally.
+
+## Add `DOUBLING_MULTISYLLABLE_VERBS`, the missing mirror of `NON_DOUBLING_MULTISYLLABLE_VERBS`
+
+Reported bug: many multisyllable Verbs had no Present Participle/Past
+Tense/Past Participle Form at all -- "administer" got no "administering"
+WordForm, alongside hundreds of others. Traced to
+`recogniseFinalConsonantDoublingStrategy()` (role/processor/word_processor.ts):
+a lemma ending consonant-vowel-consonant that isn't monosyllabic
+"abstains" (registers no form at all, rather than guess a possibly-wrong
+spelling) unless it's on the hand-curated
+`NON_DOUBLING_MULTISYLLABLE_VERBS` list added for a different reason
+earlier this session (this log's own "Add NON_DOUBLING_MULTISYLLABLE_VERBS
+exception list..." entry above) -- and "administer" simply wasn't yet on
+it.
+
+Confirmed against the real bundled dataset, not just by inspection:
+seeded WordNet's own real Verb lemmas and counted how many actually reach
+this abstain branch -- 984 of them (the existing docstring's own earlier
+count, 1,007, was in the same ballpark; the small difference is dataset-
+version noise, not a discrepancy worth chasing). Read through the full
+list by hand. Two real, independent gaps, not one:
+
+1. **"administer" itself, and dozens like it** (`register`, `deposit`,
+   `exhibit`, `inhibit`, `prohibit`, `credit`, `edit`, `audit`, `inherit`,
+   `solicit`, `interpret`, `inhabit`, `anchor`, ...) -- genuinely
+   non-final stress, correctly shouldn't double, simply hadn't been added
+   to `NON_DOUBLING_MULTISYLLABLE_VERBS` yet. Added ~35 more, the same
+   hand-verified, non-exhaustive curation the existing list already is.
+2. **A whole missing direction**: verbs genuinely stressed on their own
+   final syllable that *should* double ("occur" -> "occurred/occurring",
+   "commit" -> "committed/committing", "refer", "regret", "control",
+   "expel", ...) were abstaining too, for the opposite real reason --
+   there was no list at all for "double despite being multisyllable," only
+   the one-directional "don't double" list. Added
+   `DOUBLING_MULTISYLLABLE_VERBS`, `recogniseFinalConsonantDoublingStrategy()`'s
+   mirror-image Exception Lookup, checked the same way right after the
+   non-doubling one. ~60 entries: the core Latinate `-mit`/`-fer`/`-cur`/
+   `-pel`/`-ter` families (`admit`, `submit`, `refer`, `transfer`, `incur`,
+   `compel`, `deter`, ...), plus a run of prefixed compounds of an
+   already-doubling monosyllabic root (`unwrap`, `unpin`, `unplug`,
+   `debar`, `recap`, `sidestep`, `overlap`, `wiretap`, ...) -- English
+   inflects those the same doubling way regardless of the compound's own
+   overall stress pattern.
+
+Neither list attempts the full ~984 -- same accepted tradeoff the
+existing list's own docstring already states: plenty of genuinely rare,
+obscure, or dialect-ambiguous multisyllable verbs (the `-el` class --
+`cancel`/`travel`/`label`, GB/US spelling variants -- deliberately still
+excluded from both directions) are left abstaining rather than guessed.
+This is a partial fix for a large, real gap, not a claim of
+completeness.
+
+**A real correctness trap found and closed while building the doubling
+list**: several strong doubling candidates are prefixed compounds of a
+root that's already irregular in `IRREGULAR_VERB_FORMS`
+(role/processor/verb_processor.ts) -- `run` (`overrun`, `rerun`, `outrun`,
+`underrun`), `set` (`reset`, `upset`, `offset`, `typeset`), `cut`
+(`undercut`), `let` (`sublet`), and `bid` (`outbid`, `underbid`, not
+itself in the irregular table but conventionally unchanged in this
+sense). English inflects a prefixed compound of an irregular verb the
+same irregular way ("overran", never "overrunned"). Adding these 12
+lemmas to `DOUBLING_MULTISYLLABLE_VERBS` alone, without a matching
+`IRREGULAR_VERB_FORMS` entry, would have fixed their (always-regular)
+`presentParticipleForm` ("overrunning") while *introducing* a wrong
+`pastTenseForm`/`pastParticipleForm` ("overrunned") where none existed
+before -- worse than the original gap, not better. Added all 12 as their
+own `IRREGULAR_VERB_FORMS` entries (in alphabetical order, matching that
+table's own convention) alongside the doubling-list entries, so
+`createVerbForms()`'s existing "check `IRREGULAR_VERB_FORMS` before ever
+falling through to the regular generators" order (its own docstring)
+resolves past/participle correctly while doubling still supplies the
+right present participle.
+
+Verified directly (a standalone script constructing each Verb and
+reading back its generated WordForms): "administer"/"anchor" ->
+administering/anchoring, no doubling; "occur"/"commit" ->
+occurring/committing, doubling; "overrun"/"reset"/"sublet" ->
+overrunning/resetting/subletting for the participle, and correctly
+overran/overrun, reset/reset, sublet/sublet for past/past-participle
+(the irregular entries, not a regular guess). Updated the one existing
+test that had asserted "occur" abstains (added specifically to guard the
+now-removed gap) to assert its correct doubled forms instead, and to
+cover a still-genuinely-abstaining lemma ("gallop") in the same test so
+the abstention path itself stays covered. `npx tsc -b --force` clean;
+`npx vitest run --no-file-parallelism` 188/188.

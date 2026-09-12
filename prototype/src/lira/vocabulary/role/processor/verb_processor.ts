@@ -132,7 +132,22 @@ function createRegularIngForm(lemma: string): Text | undefined {
  * own past tense is "was"/"were" depending on grammatical number, which
  * this table's single-value-per-lemma shape can't express;
  * createVerbForms() skips pastTenseForm/pastParticipleForm generation
- * for "be" outright instead of guessing. */
+ * for "be" outright instead of guessing.
+ *
+ * The 12 prefixed-compound entries (offset/outbid/outrun/overrun/rerun/
+ * reset/sublet/typeset/underbid/undercut/underrun/upset) exist only
+ * because their own bare root (bid/cut/let/run/set) is itself irregular
+ * here -- English inflects a prefixed compound of an irregular verb the
+ * same irregular way ("overran", not "overrunned"), and without an
+ * entry of its own a compound falls straight through to the regular
+ * generators below. This matters together with word_processor.ts's own
+ * DOUBLING_MULTISYLLABLE_VERBS (added for the same reason "administer"
+ * needed NON_DOUBLING_MULTISYLLABLE_VERBS -- role/processor/word_processor.ts's
+ * own docstring): every one of these 12 also appears there, since their
+ * presentParticipleForm ("overrunning", "resetting", "subletting", ...)
+ * is still perfectly regular doubling regardless of the irregular past/
+ * participle -- the two lists solve different fields, not the same one
+ * twice. */
 const IRREGULAR_VERB_FORMS: Readonly<Record<string, { past: string; pastParticiple: string }>> = {
   arise: { past: "arose", pastParticiple: "arisen" },
   awake: { past: "awoke", pastParticiple: "awoken" },
@@ -204,11 +219,17 @@ const IRREGULAR_VERB_FORMS: Readonly<Record<string, { past: string; pastParticip
   mean: { past: "meant", pastParticiple: "meant" },
   meet: { past: "met", pastParticiple: "met" },
   mistake: { past: "mistook", pastParticiple: "mistaken" },
+  offset: { past: "offset", pastParticiple: "offset" },
+  outbid: { past: "outbid", pastParticiple: "outbid" },
+  outrun: { past: "outran", pastParticiple: "outrun" },
   overcome: { past: "overcame", pastParticiple: "overcome" },
+  overrun: { past: "overran", pastParticiple: "overrun" },
   pay: { past: "paid", pastParticiple: "paid" },
   put: { past: "put", pastParticiple: "put" },
   quit: { past: "quit", pastParticiple: "quit" },
   read: { past: "read", pastParticiple: "read" },
+  rerun: { past: "reran", pastParticiple: "rerun" },
+  reset: { past: "reset", pastParticiple: "reset" },
   ride: { past: "rode", pastParticiple: "ridden" },
   ring: { past: "rang", pastParticiple: "rung" },
   rise: { past: "rose", pastParticiple: "risen" },
@@ -243,6 +264,7 @@ const IRREGULAR_VERB_FORMS: Readonly<Record<string, { past: string; pastParticip
   sting: { past: "stung", pastParticiple: "stung" },
   stink: { past: "stank", pastParticiple: "stunk" },
   strike: { past: "struck", pastParticiple: "struck" },
+  sublet: { past: "sublet", pastParticiple: "sublet" },
   swear: { past: "swore", pastParticiple: "sworn" },
   sweep: { past: "swept", pastParticiple: "swept" },
   swim: { past: "swam", pastParticiple: "swum" },
@@ -253,7 +275,12 @@ const IRREGULAR_VERB_FORMS: Readonly<Record<string, { past: string; pastParticip
   tell: { past: "told", pastParticiple: "told" },
   think: { past: "thought", pastParticiple: "thought" },
   throw: { past: "threw", pastParticiple: "thrown" },
+  typeset: { past: "typeset", pastParticiple: "typeset" },
+  underbid: { past: "underbid", pastParticiple: "underbid" },
+  undercut: { past: "undercut", pastParticiple: "undercut" },
+  underrun: { past: "underran", pastParticiple: "underrun" },
   understand: { past: "understood", pastParticiple: "understood" },
+  upset: { past: "upset", pastParticiple: "upset" },
   wake: { past: "woke", pastParticiple: "woken" },
   wear: { past: "wore", pastParticiple: "worn" },
   weep: { past: "wept", pastParticiple: "wept" },

@@ -538,7 +538,7 @@ describe("generate<Class>Forms() -- deriving *_Form values from a base lemma", (
     expect(formTextOf(cancelForms, cancel, WordFormType.PRESENT_PARTICIPLE_FORM)).toBeUndefined();
   });
 
-  it("Verb: NON_DOUBLING_MULTISYLLABLE_VERBS resolves a small, hand-verified carve-out of the polysyllabic-CVC abstention -- \"happen\"/\"differ\", not \"occur\"", () => {
+  it("Verb: NON_DOUBLING_MULTISYLLABLE_VERBS and DOUBLING_MULTISYLLABLE_VERBS resolve a small, hand-verified carve-out of the polysyllabic-CVC abstention each, in opposite directions -- \"happen\" doesn't double, \"occur\" does, \"gallop\" still abstains", () => {
     // "happen"/"differ" end the identical consonant-vowel-consonant
     // shape "stop" does and are two syllables, not one, exactly like
     // "cancel" above -- but real English never doubles either
@@ -551,14 +551,28 @@ describe("generate<Class>Forms() -- deriving *_Form values from a base lemma", (
     expect(formTextOf(happenForms, happen, WordFormType.PAST_TENSE_FORM)).toEqual({ value: "happened", formats: ["/ed$/i"] });
     expect(formTextOf(happenForms, happen, WordFormType.PRESENT_PARTICIPLE_FORM)).toEqual({ value: "happening", formats: ["/ing$/i"] });
 
-    // "occur" ends the same shape and is genuinely stressed on its own
-    // final syllable ("oc-CUR") -- a real doubling case this carve-out
-    // must never mistakenly resolve just because it also ends CVC and
-    // isn't monosyllabic; still correctly abstains.
+    // "occur" ends the same shape but is genuinely stressed on its own
+    // final syllable ("oc-CUR") -- the opposite-direction carve-out
+    // (DOUBLING_MULTISYLLABLE_VERBS) resolves this one with confidence
+    // too, rather than leaving every non-monosyllabic CVC verb abstained
+    // regardless of which way its own stress actually points.
     const occur = createVerb({ text: "occur" });
     const occurForms = new WordForms();
     createVerbForms(occur, occurForms);
-    expect(formTextOf(occurForms, occur, WordFormType.PAST_TENSE_FORM)).toBeUndefined();
+    expect(formTextOf(occurForms, occur, WordFormType.PAST_TENSE_FORM)).toEqual({ value: "occurred", formats: ["/([bcdfghjklmnpqrstvwxyz])\\1ed$/i"] });
+    expect(formTextOf(occurForms, occur, WordFormType.PRESENT_PARTICIPLE_FORM)).toEqual({
+      value: "occurring",
+      formats: ["/([bcdfghjklmnpqrstvwxyz])\\1ing$/i"],
+    });
+
+    // "gallop" ends the same shape and isn't in either carve-out --
+    // neither list attempts every one of the ~1,000 real WordNet verb
+    // lemmas this abstention reaches, so a genuinely unhandled one still
+    // correctly abstains rather than guessing either way.
+    const gallop = createVerb({ text: "gallop" });
+    const gallopForms = new WordForms();
+    createVerbForms(gallop, gallopForms);
+    expect(formTextOf(gallopForms, gallop, WordFormType.PAST_TENSE_FORM)).toBeUndefined();
   });
 
   it("Verb: presentParticipleForm's ie -> ying rule, and abstains on the vowel-before-e silent-e ambiguity", () => {
