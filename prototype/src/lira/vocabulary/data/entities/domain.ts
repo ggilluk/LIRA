@@ -6,7 +6,7 @@
  * (their own docstrings) all reference by identifier now, instead of
  * each carrying its own duplicate copy of the same `Text`.
  *
- * NOT the same "Domain" `knowledge/data/portal_domain.ts`'s own docstring
+ * NOT the same "Domain" `common/data/portal_domain.ts`'s own docstring
  * and `VocabularyContext`'s own `domainName` constructor parameter mean
  * (a hosted vocabulary partition like "Common"/"Physics", composing an
  * entire Vocabulary/Linguistics/Value-Objects/Knowledge layer stack --

@@ -11,7 +11,7 @@ import type { SenseRecord } from "../../ui/server/builder_sense";
 import type { WordRecord } from "../../ui/server/builder_word";
 
 /** The Vocabulary Service's own status vocabulary -- deliberately not
- * knowledge/data/service_status.ts's `ServiceState` (which also has
+ * common/data/service_status.ts's `ServiceState` (which also has
  * `"not-ported"`, a state only the UI ever assigns to a layer with no
  * worker at all): Vocabulary must not depend on Knowledge. The Portal
  * shell maps this onto its own `ServiceState` when it forwards a
@@ -20,7 +20,7 @@ export type VocabularyServiceState = "idle" | "running" | "done" | "error";
 
 /** One seeded Domain, as summarised for whichever UI is watching this
  * worker -- name, optional parent (for tree nesting), and the counts a
- * tree row displays. Deliberately not knowledge/data/portal_domain.ts's
+ * tree row displays. Deliberately not common/data/portal_domain.ts's
  * `PortalDomain` type itself: that type belongs to the Knowledge Layer's
  * Portal shell, and this module must not import from Knowledge. */
 export interface VocabularyDomainSummary {

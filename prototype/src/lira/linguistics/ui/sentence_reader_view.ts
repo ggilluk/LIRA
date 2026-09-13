@@ -866,7 +866,7 @@ const ICON_CHEVRON = `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor"
 // Assumes the Portal shell's own --ground/--surface/--surface-2/--ink/
 // --ink-muted/--ink-faint/--accent/--accent-ink/--line/--line-strong/
 // --shadow/--radius/--font-display/--font-body/--font-mono tokens exist
-// on an ancestor element (knowledge/ui/portal_shell.ts's own SHELL_CSS)
+// on an ancestor element (common/ui/portal_shell.ts's own SHELL_CSS)
 // -- the same "shared chrome, defined once" contract DictionaryView's
 // fragment CSS assumes, but this stylesheet was authored against that
 // contract from the outset rather than extracted from a standalone

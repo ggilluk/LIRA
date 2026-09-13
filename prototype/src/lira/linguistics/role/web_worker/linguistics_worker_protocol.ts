@@ -8,7 +8,7 @@
  * Vocabulary's UI). */
 
 /** The Linguistic Service's own status vocabulary -- deliberately not
- * knowledge/data/service_status.ts's `ServiceState` (which also has
+ * common/data/service_status.ts's `ServiceState` (which also has
  * `"not-ported"`, a state only the UI ever assigns to a layer with no
  * worker at all), for the same layering reason
  * vocabulary_worker_protocol.ts's own `VocabularyServiceState` gives:

@@ -1,7 +1,7 @@
-import { ServiceStatusBoard } from "lira/knowledge/data/service_status";
-import { PortalDomainRegistry } from "lira/knowledge/data/portal_domain";
-import { LoadingScreen } from "lira/knowledge/ui/loading_screen";
-import { PortalShell } from "lira/knowledge/ui/portal_shell";
+import { ServiceStatusBoard } from "lira/common/data/service_status";
+import { PortalDomainRegistry } from "lira/common/data/portal_domain";
+import { LoadingScreen } from "lira/common/ui/loading_screen";
+import { PortalShell } from "lira/common/ui/portal_shell";
 import { VocabularyWorkerClient } from "lira/vocabulary/role/web_worker/vocabulary_worker_client";
 import { LinguisticsWorkerClient } from "lira/linguistics/role/web_worker/linguistics_worker_client";
 

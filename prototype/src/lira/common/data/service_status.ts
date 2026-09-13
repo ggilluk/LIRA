@@ -7,12 +7,13 @@
  * status from a page" because the Python implementation has no
  * persistent process to watch.
  *
- * Lives in Knowledge, alongside PortalShell/LoadingScreen/ServiceStatusView
- * (Knowledge is already where cross-layer composition UI lives -- see
- * portal_shell.ts's own docstring). `ServiceState` is a superset of
+ * Lives in Common, alongside PortalShell/LoadingScreen/ServiceStatusView
+ * (Common is this codebase's home for generic UI-portal infrastructure
+ * that hosts every domain layer's own view without itself being one --
+ * see portal_shell.ts's own docstring). `ServiceState` is a superset of
  * vocabulary/role/vocabulary_worker_protocol.ts's own status vocabulary
  * (that module defines its own minimal type rather than importing this
- * one, since Vocabulary must not depend on Knowledge); the Portal shell
+ * one, since Vocabulary must not depend on Common); the Portal shell
  * maps a worker's reported state onto this board itself.
  *
  * `"not-ported"` is a real, permanent state, not a loading placeholder:

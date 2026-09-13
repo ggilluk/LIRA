@@ -1,4 +1,4 @@
-/** A hosted Domain, as seen by the Portal shell (knowledge/ui/portal_shell.ts).
+/** A hosted Domain, as seen by the Portal shell (common/ui/portal_shell.ts).
  *
  * This is deliberately NOT a port of the real `Domain`
  * (knowledge/data/domain.py) or `HostedDomains`
