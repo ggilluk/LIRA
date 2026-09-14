@@ -294,7 +294,12 @@ const CSS = `
 .service-log-rows {
   display: flex; flex-direction: column; gap: 0.2rem;
   max-height: 220px; overflow-y: auto;
+  scrollbar-width: thin; scrollbar-color: var(--line-strong, #C4C9BF) transparent;
 }
+.service-log-rows::-webkit-scrollbar { width: 8px; }
+.service-log-rows::-webkit-scrollbar-track { background: transparent; }
+.service-log-rows::-webkit-scrollbar-thumb { background: var(--line-strong, #C4C9BF); border-radius: 4px; }
+.service-log-rows::-webkit-scrollbar-thumb:hover { background: var(--ink-faint, #8B948E); }
 .service-log-empty { font-size: 0.78rem; color: var(--ink-muted, #5B6660); padding: 0.2rem 0; }
 .service-log-row {
   display: flex; align-items: baseline; gap: 0.5rem; font-size: 0.76rem;

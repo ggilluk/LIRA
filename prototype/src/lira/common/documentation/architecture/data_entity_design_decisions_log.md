@@ -138,3 +138,26 @@ confirmed the Event Log panel filled with both the start
 ("Seeding closed-class vocabulary…") and finish ("Seeded 372 closed-class
 entries.") events, each with the correct timestamp, "Info" level pill,
 and "Vocabulary Service" source, newest first.
+
+## Give the Event Log a visible scrollbar
+
+Reported: "The event list needs a vertical scroll bar." `.service-log-rows`
+already had `overflow-y: auto` over its own `max-height: 220px`, so
+scrolling itself already worked once content overflowed -- the reported
+gap was visibility, not behavior: platforms/browsers with an auto-hiding
+overlay scrollbar (the default on e.g. macOS) give no visual cue a log
+this short is even scrollable. Added an explicit, always-visible thin
+scrollbar (`scrollbar-width: thin`/`scrollbar-color` for Firefox, the
+matching `::-webkit-scrollbar*` pseudo-elements for Chromium/Safari),
+styled from the same `--line-strong`/`--ink-faint` tokens every other
+control in this file already uses, so it reads as part of the same
+design system rather than a bare native scrollbar.
+
+Verified live, not just read from CSS: seeded past enough Event Log
+rows (`Seed Vocabulary` then `Load WordNet` twice) to genuinely exceed
+220px (10 rows, 241px measured `scrollHeight` against a 220px
+`clientHeight`) and confirmed `scrollHeight > clientHeight` plus a
+visible scrollbar in a real Chromium screenshot -- not just that the CSS
+property was present. `npx tsc -b --force` clean; `npx vitest run
+--no-file-parallelism` 188/188 (a pure CSS change, nothing under test
+coverage).
