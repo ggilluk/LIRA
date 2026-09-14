@@ -1,4 +1,5 @@
 import type { ServiceState, ServiceStatus, ServiceStatusBoard } from "../data/service_status";
+import type { LogEvent, LogEventBoard, LogLevel } from "../data/log_event";
 
 /** One row's optional attached action -- e.g. "Load WordNet" on the
  * Vocabulary Service row (PortalShell's own construction). Generic
@@ -28,52 +29,89 @@ export interface ServiceStatusAction {
  * synset-by-synset run relayed live through the Vocabulary Service
  * worker.
  *
- * Minimizable: a chevron in the header row collapses the rows down to
- * just that header (which then shows a "N/M running" summary in place
- * of the hidden rows, so collapsing never hides an error silently).
- * `collapsed` lives on this instance, not in the DOM the board
- * re-renders into -- PortalShell rebuilds this view's container from
- * scratch on every one of its own re-renders (selecting a Domain,
- * switching component, etc.), so an instance field is what makes the
- * collapsed state survive that instead of silently resetting to
- * expanded on the next unrelated Portal action. */
+ * Also hosts the Event Log, when a `LogEventBoard` is supplied (optional
+ * -- a caller with no `Logger`-emitting Service yet simply omits it,
+ * same "board is optional, panel just doesn't render that part"
+ * convention `actions` already establishes): a second, independently
+ * collapsible section beneath Background Services listing every
+ * `LogEvent` a `Logger` instance has emitted (common/role/logger.ts),
+ * most recent first -- the "what happened, and when" history
+ * `ServiceStatus`'s own single, overwritten-in-place row can't show.
+ *
+ * Minimizable, each section independently: a chevron in either header
+ * row collapses that section down to just its own header (Background
+ * Services then shows a "N/M running" summary in place of the hidden
+ * rows, so collapsing never hides an error silently; the Event Log
+ * summary is just its own row count). `collapsed`/`logCollapsed` live on
+ * this instance, not in the DOM the board re-renders into -- PortalShell
+ * rebuilds this view's container from scratch on every one of its own
+ * re-renders (selecting a Domain, switching component, etc.), so an
+ * instance field is what makes the collapsed state survive that instead
+ * of silently resetting to expanded on the next unrelated Portal
+ * action. */
 export class ServiceStatusView {
-  private unsubscribe: (() => void) | undefined;
+  private unsubscribeStatus: (() => void) | undefined;
+  private unsubscribeLog: (() => void) | undefined;
   private collapsed = false;
+  private logCollapsed = false;
+  private latestStatuses: readonly ServiceStatus[] = [];
+  private latestEvents: readonly LogEvent[] = [];
+  private container: HTMLElement | undefined;
 
   constructor(
     private readonly board: ServiceStatusBoard,
     private readonly actions: readonly ServiceStatusAction[] = [],
+    private readonly logBoard?: LogEventBoard,
   ) {}
 
   mount(container: HTMLElement): void {
+    this.container = container;
     this.ensureStyles();
-    this.unsubscribe?.();
-    container.addEventListener("click", (event) => this.handleClick(event, container));
-    this.unsubscribe = this.board.subscribe((statuses) => {
-      container.innerHTML = this.renderPanel(statuses);
+    this.unsubscribeStatus?.();
+    this.unsubscribeLog?.();
+    container.addEventListener("click", (event) => this.handleClick(event));
+    this.unsubscribeStatus = this.board.subscribe((statuses) => {
+      this.latestStatuses = statuses;
+      this.paint();
     });
+    if (this.logBoard) {
+      this.unsubscribeLog = this.logBoard.subscribe((events) => {
+        this.latestEvents = events;
+        this.paint();
+      });
+    }
   }
 
   destroy(): void {
-    this.unsubscribe?.();
-    this.unsubscribe = undefined;
+    this.unsubscribeStatus?.();
+    this.unsubscribeStatus = undefined;
+    this.unsubscribeLog?.();
+    this.unsubscribeLog = undefined;
   }
 
-  private handleClick(event: MouseEvent, container: HTMLElement): void {
+  private paint(): void {
+    if (!this.container) return;
+    this.container.innerHTML = this.renderPanel();
+  }
+
+  private handleClick(event: MouseEvent): void {
     const target = (event.target as HTMLElement).closest<HTMLElement>("[data-action]");
     if (!target || (target as HTMLButtonElement).disabled) return;
 
     if (target.dataset.action === "toggle") {
       this.collapsed = !this.collapsed;
-      container.innerHTML = this.renderPanel(this.board.all());
+      this.paint();
+    } else if (target.dataset.action === "toggle-log") {
+      this.logCollapsed = !this.logCollapsed;
+      this.paint();
     } else if (target.dataset.action === "run") {
       const action = this.actions.find((a) => a.id === target.dataset.actionId);
       action?.onClick();
     }
   }
 
-  private renderPanel(statuses: readonly ServiceStatus[]): string {
+  private renderPanel(): string {
+    const statuses = this.latestStatuses;
     const runningCount = statuses.filter((status) => status.state === "running" || status.state === "done").length;
     return `
       <div class="service-status-panel ${this.collapsed ? "collapsed" : ""}">
@@ -86,6 +124,7 @@ export class ServiceStatusView {
           ${statuses.map((status) => this.renderRow(status)).join("")}
         </div>
       </div>
+      ${this.logBoard ? this.renderLogPanel() : ""}
     `;
   }
 
@@ -113,6 +152,40 @@ export class ServiceStatusView {
     `;
   }
 
+  /** Most recent event first -- a live viewer reads top-to-bottom, and
+   * the newest entry is the one someone watching a run in progress
+   * actually wants without scrolling past everything already seen. */
+  private renderLogPanel(): string {
+    const events = this.latestEvents;
+    return `
+      <div class="service-log-panel ${this.logCollapsed ? "collapsed" : ""}">
+        <button type="button" class="service-status-header" data-action="toggle-log" aria-expanded="${!this.logCollapsed}">
+          <span class="service-status-label">Event Log</span>
+          ${this.logCollapsed ? `<span class="service-status-summary">${events.length} event${events.length === 1 ? "" : "s"}</span>` : ""}
+          <span class="service-status-chevron">${ICON_CHEVRON}</span>
+        </button>
+        <div class="service-log-rows">
+          ${
+            events.length === 0
+              ? `<div class="service-log-empty">No events yet.</div>`
+              : [...events].reverse().map((event) => this.renderLogRow(event)).join("")
+          }
+        </div>
+      </div>
+    `;
+  }
+
+  private renderLogRow(event: LogEvent): string {
+    return `
+      <div class="service-log-row level-${event.level}">
+        <span class="service-log-time">${formatTime(event.timestamp)}</span>
+        <span class="service-log-level-pill">${LOG_LEVEL_LABEL[event.level]}</span>
+        <span class="service-log-source">${escapeHtml(event.source)}</span>
+        <span class="service-log-message">${escapeHtml(event.message)}</span>
+      </div>
+    `;
+  }
+
   private ensureStyles(): void {
     if (document.getElementById(STYLE_ID)) return;
     const style = document.createElement("style");
@@ -130,8 +203,18 @@ const STATE_LABEL: Record<ServiceState, string> = {
   error: "Error",
 };
 
+const LOG_LEVEL_LABEL: Record<LogLevel, string> = {
+  info: "Info",
+  warn: "Warn",
+  error: "Error",
+};
+
 function escapeHtml(value: string): string {
   return value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+function formatTime(timestamp: number): string {
+  return new Date(timestamp).toLocaleTimeString(undefined, { hour12: false });
 }
 
 const ICON_CHEVRON = `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6l4 4 4-4"/></svg>`;
@@ -199,4 +282,36 @@ const CSS = `
 .service-status-row.state-not-ported { opacity: 0.55; }
 @media (prefers-reduced-motion: reduce) { .service-status-dot { animation: none !important; } .service-status-progress-fill { transition: none; } }
 @keyframes lira-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+.service-log-panel {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  background: var(--surface, #FFFFFF);
+  border-top: 1px solid var(--line, #DDE0DA);
+  padding: 0.6rem 0.9rem 0.75rem;
+}
+.service-log-panel.collapsed .service-status-header { margin-bottom: 0; }
+.service-log-panel.collapsed .service-status-chevron { transform: rotate(-90deg); }
+.service-log-panel.collapsed .service-log-rows { display: none; }
+.service-log-rows {
+  display: flex; flex-direction: column; gap: 0.2rem;
+  max-height: 220px; overflow-y: auto;
+}
+.service-log-empty { font-size: 0.78rem; color: var(--ink-muted, #5B6660); padding: 0.2rem 0; }
+.service-log-row {
+  display: flex; align-items: baseline; gap: 0.5rem; font-size: 0.76rem;
+  padding: 0.2rem 0; border-bottom: 1px solid var(--line, #DDE0DA);
+}
+.service-log-row:last-child { border-bottom: none; }
+.service-log-time {
+  font-family: 'SF Mono', Menlo, monospace; font-size: 0.7rem; color: var(--ink-faint, #8B948E); flex: none;
+}
+.service-log-level-pill {
+  font-size: 0.6rem; font-weight: 700; letter-spacing: 0.02em; text-transform: uppercase;
+  padding: 0.02rem 0.4rem; border-radius: 999px; color: var(--ink-muted, #5B6660);
+  background: var(--surface-2, #ECEEE8); flex: none;
+}
+.service-log-row.level-error .service-log-level-pill { background: rgba(194, 84, 75, 0.15); color: #C2544B; }
+.service-log-row.level-warn .service-log-level-pill { background: rgba(176, 137, 0, 0.15); color: #B08900; }
+.service-log-row.level-info .service-log-level-pill { background: var(--accent-soft, #DCE9E4); color: var(--accent, #2B6E63); }
+.service-log-source { color: var(--ink-muted, #5B6660); flex: none; min-width: 96px; }
+.service-log-message { color: var(--ink, #1C2321); overflow-wrap: anywhere; }
 `;

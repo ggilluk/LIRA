@@ -1,6 +1,7 @@
 import type {
   RenderedFragment,
   VocabularyDomainSummary,
+  VocabularyLogLevel,
   VocabularyServiceState,
   VocabularyWorkerMessage,
   VocabularyWorkerRequest,
@@ -94,6 +95,12 @@ export interface HierarchyResult {
 
 export type VocabularyStatusListener = (state: VocabularyServiceState, detail?: string, progress?: number) => void;
 export type VocabularyDomainUpdateListener = (domain: VocabularyDomainSummary) => void;
+/** onStatus()'s own exact counterpart for LogMessage
+ * (vocabulary_worker_protocol.ts's own docstring on why WordSeeder's
+ * raw onLog? callback ends up here, not a real Logger, until it
+ * crosses back into the Common Layer on the listening side --
+ * common/ui/portal_shell.ts's own onLog() registration). */
+export type VocabularyLogListener = (level: VocabularyLogLevel, source: string, message: string, timestamp: number) => void;
 
 /** Main-thread handle to the Vocabulary Service worker
  * (vocabulary_worker.ts) -- starts the worker, turns its postMessage
@@ -109,6 +116,7 @@ export class VocabularyWorkerClient {
   private readonly worker: Worker;
   private readonly statusListeners = new Set<VocabularyStatusListener>();
   private readonly domainUpdateListeners = new Set<VocabularyDomainUpdateListener>();
+  private readonly logListeners = new Set<VocabularyLogListener>();
   private readyResolvers: Array<(domains: readonly VocabularyDomainSummary[]) => void> = [];
   private readonly pendingRenders = new Map<string, { resolve: (fragment: RenderedFragment) => void; reject: (error: Error) => void }>();
   private readonly pendingSearches = new Map<string, (result: WordSearchResult) => void>();
@@ -132,6 +140,22 @@ export class VocabularyWorkerClient {
     this.statusListeners.add(listener);
     return () => {
       this.statusListeners.delete(listener);
+    };
+  }
+
+  /** onStatus()'s own exact counterpart for every LogMessage this
+   * worker's own WordSeeder calls relay out -- start/finish milestones
+   * from seedClosedClassWords()/seedWordNet(), plus an "error" one if
+   * either run throws (word_seeder.ts's own onLog? docstring on why
+   * it's a plain callback, not a real Logger, crossing this boundary).
+   * common/ui/portal_shell.ts's own construction is the one real
+   * listener today -- it turns each call into a Logger.info()/warn()/
+   * error() call feeding its own LogEventBoard. Returns an unsubscribe
+   * function. */
+  onLog(listener: VocabularyLogListener): () => void {
+    this.logListeners.add(listener);
+    return () => {
+      this.logListeners.delete(listener);
     };
   }
 
@@ -370,6 +394,8 @@ export class VocabularyWorkerClient {
       }
     } else if (message.type === "domain-updated") {
       for (const listener of this.domainUpdateListeners) listener(message.domain);
+    } else if (message.type === "log") {
+      for (const listener of this.logListeners) listener(message.level, message.source, message.message, message.timestamp);
     } else if (message.type === "search-words-result") {
       const resolve = this.pendingSearches.get(message.requestId);
       if (resolve) {

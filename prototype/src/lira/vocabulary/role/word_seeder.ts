@@ -1139,7 +1139,17 @@ export class WordSeeder {
     wordForms?: WordForms,
     coordinations?: Coordinations<LinguisticUnit>,
     domains?: Domains,
+    // Mirrors seedWordNet()'s own `onProgress?` -- a plain, optional
+    // callback (never a real Logger instance, common/role/logger.ts's
+    // own class), since WordSeeder lives in the Vocabulary Layer and
+    // must not import from Common (vocabulary_worker_protocol.ts's own
+    // VocabularyServiceState docstring gives the identical reasoning
+    // for VocabularyServiceState vs. ServiceState). This method reports
+    // only start/finish -- there's no multi-phase progress loop here
+    // the way seedWordNet()'s own synset passes have one to narrate.
+    onLog?: (level: "info" | "warn" | "error", message: string) => void,
   ): number {
+    onLog?.("info", "Seeding closed-class vocabulary…");
     const excludeOpenClasses = options?.excludeOpenClasses ?? false;
     new AuxiliarySeeder(dictionary, senseStore, wordForms).seed();
     new DeterminerSeeder(dictionary, senseStore, wordForms).seed();
@@ -1266,6 +1276,7 @@ export class WordSeeder {
       updatePhraseWordLinks(phraseCopy, dictionary, wordForms, phraseBook, coordinations);
       seeded += 1;
     }
+    onLog?.("info", `Seeded ${seeded} closed-class ${seeded === 1 ? "entry" : "entries"}.`);
     return seeded;
   }
 
@@ -1281,6 +1292,7 @@ export class WordSeeder {
       };
     },
     options?: { excludeOpenClasses?: boolean },
+    onLog?: (level: "info" | "warn" | "error", message: string) => void,
   ): number {
     return this.seedClosedClassWords(
       domain.vocabulary.dictionary,
@@ -1290,6 +1302,7 @@ export class WordSeeder {
       domain.vocabulary.wordForms,
       domain.vocabulary.coordinations,
       domain.vocabulary.domains,
+      onLog,
     );
   }
 
@@ -1371,7 +1384,17 @@ export class WordSeeder {
       };
     },
     onProgress?: (phase: "words" | "relationships", processed: number, total: number) => void,
+    // Same raw-callback shape as seedClosedClassWords()'s own `onLog?`
+    // (its own docstring on why this stays a plain callback, never a
+    // real Logger). Logged at coarser granularity than onProgress --
+    // start, each pass's own completion, and the final summary -- not
+    // once per PROGRESS_REPORT_INTERVAL batch; the Event Log viewer
+    // (common/ui/service_status_view.ts) is a history of milestones, not
+    // a second progress bar duplicating the one onProgress already
+    // drives.
+    onLog?: (level: "info" | "warn" | "error", message: string) => void,
   ): Promise<{ wordsSeeded: number; sensesSeeded: number; relationshipsSeeded: number }> {
+    onLog?.("info", "Loading Princeton WordNet 3.1…");
     const dictionary = domain.vocabulary.dictionary;
     const phraseBook = domain.vocabulary.phrases;
     const senseStore = domain.vocabulary.senses;
@@ -1568,6 +1591,7 @@ export class WordSeeder {
         await new Promise((resolve) => setTimeout(resolve, 0));
       }
     }
+    onLog?.("info", `Seeded ${wordsSeeded} words, ${sensesSeeded} senses — seeding relationships…`);
 
     // Every single-word synset member is seeded by now (the loop above
     // ran to completion), so every Phrase's own constituent Words can be
@@ -1635,6 +1659,7 @@ export class WordSeeder {
         await new Promise((resolve) => setTimeout(resolve, 0));
       }
     }
+    onLog?.("info", `Seeded ${relationshipsSeeded} relationships.`);
 
     // Every morphological-derivation pointer field (Noun/Verb/Adjective/
     // Adverb, each field's own docstring in data/entities/noun.ts, data/entities/verb.ts,
@@ -1679,6 +1704,7 @@ export class WordSeeder {
       }
     }
 
+    onLog?.("info", `WordNet loaded — ${wordsSeeded} words, ${sensesSeeded} senses, ${relationshipsSeeded} relationships.`);
     return { wordsSeeded, sensesSeeded, relationshipsSeeded };
   }
 

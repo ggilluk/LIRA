@@ -13,7 +13,7 @@ import type { WordRecord } from "../../ui/server/builder_word";
 /** The Vocabulary Service's own status vocabulary -- deliberately not
  * common/data/service_status.ts's `ServiceState` (which also has
  * `"not-ported"`, a state only the UI ever assigns to a layer with no
- * worker at all): Vocabulary must not depend on Knowledge. The Portal
+ * worker at all): Vocabulary must not depend on Common. The Portal
  * shell maps this onto its own `ServiceState` when it forwards a
  * status message to its ServiceStatusBoard. */
 export type VocabularyServiceState = "idle" | "running" | "done" | "error";
@@ -21,8 +21,8 @@ export type VocabularyServiceState = "idle" | "running" | "done" | "error";
 /** One seeded Domain, as summarised for whichever UI is watching this
  * worker -- name, optional parent (for tree nesting), and the counts a
  * tree row displays. Deliberately not common/data/portal_domain.ts's
- * `PortalDomain` type itself: that type belongs to the Knowledge Layer's
- * Portal shell, and this module must not import from Knowledge. */
+ * `PortalDomain` type itself: that type belongs to the Common Layer's
+ * Portal shell, and this module must not import from Common. */
 export interface VocabularyDomainSummary {
   name: string;
   parentName?: string;
@@ -349,6 +349,34 @@ export interface ResolveHierarchyResultMessage {
   truncated: boolean;
 }
 
+/** The Vocabulary Service's own log-event vocabulary -- deliberately not
+ * common/data/log_event.ts's `LogLevel`/`LogEvent` themselves, the exact
+ * same reasoning `VocabularyServiceState`'s own docstring (above) gives
+ * for `ServiceState`: Vocabulary must not depend on Common. The Portal
+ * shell (common/ui/portal_shell.ts) is what turns one of these
+ * into a real `LogEvent` and hands it to a `Logger` (common/role/logger.ts). */
+export type VocabularyLogLevel = "info" | "warn" | "error";
+
+/** One `WordSeeder`-emitted event, relayed out of this worker --
+ * `WordSeeder.seedWordNet()`/`seedClosedClassWords()`'s own `onLog?`
+ * callback (word_seeder.ts, the exact same raw-callback shape its
+ * existing `onProgress?` already uses) posts one of these per call,
+ * this worker's own `post()` (StatusMessage's own exact relay pattern)
+ * -- rather than constructing a `common/role/logger.ts` `Logger`
+ * in-worker, which would pull a Common Layer import into Vocabulary.
+ * `source` and `timestamp` are set here, not by WordSeeder itself --
+ * WordSeeder only ever says *what* happened; *when* it left this worker
+ * and *which* Service it came from are this relay's own job, the same
+ * split `StatusMessage` already makes (WordSeeder reports `detail`
+ * text, this file's own handlers decide `state`). */
+export interface LogMessage {
+  type: "log";
+  level: VocabularyLogLevel;
+  source: string;
+  message: string;
+  timestamp: number;
+}
+
 export type VocabularyWorkerMessage =
   | StatusMessage
   | ReadyMessage
@@ -361,4 +389,6 @@ export type VocabularyWorkerMessage =
   | SearchSensesResultMessage
   | SearchRelationshipsResultMessage
   | SearchLexicalRelationshipsResultMessage
-  | ResolveHierarchyResultMessage;
+  | ResolveHierarchyResultMessage
+  | LogMessage;
+

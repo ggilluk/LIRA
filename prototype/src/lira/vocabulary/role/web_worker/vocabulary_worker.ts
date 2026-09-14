@@ -46,6 +46,7 @@ import type {
   SeedCommonVocabularyRequest,
   SeedWordNetRequest,
   VocabularyDomainSummary,
+  VocabularyLogLevel,
   VocabularyWorkerMessage,
   VocabularyWorkerRequest,
 } from "./vocabulary_worker_protocol";
@@ -85,6 +86,16 @@ let physicsBootstrapped = false;
 
 function post(message: VocabularyWorkerMessage): void {
   ctx.postMessage(message);
+}
+
+/** WordSeeder's own `onLog?` callback (word_seeder.ts's own docstring
+ * on why that stays a plain, Common-free callback) resolves here, one
+ * call site every seeding entry point below shares -- turns a raw
+ * (level, message) pair into a real LogMessage, filling in `source`
+ * and `timestamp` (vocabulary_worker_protocol.ts's own LogMessage
+ * docstring on why WordSeeder itself sets neither). */
+function postLog(level: VocabularyLogLevel, message: string): void {
+  post({ type: "log", level, source: "Vocabulary Service", message, timestamp: Date.now() });
 }
 
 function summaryOf(domain: SeededDomain): VocabularyDomainSummary {
@@ -178,7 +189,7 @@ async function handleSeedCommonVocabulary(request: SeedCommonVocabularyRequest):
     // with skipUnresolvable below, since most of the Common Relationship
     // Cache's own specs relate open-class words this call now leaves
     // unseeded by design.
-    wordSeeder.seedDomain(domain, { excludeOpenClasses: true });
+    wordSeeder.seedDomain(domain, { excludeOpenClasses: true }, postLog);
     const wordsSeeded = domain.vocabulary.dictionary.totalEntries() - wordCountBefore;
     const phrasesSeeded = domain.vocabulary.phrases.totalEntries() - phraseCountBefore;
 
@@ -211,6 +222,7 @@ async function handleSeedCommonVocabulary(request: SeedCommonVocabularyRequest):
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     post({ type: "status", state: "error", detail: message });
+    postLog("error", message);
     post({ type: "error", message });
   } finally {
     commonVocabularySeedingDomains.delete(domain.name);
@@ -256,14 +268,18 @@ async function handleSeedWordNet(request: SeedWordNetRequest): Promise<void> {
     // single-word ones, by design.
     const wordCountBefore = domain.vocabulary.dictionary.totalEntries();
     const phraseCountBefore = domain.vocabulary.phrases.totalEntries();
-    const result = await seeder.seedWordNet(domain, (phase, processed, total) => {
-      post({
-        type: "status",
-        state: "running",
-        detail: `Seeding WordNet ${phaseLabel[phase]} into ${domain.name} — ${processed.toLocaleString()} / ${total.toLocaleString()} synsets…`,
-        progress: processed / total,
-      });
-    });
+    const result = await seeder.seedWordNet(
+      domain,
+      (phase, processed, total) => {
+        post({
+          type: "status",
+          state: "running",
+          detail: `Seeding WordNet ${phaseLabel[phase]} into ${domain.name} — ${processed.toLocaleString()} / ${total.toLocaleString()} synsets…`,
+          progress: processed / total,
+        });
+      },
+      postLog,
+    );
     // Last step of the WordNet load, after every Word/Phrase/relationship
     // from the seeded synsets themselves already exists -- sets
     // wordCharacterForms on the punctuation-mark Nouns already seeded
@@ -304,6 +320,7 @@ async function handleSeedWordNet(request: SeedWordNetRequest): Promise<void> {
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     post({ type: "status", state: "error", detail: message });
+    postLog("error", message);
     post({ type: "error", message });
   } finally {
     wordNetSeedingDomains.delete(domain.name);

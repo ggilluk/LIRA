@@ -1,5 +1,7 @@
 import type { ServiceStatus, ServiceStatusBoard } from "../data/service_status";
 import type { PortalDomain, PortalDomainRegistry } from "../data/portal_domain";
+import { LogEventBoard } from "../data/log_event";
+import { Logger } from "../role/logger";
 import { ServiceStatusView } from "./service_status_view";
 import type { VocabularyWorkerClient } from "../../vocabulary/role/web_worker/vocabulary_worker_client";
 import type { RenderedFragment } from "../../vocabulary/role/web_worker/vocabulary_worker_protocol";
@@ -185,6 +187,8 @@ export class PortalShell {
   private container: HTMLElement | undefined;
   private readonly serviceStatusView: ServiceStatusView;
   private readonly sentenceReaderView: SentenceReaderView;
+  private readonly logBoard = new LogEventBoard();
+  private readonly loggersBySource = new Map<string, Logger>();
   private renderToken = 0;
   // The Domain name whose Vocabulary fragment is currently mounted --
   // set once loadView() actually finishes mounting one (not at request
@@ -212,8 +216,20 @@ export class PortalShell {
     // while looking at the Vocabulary view, not a generic service
     // control. ServiceStatusView keeps showing the Vocabulary Service's
     // live status (still useful there), just with no button of its own.
-    this.serviceStatusView = new ServiceStatusView(statusBoard);
+    this.serviceStatusView = new ServiceStatusView(statusBoard, [], this.logBoard);
     this.sentenceReaderView = new SentenceReaderView(linguisticsClient);
+    // Relays every VocabularyLogListener call into a real Logger --
+    // one instance per distinct `source` (Logger's own docstring on why
+    // `source` is bound once at construction, not passed per call), so
+    // a worker that names more than one Service ever gets its own
+    // Logger rather than one shared instance misreporting whose event
+    // this was. Uses Logger's own Date.now() timestamp at receipt, not
+    // a relayed one -- postMessage latency here is a fraction of a
+    // millisecond, not a difference an Event Log viewer reading
+    // wall-clock times needs to preserve.
+    this.vocabularyClient.onLog((level, source, message) => {
+      this.loggerFor(source)[level](message);
+    });
     // Targeted update, not a full render() -- a status tick fires on
     // every synset-batch progress update during a WordNet seed
     // (dozens of times a second, vocabulary_worker.ts's own
@@ -504,6 +520,21 @@ export class PortalShell {
     const toolbar = this.container?.querySelector<HTMLElement>(".portal-vocab-toolbar");
     if (!toolbar) return;
     toolbar.innerHTML = this.vocabToolbarInner(status);
+  }
+
+  /** Idempotent find-or-create -- `vocabularyClient.onLog()`'s own
+   * subscription (constructor) calls this once per relayed event, and
+   * every event so far has named the same one `source` ("Vocabulary
+   * Service"), so in practice this always returns the same cached
+   * instance; a future second Service source gets its own the first
+   * time it's seen, never sharing one Logger across two names. */
+  private loggerFor(source: string): Logger {
+    let logger = this.loggersBySource.get(source);
+    if (!logger) {
+      logger = new Logger(source, (event) => this.logBoard.append(event));
+      this.loggersBySource.set(source, logger);
+    }
+    return logger;
   }
 
   private ensureStyles(): void {
