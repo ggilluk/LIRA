@@ -276,4 +276,42 @@ export class WordForms {
       if (synsetId !== undefined) this.setSynsetId(copy, synsetId);
     }
   }
+
+  /** This WordForms store's own save/load snapshot -- every WordForm
+   * verbatim (uuids unregenerated, seedFrom()'s own docstring on why
+   * that's safe here) plus each one's own `synsetId`, bolted onto its
+   * own record since it isn't a real WordForm field (synsetIdOf()'s own
+   * docstring on why). `byUuid`/`textIndex` aren't saved -- both rebuild
+   * for free from `forms` alone on load. `formsByWordId` isn't saved
+   * either: it mirrors `Word.wordFormIds`, already part of Dictionary's
+   * own saveToFile() output, so rebuilding it here would duplicate data
+   * this store doesn't own -- role/vocabulary_serializer.ts's
+   * relinkAfterLoad() rebuilds it instead, once every store is loaded,
+   * the same "known, accepted gap ... solved one layer up" reasoning
+   * seedFrom() already documents above. */
+  saveToFile(): { forms: (WordForm & { synsetId?: Identifier })[] } {
+    return { forms: this.forms.map((form) => ({ ...form, synsetId: this.synsetIdByUuid.get(graphUuid(form)) })) };
+  }
+
+  /** saveToFile()'s own exact inverse -- clears every one of this
+   * store's own collections first, then replays `append()` (rebuilding
+   * `byUuid`) and `setSynsetId()` for every form. `registerMember()`
+   * needs the owning Word, which this store's own JSON doesn't carry
+   * (see saveToFile()'s own docstring), so it isn't called here --
+   * `formsByWordId` AND `textIndex` (both of which only `registerMember()`
+   * populates) are left empty until role/vocabulary_serializer.ts's
+   * relinkAfterLoad() replays `registerMember()` itself, once every
+   * store is loaded. */
+  loadFromFile(json: { forms: readonly (WordForm & { synsetId?: Identifier })[] }): void {
+    this.forms = [];
+    this.byUuid.clear();
+    this.formsByWordId.clear();
+    this.textIndex.clear();
+    this.synsetIdByUuid.clear();
+    for (const { synsetId, ...form } of json.forms) {
+      this.append(form);
+      if (synsetId !== undefined) this.setSynsetId(form, synsetId);
+    }
+  }
 }
+

@@ -13,6 +13,30 @@ import type { RelationshipRecord } from "../../ui/server/builder_relationship";
 import type { SenseRecord } from "../../ui/server/builder_sense";
 import type { WordRecord } from "../../ui/server/builder_word";
 
+/** ExportedDomainMessage's own five JSON strings, minus the message
+ * envelope -- exportDomain()'s own resolved shape, and
+ * portal_shell.ts's own source for its five `downloadJsonFile()` calls. */
+export interface ExportedDomainFiles {
+  words: string;
+  phrases: string;
+  wordForms: string;
+  senses: string;
+  coordinations: string;
+}
+
+/** ImportDomainRequest's own five fields, minus `type`/`requestId`/
+ * `domain` -- importDomain()'s own parameter shape. Each optional, the
+ * same "a caller supplying only some of the five leaves the rest of
+ * that Domain's data untouched" contract ImportDomainRequest's own
+ * docstring states. */
+export interface ImportDomainFiles {
+  words?: string;
+  phrases?: string;
+  wordForms?: string;
+  senses?: string;
+  coordinations?: string;
+}
+
 export interface WordSearchQuery {
   wordId?: string;
   word?: string;
@@ -119,6 +143,8 @@ export class VocabularyWorkerClient {
   private readonly logListeners = new Set<VocabularyLogListener>();
   private readyResolvers: Array<(domains: readonly VocabularyDomainSummary[]) => void> = [];
   private readonly pendingRenders = new Map<string, { resolve: (fragment: RenderedFragment) => void; reject: (error: Error) => void }>();
+  private readonly pendingExports = new Map<string, { resolve: (files: ExportedDomainFiles) => void; reject: (error: Error) => void }>();
+  private readonly pendingImports = new Map<string, { resolve: (domain: VocabularyDomainSummary) => void; reject: (error: Error) => void }>();
   private readonly pendingSearches = new Map<string, (result: WordSearchResult) => void>();
   private readonly pendingPhraseSearches = new Map<string, (result: PhraseSearchResult) => void>();
   private readonly pendingSenseSearches = new Map<string, (result: SenseSearchResult) => void>();
@@ -191,6 +217,34 @@ export class VocabularyWorkerClient {
     return new Promise((resolve, reject) => {
       this.pendingRenders.set(requestId, { resolve, reject });
       this.post({ type: "render", requestId, domain: name });
+    });
+  }
+
+  /** The "Save" toolbar button's own call (ExportDomainRequest's own
+   * docstring) -- resolves with all five stores' own already-`JSON.stringify()`'d
+   * files, for the caller (portal_shell.ts) to turn into five real
+   * browser downloads. Rejects on an ExportDomainErrorMessage,
+   * renderDomain()'s own exact failure-handling shape. */
+  exportDomain(name: string): Promise<ExportedDomainFiles> {
+    const requestId = `export-${name}-${Math.random().toString(36).slice(2)}`;
+    return new Promise((resolve, reject) => {
+      this.pendingExports.set(requestId, { resolve, reject });
+      this.post({ type: "export-domain", requestId, domain: name });
+    });
+  }
+
+  /** The "Load" toolbar button's own call (ImportDomainRequest's own
+   * docstring) -- `files` may supply any subset of the five; whichever
+   * are given replace that store's own data inside the worker, the rest
+   * are left untouched. Resolves with the Domain's refreshed summary
+   * counts once loaded (and relinked -- role/vocabulary_serializer.ts's
+   * relinkAfterLoad()); rejects on an ImportDomainErrorMessage,
+   * renderDomain()'s own exact failure-handling shape. */
+  importDomain(name: string, files: ImportDomainFiles): Promise<VocabularyDomainSummary> {
+    const requestId = `import-${name}-${Math.random().toString(36).slice(2)}`;
+    return new Promise((resolve, reject) => {
+      this.pendingImports.set(requestId, { resolve, reject });
+      this.post({ type: "import-domain", requestId, domain: name, ...files });
     });
   }
 
@@ -390,6 +444,30 @@ export class VocabularyWorkerClient {
       const pending = this.pendingRenders.get(message.requestId);
       if (pending) {
         this.pendingRenders.delete(message.requestId);
+        pending.reject(new Error(message.message));
+      }
+    } else if (message.type === "export-domain-result") {
+      const pending = this.pendingExports.get(message.requestId);
+      if (pending) {
+        this.pendingExports.delete(message.requestId);
+        pending.resolve({ words: message.words, phrases: message.phrases, wordForms: message.wordForms, senses: message.senses, coordinations: message.coordinations });
+      }
+    } else if (message.type === "export-domain-error") {
+      const pending = this.pendingExports.get(message.requestId);
+      if (pending) {
+        this.pendingExports.delete(message.requestId);
+        pending.reject(new Error(message.message));
+      }
+    } else if (message.type === "import-domain-result") {
+      const pending = this.pendingImports.get(message.requestId);
+      if (pending) {
+        this.pendingImports.delete(message.requestId);
+        pending.resolve(message.domain);
+      }
+    } else if (message.type === "import-domain-error") {
+      const pending = this.pendingImports.get(message.requestId);
+      if (pending) {
+        this.pendingImports.delete(message.requestId);
         pending.reject(new Error(message.message));
       }
     } else if (message.type === "domain-updated") {

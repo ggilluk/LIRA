@@ -144,4 +144,49 @@ export class Senses {
   seedFrom(other: Senses): void {
     for (const sense of other.senses) this.append(createFreshUuidSenseCopy(sense), other.synsetIdOf(sense));
   }
+
+  /** This Senses store's own save/load snapshot -- every Sense verbatim
+   * (uuids unregenerated, `Dictionary.saveToFile()`'s own docstring on
+   * why that's safe for a save/load round-trip) plus each one's own
+   * `synsetId` bolted onto its own record (not a real Sense field,
+   * synsetIdOf()'s own docstring on why) and `memberMetadata` flattened
+   * into its own array -- both are genuinely private to this store, not
+   * recoverable from any entity's own fields. `byUuid`/`bySynsetId`
+   * rebuild for free from `senses` alone; `membersBySenseId` mirrors
+   * `Word`/`Phrase.senseIds` (already part of WordForms'/Dictionary's/
+   * Phrases' own saveToFile() output) and so is left to
+   * role/vocabulary_serializer.ts's relinkAfterLoad() instead, the same
+   * reasoning WordForms.saveToFile() gives for `formsByWordId`. */
+  saveToFile(): {
+    senses: (Sense & { synsetId?: Identifier })[];
+    memberMetadata: { senseId: number; memberUuid: number; metadata: Readonly<Record<string, unknown>> }[];
+  } {
+    const senses = this.senses.map((sense) => ({ ...sense, synsetId: this.synsetIdByUuid.get(graphUuid(sense)) }));
+    const memberMetadata: { senseId: number; memberUuid: number; metadata: Readonly<Record<string, unknown>> }[] = [];
+    for (const [key, metadata] of this.memberMetadata) {
+      const [senseId, memberUuid] = key.split("|").map(Number);
+      memberMetadata.push({ senseId, memberUuid, metadata });
+    }
+    return { senses, memberMetadata };
+  }
+
+  /** saveToFile()'s own exact inverse -- clears every one of this
+   * store's own collections first, replays `append()` (rebuilding
+   * `byUuid`/`bySynsetId`) for every Sense, then `setMemberMetadata()`
+   * for every `memberMetadata` entry. `membersBySenseId` is left to
+   * relinkAfterLoad(), saveToFile()'s own docstring on why. */
+  loadFromFile(json: {
+    senses: readonly (Sense & { synsetId?: Identifier })[];
+    memberMetadata: readonly { senseId: number; memberUuid: number; metadata: Readonly<Record<string, unknown>> }[];
+  }): void {
+    this.senses = [];
+    this.byUuid.clear();
+    this.bySynsetId.clear();
+    this.synsetIdByUuid.clear();
+    this.membersBySenseId.clear();
+    this.memberMetadata.clear();
+    for (const { synsetId, ...sense } of json.senses) this.append(sense, synsetId);
+    for (const { senseId, memberUuid, metadata } of json.memberMetadata) this.setMemberMetadata(senseId, memberUuid, metadata);
+  }
 }
+

@@ -119,4 +119,37 @@ export class Phrases {
       this.append(copyPhraseWithFreshUuid(phrase), partOfSpeech, synsetId);
     }
   }
+
+  /** This Phrases store's own save/load snapshot -- every Phrase
+   * verbatim (uuids unregenerated, `Dictionary.saveToFile()`'s own
+   * docstring on why that's safe for a save/load round-trip) plus each
+   * one's own `partOfSpeech`/`synsetId` bolted onto its own record
+   * (neither is a real Phrase field, `partOfSpeechOf()`'s/`synsetIdOf()`'s
+   * own docstrings on why) -- both are genuinely private to this store.
+   * `byText`/`byUuid`/`maxSpan` all rebuild for free from `phrases`
+   * alone on load. */
+  saveToFile(): { phrases: (Phrase & { partOfSpeech: PartOfSpeech; synsetId?: Identifier })[] } {
+    return {
+      phrases: this.phrases.map((phrase) => ({
+        ...phrase,
+        partOfSpeech: this.partOfSpeechByUuid.get(graphUuid(phrase))!,
+        synsetId: this.synsetIdByUuid.get(graphUuid(phrase)),
+      })),
+    };
+  }
+
+  /** saveToFile()'s own exact inverse -- clears every one of this
+   * store's own collections first, then replays `append()` for every
+   * Phrase (rebuilding `byText`/`byUuid`/`maxSpan`/`partOfSpeechByUuid`/
+   * `synsetIdByUuid` all in the same call). */
+  loadFromFile(json: { phrases: readonly (Phrase & { partOfSpeech: PartOfSpeech; synsetId?: Identifier })[] }): void {
+    this.phrases = [];
+    this.byText.clear();
+    this.byUuid.clear();
+    this.partOfSpeechByUuid.clear();
+    this.synsetIdByUuid.clear();
+    this.maxSpan = 0;
+    for (const { partOfSpeech, synsetId, ...phrase } of json.phrases) this.append(phrase, partOfSpeech, synsetId);
+  }
 }
+

@@ -161,3 +161,91 @@ visible scrollbar in a real Chromium screenshot -- not just that the CSS
 property was present. `npx tsc -b --force` clean; `npx vitest run
 --no-file-parallelism` 188/188 (a pure CSS change, nothing under test
 coverage).
+
+## Add Save/Load buttons for the Vocabulary stores, next to the seed buttons
+
+Requested: "Save" and "Load from File" buttons in `vocabToolbarInner()`,
+right next to the existing "Seed Vocabulary"/"Load WordNet" pair, so a
+seeded (or since-edited) Domain's Dictionary/Phrases/WordForms/Senses/
+Coordinations can be persisted to JSON files and brought back later
+without re-seeding from scratch. Each store's own `saveToFile()`/
+`loadFromFile()` pair (the native-entity-shape design, three-way entity/
+private-index/derived-index split, and `relinkAfterLoad()`'s own
+reasoning) is `vocabulary/`'s own concern -- see that layer's design
+log for the store-level half. This entry covers the Worker protocol and
+UI wiring on top of it.
+
+**Worker protocol** (`vocabulary_worker_protocol.ts`): new
+`ExportDomainRequest`/`ImportDomainRequest` request types and
+`ExportedDomainMessage`/`ImportedDomainMessage` (+ their own error
+variants) response types, following `renderDomain()`'s own
+`requestId` + pending-`Map` + resolve/reject shape -- Save/Load are each
+one bounded computation producing one result, not an open-ended
+progress job the way `seedWordNet()` is. `ExportedDomainMessage` carries
+each of the five stores' own `saveToFile()` output pre-`JSON.stringify()`'d
+into a plain string (`words`/`phrases`/`wordForms`/`senses`/
+`coordinations`), not the live objects -- a Worker message already has
+to structured-clone everything it posts, so stringifying once in the
+Worker and parsing once in the UI is no more work than letting
+`postMessage()` clone the same data, and it hands the UI exactly the
+bytes it's about to write to a file with no separate re-serialization
+step of its own. `ImportDomainRequest` accepts any subset of the five
+fields (a partial load leaves the rest of that Domain's data as-is) --
+`Load from File`'s own file-matching below is what actually determines
+which subset gets sent on any real click, but the protocol itself
+doesn't require all five. Every new type is self-contained, importing
+nothing from `common/` -- the same "Vocabulary must not depend on
+Common" layering rule this file's own docstring already states for
+`VocabularyServiceState`/`VocabularyDomainSummary`.
+
+`vocabulary_worker.ts`'s new `handleExportDomain()`/`handleImportDomain()`
+mirror `handleRender()`'s own try/catch-and-post-an-error-message shape,
+`postLog(...)` on both success and failure (the Event Log work's own
+helper). Import also calls `relinkAfterLoad()` once every provided
+store has been loaded, invalidates `renderCache` for that Domain (every
+other state-changing handler already does this), and posts the existing
+`domain-updated` message so `PortalShell`'s already-wired
+`onDomainUpdated` -> `this.render()` path picks up the new counts with
+no new client-side re-render logic needed.
+
+**UI** (`portal_shell.ts`): `vocabToolbarInner()` gained two buttons,
+`data-action="save-vocabulary"`/`data-action="load-vocabulary"`, plus a
+hidden `<input type="file" multiple accept=".json" class="portal-vocab-file-input">` --
+both target `SEED_TARGET_DOMAIN` ("Common"), same as the existing pair.
+**Save** (`saveVocabulary()`) calls `vocabularyClient.exportDomain()`
+then downloads each of the five returned JSON strings as its own file
+via a new `downloadJsonFile()` helper -- `Blob` + `URL.createObjectURL`
++ `<a download>` + `.click()` + `URL.revokeObjectURL`, adapted from
+`DictionaryView.downloadAsFile()`'s own identical mechanics
+(`vocabulary/ui/server/dictionary_controller.ts`) with `type:
+"application/json"` in place of `"text/html"` -- this has to run here,
+on the main thread, since Worker code has no `document`/`Blob` to reach
+for at all. **Load** proxies the "Load from File" button's click to the
+hidden file input, then `handleFileInputChange()` reads every selected
+`File`, matches each one's name against the five store keys via a new
+`matchVocabFileKey()` (case-insensitive substring match against
+"words"/"phrases"/"word_forms"/"senses"/"coordinations", tolerant of
+the `${domain}-` filename prefix `saveVocabulary()` adds -- so a user
+can select every file Save produced at once, in any order, without
+renaming any of them; a file matching none of the five is silently
+skipped), and calls `importDomain()` once with everything that resolved
+-- not once per file, which would each separately trigger
+`relinkAfterLoad()` and a redundant re-render. No confirmation dialog on
+either button, matching this toolbar's existing "click and it just
+runs" convention (neither seed button confirms either).
+
+`npx tsc -b --force` clean; `npx vitest run --no-file-parallelism`
+194/194 (the 6 new store-level/`relinkAfterLoad()` tests live in
+`vocabulary/vocabulary.test.ts`, this UI/protocol half added no new
+Worker-plumbing tests of its own, same as the Event Log work above).
+Live Playwright verification against the real bundled Common Vocabulary
+Cache: seeded Common (400 words, 36 phrases, 646 word forms, 632
+senses), clicked Save and captured all 5 downloads
+(`common-words.json` 400 entries, `common-phrases.json` 36,
+`common-word_forms.json` 646, `common-senses.json` 632,
+`common-coordinations.json` 0 -- Common seeds no Coordinations today),
+re-selected those same 5 files via the file input and clicked Load,
+confirmed the Domain summary panel and every store tab still reported
+the identical counts afterward, and the Event Log recorded both
+"Exported Common — ..." and "Loaded Common from file — ..." entries
+with matching counts.

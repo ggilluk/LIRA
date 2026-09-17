@@ -28,12 +28,15 @@ import { PrepositionSenseSeeder } from "../preposition_sense_seeder";
 import { RelationshipSeeder } from "../relationship_seeder";
 import { WordCoordinationSeeder } from "../word_coordination_seeder";
 import { WordSeeder } from "../word_seeder";
+import { relinkAfterLoad } from "../vocabulary_serializer";
 import type { PartOfSpeech } from "../../data/enums/part_of_speech";
 import type { Word } from "../../data/entities/word";
 import type { WordForm } from "../../data/entities/word_form";
 import type { Phrase } from "../../data/entities/phrase";
 import type { LookupWordsRequest } from "./dictionary_query_protocol";
 import type {
+  ExportDomainRequest,
+  ImportDomainRequest,
   LinkPortRequest,
   RenderedFragment,
   RenderRequest,
@@ -373,6 +376,78 @@ function handleRender(request: RenderRequest): void {
   }
 }
 
+/** Handles the "Save" toolbar button's own request (ExportDomainRequest's
+ * own docstring) -- each of `domain`'s five stores' own `saveToFile()`,
+ * `JSON.stringify()`'d here inside the worker so the one-time structured-
+ * clone cost `postMessage` pays lands on the already-serialized strings,
+ * not the live entity arrays themselves. */
+function handleExportDomain(request: ExportDomainRequest): void {
+  const domain = domains.get(request.domain);
+  if (!domain) {
+    post({ type: "export-domain-error", requestId: request.requestId, message: `Vocabulary Service: unknown Domain '${request.domain}'` });
+    return;
+  }
+  try {
+    const { dictionary, phrases, wordForms, senses, coordinations } = domain.vocabulary;
+    const words = JSON.stringify(dictionary.saveToFile());
+    const phrasesJson = JSON.stringify(phrases.saveToFile());
+    const wordFormsJson = JSON.stringify(wordForms.saveToFile());
+    const sensesJson = JSON.stringify(senses.saveToFile());
+    const coordinationsJson = JSON.stringify(coordinations.saveToFile());
+    postLog("info", `Exported ${domain.name} — ${dictionary.totalEntries()} words, ${phrases.totalEntries()} phrases, ${wordForms.all().length} word forms, ${senses.totalEntries()} senses, ${coordinations.totalEntries()} coordinations.`);
+    post({
+      type: "export-domain-result",
+      requestId: request.requestId,
+      words,
+      phrases: phrasesJson,
+      wordForms: wordFormsJson,
+      senses: sensesJson,
+      coordinations: coordinationsJson,
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    postLog("error", `Failed to export ${domain.name}: ${message}`);
+    post({ type: "export-domain-error", requestId: request.requestId, message });
+  }
+}
+
+/** Handles the "Load" toolbar button's own request (ImportDomainRequest's
+ * own docstring) -- `JSON.parse()`s whichever of the five fields were
+ * supplied and hands each to its own store's `loadFromFile()`, then
+ * role/vocabulary_serializer.ts's relinkAfterLoad() once every provided
+ * store has loaded (only meaningful once Dictionary/Phrases/WordForms/
+ * Senses are all present -- a Coordinations-only load, say, has nothing
+ * for it to relink and it's a no-op). Invalidates `renderCache` the same
+ * way every seed handler already does, and posts both this request's own
+ * `import-domain-result` (so the caller's pending Promise resolves) and
+ * the ordinary `domain-updated` broadcast every other data-changing
+ * handler already posts, so PortalShell's own existing subscription
+ * re-renders without any new client-side wiring. */
+function handleImportDomain(request: ImportDomainRequest): void {
+  const domain = domains.get(request.domain);
+  if (!domain) {
+    post({ type: "import-domain-error", requestId: request.requestId, message: `Vocabulary Service: unknown Domain '${request.domain}'` });
+    return;
+  }
+  try {
+    const { dictionary, phrases, wordForms, senses, coordinations } = domain.vocabulary;
+    if (request.words !== undefined) dictionary.loadFromFile(JSON.parse(request.words));
+    if (request.phrases !== undefined) phrases.loadFromFile(JSON.parse(request.phrases));
+    if (request.wordForms !== undefined) wordForms.loadFromFile(JSON.parse(request.wordForms));
+    if (request.senses !== undefined) senses.loadFromFile(JSON.parse(request.senses));
+    if (request.coordinations !== undefined) coordinations.loadFromFile(JSON.parse(request.coordinations));
+    relinkAfterLoad(dictionary, phrases, wordForms, senses);
+    renderCache.delete(domain.name);
+    postLog("info", `Loaded ${domain.name} from file — ${dictionary.totalEntries()} words, ${phrases.totalEntries()} phrases, ${wordForms.all().length} word forms, ${senses.totalEntries()} senses, ${coordinations.totalEntries()} coordinations.`);
+    post({ type: "import-domain-result", requestId: request.requestId, domain: summaryOf(domain) });
+    post({ type: "domain-updated", domain: summaryOf(domain) });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    postLog("error", `Failed to load ${domain.name} from file: ${message}`);
+    post({ type: "import-domain-error", requestId: request.requestId, message });
+  }
+}
+
 /** Resolves a Words-tab search on demand, against the real Dictionary
  * (DictionaryView.searchWords()) rather than a pre-embedded array --
  * the fragment's own script dispatches a "lira-search-words" DOM event
@@ -627,6 +702,8 @@ ctx.addEventListener("message", (event) => {
   else if (request.type === "render") handleRender(request);
   else if (request.type === "seed-wordnet") void handleSeedWordNet(request);
   else if (request.type === "seed-common-vocabulary") void handleSeedCommonVocabulary(request);
+  else if (request.type === "export-domain") handleExportDomain(request);
+  else if (request.type === "import-domain") handleImportDomain(request);
   else if (request.type === "search-words") handleSearchWords(request);
   else if (request.type === "search-phrases") handleSearchPhrases(request);
   else if (request.type === "search-senses") handleSearchSenses(request);

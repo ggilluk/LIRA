@@ -91,6 +91,41 @@ export interface SeedCommonVocabularyRequest {
   domain: string;
 }
 
+/** Requests `domain`'s own Dictionary/Phrases/WordForms/Senses/
+ * Coordinations, each serialized via that store's own `saveToFile()`
+ * (data/dictionary.ts, data/phrases.ts, data/word_forms.ts,
+ * data/senses.ts, data/coordinations.ts) -- the "Save" toolbar button's
+ * own request (portal_shell.ts's renderVocabToolbar()). Request/response
+ * with a `requestId`, RenderRequest's own exact shape, not
+ * SeedWordNetRequest's fire-and-forget one: exporting is one bounded
+ * computation producing one result, not an open-ended progress-reporting
+ * job. */
+export interface ExportDomainRequest {
+  type: "export-domain";
+  requestId: string;
+  domain: string;
+}
+
+/** Requests that `domain`'s own Dictionary/Phrases/WordForms/Senses/
+ * Coordinations be replaced from previously-exported JSON (each field
+ * optional -- a caller supplying only some of the five leaves the rest
+ * of that Domain's data exactly as it already was) -- the "Load"
+ * toolbar button's own request. Each string is `JSON.parse()`d and
+ * handed to the matching store's own `loadFromFile()` inside the
+ * worker (vocabulary_worker.ts's own handleImportDomain()), followed by
+ * role/vocabulary_serializer.ts's relinkAfterLoad() once every provided
+ * store has loaded. */
+export interface ImportDomainRequest {
+  type: "import-domain";
+  requestId: string;
+  domain: string;
+  words?: string;
+  phrases?: string;
+  wordForms?: string;
+  senses?: string;
+  coordinations?: string;
+}
+
 /** Resolves one Words-tab search against `domain`'s full Dictionary,
  * server-side (DictionaryView.searchWords() -- that method's own
  * docstring on why: past MAX_INTERACTIVE_WORDS, there's no embedded
@@ -205,6 +240,8 @@ export type VocabularyWorkerRequest =
   | RenderRequest
   | SeedWordNetRequest
   | SeedCommonVocabularyRequest
+  | ExportDomainRequest
+  | ImportDomainRequest
   | SearchWordsRequest
   | SearchPhrasesRequest
   | SearchSensesRequest
@@ -271,6 +308,58 @@ export interface RenderedMessage {
  * message type existed. */
 export interface RenderErrorMessage {
   type: "render-error";
+  requestId: string;
+  message: string;
+}
+
+/** The response to an ExportDomainRequest -- every store's own
+ * `saveToFile()` output, each already `JSON.stringify()`'d here inside
+ * the worker (not left to the main thread) so the structured-clone cost
+ * `postMessage` pays is one string copy per store, not a clone of the
+ * live entity arrays themselves. `words: string`/... are each one
+ * downloadable file's own full contents, in the order
+ * ExportDomainRequest's own docstring names them (portal_shell.ts's own
+ * downloadJsonFile() call sites). */
+export interface ExportedDomainMessage {
+  type: "export-domain-result";
+  requestId: string;
+  words: string;
+  phrases: string;
+  wordForms: string;
+  senses: string;
+  coordinations: string;
+}
+
+/** Posted instead of ExportedDomainMessage when an export request fails
+ * -- RenderErrorMessage's own exact shape and reasoning, one layer over
+ * (an unknown Domain name, or a store's own saveToFile()/JSON.stringify()
+ * throwing). */
+export interface ExportDomainErrorMessage {
+  type: "export-domain-error";
+  requestId: string;
+  message: string;
+}
+
+/** The response to an ImportDomainRequest -- `domain`'s own refreshed
+ * summary counts, DomainUpdatedMessage's own exact shape (`summaryOf()`,
+ * vocabulary_worker.ts) -- carried on its own `requestId` so
+ * VocabularyWorkerClient.importDomain()'s matching pending Promise can
+ * resolve, in addition to (not instead of) the DomainUpdatedMessage this
+ * same handler also posts, so PortalShell's own already-wired
+ * `onDomainUpdated` -> `render()` picks up the change with no new
+ * client-side re-render logic needed. */
+export interface ImportedDomainMessage {
+  type: "import-domain-result";
+  requestId: string;
+  domain: VocabularyDomainSummary;
+}
+
+/** Posted instead of ImportedDomainMessage when an import request fails
+ * -- RenderErrorMessage's own exact shape and reasoning (an unknown
+ * Domain name, malformed JSON a `JSON.parse()` call rejects, or a
+ * store's own loadFromFile() throwing). */
+export interface ImportDomainErrorMessage {
+  type: "import-domain-error";
   requestId: string;
   message: string;
 }
@@ -382,6 +471,10 @@ export type VocabularyWorkerMessage =
   | ReadyMessage
   | RenderedMessage
   | RenderErrorMessage
+  | ExportedDomainMessage
+  | ExportDomainErrorMessage
+  | ImportedDomainMessage
+  | ImportDomainErrorMessage
   | ErrorMessage
   | DomainUpdatedMessage
   | SearchWordsResultMessage

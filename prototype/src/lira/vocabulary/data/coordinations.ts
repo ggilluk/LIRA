@@ -48,4 +48,24 @@ export class Coordinations<T extends LinguisticUnit> {
   seedFrom(other: Coordinations<T>): void {
     for (const coordination of other.coordinations) this.append(createFreshUuidCoordinationCopy(coordination));
   }
+
+  /** This Coordinations store's own save/load snapshot -- every
+   * Coordination verbatim (uuids unregenerated, `Dictionary.saveToFile()`'s
+   * own docstring on why that's safe for a save/load round-trip). No
+   * private side-index data to bolt on -- this store's own docstring on
+   * why it carries none (`byUuid` rebuilds for free from `coordinations`
+   * alone on load). */
+  saveToFile(): { coordinations: Coordination<T>[] } {
+    return { coordinations: this.coordinations };
+  }
+
+  /** saveToFile()'s own exact inverse -- clears this store's own
+   * collections first, then replays `append()` for every Coordination
+   * (rebuilding `byUuid`). */
+  loadFromFile(json: { coordinations: readonly Coordination<T>[] }): void {
+    this.coordinations = [];
+    this.byUuid.clear();
+    for (const coordination of json.coordinations) this.append(coordination);
+  }
 }
+

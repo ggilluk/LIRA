@@ -3,7 +3,7 @@ import type { PortalDomain, PortalDomainRegistry } from "../data/portal_domain";
 import { LogEventBoard } from "../data/log_event";
 import { Logger } from "../role/logger";
 import { ServiceStatusView } from "./service_status_view";
-import type { VocabularyWorkerClient } from "../../vocabulary/role/web_worker/vocabulary_worker_client";
+import type { VocabularyWorkerClient, ImportDomainFiles } from "../../vocabulary/role/web_worker/vocabulary_worker_client";
 import type { RenderedFragment } from "../../vocabulary/role/web_worker/vocabulary_worker_protocol";
 import type { LinguisticsWorkerClient } from "../../linguistics/role/web_worker/linguistics_worker_client";
 import { SentenceReaderView } from "../../linguistics/ui/sentence_reader_view";
@@ -190,6 +190,14 @@ export class PortalShell {
   private readonly logBoard = new LogEventBoard();
   private readonly loggersBySource = new Map<string, Logger>();
   private renderToken = 0;
+  /** True while an exportDomain()/importDomain() call is in flight --
+   * Save/Load are a single bounded request/response (renderVocabToolbar()'s
+   * own docstring on why they don't post through the shared "vocabulary"
+   * ServiceStatus row the way seed-wordnet/seed-common-vocabulary do),
+   * so this is this class's own equivalent disabling signal for just
+   * those two buttons, checked alongside `running` in
+   * vocabToolbarInner(). */
+  private ioInFlight = false;
   // The Domain name whose Vocabulary fragment is currently mounted --
   // set once loadView() actually finishes mounting one (not at request
   // time: a stale or failed fetch should never become the search
@@ -445,6 +453,7 @@ export class PortalShell {
     document.title = this.title;
     this.ensureStyles();
     container.addEventListener("click", (event) => this.handleClick(event));
+    container.addEventListener("change", (event) => this.handleFileInputChange(event));
     this.render();
   }
 
@@ -474,7 +483,79 @@ export class PortalShell {
       this.vocabularyClient.seedWordNet(SEED_TARGET_DOMAIN);
     } else if (action === "seed-common-vocabulary") {
       this.vocabularyClient.seedCommonVocabulary(SEED_TARGET_DOMAIN);
+    } else if (action === "save-vocabulary") {
+      this.saveVocabulary();
+    } else if (action === "load-vocabulary") {
+      this.container?.querySelector<HTMLInputElement>(".portal-vocab-file-input")?.click();
     }
+  }
+
+  /** "Save" button's own handler -- exports the target Domain's five
+   * stores via VocabularyWorkerClient.exportDomain() and downloads each
+   * one as its own file (downloadJsonFile() below), Blob+anchor+click,
+   * DictionaryView.downloadAsFile()'s own exact mechanics
+   * (vocabulary/ui/server/dictionary_controller.ts) adapted for
+   * `application/json` instead of `text/html` -- this has to run here,
+   * on the main thread, not inside the Worker (no `document`/`Blob`
+   * there, ExportDomainRequest's own docstring on why the Worker only
+   * ever hands back plain strings). Failure is already surfaced via the
+   * Event Log (vocabulary_worker.ts's own postLog("error", ...) call on
+   * the same rejection) -- nothing further to show here. */
+  private saveVocabulary(): void {
+    this.ioInFlight = true;
+    this.render();
+    const prefix = SEED_TARGET_DOMAIN.toLowerCase();
+    this.vocabularyClient
+      .exportDomain(SEED_TARGET_DOMAIN)
+      .then((files) => {
+        downloadJsonFile(files.words, `${prefix}-words.json`);
+        downloadJsonFile(files.phrases, `${prefix}-phrases.json`);
+        downloadJsonFile(files.wordForms, `${prefix}-word_forms.json`);
+        downloadJsonFile(files.senses, `${prefix}-senses.json`);
+        downloadJsonFile(files.coordinations, `${prefix}-coordinations.json`);
+      })
+      .catch(() => {})
+      .finally(() => {
+        this.ioInFlight = false;
+        this.render();
+      });
+  }
+
+  /** "Load" button's own handler -- the hidden `.portal-vocab-file-input`'s
+   * own `change` listener (mount()'s own container-level delegation, the
+   * same pattern handleClick() already uses for every `data-action`
+   * click). Matches each selected File's own name against the five
+   * store names matchVocabFileKey() below recognises (case-insensitive
+   * substring match, tolerant of the domain-name prefix saveVocabulary()
+   * adds) so a user can select all five files Save produced at once, in
+   * any order, without renaming them; a file matching none of the five
+   * is silently ignored. Reads every matched File's own text before
+   * calling importDomain() once with everything that resolved -- not one
+   * importDomain() call per file, which would each separately trigger
+   * relinkAfterLoad() and a domain-updated re-render. */
+  private handleFileInputChange(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (!input.classList.contains("portal-vocab-file-input") || !input.files || input.files.length === 0) return;
+    const files = [...input.files];
+    input.value = "";
+    this.ioInFlight = true;
+    this.render();
+    Promise.all(
+      files.map(async (file) => {
+        const key = matchVocabFileKey(file.name);
+        return key ? ([key, await file.text()] as const) : undefined;
+      }),
+    )
+      .then((matched) => {
+        const importFiles: ImportDomainFiles = {};
+        for (const entry of matched) if (entry) importFiles[entry[0]] = entry[1];
+        return this.vocabularyClient.importDomain(SEED_TARGET_DOMAIN, importFiles);
+      })
+      .catch(() => {})
+      .finally(() => {
+        this.ioInFlight = false;
+        this.render();
+      });
   }
 
   /** The Vocabulary view pane's own toolbar -- "Seed Vocabulary" (the
@@ -496,10 +577,14 @@ export class PortalShell {
 
   private vocabToolbarInner(status: ServiceStatus | undefined): string {
     const running = status?.state === "running";
+    const disabled = running || this.ioInFlight;
     const progress = status?.progress;
     return `
       <button type="button" class="portal-vocab-toolbar-action" data-action="seed-common-vocabulary" ${running ? "disabled" : ""}>Seed Vocabulary</button>
       <button type="button" class="portal-vocab-toolbar-action" data-action="seed-wordnet" ${running ? "disabled" : ""}>Load WordNet</button>
+      <button type="button" class="portal-vocab-toolbar-action" data-action="save-vocabulary" ${disabled ? "disabled" : ""}>Save</button>
+      <button type="button" class="portal-vocab-toolbar-action" data-action="load-vocabulary" ${disabled ? "disabled" : ""}>Load from File</button>
+      <input type="file" class="portal-vocab-file-input" multiple accept=".json" style="display:none">
       <span class="portal-vocab-toolbar-detail">${status?.detail ? escapeHtml(status.detail) : ""}</span>
       ${
         progress !== undefined
@@ -779,6 +864,39 @@ export class PortalShell {
 
 function escapeHtml(value: string): string {
   return value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+
+/** saveVocabulary()'s own file-download mechanics --
+ * `DictionaryView.downloadAsFile()`'s own exact `Blob`+
+ * `URL.createObjectURL`+`<a download>`+`.click()`+`URL.revokeObjectURL`
+ * pattern (vocabulary/ui/server/dictionary_controller.ts), adapted for
+ * a raw JSON string and `application/json` instead of that method's own
+ * `render()`-produced HTML. */
+function downloadJsonFile(json: string, filename: string): void {
+  const blob = new Blob([json], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = filename;
+  anchor.click();
+  URL.revokeObjectURL(url);
+}
+
+/** handleFileInputChange()'s own filename -> ImportDomainFiles key
+ * matcher -- case-insensitive substring match, tolerant of
+ * saveVocabulary()'s own domain-name filename prefix (`${prefix}-words.json`,
+ * ...), so a user can select every file Save produced, in any order,
+ * without renaming any of them. `undefined` for a filename matching
+ * none of the five -- handleFileInputChange() silently skips it rather
+ * than guessing. */
+function matchVocabFileKey(filename: string): keyof ImportDomainFiles | undefined {
+  const lower = filename.toLowerCase();
+  if (lower.includes("word_forms") || lower.includes("wordforms")) return "wordForms";
+  if (lower.includes("words")) return "words";
+  if (lower.includes("phrases")) return "phrases";
+  if (lower.includes("senses")) return "senses";
+  if (lower.includes("coordinations")) return "coordinations";
+  return undefined;
 }
 
 const ICON_FOLDER = `<svg class="i-folder" viewBox="0 0 16 16" fill="currentColor"><path d="M1.5 3.5A1 1 0 0 1 2.5 2.5h3.6l1.2 1.4H13.5A1 1 0 0 1 14.5 5v7A1 1 0 0 1 13.5 13h-11a1 1 0 0 1-1-1v-8.5z"/></svg>`;

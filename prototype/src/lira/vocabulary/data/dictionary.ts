@@ -186,4 +186,44 @@ export class Dictionary {
       }
     }
   }
+
+  /** This Dictionary's own save/load snapshot -- every Word verbatim
+   * (uuids included, unregenerated: unlike seedFrom()'s own cross-Domain
+   * copy, a save/load round-trip never needs a fresh graph identity,
+   * only every existing `Identifier` pointer -- `wordFormIds`,
+   * `domainTag`, ... -- to keep resolving correctly once reloaded) plus
+   * `formsByBase`'s own lemma-link data flattened into `formLinks`,
+   * keyed by uuid -- the one piece of this store's own state that isn't
+   * recoverable from `words` alone (`byText`/`byUuid`/`maxPhraseSpan`
+   * all rebuild themselves from a plain `append()` replay,
+   * `loadFromFile()`'s own docstring). */
+  saveToFile(): { words: Word[]; formLinks: { baseWordId: number; formWordId: number; derivationKinds: readonly string[] }[] } {
+    const formLinks: { baseWordId: number; formWordId: number; derivationKinds: readonly string[] }[] = [];
+    for (const [baseWordId, links] of this.formsByBase) {
+      for (const link of links) formLinks.push({ baseWordId, formWordId: graphUuid(link.word), derivationKinds: link.derivationKinds });
+    }
+    return { words: this.words, formLinks };
+  }
+
+  /** saveToFile()'s own exact inverse -- clears every one of this
+   * Dictionary's own collections first (a full replace, "restore this
+   * snapshot", not seedFrom()'s own additive copy), replays `append()`
+   * for every Word (rebuilding `byText`/`byUuid`/`maxPhraseSpan` for
+   * free), then `linkForm()` for every `formLinks` entry once every Word
+   * it names is already appended and so resolvable via `findByUuid()`. */
+  loadFromFile(json: { words: readonly Word[]; formLinks: readonly { baseWordId: number; formWordId: number; derivationKinds: readonly string[] }[] }): void {
+    this.words = [];
+    this.byText.clear();
+    this.byUuid.clear();
+    this.formsByBase.clear();
+    this.baseByForm.clear();
+    this.maxPhraseSpan = 1;
+    for (const word of json.words) this.append(word);
+    for (const link of json.formLinks) {
+      const base = this.findByUuid(link.baseWordId);
+      const form = this.findByUuid(link.formWordId);
+      if (base && form) this.linkForm(base, form, link.derivationKinds);
+    }
+  }
 }
+

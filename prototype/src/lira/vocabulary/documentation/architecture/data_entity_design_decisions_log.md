@@ -4140,3 +4140,109 @@ now-removed gap) to assert its correct doubled forms instead, and to
 cover a still-genuinely-abstaining lemma ("gallop") in the same test so
 the abstention path itself stays covered. `npx tsc -b --force` clean;
 `npx vitest run --no-file-parallelism` 188/188.
+
+## Add `saveToFile()`/`loadFromFile()` to Dictionary, WordForms, Senses, Phrases, Coordinations
+
+Every store's own data now has an own file-persistence round-trip --
+the UI half (the Save/Load buttons themselves) lives one layer up, in
+`common/`'s own design log, since the store methods below are usable
+without any UI at all. Requested: a way to persist a seeded (or
+since-edited) Domain's vocabulary and bring it back later, instead of
+every reload re-seeding from scratch.
+
+**Ruled out: reusing the Common Vocabulary Cache's own seed-file schema**
+(`WordFileEntry`, `assets/common/en/*.json`) as the save format.
+`WordSeeder.wordToEntry()` (the only existing Word -> seed-file
+converter, called by the never-wired-up `promoteWord()`) already proves
+this doesn't work for real seeded data: it hardcodes
+`syllable_representation`/`syllable_count`/`stress_pattern` to `null`
+because that data no longer exists on the runtime model at all, and it
+needs a `WordForms`/`Senses`/`Domains` store threaded in just to avoid
+losing frequency/version/PAD data a bare `Word` can't reach on its own.
+Worse, that schema was built for ~4,000 hand-curated closed-class
+entries, not the ~92,000+ WordNet-sourced Words a real seeded
+Dictionary mostly consists of -- WordNet's own `dict/` files were never
+JSON to begin with, so there's no existing shape for them to round-trip
+through even in principle. **Decision: each store's own native entity
+shape is the save format** -- a `Word`/`Phrase`/`WordForm`/`Sense`/
+`Coordination` array, saved losslessly, never reshaped into
+`WordFileEntry`.
+
+**Why a straight `all()` dump per store isn't quite enough.** Every
+store's own runtime data splits into three kinds:
+
+1. **Entity fields** -- already complete, JSON-native data. Crucially,
+   since a save/load round-trip never needs to regenerate a `uuid` the
+   way `seedFrom()`'s cross-Domain copying does (`createFreshUuidWordCopy()`
+   and its siblings are `seedFrom()`'s own concern, untouched by any of
+   this), every `Identifier` pointer already embedded on an entity
+   (`Word.wordFormIds`, `WordForm.senseIds`, `Phrase.senseIds`, ...)
+   stays a *valid* pointer after a plain round-trip -- this single fact
+   is what makes the whole feature tractable without any relinking logic
+   at the entity-field level.
+2. **Store-private side-index data** -- genuinely not recoverable from
+   any entity's own fields, so it has to be part of the saved JSON or
+   it's permanently lost on reload: `Dictionary.formsByBase`/`baseByForm`
+   (the lemma <-> inflected-form links), `WordForms`'/`Senses`'/
+   `Phrases`' own `synsetIdByUuid` (WordNet's synset id -- deliberately
+   not a field on any entity, each entity's own docstring says why),
+   `Phrases.partOfSpeechByUuid`, `Senses.memberMetadata` (verb frames /
+   adjective syntactic position). Each store bolts its own (2)-kind data
+   onto its own saved records (e.g. a saved WordForm/Phrase/Sense record
+   gains its own `synsetId?: Identifier` field that isn't a real entity
+   field) or a small sibling array (Dictionary's `formLinks`).
+3. **Derived side-index data** -- rebuildable purely by replaying each
+   store's own existing `append()`, so it needs no serialization at all:
+   `byText`/`byUuid`/`maxPhraseSpan` (Dictionary), `byUuid`/`textIndex`
+   (WordForms), `byUuid`/`bySynsetId` (Senses), `byText`/`byUuid`/
+   `maxSpan` (Phrases). `loadFromFile()` clears a store's own state and
+   replays `append()` (plus the private side-index setters) for
+   everything in the file -- a full **replace**, "restore this
+   snapshot", not `seedFrom()`'s additive-copy semantics.
+
+**One category belongs to no single store**: `WordForms.formsByWordId`
+and `Senses.membersBySenseId` are indexes over facts that live on the
+*other* side already (`Word.wordFormIds`, a Word's own senses via
+`WordForms.senseIdsOf()`, `Phrase.senseIds`) -- the exact same "known,
+accepted gap" `WordForms.seedFrom()`'s own docstring already documents
+for cross-Domain copies. Rather than solve it inside one store's own
+`loadFromFile()`, `role/vocabulary_serializer.ts`'s new
+`relinkAfterLoad(dictionary, phraseBook, wordForms, senses)` runs once,
+after all four stores are loaded, replaying each store's own
+already-idempotent `registerMember()` for every pointer a loaded
+Word/Phrase already carries -- `formsByWordId` first (from
+`Word.wordFormIds`), then Word-senses (`wordForms.senseIdsOf(word)`,
+which itself reads `formsByWordId`, so ordering matters -- documented in
+the function's own docstring), then Phrase-senses (`Phrase.senseIds`
+directly). `registerMember()`'s own idempotency (both stores) is what
+makes calling this safe even against a Domain that was only ever
+ordinarily seeded, never loaded from a file -- just a no-op replay of
+links that already exist. `Domains`/relationship stores are untouched --
+out of scope, and nothing about Save/Load regenerates a uuid a
+`domainTag` pointer might target.
+
+**Coordinations needed no private side-index at all** -- its own
+docstring already explains why (no text/lemma index, no synsetId/
+partOfSpeech concept applies to a Coordination) -- so its `saveToFile()`/
+`loadFromFile()` pair is the simplest of the five, a plain `all()`
+dump/replay.
+
+Tested: one round-trip test per store (`vocabulary.test.ts`, `describe("Save/Load", ...)`),
+each routing the saved JSON through an actual `JSON.parse(JSON.stringify(...))`
+round-trip (not just object-reference reuse) to faithfully simulate the
+real save-file pathway -- verifying both the entity data and each
+store's own private side-index data (lemma links, synsetId, partOfSpeech,
+memberMetadata) survive into a *fresh* store instance. Plus one
+integration test building a small Dictionary+WordForms+Senses+Phrases
+fixture with real cross-references, round-tripping all four
+independently through JSON, and asserting `relinkAfterLoad()` correctly
+rebuilds `WordForms.formsOf()`/`Senses.membersOf()` -- the one behavior
+no single store's own round-trip test can cover on its own. `npx tsc -b
+--force` clean; `npx vitest run --no-file-parallelism` 194/194. Live
+Playwright verification against the real bundled Common Vocabulary
+Cache (see `common/`'s own design log for the UI half): seeded Common
+(400 words, 36 phrases, 646 word forms, 632 senses), clicked Save (5
+correctly-shaped/named files downloaded), clicked Load with those same
+5 files re-selected, confirmed the Domain summary and every tab still
+reported the identical counts, and the Event Log recorded both the
+export and the import.

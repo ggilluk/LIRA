@@ -63,6 +63,8 @@ import { PrepositionSenseSeeder } from "./role/preposition_sense_seeder";
 import { IdentificationSource } from "./role/word_identifier";
 import { loadWordNetSynsets } from "./role/wordnet_loader";
 import { DictionaryView } from "./ui/server/dictionary_controller";
+import { createWordForm } from "./role/processor/word_form_processor";
+import { relinkAfterLoad } from "./role/vocabulary_serializer";
 
 // generateXForms()'s own migrated POS types register a WordForm instead
 // of assigning a named scalar field -- this reads one back the same way
@@ -1123,6 +1125,160 @@ describe("Coordinations", () => {
     expect(and.partOfSpeech).toBe(PartOfSpeech.CONJUNCTION);
     if (!isConjunction(and)) throw new Error("unreachable");
     expect(and.conjunctionType).toBe(ConjunctionType.COORDINATING);
+  });
+});
+
+describe("Save/Load", () => {
+  it("Dictionary.saveToFile/loadFromFile round-trips every Word and the lemma index through JSON", () => {
+    const source = new Dictionary();
+    const walk = createWord({ text: "walk", partOfSpeech: PartOfSpeech.VERB });
+    const walked = createWord({ text: "walked", partOfSpeech: PartOfSpeech.VERB });
+    source.append(walk);
+    source.append(walked);
+    source.linkForm(walk, walked, ["PAST_TENSE_FORM"]);
+
+    const json = JSON.parse(JSON.stringify(source.saveToFile()));
+    const target = new Dictionary();
+    target.loadFromFile(json);
+
+    expect(target.totalEntries()).toBe(2);
+    const reloadedWalk = target.findByUuid(wordGraphUuid(walk))!;
+    const reloadedWalked = target.findByUuid(wordGraphUuid(walked))!;
+    expect(reloadedWalk.wordId.value).toBe(walk.wordId.value);
+    expect(target.lookup("walked")?.wordId.value).toBe(walked.wordId.value);
+    expect(target.formsOf(reloadedWalk).map((f) => f.word.text)).toEqual(["walked"]);
+    expect(target.formsOf(reloadedWalk)[0].derivationKinds).toEqual(["PAST_TENSE_FORM"]);
+    expect(target.lemmaOf(reloadedWalked)?.word.text).toBe("walk");
+  });
+
+  it("WordForms.saveToFile/loadFromFile round-trips every WordForm and each one's own synsetId through JSON", () => {
+    const source = new WordForms();
+    const run = createWordForm({ formType: WordFormType.BASE_LEMMA_CANONICAL_FORM, text: { value: "run" } });
+    source.append(run);
+    source.setSynsetId(run, { value: "v00123" });
+    const running = createWordForm({ formType: WordFormType.PRESENT_PARTICIPLE_FORM, text: { value: "running" } });
+    source.append(running);
+
+    const json = JSON.parse(JSON.stringify(source.saveToFile()));
+    const target = new WordForms();
+    target.loadFromFile(json);
+
+    expect(target.all()).toHaveLength(2);
+    const reloadedRun = target.findByUuid(formGraphUuid(run))!;
+    expect(reloadedRun.text.value).toBe("run");
+    expect(target.findByUuid(formGraphUuid(running))?.text.value).toBe("running");
+    // synsetIdByUuid is private -- re-exporting is the black-box way to
+    // confirm loadFromFile() actually repopulated it, not just `forms`.
+    const reexported = target.saveToFile().forms;
+    expect(reexported.find((f) => f.text.value === "run")?.synsetId).toEqual({ value: "v00123" });
+    expect(reexported.find((f) => f.text.value === "running")?.synsetId).toBeUndefined();
+  });
+
+  it("Senses.saveToFile/loadFromFile round-trips every Sense and its own memberMetadata through JSON", () => {
+    const source = new Senses();
+    const run = createAdjective({ text: "swift" });
+    const sense = createSense({ definition: { value: "moving fast" } });
+    source.append(sense, { value: "a00456" });
+    source.registerMember(sense, run);
+    source.setMemberMetadata(senseGraphUuid(sense), memberUuid(run), { syntacticPosition: "ATTRIBUTIVE" });
+
+    const json = JSON.parse(JSON.stringify(source.saveToFile()));
+    const target = new Senses();
+    target.loadFromFile(json);
+
+    expect(target.totalEntries()).toBe(1);
+    const reloadedSense = target.findByUuid(senseGraphUuid(sense))!;
+    expect(reloadedSense.definition?.value).toBe("moving fast");
+    expect(target.findBySynsetId("a00456")).toBe(reloadedSense);
+    expect(target.synsetIdOf(reloadedSense)).toEqual({ value: "a00456" });
+    expect(target.metadataFor(senseGraphUuid(sense), memberUuid(run))).toEqual({ syntacticPosition: "ATTRIBUTIVE" });
+    // membersBySenseId mirrors Word/Phrase.senseIds -- relinkAfterLoad()'s
+    // own concern, not this store's loadFromFile() (both docstrings).
+    expect(target.membersOf(senseGraphUuid(sense))).toHaveLength(0);
+  });
+
+  it("Phrases.saveToFile/loadFromFile round-trips every Phrase and its own partOfSpeech/synsetId through JSON", () => {
+    const source = new Phrases();
+    const phrase = createPhrase({ text: "give up", phraseType: PhraseType.VERB_PHRASE });
+    source.append(phrase, PartOfSpeech.VERB, { value: "v00789" });
+
+    const json = JSON.parse(JSON.stringify(source.saveToFile()));
+    const target = new Phrases();
+    target.loadFromFile(json);
+
+    expect(target.totalEntries()).toBe(1);
+    const reloaded = target.findByUuid(phraseGraphUuid(phrase))!;
+    expect(reloaded.phraseId.value).toBe(phrase.phraseId.value);
+    expect(target.lookup("give up")?.phraseId.value).toBe(phrase.phraseId.value);
+    expect(target.partOfSpeechOf(reloaded)).toBe(PartOfSpeech.VERB);
+    expect(target.synsetIdOf(reloaded)).toEqual({ value: "v00789" });
+    expect(target.spanLimit).toBe(2);
+  });
+
+  it("Coordinations.saveToFile/loadFromFile round-trips every Coordination through JSON", () => {
+    const source = new Coordinations<Adjective>();
+    const red = createAdjective({ text: "red" });
+    const white = createAdjective({ text: "white" });
+    const coordination = createCoordination<Adjective>({ coordinates: [red, white] });
+    source.append(coordination);
+
+    const json = JSON.parse(JSON.stringify(source.saveToFile()));
+    const target = new Coordinations<Adjective>();
+    target.loadFromFile(json);
+
+    expect(target.totalEntries()).toBe(1);
+    const reloaded = target.findByUuid(coordinationGraphUuid(coordination))!;
+    expect(reloaded.coordinationId.value).toBe(coordination.coordinationId.value);
+    expect(reloaded.coordinates.map((c) => (c as Adjective).text)).toEqual(["red", "white"]);
+  });
+
+  it("relinkAfterLoad rebuilds WordForms.formsOf/Senses.membersOf after Dictionary/WordForms/Senses/Phrases are independently loaded from JSON", () => {
+    // Build a small, real fixture: a Word carrying a base-lemma WordForm,
+    // that WordForm carrying a Sense, and a Phrase lexicalizing the same
+    // Sense -- exactly the cross-store pointer shape relinkAfterLoad()'s
+    // own docstring describes.
+    const dictionary = new Dictionary();
+    const wordForms = new WordForms();
+    const senses = new Senses();
+    const phraseBook = new Phrases();
+
+    const swift = createAdjective({ text: "swift" });
+    dictionary.append(swift);
+    const swiftForm = wordForms.registerBaseLemmaForm(swift);
+    const sense = createSense({ definition: { value: "moving fast" } });
+    senses.append(sense);
+    wordForms.registerSense(swiftForm, sense);
+    senses.registerMember(sense, swift);
+
+    const phrase = createPhrase({ text: "in short order", phraseType: PhraseType.ADVERB_PHRASE, senseIds: [{ value: String(senseGraphUuid(sense)) }] });
+    phraseBook.append(phrase, PartOfSpeech.ADVERB);
+    senses.registerMember(sense, phrase);
+
+    // Round-trip all four stores through JSON independently, exactly the
+    // way ImportDomainRequest's own partial-file shape allows.
+    const loadedDictionary = new Dictionary();
+    loadedDictionary.loadFromFile(JSON.parse(JSON.stringify(dictionary.saveToFile())));
+    const loadedWordForms = new WordForms();
+    loadedWordForms.loadFromFile(JSON.parse(JSON.stringify(wordForms.saveToFile())));
+    const loadedSenses = new Senses();
+    loadedSenses.loadFromFile(JSON.parse(JSON.stringify(senses.saveToFile())));
+    const loadedPhrases = new Phrases();
+    loadedPhrases.loadFromFile(JSON.parse(JSON.stringify(phraseBook.saveToFile())));
+
+    // Before relinking, the cross-store membership indexes are empty --
+    // loadFromFile()'s own docstrings on why.
+    const reloadedWord = loadedDictionary.findByUuid(wordGraphUuid(swift))!;
+    expect(loadedWordForms.formsOf(reloadedWord)).toHaveLength(0);
+    expect(loadedSenses.membersOf(senseGraphUuid(sense))).toHaveLength(0);
+
+    relinkAfterLoad(loadedDictionary, loadedPhrases, loadedWordForms, loadedSenses);
+
+    const relinkedForms = loadedWordForms.formsOf(reloadedWord);
+    expect(relinkedForms).toHaveLength(1);
+    expect(relinkedForms[0].text.value).toBe("swift");
+
+    const relinkedMembers = loadedSenses.membersOf(senseGraphUuid(sense));
+    expect(relinkedMembers.map((m) => memberUuid(m)).sort()).toEqual([wordGraphUuid(reloadedWord), phraseGraphUuid(loadedPhrases.findByUuid(phraseGraphUuid(phrase))!)].sort());
   });
 });
 
