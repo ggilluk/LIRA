@@ -4246,3 +4246,103 @@ correctly-shaped/named files downloaded), clicked Load with those same
 5 files re-selected, confirmed the Domain summary and every tab still
 reported the identical counts, and the Event Log recorded both the
 export and the import.
+
+## Extend Save/Load to the permanent relationship graph: SemanticRelationshipStore, LexicalRelationshipStore
+
+Requested: Save/Load should cover the relationship graph, not just the
+five entity stores. `SemanticRelationshipStore`/`LexicalRelationshipStore`
+each gain `saveToFile()`/`loadFromFile()`, `Dictionary`/`WordForms`/
+`Senses`/`Phrases`/`Coordinations`'s own established pattern extended
+one layer over -- same native-entity-shape decision, same "clear then
+replay `add()`" full-replace semantics, same "uuids unregenerated, so a
+saved pointer stays a valid pointer after a straight round-trip" property
+this whole feature already leans on.
+
+**Scope: `MorphologicalPointerRelationshipStore` is deliberately
+excluded.** `VocabularyContext`'s own docstring (data/vocabulary_context.ts)
+is explicit that this store is seeding-internal working state now --
+`WordSeeder`/`RelationshipSeeder` build a full graph there but only to
+read it back once, at the end of their own seeding pass, into
+`semanticRelationships` (the true sense-to-sense facts) and
+`lexicalRelationships` (the true WordForm+Sense-to-WordForm+Sense
+facts) -- nothing outside those two seeders is meant to read it again.
+Persisting it would save scratch state with no consumer on reload.
+
+**A stale, actively-wrong comment found and corrected while scoping
+this**: `vocabulary_worker.ts`'s own `summaryOf()` had a comment
+claiming `lexicalRelationships` was "seeding-internal scratch state" and
+so was deliberately left out of `relationshipCount` (only
+`semanticRelationships` was counted). This directly contradicts both
+`VocabularyContext`'s own docstring and `LexicalRelationship`'s own
+docstring (data/lexical_relationship.ts), which both say the opposite:
+`lexicalRelationships` is *this* Domain's own permanent, queryable
+model, `semanticRelationships`'s own exact counterpart; Morphological is
+the one that's scratch. Fixed `relationshipCount` to sum both permanent
+stores, and corrected the comment.
+
+**The one real wrinkle neither store had to solve before**: both
+records carry `systemProperties: SystemPropertiesRef` (data/system_properties_ref.ts)
+-- a live by-reference handle into a separate tensor
+(`SemanticRelationshipSystemPropertyTensor`/`LexicalRelationshipSystemPropertyTensor`,
+each a growable `Float64Array` of confidence/provenance/temporal/
+activation, one row per relationship), not JSON data of its own.
+`saveToFile()` reads the four scalars off the live ref and flattens them
+onto the saved record (`SavedSemanticRelationship`/`SavedLexicalRelationship`,
+each store's own new exported type) -- the same "bolt on a field that
+isn't a real entity field" move `WordForms`/`Senses`/`Phrases` already
+make for `synsetId`. `loadFromFile()` can't just `add()` the parsed
+record back, though: its own `systemProperties` field is still those
+four plain numbers, not a working `SystemPropertiesRef`. Since neither
+store ever held a tensor reference of its own (each `VocabularyContext`
+wires store+tensor together only via its own Processor's constructor,
+`SemanticRelationshipProcessor`/`LexicalRelationshipProcessor`),
+`loadFromFile()` takes that Domain's own tensor as a second parameter,
+and for every saved relationship: allocates a fresh row
+(`tensor.allocateRow(uuid, version, confidence, provenance, temporal,
+activation)`, `SemanticRelationshipProcessor.create()`'s own exact call,
+just fed saved values instead of `create()`'s own defaults), wraps it in
+a fresh `SystemPropertiesRef(tensor, row)`, then `add()`s the
+reconstructed relationship. The tensor row index itself is never
+persisted -- a `SystemPropertiesRef`'s own `row` is process-local,
+remade here in the same append order `create()` would have used, not a
+saved row number that could point anywhere once a tensor's own backing
+array is freshly re-grown from empty.
+
+**No `relinkAfterLoad()` involvement.** Neither store indexes anything
+the *other side* owns the way `WordForms.formsByWordId`/
+`Senses.membersBySenseId` do -- `bySource`/`byTarget` are pure derived
+indexes over the relationship's own pointer fields, already rebuilt for
+free by `loadFromFile()`'s own `add()` replay. A saved
+`sourceSenseId`/`targetSenseId`/`sourceWordFormId`/`targetWordFormId`
+stays resolvable via `Senses.findByUuid()`/`WordForms.findByUuid()`
+once those stores are reloaded, the same way every other cross-store
+pointer in this feature already does, with no reconciliation pass
+needed on the relationship side at all.
+
+Worker protocol (`vocabulary_worker_protocol.ts`): `ExportedDomainMessage`/
+`ImportDomainRequest` each gain `semanticRelationships`/
+`lexicalRelationships` string fields, `handleExportDomain()`/
+`handleImportDomain()` (`vocabulary_worker.ts`) call the two new store
+methods (import passing each store's own Domain-specific tensor
+through), and the Event Log line for both operations now names all
+seven counts. `vocabulary_worker_client.ts`'s `ExportedDomainFiles`/
+`ImportDomainFiles` grew the same two fields.
+
+Tested: one round-trip test per store (`vocabulary.test.ts`, inside the
+existing `describe("Save/Load", ...)` block), each via a real
+`JSON.parse(JSON.stringify(...))` round-trip, asserting the relationship's
+own pointer fields *and* all four `systemProperties` scalars survive
+into a freshly-reloaded store with its own freshly-constructed tensor --
+the one behavior that would silently break (returning a real, just
+wrong, number) if the tensor-row reconstruction were off. The Lexical
+test additionally round-trips a real `WordForms` fixture alongside it to
+confirm a saved `sourceWordFormId`/`targetWordFormId` still resolves
+correctly post-reload. `npx tsc -b --force` clean; `npx vitest run
+--no-file-parallelism` 196/196. Live Playwright verification against the
+real bundled Common Relationship Cache: seeded Common, clicked Save (7
+files now, including `common-semantic-relationships.json` at 110
+entries and `common-lexical-relationships.json` at 76, each sample
+record carrying the flattened `confidenceWeight`/`provenanceWeight`/
+`temporalValueWeight`/`activationWeight` fields), re-selected all 7 and
+clicked Load, confirmed the Event Log's own "Loaded Common from file"
+line reported the identical 110/76 counts back.

@@ -13,20 +13,22 @@ import type { RelationshipRecord } from "../../ui/server/builder_relationship";
 import type { SenseRecord } from "../../ui/server/builder_sense";
 import type { WordRecord } from "../../ui/server/builder_word";
 
-/** ExportedDomainMessage's own five JSON strings, minus the message
+/** ExportedDomainMessage's own seven JSON strings, minus the message
  * envelope -- exportDomain()'s own resolved shape, and
- * portal_shell.ts's own source for its five `downloadJsonFile()` calls. */
+ * portal_shell.ts's own source for its seven `downloadJsonFile()` calls. */
 export interface ExportedDomainFiles {
   words: string;
   phrases: string;
   wordForms: string;
   senses: string;
   coordinations: string;
+  semanticRelationships: string;
+  lexicalRelationships: string;
 }
 
-/** ImportDomainRequest's own five fields, minus `type`/`requestId`/
+/** ImportDomainRequest's own seven fields, minus `type`/`requestId`/
  * `domain` -- importDomain()'s own parameter shape. Each optional, the
- * same "a caller supplying only some of the five leaves the rest of
+ * same "a caller supplying only some of the seven leaves the rest of
  * that Domain's data untouched" contract ImportDomainRequest's own
  * docstring states. */
 export interface ImportDomainFiles {
@@ -35,6 +37,8 @@ export interface ImportDomainFiles {
   wordForms?: string;
   senses?: string;
   coordinations?: string;
+  semanticRelationships?: string;
+  lexicalRelationships?: string;
 }
 
 export interface WordSearchQuery {
@@ -221,8 +225,8 @@ export class VocabularyWorkerClient {
   }
 
   /** The "Save" toolbar button's own call (ExportDomainRequest's own
-   * docstring) -- resolves with all five stores' own already-`JSON.stringify()`'d
-   * files, for the caller (portal_shell.ts) to turn into five real
+   * docstring) -- resolves with all seven stores' own already-`JSON.stringify()`'d
+   * files, for the caller (portal_shell.ts) to turn into seven real
    * browser downloads. Rejects on an ExportDomainErrorMessage,
    * renderDomain()'s own exact failure-handling shape. */
   exportDomain(name: string): Promise<ExportedDomainFiles> {
@@ -234,7 +238,7 @@ export class VocabularyWorkerClient {
   }
 
   /** The "Load" toolbar button's own call (ImportDomainRequest's own
-   * docstring) -- `files` may supply any subset of the five; whichever
+   * docstring) -- `files` may supply any subset of the seven; whichever
    * are given replace that store's own data inside the worker, the rest
    * are left untouched. Resolves with the Domain's refreshed summary
    * counts once loaded (and relinked -- role/vocabulary_serializer.ts's
@@ -450,7 +454,15 @@ export class VocabularyWorkerClient {
       const pending = this.pendingExports.get(message.requestId);
       if (pending) {
         this.pendingExports.delete(message.requestId);
-        pending.resolve({ words: message.words, phrases: message.phrases, wordForms: message.wordForms, senses: message.senses, coordinations: message.coordinations });
+        pending.resolve({
+          words: message.words,
+          phrases: message.phrases,
+          wordForms: message.wordForms,
+          senses: message.senses,
+          coordinations: message.coordinations,
+          semanticRelationships: message.semanticRelationships,
+          lexicalRelationships: message.lexicalRelationships,
+        });
       }
     } else if (message.type === "export-domain-error") {
       const pending = this.pendingExports.get(message.requestId);

@@ -491,8 +491,10 @@ export class PortalShell {
   }
 
   /** "Save" button's own handler -- exports the target Domain's five
-   * stores via VocabularyWorkerClient.exportDomain() and downloads each
-   * one as its own file (downloadJsonFile() below), Blob+anchor+click,
+   * stores plus its own permanent relationship graph (Semantic/Lexical --
+   * ExportDomainRequest's own docstring on why Morphological is
+   * excluded) via VocabularyWorkerClient.exportDomain() and downloads
+   * each one as its own file (downloadJsonFile() below), Blob+anchor+click,
    * DictionaryView.downloadAsFile()'s own exact mechanics
    * (vocabulary/ui/server/dictionary_controller.ts) adapted for
    * `application/json` instead of `text/html` -- this has to run here,
@@ -513,6 +515,8 @@ export class PortalShell {
         downloadJsonFile(files.wordForms, `${prefix}-word_forms.json`);
         downloadJsonFile(files.senses, `${prefix}-senses.json`);
         downloadJsonFile(files.coordinations, `${prefix}-coordinations.json`);
+        downloadJsonFile(files.semanticRelationships, `${prefix}-semantic-relationships.json`);
+        downloadJsonFile(files.lexicalRelationships, `${prefix}-lexical-relationships.json`);
       })
       .catch(() => {})
       .finally(() => {
@@ -524,11 +528,11 @@ export class PortalShell {
   /** "Load" button's own handler -- the hidden `.portal-vocab-file-input`'s
    * own `change` listener (mount()'s own container-level delegation, the
    * same pattern handleClick() already uses for every `data-action`
-   * click). Matches each selected File's own name against the five
+   * click). Matches each selected File's own name against the seven
    * store names matchVocabFileKey() below recognises (case-insensitive
    * substring match, tolerant of the domain-name prefix saveVocabulary()
-   * adds) so a user can select all five files Save produced at once, in
-   * any order, without renaming them; a file matching none of the five
+   * adds) so a user can select all seven files Save produced at once, in
+   * any order, without renaming them; a file matching none of the seven
    * is silently ignored. Reads every matched File's own text before
    * calling importDomain() once with everything that resolved -- not one
    * importDomain() call per file, which would each separately trigger
@@ -886,9 +890,12 @@ function downloadJsonFile(json: string, filename: string): void {
  * matcher -- case-insensitive substring match, tolerant of
  * saveVocabulary()'s own domain-name filename prefix (`${prefix}-words.json`,
  * ...), so a user can select every file Save produced, in any order,
- * without renaming any of them. `undefined` for a filename matching
- * none of the five -- handleFileInputChange() silently skips it rather
- * than guessing. */
+ * without renaming any of them. `semantic`/`lexical` are checked ahead
+ * of nothing in particular -- neither substring collides with any of the
+ * other five keys' own filenames, so order doesn't matter here the way
+ * it does for `word_forms` vs `words` below. `undefined` for a filename
+ * matching none of the seven -- handleFileInputChange() silently skips
+ * it rather than guessing. */
 function matchVocabFileKey(filename: string): keyof ImportDomainFiles | undefined {
   const lower = filename.toLowerCase();
   if (lower.includes("word_forms") || lower.includes("wordforms")) return "wordForms";
@@ -896,6 +903,8 @@ function matchVocabFileKey(filename: string): keyof ImportDomainFiles | undefine
   if (lower.includes("phrases")) return "phrases";
   if (lower.includes("senses")) return "senses";
   if (lower.includes("coordinations")) return "coordinations";
+  if (lower.includes("semantic")) return "semanticRelationships";
+  if (lower.includes("lexical")) return "lexicalRelationships";
   return undefined;
 }
 

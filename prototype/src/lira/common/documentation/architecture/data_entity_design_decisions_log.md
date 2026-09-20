@@ -249,3 +249,33 @@ confirmed the Domain summary panel and every store tab still reported
 the identical counts afterward, and the Event Log recorded both
 "Exported Common — ..." and "Loaded Common from file — ..." entries
 with matching counts.
+
+## Extend the Save/Load toolbar to the two new relationship files
+
+Follow-up to the entry above: Save/Load now also covers
+`SemanticRelationshipStore`/`LexicalRelationshipStore` -- the store-level
+half (native-entity-shape design, the `SystemPropertiesRef`/tensor-row
+wrinkle, why `MorphologicalPointerRelationshipStore` is excluded) is
+`vocabulary/`'s own concern; this entry covers only the toolbar's own
+two extra files.
+
+`saveVocabulary()` downloads two more: `${prefix}-semantic-relationships.json`,
+`${prefix}-lexical-relationships.json`, alongside the existing five.
+`matchVocabFileKey()` gained two more substring matches, `"semantic"`/
+`"lexical"` -- both checked without needing to worry about ordering
+against the existing five keys (unlike `"word_forms"` vs `"words"`,
+neither new substring is a substring of, or contains, any of the
+others' filenames), so a user can still select every file Save produced
+in one go, in any order, without renaming any of them.
+
+No new buttons, no new UI surface at all -- the same single Save/Load
+pair now just round-trips seven files under the hood instead of five.
+
+`npx tsc -b --force` clean; `npx vitest run --no-file-parallelism`
+196/196 (the 2 new relationship round-trip tests live in
+`vocabulary/vocabulary.test.ts`, same split as before). Live Playwright
+verification: seeded Common, clicked Save and confirmed all 7 files
+downloaded (the two new ones at 110 and 76 entries respectively,
+matching the Domain's own real seeded relationship counts), re-selected
+all 7 and clicked Load, confirmed the Event Log's "Loaded Common from
+file — ..." line reported the identical semantic/lexical counts back.

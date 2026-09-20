@@ -8,6 +8,9 @@ import { SemanticRelationshipStore } from "./data/semantic_relationship_store";
 import { SemanticRelationshipSystemPropertyTensor } from "./data/semantic_relationship_tensor";
 import { SemanticRelationshipKind } from "./data/enums/semantic_relationship_kind";
 import { SemanticRelationshipProcessor } from "./role/semantic_relationship_processor";
+import { LexicalRelationshipStore } from "./data/lexical_relationship_store";
+import { LexicalRelationshipSystemPropertyTensor } from "./data/lexical_relationship_tensor";
+import { LexicalRelationshipProcessor } from "./role/lexical_relationship_processor";
 import { PartOfSpeech } from "./data/enums/part_of_speech";
 import { ConjunctionType } from "./data/enums/conjunction_type";
 import { WordFormType, wordFormTypeLabel } from "./data/enums/word_forms_enum";
@@ -1279,6 +1282,94 @@ describe("Save/Load", () => {
 
     const relinkedMembers = loadedSenses.membersOf(senseGraphUuid(sense));
     expect(relinkedMembers.map((m) => memberUuid(m)).sort()).toEqual([wordGraphUuid(reloadedWord), phraseGraphUuid(loadedPhrases.findByUuid(phraseGraphUuid(phrase))!)].sort());
+  });
+
+  it("SemanticRelationshipStore.saveToFile/loadFromFile round-trips every relationship and its own tensor-backed system properties through JSON", () => {
+    const tensor = new SemanticRelationshipSystemPropertyTensor();
+    const store = new SemanticRelationshipStore();
+    const processor = new SemanticRelationshipProcessor(store, tensor);
+    const senseA = createSense({ definition: { value: "a" } });
+    const senseB = createSense({ definition: { value: "b" } });
+    const relationship = processor.create({
+      sourceSenseId: String(senseGraphUuid(senseA)),
+      targetSenseId: String(senseGraphUuid(senseB)),
+      relationshipType: SemanticRelationshipKind.ATTRIBUTE,
+      sourceReferences: [],
+      confidence: 0.75,
+      provenance: 0.5,
+      temporal: 0.25,
+      activation: 0.1,
+    });
+
+    const json = JSON.parse(JSON.stringify(store.saveToFile()));
+    const targetStore = new SemanticRelationshipStore();
+    const targetTensor = new SemanticRelationshipSystemPropertyTensor();
+    targetStore.loadFromFile(json, targetTensor);
+
+    expect(targetStore.totalRelationships()).toBe(1);
+    const [reloaded] = targetStore.outgoing(String(senseGraphUuid(senseA)));
+    expect(reloaded.sourceSenseId.value).toBe(relationship.sourceSenseId.value);
+    expect(reloaded.targetSenseId.value).toBe(relationship.targetSenseId.value);
+    expect(reloaded.relationshipType).toBe(SemanticRelationshipKind.ATTRIBUTE);
+    expect(reloaded.uuid.value).toBe(relationship.uuid.value);
+    // The tricky part: systemProperties is a live SystemPropertiesRef, not
+    // plain JSON data (SavedSemanticRelationship's own docstring) --
+    // this is only correct if loadFromFile() actually re-allocated a
+    // real tensor row seeded with the saved scalars, not a fresh
+    // zeroed-out row.
+    expect(reloaded.systemProperties.confidenceWeight).toBe(0.75);
+    expect(reloaded.systemProperties.provenanceWeight).toBe(0.5);
+    expect(reloaded.systemProperties.temporalValueWeight).toBe(0.25);
+    expect(reloaded.systemProperties.activationWeight).toBe(0.1);
+    expect(targetStore.incoming(String(senseGraphUuid(senseB)))).toHaveLength(1);
+  });
+
+  it("LexicalRelationshipStore.saveToFile/loadFromFile round-trips every relationship and its own tensor-backed system properties through JSON", () => {
+    const tensor = new LexicalRelationshipSystemPropertyTensor();
+    const store = new LexicalRelationshipStore();
+    const processor = new LexicalRelationshipProcessor(store, tensor);
+    const wordForms = new WordForms();
+    const swift = createAdjective({ text: "swift" });
+    const slow = createAdjective({ text: "slow" });
+    const swiftForm = wordForms.registerBaseLemmaForm(swift);
+    const slowForm = wordForms.registerBaseLemmaForm(slow);
+    const senseA = createSense({ definition: { value: "fast" } });
+    const senseB = createSense({ definition: { value: "not fast" } });
+    const relationship = processor.create({
+      sourceWordFormId: String(formGraphUuid(swiftForm)),
+      sourceSenseId: String(senseGraphUuid(senseA)),
+      targetWordFormId: String(formGraphUuid(slowForm)),
+      targetSenseId: String(senseGraphUuid(senseB)),
+      relationshipType: LexicalRelationshipType.ANTONYM,
+      sourceReferences: [],
+      confidence: 0.9,
+      provenance: 0.6,
+      temporal: 0.3,
+      activation: 0.2,
+    });
+
+    const json = JSON.parse(JSON.stringify(store.saveToFile()));
+    const targetStore = new LexicalRelationshipStore();
+    const targetTensor = new LexicalRelationshipSystemPropertyTensor();
+    targetStore.loadFromFile(json, targetTensor);
+
+    expect(targetStore.totalRelationships()).toBe(1);
+    const [reloaded] = targetStore.outgoing(String(senseGraphUuid(senseA)));
+    expect(reloaded.sourceWordFormId.value).toBe(relationship.sourceWordFormId.value);
+    expect(reloaded.targetWordFormId.value).toBe(relationship.targetWordFormId.value);
+    expect(reloaded.relationshipType).toBe(LexicalRelationshipType.ANTONYM);
+    expect(reloaded.systemProperties.confidenceWeight).toBe(0.9);
+    expect(reloaded.systemProperties.provenanceWeight).toBe(0.6);
+    expect(reloaded.systemProperties.temporalValueWeight).toBe(0.3);
+    expect(reloaded.systemProperties.activationWeight).toBe(0.2);
+    // The saved WordForm/Sense uuid pointers stay resolvable against a
+    // freshly-reloaded WordForms/Senses store, the same "already a valid
+    // pointer after a straight round-trip" property Dictionary/WordForms/
+    // Senses/Phrases already rely on (no uuid regeneration on load).
+    const reloadedWordForms = new WordForms();
+    reloadedWordForms.loadFromFile(JSON.parse(JSON.stringify(wordForms.saveToFile())));
+    expect(reloadedWordForms.findByUuid(Number(reloaded.sourceWordFormId.value))?.text.value).toBe("swift");
+    expect(reloadedWordForms.findByUuid(Number(reloaded.targetWordFormId.value))?.text.value).toBe("slow");
   });
 });
 

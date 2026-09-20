@@ -94,7 +94,13 @@ export interface SeedCommonVocabularyRequest {
 /** Requests `domain`'s own Dictionary/Phrases/WordForms/Senses/
  * Coordinations, each serialized via that store's own `saveToFile()`
  * (data/dictionary.ts, data/phrases.ts, data/word_forms.ts,
- * data/senses.ts, data/coordinations.ts) -- the "Save" toolbar button's
+ * data/senses.ts, data/coordinations.ts), plus its own permanent
+ * relationship graph -- SemanticRelationshipStore/LexicalRelationshipStore
+ * (data/semantic_relationship_store.ts, data/lexical_relationship_store.ts;
+ * MorphologicalPointerRelationshipStore is deliberately excluded --
+ * VocabularyContext's own docstring on why that one is seeding-internal
+ * scratch state, not a permanent part of a Domain's queryable model, so
+ * there's nothing worth persisting there) -- the "Save" toolbar button's
  * own request (portal_shell.ts's renderVocabToolbar()). Request/response
  * with a `requestId`, RenderRequest's own exact shape, not
  * SeedWordNetRequest's fire-and-forget one: exporting is one bounded
@@ -107,14 +113,19 @@ export interface ExportDomainRequest {
 }
 
 /** Requests that `domain`'s own Dictionary/Phrases/WordForms/Senses/
- * Coordinations be replaced from previously-exported JSON (each field
- * optional -- a caller supplying only some of the five leaves the rest
- * of that Domain's data exactly as it already was) -- the "Load"
- * toolbar button's own request. Each string is `JSON.parse()`d and
- * handed to the matching store's own `loadFromFile()` inside the
- * worker (vocabulary_worker.ts's own handleImportDomain()), followed by
- * role/vocabulary_serializer.ts's relinkAfterLoad() once every provided
- * store has loaded. */
+ * Coordinations/SemanticRelationships/LexicalRelationships be replaced
+ * from previously-exported JSON (each field optional -- a caller
+ * supplying only some of the seven leaves the rest of that Domain's data
+ * exactly as it already was) -- the "Load" toolbar button's own request.
+ * Each string is `JSON.parse()`d and handed to the matching store's own
+ * `loadFromFile()` inside the worker (vocabulary_worker.ts's own
+ * handleImportDomain()), followed by role/vocabulary_serializer.ts's
+ * relinkAfterLoad() once every provided store has loaded --
+ * `semanticRelationships`/`lexicalRelationships` need no equivalent
+ * relinking pass of their own: neither store indexes anything the other
+ * side owns the way `WordForms.formsByWordId`/`Senses.membersBySenseId`
+ * do, so `loadFromFile()` alone (which already rebuilds `bySource`/
+ * `byTarget` via `add()`) is a complete reload. */
 export interface ImportDomainRequest {
   type: "import-domain";
   requestId: string;
@@ -124,6 +135,8 @@ export interface ImportDomainRequest {
   wordForms?: string;
   senses?: string;
   coordinations?: string;
+  semanticRelationships?: string;
+  lexicalRelationships?: string;
 }
 
 /** Resolves one Words-tab search against `domain`'s full Dictionary,
@@ -328,6 +341,8 @@ export interface ExportedDomainMessage {
   wordForms: string;
   senses: string;
   coordinations: string;
+  semanticRelationships: string;
+  lexicalRelationships: string;
 }
 
 /** Posted instead of ExportedDomainMessage when an export request fails

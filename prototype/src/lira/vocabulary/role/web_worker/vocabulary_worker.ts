@@ -106,11 +106,15 @@ function summaryOf(domain: SeededDomain): VocabularyDomainSummary {
     name: domain.name,
     parentName: domain.parentName,
     wordCount: domain.vocabulary.dictionary.totalEntries(),
-    // semanticRelationships, not lexicalRelationships -- the latter is
-    // seeding-internal scratch state now (VocabularyContext's own
-    // docstring, data/vocabulary_context.ts), so counting it here would surface a
-    // number nothing else in the UI shows any more.
-    relationshipCount: domain.vocabulary.semanticRelationships.totalRelationships(),
+    // Both semanticRelationships and lexicalRelationships -- both are
+    // this Domain's own permanent, queryable relationship facts
+    // (VocabularyContext's own docstring, data/vocabulary_context.ts).
+    // MorphologicalPointerRelationships is the one excluded here: that
+    // store is seeding-internal scratch state, discarded once
+    // WordSeeder/RelationshipSeeder finish copying its facts onto these
+    // two permanent stores, so counting it would surface a number
+    // nothing else in the UI shows any more.
+    relationshipCount: domain.vocabulary.semanticRelationships.totalRelationships() + domain.vocabulary.lexicalRelationships.totalRelationships(),
   };
 }
 
@@ -378,9 +382,12 @@ function handleRender(request: RenderRequest): void {
 
 /** Handles the "Save" toolbar button's own request (ExportDomainRequest's
  * own docstring) -- each of `domain`'s five stores' own `saveToFile()`,
- * `JSON.stringify()`'d here inside the worker so the one-time structured-
- * clone cost `postMessage` pays lands on the already-serialized strings,
- * not the live entity arrays themselves. */
+ * plus its own SemanticRelationshipStore/LexicalRelationshipStore
+ * (MorphologicalPointerRelationshipStore deliberately excluded --
+ * ExportDomainRequest's own docstring on why), `JSON.stringify()`'d here
+ * inside the worker so the one-time structured-clone cost `postMessage`
+ * pays lands on the already-serialized strings, not the live entity
+ * arrays themselves. */
 function handleExportDomain(request: ExportDomainRequest): void {
   const domain = domains.get(request.domain);
   if (!domain) {
@@ -388,13 +395,18 @@ function handleExportDomain(request: ExportDomainRequest): void {
     return;
   }
   try {
-    const { dictionary, phrases, wordForms, senses, coordinations } = domain.vocabulary;
+    const { dictionary, phrases, wordForms, senses, coordinations, semanticRelationships, lexicalRelationships } = domain.vocabulary;
     const words = JSON.stringify(dictionary.saveToFile());
     const phrasesJson = JSON.stringify(phrases.saveToFile());
     const wordFormsJson = JSON.stringify(wordForms.saveToFile());
     const sensesJson = JSON.stringify(senses.saveToFile());
     const coordinationsJson = JSON.stringify(coordinations.saveToFile());
-    postLog("info", `Exported ${domain.name} — ${dictionary.totalEntries()} words, ${phrases.totalEntries()} phrases, ${wordForms.all().length} word forms, ${senses.totalEntries()} senses, ${coordinations.totalEntries()} coordinations.`);
+    const semanticRelationshipsJson = JSON.stringify(semanticRelationships.saveToFile());
+    const lexicalRelationshipsJson = JSON.stringify(lexicalRelationships.saveToFile());
+    postLog(
+      "info",
+      `Exported ${domain.name} — ${dictionary.totalEntries()} words, ${phrases.totalEntries()} phrases, ${wordForms.all().length} word forms, ${senses.totalEntries()} senses, ${coordinations.totalEntries()} coordinations, ${semanticRelationships.totalRelationships()} semantic relationships, ${lexicalRelationships.totalRelationships()} lexical relationships.`,
+    );
     post({
       type: "export-domain-result",
       requestId: request.requestId,
@@ -403,6 +415,8 @@ function handleExportDomain(request: ExportDomainRequest): void {
       wordForms: wordFormsJson,
       senses: sensesJson,
       coordinations: coordinationsJson,
+      semanticRelationships: semanticRelationshipsJson,
+      lexicalRelationships: lexicalRelationshipsJson,
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
@@ -412,17 +426,21 @@ function handleExportDomain(request: ExportDomainRequest): void {
 }
 
 /** Handles the "Load" toolbar button's own request (ImportDomainRequest's
- * own docstring) -- `JSON.parse()`s whichever of the five fields were
- * supplied and hands each to its own store's `loadFromFile()`, then
- * role/vocabulary_serializer.ts's relinkAfterLoad() once every provided
- * store has loaded (only meaningful once Dictionary/Phrases/WordForms/
- * Senses are all present -- a Coordinations-only load, say, has nothing
- * for it to relink and it's a no-op). Invalidates `renderCache` the same
- * way every seed handler already does, and posts both this request's own
- * `import-domain-result` (so the caller's pending Promise resolves) and
- * the ordinary `domain-updated` broadcast every other data-changing
- * handler already posts, so PortalShell's own existing subscription
- * re-renders without any new client-side wiring. */
+ * own docstring) -- `JSON.parse()`s whichever of the seven fields were
+ * supplied and hands each to its own store's `loadFromFile()` (the two
+ * relationship stores each additionally need their own Domain's own
+ * tensor -- `SemanticRelationshipStore.loadFromFile()`'s own docstring on
+ * why the store never holds one itself), then role/vocabulary_serializer.ts's
+ * relinkAfterLoad() once every provided store has loaded (only
+ * meaningful once Dictionary/Phrases/WordForms/Senses are all present --
+ * a Coordinations-only load, say, has nothing for it to relink and it's
+ * a no-op; the two relationship stores need no relinking pass of their
+ * own, ImportDomainRequest's own docstring on why). Invalidates
+ * `renderCache` the same way every seed handler already does, and posts
+ * both this request's own `import-domain-result` (so the caller's
+ * pending Promise resolves) and the ordinary `domain-updated` broadcast
+ * every other data-changing handler already posts, so PortalShell's own
+ * existing subscription re-renders without any new client-side wiring. */
 function handleImportDomain(request: ImportDomainRequest): void {
   const domain = domains.get(request.domain);
   if (!domain) {
@@ -430,15 +448,21 @@ function handleImportDomain(request: ImportDomainRequest): void {
     return;
   }
   try {
-    const { dictionary, phrases, wordForms, senses, coordinations } = domain.vocabulary;
+    const { dictionary, phrases, wordForms, senses, coordinations, semanticRelationships, semanticRelationshipTensor, lexicalRelationships, lexicalRelationshipTensor } =
+      domain.vocabulary;
     if (request.words !== undefined) dictionary.loadFromFile(JSON.parse(request.words));
     if (request.phrases !== undefined) phrases.loadFromFile(JSON.parse(request.phrases));
     if (request.wordForms !== undefined) wordForms.loadFromFile(JSON.parse(request.wordForms));
     if (request.senses !== undefined) senses.loadFromFile(JSON.parse(request.senses));
     if (request.coordinations !== undefined) coordinations.loadFromFile(JSON.parse(request.coordinations));
+    if (request.semanticRelationships !== undefined) semanticRelationships.loadFromFile(JSON.parse(request.semanticRelationships), semanticRelationshipTensor);
+    if (request.lexicalRelationships !== undefined) lexicalRelationships.loadFromFile(JSON.parse(request.lexicalRelationships), lexicalRelationshipTensor);
     relinkAfterLoad(dictionary, phrases, wordForms, senses);
     renderCache.delete(domain.name);
-    postLog("info", `Loaded ${domain.name} from file — ${dictionary.totalEntries()} words, ${phrases.totalEntries()} phrases, ${wordForms.all().length} word forms, ${senses.totalEntries()} senses, ${coordinations.totalEntries()} coordinations.`);
+    postLog(
+      "info",
+      `Loaded ${domain.name} from file — ${dictionary.totalEntries()} words, ${phrases.totalEntries()} phrases, ${wordForms.all().length} word forms, ${senses.totalEntries()} senses, ${coordinations.totalEntries()} coordinations, ${semanticRelationships.totalRelationships()} semantic relationships, ${lexicalRelationships.totalRelationships()} lexical relationships.`,
+    );
     post({ type: "import-domain-result", requestId: request.requestId, domain: summaryOf(domain) });
     post({ type: "domain-updated", domain: summaryOf(domain) });
   } catch (error) {
