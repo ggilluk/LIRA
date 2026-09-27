@@ -123,6 +123,14 @@ export interface HierarchyResult {
 
 export type VocabularyStatusListener = (state: VocabularyServiceState, detail?: string, progress?: number) => void;
 export type VocabularyDomainUpdateListener = (domain: VocabularyDomainSummary) => void;
+/** onDomainUpdated()'s own counterpart for DomainSnapshotMessage
+ * (that message type's own docstring, vocabulary_worker_protocol.ts) --
+ * fires once a seed-common-vocabulary or seed-wordnet run finishes
+ * successfully, with the same `ExportedDomainFiles` shape exportDomain()
+ * itself resolves with, so a listener needs no separate handling for
+ * "the automatic post-seed snapshot" vs "the result of an explicit Save
+ * click". */
+export type VocabularyDomainSnapshotListener = (domainName: string, files: ExportedDomainFiles) => void;
 /** onStatus()'s own exact counterpart for LogMessage
  * (vocabulary_worker_protocol.ts's own docstring on why WordSeeder's
  * raw onLog? callback ends up here, not a real Logger, until it
@@ -144,6 +152,7 @@ export class VocabularyWorkerClient {
   private readonly worker: Worker;
   private readonly statusListeners = new Set<VocabularyStatusListener>();
   private readonly domainUpdateListeners = new Set<VocabularyDomainUpdateListener>();
+  private readonly domainSnapshotListeners = new Set<VocabularyDomainSnapshotListener>();
   private readonly logListeners = new Set<VocabularyLogListener>();
   private readyResolvers: Array<(domains: readonly VocabularyDomainSummary[]) => void> = [];
   private readonly pendingRenders = new Map<string, { resolve: (fragment: RenderedFragment) => void; reject: (error: Error) => void }>();
@@ -283,6 +292,20 @@ export class VocabularyWorkerClient {
     this.domainUpdateListeners.add(listener);
     return () => {
       this.domainUpdateListeners.delete(listener);
+    };
+  }
+
+  /** Subscribes to every automatic post-seed snapshot the worker posts
+   * (DomainSnapshotMessage's own docstring) -- fires once per successful
+   * seed-common-vocabulary/seed-wordnet run, in addition to (not instead
+   * of) the `onDomainUpdated` call that same run already triggers.
+   * portal_shell.ts's own handleDomainSnapshot() is the one real
+   * listener today, turning each call into a set of downloadable Blob
+   * links. Returns an unsubscribe function. */
+  onDomainSnapshot(listener: VocabularyDomainSnapshotListener): () => void {
+    this.domainSnapshotListeners.add(listener);
+    return () => {
+      this.domainSnapshotListeners.delete(listener);
     };
   }
 
@@ -484,6 +507,18 @@ export class VocabularyWorkerClient {
       }
     } else if (message.type === "domain-updated") {
       for (const listener of this.domainUpdateListeners) listener(message.domain);
+    } else if (message.type === "domain-snapshot") {
+      for (const listener of this.domainSnapshotListeners) {
+        listener(message.domain, {
+          words: message.words,
+          phrases: message.phrases,
+          wordForms: message.wordForms,
+          senses: message.senses,
+          coordinations: message.coordinations,
+          semanticRelationships: message.semanticRelationships,
+          lexicalRelationships: message.lexicalRelationships,
+        });
+      }
     } else if (message.type === "log") {
       for (const listener of this.logListeners) listener(message.level, message.source, message.message, message.timestamp);
     } else if (message.type === "search-words-result") {

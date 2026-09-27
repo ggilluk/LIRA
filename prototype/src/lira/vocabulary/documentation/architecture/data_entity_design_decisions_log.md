@@ -4346,3 +4346,66 @@ record carrying the flattened `confidenceWeight`/`provenanceWeight`/
 `temporalValueWeight`/`activationWeight` fields), re-selected all 7 and
 clicked Load, confirmed the Event Log's own "Loaded Common from file"
 line reported the identical 110/76 counts back.
+
+## Post a snapshot automatically once a seed run finishes -- DomainSnapshotMessage
+
+Requested: "Seed Vocabulary" and "Load WordNet" should each save their
+own result as files, made available as Blob objects, without the user
+having to separately reach for the "Save" button afterward. Clarified
+via two questions: (1) in-memory Blobs generated automatically right
+after seeding, not real files written to `assets/` on disk (a browser
+Worker has no filesystem access at runtime -- writing real seed files
+would mean a separate build-time script, a different feature entirely);
+(2) the Blobs should surface as clickable download links in the UI, not
+just sit unreachable in memory for some other internal reuse.
+
+**Reused, not duplicated, the "Save" button's own export logic.**
+`handleExportDomain()`'s own inline five-`saveToFile()`-calls-plus-two-
+relationship-stores body (the previous entry above) is now
+`exportSnapshotFiles(domain)`, a plain helper returning the same
+seven-string object either caller needs -- an explicit Save click
+(`handleExportDomain`) or an automatic post-seed snapshot
+(`postDomainSnapshot`, new). `snapshotSummaryLine(domain)` similarly
+factors the "N words, N phrases, ..." count string both `postLog()`
+calls that already existed (Save, Load) and this new automatic path all
+need, instead of writing the same seven-field template a third time.
+
+**New spontaneous message, not a repurposed response.** `ExportedDomainMessage`
+only exists because `exportDomain()` is a request/response call with a
+`requestId` a caller is actually waiting on; nothing asks for a
+post-seed snapshot, so reusing that message type would leave `requestId`
+meaningless. `DomainSnapshotMessage` (vocabulary_worker_protocol.ts) is
+`ExportedDomainMessage`'s own seven-string shape minus `requestId`, plus
+`domain` (naming which Domain it's for, since nothing else on this
+message says so) -- posted once, at the very end of
+`handleSeedCommonVocabulary()`/`handleSeedWordNet()`, right after the
+`domain-updated` broadcast they already post, never for Physics
+(SEED_TARGET_DOMAIN's own docstring on why neither seed action targets
+it, and Physics's own Dictionary/Phrases snapshot is a `seedFrom()` copy,
+not a seed run of its own worth downloading).
+
+**Wrapped in its own try/catch, deliberately separate from the seed's
+own.** `postDomainSnapshot()` calls `exportSnapshotFiles()` inside a
+try/catch that only ever logs a `"warn"` on failure -- a
+`JSON.stringify()` blow-up building the snapshot (the same failure mode
+`ExportDomainRequest`'s own handler already guards against, just far
+more likely to actually happen here: a WordNet-scale seed run is
+~156,000 Words instead of ~400) must never turn an otherwise-successful
+seed run into a reported failure. The seed's own "done" status and
+`domain-updated` broadcast are posted first, unconditionally, before
+`postDomainSnapshot()` even runs -- a snapshot failure only costs the
+snapshot.
+
+`vocabulary_worker_client.ts` gained `onDomainSnapshot()`, `onDomainUpdated()`'s
+own exact Set-of-listeners/unsubscribe shape, firing with the Domain
+name plus the same `ExportedDomainFiles` object `exportDomain()` itself
+already resolves with -- one shape either path resolves through, so
+`portal_shell.ts` needs no separate handling for "the automatic snapshot"
+vs "the result of an explicit Save".
+
+`npx tsc -b --force` clean; `npx vitest run --no-file-parallelism`
+196/196, unchanged -- pure Worker-plumbing/UI wiring, the same "no new
+tests of their own" precedent the Event Log work and the Save/Load UI
+wiring both already set (see `common/`'s own design log for that UI
+half, including the live Playwright verification of the actual
+auto-populated download links).

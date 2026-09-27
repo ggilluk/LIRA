@@ -290,6 +290,34 @@ export interface DomainUpdatedMessage {
   domain: VocabularyDomainSummary;
 }
 
+/** Posted automatically once a seed-common-vocabulary or seed-wordnet
+ * request finishes successfully -- ExportedDomainMessage's own exact
+ * seven-file shape, minus `requestId` (nothing asked for this one; it's
+ * spontaneous, not a response), plus `domain` naming which Domain it's
+ * for. Lets the Portal shell keep a standing, downloadable snapshot of
+ * "what this Domain looked like right after its last seed run" without
+ * the user having to reach for the "Save" button separately
+ * (portal_shell.ts's own handleDomainSnapshot()) -- built from the exact
+ * same `saveToFile()` calls ExportDomainRequest's own handler
+ * (vocabulary_worker.ts's own exportSnapshotFiles(), shared by both
+ * paths) already makes, just triggered by a seed finishing rather than
+ * an explicit "Save" click. Not posted for Physics -- SEED_TARGET_DOMAIN's
+ * own docstring on why neither seed action ever targets it directly;
+ * Physics only ever receives a one-time Dictionary/Phrases copy of
+ * Common's own snapshot, seedFrom()'s own semantics, not a seed run of
+ * its own worth downloading. */
+export interface DomainSnapshotMessage {
+  type: "domain-snapshot";
+  domain: string;
+  words: string;
+  phrases: string;
+  wordForms: string;
+  senses: string;
+  coordinations: string;
+  semanticRelationships: string;
+  lexicalRelationships: string;
+}
+
 /** A rendered Domain's DictionaryView, as its three renderFragment()
  * pieces -- style/body/script -- rather than one self-contained HTML
  * string. The Portal shell mounts these directly into its own DOM
@@ -492,6 +520,7 @@ export type VocabularyWorkerMessage =
   | ImportDomainErrorMessage
   | ErrorMessage
   | DomainUpdatedMessage
+  | DomainSnapshotMessage
   | SearchWordsResultMessage
   | SearchPhrasesResultMessage
   | SearchSensesResultMessage

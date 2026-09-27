@@ -3,7 +3,7 @@ import type { PortalDomain, PortalDomainRegistry } from "../data/portal_domain";
 import { LogEventBoard } from "../data/log_event";
 import { Logger } from "../role/logger";
 import { ServiceStatusView } from "./service_status_view";
-import type { VocabularyWorkerClient, ImportDomainFiles } from "../../vocabulary/role/web_worker/vocabulary_worker_client";
+import type { VocabularyWorkerClient, ImportDomainFiles, ExportedDomainFiles } from "../../vocabulary/role/web_worker/vocabulary_worker_client";
 import type { RenderedFragment } from "../../vocabulary/role/web_worker/vocabulary_worker_protocol";
 import type { LinguisticsWorkerClient } from "../../linguistics/role/web_worker/linguistics_worker_client";
 import { SentenceReaderView } from "../../linguistics/ui/sentence_reader_view";
@@ -198,6 +198,14 @@ export class PortalShell {
    * those two buttons, checked alongside `running` in
    * vocabToolbarInner(). */
   private ioInFlight = false;
+  /** The most recent automatic post-seed snapshot per Domain name
+   * (DomainSnapshotMessage's own docstring), kept as real Blob URLs --
+   * handleDomainSnapshot()'s own doing, revoked and replaced wholesale
+   * every time a new snapshot for that same Domain arrives, so a session
+   * with several seed runs never leaks the earlier Blobs. Rendered by
+   * snapshotLinksHtml() as a row of downloadable links, next to the
+   * toolbar's own status detail text. */
+  private readonly domainSnapshots = new Map<string, { label: string; filename: string; url: string }[]>();
   // The Domain name whose Vocabulary fragment is currently mounted --
   // set once loadView() actually finishes mounting one (not at request
   // time: a stale or failed fetch should never become the search
@@ -263,6 +271,13 @@ export class PortalShell {
     this.vocabularyClient.onDomainUpdated((domain) => {
       this.registry.add(domain);
       this.render();
+    });
+    // Fires alongside (never instead of) the onDomainUpdated call above,
+    // once per successful seed-common-vocabulary/seed-wordnet run --
+    // handleDomainSnapshot()'s own docstring on what it does with the
+    // seven files this hands over.
+    this.vocabularyClient.onDomainSnapshot((domainName, files) => {
+      this.handleDomainSnapshot(domainName, files);
     });
     this.searchWordsBridge();
     this.searchPhrasesBridge();
@@ -562,6 +577,43 @@ export class PortalShell {
       });
   }
 
+  /** `vocabularyClient.onDomainSnapshot()`'s own listener -- turns an
+   * automatic post-seed snapshot (DomainSnapshotMessage's own docstring)
+   * into real, downloadable Blob objects, the same `Blob`+
+   * `URL.createObjectURL` mechanics `downloadJsonFile()` below uses,
+   * just without the immediate `<a>`+`.click()` -- these are meant to
+   * sit as links until the user actually wants one, not download
+   * themselves the moment a seed run finishes. Revokes `domainName`'s
+   * own previous snapshot URLs first (if any): each seed run replaces
+   * the last one wholesale, so keeping the old Blobs alive too would
+   * only leak memory across a session with several seed runs, never
+   * serve a link still worth keeping. Only updates the toolbar's own
+   * markup (`updateVocabToolbar()`'s own narrow-refresh precedent) --
+   * a snapshot arriving is never itself a reason to remount the
+   * Vocabulary fragment the way `onDomainUpdated` does. */
+  private handleDomainSnapshot(domainName: string, files: ExportedDomainFiles): void {
+    const previous = this.domainSnapshots.get(domainName);
+    if (previous) for (const link of previous) URL.revokeObjectURL(link.url);
+
+    const prefix = domainName.toLowerCase();
+    const entries: readonly [label: string, filename: string, json: string][] = [
+      ["Words", `${prefix}-words.json`, files.words],
+      ["Phrases", `${prefix}-phrases.json`, files.phrases],
+      ["Word Forms", `${prefix}-word_forms.json`, files.wordForms],
+      ["Senses", `${prefix}-senses.json`, files.senses],
+      ["Coordinations", `${prefix}-coordinations.json`, files.coordinations],
+      ["Semantic Relationships", `${prefix}-semantic-relationships.json`, files.semanticRelationships],
+      ["Lexical Relationships", `${prefix}-lexical-relationships.json`, files.lexicalRelationships],
+    ];
+    this.domainSnapshots.set(
+      domainName,
+      entries.map(([label, filename, json]) => ({ label, filename, url: URL.createObjectURL(new Blob([json], { type: "application/json" })) })),
+    );
+
+    const status = this.statusBoard.get("vocabulary");
+    if (status) this.updateVocabToolbar(status);
+  }
+
   /** The Vocabulary view pane's own toolbar -- "Seed Vocabulary" (the
    * Common Vocabulary Cache's own seed files) and "Load WordNet" (the
    * Princeton WordNet dict/ text), plus a live status line/progress bar
@@ -595,7 +647,23 @@ export class PortalShell {
           ? `<div class="portal-vocab-toolbar-progress"><div class="portal-vocab-toolbar-progress-fill" style="width:${Math.round(progress * 100)}%"></div></div>`
           : ""
       }
+      ${this.snapshotLinksHtml()}
     `;
+  }
+
+  /** vocabToolbarInner()'s own trailing row -- one downloadable link per
+   * file in `domainSnapshots.get(SEED_TARGET_DOMAIN)` (handleDomainSnapshot()'s
+   * own docstring on where that Map comes from), empty until the first
+   * seed run in this session actually finishes. Plain `<a href="blob:..."
+   * download>` anchors -- clicking one just downloads that one file,
+   * the same `.download` mechanics `downloadJsonFile()` below drives
+   * programmatically, no extra click handler of this class's own
+   * needed. */
+  private snapshotLinksHtml(): string {
+    const links = this.domainSnapshots.get(SEED_TARGET_DOMAIN);
+    if (!links || links.length === 0) return "";
+    const anchors = links.map((link) => `<a class="portal-vocab-snapshot-link" href="${link.url}" download="${escapeHtml(link.filename)}">${escapeHtml(link.label)}</a>`).join("");
+    return `<div class="portal-vocab-snapshot-links"><span class="portal-vocab-snapshot-label">Last seed snapshot:</span>${anchors}</div>`;
   }
 
   /** Targeted counterpart to renderVocabToolbar() -- see this class's
@@ -1015,6 +1083,10 @@ const SHELL_CSS = `
 .portal-vocab-toolbar-detail { font-size: 0.78rem; color: var(--ink-muted); flex: 1; min-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .portal-vocab-toolbar-progress { flex: 0 0 100%; height: 4px; border-radius: 999px; background: var(--surface-2); overflow: hidden; }
 .portal-vocab-toolbar-progress-fill { height: 100%; background: var(--accent); border-radius: 999px; transition: width 0.2s ease-out; }
+.portal-vocab-snapshot-links { flex: 0 0 100%; display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; font-size: 0.74rem; }
+.portal-vocab-snapshot-label { color: var(--ink-muted); }
+.portal-vocab-snapshot-link { color: var(--accent); text-decoration: none; border-bottom: 1px dotted var(--accent); }
+.portal-vocab-snapshot-link:hover { text-decoration: none; border-bottom-style: solid; }
 .portal-view-status { padding: 0.4rem 0.9rem 0; font-size: 0.76rem; color: var(--ink-muted); flex: none; }
 .portal-fragment-mount { flex: 1; min-width: 0; min-height: 0; overflow-y: auto; padding: 0.85rem 0.9rem 1.1rem; background: var(--ground); }
 .mode-mobile .portal-fragment-mount { min-height: 55vh; }

@@ -279,3 +279,53 @@ downloaded (the two new ones at 110 and 76 entries respectively,
 matching the Domain's own real seeded relationship counts), re-selected
 all 7 and clicked Load, confirmed the Event Log's "Loaded Common from
 file — ..." line reported the identical semantic/lexical counts back.
+
+## Auto-populate a "Last seed snapshot" download row after Seed Vocabulary / Load WordNet
+
+Requested: seeding shouldn't require a separate "Save" click to get a
+downloadable copy of what was just seeded -- both seed actions should
+save their own result, "available as blob objects". The Worker-side
+half (`DomainSnapshotMessage`, `exportSnapshotFiles()`,
+`postDomainSnapshot()`) is `vocabulary/`'s own concern; this entry
+covers only what `portal_shell.ts` does with the seven strings it
+receives.
+
+**Blobs, not auto-downloads.** `handleDomainSnapshot()` (this class's
+own new `vocabularyClient.onDomainSnapshot()` listener) builds a `Blob`
++`URL.createObjectURL()` per file -- `downloadJsonFile()`'s own first
+half, minus the second half (`<a>`+`.click()`+`URL.revokeObjectURL()`).
+A seed finishing is not itself a reason to push a file at the user
+unprompted; these sit as real, clickable links (`snapshotLinksHtml()`,
+a new trailing row in `vocabToolbarInner()`, "Last seed snapshot:" plus
+one `<a href="blob:..." download="...">` per file) until the user
+actually wants one.
+
+**Each new snapshot revokes the last one for that Domain.** `domainSnapshots`
+(a new `Map<domainName, {label, filename, url}[]>` field) holds exactly
+one snapshot per Domain name at a time -- `handleDomainSnapshot()` calls
+`URL.revokeObjectURL()` on every link already stored for that Domain
+before building the new set. Without this, a session with several seed
+runs (Seed Vocabulary, then Load WordNet, then Seed Vocabulary again on
+a different Domain) would leak one full seven-file Blob set per run,
+each potentially tens of megabytes at WordNet scale, for the rest of the
+page's lifetime.
+
+**A narrow refresh, not a full render().** `handleDomainSnapshot()` ends
+by calling `updateVocabToolbar()` directly (this class's own established
+"a status tick only touches the toolbar's own markup" precedent, its own
+constructor comment on why) rather than `render()` -- a snapshot becoming
+available is never itself a reason to remount the Vocabulary fragment.
+
+`npx tsc -b --force` clean; `npx vitest run --no-file-parallelism`
+196/196, unchanged (pure Worker-plumbing/UI wiring, no new tests of
+their own -- see `vocabulary/`'s own design log for the Worker-side
+half). Live Playwright verification against the real bundled Common
+Vocabulary Cache and Princeton WordNet 3.1: confirmed zero snapshot
+links before any seeding; clicked "Seed Vocabulary" alone (no Save
+click) and confirmed all 7 links appeared immediately after, each with
+the right filename/label, and fetched one Blob directly from the page
+to confirm its own real content (400 words); then clicked "Load WordNet"
+and confirmed the links refreshed to a second, much larger snapshot
+(92,714 words) once the worker's own considerably heavier `JSON.stringify()`
+pass finished, and that the *first* run's own Blob URLs were genuinely
+revoked by then (a direct `fetch()` against the old URL failed).

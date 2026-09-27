@@ -226,6 +226,7 @@ async function handleSeedCommonVocabulary(request: SeedCommonVocabularyRequest):
       detail: `Vocabulary seeded into ${domain.name} — ${wordsSeeded.toLocaleString()} words, ${phrasesSeeded.toLocaleString()} phrases, ${relationshipsSeeded.toLocaleString()} relationships`,
     });
     for (const updated of updatedDomains) post({ type: "domain-updated", domain: summaryOf(updated) });
+    postDomainSnapshot(domain);
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     post({ type: "status", state: "error", detail: message });
@@ -324,6 +325,7 @@ async function handleSeedWordNet(request: SeedWordNetRequest): Promise<void> {
       detail: `WordNet seeded into ${domain.name} — ${wordsSeeded.toLocaleString()} words, ${phrasesSeeded.toLocaleString()} phrases, ${result.relationshipsSeeded.toLocaleString()} relationships`,
     });
     post({ type: "domain-updated", domain: summaryOf(domain) });
+    postDomainSnapshot(domain);
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     post({ type: "status", state: "error", detail: message });
@@ -380,14 +382,65 @@ function handleRender(request: RenderRequest): void {
   }
 }
 
+/** The seven-file JSON snapshot both handleExportDomain() (an explicit
+ * "Save" click) and handleSeedCommonVocabulary()/handleSeedWordNet() (an
+ * automatic post-seed snapshot, DomainSnapshotMessage's own docstring)
+ * build from `domain`'s current stores -- each of `domain`'s five entity
+ * stores' own `saveToFile()`, plus its own SemanticRelationshipStore/
+ * LexicalRelationshipStore (MorphologicalPointerRelationshipStore
+ * deliberately excluded -- ExportDomainRequest's own docstring on why),
+ * `JSON.stringify()`'d here inside the worker so the one-time
+ * structured-clone cost `postMessage` pays lands on the
+ * already-serialized strings, not the live entity arrays themselves. */
+function exportSnapshotFiles(domain: SeededDomain): {
+  words: string;
+  phrases: string;
+  wordForms: string;
+  senses: string;
+  coordinations: string;
+  semanticRelationships: string;
+  lexicalRelationships: string;
+} {
+  const { dictionary, phrases, wordForms, senses, coordinations, semanticRelationships, lexicalRelationships } = domain.vocabulary;
+  return {
+    words: JSON.stringify(dictionary.saveToFile()),
+    phrases: JSON.stringify(phrases.saveToFile()),
+    wordForms: JSON.stringify(wordForms.saveToFile()),
+    senses: JSON.stringify(senses.saveToFile()),
+    coordinations: JSON.stringify(coordinations.saveToFile()),
+    semanticRelationships: JSON.stringify(semanticRelationships.saveToFile()),
+    lexicalRelationships: JSON.stringify(lexicalRelationships.saveToFile()),
+  };
+}
+
+function snapshotSummaryLine(domain: SeededDomain): string {
+  const { dictionary, phrases, wordForms, senses, coordinations, semanticRelationships, lexicalRelationships } = domain.vocabulary;
+  return `${dictionary.totalEntries()} words, ${phrases.totalEntries()} phrases, ${wordForms.all().length} word forms, ${senses.totalEntries()} senses, ${coordinations.totalEntries()} coordinations, ${semanticRelationships.totalRelationships()} semantic relationships, ${lexicalRelationships.totalRelationships()} lexical relationships`;
+}
+
+/** Posts a DomainSnapshotMessage for `domain` -- the automatic
+ * post-seed snapshot handleSeedCommonVocabulary()/handleSeedWordNet()
+ * each call once they finish successfully (DomainSnapshotMessage's own
+ * docstring, vocabulary_worker_protocol.ts). Wrapped in its own
+ * try/catch so a snapshot failure (exportSnapshotFiles()'s own
+ * `JSON.stringify()` calls, same failure mode ExportDomainRequest's own
+ * handler already guards against) never turns an otherwise-successful
+ * seed run into a failed one -- it only costs the snapshot itself,
+ * logged as its own warning rather than surfacing as the seed's own
+ * error. */
+function postDomainSnapshot(domain: SeededDomain): void {
+  try {
+    const files = exportSnapshotFiles(domain);
+    post({ type: "domain-snapshot", domain: domain.name, ...files });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    postLog("warn", `Failed to build a post-seed snapshot for ${domain.name}: ${message}`);
+  }
+}
+
 /** Handles the "Save" toolbar button's own request (ExportDomainRequest's
- * own docstring) -- each of `domain`'s five stores' own `saveToFile()`,
- * plus its own SemanticRelationshipStore/LexicalRelationshipStore
- * (MorphologicalPointerRelationshipStore deliberately excluded --
- * ExportDomainRequest's own docstring on why), `JSON.stringify()`'d here
- * inside the worker so the one-time structured-clone cost `postMessage`
- * pays lands on the already-serialized strings, not the live entity
- * arrays themselves. */
+ * own docstring) -- exportSnapshotFiles()'s own output, posted back on
+ * this request's `requestId`. */
 function handleExportDomain(request: ExportDomainRequest): void {
   const domain = domains.get(request.domain);
   if (!domain) {
@@ -395,29 +448,9 @@ function handleExportDomain(request: ExportDomainRequest): void {
     return;
   }
   try {
-    const { dictionary, phrases, wordForms, senses, coordinations, semanticRelationships, lexicalRelationships } = domain.vocabulary;
-    const words = JSON.stringify(dictionary.saveToFile());
-    const phrasesJson = JSON.stringify(phrases.saveToFile());
-    const wordFormsJson = JSON.stringify(wordForms.saveToFile());
-    const sensesJson = JSON.stringify(senses.saveToFile());
-    const coordinationsJson = JSON.stringify(coordinations.saveToFile());
-    const semanticRelationshipsJson = JSON.stringify(semanticRelationships.saveToFile());
-    const lexicalRelationshipsJson = JSON.stringify(lexicalRelationships.saveToFile());
-    postLog(
-      "info",
-      `Exported ${domain.name} — ${dictionary.totalEntries()} words, ${phrases.totalEntries()} phrases, ${wordForms.all().length} word forms, ${senses.totalEntries()} senses, ${coordinations.totalEntries()} coordinations, ${semanticRelationships.totalRelationships()} semantic relationships, ${lexicalRelationships.totalRelationships()} lexical relationships.`,
-    );
-    post({
-      type: "export-domain-result",
-      requestId: request.requestId,
-      words,
-      phrases: phrasesJson,
-      wordForms: wordFormsJson,
-      senses: sensesJson,
-      coordinations: coordinationsJson,
-      semanticRelationships: semanticRelationshipsJson,
-      lexicalRelationships: lexicalRelationshipsJson,
-    });
+    const files = exportSnapshotFiles(domain);
+    postLog("info", `Exported ${domain.name} — ${snapshotSummaryLine(domain)}.`);
+    post({ type: "export-domain-result", requestId: request.requestId, ...files });
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     postLog("error", `Failed to export ${domain.name}: ${message}`);
