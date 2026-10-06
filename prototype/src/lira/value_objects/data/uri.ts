@@ -1,12 +1,15 @@
 /** Uri: this prototype's own addition, no CCTS Core Component Type or
  * Python original behind it (identifier.ts's own `uuid`/`hash` are the
- * precedent for a TS-port-only value object living here). Exists to
- * give every `*Uri`-suffixed supplementary attribute already in this
- * layer (`Code.listUri`/`listSchemeUri`, `Identifier.schemeUri`/
- * `schemeDataUri`, ...) a real, validated type to carry instead of a
- * bare `string` -- not wired onto any of those fields yet, a deliberate
- * separate step (this class's own docstring update, once a caller
- * actually needs it, is the moment to revisit each one).
+ * precedent for a TS-port-only value object living here). Carries every
+ * `*Uri`-suffixed supplementary attribute in this layer that's a real,
+ * dereferenceable locator rather than an identifying reference in its
+ * own right -- `Code.listUri`/`listSchemeUri` (code.ts), `Identifier.schemeUri`/
+ * `schemeDataUri` (identifier.ts), and every `code/*.ts` CCTS `Code`
+ * specialisation's own `listUri`/`listSchemeUri` -- instead of a bare
+ * `string`. `vocabulary/data/source_reference.ts`'s own `referenceUri`
+ * is the one real `*Uri`-named field that deliberately stayed
+ * `Identifier`-typed -- that file's own docstring on why the name alone
+ * isn't enough to tell the two apart.
  *
  * Deliberately a thin wrapper around the platform's own `URL`, not a
  * hand-rolled RFC 3986 parser -- `URL`'s own parser already is one,

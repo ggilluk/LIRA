@@ -1,8 +1,12 @@
+import type { Uri } from "./uri";
+
 /** Identifier. Type, per the UN/CEFACT Core Components Technical
  * Specification (CCTS) Core Component Type catalogue (Layer Summary:
  * Value Objects Layer). Ported from value_objects/data/identifier.py,
- * plus two TS-port-only additions with no Python counterpart: `uuid`
- * and `hash` (both below). */
+ * except `schemeDataUri`/`schemeUri`: `string` there, `Uri` here --
+ * Code.listUri's own exact reasoning (data/code.ts) -- plus two further
+ * TS-port-only additions with no Python counterpart: `uuid` and `hash`
+ * (both below). */
 export interface Identifier {
   value: string;
   schemeId?: string;
@@ -10,8 +14,8 @@ export interface Identifier {
   schemeAgencyId?: string;
   schemeAgencyName?: string;
   schemeVersionId?: string;
-  schemeDataUri?: string;
-  schemeUri?: string;
+  schemeDataUri?: Uri;
+  schemeUri?: Uri;
   /** A fresh random 53-bit graph-identity number naming this Identifier
    * value object instance itself -- distinct from `value`, which names
    * whatever `value` is an Identifier *for* (a Word's own uuid, a

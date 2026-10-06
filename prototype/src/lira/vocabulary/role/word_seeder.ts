@@ -55,6 +55,7 @@ import { VectorPrimitiveRootWord } from "../data/enums/vector_primitive_root_wor
 import { VERB_FRAME_TEXT } from "../data/enums/verb_framed_example_template";
 import {
   LanguageStyleCodelist,
+  Uri,
   dialectCodeFor,
   languageCodeFor,
   languageStyleCodeFor,
@@ -250,7 +251,7 @@ const WORDNET_SOURCE_REFERENCE: SourceReference = {
 const WORDNET_SYNSET_ID_SCHEME = {
   schemeId: "wn31",
   schemeAgencyName: "Princeton University",
-  schemeUri: "https://wordnet.princeton.edu/",
+  schemeUri: new Uri("https://wordnet.princeton.edu/"),
 } as const;
 // Every SYNONYM edge seedWordNet creates comes straight from WordNet
 // synset membership, a curated linguistic fact, not an inference with

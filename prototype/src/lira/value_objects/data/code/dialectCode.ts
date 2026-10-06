@@ -1,4 +1,5 @@
 import type { Code } from "../code";
+import { Uri } from "../uri";
 import { DialectCodelist, dialectCodelistCode } from "../enum/dialectCodelist";
 
 /**
@@ -19,8 +20,8 @@ export class DialectCode implements Code {
   readonly listAgencyName = "Internet Assigned Numbers Authority";
   readonly listName = "Language Subtag Registry - variant subtags";
   readonly listVersionId?: string;
-  readonly listUri?: string;
-  readonly listSchemeUri = "https://www.iana.org/assignments/language-subtag-registry/language-subtag-registry";
+  readonly listUri?: Uri;
+  readonly listSchemeUri = new Uri("https://www.iana.org/assignments/language-subtag-registry/language-subtag-registry");
 
   constructor(codelist: DialectCodelist, name?: string, languageId?: string) {
     this.codelist = codelist;

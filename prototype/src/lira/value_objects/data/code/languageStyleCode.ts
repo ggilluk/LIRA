@@ -1,4 +1,5 @@
 import type { Code } from "../code";
+import type { Uri } from "../uri";
 import { LanguageStyleCodelist } from "../enum/languageStyleCodelist";
 
 /**
@@ -20,8 +21,8 @@ export class LanguageStyleCode implements Code {
   readonly listAgencyName?: string;
   readonly listName = "Language Style";
   readonly listVersionId?: string;
-  readonly listUri?: string;
-  readonly listSchemeUri?: string;
+  readonly listUri?: Uri;
+  readonly listSchemeUri?: Uri;
 
   constructor(value: LanguageStyleCodelist, name?: string, languageId?: string) {
     this.value = value;

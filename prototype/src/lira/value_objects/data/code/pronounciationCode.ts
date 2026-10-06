@@ -1,4 +1,5 @@
 import type { Code } from "../code";
+import { Uri } from "../uri";
 import { PronounciationCodelist } from "../enum/pronounciationCodelist";
 import { PronounciationCategoryCodelist } from "../enum/pronounciationCategoryCodelist";
 
@@ -23,8 +24,8 @@ export class PronounciationCode implements Code {
   readonly listAgencyName = "International Phonetic Association";
   readonly listName = "International Phonetic Alphabet";
   readonly listVersionId?: string;
-  readonly listUri?: string;
-  readonly listSchemeUri = "https://www.internationalphoneticassociation.org/content/ipa-chart";
+  readonly listUri?: Uri;
+  readonly listSchemeUri = new Uri("https://www.internationalphoneticassociation.org/content/ipa-chart");
 
   readonly category: PronounciationCategoryCodelist;
   readonly ipaNumber?: string;

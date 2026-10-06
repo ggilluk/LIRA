@@ -1,4 +1,5 @@
 import type { Code } from "../code";
+import { Uri } from "../uri";
 import { ScriptCodelist, scriptCodelistCode } from "../enum/scriptCodelist";
 
 /** UN/CEFACT CCTS Code. Type specialised for ISO 15924 script codes. */
@@ -13,8 +14,8 @@ export class ScriptCode implements Code {
   readonly listAgencyName = "International Organization for Standardization";
   readonly listName = "Codes for the representation of names of scripts";
   readonly listVersionId?: string;
-  readonly listUri?: string;
-  readonly listSchemeUri = "https://unicode.org/iso15924/iso15924.txt";
+  readonly listUri?: Uri;
+  readonly listSchemeUri = new Uri("https://unicode.org/iso15924/iso15924.txt");
 
   constructor(codelist: ScriptCodelist, name?: string, languageId?: string) {
     this.codelist = codelist;

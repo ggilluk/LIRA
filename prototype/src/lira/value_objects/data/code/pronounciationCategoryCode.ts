@@ -1,4 +1,5 @@
 import type { Code } from "../code";
+import type { Uri } from "../uri";
 import { PronounciationCategoryCodelist } from "../enum/pronounciationCategoryCodelist";
 
 /**
@@ -18,16 +19,16 @@ export class PronounciationCategoryCode implements Code {
   readonly listAgencyName?: string;
   readonly listName = "Pronounciation Category";
   readonly listVersionId?: string;
-  readonly listUri?: string;
-  readonly listSchemeUri?: string;
+  readonly listUri?: Uri;
+  readonly listSchemeUri?: Uri;
 
   constructor(
     value: PronounciationCategoryCodelist,
     name?: string,
     languageId?: string,
     listVersionId?: string,
-    listUri?: string,
-    listSchemeUri?: string,
+    listUri?: Uri,
+    listSchemeUri?: Uri,
   ) {
     this.value = value;
     this.name = name;
