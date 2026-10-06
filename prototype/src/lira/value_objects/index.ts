@@ -27,3 +27,4 @@ export {
   scriptCodeFor,
   languageStyleCodeFor,
 } from "./data/text";
+export { Uri } from "./data/uri";
