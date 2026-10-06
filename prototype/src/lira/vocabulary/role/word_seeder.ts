@@ -245,7 +245,7 @@ const ROOT_WORD_DOMAIN_TAG = "root_word.common";
 const WORDNET_SOURCE_REFERENCE: SourceReference = {
   sourceName: { value: "Princeton WordNet 3.1" },
   sourceVersion: { value: "3.1" },
-  referenceUri: { value: "https://wordnet.princeton.edu/" },
+  referenceUri: new Uri("https://wordnet.princeton.edu/"),
   licenceIdentifier: { value: "Princeton WordNet License" },
 };
 const WORDNET_SYNSET_ID_SCHEME = {
@@ -2601,7 +2601,14 @@ export class WordSeeder {
       sourceName: { value: ref.source_name },
       sourceVersion: optText(ref.source_version),
       externalIdentifier: ref.external_identifier ? { value: ref.external_identifier } : undefined,
-      referenceUri: ref.reference_uri ? { value: ref.reference_uri } : undefined,
+      // Asset-sourced, not a guaranteed-well-formed configured value the
+      // way WORDNET_SOURCE_REFERENCE's own referenceUri is --
+      // dialectCodeFor()'s own "don't throw, drop it" precedent
+      // (text.ts), not languageCodeFor()'s own "throw, it's guaranteed"
+      // one: a malformed reference_uri in the Common Vocabulary/
+      // Relationship Cache shouldn't crash the whole seeding pass over
+      // one optional provenance field.
+      referenceUri: ref.reference_uri && Uri.isValid(ref.reference_uri) ? new Uri(ref.reference_uri) : undefined,
       licenceIdentifier: ref.licence_identifier ? { value: ref.licence_identifier } : undefined,
     }));
 
@@ -2752,7 +2759,14 @@ export class WordSeeder {
       sourceName: { value: ref.source_name },
       sourceVersion: optText(ref.source_version),
       externalIdentifier: ref.external_identifier ? { value: ref.external_identifier } : undefined,
-      referenceUri: ref.reference_uri ? { value: ref.reference_uri } : undefined,
+      // Asset-sourced, not a guaranteed-well-formed configured value the
+      // way WORDNET_SOURCE_REFERENCE's own referenceUri is --
+      // dialectCodeFor()'s own "don't throw, drop it" precedent
+      // (text.ts), not languageCodeFor()'s own "throw, it's guaranteed"
+      // one: a malformed reference_uri in the Common Vocabulary/
+      // Relationship Cache shouldn't crash the whole seeding pass over
+      // one optional provenance field.
+      referenceUri: ref.reference_uri && Uri.isValid(ref.reference_uri) ? new Uri(ref.reference_uri) : undefined,
       licenceIdentifier: ref.licence_identifier ? { value: ref.licence_identifier } : undefined,
     }));
 

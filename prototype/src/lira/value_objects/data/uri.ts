@@ -1,15 +1,16 @@
 /** Uri: this prototype's own addition, no CCTS Core Component Type or
  * Python original behind it (identifier.ts's own `uuid`/`hash` are the
  * precedent for a TS-port-only value object living here). Carries every
- * `*Uri`-suffixed supplementary attribute in this layer that's a real,
- * dereferenceable locator rather than an identifying reference in its
- * own right -- `Code.listUri`/`listSchemeUri` (code.ts), `Identifier.schemeUri`/
- * `schemeDataUri` (identifier.ts), and every `code/*.ts` CCTS `Code`
- * specialisation's own `listUri`/`listSchemeUri` -- instead of a bare
- * `string`. `vocabulary/data/source_reference.ts`'s own `referenceUri`
- * is the one real `*Uri`-named field that deliberately stayed
- * `Identifier`-typed -- that file's own docstring on why the name alone
- * isn't enough to tell the two apart.
+ * `*Uri`-suffixed attribute in this layer instead of a bare `string` --
+ * `Code.listUri`/`listSchemeUri` (code.ts), `Identifier.schemeUri`/
+ * `schemeDataUri` (identifier.ts), every `code/*.ts` CCTS `Code`
+ * specialisation's own `listUri`/`listSchemeUri`, and
+ * `SourceReference.referenceUri` (vocabulary/data/source_reference.ts,
+ * the one `*Uri` field with a real Python original behind it --
+ * `Identifier`-typed there, moved to `Uri` here anyway: a format-checked
+ * address is worth more than fidelity to a Python type that itself only
+ * ever carried a bare URI string as `value`, never used any of
+ * `Identifier`'s own scheme/agency supplementary components).
  *
  * Deliberately a thin wrapper around the platform's own `URL`, not a
  * hand-rolled RFC 3986 parser -- `URL`'s own parser already is one,

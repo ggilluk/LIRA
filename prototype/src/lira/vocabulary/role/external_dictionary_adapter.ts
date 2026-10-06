@@ -3,6 +3,7 @@ import { combinedConfidence } from "../data/external_word_candidate";
 import { PartOfSpeech } from "../data/enums/part_of_speech";
 import type { SourceReference } from "../data/source_reference";
 import type { WordLookupContext } from "../data/word_lookup_context";
+import { Uri } from "../../value_objects";
 
 /** Translates an external dictionary API response into LIRA vocabulary
  * candidates, insulating core engine data structures against external
@@ -109,7 +110,7 @@ export class ExternalDictionaryAdapter {
     const sourceReference: SourceReference = {
       sourceName: { value: "Free Dictionary API" },
       externalIdentifier: { value: `${sourceWord}:${rawPartOfSpeech}` },
-      referenceUri: { value: sourceUri },
+      referenceUri: new Uri(sourceUri),
     };
 
     return {
