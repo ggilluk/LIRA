@@ -548,3 +548,68 @@ projects` command lines still both showed `lira:/$ ` (the directory
 they actually ran from), not retroactively rewritten to `/projects` --
 confirming the freeze-at-submission-time design actually holds, not
 just the live prompt's own update.
+
+## Console: a `ps` command, honest about what it can't measure
+
+The request was CPU usage, memory, "as many metrics as possible." The
+answer settled on carries only two real fields, and deliberately has
+no CPU column at all -- not even a blank one. There is no browser API
+that exposes per-thread or per-Worker CPU usage to JS, full stop; any
+number `ps` printed there would be invented, which this whole session's
+own running rule (`Measure`, `Uri`, the relationship-store docstrings)
+has consistently refused to do. `uptimeMs` (wall-clock since the Worker
+started, trivially real) and JS heap usage via `performance.memory`
+are the only two things left that are actually measurable, so those are
+what `WorkerMetrics` carries.
+
+**`performance.memory` turned out to have a narrower reach than its own
+docstring first claimed.** The first pass wrote it off as "Chrome/Edge
+only, `undefined` on Firefox/Safari" -- true, but incomplete. Live
+Playwright verification showed `ps` printing `-` for HEAP/%HEAP on
+*both* real Worker-backed Services even in this project's own Chromium
+build, which could have been a bug in `handleMetrics()` instead of an
+honest gap. Two targeted probes settled it: `performance.memory` on the
+*main thread* of the same running page, in the same browser, returned
+real numbers (`{used: 3020450, limit: 4294705152}`); the identical
+check run *inside a real dedicated Worker* (`new Worker(...)` with a
+one-line body posting back `typeof performance.memory`) came back
+`"undefined"`. So the API genuinely doesn't reach into a dedicated
+Worker's own global scope at all in Chromium, not just on the browsers
+it was already known to be missing from entirely -- the `-` every
+Worker-backed Service shows for HEAP/%HEAP is the honestly correct
+answer, not a defect, and every docstring that previously said
+"Chrome/Edge only" was corrected to say so precisely instead of
+overclaiming a guarantee the API doesn't keep.
+
+**`MetricsProvider` is a narrow structural interface, not the real
+client classes.** `ConsoleServices` needed *some* way to reach
+`VocabularyWorkerClient.getMetrics()`/`LinguisticsWorkerClient.getMetrics()`,
+but both real classes construct an actual `Worker` in their own
+constructors -- which `jsdom` cannot do, so a test importing either
+class directly would never run. `MetricsProvider`'s shape
+(`{ getMetrics(): Promise<{uptimeMs, heapUsedBytes?, heapLimitBytes?}> }`)
+is exactly narrow enough that both real client classes satisfy it
+structurally with no adapter, while tests construct a trivial literal
+instead of a real `Worker`-backed object.
+
+**`ConsoleCommand.run()` widened from `readonly string[]` to
+`readonly string[] | Promise<readonly string[]>`.** `ps`'s own numbers
+only exist after a real round-trip to each Service's Worker, so it has
+to be the first genuinely asynchronous command. `console_view.ts`'s
+dispatch wraps every `run()` call in `Promise.resolve(...)` rather than
+making `runCommand()` itself `async` -- a synchronous command (the other
+thirteen) still resolves on the same microtask and calls `paint()`
+exactly once, so none of them gained a double-render flash from a
+command that happens to be async elsewhere.
+
+`npx tsc -b --force` clean; `npx vitest run --no-file-parallelism`
+266/266 (6 new: header-plus-row shape, per-Service `STATE`, correct
+`uptimeMs`/heap formatting including the `G`-tier byte formatting
+`formatBytes()` gained for a realistic ~4GB heap limit, `-` for a
+Service with no live Worker behind it at all, and `-` rather than a
+thrown error when `getMetrics()` itself rejects). Live Playwright
+verification against the real running Console confirmed the exact
+output described above: `PID`/`SERVICE`/`STATE`/`UPTIME` all real and
+correct for both live Services and for the not-ported Knowledge
+Service; `HEAP`/`%HEAP` showing `-` everywhere, now confirmed to be the
+honestly correct answer rather than a gap in the implementation.

@@ -5,6 +5,7 @@ import type {
   VocabularyServiceState,
   VocabularyWorkerMessage,
   VocabularyWorkerRequest,
+  WorkerMetrics,
 } from "./vocabulary_worker_protocol";
 import type { HierarchyEdge, HierarchyNode } from "../../ui/server/builder_hierarchy";
 import type { LexicalRelationshipRecord } from "../../ui/server/builder_lexical_relationship";
@@ -164,6 +165,7 @@ export class VocabularyWorkerClient {
   private readonly pendingRelationshipSearches = new Map<string, (result: RelationshipSearchResult) => void>();
   private readonly pendingLexicalRelationshipSearches = new Map<string, (result: LexicalRelationshipSearchResult) => void>();
   private readonly pendingHierarchyResolutions = new Map<string, (result: HierarchyResult) => void>();
+  private readonly pendingMetrics = new Map<string, (metrics: WorkerMetrics) => void>();
 
   constructor() {
     this.worker = new Worker(new URL("./vocabulary_worker.ts", import.meta.url), { type: "module" });
@@ -258,6 +260,20 @@ export class VocabularyWorkerClient {
     return new Promise((resolve, reject) => {
       this.pendingImports.set(requestId, { resolve, reject });
       this.post({ type: "import-domain", requestId, domain: name, ...files });
+    });
+  }
+
+  /** The "ps" Console command's own call (common/ui/console_commands/ps.ts)
+   * -- `WorkerMetrics`'s own docstring (vocabulary_worker_protocol.ts)
+   * on what it can and can't honestly report. `searchWords()`'s own
+   * resolve-only shape, not `exportDomain()`'s own resolve/reject one --
+   * `handleMetrics()` always succeeds (nothing about it can fail the
+   * way an unknown Domain name can). */
+  getMetrics(): Promise<WorkerMetrics> {
+    const requestId = `metrics-${Math.random().toString(36).slice(2)}`;
+    return new Promise((resolve) => {
+      this.pendingMetrics.set(requestId, resolve);
+      this.post({ type: "metrics", requestId });
     });
   }
 
@@ -504,6 +520,12 @@ export class VocabularyWorkerClient {
       if (pending) {
         this.pendingImports.delete(message.requestId);
         pending.reject(new Error(message.message));
+      }
+    } else if (message.type === "metrics-result") {
+      const resolve = this.pendingMetrics.get(message.requestId);
+      if (resolve) {
+        this.pendingMetrics.delete(message.requestId);
+        resolve(message.metrics);
       }
     } else if (message.type === "domain-updated") {
       for (const listener of this.domainUpdateListeners) listener(message.domain);

@@ -1,5 +1,6 @@
+import type { ServiceStatusBoard } from "../data/service_status";
 import { VirtualFileSystem } from "../data/virtual_file_system";
-import { CONSOLE_COMMANDS } from "./console_commands";
+import { CONSOLE_COMMANDS, type ConsoleServices, type MetricsProvider } from "./console_commands";
 
 /** ConsoleView: a terminal-styled command console for the Vocabulary
  * view pane, mounted directly above ServiceStatusView's own Background
@@ -16,7 +17,11 @@ import { CONSOLE_COMMANDS } from "./console_commands";
  * (common/data/virtual_file_system.ts) this whole Console session
  * shares, is the one piece of state every filesystem command reads and
  * writes -- a real, bash-shaped in-memory filesystem, not just output
- * text.
+ * text. `services` (`ConsoleServices`, console_commands/types.ts) is
+ * the same `ServiceStatusBoard`/`VocabularyWorkerClient`/
+ * `LinguisticsWorkerClient` instances `PortalShell` itself already
+ * owns, handed straight through -- `ps.ts`'s own window onto the real
+ * running Services, not a copy of their state.
  *
  * Self-contained the same way ServiceStatusView is: owns its own DOM
  * subtree, its own `<style>` injection, its own collapsed/history/
@@ -28,6 +33,7 @@ export class ConsoleView {
   private container: HTMLElement | undefined;
   private collapsed = false;
   private readonly fs = new VirtualFileSystem();
+  private readonly services: ConsoleServices;
   private lines: ConsoleLine[] = BANNER_LINES.map((text) => ({ kind: "banner", text }));
   /** Every command actually submitted (Enter pressed on a non-empty,
    * non-whitespace line), oldest first -- ArrowUp/ArrowDown recall this
@@ -46,6 +52,10 @@ export class ConsoleView {
    * down past every history entry, so recalling history and then
    * backing out of it again never loses what they'd already typed. */
   private draftBeforeRecall = "";
+
+  constructor(statusBoard: ServiceStatusBoard, vocabularyClient: MetricsProvider, linguisticsClient: MetricsProvider) {
+    this.services = { statusBoard, vocabularyClient, linguisticsClient };
+  }
 
   mount(container: HTMLElement): void {
     this.container = container;
@@ -136,8 +146,15 @@ export class ConsoleView {
    * containing spaces), and looks the command name up in
    * `CONSOLE_COMMANDS` (console_commands/index.ts). An unrecognised
    * name is echoed back as "not found"; a recognised one runs with a
-   * fresh `ConsoleCommandContext` built from this instance's own `fs`
-   * and the full registry (`help`'s own listing needs it). A thrown
+   * fresh `ConsoleCommandContext` built from this instance's own `fs`,
+   * `services`, and the full registry (`help`'s own listing needs it).
+   * `run()` may return its lines directly or as a `Promise`
+   * (`ConsoleCommand`'s own docstring on why -- `ps.ts`'s own real
+   * worker round-trip) -- wrapped in `Promise.resolve()` either way, so
+   * a synchronous command's own result still reaches one single
+   * `paint()` call once resolved, not two (an immediate repaint for the
+   * echoed command line, then a second one once output arrives, would
+   * be a visible flash this never had before `ps` existed). A thrown
    * `Error` -- `ConsoleCommand.run()`'s own docstring on why a command
    * throws instead of returning an error line itself -- becomes one
    * error-styled line; a successful run's own returned lines become
@@ -160,13 +177,14 @@ export class ConsoleView {
       this.paint();
       return;
     }
-    try {
-      const output = command.run({ fs: this.fs, args, commands: CONSOLE_COMMANDS, clearScrollback: () => (this.lines = []) });
-      for (const text of output) this.lines.push({ kind: "output", text });
-    } catch (error) {
-      this.lines.push({ kind: "error", text: error instanceof Error ? error.message : String(error) });
-    }
-    this.paint();
+    Promise.resolve(command.run({ fs: this.fs, args, commands: CONSOLE_COMMANDS, clearScrollback: () => (this.lines = []), services: this.services }))
+      .then((output) => {
+        for (const text of output) this.lines.push({ kind: "output", text });
+      })
+      .catch((error: unknown) => {
+        this.lines.push({ kind: "error", text: error instanceof Error ? error.message : String(error) });
+      })
+      .finally(() => this.paint());
   }
 
   private focusInput(): void {

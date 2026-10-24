@@ -38,6 +38,7 @@ import type {
   ExportDomainRequest,
   ImportDomainRequest,
   LinkPortRequest,
+  MetricsRequest,
   RenderedFragment,
   RenderRequest,
   ResolveHierarchyRequest,
@@ -68,6 +69,11 @@ interface SeededDomain {
 
 const domains = new Map<string, SeededDomain>();
 const renderCache = new Map<string, RenderedFragment>();
+// handleMetrics()'s own uptime baseline -- the moment this worker's own
+// module first ran, not when "init" happened to be requested (a worker
+// is alive, and its own Date.now() clock is already ticking, from the
+// instant the browser starts evaluating it).
+const WORKER_STARTED_AT = Date.now();
 // Domain names with a seed-wordnet run currently in flight -- guards
 // against a rapid double click (or two independent UI callers) firing
 // two overlapping seedWordNet passes against the same Domain at once;
@@ -752,6 +758,26 @@ function handleLookupWords(request: LookupWordsRequest): void {
   linguisticsPort.postMessage({ type: "lookup-words-result", requestId: request.requestId, words, wordForms, phrases });
 }
 
+/** Handles the "ps" Console command's own request (common/ui/console_commands/ps.ts)
+ * -- `WorkerMetrics`'s own docstring (vocabulary_worker_protocol.ts) on
+ * why `uptimeMs` and `performance.memory` are the only two real things
+ * this can honestly report. `performance.memory` reads as `undefined`
+ * here in every browser tested, including Chrome -- a direct probe
+ * confirmed it exists on the main thread in this same Chromium build
+ * but is simply never exposed inside a dedicated Worker's own global
+ * scope, so this always posts `heapUsedBytes`/`heapLimitBytes` as
+ * `undefined` rather than guessed-at numbers. There is no browser API
+ * for per-thread CPU usage at all, so `ps`'s own output has no CPU
+ * column to fill in from here. */
+function handleMetrics(request: MetricsRequest): void {
+  const memory = (performance as Performance & { memory?: { usedJSHeapSize: number; jsHeapSizeLimit: number } }).memory;
+  post({
+    type: "metrics-result",
+    requestId: request.requestId,
+    metrics: { uptimeMs: Date.now() - WORKER_STARTED_AT, heapUsedBytes: memory?.usedJSHeapSize, heapLimitBytes: memory?.jsHeapSizeLimit },
+  });
+}
+
 ctx.addEventListener("message", (event) => {
   const request = event.data;
   if (request.type === "init") void handleInit();
@@ -767,4 +793,5 @@ ctx.addEventListener("message", (event) => {
   else if (request.type === "search-relationships") handleSearchRelationships(request);
   else if (request.type === "search-lexical-relationships") handleSearchLexicalRelationships(request);
   else if (request.type === "resolve-hierarchy") handleResolveHierarchy(request);
+  else if (request.type === "metrics") handleMetrics(request);
 });

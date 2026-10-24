@@ -1,4 +1,5 @@
 import type { ConsoleCommand } from "./types";
+import { formatBytes } from "./shared";
 
 /** `df -h`'s own shape, for the one filesystem this Console has --
  * `blobfs` names it after `VirtualFileSystem.toBlob()`'s own
@@ -17,9 +18,3 @@ export const dfCommand: ConsoleCommand = {
     ];
   },
 };
-
-function formatBytes(bytes: number): string {
-  if (bytes < 1024) return `${bytes}B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)}K`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)}M`;
-}

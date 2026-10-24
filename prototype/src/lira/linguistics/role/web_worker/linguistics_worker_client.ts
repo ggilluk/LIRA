@@ -4,6 +4,7 @@ import type {
   LinguisticsWorkerRequest,
   ReadDocumentResult,
   ReadResult,
+  WorkerMetrics,
 } from "./linguistics_worker_protocol";
 
 export type LinguisticsStatusListener = (state: LinguisticServiceState, detail?: string) => void;
@@ -21,6 +22,7 @@ export class LinguisticsWorkerClient {
   private readyResolvers: Array<(wordCount: number) => void> = [];
   private readonly pendingReads = new Map<string, { resolve: (result: ReadResult) => void; reject: (error: Error) => void }>();
   private readonly pendingReadDocuments = new Map<string, { resolve: (result: ReadDocumentResult) => void; reject: (error: Error) => void }>();
+  private readonly pendingMetrics = new Map<string, (metrics: WorkerMetrics) => void>();
 
   constructor() {
     this.worker = new Worker(new URL("./linguistics_worker.ts", import.meta.url), { type: "module" });
@@ -94,6 +96,18 @@ export class LinguisticsWorkerClient {
     });
   }
 
+  /** The "ps" Console command's own call (common/ui/console_commands/ps.ts)
+   * -- vocabulary_worker_client.ts's own `getMetrics()`, the identical
+   * resolve-only shape (`handleMetrics()` on the worker side always
+   * succeeds). */
+  getMetrics(): Promise<WorkerMetrics> {
+    const requestId = `metrics-${Math.random().toString(36).slice(2)}`;
+    return new Promise((resolve) => {
+      this.pendingMetrics.set(requestId, resolve);
+      this.post({ type: "metrics", requestId });
+    });
+  }
+
   private post(request: LinguisticsWorkerRequest): void {
     this.worker.postMessage(request);
   }
@@ -115,6 +129,12 @@ export class LinguisticsWorkerClient {
       if (pending) {
         this.pendingReadDocuments.delete(message.requestId);
         pending.resolve(message.result);
+      }
+    } else if (message.type === "metrics-result") {
+      const resolve = this.pendingMetrics.get(message.requestId);
+      if (resolve) {
+        this.pendingMetrics.delete(message.requestId);
+        resolve(message.metrics);
       }
     } else if (message.type === "error") {
       if (message.requestId) {

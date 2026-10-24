@@ -187,7 +187,7 @@ export class PortalShell {
   private readonly title: string;
   private container: HTMLElement | undefined;
   private readonly serviceStatusView: ServiceStatusView;
-  private readonly consoleView = new ConsoleView();
+  private readonly consoleView: ConsoleView;
   private readonly sentenceReaderView: SentenceReaderView;
   private readonly logBoard = new LogEventBoard();
   private readonly loggersBySource = new Map<string, Logger>();
@@ -235,6 +235,12 @@ export class PortalShell {
     // control. ServiceStatusView keeps showing the Vocabulary Service's
     // live status (still useful there), just with no button of its own.
     this.serviceStatusView = new ServiceStatusView(statusBoard, [], this.logBoard);
+    // ConsoleView's own `ps` command needs a real window onto this same
+    // VocabularyWorkerClient/LinguisticsWorkerClient/ServiceStatusBoard
+    // (ConsoleServices's own docstring, console_commands/types.ts) --
+    // the exact instances this constructor already has in hand, not
+    // copies of their own state.
+    this.consoleView = new ConsoleView(statusBoard, vocabularyClient, linguisticsClient);
     this.sentenceReaderView = new SentenceReaderView(linguisticsClient);
     // Relays every VocabularyLogListener call into a real Logger --
     // one instance per distinct `source` (Logger's own docstring on why

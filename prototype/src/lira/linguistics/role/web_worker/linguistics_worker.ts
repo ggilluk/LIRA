@@ -64,6 +64,7 @@ import type {
   LinguisticsWorkerMessage,
   LinguisticsWorkerRequest,
   LinkVocabularyPortRequest,
+  MetricsRequest,
   PredictedWord,
   ReadDocumentRequest,
   ReadRequest,
@@ -112,6 +113,10 @@ const insertedPhraseIds = new Set<number>();
 // empty-result queries costs far less than ever under-fetching a real
 // multi-word match.
 const MAX_PREFETCH_SPAN = 5;
+
+// handleMetrics()'s own uptime baseline -- vocabulary_worker.ts's own
+// WORKER_STARTED_AT, the identical reasoning.
+const WORKER_STARTED_AT = Date.now();
 
 function post(message: LinguisticsWorkerMessage): void {
   ctx.postMessage(message);
@@ -375,12 +380,26 @@ function buildPredictedWords(sentence: Sentence, rawTokens: readonly TokenReadin
   return words;
 }
 
+/** Handles the "ps" Console command's own request (common/ui/console_commands/ps.ts)
+ * -- vocabulary_worker.ts's own `handleMetrics()`, the identical
+ * reasoning (`WorkerMetrics`'s own docstring, linguistics_worker_protocol.ts,
+ * on what it can and can't honestly report). */
+function handleMetrics(request: MetricsRequest): void {
+  const memory = (performance as Performance & { memory?: { usedJSHeapSize: number; jsHeapSizeLimit: number } }).memory;
+  post({
+    type: "metrics-result",
+    requestId: request.requestId,
+    metrics: { uptimeMs: Date.now() - WORKER_STARTED_AT, heapUsedBytes: memory?.usedJSHeapSize, heapLimitBytes: memory?.jsHeapSizeLimit },
+  });
+}
+
 ctx.addEventListener("message", (event) => {
   const request = event.data;
   if (request.type === "init") handleInit();
   else if (request.type === "link-vocabulary-port") handleLinkVocabularyPort(request);
   else if (request.type === "read") void handleRead(request);
   else if (request.type === "read-document") void handleReadDocument(request);
+  else if (request.type === "metrics") handleMetrics(request);
 });
 
 // --- Sentence/Clause/Phrase/ReadingError -> JSON, the same fields

@@ -247,6 +247,42 @@ export interface ResolveHierarchyRequest {
   limit?: number;
 }
 
+/** `ps`'s own real metrics (common/ui/console_commands/ps.ts) -- CPU
+ * time isn't observable at all from inside a Worker (no browser API
+ * exposes per-thread CPU usage to JS, Worker or otherwise, so there's
+ * no honest number this protocol could report for it), leaving
+ * `uptimeMs` and, where the browser actually supports it, JS heap usage
+ * as the two real metrics this can carry. `heapUsedBytes`/`heapLimitBytes`
+ * are `performance.memory`'s own fields -- non-standard, Chrome/Edge
+ * only on the main thread, and confirmed by direct probe to be
+ * `undefined` inside a dedicated Worker's own global scope in Chromium
+ * too (not just absent on Firefox/Safari) -- so both fields read as
+ * `undefined` for every real Worker-backed Service in every browser
+ * tested so far, and `ps` shows "-" for them rather than a fabricated
+ * number. Independently declared from
+ * linguistics_worker_protocol.ts's own identical `WorkerMetrics` --
+ * `VocabularyServiceState`'s own docstring above on why this file never
+ * imports from a sibling Service's own worker protocol. */
+export interface WorkerMetrics {
+  uptimeMs: number;
+  heapUsedBytes?: number;
+  heapLimitBytes?: number;
+}
+
+/** The "ps" Console command's own request (common/ui/console_commands/ps.ts)
+ * -- RenderRequest's own request/response shape, one bounded computation
+ * producing one result. */
+export interface MetricsRequest {
+  type: "metrics";
+  requestId: string;
+}
+
+export interface MetricsResultMessage {
+  type: "metrics-result";
+  requestId: string;
+  metrics: WorkerMetrics;
+}
+
 export type VocabularyWorkerRequest =
   | InitRequest
   | LinkPortRequest
@@ -260,7 +296,8 @@ export type VocabularyWorkerRequest =
   | SearchSensesRequest
   | SearchRelationshipsRequest
   | SearchLexicalRelationshipsRequest
-  | ResolveHierarchyRequest;
+  | ResolveHierarchyRequest
+  | MetricsRequest;
 
 export interface StatusMessage {
   type: "status";
@@ -527,5 +564,6 @@ export type VocabularyWorkerMessage =
   | SearchRelationshipsResultMessage
   | SearchLexicalRelationshipsResultMessage
   | ResolveHierarchyResultMessage
-  | LogMessage;
+  | LogMessage
+  | MetricsResultMessage;
 

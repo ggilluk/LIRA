@@ -73,7 +73,40 @@ export interface ReadDocumentRequest {
   learningEnabled: boolean;
 }
 
-export type LinguisticsWorkerRequest = InitRequest | LinkVocabularyPortRequest | ReadRequest | ReadDocumentRequest;
+/** `ps`'s own real metrics (common/ui/console_commands/ps.ts) -- CPU
+ * time isn't observable at all from inside a Worker (no browser API
+ * exposes per-thread CPU usage to JS, Worker or otherwise, so there's
+ * no honest number this protocol could report for it), leaving
+ * `uptimeMs` and, where the browser actually supports it, JS heap usage
+ * as the two real metrics this can carry. `heapUsedBytes`/`heapLimitBytes`
+ * are `performance.memory`'s own fields -- non-standard, Chrome/Edge
+ * only on the main thread, and confirmed by direct probe to be
+ * `undefined` inside a dedicated Worker's own global scope in Chromium
+ * too (not just absent on Firefox/Safari) -- so both fields read as
+ * `undefined` for every real Worker-backed Service in every browser
+ * tested so far, and `ps` shows "-" for them rather than a fabricated
+ * number. Independently declared from
+ * vocabulary_worker_protocol.ts's own identical `WorkerMetrics` -- this
+ * file's own docstring above on why it never imports from Vocabulary's
+ * own worker plumbing. */
+export interface WorkerMetrics {
+  uptimeMs: number;
+  heapUsedBytes?: number;
+  heapLimitBytes?: number;
+}
+
+export interface MetricsRequest {
+  type: "metrics";
+  requestId: string;
+}
+
+export interface MetricsResultMessage {
+  type: "metrics-result";
+  requestId: string;
+  metrics: WorkerMetrics;
+}
+
+export type LinguisticsWorkerRequest = InitRequest | LinkVocabularyPortRequest | ReadRequest | ReadDocumentRequest | MetricsRequest;
 
 export interface StatusMessage {
   type: "status";
@@ -337,4 +370,5 @@ export type LinguisticsWorkerMessage =
   | ReadyMessage
   | ReadResultMessage
   | ReadDocumentResultMessage
-  | ErrorMessage;
+  | ErrorMessage
+  | MetricsResultMessage;
