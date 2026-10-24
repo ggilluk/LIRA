@@ -3,6 +3,7 @@ import type { PortalDomain, PortalDomainRegistry } from "../data/portal_domain";
 import { LogEventBoard } from "../data/log_event";
 import { Logger } from "../role/logger";
 import { ServiceStatusView } from "./service_status_view";
+import { ConsoleView } from "./console_view";
 import type { VocabularyWorkerClient, ImportDomainFiles, ExportedDomainFiles } from "../../vocabulary/role/web_worker/vocabulary_worker_client";
 import type { RenderedFragment } from "../../vocabulary/role/web_worker/vocabulary_worker_protocol";
 import type { LinguisticsWorkerClient } from "../../linguistics/role/web_worker/linguistics_worker_client";
@@ -186,6 +187,7 @@ export class PortalShell {
   private readonly title: string;
   private container: HTMLElement | undefined;
   private readonly serviceStatusView: ServiceStatusView;
+  private readonly consoleView = new ConsoleView();
   private readonly sentenceReaderView: SentenceReaderView;
   private readonly logBoard = new LogEventBoard();
   private readonly loggersBySource = new Map<string, Logger>();
@@ -744,6 +746,9 @@ export class PortalShell {
     const statusMount = this.container.querySelector<HTMLElement>(".portal-service-status");
     if (statusMount) this.serviceStatusView.mount(statusMount);
 
+    const consoleMount = this.container.querySelector<HTMLElement>(".portal-console");
+    if (consoleMount) this.consoleView.mount(consoleMount);
+
     if (selected && this.selectedComponent === "vocabulary") {
       void this.loadView(selected);
     } else if (selected && this.selectedComponent === "linguistics") {
@@ -900,6 +905,11 @@ export class PortalShell {
 
   private renderViewPane(selected: PortalDomain | undefined, fullWidth = false): string {
     const switcher = this.renderComponentSwitcher();
+    // Console sits directly above Background Services, in that same
+    // always-shown position regardless of which branch below actually
+    // runs -- ConsoleView's own docstring on why it needs no Domain/
+    // component context of its own to be useful here.
+    const consolePanel = `<div class="portal-console"></div>`;
     const statusPanel = `<div class="portal-service-status"></div>`;
     // SEED_TARGET_DOMAIN's own docstring on why neither action depends
     // on which Domain is selected -- shown for the whole Vocabulary
@@ -913,6 +923,7 @@ export class PortalShell {
           ${switcher}
           ${vocabToolbar}
           <div class="portal-view-empty">Select a Domain to continue.</div>
+          ${consolePanel}
           ${statusPanel}
         </div>`;
     }
@@ -929,6 +940,7 @@ export class PortalShell {
         ${switcher}
         ${vocabToolbar}
         ${content}
+        ${consolePanel}
         ${statusPanel}
       </div>`;
   }

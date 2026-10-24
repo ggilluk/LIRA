@@ -329,3 +329,80 @@ and confirmed the links refreshed to a second, much larger snapshot
 (92,714 words) once the worker's own considerably heavier `JSON.stringify()`
 pass finished, and that the *first* run's own Blob URLs were genuinely
 revoked by then (a direct `fetch()` against the old URL failed).
+
+## Add a terminal-styled Console above Background Services -- ConsoleView
+
+Requested: a "user shell console" in the Vocabulary view pane, above
+ServiceStatusView's own Background Services panel, with a real
+shell-like feel. Clarified via two questions before building anything:
+(1) scope -- a visual scaffold for now (real terminal chrome, history
+navigation, `help`/`clear` wired up), not real app commands yet, since
+"what should typing `seed` actually do" opens a much bigger design
+question (confirm first before building the Dictionary/Senses/wherever
+is live, or just proxy to the existing toolbar buttons? accept partial
+matches? tab-complete?) than this request asked to settle; (2) placement
+-- inside `renderViewPane()`, a new `.portal-console` mount point
+directly above `.portal-service-status`, present in both of that
+method's own branches (the "Select a Domain" empty state and the real
+content state) the exact same way `.portal-service-status` itself
+already is, rather than a bigger structural change to the shell's own
+top-level layout.
+
+**New file, `common/ui/console_view.ts`, `ServiceStatusView`'s own exact
+shape** (`mount(container)`, `ensureStyles()` with an ID-guarded
+`<style>` tag, instance-field state surviving PortalShell's own
+"rebuild the DOM from scratch on every render()" habit, a collapsible
+header with the same chevron/summary-when-collapsed convention) --
+consistency with the panel it sits directly above mattered more here
+than any novelty, since the two read as siblings in the UI. Takes no
+constructor dependencies at all (no `VocabularyWorkerClient`, nothing)
+-- the scaffold doesn't need one yet, and not taking one now means
+wiring a real command in later is purely additive to `runCommand()`,
+never a reshaping of how this class gets constructed or mounted.
+
+**What actually gives it "shell feel", concretely**: the one real visual
+departure from this codebase's own light theme -- `.console-body` is a
+hardcoded dark panel (`#14171a`), not `var(--surface)`, with a
+terminal-green prompt/caret color (`#5fe3b3`) picked as a brighter tint
+of the app's own teal `--accent` rather than a generic "terminal green",
+so it reads as *this app's* console, not a borrowed xterm skin. The
+input itself has no visible border of its own (`background: transparent;
+border: none`) and sits inline after a static `lira$ ` prompt span, so
+typing feels like it's happening directly in the terminal body, not in
+a separate form control bolted onto it.
+
+**Real history navigation, kept deliberately cheap.** ArrowUp/ArrowDown
+mutate the live `<input>` element's own `.value` directly
+(`recall()`) rather than going through a full `paint()` -- a full
+re-render would tear down and rebuild the input (losing focus
+mid-recall, however briefly) for a change that's purely "what text sits
+in one input box", nothing the scrollback above it needs to know about
+at all. `paint()` itself only runs for state the *scrollback* actually
+needs to reflect: mount, a submitted command (Enter), and the
+collapse toggle -- never on ordinary keystrokes, which would otherwise
+reset the native input's own cursor position on every character typed.
+
+**`help`/`clear` handled directly in `runCommand()`, not through a
+dispatch table.** A `Record<string, ConsoleCommand>` registry was the
+first draft -- then `clear` turned out to need to reset `this.lines`,
+an instance field a module-level table has no access to, and the
+registry's own `run()` contract (return lines to *append*) had no way
+to express "replace the whole scrollback instead" without a special
+case anyway. Two real commands sharing one `if`/`else if` is the
+honest shape for what this scaffold actually has today; `COMMAND_DESCRIPTIONS`
+(a plain description map, not a dispatch table) exists only so `help`'s
+own listing has one place to read each description from, not two.
+
+`npx tsc -b --force` clean; `npx vitest run --no-file-parallelism`
+208/208, unchanged (pure new UI component plus wiring, no existing
+behaviour touched -- no new tests of its own, matching this file's own
+established "UI/Worker-plumbing changes verified live, not unit-tested"
+precedent for a PortalShell-level change). Live Playwright verification:
+confirmed the console's own bounding box sits above Background
+Services' own in the real rendered page; typed `help` and got the two-
+command listing; typed an unmapped command and got the "not implemented
+yet" message; ArrowUp twice recalled the two most recent commands in
+reverse order, ArrowDown twice returned to the original (empty) draft;
+`clear` emptied the scrollback to nothing; the header's own collapse
+toggle hid the body and showed a "3 commands" summary, then restored it
+on a second click.
