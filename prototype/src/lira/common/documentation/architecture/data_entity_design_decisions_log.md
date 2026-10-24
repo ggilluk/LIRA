@@ -500,3 +500,51 @@ refusing with the real bash message, `rm -r` then succeeding); `cat` on
 a missing file and `df` (reporting `20.0M`/`0B`/`20.0M`/`0%` on an
 empty filesystem) both confirmed; `help` listed all 13 real commands,
 alphabetically, each with its own description.
+
+## Console: a boot banner, and a prompt that shows the working directory
+
+Two small, real shell-fidelity gaps closed: a static `"LIRA Console —
+type 'help' to get started."` first line read as placeholder text, not
+a real terminal's own boot banner; a hardcoded `lira$ ` prompt never
+reflected `cd`, so a scrollback full of `cd`/`ls` output gave no visual
+cue which directory any of it actually ran against -- the one thing a
+real shell prompt exists to answer at a glance.
+
+**The banner is `BANNER_LINES`, `lines`' own initial value -- never
+reprinted by `clear`.** A real terminal's own `clear` blanks the
+screen; it doesn't re-run whatever printed the MOTD on first connect,
+so `clear.ts`'s existing `clearScrollback()` (resetting `lines` to `[]`)
+needed no change at all for this to already be correct -- the banner
+only shows up once, at mount, the same as a real login banner.
+
+**The prompt is `lira:<cwd>$ ` (`promptFor()`), not a constant --**
+bash's own familiar `user@host:cwd$` shape, trimmed to what this toy
+single-user Console actually has an identity for. The live prompt row
+(beside the input) recomputes `promptFor(fs.pwd())` on every `paint()`,
+so it's always current. The trickier half: a *past* command's own
+echoed prompt has to freeze at the directory it actually ran from, not
+retroactively follow wherever a later `cd` moves to -- exactly what a
+real terminal's own scrollback does (your history doesn't rewrite
+itself when you change directories). `ConsoleLine` became a
+discriminated union over this: only `{ kind: "command" }` carries its
+own `prompt: string`, captured once in `runCommand()` *before* the
+command runs (so a `cd` command's own echoed line still shows the
+directory it was typed from, not the one it just changed to -- a real
+shell draws the prompt before reading input, not after running it), not
+recomputed at render time the way the live input row's prompt is. The
+union shape (not one interface with an optional `prompt?: string`) was
+deliberate: it lets `renderLine()`'s own `line.kind === "command"`
+check narrow `line.prompt` to a real, non-optional `string`, rather
+than every other line kind having to carry a `string | undefined` it
+never uses.
+
+`npx tsc -b --force` clean; `npx vitest run --no-file-parallelism`
+260/260, unchanged (pure UI/copy change, no new tests of its own).
+Live Playwright verification: confirmed the banner's own two lines
+render with `LIRA Operating System` present verbatim; the live prompt
+read `lira:/$` at root and `lira:/projects$` once `cd projects` ran;
+critically, after that `cd`, the *historical* `mkdir projects`/`cd
+projects` command lines still both showed `lira:/$ ` (the directory
+they actually ran from), not retroactively rewritten to `/projects` --
+confirming the freeze-at-submission-time design actually holds, not
+just the live prompt's own update.

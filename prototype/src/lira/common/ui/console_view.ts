@@ -28,7 +28,7 @@ export class ConsoleView {
   private container: HTMLElement | undefined;
   private collapsed = false;
   private readonly fs = new VirtualFileSystem();
-  private lines: ConsoleLine[] = [{ kind: "output", text: "LIRA Console — type 'help' to get started." }];
+  private lines: ConsoleLine[] = BANNER_LINES.map((text) => ({ kind: "banner", text }));
   /** Every command actually submitted (Enter pressed on a non-empty,
    * non-whitespace line), oldest first -- ArrowUp/ArrowDown recall this
    * the same way a real shell's own history does, newest entry first on
@@ -124,12 +124,17 @@ export class ConsoleView {
   }
 
   /** Submits `raw` -- echoes it as a command line (prefixed with the
-   * prompt, PROMPT's own docstring), records it in `commandHistory`
-   * unless blank (a bare Enter press shouldn't pollute recall the way
-   * a real shell's own history doesn't either), tokenizes it
-   * (`tokenize()` below -- whitespace-separated, with `"..."` quoting
-   * for an argument containing spaces), and looks the command name up
-   * in `CONSOLE_COMMANDS` (console_commands/index.ts). An unrecognised
+   * prompt `promptFor()` reports for the working directory *at
+   * submission time*, captured into the line itself rather than
+   * recomputed at render time -- a real terminal's own history shows
+   * each past command against the prompt it was actually typed at, not
+   * retroactively rewritten to the current directory once a later `cd`
+   * changes it), records it in `commandHistory` unless blank (a bare
+   * Enter press shouldn't pollute recall the way a real shell's own
+   * history doesn't either), tokenizes it (`tokenize()` below --
+   * whitespace-separated, with `"..."` quoting for an argument
+   * containing spaces), and looks the command name up in
+   * `CONSOLE_COMMANDS` (console_commands/index.ts). An unrecognised
    * name is echoed back as "not found"; a recognised one runs with a
    * fresh `ConsoleCommandContext` built from this instance's own `fs`
    * and the full registry (`help`'s own listing needs it). A thrown
@@ -141,7 +146,7 @@ export class ConsoleView {
    * fresh prompt" behaviour -- but records nothing and runs nothing. */
   private runCommand(raw: string): void {
     const trimmed = raw.trim();
-    this.lines.push({ kind: "command", text: raw });
+    this.lines.push({ kind: "command", text: raw, prompt: promptFor(this.fs.pwd()) });
     if (trimmed.length === 0) {
       this.paint();
       return;
@@ -186,7 +191,7 @@ export class ConsoleView {
             ${this.lines.map((line) => this.renderLine(line)).join("")}
           </div>
           <div class="console-prompt-row">
-            <span class="console-prompt" aria-hidden="true">${PROMPT}</span>
+            <span class="console-prompt" aria-hidden="true">${escapeHtml(promptFor(this.fs.pwd()))}</span>
             <input type="text" class="console-input" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Console command input">
           </div>
         </div>
@@ -196,7 +201,7 @@ export class ConsoleView {
 
   private renderLine(line: ConsoleLine): string {
     if (line.kind === "command") {
-      return `<div class="console-line console-line-command"><span class="console-prompt" aria-hidden="true">${PROMPT}</span>${escapeHtml(line.text)}</div>`;
+      return `<div class="console-line console-line-command"><span class="console-prompt" aria-hidden="true">${escapeHtml(line.prompt)}</span>${escapeHtml(line.text)}</div>`;
     }
     return `<div class="console-line console-line-${line.kind}">${escapeHtml(line.text)}</div>`;
   }
@@ -210,12 +215,27 @@ export class ConsoleView {
   }
 }
 
-interface ConsoleLine {
-  kind: "command" | "output" | "error";
-  text: string;
-}
+/** A discriminated union, not one interface with an optional `prompt`
+ * -- only a `"command"` line has a prompt of its own to show
+ * (`runCommand()`'s own docstring on why it's captured once at
+ * submission time, not recomputed later), and this shape lets
+ * `renderLine()`'s own `line.kind === "command"` check narrow `line.prompt`
+ * to a real `string` instead of `string | undefined` everywhere else
+ * has to account for. */
+type ConsoleLine = { kind: "command"; text: string; prompt: string } | { kind: "output" | "error" | "banner"; text: string };
 
-const PROMPT = "lira$ ";
+/** The console's own MOTD-style banner -- `lines`' own initial value,
+ * never reprinted by `clear` (a real terminal's own `clear` blanks the
+ * screen; it doesn't re-run whatever printed the banner on first
+ * connect). */
+const BANNER_LINES: readonly string[] = ["LIRA Operating System", "Type 'help' to get started."];
+
+/** `runCommand()`'s own prompt text for `cwd` -- `lira:<cwd>$ `, bash's
+ * own familiar `user@host:cwd$` shape trimmed down to what this toy
+ * single-user, single-filesystem Console actually has an identity for. */
+function promptFor(cwd: string): string {
+  return `lira:${cwd}$ `;
+}
 
 /** `runCommand()`'s own input splitter -- whitespace-separated, with
  * `"..."` double-quoting for one argument that itself contains spaces
@@ -283,6 +303,7 @@ const CSS = `
 .console-line { white-space: pre-wrap; overflow-wrap: anywhere; color: #c7ccd1; }
 .console-line-command { color: #f2f4f6; }
 .console-line-error { color: #e0796d; }
+.console-line-banner { color: #5fe3b3; font-weight: 700; }
 .console-prompt { color: #5fe3b3; font-weight: 600; user-select: none; }
 .console-prompt-row { display: flex; align-items: center; margin-top: 0.3rem; }
 .console-input {
