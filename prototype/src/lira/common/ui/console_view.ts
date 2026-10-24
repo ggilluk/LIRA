@@ -1,27 +1,33 @@
+import { VirtualFileSystem } from "../data/virtual_file_system";
+import { CONSOLE_COMMANDS } from "./console_commands";
+
 /** ConsoleView: a terminal-styled command console for the Vocabulary
  * view pane, mounted directly above ServiceStatusView's own Background
  * Services panel (PortalShell's own renderViewPane()/render() call
  * sites, service_status_view.ts's own `mount()`/`ensureStyles()`
  * pattern mirrored here).
  *
- * A visual scaffold for now, not a real command shell -- `help` and
- * `clear` are the only two commands that do anything; every other
- * input is echoed back as "command not found... (not implemented yet)"
- * rather than silently accepted or guessed at. Wiring real commands
- * (seed, search, save/load, ...) onto VocabularyWorkerClient/
- * LinguisticsWorkerClient is a deliberate follow-up, not attempted
- * here -- this class takes no Worker-client dependency of its own at
- * all, so that follow-up is purely additive to `runCommand()` below
- * rather than a reshaping of this file.
+ * Real commands, not just a scaffold any more -- every command this
+ * Console runs lives in its own file under `./console_commands/`
+ * (`ConsoleCommand`'s own docstring there), dispatched through
+ * `CONSOLE_COMMANDS` by name; an unrecognised name still echoes back
+ * "command not found... (not implemented yet)" rather than silently
+ * doing nothing. `fs`, one `VirtualFileSystem` instance
+ * (common/data/virtual_file_system.ts) this whole Console session
+ * shares, is the one piece of state every filesystem command reads and
+ * writes -- a real, bash-shaped in-memory filesystem, not just output
+ * text.
  *
  * Self-contained the same way ServiceStatusView is: owns its own DOM
- * subtree, its own `<style>` injection, its own collapsed/history
- * state as instance fields (not re-derived from the DOM, which
- * PortalShell rebuilds from scratch on every one of its own renders --
- * `ServiceStatusView`'s own docstring on why that matters). */
+ * subtree, its own `<style>` injection, its own collapsed/history/
+ * filesystem state as instance fields (not re-derived from the DOM,
+ * which PortalShell rebuilds from scratch on every one of its own
+ * renders -- `ServiceStatusView`'s own docstring on why that
+ * matters). */
 export class ConsoleView {
   private container: HTMLElement | undefined;
   private collapsed = false;
+  private readonly fs = new VirtualFileSystem();
   private lines: ConsoleLine[] = [{ kind: "output", text: "LIRA Console — type 'help' to get started." }];
   /** Every command actually submitted (Enter pressed on a non-empty,
    * non-whitespace line), oldest first -- ArrowUp/ArrowDown recall this
@@ -120,15 +126,19 @@ export class ConsoleView {
   /** Submits `raw` -- echoes it as a command line (prefixed with the
    * prompt, PROMPT's own docstring), records it in `commandHistory`
    * unless blank (a bare Enter press shouldn't pollute recall the way
-   * a real shell's own history doesn't either), and runs it: `clear`
-   * and `help` are the only two real commands this scaffold has, so
-   * they're handled directly here rather than through a dispatch table
-   * -- COMMAND_DESCRIPTIONS below exists purely for `help`'s own
-   * listing, not as a registry `runCommand()` looks anything up in.
-   * Everything else is echoed back as "not found". A blank `raw` still
-   * echoes an empty prompt line -- matches a real terminal's own "Enter
-   * alone just advances to a fresh prompt" behaviour -- but records
-   * nothing and runs nothing. */
+   * a real shell's own history doesn't either), tokenizes it
+   * (`tokenize()` below -- whitespace-separated, with `"..."` quoting
+   * for an argument containing spaces), and looks the command name up
+   * in `CONSOLE_COMMANDS` (console_commands/index.ts). An unrecognised
+   * name is echoed back as "not found"; a recognised one runs with a
+   * fresh `ConsoleCommandContext` built from this instance's own `fs`
+   * and the full registry (`help`'s own listing needs it). A thrown
+   * `Error` -- `ConsoleCommand.run()`'s own docstring on why a command
+   * throws instead of returning an error line itself -- becomes one
+   * error-styled line; a successful run's own returned lines become
+   * output-styled ones. A blank `raw` still echoes an empty prompt line
+   * -- matches a real terminal's own "Enter alone just advances to a
+   * fresh prompt" behaviour -- but records nothing and runs nothing. */
   private runCommand(raw: string): void {
     const trimmed = raw.trim();
     this.lines.push({ kind: "command", text: raw });
@@ -138,19 +148,18 @@ export class ConsoleView {
     }
     this.commandHistory.push(trimmed);
 
-    const [name] = trimmed.split(/\s+/);
-    const lowerName = name.toLowerCase();
-    if (lowerName === "clear") {
-      this.lines = [];
-    } else if (lowerName === "help") {
-      this.lines.push(
-        { kind: "output", text: "Available commands:" },
-        ...Object.entries(COMMAND_DESCRIPTIONS).map(([cmd, description]) => ({ kind: "output" as const, text: `  ${cmd.padEnd(8)}${description}` })),
-        { kind: "output", text: "" },
-        { kind: "output", text: "Everything else is reserved for a future release." },
-      );
-    } else {
+    const [name, ...args] = tokenize(trimmed);
+    const command = CONSOLE_COMMANDS[name.toLowerCase()];
+    if (!command) {
       this.lines.push({ kind: "error", text: `lira: command not found: ${name} (not implemented yet)` });
+      this.paint();
+      return;
+    }
+    try {
+      const output = command.run({ fs: this.fs, args, commands: CONSOLE_COMMANDS, clearScrollback: () => (this.lines = []) });
+      for (const text of output) this.lines.push({ kind: "output", text });
+    } catch (error) {
+      this.lines.push({ kind: "error", text: error instanceof Error ? error.message : String(error) });
     }
     this.paint();
   }
@@ -206,19 +215,22 @@ interface ConsoleLine {
   text: string;
 }
 
-/** `help`'s own listing, factored out so the description for each real
- * command is written exactly once -- `runCommand()`'s own `help`
- * branch reads this, nothing else does. Not a dispatch table: `clear`
- * needs to reset `this.lines` itself (an instance field this
- * module-level object has no access to), so both real commands are
- * just handled directly in `runCommand()` instead of through a
- * registry neither of the two actually needs yet. */
-const COMMAND_DESCRIPTIONS: Record<string, string> = {
-  help: "list available commands",
-  clear: "clear the console",
-};
-
 const PROMPT = "lira$ ";
+
+/** `runCommand()`'s own input splitter -- whitespace-separated, with
+ * `"..."` double-quoting for one argument that itself contains spaces
+ * (`echo "hello world"` -> one arg `hello world`, not two). Nothing
+ * fancier than that -- single quotes, escaping, and `$VAR`-style
+ * expansion are all real bash features this scaffold doesn't attempt
+ * (`ConsoleCommand`'s own docstring on "basic commands" being the
+ * actual scope here). */
+function tokenize(input: string): string[] {
+  const tokens: string[] = [];
+  const pattern = /"([^"]*)"|(\S+)/g;
+  let match: RegExpExecArray | null;
+  while ((match = pattern.exec(input)) !== null) tokens.push(match[1] !== undefined ? match[1] : match[2]);
+  return tokens;
+}
 
 function escapeHtml(value: string): string {
   return value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");

@@ -406,3 +406,97 @@ reverse order, ArrowDown twice returned to the original (empty) draft;
 `clear` emptied the scrollback to nothing; the header's own collapse
 toggle hid the body and showed a "3 commands" summary, then restored it
 on a second click.
+
+## Split Console commands into their own files; add a 20MB bash-shaped virtual filesystem
+
+Requested: every Console command in its own `.ts` file under `common/ui/`,
+plus a 20MB "blob storage" and basic commands to use a filesystem
+fashioned on bash/Linux. Two real pieces, in two different layers:
+`common/data/virtual_file_system.ts` (the filesystem model itself --
+`data/`, alongside `service_status.ts`/`log_event.ts`, since it's pure
+state with no DOM of its own) and `common/ui/console_commands/*.ts`
+(one file per bash-shaped command, the UI-facing half that was actually
+asked to move).
+
+**`VirtualFileSystem`: one method per bash utility, each throwing that
+utility's own real error phrasing directly.** `mkdir`'s own
+`"mkdir: cannot create directory 'x': File exists"`, `rm`'s own
+`"rm: cannot remove 'x': Is a directory"`, and so on -- a generic
+reason-code error type (`"not-found" | "exists" | ...`) that each
+command translated into its own bash phrasing was the first draft, then
+dropped: every `VirtualFileSystem` method already corresponds to
+exactly one command file (`changeDirectory` only ever gets called from
+`cd.ts`), so there's no reuse the indirection would actually buy, and
+the whole point of "fashion it on bash" is that a bad command here
+*reads* like a bad command in a real shell, not like a translated
+error code. `touch` on an already-existing file is a deliberate no-op,
+not an error -- this filesystem tracks no mtime for `touch` to
+meaningfully bump, so matching real `touch`'s surface behaviour (file
+still exists afterward) matters more than matching its full semantics.
+
+**The 20MB cap is enforced against a *projected* total, not the new
+content's own size in isolation.** `writeFile()` computes `usedBytes()
+- (bytes the write replaces, if overwriting) + (the new content's own
+bytes)` before accepting a write -- overwriting a 19MB file with a 1KB
+one is never mistakenly rejected as "out of space" just because the
+1KB write, considered alone, momentarily looks like it's being checked
+against a nearly-full disk. Real UTF-8 byte length throughout
+(`TextEncoder().encode(content).length`), not JS string `.length` --
+the two diverge for any non-ASCII content (an `é` is one UTF-16 code
+unit but two UTF-8 bytes), and "20MB" should mean 20 real megabytes of
+storable content, not 20 million UTF-16 code units.
+
+**"Blob storage" is literal, not just a capacity number's own name.**
+`toBlob()` serialises the whole tree to one real `Blob`
+(`application/json`) -- nothing inside this class calls it today, but
+it exists so a future caller wanting to persist or download the virtual
+disk can reuse the exact `Blob`/`URL.createObjectURL` pattern the
+Vocabulary layer's own Save/Load feature already established
+(`downloadJsonFile()`, `common/ui/portal_shell.ts`), rather than
+inventing a second one. `capacityBytes` on its own would have made "20MB
+blob storage" just a comment; a real, tested `toBlob()` makes it true.
+
+**`console_commands/`: `ConsoleCommand.run()` returns lines, throws for
+failure -- `console_view.ts`'s own `runCommand()` is the one and only
+catch site.** Most commands never handle an exception themselves: every
+`VirtualFileSystem` method already throws a ready-to-print bash message,
+so a single-operand command (`cd`, `mv`, `cp`) just lets it propagate.
+The four commands that take more than one path (`mkdir`/`touch`/`cat`/`rm`)
+are the exception -- real bash doesn't abort `rm a b c` just because `a`
+is missing, it prints that one operand's own error and still removes
+`b`/`c` -- so those catch per-operand internally (`shared.ts`'s own
+`forEachOperand()` for the three that only need the side effect;
+`cat.ts` keeps its own loop since it alone needs each operand's own
+*return value*, not just whether it succeeded, interleaved with any
+error lines in argument order).
+
+**`clear` is still the one command that can't just return lines.**
+Clearing means resetting `ConsoleView`'s own `lines` field, which no
+return value reaches -- `ConsoleCommandContext.clearScrollback()` is
+`clear.ts`'s own escape hatch for exactly that, called directly rather
+than expressed through `run()`'s return type. `help` needs the live
+command registry, not a hand-maintained duplicate list -- it reads
+`context.commands` (the same `CONSOLE_COMMANDS` `console_view.ts`
+itself dispatches through), so adding a new command file plus one line
+in `console_commands/index.ts` is the only step needed for `help`'s own
+listing to pick it up too.
+
+`npx tsc -b --force` clean; `npx vitest run --no-file-parallelism`
+260/260 (52 new: `virtual_file_system.test.ts`'s own thorough coverage
+of path resolution, every operation's own bash-phrased error, capacity
+enforcement including the overwrite-doesn't-false-reject case, and
+`toBlob()`'s own round-trip; `console_commands.test.ts` exercising every
+command's own `run()` directly, including the multi-operand
+keep-going behaviour and `echo`'s own `>`/`>>` redirection parsing --
+`VirtualFileSystem`'s own test file had to work around this project's
+jsdom test environment lacking `Blob.prototype.text()`/`.arrayBuffer()`,
+reading the Blob back via `FileReader` instead, a test-environment gap,
+not a `VirtualFileSystem` one). Live Playwright verification against
+the real running Console: `mkdir`/`cd`/`echo >`/`cat`/`echo >>`/`cp`/`mv`/`rm`
+walked through in sequence, each producing real bash-shaped output
+(`ls` after `mkdir projects` showing `projects/`, `cat` after an
+appended `echo >>` showing both lines, `rm` on a directory without `-r`
+refusing with the real bash message, `rm -r` then succeeding); `cat` on
+a missing file and `df` (reporting `20.0M`/`0B`/`20.0M`/`0%` on an
+empty filesystem) both confirmed; `help` listed all 13 real commands,
+alphabetically, each with its own description.
