@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 import { VirtualFileSystem } from "../../data/virtual_file_system";
 import { ServiceStatusBoard } from "../../data/service_status";
 import { CONSOLE_COMMANDS } from "./index";
@@ -258,5 +258,124 @@ describe("ps", () => {
     const output = await run(CONSOLE_COMMANDS.ps, context([], new VirtualFileSystem(), services));
     const vocabularyRow = output.find((line) => line.includes("Vocabulary Service"))!;
     expect(vocabularyRow).toMatch(/-\s+-\s*$/);
+  });
+});
+
+/** jsdom (this project's own test environment) implements no WebGPU
+ * at all, which is exactly the real "unsupported browser" case
+ * `gpu.ts` itself has to handle -- so the one thing every one of these
+ * tests but the first has to do is stub `navigator.gpu` itself, not
+ * mock the module. `delete` after each test rather than reassigning
+ * `undefined` so "unsupported" tests downstream see the same real
+ * absence jsdom started with. */
+function stubGpu(gpu: unknown): void {
+  (navigator as unknown as { gpu: unknown }).gpu = gpu;
+}
+
+function fakeAdapter(overrides: Record<string, unknown> = {}): Record<string, unknown> {
+  return {
+    isFallbackAdapter: false,
+    features: new Set(["depth-clip-control", "texture-compression-bc"]),
+    limits: {
+      maxTextureDimension1D: 8192,
+      maxTextureDimension2D: 8192,
+      maxTextureDimension3D: 2048,
+      maxTextureArrayLayers: 2048,
+      maxBindGroups: 4,
+      maxBindGroupsPlusVertexBuffers: 24,
+      maxBindingsPerBindGroup: 1000,
+      maxDynamicUniformBuffersPerPipelineLayout: 8,
+      maxDynamicStorageBuffersPerPipelineLayout: 4,
+      maxSampledTexturesPerShaderStage: 16,
+      maxSamplersPerShaderStage: 16,
+      maxStorageBuffersPerShaderStage: 8,
+      maxStorageTexturesPerShaderStage: 4,
+      maxUniformBuffersPerShaderStage: 12,
+      maxUniformBufferBindingSize: 65_536,
+      maxStorageBufferBindingSize: 134_217_728,
+      minUniformBufferOffsetAlignment: 256,
+      minStorageBufferOffsetAlignment: 256,
+      maxVertexBuffers: 8,
+      maxBufferSize: 268_435_456,
+      maxVertexAttributes: 16,
+      maxVertexBufferArrayStride: 2048,
+      maxInterStageShaderVariables: 16,
+      maxColorAttachments: 8,
+      maxColorAttachmentBytesPerSample: 32,
+      maxComputeWorkgroupStorageSize: 16_384,
+      maxComputeInvocationsPerWorkgroup: 256,
+      maxComputeWorkgroupSizeX: 256,
+      maxComputeWorkgroupSizeY: 256,
+      maxComputeWorkgroupSizeZ: 64,
+      maxComputeWorkgroupsPerDimension: 65_535,
+    },
+    ...overrides,
+  };
+}
+
+describe("gpu", () => {
+  afterEach(() => {
+    delete (navigator as unknown as { gpu?: unknown }).gpu;
+  });
+
+  it("throws when WebGPU is not supported (navigator.gpu is undefined, jsdom's own real default)", async () => {
+    await expect(run(CONSOLE_COMMANDS.gpu, context([]))).rejects.toThrow(/WebGPU is not supported/);
+  });
+
+  it("throws when the browser supports WebGPU but requestAdapter() finds no real adapter", async () => {
+    stubGpu({ requestAdapter: async () => null, getPreferredCanvasFormat: () => "bgra8unorm" });
+    await expect(run(CONSOLE_COMMANDS.gpu, context([]))).rejects.toThrow(/no GPU adapter is available/);
+  });
+
+  it("reports real adapter info, features, and every known limit", async () => {
+    stubGpu({
+      requestAdapter: async () =>
+        fakeAdapter({ info: { vendor: "nvidia", architecture: "ada", device: "0x2684", description: "" } }),
+      getPreferredCanvasFormat: () => "bgra8unorm",
+    });
+    const output = await run(CONSOLE_COMMANDS.gpu, context([]));
+    expect(output.some((line) => line.includes("vendor") && line.includes("nvidia"))).toBe(true);
+    expect(output.some((line) => line.includes("architecture") && line.includes("ada"))).toBe(true);
+    expect(output.some((line) => line.includes("fallback adapter") && line.includes("false"))).toBe(true);
+    expect(output.some((line) => line.includes("preferred canvas fmt") && line.includes("bgra8unorm"))).toBe(true);
+    expect(output.some((line) => line.includes("depth-clip-control"))).toBe(true);
+    expect(output.some((line) => line.includes("maxBufferSize") && line.includes("268,435,456"))).toBe(true);
+  });
+
+  it("shows '-' for a privacy-withheld blank info field rather than an empty cell", async () => {
+    stubGpu({
+      requestAdapter: async () => fakeAdapter({ info: { vendor: "", architecture: "", device: "", description: "" } }),
+      getPreferredCanvasFormat: () => "bgra8unorm",
+    });
+    const output = await run(CONSOLE_COMMANDS.gpu, context([]));
+    const vendorLine = output.find((line) => line.includes("vendor"))!;
+    expect(vendorLine).toMatch(/-\s*$/);
+  });
+
+  it("falls back to the deprecated requestAdapterInfo() when adapter.info itself is absent", async () => {
+    stubGpu({
+      requestAdapter: async () =>
+        fakeAdapter({ requestAdapterInfo: async () => ({ vendor: "intel", architecture: "gen12", device: "", description: "" }) }),
+      getPreferredCanvasFormat: () => "bgra8unorm",
+    });
+    const output = await run(CONSOLE_COMMANDS.gpu, context([]));
+    expect(output.some((line) => line.includes("vendor") && line.includes("intel"))).toBe(true);
+  });
+
+  it("shows '-' for every info field when neither info nor requestAdapterInfo() exists at all", async () => {
+    stubGpu({ requestAdapter: async () => fakeAdapter(), getPreferredCanvasFormat: () => "bgra8unorm" });
+    const output = await run(CONSOLE_COMMANDS.gpu, context([]));
+    expect(output.find((line) => line.includes("vendor"))).toMatch(/-\s*$/);
+    expect(output.find((line) => line.includes("description"))).toMatch(/-\s*$/);
+  });
+
+  it("shows '(none)' when the adapter reports no features at all", async () => {
+    stubGpu({
+      requestAdapter: async () => fakeAdapter({ features: new Set() }),
+      getPreferredCanvasFormat: () => "bgra8unorm",
+    });
+    const output = await run(CONSOLE_COMMANDS.gpu, context([]));
+    expect(output.some((line) => line.includes("Features (0)"))).toBe(true);
+    expect(output.some((line) => line.trim() === "(none)")).toBe(true);
   });
 });

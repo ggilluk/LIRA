@@ -13,6 +13,7 @@ import { mvCommand } from "./mv";
 import { cpCommand } from "./cp";
 import { dfCommand } from "./df";
 import { psCommand } from "./ps";
+import { gpuCommand } from "./gpu";
 
 export type { ConsoleCommand, ConsoleCommandContext, ConsoleServices, MetricsProvider } from "./types";
 
@@ -36,6 +37,7 @@ const ALL_COMMANDS: readonly ConsoleCommand[] = [
   cpCommand,
   dfCommand,
   psCommand,
+  gpuCommand,
 ];
 
 export const CONSOLE_COMMANDS: Readonly<Record<string, ConsoleCommand>> = Object.fromEntries(ALL_COMMANDS.map((command) => [command.name, command]));

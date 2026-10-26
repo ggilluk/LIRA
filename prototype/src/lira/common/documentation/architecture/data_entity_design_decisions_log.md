@@ -613,3 +613,69 @@ output described above: `PID`/`SERVICE`/`STATE`/`UPTIME` all real and
 correct for both live Services and for the not-ported Knowledge
 Service; `HEAP`/`%HEAP` showing `-` everywhere, now confirmed to be the
 honestly correct answer rather than a gap in the implementation.
+
+## Console: a `gpu` command, reading the real WebGPU adapter
+
+The request was "all known GPU information via WebGPU." Unlike `ps`,
+this needed no Worker round-trip at all: `navigator.gpu` is a
+main-thread API, and the Console itself already runs on the main
+thread, so `gpu.ts` calls `navigator.gpu.requestAdapter()` directly --
+no protocol file, no `postMessage`, no new `ConsoleServices` field.
+
+**No `@webgpu/types` dependency -- a local type shim instead, the same
+call this session already made for `performance.memory`.** TypeScript's
+own bundled `lib.dom.d.ts` (checked directly: zero `GPUAdapter`
+occurrences) doesn't declare WebGPU at all, and no `@webgpu/types`
+package exists in this project. Rather than add a dependency for one
+command file, `gpu.ts` declares its own narrow `GpuAdapterLike`/
+`GpuAdapterInfoLike`/`GpuAdapterLimitsLike` interfaces -- real WebGPU
+spec shapes, not invented ones -- and casts `navigator` onto them. The
+31 `GPUSupportedLimits` field names are hardcoded in a `LIMIT_NAMES`
+array for the same reason `df.ts`'s own column headers are: `limits`'
+real values are getters on its prototype, not enumerable own
+properties, so there's no way to discover the field list by enumerating
+a real adapter at runtime -- it has to be named, the same as every
+other hardcoded-header command in this Console.
+
+**A blank `GPUAdapterInfo` field is real data, not a missing one.**
+`vendor`/`architecture`/`device`/`description` are specified to return
+empty strings when a browser withholds them for fingerprinting
+resistance -- that blank *is* the adapter's own honest answer, not a
+failed read. `displayField()` shows `-` for it anyway, for the same
+"nothing useful to print" reason `ps`'s own blank HEAP columns do, but
+the distinction matters for anyone reading `gpu.ts` later: this isn't
+the same kind of gap as `requestAdapterInfo()`/`.info` being absent
+entirely (`resolveAdapterInfo()`'s own two-shape fallback, since
+`GPUAdapter.info` is a newer synchronous replacement for the
+now-deprecated async `requestAdapterInfo()` method some browsers still
+only carry).
+
+**Stops at the adapter -- never calls `requestDevice()`.** A
+`GPUDevice` is a real, `destroy()`-needing resource allocation, and
+every piece of "GPU information" this command reports (limits,
+features, adapter info) is already visible on the adapter itself
+without creating one. Querying `requestAdapter()` a second time with a
+`powerPreference` hint was considered and dropped too -- the hint isn't
+guaranteed to surface a different adapter even on a real dual-GPU
+machine, so a second, slower negotiation would buy no guaranteed new
+information.
+
+**Live Playwright verification turned up the same kind of honest "no"
+`ps` did, for a different reason.** A direct probe in this project's
+own sandboxed headless Chromium showed `navigator.gpu` genuinely
+exists (`"gpu" in navigator"` true) but `requestAdapter()` resolves to
+`null` -- no real or software-fallback GPU adapter is reachable from
+this sandbox at all. `gpu` correctly throws `"WebGPU is supported, but
+no GPU adapter is available (requestAdapter() returned null)"` rather
+than printing fabricated rows, confirmed against the real running
+Console; `help` lists it alphabetically among the other fourteen
+commands.
+
+`npx tsc -b --force` clean; `npx vitest run --no-file-parallelism`
+273/273 (7 new: unsupported-browser and no-adapter throw paths, full
+adapter info/features/limits reporting, the blank-field-shows-`-` case,
+the deprecated `requestAdapterInfo()` fallback path, the
+neither-shape-exists case, and the empty-features-set `(none)` case --
+all against a stubbed `navigator.gpu`, since jsdom implements no
+WebGPU of its own, which doubles as free coverage of the real
+"unsupported browser" path).
