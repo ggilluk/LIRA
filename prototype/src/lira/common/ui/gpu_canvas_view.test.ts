@@ -17,13 +17,35 @@ function fakeAdapter(requestDevice: () => Promise<unknown>) {
   return { requestDevice };
 }
 
+/** `GpuCanvasView`'s own render loop now runs `scene_renderer.ts`'s
+ * real `createSceneRenderer()`, not a flat clear-colour pass -- this
+ * fake has to answer every resource-creation call that setup makes
+ * (buffers, a texture, a shader module, a pipeline, bind groups), not
+ * just the two calls `GpuCanvasView` itself still makes directly
+ * (`createCommandEncoder`/`queue.submit`). Every created resource is
+ * minimal but real enough to round-trip through `scene_renderer.ts`'s
+ * own code without type or logic errors -- `createBuffer()`/
+ * `createTexture()` return objects with their own `destroy()` spy, so
+ * `destroy()` tests here are still meaningful. */
 function fakeDevice() {
   return {
-    queue: { submit: vi.fn() },
+    queue: { submit: vi.fn(), writeBuffer: vi.fn() },
     createCommandEncoder: () => ({
-      beginRenderPass: () => ({ end: vi.fn() }),
+      beginRenderPass: () => ({
+        setPipeline: vi.fn(),
+        setBindGroup: vi.fn(),
+        setVertexBuffer: vi.fn(),
+        setIndexBuffer: vi.fn(),
+        drawIndexed: vi.fn(),
+        end: vi.fn(),
+      }),
       finish: () => ({}),
     }),
+    createBuffer: vi.fn(() => ({ destroy: vi.fn() })),
+    createTexture: vi.fn(() => ({ createView: () => ({}), destroy: vi.fn() })),
+    createShaderModule: vi.fn(() => ({})),
+    createRenderPipeline: vi.fn(() => ({ getBindGroupLayout: () => ({}) })),
+    createBindGroup: vi.fn(() => ({})),
     destroy: vi.fn(),
   };
 }
@@ -55,6 +77,15 @@ describe("GpuCanvasView", () => {
         disconnect(): void {}
       },
     );
+    // `scene_renderer.ts`'s own `gpuUsageFlags()` reads these off
+    // `globalThis` as real runtime constants in a WebGPU-supporting
+    // browser -- jsdom implements no WebGPU at all, so they don't
+    // exist here either; the actual numeric values don't matter to
+    // any assertion below, only that each flag name resolves to
+    // *something* `createBuffer`/`createTexture`'s own fake calls can
+    // receive.
+    vi.stubGlobal("GPUBufferUsage", { VERTEX: 1, INDEX: 2, UNIFORM: 4, COPY_DST: 8 });
+    vi.stubGlobal("GPUTextureUsage", { RENDER_ATTACHMENT: 1 });
     vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockImplementation(() => null as unknown as RenderingContext);
   });
 

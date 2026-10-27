@@ -769,3 +769,123 @@ call tearing down the first session's own device while leaving the
 second, now-current one running -- all against stubbed
 `navigator.gpu`/`ResizeObserver`/`requestAnimationFrame`, none of which
 jsdom implements).
+
+## Canvas: a real moving, rotating cube-and-sphere scene, not just a clear colour
+
+The blank clear-colour pass the "Canvas" tab shipped with was always
+described as a starting harness, not a finished feature -- this is the
+first real scene drawn into it: sixteen entities (eight cubes, eight
+spheres), each with its own random starting position, velocity,
+rotation axis, rotation speed, and colour, bouncing inside a fixed box
+and spinning continuously. Split into five files under
+`common/ui/gpu_canvas/` by concern, the same "one file per concern"
+layout `console_commands/` already established for this Console:
+`mat4.ts` (matrix math), `geometry.ts` (mesh generation), `scene.ts`
+(entity simulation + colour), `shader.ts` (the WGSL source), and
+`scene_renderer.ts` (the only one of the five that actually touches a
+`GPUDevice` -- pipeline/buffer/texture creation and the per-frame
+draw). `gpu_canvas_view.ts` itself stays the thin mount/lifecycle
+shell it already was; it now hands its device/context to
+`createSceneRenderer()` instead of running a render loop inline.
+
+**No `gl-matrix` dependency -- a handful of hand-written matrix
+functions instead (`mat4.ts`).** `identity`/`multiply`/`translation`/
+`rotation`/`scaleUniform`/`perspective`/`lookAt` is the entire surface
+a bouncing-TRS-model-plus-fixed-camera scene needs; a real dependency
+would outweigh what it saves, the same call this session already made
+for `@webgpu/types`. Column-major `Float32Array(16)` throughout, the
+same layout WGSL's own `mat4x4<f32>` expects, so a matrix built here
+copies straight into a uniform buffer with no reordering.
+
+**Hand-derived cube/sphere winding turned out to need a test to get
+right, not just care.** Both meshes are generated procedurally
+(`geometry.ts`), and both were checked by `geometry.test.ts`
+recomputing each triangle's *real* geometric face normal (the cross
+product of its own two edges, straight from the generated vertex
+positions) and asserting it points the same direction as that
+triangle's own stored vertex normals -- not asserting the author's
+intent after the fact, but actually re-deriving the fact from the
+output data. This caught two real problems the by-hand derivation
+missed: the sphere's naive "two triangles per quad" construction
+produces a genuinely zero-area (degenerate) triangle at each pole on
+every meridian, where two of its three vertices land on the exact same
+point (fixed by skipping those index triples entirely rather than
+emitting and hoping the rasterizer discards them, `buildSphereMesh()`'s
+own comment on which rows); and once that was fixed, the sphere's
+winding came out backwards (inward-facing normals) on the first try --
+caught immediately by the same test, fixed by swapping each triangle's
+own vertex order, no further hand-derivation needed to find or confirm
+the fix. The cube's own face-frame construction (`CUBE_FACES`, each a
+`{normal, right, up}` triple with `right x up == normal` by
+construction) passed the same test on the first try, for the same
+reason: that cross-product identity is what guarantees
+counter-clockwise-from-outside winding algebraically, not luck.
+
+**Real WebGPU resource plumbing, not instancing -- one uniform buffer
+and one draw call per entity.** Sixteen entities is small enough that
+GPU instancing (one shared buffer, dynamic per-instance offsets, the
+`minUniformBufferOffsetAlignment` alignment rules that come with it)
+would add real complexity for no measurable benefit; each entity gets
+its own whole 144-byte uniform buffer (`modelViewProj` + `model` +
+`color`, `shader.ts`'s own `ENTITY_UNIFORM_SIZE_BYTES`) and its own
+bind group, both created once at setup and reused every frame --
+`renderFrame()` only ever calls `queue.writeBuffer()` on each one with
+that frame's fresh matrix/colour data, never recreates the buffer or
+bind group itself.
+
+**The real `GPUBufferUsage`/`GPUTextureUsage` flag constants, read off
+`globalThis` at runtime -- not hand-copied numeric values.**
+`webgpu_types.ts`'s own `gpuUsageFlags()` reads the genuine runtime
+globals a WebGPU-supporting browser exposes, independent of whatever
+TypeScript's own `lib.dom.d.ts` does or doesn't declare (the same gap
+`console_commands/gpu.ts`'s own shim already works around) -- the same
+"never fabricate" call this whole feature set has made everywhere
+else, just applied to flag constants instead of adapter data: a
+hand-copied magic number could silently drift from the real spec
+value in a browser update; reading the real global can't.
+
+**The depth texture is recreated lazily, only when the canvas's own
+size actually changes between frames -- not on every resize event, and
+not once at setup and never again.** `GpuCanvasView`'s own
+`ResizeObserver` callback only ever updates `canvas.width`/`height`
+(unchanged from the plain-clear-colour version); `scene_renderer.ts`'s
+own `renderFrame()` compares the canvas's *current* size against the
+depth texture's own last-known size at the top of every frame, and
+only destroys and recreates it on an actual mismatch -- cheap enough
+(two integer comparisons) to check unconditionally every frame rather
+than wiring a second observer into a module that otherwise has no
+reason to know about `ResizeObserver` at all.
+
+**`destroy()` explicitly tears down every resource `scene_renderer.ts`
+itself created -- depth texture, both meshes' own vertex/index
+buffers, every entity's own uniform buffer -- rather than leaving it
+to `GPUDevice.destroy()`'s own cascading teardown.** The same
+discipline `gpu_canvas_view.ts`'s own device-leak bug (this log's own
+earlier entry) was about: `device.destroy()` would eventually reclaim
+all of these regardless, but explicit teardown here keeps
+`SceneRenderer` correct and self-contained even if it's ever reused
+outside `GpuCanvasView`'s own current one-device-per-session lifecycle.
+
+**What this session could and couldn't verify live.** This project's
+own sandboxed headless Chromium still has no real GPU adapter
+(`console_commands/gpu.ts`'s own earlier finding) -- `requestAdapter()`
+returns `null` before `createSceneRenderer()` is ever reached, so the
+honest-failure path was confirmed live (same message, no page errors,
+no regression from the plain clear-colour version), but the actual
+scene -- sixteen rotating, bouncing, lit cubes and spheres actually
+drawing correctly on screen -- could not be. Every piece of real logic
+behind it was still verified, just by different means: the matrix math
+and mesh winding by the self-checking tests described above (not
+mocks -- real numerical/geometric assertions against real output
+data), and the WebGPU resource orchestration (pipeline/buffer/texture
+creation counts, per-frame submit/writeBuffer counts, resize-triggered
+depth-texture recreation, full teardown) by `scene_renderer.test.ts`'s
+own mocked-device tests. Confirming the actual pixels is the one thing
+left for a real GPU-backed browser to do.
+
+`npx tsc -b --force` clean; `npx vitest run --no-file-parallelism`
+314/314 (30 new in `mat4.test.ts`/`geometry.test.ts`/`scene.test.ts`
+covering the matrix math, mesh generation, and entity simulation
+described above, plus 5 new in `scene_renderer.test.ts` covering
+setup-time resource counts, per-frame submit/write counts, depth-
+texture reuse and resize-triggered recreation, and full teardown).

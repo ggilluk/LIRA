@@ -1,29 +1,22 @@
+import { createSceneRenderer, type SceneRenderer } from "./gpu_canvas/scene_renderer";
+import type { GpuCanvasContextLike, GpuDeviceLike } from "./gpu_canvas/webgpu_types";
+
 /** TypeScript's own bundled `lib.dom.d.ts` declares no WebGPU types at
  * all (confirmed directly, `console_commands/gpu.ts`'s own docstring),
  * and no `@webgpu/types` dependency exists in this project -- the same
- * narrow local type shim that file already uses, kept deliberately
- * separate rather than shared: this view reads `GPUDevice`/
- * `GPUCanvasContext`, `gpu.ts` reads `GPUAdapter.limits`/`.features`,
- * and neither shape is complete enough to be worth promoting into a
- * common module for one overlapping field (`requestAdapter`). */
+ * narrow local type shim that file already uses. `GpuDeviceLike`/
+ * `GpuCanvasContextLike` themselves come from `gpu_canvas/webgpu_types.ts`
+ * now, not a separate copy here: `createSceneRenderer()` below needs
+ * the *full* shape (buffers, pipelines, textures), so this file's own
+ * device/context are already that same full shape by the time they're
+ * handed over -- keeping a second, narrower local copy just for this
+ * file's own `queue.submit`/`createCommandEncoder` calls would only
+ * invite the two to drift apart. `GpuAdapterLike`/`NavigatorGpuLike`
+ * stay local -- `scene_renderer.ts` never touches an adapter or
+ * `navigator` at all, only the device/context this file hands it once
+ * setup already succeeded. */
 interface GpuAdapterLike {
   requestDevice(): Promise<GpuDeviceLike>;
-}
-
-interface GpuDeviceLike {
-  readonly queue: { submit(buffers: readonly unknown[]): void };
-  createCommandEncoder(): GpuCommandEncoderLike;
-  destroy(): void;
-}
-
-interface GpuCommandEncoderLike {
-  beginRenderPass(descriptor: unknown): { end(): void };
-  finish(): unknown;
-}
-
-interface GpuCanvasContextLike {
-  configure(config: unknown): void;
-  getCurrentTexture(): { createView(): unknown };
 }
 
 interface NavigatorGpuLike {
@@ -45,13 +38,20 @@ function webgpuContextOf(canvas: HTMLCanvasElement): GpuCanvasContextLike | null
 
 /** GpuCanvasView: a dedicated, self-contained WebGPU sandbox mounted
  * into the Portal's own "Canvas" component tab (portal_shell.ts's own
- * `ComponentId`/`COMPONENTS`) -- a blank canvas with nothing drawn
- * into it but a real, continuously-submitted clear-colour render pass,
- * meant as the starting harness for later experiments converting this
- * UI to a GPU-rendered framework, not a finished feature of its own.
- * Real GPU work end to end -- `requestAdapter()` -> `requestDevice()`
- * -> a configured `GPUCanvasContext` -> one real command buffer
- * submitted every frame -- not a static placeholder canvas.
+ * `ComponentId`/`COMPONENTS`) -- a live scene of rotating, bouncing
+ * cubes and spheres (`gpu_canvas/scene_renderer.ts`'s own real
+ * `SceneRenderer`), meant as the starting harness for later
+ * experiments converting this UI to a GPU-rendered framework, not a
+ * finished feature of its own. Real GPU work end to end --
+ * `requestAdapter()` -> `requestDevice()` -> a configured
+ * `GPUCanvasContext` -> one real, depth-tested command buffer
+ * submitted every frame -- not a static placeholder canvas. This file
+ * itself stays the thin mount/lifecycle/error-handling shell; every
+ * actual GPU resource (pipeline, meshes, per-entity buffers) and the
+ * per-frame scene update live in `gpu_canvas/scene_renderer.ts`
+ * instead, so this class's own job is still legible on its own --
+ * device setup and teardown -- without the scene's own details mixed
+ * into it.
  *
  * Self-contained the same way `ConsoleView`/`ServiceStatusView` are
  * (their own docstrings), but unlike either, `mount()` can be called
@@ -69,6 +69,7 @@ function webgpuContextOf(canvas: HTMLCanvasElement): GpuCanvasContextLike | null
 export class GpuCanvasView {
   private container: HTMLElement | undefined;
   private device: GpuDeviceLike | undefined;
+  private renderer: SceneRenderer | undefined;
   private animationFrame: number | undefined;
   private resizeObserver: ResizeObserver | undefined;
   /** Bumped by every `mount()` call -- `start()`'s own guard against a
@@ -87,12 +88,19 @@ export class GpuCanvasView {
   }
 
   /** Tears down whatever this instance currently owns -- cancels the
-   * render loop, disconnects the resize observer, and destroys the
-   * real `GPUDevice`, if one was ever created (every early-exit path
-   * in `start()` below returns before `this.device` is ever set, so
-   * this is always safe to call even when setup never got that far).
-   * Called at the top of every `mount()` (this class's own docstring
-   * above) and safe to call repeatedly or when nothing is running. */
+   * render loop, disconnects the resize observer, destroys every GPU
+   * resource `SceneRenderer.destroy()` owns (meshes, per-entity
+   * buffers, the depth texture), and destroys the real `GPUDevice`
+   * itself, if one was ever created (every early-exit path in
+   * `start()` below returns before `this.device` is ever set, so this
+   * is always safe to call even when setup never got that far).
+   * Renderer first, device second -- the device's own `destroy()`
+   * would eventually invalidate everything anyway, but tearing down
+   * the renderer's own resources explicitly first is the same
+   * "don't rely on cascading teardown" call `SceneRenderer.destroy()`'s
+   * own docstring makes. Called at the top of every `mount()` (this
+   * class's own docstring above) and safe to call repeatedly or when
+   * nothing is running. */
   destroy(): void {
     if (this.animationFrame !== undefined) {
       cancelAnimationFrame(this.animationFrame);
@@ -100,6 +108,8 @@ export class GpuCanvasView {
     }
     this.resizeObserver?.disconnect();
     this.resizeObserver = undefined;
+    this.renderer?.destroy();
+    this.renderer = undefined;
     this.device?.destroy();
     this.device = undefined;
   }
@@ -150,23 +160,18 @@ export class GpuCanvasView {
       this.resizeObserver.observe(canvas);
       resize();
 
-      const startedAt = performance.now();
+      // Pipeline, meshes, entities, and the depth texture are all
+      // built once here, not per frame -- `SceneRenderer.renderFrame()`
+      // below only ever updates per-entity uniform data and submits
+      // one command buffer; `gpu_canvas/scene_renderer.ts`'s own
+      // docstring on exactly what it owns and how `destroy()` tears it
+      // back down.
+      this.renderer = createSceneRenderer(device, context, gpu.getPreferredCanvasFormat(), canvas);
+      const renderer = this.renderer;
+
       const frame = () => {
         if (token !== this.sessionToken) return; // destroy()/a later mount() already stopped this session
-        const t = (performance.now() - startedAt) / 1000;
-        const encoder = device.createCommandEncoder();
-        const pass = encoder.beginRenderPass({
-          colorAttachments: [
-            {
-              view: context.getCurrentTexture().createView(),
-              clearValue: { r: 0.08 + 0.05 * Math.sin(t), g: 0.14, b: 0.16 + 0.05 * Math.cos(t), a: 1 },
-              loadOp: "clear",
-              storeOp: "store",
-            },
-          ],
-        });
-        pass.end();
-        device.queue.submit([encoder.finish()]);
+        renderer.renderFrame(performance.now());
         this.animationFrame = requestAnimationFrame(frame);
       };
       this.animationFrame = requestAnimationFrame(frame);
