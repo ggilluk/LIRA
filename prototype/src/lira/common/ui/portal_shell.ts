@@ -4,6 +4,7 @@ import { LogEventBoard } from "../data/log_event";
 import { Logger } from "../role/logger";
 import { ServiceStatusView } from "./service_status_view";
 import { ConsoleView } from "./console_view";
+import { GpuCanvasView } from "./gpu_canvas_view";
 import type { VocabularyWorkerClient, ImportDomainFiles, ExportedDomainFiles } from "../../vocabulary/role/web_worker/vocabulary_worker_client";
 import type { RenderedFragment } from "../../vocabulary/role/web_worker/vocabulary_worker_protocol";
 import type { LinguisticsWorkerClient } from "../../linguistics/role/web_worker/linguistics_worker_client";
@@ -148,11 +149,21 @@ interface LiraResolveHierarchyEventDetail {
  * per-Domain routing (the Linguistics worker reads against its own
  * seeded Common vocabulary regardless of which Domain node is
  * selected); it just mounts itself into whatever container this shell
- * hands it. */
+ * hands it.
+ *
+ * "Canvas" is the one component tab that isn't a ported Architectural
+ * Layer at all -- it mounts `GpuCanvasView` (gpu_canvas_view.ts), a
+ * dedicated, blank WebGPU sandbox for experimenting with converting
+ * this UI to a GPU-rendered framework later. It shares the Vocabulary/
+ * Linguistics tabs' own `.portal-fragment-mount` and still waits on a
+ * selected Domain the same way they do, even though -- like
+ * Linguistics -- nothing about it actually depends on which Domain
+ * that is; kept consistent with the existing two tabs' own gating
+ * rather than carved out as a special case. */
 
 type ShellMode = "desktop" | "mobile";
 type MobileScreen = "browse" | "view";
-type ComponentId = "vocabulary" | "linguistics" | "knowledge";
+type ComponentId = "vocabulary" | "linguistics" | "knowledge" | "canvas";
 
 interface ComponentDescriptor {
   id: ComponentId;
@@ -164,6 +175,7 @@ const COMPONENTS: readonly ComponentDescriptor[] = [
   { id: "vocabulary", label: "Vocabulary", available: true },
   { id: "linguistics", label: "Linguistics", available: true },
   { id: "knowledge", label: "Knowledge", available: false },
+  { id: "canvas", label: "Canvas", available: true },
 ];
 
 export interface PortalShellOptions {
@@ -189,6 +201,7 @@ export class PortalShell {
   private readonly serviceStatusView: ServiceStatusView;
   private readonly consoleView: ConsoleView;
   private readonly sentenceReaderView: SentenceReaderView;
+  private readonly gpuCanvasView = new GpuCanvasView();
   private readonly logBoard = new LogEventBoard();
   private readonly loggersBySource = new Map<string, Logger>();
   private renderToken = 0;
@@ -759,6 +772,8 @@ export class PortalShell {
       void this.loadView(selected);
     } else if (selected && this.selectedComponent === "linguistics") {
       this.loadLinguisticsView();
+    } else if (selected && this.selectedComponent === "canvas") {
+      this.loadCanvasView();
     }
   }
 
@@ -774,6 +789,17 @@ export class PortalShell {
     if (!this.container) return;
     const mount = this.container.querySelector<HTMLElement>(".portal-fragment-mount");
     if (mount) this.sentenceReaderView.mount(mount);
+  }
+
+  /** Mounts the `GpuCanvasView` WebGPU sandbox into the pane's fragment
+   * container -- synchronous, the same shape as `loadLinguisticsView()`
+   * just above; `GpuCanvasView.mount()`'s own docstring on why it's
+   * safe (and necessary) to call again with a fresh container on every
+   * `render()` pass while this tab stays selected. */
+  private loadCanvasView(): void {
+    if (!this.container) return;
+    const mount = this.container.querySelector<HTMLElement>(".portal-fragment-mount");
+    if (mount) this.gpuCanvasView.mount(mount);
   }
 
   /** Requests the selected Domain's Vocabulary fragment from the worker
@@ -1118,5 +1144,6 @@ const SHELL_CSS = `
    a higher-specificity selector that only applies inside this mount,
    keeps every tab reachable without touching the ported string. */
 .portal-fragment-mount .tabs { max-width: 100%; overflow-x: auto; }
+.gpu-canvas-surface { width: 100%; height: 100%; display: block; background: #000; border-radius: 6px; }
 .portal-service-status { flex: none; }
 `;

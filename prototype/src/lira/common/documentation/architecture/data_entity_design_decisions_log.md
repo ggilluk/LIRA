@@ -679,3 +679,93 @@ neither-shape-exists case, and the empty-features-set `(none)` case --
 all against a stubbed `navigator.gpu`, since jsdom implements no
 WebGPU of its own, which doubles as free coverage of the real
 "unsupported browser" path).
+
+## Portal: a "Canvas" top-level view, a real WebGPU render loop with nothing drawn in it yet
+
+The request was a dedicated top-level Portal view to experiment with
+converting this UI to a GPU-rendered framework later. `GpuCanvasView`
+(gpu_canvas_view.ts) is deliberately *not* another ported Architectural
+Layer the way Vocabulary/Linguistics/Knowledge are -- `ComponentId`'s
+own docstring in portal_shell.ts now says so explicitly, since
+`COMPONENTS`' existing framing ("one button per ported-or-not
+Architectural Layer") stopped being literally true the moment Canvas
+joined it. It still gates on a selected Domain the same way the
+Linguistics tab does, even though -- like Linguistics -- nothing about
+it actually depends on which Domain that is: kept consistent with the
+existing two tabs' own gating rather than carved out as a special
+case just for this one.
+
+**A real WebGPU pipeline, continuously running, with nothing meaningful
+drawn into it yet.** `requestAdapter()` -> `requestDevice()` -> a
+configured `GPUCanvasContext` -> one real command buffer submitted
+every frame (a `rAF`-driven clear-colour pass whose colour drifts
+slowly over time, proof the loop is actually alive, not a single
+static paint) -- genuinely the whole GPU pipeline this UI would need
+to build on later, just with nothing substantive drawn into it. No
+`@webgpu/types` dependency here either, same call as
+`console_commands/gpu.ts`'s own -- a local, narrower type shim (just
+`GPUDevice`/`GPUCanvasContext`/the two command-encoding methods this
+view actually calls), kept separate from `gpu.ts`'s own shim rather
+than factored into one shared module: the two files' real overlap is
+one method (`requestAdapter`), not enough to be worth the coupling.
+
+**`mount()` always `destroy()`s first -- not merely idempotent,
+actively self-healing.** `PortalShell.render()` rebuilds its whole
+`.portal-view` subtree via `innerHTML` on every single call, including
+while the Canvas tab is already the selected one -- `onDomainUpdated`
+alone fires a full `render()` any time a WordNet seed run updates a
+Domain's word count in the background, regardless of which component
+tab a user happens to be looking at. A real `GPUDevice` and `rAF` loop
+are live resources that keep running against a now-detached canvas
+forever if nothing stops them, so every `mount()` tears down whatever
+session it already owns (cancels the frame, disconnects the
+`ResizeObserver`, destroys the device) before building a fresh canvas
+and starting a new one -- the same race-guard shape
+`PortalShell.loadView()`'s own `renderToken` already uses, reused here
+as `sessionToken` so a slower, now-superseded `requestAdapter()`/
+`requestDevice()` await can't clobber a session a *later* `mount()`
+already started.
+
+**A real device-leak bug, caught by writing the "no WebGPU context"
+test, not by inspection.** The first draft assigned `this.device =
+device` only after the canvas-context-null check passed -- so a
+successfully-created `GPUDevice` that then hit that one later failure
+(a real, if rare, possibility: `canvas.getContext("webgpu")` can still
+return `null` even with a working adapter/device, e.g. a second
+`"webgpu"` context already claimed elsewhere) was never assigned to
+`this.device` at all, meaning the `catch` block's own `destroy()` call
+had nothing to destroy -- the device just leaked, silently, forever.
+Moving the assignment immediately after `requestDevice()` succeeds,
+before the context check, fixes it: any later throw now reaches a
+`this.device` that's actually set, so `destroy()` genuinely tears it
+down. The regression test (`gpu_canvas_view.test.ts`) asserts
+`device.destroy()` was actually called in that exact failure path, not
+just that the message shown is right -- the first version of that
+assertion (written before the fix) would have passed just as easily
+while the leak was still live, so it was flipped once the bug was
+found, not left checking the wrong thing.
+
+**Live Playwright verification found the identical real "no adapter"
+outcome `console_commands/gpu.ts` already found, from inside the
+Portal this time, not the Console.** This project's own sandboxed
+headless Chromium reports the same `navigator.gpu` present /
+`requestAdapter()` returns `null` split either way it's asked --
+confirming the Canvas tab shows the honest message
+`"WebGPU is supported, but no GPU adapter is available (requestAdapter()
+returned null)."` rather than a blank or fabricated canvas, both on
+first visit and, critically, after switching away to Vocabulary and
+back to Canvas again (exercising `render()`'s own repeated-`innerHTML`-
+rebuild path and confirming `mount()`'s own destroy-first behaviour
+holds up against it, not just in the unit tests' own mocked version of
+the same race).
+
+`npx tsc -b --force` clean; `npx vitest run --no-file-parallelism`
+279/279 (6 new: the unsupported-browser message, the no-adapter
+message, the no-WebGPU-context message (and the device-leak regression
+check alongside it), one real frame actually submitting a command
+buffer through a stubbed `GPUDevice`/`GPUCanvasContext`, `destroy()`
+cancelling the frame and the device together, and a second `mount()`
+call tearing down the first session's own device while leaving the
+second, now-current one running -- all against stubbed
+`navigator.gpu`/`ResizeObserver`/`requestAnimationFrame`, none of which
+jsdom implements).
