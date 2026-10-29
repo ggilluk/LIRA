@@ -17,8 +17,12 @@ const VERTEX_FLOATS = 6;
  * counter-clockwise as seen from outside the cube (this module's own
  * `geometry.test.ts` recomputes each triangle's real face normal from
  * its own vertex positions and asserts it agrees with the vertex
- * normal, rather than trusting this by hand). */
-const CUBE_FACES: readonly { normal: Vec3; right: Vec3; up: Vec3 }[] = [
+ * normal, rather than trusting this by hand). Exported so
+ * `buildTexturedCubeMesh()` below can walk the exact same six frames,
+ * in the same order -- its own winding is then provably identical to
+ * `buildCubeMesh()`'s own already-verified winding, by construction,
+ * not re-derived by hand a second time. */
+export const CUBE_FACES: readonly { normal: Vec3; right: Vec3; up: Vec3 }[] = [
   { normal: [1, 0, 0], right: [0, 0, -1], up: [0, 1, 0] },
   { normal: [-1, 0, 0], right: [0, 0, 1], up: [0, 1, 0] },
   { normal: [0, 1, 0], right: [1, 0, 0], up: [0, 0, -1] },
@@ -68,6 +72,66 @@ export function buildCubeMesh(size: number): Mesh {
 
 function addScaled(base: Vec3, offset: Vec3, scale: number): Vec3 {
   return [base[0] + offset[0] * scale, base[1] + offset[1] * scale, base[2] + offset[2] * scale];
+}
+
+const TEXTURED_VERTEX_FLOATS = 5; // position(3) + uv(2) -- no normal: the camera cube is unlit (shader.ts's own CAMERA_SHADER_WGSL), so there's nothing a normal would be used for
+
+/** A second interleaved layout, `[px,py,pz, u,v, ...]` -- `scene_renderer.ts`'s
+ * own camera-textured cube (`attachCamera()`) needs UV coordinates to
+ * sample a video frame, not a lit surface normal, so this is a
+ * separate mesh/vertex-buffer layout and pipeline from `buildCubeMesh()`'s
+ * own, not a third optional field grafted onto it. */
+export interface TexturedMesh {
+  vertices: Float32Array;
+  indices: Uint16Array;
+}
+
+const UV_CORNERS: readonly [number, number][] = [
+  [0, 1],
+  [1, 1],
+  [1, 0],
+  [0, 0],
+];
+
+/** A cube centred on the origin, `size` long on each edge, each face
+ * mapped to the whole `[0,1]x[0,1]` texture (the same live camera
+ * frame repeated on all six faces, not a cube-map -- `scene_renderer.ts`'s
+ * own docstring on why that's the simpler, sufficient choice here).
+ * Walks the exact same `CUBE_FACES` frames and corner order
+ * `buildCubeMesh()` does, so `geometry.test.ts` can assert this
+ * produces the *identical* index array -- proof its winding is
+ * correct by construction, not a second hand-derivation to get wrong. */
+export function buildTexturedCubeMesh(size: number): TexturedMesh {
+  const half = size / 2;
+  const vertices = new Float32Array(CUBE_FACES.length * 4 * TEXTURED_VERTEX_FLOATS);
+  const indices = new Uint16Array(CUBE_FACES.length * 6);
+
+  CUBE_FACES.forEach((face, faceIndex) => {
+    const corners: Vec3[] = [
+      addScaled(addScaled(face.normal, face.right, -1), face.up, -1),
+      addScaled(addScaled(face.normal, face.right, 1), face.up, -1),
+      addScaled(addScaled(face.normal, face.right, 1), face.up, 1),
+      addScaled(addScaled(face.normal, face.right, -1), face.up, 1),
+    ];
+    corners.forEach((corner, cornerIndex) => {
+      const base = (faceIndex * 4 + cornerIndex) * TEXTURED_VERTEX_FLOATS;
+      vertices[base] = corner[0] * half;
+      vertices[base + 1] = corner[1] * half;
+      vertices[base + 2] = corner[2] * half;
+      vertices[base + 3] = UV_CORNERS[cornerIndex][0];
+      vertices[base + 4] = UV_CORNERS[cornerIndex][1];
+    });
+    const quadBase = faceIndex * 4;
+    const indexBase = faceIndex * 6;
+    indices[indexBase] = quadBase;
+    indices[indexBase + 1] = quadBase + 1;
+    indices[indexBase + 2] = quadBase + 2;
+    indices[indexBase + 3] = quadBase;
+    indices[indexBase + 4] = quadBase + 2;
+    indices[indexBase + 5] = quadBase + 3;
+  });
+
+  return { vertices, indices };
 }
 
 /** A UV sphere, `radius`, `latSegments` rings from pole to pole,

@@ -889,3 +889,150 @@ covering the matrix math, mesh generation, and entity simulation
 described above, plus 5 new in `scene_renderer.test.ts` covering
 setup-time resource counts, per-frame submit/write counts, depth-
 texture reuse and resize-triggered recreation, and full teardown).
+
+## Canvas: a live camera feed, textured onto one more cube in the same scene
+
+The request was a camera interface whose image renders inside the
+Canvas view, in a box among the already-moving cubes and spheres --
+not a separate overlay or a static screenshot, but one more entity in
+the exact same bounce-and-spin simulation the sixteen solid cubes and
+spheres already run in, just displaying a live video feed instead of a
+flat colour.
+
+**`common/data/camera_capture.ts`'s own `CameraCapture` -- a thin,
+independently testable wrapper around exactly one `getUserMedia()`
+`MediaStream` and the `<video>` element it plays into, never attached
+to the document.** A WebGPU texture copy reads frames straight off the
+video element itself (`copyExternalImageToTexture()`'s own `source`),
+so there's no need for one anywhere in the DOM. `video`/`mediaDevices`
+are both constructor parameters with real defaults, the same
+injectable-dependency shape `scene.ts`'s own `RandomSource` already
+uses -- necessary here, not just stylistic consistency, since jsdom
+(this project's own test environment) cannot decode media at all;
+`.play()` on a real `<video>` element throws there, so
+`camera_capture.test.ts` supplies a fake `VideoElementLike` instead. No
+camera hardware, a denied permission prompt, and an unsupported
+browser are all real, ordinary outcomes -- every one surfaces as a
+real, honest `Error` from `start()`, the same "throw for a genuine
+failure" convention this whole feature set already uses, but
+`gpu_canvas_view.ts`'s own call site treats every one of them as
+optional, not fatal: the cube/sphere scene keeps rendering whether or
+not a camera is ever available, logging the failure
+(`console.warn`) rather than blanking the pane the way an
+adapter/device failure does -- there's nowhere honest to put a
+persistent "camera denied" notice without implying the rest of the
+already-working scene is broken too.
+
+**A second, unlit pipeline and a second, UV-mapped cube mesh -- not a
+branch inside the existing lit one.** `geometry.ts`'s own
+`buildTexturedCubeMesh()` walks the exact same `CUBE_FACES` frames (now
+exported) in the exact same order `buildCubeMesh()` does, so
+`geometry.test.ts` can assert the two produce *identical* index
+arrays -- the camera cube's own winding is correct by construction,
+proven by that equality, not re-derived or re-verified by hand a
+second time the way the sphere's own winding had to be. `shader.ts`'s
+own `CAMERA_SHADER_WGSL` sports a `uv` vertex attribute instead of a
+normal and samples a texture directly in the fragment shader with no
+lighting term at all -- the cube reads as a screen showing a live feed,
+not a diffuse solid object reflecting the scene's own light. Still a
+real solid cube, still `cullMode: "back"` (the same primitive state as
+every other entity): a flat double-sided quad was considered and
+dropped, since a cube's own hidden faces are already genuinely hidden
+by its own front faces regardless of culling, so there was no reason
+to special-case this one pipeline's own primitive state at all.
+
+**The camera cube moves and spins through the exact same `stepEntity()`
+physics as every other entity -- `scene.ts`'s own `createRandomEntity()`
+exported for exactly this, not duplicated.** `EntityKind` grew a third
+value, `"camera"`, that `createRandomEntities()` itself never produces
+on its own (there's always at most one camera cube, and only once a
+real camera actually becomes available) -- `scene_renderer.ts`'s own
+`attachCamera()` calls the same exported `createRandomEntity("camera",
+BOUNDS, Math.random)` the plural wrapper already builds on, so the
+camera cube bounces inside the identical `BOUNDS` box with its own
+random starting position/velocity/rotation, not a special case bolted
+onto the simulation from outside it.
+
+**`attachCamera()` is deliberately a one-shot, optional add-on, called
+only once a real `CameraCapture` has already resolved its own
+`start()`** -- by then its `width`/`height` are already real, non-zero
+dimensions (`start()` itself already awaits a first decoded frame), so
+the camera's own `rgba8unorm` texture is created once, at attach time,
+never needing the lazy "placeholder until real dimensions are known"
+handling the depth texture's own resize path needs. A second
+`attachCamera()` call is a no-op -- `gpu_canvas_view.ts` only ever
+calls it once per session regardless, but the renderer enforces it
+too, not just trusts the one real caller. `copyExternalImageToTexture()`
+is called fresh every frame (gated on `camera.isReady`, checked rather
+than assumed, even though it's true from the first frame in every
+case `attachCamera()`'s own calling convention actually produces) --
+the texture is only ever as current as that frame's own copy, there's
+no caching of a stale previous frame to skip it.
+
+**`destroy()` ordering, reconsidered once more.** `GpuCanvasView.destroy()`
+now stops the real camera hardware (`CameraCapture.stop()`) *before*
+tearing down the renderer or the device -- releasing real hardware
+promptly (a camera's own recording-indicator light staying on a moment
+longer than it needs to is a real, visible user-facing wrongness,
+unlike any of this session's own GPU-resource-leak concerns, which are
+invisible to a user) earns it the front of the queue this time, ahead
+of the renderer-then-device ordering `GpuCanvasView`'s own earlier
+device-leak fix established. `SceneRenderer.destroy()` itself tears
+down the camera cube's own texture, mesh buffers, and uniform buffer
+alongside everything else it already tore down -- but not the camera
+hardware itself, which stays `GpuCanvasView`'s own job (it constructed
+the `CameraCapture`, it owns stopping it).
+
+**Resize correctness was a stated requirement, not just a side
+effect -- confirmed, not just assumed, to still hold.** The camera
+cube's own world-space size (`CAMERA_CUBE_SIZE`) and its own texture
+size (the camera's native resolution) are both independent of the
+canvas's own pixel size, so neither needed any new resize-aware
+handling of its own; the aspect-ratio/projection recomputation and the
+depth-texture resize-and-recreate logic `renderFrame()` already ran on
+every frame (this log's own earlier "Canvas: a real moving, rotating
+cube-and-sphere scene" entry) cover the camera cube for free, the same
+way they already covered the other sixteen entities. Live Playwright
+verification against the real running Console confirmed this
+end-to-end, not just by reading the code: the honest "no GPU adapter"
+message (this sandbox's own real, by-now-familiar limitation) still
+shows correctly both before and after a real viewport resize, with no
+page errors either time.
+
+**What this session could and couldn't verify live.** Same limitation
+as the cube/sphere scene's own entry above: this project's own
+sandboxed headless Chromium still has no real GPU adapter, so the
+actual textured camera cube -- a live video feed visibly mapped onto a
+tumbling cube among the others -- could not be confirmed with real
+pixels. What could be, and was: `CameraCapture`'s own permission/
+readiness/teardown logic (`camera_capture.test.ts`, a fake video
+element standing in for jsdom's own real inability to decode media);
+the textured cube's own winding, by construction equality with the
+already-verified plain cube (`geometry.test.ts`); and the camera-
+specific WebGPU resource orchestration -- one additional pipeline/
+texture/sampler/buffer set created exactly once, a fresh texture copy
+and one extra draw call every frame while ready, none while not, and
+full teardown including the camera's own resources
+(`scene_renderer.test.ts`'s own `attachCamera` tests). Confirming the
+actual pixels -- and that a real browser's own camera permission
+prompt, accepted or denied, behaves the way `CameraCapture`'s own
+tests predict -- is, again, the one thing left for a real GPU-and-
+camera-backed browser to do.
+
+`npx tsc -b --force` clean; `npx vitest run --no-file-parallelism`
+332/332 (18 new: 9 in `camera_capture.test.ts` covering unsupported-
+browser/permission-denied/fast-ready/waits-for-loadeddata/ignores-a-
+premature-loadeddata/srcObject-wiring/stop()-teardown; 4 in
+`geometry.test.ts` covering `buildTexturedCubeMesh()`'s own vertex/
+index counts, its identical-to-`buildCubeMesh()` index array, its
+matching positions, and its own four-distinct-UV-corners-per-face
+check; 5 in `scene_renderer.test.ts` covering `attachCamera()`'s own
+setup-time resource counts, its no-op-on-a-second-call guard, the
+per-frame texture-copy-plus-extra-draw-call while ready, the
+skip-the-copy-but-keep-drawing while not, and full teardown of the
+camera's own resources). Live Playwright verification against the
+real running Console confirmed the resize path specifically: the
+honest "no GPU adapter" message still renders correctly, with no page
+errors, both before and after a real viewport resize -- the camera
+cube's own addition changed nothing about `renderFrame()`'s own
+existing resize handling, as the design above intended.

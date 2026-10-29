@@ -56,3 +56,46 @@ export const ENTITY_UNIFORM_SIZE_BYTES = 64 + 64 + 16;
  * `scene_renderer.ts`'s own per-frame `Float32Array` scratch buffer
  * allocates once and reuses for every entity's `writeBuffer()` call. */
 export const ENTITY_UNIFORM_FLOAT_COUNT = ENTITY_UNIFORM_SIZE_BYTES / 4;
+
+/** `scene_renderer.ts`'s own camera-textured cube -- a separate
+ * pipeline/shader from `SCENE_SHADER_WGSL` above, not a branch inside
+ * it: this one samples a live video frame instead of computing lit
+ * colour, needs a `uv` vertex attribute `geometry.ts`'s own
+ * `buildCubeMesh()` layout doesn't carry (`buildTexturedCubeMesh()`'s
+ * own separate layout instead), and is deliberately unlit -- the cube
+ * reads as a screen showing a live feed, not a diffuse solid object
+ * reflecting the scene's own light, so `fs_camera` outputs the sampled
+ * texel directly with no lighting term at all. */
+export const CAMERA_SHADER_WGSL = `
+struct CameraUniforms {
+  modelViewProj: mat4x4<f32>,
+};
+@group(0) @binding(0) var<uniform> uniforms: CameraUniforms;
+@group(0) @binding(1) var cameraSampler: sampler;
+@group(0) @binding(2) var cameraTexture: texture_2d<f32>;
+
+struct CameraVertexOut {
+  @builtin(position) clipPosition: vec4<f32>,
+  @location(0) uv: vec2<f32>,
+};
+
+@vertex
+fn vs_camera(@location(0) position: vec3<f32>, @location(1) uv: vec2<f32>) -> CameraVertexOut {
+  var out: CameraVertexOut;
+  out.clipPosition = uniforms.modelViewProj * vec4<f32>(position, 1.0);
+  out.uv = uv;
+  return out;
+}
+
+@fragment
+fn fs_camera(in: CameraVertexOut) -> @location(0) vec4<f32> {
+  return textureSample(cameraTexture, cameraSampler, in.uv);
+}
+`;
+
+/** Bytes for the camera cube's own uniform buffer -- just
+ * `modelViewProj` (64 bytes), no `model`/`color` the way
+ * `ENTITY_UNIFORM_SIZE_BYTES` carries: unlit, so there's no normal to
+ * transform and no flat colour to tint with. */
+export const CAMERA_UNIFORM_SIZE_BYTES = 64;
+export const CAMERA_UNIFORM_FLOAT_COUNT = CAMERA_UNIFORM_SIZE_BYTES / 4;

@@ -20,6 +20,8 @@ export interface GpuTextureLike {
 
 export interface GpuBindGroupLike {}
 
+export interface GpuSamplerLike {}
+
 export interface GpuRenderPipelineLike {
   getBindGroupLayout(index: number): unknown;
 }
@@ -48,12 +50,19 @@ export interface GpuQueueLike {
   // non-generic-pinned `ArrayBufferLike` outright -- naming the real
   // two types used sidesteps that mismatch instead of fighting it.
   writeBuffer(buffer: GpuBufferLike, offset: number, data: Float32Array | Uint16Array): void;
+  // `source`/`destination`/`copySize` left as `unknown` like every
+  // other descriptor object in this shim -- `scene_renderer.ts`'s own
+  // `attachCamera()` is the one caller, passing a real
+  // `GPUImageCopyExternalImage`/`GPUImageCopyTexture`/`GPUExtent3D`
+  // literal each time, never read back here.
+  copyExternalImageToTexture(source: unknown, destination: unknown, copySize: unknown): void;
 }
 
 export interface GpuDeviceLike {
   readonly queue: GpuQueueLike;
   createBuffer(descriptor: { size: number; usage: number }): GpuBufferLike;
   createTexture(descriptor: unknown): GpuTextureLike;
+  createSampler(descriptor: unknown): GpuSamplerLike;
   createShaderModule(descriptor: { code: string }): unknown;
   createRenderPipeline(descriptor: unknown): GpuRenderPipelineLike;
   createBindGroup(descriptor: unknown): GpuBindGroupLike;
@@ -77,11 +86,11 @@ export interface GpuCanvasContextLike {
  * drift from the real spec value; this can't. */
 export function gpuUsageFlags(): {
   buffer: { VERTEX: number; INDEX: number; UNIFORM: number; COPY_DST: number };
-  texture: { RENDER_ATTACHMENT: number };
+  texture: { RENDER_ATTACHMENT: number; TEXTURE_BINDING: number; COPY_DST: number };
 } {
   const g = globalThis as unknown as {
     GPUBufferUsage: { VERTEX: number; INDEX: number; UNIFORM: number; COPY_DST: number };
-    GPUTextureUsage: { RENDER_ATTACHMENT: number };
+    GPUTextureUsage: { RENDER_ATTACHMENT: number; TEXTURE_BINDING: number; COPY_DST: number };
   };
   return { buffer: g.GPUBufferUsage, texture: g.GPUTextureUsage };
 }

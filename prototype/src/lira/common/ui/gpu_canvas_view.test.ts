@@ -29,7 +29,7 @@ function fakeAdapter(requestDevice: () => Promise<unknown>) {
  * `destroy()` tests here are still meaningful. */
 function fakeDevice() {
   return {
-    queue: { submit: vi.fn(), writeBuffer: vi.fn() },
+    queue: { submit: vi.fn(), writeBuffer: vi.fn(), copyExternalImageToTexture: vi.fn() },
     createCommandEncoder: () => ({
       beginRenderPass: () => ({
         setPipeline: vi.fn(),
@@ -43,6 +43,7 @@ function fakeDevice() {
     }),
     createBuffer: vi.fn(() => ({ destroy: vi.fn() })),
     createTexture: vi.fn(() => ({ createView: () => ({}), destroy: vi.fn() })),
+    createSampler: vi.fn(() => ({})),
     createShaderModule: vi.fn(() => ({})),
     createRenderPipeline: vi.fn(() => ({ getBindGroupLayout: () => ({}) })),
     createBindGroup: vi.fn(() => ({})),
@@ -85,8 +86,17 @@ describe("GpuCanvasView", () => {
     // *something* `createBuffer`/`createTexture`'s own fake calls can
     // receive.
     vi.stubGlobal("GPUBufferUsage", { VERTEX: 1, INDEX: 2, UNIFORM: 4, COPY_DST: 8 });
-    vi.stubGlobal("GPUTextureUsage", { RENDER_ATTACHMENT: 1 });
+    vi.stubGlobal("GPUTextureUsage", { RENDER_ATTACHMENT: 1, TEXTURE_BINDING: 2, COPY_DST: 4 });
     vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockImplementation(() => null as unknown as RenderingContext);
+    // jsdom's own navigator.mediaDevices is undefined (no media APIs
+    // at all) -- every test below triggers the real, honest
+    // "Camera capture is not supported" rejection path
+    // (CameraCapture.start()'s own docstring) exactly once per
+    // mount(), which GpuCanvasView correctly logs rather than
+    // surfacing in the pane (its own start()'s docstring on why).
+    // That's expected, passing behaviour, not a test failure to
+    // chase -- silenced here purely to keep test output readable.
+    vi.spyOn(console, "warn").mockImplementation(() => {});
   });
 
   afterEach(() => {

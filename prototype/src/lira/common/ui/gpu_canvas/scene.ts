@@ -1,6 +1,15 @@
 import { normalize, type Vec3 } from "./mat4";
 
-export type EntityKind = "cube" | "sphere";
+/** `"camera"` is `scene_renderer.ts`'s own camera-textured cube
+ * (`attachCamera()`) -- it moves and spins through exactly the same
+ * `stepEntity()` physics as every cube/sphere (`kind` plays no part in
+ * the simulation itself, only in which mesh/pipeline/uniform data
+ * `scene_renderer.ts` draws it with), but `createRandomEntities()`
+ * below never creates one on its own: there's always at most one, and
+ * only once a real camera actually becomes available, so
+ * `scene_renderer.ts` builds its own via the exported
+ * `createRandomEntity()` instead. */
+export type EntityKind = "cube" | "sphere" | "camera";
 
 /** One moving, spinning shape -- `position`/`velocity`/`rotationAngle`
  * mutate every frame (`stepEntity()` below); `rotationAxis`/
@@ -41,7 +50,7 @@ export function createRandomEntities(cubeCount: number, sphereCount: number, bou
   return entities;
 }
 
-function createRandomEntity(kind: EntityKind, bounds: SceneBounds, random: RandomSource): SceneEntity {
+export function createRandomEntity(kind: EntityKind, bounds: SceneBounds, random: RandomSource): SceneEntity {
   const speed = 0.6 + random() * 1.2;
   const axis = normalize([random() * 2 - 1, random() * 2 - 1, random() * 2 - 1]);
   return {

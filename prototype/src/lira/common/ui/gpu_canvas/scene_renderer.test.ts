@@ -7,23 +7,30 @@ import { createSceneRenderer } from "./scene_renderer";
  * `gpuUsageFlags()` reads. */
 function stubWebGpuGlobals(): void {
   vi.stubGlobal("GPUBufferUsage", { VERTEX: 1, INDEX: 2, UNIFORM: 4, COPY_DST: 8 });
-  vi.stubGlobal("GPUTextureUsage", { RENDER_ATTACHMENT: 1 });
+  vi.stubGlobal("GPUTextureUsage", { RENDER_ATTACHMENT: 1, TEXTURE_BINDING: 2, COPY_DST: 4 });
 }
 
 function fakeDevice() {
   const createdBuffers: { destroy: ReturnType<typeof vi.fn> }[] = [];
   const createdTextures: { destroy: ReturnType<typeof vi.fn> }[] = [];
+  // One shared render-pass spy object, reused across every
+  // `beginRenderPass()` call (every `renderFrame()` makes a fresh
+  // `GPUCommandEncoder`, same as a real device would) -- so a test can
+  // inspect `pass.drawIndexed`'s own call count across one or more
+  // `renderFrame()` calls, not just within a single one it can't
+  // otherwise reach the return value of.
+  const pass = {
+    setPipeline: vi.fn(),
+    setBindGroup: vi.fn(),
+    setVertexBuffer: vi.fn(),
+    setIndexBuffer: vi.fn(),
+    drawIndexed: vi.fn(),
+    end: vi.fn(),
+  };
   const device = {
-    queue: { submit: vi.fn(), writeBuffer: vi.fn() },
+    queue: { submit: vi.fn(), writeBuffer: vi.fn(), copyExternalImageToTexture: vi.fn() },
     createCommandEncoder: () => ({
-      beginRenderPass: () => ({
-        setPipeline: vi.fn(),
-        setBindGroup: vi.fn(),
-        setVertexBuffer: vi.fn(),
-        setIndexBuffer: vi.fn(),
-        drawIndexed: vi.fn(),
-        end: vi.fn(),
-      }),
+      beginRenderPass: () => pass,
       finish: () => ({}),
     }),
     createBuffer: vi.fn(() => {
@@ -36,12 +43,17 @@ function fakeDevice() {
       createdTextures.push(texture);
       return texture;
     }),
+    createSampler: vi.fn(() => ({})),
     createShaderModule: vi.fn(() => ({})),
     createRenderPipeline: vi.fn(() => ({ getBindGroupLayout: () => ({}) })),
     createBindGroup: vi.fn(() => ({})),
     destroy: vi.fn(),
   };
-  return { device, createdBuffers, createdTextures };
+  return { device, createdBuffers, createdTextures, pass };
+}
+
+function fakeCamera(overrides: Partial<{ element: unknown; isReady: boolean; width: number; height: number }> = {}) {
+  return { element: {}, isReady: true, width: 640, height: 480, ...overrides };
 }
 
 function fakeContext() {
@@ -112,5 +124,57 @@ describe("createSceneRenderer", () => {
     renderer.destroy();
     expect(createdTextures[0].destroy).toHaveBeenCalledTimes(1);
     for (const buffer of createdBuffers) expect(buffer.destroy).toHaveBeenCalledTimes(1);
+  });
+
+  describe("attachCamera", () => {
+    it("creates one additional pipeline, sampler, texture, mesh buffers, and uniform buffer, at attach time", () => {
+      const { device } = fakeDevice();
+      const renderer = createSceneRenderer(device as never, fakeContext() as never, "bgra8unorm", fakeCanvas());
+      device.createRenderPipeline.mockClear();
+      device.createBuffer.mockClear();
+      device.createTexture.mockClear();
+      renderer.attachCamera(fakeCamera() as never);
+      expect(device.createRenderPipeline).toHaveBeenCalledTimes(1);
+      expect(device.createSampler).toHaveBeenCalledTimes(1);
+      expect(device.createTexture).toHaveBeenCalledTimes(1); // the camera texture itself, not the (not yet created) depth texture
+      expect(device.createBuffer).toHaveBeenCalledTimes(3); // the camera cube's own vertex + index buffers, plus its uniform buffer
+    });
+
+    it("is a no-op when called a second time -- this renderer's own docstring on why there's never more than one camera cube", () => {
+      const { device } = fakeDevice();
+      const renderer = createSceneRenderer(device as never, fakeContext() as never, "bgra8unorm", fakeCanvas());
+      renderer.attachCamera(fakeCamera() as never);
+      device.createRenderPipeline.mockClear();
+      renderer.attachCamera(fakeCamera() as never);
+      expect(device.createRenderPipeline).not.toHaveBeenCalled();
+    });
+
+    it("renderFrame() copies a fresh video frame into the texture and draws one extra entity, while the camera is ready", () => {
+      const { device, pass } = fakeDevice();
+      const renderer = createSceneRenderer(device as never, fakeContext() as never, "bgra8unorm", fakeCanvas());
+      renderer.attachCamera(fakeCamera() as never);
+      pass.drawIndexed.mockClear();
+      renderer.renderFrame(0);
+      expect(device.queue.copyExternalImageToTexture).toHaveBeenCalledTimes(1);
+      expect(pass.drawIndexed).toHaveBeenCalledTimes(8 + 8 + 1); // CUBE_COUNT + SPHERE_COUNT + the camera cube
+    });
+
+    it("skips the texture copy when the camera isn't ready yet, without failing to draw the rest of the scene", () => {
+      const { device } = fakeDevice();
+      const renderer = createSceneRenderer(device as never, fakeContext() as never, "bgra8unorm", fakeCanvas());
+      renderer.attachCamera(fakeCamera({ isReady: false }) as never);
+      expect(() => renderer.renderFrame(0)).not.toThrow();
+      expect(device.queue.copyExternalImageToTexture).not.toHaveBeenCalled();
+    });
+
+    it("destroy() tears down the camera's own texture and buffers too, alongside everything else", () => {
+      const { device, createdBuffers, createdTextures } = fakeDevice();
+      const renderer = createSceneRenderer(device as never, fakeContext() as never, "bgra8unorm", fakeCanvas());
+      renderer.attachCamera(fakeCamera() as never);
+      renderer.renderFrame(0); // also creates the depth texture
+      renderer.destroy();
+      for (const buffer of createdBuffers) expect(buffer.destroy).toHaveBeenCalledTimes(1);
+      for (const texture of createdTextures) expect(texture.destroy).toHaveBeenCalledTimes(1);
+    });
   });
 });

@@ -1,5 +1,6 @@
 import { createSceneRenderer, type SceneRenderer } from "./gpu_canvas/scene_renderer";
 import type { GpuCanvasContextLike, GpuDeviceLike } from "./gpu_canvas/webgpu_types";
+import { CameraCapture } from "../data/camera_capture";
 
 /** TypeScript's own bundled `lib.dom.d.ts` declares no WebGPU types at
  * all (confirmed directly, `console_commands/gpu.ts`'s own docstring),
@@ -40,9 +41,12 @@ function webgpuContextOf(canvas: HTMLCanvasElement): GpuCanvasContextLike | null
  * into the Portal's own "Canvas" component tab (portal_shell.ts's own
  * `ComponentId`/`COMPONENTS`) -- a live scene of rotating, bouncing
  * cubes and spheres (`gpu_canvas/scene_renderer.ts`'s own real
- * `SceneRenderer`), meant as the starting harness for later
- * experiments converting this UI to a GPU-rendered framework, not a
- * finished feature of its own. Real GPU work end to end --
+ * `SceneRenderer`), plus -- once a real camera becomes available -- a
+ * live camera feed textured onto one more cube in that same scene
+ * (`common/data/camera_capture.ts`'s own `CameraCapture`), meant as
+ * the starting harness for later experiments converting this UI to a
+ * GPU-rendered framework, not a finished feature of its own. Real GPU
+ * work end to end --
  * `requestAdapter()` -> `requestDevice()` -> a configured
  * `GPUCanvasContext` -> one real, depth-tested command buffer
  * submitted every frame -- not a static placeholder canvas. This file
@@ -70,6 +74,7 @@ export class GpuCanvasView {
   private container: HTMLElement | undefined;
   private device: GpuDeviceLike | undefined;
   private renderer: SceneRenderer | undefined;
+  private cameraCapture: CameraCapture | undefined;
   private animationFrame: number | undefined;
   private resizeObserver: ResizeObserver | undefined;
   /** Bumped by every `mount()` call -- `start()`'s own guard against a
@@ -88,19 +93,26 @@ export class GpuCanvasView {
   }
 
   /** Tears down whatever this instance currently owns -- cancels the
-   * render loop, disconnects the resize observer, destroys every GPU
-   * resource `SceneRenderer.destroy()` owns (meshes, per-entity
-   * buffers, the depth texture), and destroys the real `GPUDevice`
-   * itself, if one was ever created (every early-exit path in
-   * `start()` below returns before `this.device` is ever set, so this
-   * is always safe to call even when setup never got that far).
-   * Renderer first, device second -- the device's own `destroy()`
-   * would eventually invalidate everything anyway, but tearing down
-   * the renderer's own resources explicitly first is the same
-   * "don't rely on cascading teardown" call `SceneRenderer.destroy()`'s
-   * own docstring makes. Called at the top of every `mount()` (this
-   * class's own docstring above) and safe to call repeatedly or when
-   * nothing is running. */
+   * render loop, disconnects the resize observer, stops the real
+   * camera hardware (`CameraCapture.stop()`'s own docstring on why
+   * that's an actual, necessary step, not just dropping a reference),
+   * destroys every GPU resource `SceneRenderer.destroy()` owns
+   * (meshes, per-entity buffers, the depth texture, and the camera
+   * cube's own texture/buffers if one was ever attached), and destroys
+   * the real `GPUDevice` itself, if one was ever created (every
+   * early-exit path in `start()` below returns before `this.device` is
+   * ever set, so this is always safe to call even when setup never got
+   * that far). Camera first (releasing real hardware ahead of
+   * anything else is the more time-sensitive teardown -- a camera's
+   * own recording indicator staying lit a moment longer than it needs
+   * to is a real, visible user-facing wrongness, nothing else here
+   * is), then the renderer, then the device -- the device's own
+   * `destroy()` would eventually invalidate the renderer's own
+   * resources anyway, but tearing them down explicitly first is the
+   * same "don't rely on cascading teardown" call
+   * `SceneRenderer.destroy()`'s own docstring makes. Called at the top
+   * of every `mount()` (this class's own docstring above) and safe to
+   * call repeatedly or when nothing is running. */
   destroy(): void {
     if (this.animationFrame !== undefined) {
       cancelAnimationFrame(this.animationFrame);
@@ -108,6 +120,8 @@ export class GpuCanvasView {
     }
     this.resizeObserver?.disconnect();
     this.resizeObserver = undefined;
+    this.cameraCapture?.stop();
+    this.cameraCapture = undefined;
     this.renderer?.destroy();
     this.renderer = undefined;
     this.device?.destroy();
@@ -168,6 +182,30 @@ export class GpuCanvasView {
       // back down.
       this.renderer = createSceneRenderer(device, context, gpu.getPreferredCanvasFormat(), canvas);
       const renderer = this.renderer;
+
+      // Started here, but never awaited before the scene itself starts
+      // rendering below -- a camera permission prompt can take an
+      // arbitrary amount of time (or never resolve, if the user simply
+      // never answers it), and whether a camera is ever available at
+      // all is genuinely optional: the cube/sphere scene has to keep
+      // running regardless. `CameraCapture.start()`'s own docstring on
+      // why every failure here (no hardware, denied permission, an
+      // unsupported browser) is an entirely ordinary outcome, not a
+      // reason to blank the whole Canvas tab the way an adapter/device
+      // failure does -- logged, not surfaced in the pane, since there
+      // is nowhere honest to put a persistent "camera denied" notice
+      // without implying the rest of the already-working scene is
+      // broken too.
+      const camera = new CameraCapture();
+      this.cameraCapture = camera;
+      camera
+        .start()
+        .then(() => {
+          if (token === this.sessionToken) renderer.attachCamera(camera);
+        })
+        .catch((error: unknown) => {
+          console.warn("[GpuCanvasView] camera capture unavailable:", error instanceof Error ? error.message : error);
+        });
 
       const frame = () => {
         if (token !== this.sessionToken) return; // destroy()/a later mount() already stopped this session

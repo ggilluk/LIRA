@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildCubeMesh, buildSphereMesh, type Mesh } from "./geometry";
+import { buildCubeMesh, buildSphereMesh, buildTexturedCubeMesh, type Mesh } from "./geometry";
 
 type Vec3 = readonly [number, number, number];
 
@@ -87,5 +87,43 @@ describe("buildSphereMesh", () => {
 
   it("winds every triangle counter-clockwise as seen from outside, matching its own outward (position-direction) normal", () => {
     expectConsistentOutwardWinding(buildSphereMesh(1, 8, 12));
+  });
+});
+
+describe("buildTexturedCubeMesh", () => {
+  it("has 24 vertices (position+uv, 5 floats each) and 36 indices, same counts as buildCubeMesh", () => {
+    const mesh = buildTexturedCubeMesh(2);
+    expect(mesh.vertices).toHaveLength(24 * 5);
+    expect(mesh.indices).toHaveLength(36);
+  });
+
+  it("produces the exact same index array as buildCubeMesh -- proof its winding is identical (and so already correct) by construction, not re-derived", () => {
+    expect(Array.from(buildTexturedCubeMesh(1).indices)).toEqual(Array.from(buildCubeMesh(1).indices));
+  });
+
+  it("every vertex sits at the same positions buildCubeMesh produces for the same size", () => {
+    const textured = buildTexturedCubeMesh(2);
+    const plain = buildCubeMesh(2);
+    for (let i = 0; i < 24; i++) {
+      expect([textured.vertices[i * 5], textured.vertices[i * 5 + 1], textured.vertices[i * 5 + 2]]).toEqual([plain.vertices[i * 6], plain.vertices[i * 6 + 1], plain.vertices[i * 6 + 2]]);
+    }
+  });
+
+  it("maps every face's own 4 corners to the 4 distinct UV corners, each within [0,1]", () => {
+    const mesh = buildTexturedCubeMesh(1);
+    for (let face = 0; face < 6; face++) {
+      const uvs = [0, 1, 2, 3].map((corner) => {
+        const base = (face * 4 + corner) * 5;
+        return [mesh.vertices[base + 3], mesh.vertices[base + 4]];
+      });
+      for (const [u, v] of uvs) {
+        expect(u).toBeGreaterThanOrEqual(0);
+        expect(u).toBeLessThanOrEqual(1);
+        expect(v).toBeGreaterThanOrEqual(0);
+        expect(v).toBeLessThanOrEqual(1);
+      }
+      const distinct = new Set(uvs.map(([u, v]) => `${u},${v}`));
+      expect(distinct.size).toBe(4);
+    }
   });
 });
