@@ -11,13 +11,45 @@ const FOV_Y_RADIANS = (55 * Math.PI) / 180;
 const NEAR = 0.1;
 const FAR = 100;
 
-// The box every entity bounces inside of (scene.ts's own stepEntity()
-// docstring on why bouncing, not wrapping) -- sized to stay well
-// within CAMERA_EYE's own frustum at every point along each axis, not
-// derived from the frustum itself: a fixed box is simpler to reason
-// about than one that would need recomputing on every resize (aspect
-// ratio changes the horizontal half of the frustum, not the vertical).
-const BOUNDS: SceneBounds = { min: [-4, -2.5, -4], max: [4, 2.5, 4] };
+// How far an entity can wander toward/away from the camera -- a first
+// version used +/-4 here and a *fixed*, aspect-blind x/y box, which is
+// exactly what made every entity visibly cluster in a small central
+// patch of the canvas no matter how wide or tall the real viewport
+// was (confirmed on a real phone): most of the actual frustum sat
+// unused outside that fixed box. +/-2.5 here, not +/-4, is deliberate
+// too -- computeBounds() below has to stay safe at the *closest* z an
+// entity can reach (the frustum is narrowest there), so a smaller
+// Z_RANGE keeps that worst case close enough to the z=0 plane the
+// camera is actually centred on for the computed x/y box to be worth
+// having, rather than being squeezed back down toward the old fixed
+// size to stay safe.
+const Z_RANGE = 2.5;
+// Fraction of the *true* frustum edge computeBounds() actually uses --
+// safely under 1 so a cube's own far corner (half-extent past its
+// own centre, stepEntity()'s own `bounds.max[axis] - entity.scale`
+// clamp) never visibly clips the real edge of the canvas mid-bounce.
+const BOUNDS_MARGIN = 0.85;
+
+/** The box every entity bounces inside of (`scene.ts`'s own
+ * `stepEntity()` docstring on why bouncing, not wrapping) -- derived
+ * fresh from the camera's own real frustum at the given aspect ratio,
+ * not a fixed guess. Sized against the *closest* z plane an entity can
+ * reach (`CAMERA_EYE[2] - Z_RANGE`, the smallest camera distance, and
+ * so the narrowest slice of the frustum): at any shallower z the real
+ * visible area only gets more generous, so this is the one value safe
+ * at every depth an entity actually visits, not just the z=0 plane the
+ * camera happens to be centred on. Recomputed every `renderFrame()`
+ * call (`aspect` is already recomputed there every frame regardless),
+ * not cached -- cheap (a handful of trig calls), and the one thing
+ * that actually makes the scene use "all of the canvas" on a resize,
+ * not just at whatever aspect ratio happened to be current at
+ * startup. */
+export function computeBounds(aspect: number): SceneBounds {
+  const nearDistance = CAMERA_EYE[2] - Z_RANGE;
+  const halfHeight = nearDistance * Math.tan(FOV_Y_RADIANS / 2) * BOUNDS_MARGIN;
+  const halfWidth = halfHeight * aspect;
+  return { min: [-halfWidth, -halfHeight, -Z_RANGE], max: [halfWidth, halfHeight, Z_RANGE] };
+}
 
 const CUBE_COUNT = 8;
 const SPHERE_COUNT = 8;
@@ -25,7 +57,7 @@ const CUBE_SIZE = 1.1;
 const SPHERE_RADIUS = 0.6;
 const SPHERE_LAT_SEGMENTS = 16;
 const SPHERE_LON_SEGMENTS = 24;
-const CAMERA_CUBE_SIZE = 1.6; // a touch larger than a regular CUBE_SIZE cube -- the live feed reads better a little bigger
+const CAMERA_CUBE_SIZE = 3.2; // twice a regular CUBE_SIZE cube -- the live feed reads much better bigger, confirmed too small on a real phone
 
 const CLEAR_COLOR = { r: 0.04, g: 0.05, b: 0.08, a: 1 };
 const DEPTH_FORMAT = "depth24plus";
@@ -95,7 +127,13 @@ export function createSceneRenderer(device: GpuDeviceLike, context: GpuCanvasCon
   const pipeline = createScenePipeline(device, format);
   const cubeBuffers = uploadMesh(device, buildCubeMesh(CUBE_SIZE));
   const sphereBuffers = uploadMesh(device, buildSphereMesh(SPHERE_RADIUS, SPHERE_LAT_SEGMENTS, SPHERE_LON_SEGMENTS));
-  const entityResources = createRandomEntities(CUBE_COUNT, SPHERE_COUNT, BOUNDS).map((entity) => createEntityResource(device, pipeline, entity));
+  // The canvas is already sized correctly here (GpuCanvasView's own
+  // resize() runs before createSceneRenderer() is ever called), so
+  // this is a real initial aspect ratio, not a square placeholder --
+  // entities start out already spread across the real canvas instead
+  // of snapping outward on the very first renderFrame() call.
+  const initialAspect = Math.max(1, canvas.width) / Math.max(1, canvas.height);
+  const entityResources = createRandomEntities(CUBE_COUNT, SPHERE_COUNT, computeBounds(initialAspect)).map((entity) => createEntityResource(device, pipeline, entity));
 
   // Reused every entity, every frame -- one allocation for the whole
   // session instead of one new Float32Array per entity per frame (at
@@ -148,7 +186,16 @@ export function createSceneRenderer(device: GpuDeviceLike, context: GpuCanvasCon
         { binding: 2, resource: texture.createView() },
       ],
     });
-    const entity = createRandomEntity("camera", BOUNDS, Math.random);
+    const entity = createRandomEntity("camera", computeBounds(Math.max(1, canvas.width) / Math.max(1, canvas.height)), Math.random);
+    // Unlike the sixteen solid cubes/spheres, this one isn't meant to
+    // be visually interchangeable with its own siblings -- there's
+    // only ever one, so a fixed, predictable scale (not
+    // createRandomEntity()'s own random 0.45-0.8 draw) is what
+    // actually makes CAMERA_CUBE_SIZE's own value the real, reliable
+    // control over how big the live feed reads on screen, rather than
+    // a value a random multiplier could silently shrink back down by
+    // more than half.
+    entity.scale = 1;
     cameraResource = { camera, entity, pipeline, meshBuffers, uniformBuffer, bindGroup, texture, textureWidth: camera.width, textureHeight: camera.height };
   }
 
@@ -156,7 +203,7 @@ export function createSceneRenderer(device: GpuDeviceLike, context: GpuCanvasCon
     if (lastFrameMs === undefined) lastFrameMs = nowMs;
     // Clamped, not raw -- a backgrounded tab resuming hours later would
     // otherwise hand every entity a single multi-hour step, launching
-    // it clean out of BOUNDS before stepEntity()'s own clamp-and-reflect
+    // it clean out of bounds before stepEntity()'s own clamp-and-reflect
     // logic even has a chance to run on a *subsequent* frame.
     const deltaSeconds = Math.min((nowMs - lastFrameMs) / 1000, 0.1);
     lastFrameMs = nowMs;
@@ -171,12 +218,19 @@ export function createSceneRenderer(device: GpuDeviceLike, context: GpuCanvasCon
       depthHeight = height;
     }
 
-    const projection = perspective(FOV_Y_RADIANS, width / height, NEAR, FAR);
+    const aspect = width / height;
+    const projection = perspective(FOV_Y_RADIANS, aspect, NEAR, FAR);
     const view = lookAt(CAMERA_EYE, CAMERA_TARGET, CAMERA_UP);
     const viewProjection = multiply(projection, view);
+    // Recomputed from the real, current aspect every frame
+    // (computeBounds()'s own docstring on why) -- a resize changes
+    // this the same instant it changes `aspect` above, not a stale
+    // value left over from whatever size the canvas happened to be at
+    // setup.
+    const bounds = computeBounds(aspect);
 
     for (const resource of entityResources) {
-      stepEntity(resource.entity, deltaSeconds, BOUNDS);
+      stepEntity(resource.entity, deltaSeconds, bounds);
       const model = multiplyAll(translation(resource.entity.position), rotation(resource.entity.rotationAxis, resource.entity.rotationAngle), scaleUniform(resource.entity.scale));
       const modelViewProjection = multiply(viewProjection, model);
       uniformScratch.set(modelViewProjection, 0);
@@ -186,7 +240,7 @@ export function createSceneRenderer(device: GpuDeviceLike, context: GpuCanvasCon
     }
 
     if (cameraResource) {
-      stepEntity(cameraResource.entity, deltaSeconds, BOUNDS);
+      stepEntity(cameraResource.entity, deltaSeconds, bounds);
       const model = multiplyAll(translation(cameraResource.entity.position), rotation(cameraResource.entity.rotationAxis, cameraResource.entity.rotationAngle), scaleUniform(cameraResource.entity.scale));
       cameraUniformScratch.set(multiply(viewProjection, model), 0);
       device.queue.writeBuffer(cameraResource.uniformBuffer, 0, cameraUniformScratch);

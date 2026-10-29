@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { createSceneRenderer } from "./scene_renderer";
+import { computeBounds, createSceneRenderer } from "./scene_renderer";
 
 /** `gpu_canvas_view.test.ts`'s own docstring on why jsdom needs
  * `GPUBufferUsage`/`GPUTextureUsage` stubbed -- the same real,
@@ -189,5 +189,38 @@ describe("createSceneRenderer", () => {
       for (const buffer of createdBuffers) expect(buffer.destroy).toHaveBeenCalledTimes(1);
       for (const texture of createdTextures) expect(texture.destroy).toHaveBeenCalledTimes(1);
     });
+  });
+});
+
+describe("computeBounds", () => {
+  it("is symmetric around the origin on every axis, at any aspect ratio", () => {
+    for (const aspect of [0.5, 1, 1.78, 3]) {
+      const bounds = computeBounds(aspect);
+      expect(bounds.min[0]).toBe(-bounds.max[0]);
+      expect(bounds.min[1]).toBe(-bounds.max[1]);
+      expect(bounds.min[2]).toBe(-bounds.max[2]);
+    }
+  });
+
+  it("scales width linearly with aspect ratio while height (and z) stay fixed", () => {
+    const narrow = computeBounds(1);
+    const wide = computeBounds(2);
+    expect(wide.max[0]).toBeCloseTo(narrow.max[0] * 2, 10);
+    expect(wide.max[1]).toBeCloseTo(narrow.max[1], 10);
+    expect(wide.max[2]).toBeCloseTo(narrow.max[2], 10);
+  });
+
+  it("is noticeably larger than the old fixed +/-2.5 half-height -- the real regression this fix exists to guard: a real phone showed every entity clustered in a small, fixed central patch regardless of the real canvas size", () => {
+    const bounds = computeBounds(1);
+    expect(bounds.max[1]).toBeGreaterThan(3);
+  });
+
+  it("stays well clear of the frustum's own true edge at the closest z an entity can reach -- a safety margin, not an exact fit, so no cube visibly clips mid-bounce", () => {
+    const aspect = 1.5;
+    const bounds = computeBounds(aspect);
+    const cameraEyeZ = 10;
+    const nearDistance = cameraEyeZ - bounds.max[2]; // the true closest approach to the camera
+    const trueHalfHeightAtNear = nearDistance * Math.tan(((55 * Math.PI) / 180) / 2);
+    expect(bounds.max[1]).toBeLessThan(trueHalfHeightAtNear);
   });
 });

@@ -1124,3 +1124,93 @@ end-to-end, in the one place code review alone couldn't: the Event Log
 panel, expanded via its own real toggle button, now shows a genuine
 `Canvas` / `Warn` row with the actual WebGPU failure message, not "No
 events yet."
+
+## Canvas: entities confined to a small central patch regardless of real canvas size
+
+A second round of real-phone feedback, on the same visit that
+confirmed the camera texture fix actually worked: the camera cube
+itself needed to read bigger, and every entity -- cubes, spheres, the
+camera cube alike -- only ever moved within a small, visually central
+patch of the canvas, never using the real screen's own full width or
+height. Both were real, and both trace back to the same root cause:
+`BOUNDS`, the box every entity bounces inside of, was a fixed
+`{min: [-4,-2.5,-4], max: [4,2.5,4]}` constant -- sized once, by eye,
+with no relationship at all to the camera's own real field of view at
+whatever aspect ratio the canvas actually ended up being. At the
+`z = 0` plane the camera is centred on, the *true* visible half-height
+at `FOV_Y_RADIANS = 55°` and `CAMERA_EYE = [0,2,10]` works out to
+roughly `10 * tan(27.5°) ≈ 5.2` world units -- the fixed box's own
+`2.5` used well under half of it, on every device, regardless of
+whether the real canvas was a wide desktop window or a narrow phone
+screen held in portrait.
+
+**`computeBounds(aspect)` replaces the fixed constant -- derived from
+the real camera frustum, recomputed every frame from the real,
+current aspect ratio, not cached.** `renderFrame()` already recomputes
+`aspect` (and the projection matrix built from it) on every single
+call regardless, so deriving `bounds` from that same value costs
+nothing extra and is the one change that actually makes the scene use
+"the whole canvas" on a resize, not just at whatever aspect ratio
+happened to be current when the session started -- a narrow phone in
+portrait and the same phone rotated to landscape now get two visibly
+different, both-correct bounding boxes, not one fixed box that's
+either half-empty or spilling off-screen depending on which way the
+phone happens to be held.
+
+**Sized against the closest z an entity can reach, not the z=0 plane
+the camera is centred on -- `Z_RANGE` shrunk from `±4` to `±2.5` to
+keep that worst case usable.** The frustum narrows toward the camera,
+so the *safe* half-height to hand every entity has to be computed at
+whichever z value is actually closest to `CAMERA_EYE` (the smallest
+camera distance, hence the narrowest slice) -- using the more generous
+`z=0` figure instead would let an entity visibly clip through the
+frustum's own true edge the moment it bounced to its nearest approach.
+The original `±4` z-range made that worst case (`distance = 6`) too
+tight to buy much of an improvement at all; pulling it in to `±2.5`
+(`distance = 7.5`) keeps the worst case close enough to the generous
+`z=0` figure that the computed box is a real, visible improvement
+instead of being squeezed back down toward the old fixed size to stay
+safe. `BOUNDS_MARGIN = 0.85` on top of that is deliberate slack, not
+an exact fit to the frustum's own true mathematical edge -- enough
+that a cube's own far corner (`stepEntity()`'s own
+`bounds.max[axis] - entity.scale` clamp already accounts for each
+entity's own size) never visibly grazes the real edge of the canvas
+mid-bounce.
+
+**`CAMERA_CUBE_SIZE` doubled (`1.6` -> `3.2`), and the camera cube's
+own `entity.scale` is now fixed at `1`, not the random `0.45-0.8` draw
+every other entity gets.** The sixteen solid cubes/spheres are
+deliberately visually interchangeable with their own siblings, so a
+random per-entity scale is the right choice for them; the camera cube
+is the only one of its kind, so a random scale on top of
+`CAMERA_CUBE_SIZE` could have silently undone more than half of this
+very fix on any given session (an unlucky `0.45` draw against a merely
+*doubled* base size nets out close to the old apparent size) --
+fixing it at `1` is what actually makes `CAMERA_CUBE_SIZE`'s own value
+a reliable, visible control over how big the live feed reads, every
+session, not a value at the mercy of `Math.random()`.
+
+`computeBounds()` is exported and unit-tested directly
+(`scene_renderer.test.ts`): symmetric around the origin on every axis
+at any aspect ratio; width scales linearly with aspect while height
+and z stay fixed; the computed half-height at `aspect = 1` is
+genuinely larger than the old fixed `2.5` (the concrete regression
+guard for the bug this whole entry is about); and the computed box
+stays strictly inside the frustum's own true mathematical edge at the
+closest z an entity can reach, confirming the margin is real, not
+accidentally larger than what it's meant to guard against.
+
+`npx tsc -b --force` clean; `npx vitest run --no-file-parallelism`
+339/339 -- 4 new in `scene_renderer.test.ts` covering `computeBounds()`'s
+own symmetry, linear aspect scaling, the concrete size-regression
+guard, and the safety-margin check against the real frustum edge.
+This sandbox's own
+headless Chromium still has no real GPU adapter, so -- same as every
+other visual change to this scene -- the actual on-screen effect
+(entities genuinely spreading across the full canvas, the camera cube
+reading visibly bigger) could not be confirmed with real pixels here;
+only that nothing regressed (the honest "no GPU adapter" message still
+renders correctly, no page errors) and that the underlying geometry is
+correct by the tests above. Confirming it looks right is, once again,
+for a real browser -- the same phone that reported both bugs in the
+first place.
