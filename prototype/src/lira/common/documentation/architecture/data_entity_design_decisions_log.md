@@ -1036,3 +1036,91 @@ honest "no GPU adapter" message still renders correctly, with no page
 errors, both before and after a real viewport resize -- the camera
 cube's own addition changed nothing about `renderFrame()`'s own
 existing resize handling, as the design above intended.
+
+## Canvas: a black camera cube and invisible logging -- both found on a real phone
+
+The cube/sphere scene and the camera feature were both built and
+shipped with every test this session could write passing, and both
+still shipped with a real bug neither the unit tests nor this
+project's own sandboxed, adapter-less Chromium could ever have caught:
+asked to actually try it on a real phone, the user reported the camera
+permission prompt worked, but the cube rendered solid black -- and
+separately, that "the logging is not being used" at all. Both were
+real, and both are now fixed; this entry exists because of what they
+reveal about the limits of the verification this session could do on
+its own, not just the fixes themselves.
+
+**The black cube: a missing `RENDER_ATTACHMENT` usage flag on the
+camera texture, removed by this feature's own first draft for a
+plausible-sounding but wrong reason.** `attachCamera()`'s own camera
+texture was created with `TEXTURE_BINDING | COPY_DST` only -- the
+comment at the time reasoned "never rendered to, so no
+`RENDER_ATTACHMENT` usage, unlike the depth texture." That's true for
+an ordinary `copyBufferToTexture`, but `GPUQueue.copyExternalImageToTexture()`
+specifically is a real, spec-mandated exception: most implementations
+perform that particular copy as an internal blit through a render
+pass, not a plain memory copy, so the spec requires the destination
+texture's own usage to include `RENDER_ATTACHMENT` regardless of
+whether anything in this codebase ever issues a render pass against it
+directly. Omit it and the call fails WebGPU's own validation -- but
+validation errors from a queue operation like this are reported
+asynchronously (the `uncapturederror` event / `pushErrorScope`/
+`popErrorScope`, never a thrown, catchable JS exception), so nothing
+in `start()`'s own `try`/`catch` ever saw a failure at all. The texture
+just silently stayed at its zero-initialized default: a black cube,
+rendering "successfully" by every signal this codebase's own error
+handling could observe. Fixed by adding `RENDER_ATTACHMENT` back
+(`scene_renderer.ts`'s own `attachCamera()`, with a comment spelling
+out why this one texture is the exception), and locked in with a
+regression test (`scene_renderer.test.ts`) that reads the real
+descriptor `device.createTexture()` was called with and asserts all
+three usage bits are actually set, not just that `createTexture` was
+called some number of times the way the existing tests already
+checked.
+
+**The invisible logging: every camera (and, it turned out, every
+WebGPU) outcome only ever reached `console.warn()`, which a phone with
+no attached devtools can never show at all.** `GpuCanvasView` grew a
+real `Logger` dependency (`role/logger.ts`, the same one
+Vocabulary/Linguistics already log through) -- a narrow `LoggerLike`
+structural interface (`info`/`warn`/`error`), not the concrete `Logger`
+class itself, the same "structural interface over the real class" call
+`console_commands/types.ts`'s own `MetricsProvider` already made,
+since `Logger`'s own private fields would otherwise make a plain test
+double a type error for no real benefit. `PortalShell` now constructs
+`GpuCanvasView` with `this.loggerFor("Canvas")` -- moved out of its own
+field initializer into the constructor body, since `loggerFor()` needs
+`this.loggersBySource` already initialized, and field initializers run
+in declaration order (the same reasoning `ConsoleView`/
+`SentenceReaderView` were already constructed in the constructor body
+for). Every real outcome now lands in the Portal's own visible Event
+Log instead: "Requesting camera access…" when it starts, "Camera ready
+(WxH) -- textured onto one cube in the scene." once it succeeds, the
+real failure message if it doesn't, and -- since the same gap existed
+there too -- the WebGPU/adapter/context failure message that used to
+only ever appear as pane text, now logged as well. Confirmed live:
+expanding the real Event Log panel in the running Portal shows a real
+`Canvas` row with the actual failure message, where it used to say "No
+events yet." at all.
+
+**`CameraCapture` construction became injectable at the `GpuCanvasView`
+level too, specifically so this exact bug class gets real regression
+coverage, not just the fix.** A `createCamera: () => CameraCaptureLike`
+constructor parameter (default `() => new CameraCapture()`) lets
+`gpu_canvas_view.test.ts` substitute a fake camera that succeeds or
+fails on command, without constructing a real `<video>` element jsdom
+cannot play -- new tests assert the real "Camera ready (1280x720)"
+info message and the real failure-reason warn message both actually
+reach the logger, not just that *some* log call happened.
+
+`npx tsc -b --force` clean; `npx vitest run --no-file-parallelism`
+335/335 -- new coverage in `gpu_canvas_view.test.ts` (the WebGPU-failure
+path now logs too, the camera-ready info message with real dimensions,
+the camera-failure warn message with the real reason, pane text left
+untouched) and `scene_renderer.test.ts` (the camera texture's own
+usage flags, checked bit by bit, not just a call count). Live Playwright
+verification against the real running Portal confirmed the fix
+end-to-end, in the one place code review alone couldn't: the Event Log
+panel, expanded via its own real toggle button, now shows a genuine
+`Canvas` / `Warn` row with the actual WebGPU failure message, not "No
+events yet."

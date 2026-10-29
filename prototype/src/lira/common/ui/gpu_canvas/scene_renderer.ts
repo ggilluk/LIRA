@@ -125,10 +125,20 @@ export function createSceneRenderer(device: GpuDeviceLike, context: GpuCanvasCon
     const texture = device.createTexture({
       size: [camera.width, camera.height],
       format: "rgba8unorm",
-      // Copied into every frame (copyExternalImageToTexture() below)
-      // and sampled in the fragment shader -- never rendered to, so no
-      // RENDER_ATTACHMENT usage, unlike the depth texture above.
-      usage: textureUsage.TEXTURE_BINDING | textureUsage.COPY_DST,
+      // RENDER_ATTACHMENT is required here even though nothing in this
+      // file ever renders to this texture directly -- a real, spec-
+      // mandated requirement of copyExternalImageToTexture() itself
+      // (most implementations perform that copy as an internal blit
+      // through a render pass, not a plain memory copy, so the
+      // destination texture's own usage must include it). Omitting it
+      // was this feature's own first real bug, caught only by testing
+      // on a real phone with a real camera: WebGPU validation errors
+      // from a call like this are reported asynchronously (the
+      // "uncapturederror" event / error scopes), never as a thrown
+      // JS exception the catch block around start() could see, so the
+      // texture just silently stayed at its zero-initialized default
+      // -- a black cube, with nothing in the console to explain why.
+      usage: textureUsage.TEXTURE_BINDING | textureUsage.COPY_DST | textureUsage.RENDER_ATTACHMENT,
     });
     const bindGroup = device.createBindGroup({
       layout: pipeline.getBindGroupLayout(0),

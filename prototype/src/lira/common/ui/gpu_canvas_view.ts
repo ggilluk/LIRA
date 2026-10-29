@@ -2,6 +2,21 @@ import { createSceneRenderer, type SceneRenderer } from "./gpu_canvas/scene_rend
 import type { GpuCanvasContextLike, GpuDeviceLike } from "./gpu_canvas/webgpu_types";
 import { CameraCapture } from "../data/camera_capture";
 
+/** The narrow view this file needs of a real `Logger` (`role/logger.ts`)
+ * -- `info`/`warn`/`error` only, the same "structural interface over
+ * the real class" call `console_commands/types.ts`'s own
+ * `MetricsProvider` already made. A real `Logger` instance satisfies
+ * this (its own three methods are public), but `Logger` itself has
+ * private fields a plain test double can't replicate -- typing this
+ * parameter as `Logger` directly would make `gpu_canvas_view.test.ts`'s
+ * own `fakeLogger()` a type error for no real benefit, since nothing
+ * here ever needs `Logger`'s own `source`/`sink`. */
+interface LoggerLike {
+  info(message: string): void;
+  warn(message: string): void;
+  error(message: string): void;
+}
+
 /** TypeScript's own bundled `lib.dom.d.ts` declares no WebGPU types at
  * all (confirmed directly, `console_commands/gpu.ts`'s own docstring),
  * and no `@webgpu/types` dependency exists in this project -- the same
@@ -37,6 +52,23 @@ function webgpuContextOf(canvas: HTMLCanvasElement): GpuCanvasContextLike | null
   return (canvas as HTMLCanvasElement & { getContext(id: "webgpu"): GpuCanvasContextLike | null }).getContext("webgpu");
 }
 
+/** The narrow view `start()` below actually needs of a `CameraCapture`
+ * -- `scene_renderer.ts`'s own `CameraSource` plus the two lifecycle
+ * methods this file itself calls. `createCamera`'s own default
+ * (`() => new CameraCapture()`) is what every real caller gets; the
+ * injection point exists so a test can substitute a fake one without
+ * constructing a real `<video>` element and triggering jsdom's own
+ * real inability to decode media (`camera_capture.test.ts`'s own
+ * docstring on the same gap, one layer down). */
+interface CameraCaptureLike {
+  start(): Promise<void>;
+  stop(): void;
+  readonly element: unknown;
+  readonly isReady: boolean;
+  readonly width: number;
+  readonly height: number;
+}
+
 /** GpuCanvasView: a dedicated, self-contained WebGPU sandbox mounted
  * into the Portal's own "Canvas" component tab (portal_shell.ts's own
  * `ComponentId`/`COMPONENTS`) -- a live scene of rotating, bouncing
@@ -69,12 +101,24 @@ function webgpuContextOf(canvas: HTMLCanvasElement): GpuCanvasContextLike | null
  * running against a now-detached canvas if nothing stops them, so
  * `mount()` always `destroy()`s whatever session it already owns
  * before starting a new one -- not merely idempotent, actively
- * self-healing against `PortalShell`'s own re-mount behaviour. */
+ * self-healing against `PortalShell`'s own re-mount behaviour.
+ *
+ * `logger` (`role/logger.ts`'s own `Logger`, the same one every other
+ * named Service already logs through) is where every real outcome
+ * here actually goes -- WebGPU/adapter/context failures, and every
+ * camera outcome (requesting access, becoming ready, or failing for
+ * any reason). Earlier, camera failures only ever reached
+ * `console.warn()`, invisible on a phone with no attached devtools;
+ * this is the real bug a live test on an actual phone surfaced (this
+ * class's own `start()` docstring on the texture bug that same test
+ * also caught) -- every one of these now lands in the Portal's own
+ * visible Event Log instead, the same place a WordNet seed run's own
+ * progress already shows up. */
 export class GpuCanvasView {
   private container: HTMLElement | undefined;
   private device: GpuDeviceLike | undefined;
   private renderer: SceneRenderer | undefined;
-  private cameraCapture: CameraCapture | undefined;
+  private cameraCapture: CameraCaptureLike | undefined;
   private animationFrame: number | undefined;
   private resizeObserver: ResizeObserver | undefined;
   /** Bumped by every `mount()` call -- `start()`'s own guard against a
@@ -83,6 +127,11 @@ export class GpuCanvasView {
    * took over, the same `renderToken` pattern `PortalShell.loadView()`
    * uses for its own async race. */
   private sessionToken = 0;
+
+  constructor(
+    private readonly logger: LoggerLike,
+    private readonly createCamera: () => CameraCaptureLike = () => new CameraCapture(),
+  ) {}
 
   mount(container: HTMLElement): void {
     this.destroy();
@@ -192,19 +241,25 @@ export class GpuCanvasView {
       // why every failure here (no hardware, denied permission, an
       // unsupported browser) is an entirely ordinary outcome, not a
       // reason to blank the whole Canvas tab the way an adapter/device
-      // failure does -- logged, not surfaced in the pane, since there
-      // is nowhere honest to put a persistent "camera denied" notice
-      // without implying the rest of the already-working scene is
-      // broken too.
-      const camera = new CameraCapture();
+      // failure does -- logged (via `this.logger`, the Portal's own
+      // visible Event Log, not `console.warn()` -- this class's own
+      // docstring on why that matters), not surfaced in the pane
+      // itself, since there is nowhere honest to put a persistent
+      // "camera denied" notice without implying the rest of the
+      // already-working scene is broken too.
+      this.logger.info("Requesting camera access…");
+      const camera = this.createCamera();
       this.cameraCapture = camera;
       camera
         .start()
         .then(() => {
-          if (token === this.sessionToken) renderer.attachCamera(camera);
+          if (token !== this.sessionToken) return;
+          renderer.attachCamera(camera);
+          this.logger.info(`Camera ready (${camera.width}x${camera.height}) -- textured onto one cube in the scene.`);
         })
         .catch((error: unknown) => {
-          console.warn("[GpuCanvasView] camera capture unavailable:", error instanceof Error ? error.message : error);
+          if (token !== this.sessionToken) return;
+          this.logger.warn(`Camera unavailable: ${error instanceof Error ? error.message : String(error)}`);
         });
 
       const frame = () => {
@@ -215,8 +270,10 @@ export class GpuCanvasView {
       this.animationFrame = requestAnimationFrame(frame);
     } catch (error) {
       if (token !== this.sessionToken || !this.container) return;
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.warn(message);
       this.destroy();
-      this.container.innerHTML = `<div class="portal-view-empty">${escapeHtml(error instanceof Error ? error.message : String(error))}</div>`;
+      this.container.innerHTML = `<div class="portal-view-empty">${escapeHtml(message)}</div>`;
     }
   }
 }

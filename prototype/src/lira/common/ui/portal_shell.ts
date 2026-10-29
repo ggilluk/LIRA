@@ -201,7 +201,7 @@ export class PortalShell {
   private readonly serviceStatusView: ServiceStatusView;
   private readonly consoleView: ConsoleView;
   private readonly sentenceReaderView: SentenceReaderView;
-  private readonly gpuCanvasView = new GpuCanvasView();
+  private readonly gpuCanvasView: GpuCanvasView;
   private readonly logBoard = new LogEventBoard();
   private readonly loggersBySource = new Map<string, Logger>();
   private renderToken = 0;
@@ -255,6 +255,13 @@ export class PortalShell {
     // copies of their own state.
     this.consoleView = new ConsoleView(statusBoard, vocabularyClient, linguisticsClient);
     this.sentenceReaderView = new SentenceReaderView(linguisticsClient);
+    // GpuCanvasView's own docstring on why it needs a real Logger at
+    // all -- every WebGPU/camera outcome now lands in the same visible
+    // Event Log the Vocabulary/Linguistics Services already log
+    // through (loggerFor()'s own docstring below), not just
+    // console.warn(), which a phone with no attached devtools can
+    // never show.
+    this.gpuCanvasView = new GpuCanvasView(this.loggerFor("Canvas"));
     // Relays every VocabularyLogListener call into a real Logger --
     // one instance per distinct `source` (Logger's own docstring on why
     // `source` is bound once at construction, not passed per call), so

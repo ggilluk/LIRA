@@ -38,7 +38,7 @@ function fakeDevice() {
       createdBuffers.push(buffer);
       return buffer;
     }),
-    createTexture: vi.fn(() => {
+    createTexture: vi.fn((_descriptor: { usage: number }) => {
       const texture = { createView: () => ({}), destroy: vi.fn() };
       createdTextures.push(texture);
       return texture;
@@ -138,6 +138,19 @@ describe("createSceneRenderer", () => {
       expect(device.createSampler).toHaveBeenCalledTimes(1);
       expect(device.createTexture).toHaveBeenCalledTimes(1); // the camera texture itself, not the (not yet created) depth texture
       expect(device.createBuffer).toHaveBeenCalledTimes(3); // the camera cube's own vertex + index buffers, plus its uniform buffer
+    });
+
+    it("creates the camera texture with RENDER_ATTACHMENT usage -- the real spec requirement copyExternalImageToTexture() needs, missing which silently left the cube black on a real device (confirmed on a real phone; WebGPU validation errors from a missing usage flag are never thrown as a catchable JS exception, this renderer's own docstring on why)", () => {
+      const { device } = fakeDevice();
+      const renderer = createSceneRenderer(device as never, fakeContext() as never, "bgra8unorm", fakeCanvas());
+      device.createTexture.mockClear();
+      renderer.attachCamera(fakeCamera() as never);
+      const [[descriptor]] = device.createTexture.mock.calls;
+      // RENDER_ATTACHMENT=1, TEXTURE_BINDING=2, COPY_DST=4 (this file's
+      // own stubWebGpuGlobals()) -- all three bits set, bitwise OR'd.
+      expect(descriptor.usage & 1).toBe(1);
+      expect(descriptor.usage & 2).toBe(2);
+      expect(descriptor.usage & 4).toBe(4);
     });
 
     it("is a no-op when called a second time -- this renderer's own docstring on why there's never more than one camera cube", () => {

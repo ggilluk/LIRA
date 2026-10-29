@@ -59,6 +59,35 @@ async function flush(): Promise<void> {
   for (let i = 0; i < 5; i++) await Promise.resolve();
 }
 
+/** `GpuCanvasView`'s own real `Logger` dependency (role/logger.ts) --
+ * a plain object satisfying its `info`/`warn`/`error` shape, not a
+ * real `Logger` instance (which needs a `LogSink` of its own,
+ * irrelevant here): these tests only ever assert on what was logged,
+ * never where a real one would route it. */
+function fakeLogger() {
+  return { info: vi.fn(), warn: vi.fn(), error: vi.fn() };
+}
+
+/** A fake `CameraCapture`-shaped object -- `GpuCanvasView`'s own
+ * `createCamera` constructor parameter exists so tests can hand it
+ * one of these instead of constructing a real `CameraCapture`
+ * (`camera_capture.ts`'s own docstring on why that would need a real
+ * `<video>` element jsdom cannot actually play). `start` defaults to
+ * an immediately-resolving no-op -- most tests below care about the
+ * WebGPU/scene path, not the camera one, so a camera that "succeeds"
+ * doing nothing is the least surprising default; the dedicated camera
+ * tests override every field that matters to them explicitly. */
+function fakeCameraCapture(overrides: Partial<{ start: () => Promise<void>; stop: () => void; isReady: boolean; width: number; height: number }> = {}) {
+  return {
+    start: overrides.start ?? vi.fn(async () => {}),
+    stop: overrides.stop ?? vi.fn(),
+    element: {},
+    isReady: overrides.isReady ?? true,
+    width: overrides.width ?? 640,
+    height: overrides.height ?? 480,
+  };
+}
+
 describe("GpuCanvasView", () => {
   beforeEach(() => {
     rafCallbacks = [];
@@ -88,15 +117,6 @@ describe("GpuCanvasView", () => {
     vi.stubGlobal("GPUBufferUsage", { VERTEX: 1, INDEX: 2, UNIFORM: 4, COPY_DST: 8 });
     vi.stubGlobal("GPUTextureUsage", { RENDER_ATTACHMENT: 1, TEXTURE_BINDING: 2, COPY_DST: 4 });
     vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockImplementation(() => null as unknown as RenderingContext);
-    // jsdom's own navigator.mediaDevices is undefined (no media APIs
-    // at all) -- every test below triggers the real, honest
-    // "Camera capture is not supported" rejection path
-    // (CameraCapture.start()'s own docstring) exactly once per
-    // mount(), which GpuCanvasView correctly logs rather than
-    // surfacing in the pane (its own start()'s docstring on why).
-    // That's expected, passing behaviour, not a test failure to
-    // chase -- silenced here purely to keep test output readable.
-    vi.spyOn(console, "warn").mockImplementation(() => {});
   });
 
   afterEach(() => {
@@ -106,17 +126,19 @@ describe("GpuCanvasView", () => {
   });
 
   it("shows an honest message when WebGPU is not supported (navigator.gpu is undefined, jsdom's own real default)", async () => {
-    const view = new GpuCanvasView();
+    const logger = fakeLogger();
+    const view = new GpuCanvasView(logger, () => fakeCameraCapture());
     const container = document.createElement("div");
     view.mount(container);
     await flush();
     expect(container.textContent).toContain("WebGPU is not supported");
     expect(container.querySelector("canvas")).toBeNull();
+    expect(logger.warn).toHaveBeenCalledWith(expect.stringContaining("WebGPU is not supported")); // logged to the Portal's own visible Event Log, not just shown in the pane
   });
 
   it("shows an honest message when requestAdapter() finds no real adapter", async () => {
     stubGpu({ requestAdapter: async () => null, getPreferredCanvasFormat: () => "bgra8unorm" });
-    const view = new GpuCanvasView();
+    const view = new GpuCanvasView(fakeLogger(), () => fakeCameraCapture());
     const container = document.createElement("div");
     view.mount(container);
     await flush();
@@ -129,7 +151,7 @@ describe("GpuCanvasView", () => {
       requestAdapter: async () => fakeAdapter(async () => device),
       getPreferredCanvasFormat: () => "bgra8unorm",
     });
-    const view = new GpuCanvasView();
+    const view = new GpuCanvasView(fakeLogger(), () => fakeCameraCapture());
     const container = document.createElement("div");
     view.mount(container);
     await flush();
@@ -146,7 +168,7 @@ describe("GpuCanvasView", () => {
       getPreferredCanvasFormat: () => "bgra8unorm",
     });
 
-    const view = new GpuCanvasView();
+    const view = new GpuCanvasView(fakeLogger(), () => fakeCameraCapture());
     const container = document.createElement("div");
     view.mount(container);
     await flush();
@@ -159,7 +181,7 @@ describe("GpuCanvasView", () => {
     expect(rafCallbacks).toHaveLength(1); // frame() rescheduled itself once, not invoked again
   });
 
-  it("destroy() cancels the render loop and destroys the real GPUDevice", async () => {
+  it("destroy() cancels the render loop, stops the camera, and destroys the real GPUDevice", async () => {
     const device = fakeDevice();
     const context = { configure: vi.fn(), getCurrentTexture: () => ({ createView: () => ({}) }) };
     vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockImplementation((id: string) => (id === "webgpu" ? (context as unknown as RenderingContext) : null));
@@ -167,8 +189,9 @@ describe("GpuCanvasView", () => {
       requestAdapter: async () => fakeAdapter(async () => device),
       getPreferredCanvasFormat: () => "bgra8unorm",
     });
+    const camera = fakeCameraCapture();
 
-    const view = new GpuCanvasView();
+    const view = new GpuCanvasView(fakeLogger(), () => camera);
     const container = document.createElement("div");
     view.mount(container);
     await flush();
@@ -176,6 +199,7 @@ describe("GpuCanvasView", () => {
     view.destroy();
     expect(device.destroy).toHaveBeenCalledTimes(1);
     expect(cancelledIds).toHaveLength(1);
+    expect(camera.stop).toHaveBeenCalledTimes(1); // the real camera hardware, released -- not just dropped
   });
 
   it("mount() called again (PortalShell's own re-render behaviour) tears down the previous session before starting a new one", async () => {
@@ -190,7 +214,7 @@ describe("GpuCanvasView", () => {
       getPreferredCanvasFormat: () => "bgra8unorm",
     });
 
-    const view = new GpuCanvasView();
+    const view = new GpuCanvasView(fakeLogger(), () => fakeCameraCapture());
     const firstContainer = document.createElement("div");
     view.mount(firstContainer);
     await flush();
@@ -202,5 +226,39 @@ describe("GpuCanvasView", () => {
 
     expect(firstDevice.destroy).toHaveBeenCalledTimes(1); // the first session's own device, torn down
     expect(secondDevice.destroy).not.toHaveBeenCalled(); // the second (now current) session's own device, left running
+  });
+
+  describe("camera logging (the Portal's own visible Event Log, not console.warn -- this class's own docstring on why that bug mattered)", () => {
+    function mountWithRealScene(logger: ReturnType<typeof fakeLogger>, camera: ReturnType<typeof fakeCameraCapture>) {
+      const device = fakeDevice();
+      const context = { configure: vi.fn(), getCurrentTexture: () => ({ createView: () => ({}) }) };
+      vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockImplementation((id: string) => (id === "webgpu" ? (context as unknown as RenderingContext) : null));
+      stubGpu({ requestAdapter: async () => fakeAdapter(async () => device), getPreferredCanvasFormat: () => "bgra8unorm" });
+      const view = new GpuCanvasView(logger, () => camera);
+      const container = document.createElement("div");
+      view.mount(container);
+      return container;
+    }
+
+    it("logs an info message with the real dimensions once the camera becomes ready", async () => {
+      const logger = fakeLogger();
+      const camera = fakeCameraCapture({ width: 1280, height: 720 });
+      mountWithRealScene(logger, camera);
+      await flush();
+      expect(logger.info).toHaveBeenCalledWith(expect.stringContaining("1280x720"));
+    });
+
+    it("logs a warn message with the real failure reason when the camera is unavailable, without touching the pane", async () => {
+      const logger = fakeLogger();
+      const camera = fakeCameraCapture({
+        start: vi.fn(async () => {
+          throw new Error("Permission denied");
+        }),
+      });
+      const container = mountWithRealScene(logger, camera);
+      await flush();
+      expect(logger.warn).toHaveBeenCalledWith(expect.stringContaining("Permission denied"));
+      expect(container.textContent).not.toContain("Permission denied"); // the scene itself keeps rendering -- GpuCanvasView's own start() docstring on why a camera failure never blanks the pane
+    });
   });
 });
