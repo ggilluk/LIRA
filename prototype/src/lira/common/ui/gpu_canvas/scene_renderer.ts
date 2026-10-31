@@ -1,4 +1,4 @@
-import { lookAt, multiply, multiplyAll, perspective, rotation, scaleUniform, translation, type Vec3 } from "./mat4";
+import { deviceOrientationToRotation, lookAt, multiply, multiplyAll, perspective, rotation, scaleUniform, translation, type Mat4, type Vec3 } from "./mat4";
 import { buildCubeMesh, buildSphereMesh, buildTexturedCubeMesh, type Mesh } from "./geometry";
 import { createRandomEntity, createRandomEntities, stepEntity, type SceneBounds, type SceneEntity } from "./scene";
 import { CAMERA_SHADER_WGSL, CAMERA_UNIFORM_FLOAT_COUNT, CAMERA_UNIFORM_SIZE_BYTES, ENTITY_UNIFORM_FLOAT_COUNT, ENTITY_UNIFORM_SIZE_BYTES, SCENE_SHADER_WGSL } from "./shader";
@@ -88,6 +88,20 @@ export interface CameraSource {
   readonly height: number;
 }
 
+/** The narrow view `attachOrientation()` needs of a real
+ * `DeviceOrientationSensor` (`common/data/device_orientation.ts`) --
+ * its own raw `alpha`/`beta`/`gamma` reading only, the same
+ * "structural interface over the real class" call `CameraSource`
+ * above already makes. The conversion into an actual rotation matrix
+ * (`mat4.ts`'s own `deviceOrientationToRotation()`) happens here, in
+ * `renderFrame()`, not inside the sensor class itself --
+ * `device_orientation.ts`'s own docstring on why a plain
+ * `common/data/` class has no business reaching into this module's
+ * own WebGPU/model-matrix concerns. */
+export interface OrientationSource {
+  readonly orientation: { alpha: number; beta: number; gamma: number } | undefined;
+}
+
 interface CameraResource {
   camera: CameraSource;
   entity: SceneEntity;
@@ -116,10 +130,24 @@ interface CameraResource {
  * already resolved its own `start()`, never before, and never if
  * camera access fails or is denied (the cube/sphere scene keeps
  * running either way). Calling it more than once for the same
- * renderer is a no-op -- there's never more than one camera cube. */
+ * renderer is a no-op -- there's never more than one camera cube.
+ *
+ * `attachOrientation()` is a second, independent optional add-on, not
+ * bundled into `attachCamera()`'s own call -- camera access and device
+ * orientation are two unrelated browser permissions that can each
+ * succeed or fail on their own schedule (`gpu_canvas_view.ts`'s own
+ * call sites start both at once but never wait on one for the other),
+ * and the camera cube has to read sensibly either way: the camera
+ * texture can be showing before orientation ever resolves (using its
+ * own auto-rotation fallback until then), or orientation can arrive
+ * before the camera does (simply held, unused, until a camera cube
+ * actually exists to apply it to). Unlike `attachCamera()`, calling
+ * this again is never a no-op -- a plain reference swap, not a GPU
+ * resource allocation, so there's nothing wrong with overwriting it. */
 export interface SceneRenderer {
   renderFrame(nowMs: number): void;
   attachCamera(camera: CameraSource): void;
+  attachOrientation(orientation: OrientationSource): void;
   destroy(): void;
 }
 
@@ -147,7 +175,12 @@ export function createSceneRenderer(device: GpuDeviceLike, context: GpuCanvasCon
   let depthHeight = 0;
   let lastFrameMs: number | undefined;
   let cameraResource: CameraResource | undefined;
+  let orientationSource: OrientationSource | undefined;
   const cameraUniformScratch = new Float32Array(CAMERA_UNIFORM_FLOAT_COUNT);
+
+  function attachOrientation(orientation: OrientationSource): void {
+    orientationSource = orientation;
+  }
 
   function attachCamera(camera: CameraSource): void {
     if (cameraResource) return; // already attached -- this class's own docstring on why that's a no-op, not an error
@@ -186,6 +219,12 @@ export function createSceneRenderer(device: GpuDeviceLike, context: GpuCanvasCon
         { binding: 2, resource: texture.createView() },
       ],
     });
+    // computeBounds()'s own real argument matters far less here than
+    // it does for the other sixteen entities -- position/velocity are
+    // overwritten to [0,0,0] immediately below and never touched again
+    // (this entity never passes through stepEntity() at all), so this
+    // call only exists to satisfy createRandomEntity()'s own required
+    // parameter; any bounds value would do.
     const entity = createRandomEntity("camera", computeBounds(Math.max(1, canvas.width) / Math.max(1, canvas.height)), Math.random);
     // Unlike the sixteen solid cubes/spheres, this one isn't meant to
     // be visually interchangeable with its own siblings -- there's
@@ -196,6 +235,14 @@ export function createSceneRenderer(device: GpuDeviceLike, context: GpuCanvasCon
     // a value a random multiplier could silently shrink back down by
     // more than half.
     entity.scale = 1;
+    // Pinned at the centre, permanently -- the whole point of a camera
+    // cube is to be the one fixed, easy-to-find thing in a scene full
+    // of bouncing shapes, not another bouncing shape itself. Set once
+    // here, never touched again (renderFrame()'s own camera branch no
+    // longer calls stepEntity() for this entity at all), rather than
+    // reset every frame for no reason.
+    entity.position = [0, 0, 0];
+    entity.velocity = [0, 0, 0];
     cameraResource = { camera, entity, pipeline, meshBuffers, uniformBuffer, bindGroup, texture, textureWidth: camera.width, textureHeight: camera.height };
   }
 
@@ -240,8 +287,27 @@ export function createSceneRenderer(device: GpuDeviceLike, context: GpuCanvasCon
     }
 
     if (cameraResource) {
-      stepEntity(cameraResource.entity, deltaSeconds, bounds);
-      const model = multiplyAll(translation(cameraResource.entity.position), rotation(cameraResource.entity.rotationAxis, cameraResource.entity.rotationAngle), scaleUniform(cameraResource.entity.scale));
+      // Never stepEntity()'d -- this entity's own position is pinned
+      // at the origin for good (attachCamera()'s own docstring on
+      // why), so there's no bounce physics to advance here, only
+      // rotation. A real device-orientation reading, once one exists,
+      // replaces the auto-spin entirely rather than blending with it
+      // -- the cube should visibly track the phone's own real tilt,
+      // not tilt-while-also-still-spinning-on-its-own, which would
+      // read as broken, not responsive. Before a real reading ever
+      // arrives (orientation unsupported, denied, or just not landed
+      // yet), the existing auto-rotation keeps the cube from sitting
+      // dead still, the same fallback behaviour this cube already had
+      // before device orientation existed at all.
+      const reading = orientationSource?.orientation;
+      let rotationMatrix: Mat4;
+      if (reading) {
+        rotationMatrix = deviceOrientationToRotation(reading.alpha, reading.beta, reading.gamma);
+      } else {
+        cameraResource.entity.rotationAngle += cameraResource.entity.rotationSpeed * deltaSeconds;
+        rotationMatrix = rotation(cameraResource.entity.rotationAxis, cameraResource.entity.rotationAngle);
+      }
+      const model = multiplyAll(translation(cameraResource.entity.position), rotationMatrix, scaleUniform(cameraResource.entity.scale));
       cameraUniformScratch.set(multiply(viewProjection, model), 0);
       device.queue.writeBuffer(cameraResource.uniformBuffer, 0, cameraUniformScratch);
       // A fresh video frame every render -- the live feed is only ever
@@ -302,7 +368,7 @@ export function createSceneRenderer(device: GpuDeviceLike, context: GpuCanvasCon
     }
   }
 
-  return { renderFrame, attachCamera, destroy };
+  return { renderFrame, attachCamera, attachOrientation, destroy };
 }
 
 function createScenePipeline(device: GpuDeviceLike, format: string): GpuRenderPipelineLike {

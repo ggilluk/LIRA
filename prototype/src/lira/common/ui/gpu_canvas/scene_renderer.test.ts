@@ -1,5 +1,22 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { deviceOrientationToRotation, multiply, type Mat4 } from "./mat4";
 import { computeBounds, createSceneRenderer } from "./scene_renderer";
+
+/** `renderFrame()`'s own real write order: every `entityResources`
+ * uniform first, the camera cube's own uniform last (`scene_renderer.ts`'s
+ * own code, unchanged by this file) -- so once a camera is attached,
+ * the *last* `device.queue.writeBuffer()` call of any given frame is
+ * always the camera's own `cameraUniformScratch`. Unlike the sixteen
+ * solid entities' own uniform, the camera's own layout carries only
+ * `modelViewProj` (`shader.ts`'s own `CAMERA_UNIFORM_FLOAT_COUNT`,
+ * 16 floats, not 36 -- the camera cube is unlit, so there's no
+ * separate `model` field for a normal transform to need); this
+ * captures that whole, real `modelViewProj`, not a sub-slice of it. */
+function captureCameraMvp(device: ReturnType<typeof fakeDevice>["device"], renderer: ReturnType<typeof createSceneRenderer>, nowMs: number): Mat4 {
+  device.queue.writeBuffer.mockClear();
+  renderer.renderFrame(nowMs);
+  return (device.queue.writeBuffer.mock.calls.at(-1)![2] as Float32Array).slice(0, 16) as unknown as Mat4;
+}
 
 /** `gpu_canvas_view.test.ts`'s own docstring on why jsdom needs
  * `GPUBufferUsage`/`GPUTextureUsage` stubbed -- the same real,
@@ -222,5 +239,60 @@ describe("computeBounds", () => {
     const nearDistance = cameraEyeZ - bounds.max[2]; // the true closest approach to the camera
     const trueHalfHeightAtNear = nearDistance * Math.tan(((55 * Math.PI) / 180) / 2);
     expect(bounds.max[1]).toBeLessThan(trueHalfHeightAtNear);
+  });
+});
+
+describe("the camera cube's own position and rotation", () => {
+  beforeEach(() => {
+    stubWebGpuGlobals();
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it("never changes its own written transform across frames while orientation stays fixed -- the only way that can hold is if position never drifts (no bounce physics for this entity)", () => {
+    const { device } = fakeDevice();
+    const renderer = createSceneRenderer(device as never, fakeContext() as never, "bgra8unorm", fakeCanvas());
+    renderer.attachCamera(fakeCamera() as never);
+    renderer.attachOrientation({ orientation: { alpha: 12, beta: 34, gamma: -56 } });
+
+    const first = Array.from(captureCameraMvp(device, renderer, 0));
+    const later = Array.from(captureCameraMvp(device, renderer, 5000)); // five full seconds later
+
+    expect(later).toEqual(first);
+  });
+
+  it("falls back to its own auto-rotation (a visibly changing transform over time) when no orientation is ever attached", () => {
+    const { device } = fakeDevice();
+    const renderer = createSceneRenderer(device as never, fakeContext() as never, "bgra8unorm", fakeCanvas());
+    renderer.attachCamera(fakeCamera() as never);
+
+    const first = Array.from(captureCameraMvp(device, renderer, 0));
+    const later = Array.from(captureCameraMvp(device, renderer, 500));
+
+    expect(later).not.toEqual(first);
+  });
+
+  it("rotates to exactly match a real device-orientation reading, with nothing else folded in unexpectedly", () => {
+    const { device } = fakeDevice();
+    const renderer = createSceneRenderer(device as never, fakeContext() as never, "bgra8unorm", fakeCanvas());
+    renderer.attachCamera(fakeCamera() as never);
+
+    // deviceOrientationToRotation(0,0,0) is the identity (mat4.test.ts's
+    // own check on that) -- so with the camera cube's own translation
+    // fixed at the origin and scale fixed at 1, the written
+    // modelViewProj for this one reading *is* the camera's own real
+    // view-projection matrix, recovered here without needing to export
+    // CAMERA_EYE/TARGET/UP/FOV_Y_RADIANS just for this test to read.
+    renderer.attachOrientation({ orientation: { alpha: 0, beta: 0, gamma: 0 } });
+    const viewProjection = captureCameraMvp(device, renderer, 0);
+
+    renderer.attachOrientation({ orientation: { alpha: 37, beta: -42, gamma: 15 } });
+    const mvp = captureCameraMvp(device, renderer, 16);
+
+    const expectedRotation = deviceOrientationToRotation(37, -42, 15);
+    const expectedMvp = multiply(viewProjection, expectedRotation);
+    for (let i = 0; i < 16; i++) expect(mvp[i]).toBeCloseTo(expectedMvp[i], 4);
   });
 });

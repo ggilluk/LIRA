@@ -129,3 +129,34 @@ export function normalize(v: Vec3): Vec3 {
   if (length === 0) return [0, 0, 0];
   return [v[0] / length, v[1] / length, v[2] / length];
 }
+
+/** `common/data/device_orientation.ts`'s own `DeviceOrientationSensor`
+ * reads a raw `alpha`/`beta`/`gamma` triple straight off the real
+ * `deviceorientation` event; this is the one place that turns it into
+ * a `Mat4` `scene_renderer.ts` can drop straight into a model matrix
+ * in place of `rotation(axis, angle)`.
+ *
+ * The W3C spec defines a device's own orientation as three *intrinsic*
+ * rotations applied in order Z (`alpha`), then X (`beta`), then Y
+ * (`gamma`) -- each about the device's own, already-rotated axes, not
+ * the fixed world ones. The standard identity for converting that into
+ * one fixed-axis (extrinsic) composition is to apply the same three
+ * single-axis rotations in *reverse* order against the fixed world
+ * axes: `Rz(alpha) * Rx(beta) * Ry(gamma)`, exactly
+ * `multiplyAll(rotation(Z, alpha), rotation(X, beta), rotation(Y,
+ * gamma))` below, since `multiplyAll(A, B, C)`'s own docstring already
+ * means "apply C first, then B, then A" to a vector -- so this applies
+ * gamma first, then beta, then alpha, the same intrinsic Z-X-Y order
+ * the device itself rotated through. This is "visually convincing,
+ * matches the published spec formula" territory, not independently
+ * re-derived or validated against a real device's own sensor output by
+ * this project's own tests (`mat4.test.ts`'s own docstring on exactly
+ * what it does and doesn't check here) -- confirming it *feels* right
+ * needs a real phone, the same limitation every other visual change
+ * to this scene has had. */
+export function deviceOrientationToRotation(alphaDegrees: number, betaDegrees: number, gammaDegrees: number): Mat4 {
+  const alpha = (alphaDegrees * Math.PI) / 180;
+  const beta = (betaDegrees * Math.PI) / 180;
+  const gamma = (gammaDegrees * Math.PI) / 180;
+  return multiplyAll(rotation([0, 0, 1], alpha), rotation([1, 0, 0], beta), rotation([0, 1, 0], gamma));
+}

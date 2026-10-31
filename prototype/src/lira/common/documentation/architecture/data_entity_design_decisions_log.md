@@ -1214,3 +1214,152 @@ renders correctly, no page errors) and that the underlying geometry is
 correct by the tests above. Confirming it looks right is, once again,
 for a real browser -- the same phone that reported both bugs in the
 first place.
+
+## Canvas: the camera cube pinned at centre, tilting to the phone's own real orientation
+
+Requested once the camera feed and sizing/bounds were both already
+working on a real phone: stop the camera cube from bouncing around the
+scene like every other entity, and drive its rotation from the
+phone's own real tilt (`DeviceOrientationEvent`) instead of the
+existing auto-spin, while falling back to that same auto-spin whenever
+a real orientation reading isn't (yet, or ever) available.
+
+**A new `DeviceOrientationSensor` in `common/data/`, deliberately
+returning the raw `{alpha, beta, gamma}` reading, not a `Mat4`.**
+Mirrors `CameraCapture`'s own shape exactly: injectable
+`target`/`eventConstructor` constructor parameters (default `window`
+itself), since jsdom fires no real `deviceorientation` events at all,
+the same reason `camera_capture.ts`'s own `video`/`mediaDevices`
+parameters exist. `start()` handles iOS Safari's own real,
+non-standard `DeviceOrientationEvent.requestPermission()` extension
+(not declared anywhere in TypeScript's bundled `lib.dom.d.ts`, the
+same gap `console_commands/gpu.ts` already found for WebGPU itself) --
+calling and awaiting it only when it actually exists, since Android
+Chrome and most non-Safari browsers expose no such method and need no
+permission step at all. An unsupported browser or a denied permission
+are both reported as a real, honest thrown `Error`, the same "throw
+for a genuine failure" convention `CameraCapture.start()` already
+uses; `gpu_canvas_view.ts`'s own call site treats every one of these
+as optional/non-fatal, same as a camera failure. A reading with any of
+its three fields `null` (a device with no compass, or one that hasn't
+produced a first real reading yet) is discarded wholesale rather than
+defaulting the missing field to `0`, which would read as a real,
+specific orientation no sensor actually reported.
+
+Conversion into a rotation matrix deliberately does **not** live on
+this class. `common/data/` classes don't reach into `common/ui/`, even
+within the same Architectural Layer, so `deviceOrientationToRotation()`
+lives in `mat4.ts` instead and is called from `scene_renderer.ts` --
+the one file that already owns both `mat4.ts` and every WebGPU
+model-matrix concern. `DeviceOrientationSensor.orientation` hands back
+the plain reading; `scene_renderer.ts` is the only place that ever
+turns it into a `Mat4`.
+
+**`deviceOrientationToRotation()`: the W3C spec's own three intrinsic
+rotations, composed as the equivalent fixed-axis product.** The spec
+defines a device's orientation as three *intrinsic* rotations applied
+in order Z (`alpha`), then X (`beta`), then Y (`gamma`) -- each about
+the device's own, already-rotated axes from the previous step, not the
+original fixed ones. The standard rotation-composition identity turns
+a sequence of intrinsic rotations into an equivalent sequence of
+*extrinsic* (fixed-world-axis) rotations composed in the same written
+order: `Rz(alpha) * Rx(beta) * Ry(gamma)`, which is exactly what
+`rotation()` (already fixed-axis) lets this codebase build directly,
+with no new rotation primitive needed. Verified directly in
+`mat4.test.ts`: identity at `(0,0,0)`; the result stays orthonormal at
+a real, arbitrary orientation; a pure `alpha` or pure `gamma` rotation
+matches `rotation()` called on that single axis alone; and `alpha=360`
+produces the same matrix as `alpha=0` (the angle wraps the way a
+real compass heading does).
+
+**The camera cube's position is now pinned at the origin
+permanently, not merely "centred for now."** `attachCamera()` sets
+`entity.position = [0, 0, 0]` and `entity.velocity = [0, 0, 0]` once,
+the same place it already fixes `entity.scale = 1`; `renderFrame()` no
+longer calls `stepEntity()` for this one entity at all, so there is no
+bounce physics left to ever move it again, regardless of whether an
+orientation reading is ever attached. The `bounds` argument still
+passed into `createRandomEntity()` for this entity barely matters any
+more, since position/velocity are both immediately overwritten right
+after.
+
+**Rotation source is chosen fresh every frame: a real orientation
+reading replaces the existing auto-spin entirely, it never blends with
+it.** `attachOrientation(orientation: OrientationSource)` is a new,
+independent `SceneRenderer` method -- independent of `attachCamera()`
+on purpose, since camera access and orientation access are two
+separately-resolving optional permissions that can succeed or fail on
+entirely unrelated schedules, and the camera cube has to render
+sensibly regardless of which (if either) has resolved yet. Each frame,
+if `orientationSource?.orientation` is currently defined, its rotation
+matrix is used as-is; otherwise the camera cube's own pre-existing
+auto-rotation (`rotationAngle` advanced by `rotationSpeed *
+deltaSeconds`, same as before this feature) still runs. This mirrors
+the "never fabricate" call already made for the camera feed itself
+(the texture only ever shows a real frame or honest fallback, never a
+synthesized one) -- a stale or fabricated orientation would read as
+real device motion that never happened.
+
+**`GpuCanvasView` wires a second, fully independent optional
+permission alongside the camera, mirroring its exact shape.** A new
+`createOrientationSensor: () => DeviceOrientationSensorLike`
+constructor parameter (default `() => new DeviceOrientationSensor()`)
+and `orientationSensor` field, started right after the camera in
+`start()` with the identical `.then(attach + log success)` /
+`.catch(log failure)` structure, logged through the same `Logger` the
+camera already uses ("Requesting device orientation access…", then
+either "Device orientation ready -- the camera cube now tilts to match
+the phone's own real orientation." or the real failure reason) --
+never surfaced in the pane itself, same reasoning as a camera failure:
+there's nowhere honest to put a persistent notice without implying the
+rest of the already-working scene is broken too. `destroy()` now also
+calls `orientationSensor?.stop()`; unlike `CameraCapture.stop()` this
+releases no real hardware (`device_orientation.ts`'s own docstring on
+why), but a torn-down session should still leave no listener of its
+own attached to `window`.
+
+**Testing exact rotation correctness against the renderer's own real,
+private `viewProjection` matrix, without exporting it.** The first
+draft of `scene_renderer.test.ts`'s new tests wrongly assumed the
+camera's own uniform buffer carried a separate `model` sub-field at
+float offset 16, mirroring the regular entity uniform's
+`modelViewProj(16) + model(16) + color(4)` layout -- but
+`CAMERA_UNIFORM_FLOAT_COUNT` is only 16 floats total (just
+`modelViewProj`; the camera shader is unlit, so it never needed a
+separate model matrix for normal transforms), and the tests failed
+with `NaN`/empty-array mismatches as a result. Fixed using a reusable
+trick instead of exporting `CAMERA_EYE`/`CAMERA_TARGET`/`CAMERA_UP`/
+`FOV_Y_RADIANS`/`NEAR`/`FAR` from `scene_renderer.ts` just for a test:
+since `deviceOrientationToRotation(0,0,0)` is provably the identity
+matrix (already verified in `mat4.test.ts`), and the camera entity's
+model matrix is `T(position) * R(rotation) * S(scale)` with
+`position=[0,0,0]` and `scale=1` both fixed, attaching an
+identity-orientation reading makes `model = R = I` for that one frame
+-- so the written `modelViewProj` **equals** the real `viewProjection`
+matrix the renderer computed internally. A later frame's real `MVP`
+can then be checked directly against `multiply(viewProjection,
+deviceOrientationToRotation(alpha, beta, gamma))`, confirming the
+renderer applies the conversion exactly, with nothing else folded in
+unexpectedly. The same `describe` block also locks in the position-pin
+itself (the written transform never changes across frames while
+orientation stays fixed, which can only hold if position never
+drifts) and the fallback (a visibly changing transform over time when
+no orientation is ever attached).
+
+`npx tsc -b --force` clean; `npx vitest run --no-file-parallelism`
+358/358 -- 5 new tests in `mat4.test.ts` (`deviceOrientationToRotation`),
+9 new in a new `device_orientation.test.ts`, 3 new in
+`scene_renderer.test.ts` (position pin, auto-rotation fallback, exact
+rotation match via the recovery trick above), and 2 new in
+`gpu_canvas_view.test.ts` (the orientation-ready info message, the
+orientation-failure warn message, plus `destroy()` now also asserting
+`orientationSensor.stop()` was called). This sandbox's own headless
+Chromium has no real GPU adapter, camera, or orientation sensor at
+all, so -- same as every other sensor/visual change to this scene --
+the actual on-device effect (the cube visibly tilting as a real phone
+turns) could not be confirmed here with real pixels or real hardware;
+live Playwright verification only confirmed the honest "no GPU
+adapter" fallback still renders correctly with no regressions and no
+page errors. Confirming the real tilt tracks correctly is, once
+again, for a real phone -- the same one that reported every other
+Canvas bug this far.

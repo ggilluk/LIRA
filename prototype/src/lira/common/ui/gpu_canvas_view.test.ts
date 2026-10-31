@@ -88,6 +88,20 @@ function fakeCameraCapture(overrides: Partial<{ start: () => Promise<void>; stop
   };
 }
 
+/** `fakeCameraCapture()`'s own exact counterpart for a
+ * `DeviceOrientationSensor` -- `start` defaults to an
+ * immediately-resolving no-op for the same reason: most tests below
+ * care about the WebGPU/scene or camera path, not this one, so an
+ * orientation sensor that "succeeds" doing nothing (and never produces
+ * a reading) is the least surprising default. */
+function fakeOrientationSensor(overrides: Partial<{ start: () => Promise<void>; stop: () => void }> = {}) {
+  return {
+    start: overrides.start ?? vi.fn(async () => {}),
+    stop: overrides.stop ?? vi.fn(),
+    orientation: undefined as { alpha: number; beta: number; gamma: number } | undefined,
+  };
+}
+
 describe("GpuCanvasView", () => {
   beforeEach(() => {
     rafCallbacks = [];
@@ -190,8 +204,9 @@ describe("GpuCanvasView", () => {
       getPreferredCanvasFormat: () => "bgra8unorm",
     });
     const camera = fakeCameraCapture();
+    const orientationSensor = fakeOrientationSensor();
 
-    const view = new GpuCanvasView(fakeLogger(), () => camera);
+    const view = new GpuCanvasView(fakeLogger(), () => camera, () => orientationSensor);
     const container = document.createElement("div");
     view.mount(container);
     await flush();
@@ -200,6 +215,7 @@ describe("GpuCanvasView", () => {
     expect(device.destroy).toHaveBeenCalledTimes(1);
     expect(cancelledIds).toHaveLength(1);
     expect(camera.stop).toHaveBeenCalledTimes(1); // the real camera hardware, released -- not just dropped
+    expect(orientationSensor.stop).toHaveBeenCalledTimes(1); // no real hardware to release, but the listener is detached regardless
   });
 
   it("mount() called again (PortalShell's own re-render behaviour) tears down the previous session before starting a new one", async () => {
@@ -259,6 +275,40 @@ describe("GpuCanvasView", () => {
       await flush();
       expect(logger.warn).toHaveBeenCalledWith(expect.stringContaining("Permission denied"));
       expect(container.textContent).not.toContain("Permission denied"); // the scene itself keeps rendering -- GpuCanvasView's own start() docstring on why a camera failure never blanks the pane
+    });
+  });
+
+  describe("device orientation logging (a second, independent optional permission -- never blocks the scene or the camera)", () => {
+    function mountWithRealScene(logger: ReturnType<typeof fakeLogger>, orientationSensor: ReturnType<typeof fakeOrientationSensor>) {
+      const device = fakeDevice();
+      const context = { configure: vi.fn(), getCurrentTexture: () => ({ createView: () => ({}) }) };
+      vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockImplementation((id: string) => (id === "webgpu" ? (context as unknown as RenderingContext) : null));
+      stubGpu({ requestAdapter: async () => fakeAdapter(async () => device), getPreferredCanvasFormat: () => "bgra8unorm" });
+      const view = new GpuCanvasView(logger, () => fakeCameraCapture(), () => orientationSensor);
+      const container = document.createElement("div");
+      view.mount(container);
+      return container;
+    }
+
+    it("logs an info message once device orientation becomes ready", async () => {
+      const logger = fakeLogger();
+      const orientationSensor = fakeOrientationSensor();
+      mountWithRealScene(logger, orientationSensor);
+      await flush();
+      expect(logger.info).toHaveBeenCalledWith(expect.stringContaining("Device orientation ready"));
+    });
+
+    it("logs a warn message with the real failure reason when device orientation is unavailable, without touching the pane", async () => {
+      const logger = fakeLogger();
+      const orientationSensor = fakeOrientationSensor({
+        start: vi.fn(async () => {
+          throw new Error("Device orientation is not supported in this browser (DeviceOrientationEvent is undefined).");
+        }),
+      });
+      const container = mountWithRealScene(logger, orientationSensor);
+      await flush();
+      expect(logger.warn).toHaveBeenCalledWith(expect.stringContaining("DeviceOrientationEvent is undefined"));
+      expect(container.textContent).not.toContain("DeviceOrientationEvent is undefined"); // the scene itself keeps rendering, same as a camera failure
     });
   });
 });

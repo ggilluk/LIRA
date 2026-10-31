@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { identity, lookAt, multiply, multiplyAll, normalize, perspective, rotation, scaleUniform, translation, type Mat4 } from "./mat4";
+import { deviceOrientationToRotation, identity, lookAt, multiply, multiplyAll, normalize, perspective, rotation, scaleUniform, translation, type Mat4 } from "./mat4";
 
 function expectClose(actual: Mat4 | readonly number[], expected: readonly number[], epsilon = 1e-5): void {
   expect(actual).toHaveLength(expected.length);
@@ -100,6 +100,35 @@ describe("perspective", () => {
     const edgeY = Math.tan(fov / 2) * 10; // at z = -10, this point sits exactly on the top edge of the frustum
     const clip = multiplyPoint4(m, [0, edgeY, -10, 1]);
     expect(clip[1] / clip[3]).toBeCloseTo(1, 4);
+  });
+});
+
+describe("deviceOrientationToRotation", () => {
+  it("returns the identity when alpha/beta/gamma are all zero (device flat, screen up, pointing 'north')", () => {
+    expectClose(deviceOrientationToRotation(0, 0, 0), Array.from(identity()), 1e-4);
+  });
+
+  it("produces an orthonormal rotation matrix (every basis column unit length, mutually perpendicular) at an arbitrary real orientation", () => {
+    const m = deviceOrientationToRotation(37, -42, 15);
+    const xAxis: [number, number, number] = [m[0], m[1], m[2]];
+    const yAxis: [number, number, number] = [m[4], m[5], m[6]];
+    const zAxis: [number, number, number] = [m[8], m[9], m[10]];
+    for (const axis of [xAxis, yAxis, zAxis]) expect(Math.hypot(...axis)).toBeCloseTo(1, 5);
+    expect(dot(xAxis, yAxis)).toBeCloseTo(0, 5);
+    expect(dot(yAxis, zAxis)).toBeCloseTo(0, 5);
+    expect(dot(xAxis, zAxis)).toBeCloseTo(0, 5);
+  });
+
+  it("a pure alpha (compass heading) rotation matches a plain Z-axis rotation by the same angle", () => {
+    expectClose(deviceOrientationToRotation(90, 0, 0), Array.from(rotation([0, 0, 1], Math.PI / 2)), 1e-4);
+  });
+
+  it("a pure gamma (left/right tilt) rotation matches a plain Y-axis rotation by the same angle", () => {
+    expectClose(deviceOrientationToRotation(0, 0, 90), Array.from(rotation([0, 1, 0], Math.PI / 2)), 1e-4);
+  });
+
+  it("wraps alpha=360 back to the same rotation as alpha=0", () => {
+    expectClose(deviceOrientationToRotation(360, 10, -5), Array.from(deviceOrientationToRotation(0, 10, -5)), 1e-4);
   });
 });
 

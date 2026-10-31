@@ -1,6 +1,7 @@
 import { createSceneRenderer, type SceneRenderer } from "./gpu_canvas/scene_renderer";
 import type { GpuCanvasContextLike, GpuDeviceLike } from "./gpu_canvas/webgpu_types";
 import { CameraCapture } from "../data/camera_capture";
+import { DeviceOrientationSensor } from "../data/device_orientation";
 
 /** The narrow view this file needs of a real `Logger` (`role/logger.ts`)
  * -- `info`/`warn`/`error` only, the same "structural interface over
@@ -69,16 +70,31 @@ interface CameraCaptureLike {
   readonly height: number;
 }
 
+/** `CameraCaptureLike`'s own exact counterpart for a
+ * `DeviceOrientationSensor` -- `createOrientationSensor`'s own default
+ * (`() => new DeviceOrientationSensor()`) is what every real caller
+ * gets; the injection point exists for the same reason `createCamera`'s
+ * own does (this file's own docstring on it). */
+interface DeviceOrientationSensorLike {
+  start(): Promise<void>;
+  stop(): void;
+  readonly orientation: { alpha: number; beta: number; gamma: number } | undefined;
+}
+
 /** GpuCanvasView: a dedicated, self-contained WebGPU sandbox mounted
  * into the Portal's own "Canvas" component tab (portal_shell.ts's own
  * `ComponentId`/`COMPONENTS`) -- a live scene of rotating, bouncing
  * cubes and spheres (`gpu_canvas/scene_renderer.ts`'s own real
  * `SceneRenderer`), plus -- once a real camera becomes available -- a
  * live camera feed textured onto one more cube in that same scene
- * (`common/data/camera_capture.ts`'s own `CameraCapture`), meant as
- * the starting harness for later experiments converting this UI to a
- * GPU-rendered framework, not a finished feature of its own. Real GPU
- * work end to end --
+ * (`common/data/camera_capture.ts`'s own `CameraCapture`), pinned at
+ * the centre and, once a real device-orientation reading becomes
+ * available too (`common/data/device_orientation.ts`'s own
+ * `DeviceOrientationSensor`), tilting to match the phone's own real
+ * orientation instead of spinning on its own. Meant as the starting
+ * harness for later experiments converting this UI to a GPU-rendered
+ * framework, not a finished feature of its own. Real GPU work end to
+ * end --
  * `requestAdapter()` -> `requestDevice()` -> a configured
  * `GPUCanvasContext` -> one real, depth-tested command buffer
  * submitted every frame -- not a static placeholder canvas. This file
@@ -119,6 +135,7 @@ export class GpuCanvasView {
   private device: GpuDeviceLike | undefined;
   private renderer: SceneRenderer | undefined;
   private cameraCapture: CameraCaptureLike | undefined;
+  private orientationSensor: DeviceOrientationSensorLike | undefined;
   private animationFrame: number | undefined;
   private resizeObserver: ResizeObserver | undefined;
   /** Bumped by every `mount()` call -- `start()`'s own guard against a
@@ -131,6 +148,7 @@ export class GpuCanvasView {
   constructor(
     private readonly logger: LoggerLike,
     private readonly createCamera: () => CameraCaptureLike = () => new CameraCapture(),
+    private readonly createOrientationSensor: () => DeviceOrientationSensorLike = () => new DeviceOrientationSensor(),
   ) {}
 
   mount(container: HTMLElement): void {
@@ -159,9 +177,13 @@ export class GpuCanvasView {
    * `destroy()` would eventually invalidate the renderer's own
    * resources anyway, but tearing them down explicitly first is the
    * same "don't rely on cascading teardown" call
-   * `SceneRenderer.destroy()`'s own docstring makes. Called at the top
-   * of every `mount()` (this class's own docstring above) and safe to
-   * call repeatedly or when nothing is running. */
+   * `SceneRenderer.destroy()`'s own docstring makes. The orientation
+   * sensor's own `stop()` has no real hardware to release (its own
+   * docstring), but is stopped alongside the camera regardless -- a
+   * torn-down session should leave no listener of its own attached to
+   * `window`. Called at the top of every `mount()` (this class's own
+   * docstring above) and safe to call repeatedly or when nothing is
+   * running. */
   destroy(): void {
     if (this.animationFrame !== undefined) {
       cancelAnimationFrame(this.animationFrame);
@@ -171,6 +193,8 @@ export class GpuCanvasView {
     this.resizeObserver = undefined;
     this.cameraCapture?.stop();
     this.cameraCapture = undefined;
+    this.orientationSensor?.stop();
+    this.orientationSensor = undefined;
     this.renderer?.destroy();
     this.renderer = undefined;
     this.device?.destroy();
@@ -260,6 +284,29 @@ export class GpuCanvasView {
         .catch((error: unknown) => {
           if (token !== this.sessionToken) return;
           this.logger.warn(`Camera unavailable: ${error instanceof Error ? error.message : String(error)}`);
+        });
+
+      // Independent of the camera above -- a separate real permission
+      // (iOS Safari's own `requestPermission()`, `device_orientation.ts`'s
+      // own docstring) that resolves or fails on its own schedule, with
+      // its own entirely ordinary failure modes (unsupported browser,
+      // denied permission). Until (and unless) it ever resolves, the
+      // camera cube keeps its own existing auto-rotation fallback
+      // (`scene_renderer.ts`'s own `renderFrame()`); there is nothing
+      // here for this to block on.
+      this.logger.info("Requesting device orientation access…");
+      const orientationSensor = this.createOrientationSensor();
+      this.orientationSensor = orientationSensor;
+      orientationSensor
+        .start()
+        .then(() => {
+          if (token !== this.sessionToken) return;
+          renderer.attachOrientation(orientationSensor);
+          this.logger.info("Device orientation ready -- the camera cube now tilts to match the phone's own real orientation.");
+        })
+        .catch((error: unknown) => {
+          if (token !== this.sessionToken) return;
+          this.logger.warn(`Device orientation unavailable: ${error instanceof Error ? error.message : String(error)}`);
         });
 
       const frame = () => {
