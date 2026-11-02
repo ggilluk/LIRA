@@ -6,7 +6,9 @@ import type { ConsoleCommand } from "./types";
  * each file's own content, in argument order, interleaved with any
  * error lines a failed operand produces along the way (real bash's own
  * `cat a b c` behaviour when `b` doesn't exist -- `a` and `c` still
- * print). */
+ * print). Each file's own `BinaryObject` bytes are decoded as UTF-8 --
+ * `echo`'s own encoding, and the one text encoding this Console
+ * writes. */
 export const catCommand: ConsoleCommand = {
   name: "cat",
   description: "print file contents",
@@ -15,7 +17,7 @@ export const catCommand: ConsoleCommand = {
     const lines: string[] = [];
     for (const path of args) {
       try {
-        lines.push(fs.readFile(path));
+        lines.push(new TextDecoder().decode(fs.readFile(path).value));
       } catch (error) {
         lines.push(error instanceof Error ? error.message : String(error));
       }

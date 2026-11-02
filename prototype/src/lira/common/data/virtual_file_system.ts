@@ -17,15 +17,32 @@
  * Deliberately has no concept of permissions, timestamps, symlinks, or
  * multiple users -- "basic commands" (what was asked for), not a real
  * kernel's own VFS layer. `touch` on an existing file is accordingly a
- * no-op (no mtime to bump), not an error. */
+ * no-op (no mtime to bump), not an error.
+ *
+ * Every file's own content is a CCTS `BinaryObject`
+ * (value_objects/data/binary_object.ts) -- raw bytes plus whichever
+ * supplementary components (`mimeCode`, `characterSetCode`, ...) the
+ * writer supplied -- not a string: a file is bytes, and text is only
+ * one thing those bytes can be (`echo`/`cat` encode/decode UTF-8 at
+ * their own edge, not here). Its own `filename` is never a stored
+ * copy but a getter reading this file's own `FileNode.name` (see
+ * `boundContent()` below), so it always names wherever the file
+ * currently lives in the tree. */
+import type { BinaryObject } from "../../value_objects";
+
 export interface FsEntry {
   name: string;
   kind: "file" | "dir";
 }
 
+/** `name` mirrors this node's own key in its parent's `children` --
+ * `move()`/`copy()` keep the two equal -- so `content.filename` (a
+ * getter onto `name`, `boundContent()` below) has a name to read at
+ * all; a Map key alone can't be referenced from the node it keys. */
 interface FileNode {
   kind: "file";
-  content: string;
+  name: string;
+  content: BinaryObject;
 }
 
 interface DirectoryNode {
@@ -47,11 +64,10 @@ export class VirtualFileSystem {
     return this.capacity;
   }
 
-  /** Total bytes of file content currently stored, UTF-8-encoded the
-   * same way `Blob`/`TextEncoder` measure a real file's own size --
-   * recomputed by walking the whole tree rather than tracked
+  /** Total bytes of file content currently stored -- every file's
+   * own `content.value.byteLength` summed, recomputed by walking the whole tree rather than tracked
    * incrementally, since this scaffold's own tree is small enough
-   * (20MB of plain text, at most) that a full walk costs nothing a
+   * (20MB of content, at most) that a full walk costs nothing a
    * console command would ever notice. */
   usedBytes(): number {
     return sizeOf(this.root);
@@ -100,7 +116,7 @@ export class VirtualFileSystem {
     const name = segments[segments.length - 1];
     if (!parent) throw new Error(`touch: cannot touch '${path}': No such file or directory`);
     if (parent.children.get(name)?.kind === "dir") throw new Error(`touch: cannot touch '${path}': Is a directory`);
-    if (!parent.children.has(name)) parent.children.set(name, { kind: "file", content: "" });
+    if (!parent.children.has(name)) parent.children.set(name, fileNode(name, { value: new Uint8Array(0) }));
   }
 
   /** `echo`'s own `>`/`>>` redirection target -- `options.append` picks
@@ -108,8 +124,11 @@ export class VirtualFileSystem {
    * total (current usage minus whatever this write replaces, plus the
    * new content), not just the new content's own size in isolation, so
    * overwriting a large file with a small one is never mistakenly
-   * rejected as "out of space". */
-  writeFile(path: string, content: string, options: { append?: boolean } = {}): void {
+   * rejected as "out of space". Appending keeps the existing file's own
+   * supplementary components (`mimeCode`, ...) and only extends its
+   * bytes; any `filename` on `content` is ignored either way -- the
+   * file's own path names it (`boundContent()` below). */
+  writeFile(path: string, content: BinaryObject, options: { append?: boolean } = {}): void {
     const segments = this.resolveSegments(path);
     if (segments.length === 0) throw new Error(`${path}: Is a directory`);
     const parent = this.lookupParentDir(segments);
@@ -117,14 +136,14 @@ export class VirtualFileSystem {
     if (!parent) throw new Error(`${path}: No such file or directory`);
     const existing = parent.children.get(name);
     if (existing?.kind === "dir") throw new Error(`${path}: Is a directory`);
-    const nextContent = options.append && existing ? existing.content + content : content;
-    const previousBytes = existing ? byteLength(existing.content) : 0;
-    const nextBytes = byteLength(nextContent);
+    const nextContent = options.append && existing ? { ...existing.content, value: concatBytes(existing.content.value, content.value) } : content;
+    const previousBytes = existing ? existing.content.value.byteLength : 0;
+    const nextBytes = nextContent.value.byteLength;
     if (this.usedBytes() - previousBytes + nextBytes > this.capacity) throw new Error(`${path}: No space left on device`);
-    parent.children.set(name, { kind: "file", content: nextContent });
+    parent.children.set(name, fileNode(name, nextContent));
   }
 
-  readFile(path: string): string {
+  readFile(path: string): BinaryObject {
     const segments = this.resolveSegments(path);
     const node = segments.length === 0 ? this.root : this.lookupNode(segments);
     if (!node) throw new Error(`cat: ${path}: No such file or directory`);
@@ -157,6 +176,7 @@ export class VirtualFileSystem {
     const target = this.resolveDestination(destination, sourceName);
     if (!target.parent) throw new Error(`mv: cannot move '${source}' to '${destination}': No such file or directory`);
     sourceParent.children.delete(sourceName);
+    if (node.kind === "file") node.name = target.name;
     target.parent.children.set(target.name, node);
   }
 
@@ -177,7 +197,7 @@ export class VirtualFileSystem {
     const target = this.resolveDestination(destination, sourceName);
     if (!target.parent) throw new Error(`cp: cannot create '${destination}': No such file or directory`);
     if (this.usedBytes() + sizeOf(node) > this.capacity) throw new Error(`cp: ${destination}: No space left on device`);
-    target.parent.children.set(target.name, cloneNode(node));
+    target.parent.children.set(target.name, cloneNode(node, target.name));
   }
 
   /** The canonical, serialisable form of this filesystem -- a real
@@ -187,7 +207,10 @@ export class VirtualFileSystem {
    * `Blob`/`URL.createObjectURL` pattern the Vocabulary layer's own
    * Save/Load feature already established (`common/ui/portal_shell.ts`'s
    * `downloadJsonFile()`), applied to this filesystem's own tree
-   * instead of a seeded Domain's own stores. */
+   * instead of a seeded Domain's own stores. Each file's own `value`
+   * is base64 inside that JSON -- Binary Object. Content's own CCTS
+   * representation (`xsd:base64Binary`), and the one way raw bytes
+   * survive a JSON round-trip at all. */
   toBlob(): Blob {
     return new Blob([JSON.stringify(serialize(this.root))], { type: "application/json" });
   }
@@ -234,27 +257,69 @@ export class VirtualFileSystem {
   }
 }
 
+/** The one place a `FileNode` is built -- `content` is re-bound via
+ * `boundContent()` every time, so no stored file ever carries a copied
+ * `filename` of its own. */
+function fileNode(name: string, content: BinaryObject): FileNode {
+  const node: FileNode = { kind: "file", name, content };
+  node.content = boundContent(node, content);
+  return node;
+}
+
+/** `source`'s own value and supplementary components, with `filename`
+ * replaced by a getter onto `node.name` -- a by-reference filename, not
+ * a copy, so `move()` renaming `node` renames `filename` along with it.
+ * Never spread a bound content object to copy it (`{ ...content }`
+ * evaluates the getter into a frozen plain string) -- re-bind it to the
+ * new node instead, `cloneNode()`'s own approach. */
+function boundContent(node: FileNode, source: BinaryObject): BinaryObject {
+  const { filename: _filename, ...rest } = source;
+  return {
+    ...rest,
+    get filename() {
+      return node.name;
+    },
+  };
+}
+
 function sizeOf(node: FsNode): number {
-  if (node.kind === "file") return byteLength(node.content);
+  if (node.kind === "file") return node.content.value.byteLength;
   let total = 0;
   for (const child of node.children.values()) total += sizeOf(child);
   return total;
 }
 
-function cloneNode(node: FsNode): FsNode {
-  if (node.kind === "file") return { kind: "file", content: node.content };
+/** `value.slice()`, not the same `Uint8Array` -- unlike the string
+ * this used to hold, a byte array is mutable, so sharing one would let
+ * a write through the copy reach the original. `name` is the copy's
+ * own new name (`copy()`'s resolved target), which its re-bound
+ * `filename` then reads. */
+function cloneNode(node: FsNode, name: string): FsNode {
+  if (node.kind === "file") return fileNode(name, { ...node.content, value: node.content.value.slice() });
   const children = new Map<string, FsNode>();
-  for (const [name, child] of node.children) children.set(name, cloneNode(child));
+  for (const [childName, child] of node.children) children.set(childName, cloneNode(child, childName));
   return { kind: "dir", children };
 }
 
 function serialize(node: FsNode): unknown {
-  if (node.kind === "file") return { kind: "file", content: node.content };
+  if (node.kind === "file") {
+    const { value, uri, ...supplementary } = node.content;
+    return { kind: "file", content: { ...supplementary, value: toBase64(value), ...(uri ? { uri: uri.value } : {}), filename: node.content.filename } };
+  }
   const children: Record<string, unknown> = {};
   for (const [name, child] of node.children) children[name] = serialize(child);
   return { kind: "dir", children };
 }
 
-function byteLength(content: string): number {
-  return new TextEncoder().encode(content).length;
+function concatBytes(a: Uint8Array, b: Uint8Array): Uint8Array {
+  const joined = new Uint8Array(a.byteLength + b.byteLength);
+  joined.set(a, 0);
+  joined.set(b, a.byteLength);
+  return joined;
+}
+
+function toBase64(bytes: Uint8Array): string {
+  let binary = "";
+  for (const byte of bytes) binary += String.fromCharCode(byte);
+  return btoa(binary);
 }

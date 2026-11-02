@@ -1,6 +1,7 @@
 /** Value Objects Layer: parses and normalises primitive values. */
 export { ValueObjectAgent } from "./agents";
 export { ValueObjectsLayer } from "./data/layer";
+export { type BinaryObject, binaryObject } from "./data/binary_object";
 export { type Code, code } from "./data/code";
 export { PronounciationCode } from "./data/code/pronounciationCode";
 export { PronounciationCategoryCode } from "./data/code/pronounciationCategoryCode";

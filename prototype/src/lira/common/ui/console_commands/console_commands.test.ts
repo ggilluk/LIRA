@@ -1,8 +1,20 @@
 import { afterEach, describe, expect, it } from "vitest";
+import { type BinaryObject, binaryObject } from "../../../value_objects";
 import { VirtualFileSystem } from "../../data/virtual_file_system";
 import { ServiceStatusBoard } from "../../data/service_status";
 import { CONSOLE_COMMANDS } from "./index";
 import type { ConsoleCommand, ConsoleCommandContext, ConsoleServices, MetricsProvider } from "./types";
+
+/** UTF-8 `text`, as the `BinaryObject` every VirtualFileSystem file
+ * holds -- most of these tests exercise tree behaviour, not bytes, so
+ * text is just the convenient thing to write. */
+function textFile(text: string): BinaryObject {
+  return binaryObject(new TextEncoder().encode(text));
+}
+
+function readText(fs: VirtualFileSystem, path: string): string {
+  return new TextDecoder().decode(fs.readFile(path).value);
+}
 
 /** `run()`'s own fresh `ConsoleCommandContext` -- sharing one
  * `VirtualFileSystem` and the real `CONSOLE_COMMANDS` registry (so
@@ -132,14 +144,14 @@ describe("echo / cat", () => {
     const fs = new VirtualFileSystem();
     const output = await run(CONSOLE_COMMANDS.echo, context(["hi", "there", ">", "/a.txt"], fs));
     expect(output).toEqual([]);
-    expect(fs.readFile("/a.txt")).toBe("hi there\n");
+    expect(readText(fs, "/a.txt")).toBe("hi there\n");
   });
 
   it("echo with '>>' appends rather than overwriting", async () => {
     const fs = new VirtualFileSystem();
     await run(CONSOLE_COMMANDS.echo, context(["one", ">", "/a.txt"], fs));
     await run(CONSOLE_COMMANDS.echo, context(["two", ">>", "/a.txt"], fs));
-    expect(fs.readFile("/a.txt")).toBe("one\ntwo\n");
+    expect(readText(fs, "/a.txt")).toBe("one\ntwo\n");
   });
 
   it("cat prints a written file's own content back", async () => {
@@ -150,8 +162,8 @@ describe("echo / cat", () => {
 
   it("cat across multiple operands keeps going, interleaving a failed operand's own error with successful content", async () => {
     const fs = new VirtualFileSystem();
-    fs.writeFile("/a.txt", "A");
-    fs.writeFile("/c.txt", "C");
+    fs.writeFile("/a.txt", textFile("A"));
+    fs.writeFile("/c.txt", textFile("C"));
     const output = await run(CONSOLE_COMMANDS.cat, context(["/a.txt", "/b.txt", "/c.txt"], fs));
     expect(output).toEqual(["A", "cat: /b.txt: No such file or directory", "C"]);
   });
@@ -177,17 +189,17 @@ describe("rm", () => {
 describe("mv / cp", () => {
   it("mv renames in place", async () => {
     const fs = new VirtualFileSystem();
-    fs.writeFile("/a.txt", "content");
+    fs.writeFile("/a.txt", textFile("content"));
     await run(CONSOLE_COMMANDS.mv, context(["/a.txt", "/b.txt"], fs));
-    expect(fs.readFile("/b.txt")).toBe("content");
+    expect(readText(fs, "/b.txt")).toBe("content");
   });
 
   it("cp duplicates, leaving the original intact", async () => {
     const fs = new VirtualFileSystem();
-    fs.writeFile("/a.txt", "content");
+    fs.writeFile("/a.txt", textFile("content"));
     await run(CONSOLE_COMMANDS.cp, context(["/a.txt", "/b.txt"], fs));
-    expect(fs.readFile("/a.txt")).toBe("content");
-    expect(fs.readFile("/b.txt")).toBe("content");
+    expect(readText(fs, "/a.txt")).toBe("content");
+    expect(readText(fs, "/b.txt")).toBe("content");
   });
 
   it("cp of a directory without -r throws, naming the real flag", async () => {
@@ -206,7 +218,7 @@ describe("df", () => {
 
   it("reflects real usage once a file is written", async () => {
     const fs = new VirtualFileSystem(1000);
-    fs.writeFile("/a.txt", "x".repeat(100));
+    fs.writeFile("/a.txt", textFile("x".repeat(100)));
     const output = await run(CONSOLE_COMMANDS.df, context([], fs));
     expect(output[1]).toContain("10%");
   });

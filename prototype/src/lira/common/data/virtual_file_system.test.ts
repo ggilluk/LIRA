@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { type BinaryObject, binaryObject } from "../../value_objects";
 import { VirtualFileSystem } from "./virtual_file_system";
 
 function readBlobAsText(blob: Blob): Promise<string> {
@@ -8,6 +9,17 @@ function readBlobAsText(blob: Blob): Promise<string> {
     reader.onerror = () => reject(reader.error);
     reader.readAsText(blob);
   });
+}
+
+/** UTF-8 `text`, as the `BinaryObject` every VirtualFileSystem file
+ * holds -- most of these tests exercise tree behaviour, not bytes, so
+ * text is just the convenient thing to write. */
+function textFile(text: string): BinaryObject {
+  return binaryObject(new TextEncoder().encode(text));
+}
+
+function readText(fs: VirtualFileSystem, path: string): string {
+  return new TextDecoder().decode(fs.readFile(path).value);
 }
 
 describe("VirtualFileSystem: path resolution and navigation", () => {
@@ -75,23 +87,23 @@ describe("VirtualFileSystem: directories and files", () => {
   it("touch creates an empty file", () => {
     const fs = new VirtualFileSystem();
     fs.touch("/empty.txt");
-    expect(fs.readFile("/empty.txt")).toBe("");
+    expect(readText(fs, "/empty.txt")).toBe("");
   });
 
   it("touch on an already-existing file is a no-op, not an error, and doesn't truncate it", () => {
     const fs = new VirtualFileSystem();
-    fs.writeFile("/a.txt", "content");
+    fs.writeFile("/a.txt", textFile("content"));
     fs.touch("/a.txt");
-    expect(fs.readFile("/a.txt")).toBe("content");
+    expect(readText(fs, "/a.txt")).toBe("content");
   });
 
   it("writeFile overwrites by default and append:true appends instead", () => {
     const fs = new VirtualFileSystem();
-    fs.writeFile("/a.txt", "one\n");
-    fs.writeFile("/a.txt", "two\n", { append: true });
-    expect(fs.readFile("/a.txt")).toBe("one\ntwo\n");
-    fs.writeFile("/a.txt", "three\n");
-    expect(fs.readFile("/a.txt")).toBe("three\n");
+    fs.writeFile("/a.txt", textFile("one\n"));
+    fs.writeFile("/a.txt", textFile("two\n"), { append: true });
+    expect(readText(fs, "/a.txt")).toBe("one\ntwo\n");
+    fs.writeFile("/a.txt", textFile("three\n"));
+    expect(readText(fs, "/a.txt")).toBe("three\n");
   });
 
   it("readFile throws for a missing path, and for a directory", () => {
@@ -140,18 +152,18 @@ describe("VirtualFileSystem: directories and files", () => {
 describe("VirtualFileSystem: move and copy", () => {
   it("move renames a file in place", () => {
     const fs = new VirtualFileSystem();
-    fs.writeFile("/a.txt", "content");
+    fs.writeFile("/a.txt", textFile("content"));
     fs.move("/a.txt", "/b.txt");
-    expect(fs.readFile("/b.txt")).toBe("content");
+    expect(readText(fs, "/b.txt")).toBe("content");
     expect(() => fs.readFile("/a.txt")).toThrow();
   });
 
   it("move into an existing directory places the source under its own basename", () => {
     const fs = new VirtualFileSystem();
-    fs.writeFile("/a.txt", "content");
+    fs.writeFile("/a.txt", textFile("content"));
     fs.makeDirectory("/dest");
     fs.move("/a.txt", "/dest");
-    expect(fs.readFile("/dest/a.txt")).toBe("content");
+    expect(readText(fs, "/dest/a.txt")).toBe("content");
   });
 
   it("move throws for a missing source", () => {
@@ -160,19 +172,19 @@ describe("VirtualFileSystem: move and copy", () => {
 
   it("copy duplicates a file -- the original still exists afterward", () => {
     const fs = new VirtualFileSystem();
-    fs.writeFile("/a.txt", "content");
+    fs.writeFile("/a.txt", textFile("content"));
     fs.copy("/a.txt", "/b.txt");
-    expect(fs.readFile("/a.txt")).toBe("content");
-    expect(fs.readFile("/b.txt")).toBe("content");
+    expect(readText(fs, "/a.txt")).toBe("content");
+    expect(readText(fs, "/b.txt")).toBe("content");
   });
 
   it("copy is a deep copy -- mutating the copy never mutates the original", () => {
     const fs = new VirtualFileSystem();
     fs.makeDirectory("/src");
-    fs.writeFile("/src/a.txt", "original");
+    fs.writeFile("/src/a.txt", textFile("original"));
     fs.copy("/src", "/dest", { recursive: true });
-    fs.writeFile("/dest/a.txt", "changed");
-    expect(fs.readFile("/src/a.txt")).toBe("original");
+    fs.writeFile("/dest/a.txt", textFile("changed"));
+    expect(readText(fs, "/src/a.txt")).toBe("original");
   });
 
   it("copy throws for a directory without recursive, naming the real -r flag", () => {
@@ -194,26 +206,26 @@ describe("VirtualFileSystem: 20MB capacity enforcement", () => {
   it("usedBytes reflects real UTF-8 byte length, not JS string .length", () => {
     const fs = new VirtualFileSystem();
     // "é" is one UTF-16 code unit (string.length 1) but two UTF-8 bytes.
-    fs.writeFile("/a.txt", "é");
+    fs.writeFile("/a.txt", textFile("é"));
     expect(fs.usedBytes()).toBe(2);
   });
 
   it("writeFile throws 'No space left on device' once a write would exceed capacity", () => {
     const fs = new VirtualFileSystem(10);
-    fs.writeFile("/a.txt", "1234567890"); // exactly fills the 10-byte cap
-    expect(() => fs.writeFile("/b.txt", "x")).toThrow("/b.txt: No space left on device");
+    fs.writeFile("/a.txt", textFile("1234567890")); // exactly fills the 10-byte cap
+    expect(() => fs.writeFile("/b.txt", textFile("x"))).toThrow("/b.txt: No space left on device");
   });
 
   it("overwriting a file with smaller content is never rejected for 'space' -- the projection accounts for what's freed", () => {
     const fs = new VirtualFileSystem(10);
-    fs.writeFile("/a.txt", "1234567890");
-    expect(() => fs.writeFile("/a.txt", "x")).not.toThrow();
-    expect(fs.readFile("/a.txt")).toBe("x");
+    fs.writeFile("/a.txt", textFile("1234567890"));
+    expect(() => fs.writeFile("/a.txt", textFile("x"))).not.toThrow();
+    expect(readText(fs, "/a.txt")).toBe("x");
   });
 
   it("copy throws 'No space left on device' when the duplicate wouldn't fit", () => {
     const fs = new VirtualFileSystem(8);
-    fs.writeFile("/a.txt", "12345"); // 5 bytes used; a second copy needs 10, over an 8-byte cap
+    fs.writeFile("/a.txt", textFile("12345")); // 5 bytes used; a second copy needs 10, over an 8-byte cap
     expect(() => fs.copy("/a.txt", "/b.txt")).toThrow("No space left on device");
   });
 });
@@ -221,7 +233,7 @@ describe("VirtualFileSystem: 20MB capacity enforcement", () => {
 describe("VirtualFileSystem.toBlob", () => {
   it("returns a real Blob, application/json typed", () => {
     const fs = new VirtualFileSystem();
-    fs.writeFile("/a.txt", "hello");
+    fs.writeFile("/a.txt", textFile("hello"));
     const blob = fs.toBlob();
     expect(blob).toBeInstanceOf(Blob);
     expect(blob.type).toBe("application/json");
@@ -229,7 +241,7 @@ describe("VirtualFileSystem.toBlob", () => {
 
   it("the Blob's own content round-trips the tree -- a written file's content is recoverable from it", async () => {
     const fs = new VirtualFileSystem();
-    fs.writeFile("/a.txt", "hello world");
+    fs.writeFile("/a.txt", textFile("hello world"));
     // Blob.prototype.text()/.arrayBuffer() aren't implemented by this
     // project's own jsdom test environment -- FileReader is the one
     // Blob-reading API it does support, so that's what reads it back
@@ -237,6 +249,75 @@ describe("VirtualFileSystem.toBlob", () => {
     const text = await readBlobAsText(fs.toBlob());
     const parsed = JSON.parse(text);
     expect(parsed.kind).toBe("dir");
-    expect(parsed.children["a.txt"]).toEqual({ kind: "file", content: "hello world" });
+    // "aGVsbG8gd29ybGQ=" is "hello world" base64-encoded -- Binary
+    // Object. Content's own CCTS representation inside the JSON.
+    expect(parsed.children["a.txt"]).toEqual({ kind: "file", content: { value: "aGVsbG8gd29ybGQ=", filename: "a.txt" } });
+  });
+
+  it("keeps each file's own supplementary components alongside its value", async () => {
+    const fs = new VirtualFileSystem();
+    fs.writeFile("/a.txt", binaryObject(new Uint8Array([104, 105]), { mimeCode: "text/plain", characterSetCode: "UTF-8" }));
+    const parsed = JSON.parse(await readBlobAsText(fs.toBlob()));
+    expect(parsed.children["a.txt"].content).toEqual({ value: "aGk=", mimeCode: "text/plain", characterSetCode: "UTF-8", filename: "a.txt" });
+  });
+});
+
+describe("VirtualFileSystem: BinaryObject file content", () => {
+  it("round-trips arbitrary bytes exactly, including ones that aren't valid UTF-8", () => {
+    const fs = new VirtualFileSystem();
+    fs.writeFile("/a.bin", binaryObject(new Uint8Array([0x00, 0x80, 0xff, 0xfe])));
+    expect(Array.from(fs.readFile("/a.bin").value)).toEqual([0x00, 0x80, 0xff, 0xfe]);
+    expect(fs.usedBytes()).toBe(4);
+  });
+
+  it("keeps the written supplementary components, and append keeps the existing file's own", () => {
+    const fs = new VirtualFileSystem();
+    fs.writeFile("/a.txt", binaryObject(new TextEncoder().encode("one"), { mimeCode: "text/plain" }));
+    fs.writeFile("/a.txt", binaryObject(new TextEncoder().encode("two"), { mimeCode: "application/octet-stream" }), { append: true });
+    expect(fs.readFile("/a.txt").mimeCode).toBe("text/plain");
+    expect(readText(fs, "/a.txt")).toBe("onetwo");
+  });
+
+  it("filename names the file's own path, ignoring any filename the writer supplied", () => {
+    const fs = new VirtualFileSystem();
+    fs.writeFile("/a.txt", binaryObject(new Uint8Array(0), { filename: "something-else.txt" }));
+    expect(fs.readFile("/a.txt").filename).toBe("a.txt");
+    fs.touch("/b.txt");
+    expect(fs.readFile("/b.txt").filename).toBe("b.txt");
+  });
+
+  it("filename is by reference -- a BinaryObject read before a move reports the new name after it", () => {
+    const fs = new VirtualFileSystem();
+    fs.writeFile("/a.txt", textFile("content"));
+    const content = fs.readFile("/a.txt");
+    fs.makeDirectory("/dest");
+    fs.move("/a.txt", "/dest/b.txt");
+    expect(content.filename).toBe("b.txt");
+  });
+
+  it("a copy's own filename reads the copy's name, and the source's still reads its own", () => {
+    const fs = new VirtualFileSystem();
+    fs.writeFile("/a.txt", textFile("content"));
+    fs.copy("/a.txt", "/c.txt");
+    expect(fs.readFile("/a.txt").filename).toBe("a.txt");
+    expect(fs.readFile("/c.txt").filename).toBe("c.txt");
+  });
+
+  it("a recursive copy re-binds every nested file's own filename too", () => {
+    const fs = new VirtualFileSystem();
+    fs.makeDirectory("/src");
+    fs.writeFile("/src/a.txt", textFile("content"));
+    fs.copy("/src", "/dest", { recursive: true });
+    fs.move("/dest/a.txt", "/dest/renamed.txt");
+    expect(fs.readFile("/dest/renamed.txt").filename).toBe("renamed.txt");
+    expect(fs.readFile("/src/a.txt").filename).toBe("a.txt");
+  });
+
+  it("a copy never shares its bytes with the source -- mutating one's value leaves the other's intact", () => {
+    const fs = new VirtualFileSystem();
+    fs.writeFile("/a.bin", binaryObject(new Uint8Array([1, 2, 3])));
+    fs.copy("/a.bin", "/b.bin");
+    fs.readFile("/b.bin").value[0] = 9;
+    expect(Array.from(fs.readFile("/a.bin").value)).toEqual([1, 2, 3]);
   });
 });

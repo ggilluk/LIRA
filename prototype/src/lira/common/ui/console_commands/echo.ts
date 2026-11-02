@@ -1,3 +1,4 @@
+import { binaryObject } from "../../../value_objects";
 import type { ConsoleCommand } from "./types";
 
 /** `echo foo bar` just prints "foo bar"; `echo foo > path`/`echo foo >>
@@ -9,7 +10,10 @@ import type { ConsoleCommand } from "./types";
  * shell grammar), so `>`/`>>` are parsed here, as plain tokens among
  * `echo`'s own args, rather than built into every command. A trailing
  * newline is appended to written content the same way a real `echo`'s
- * own stdout always ends with one. */
+ * own stdout always ends with one. Written as a UTF-8 `text/plain`
+ * `BinaryObject` -- every VirtualFileSystem file is bytes, so the
+ * text-to-bytes encoding happens here, at the one command that has
+ * text to write. */
 export const echoCommand: ConsoleCommand = {
   name: "echo",
   description: "print text, or write/append it to a file with > / >>",
@@ -20,7 +24,8 @@ export const echoCommand: ConsoleCommand = {
     const append = args[redirectIndex] === ">>";
     const path = args[redirectIndex + 1];
     if (!path) throw new Error("lira: syntax error near unexpected token `newline'");
-    fs.writeFile(path, args.slice(0, redirectIndex).join(" ") + "\n", { append });
+    const bytes = new TextEncoder().encode(args.slice(0, redirectIndex).join(" ") + "\n");
+    fs.writeFile(path, binaryObject(bytes, { mimeCode: "text/plain", characterSetCode: "UTF-8" }), { append });
     return [];
   },
 };
