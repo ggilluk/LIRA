@@ -1,4 +1,4 @@
-import { binaryObject } from "../../../value_objects";
+import { binaryObject, MimeCode, MimeCodelist } from "../../../value_objects";
 import type { ConsoleCommand } from "./types";
 
 /** `echo foo bar` just prints "foo bar"; `echo foo > path`/`echo foo >>
@@ -25,7 +25,7 @@ export const echoCommand: ConsoleCommand = {
     const path = args[redirectIndex + 1];
     if (!path) throw new Error("lira: syntax error near unexpected token `newline'");
     const bytes = new TextEncoder().encode(args.slice(0, redirectIndex).join(" ") + "\n");
-    fs.writeFile(path, binaryObject(bytes, { mimeCode: "text/plain", characterSetCode: "UTF-8" }), { append });
+    fs.writeFile(path, binaryObject(bytes, { mimeCode: new MimeCode(MimeCodelist.TEXT_PLAIN), characterSetCode: "UTF-8" }), { append });
     return [];
   },
 };

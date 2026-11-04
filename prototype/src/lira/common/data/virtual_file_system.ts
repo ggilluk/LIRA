@@ -210,7 +210,10 @@ export class VirtualFileSystem {
    * instead of a seeded Domain's own stores. Each file's own `value`
    * is base64 inside that JSON -- Binary Object. Content's own CCTS
    * representation (`xsd:base64Binary`), and the one way raw bytes
-   * survive a JSON round-trip at all. */
+   * survive a JSON round-trip at all. `mimeCode`/`uri` serialise as
+   * their own bare `value` (the media type / address string), not the
+   * whole Code/Uri object -- every other supplementary field on them
+   * (`listSchemeUri`, ...) is a constant of the class, not of the file. */
   toBlob(): Blob {
     return new Blob([JSON.stringify(serialize(this.root))], { type: "application/json" });
   }
@@ -303,8 +306,17 @@ function cloneNode(node: FsNode, name: string): FsNode {
 
 function serialize(node: FsNode): unknown {
   if (node.kind === "file") {
-    const { value, uri, ...supplementary } = node.content;
-    return { kind: "file", content: { ...supplementary, value: toBase64(value), ...(uri ? { uri: uri.value } : {}), filename: node.content.filename } };
+    const { value, mimeCode, uri, ...supplementary } = node.content;
+    return {
+      kind: "file",
+      content: {
+        ...supplementary,
+        value: toBase64(value),
+        ...(mimeCode ? { mimeCode: mimeCode.value } : {}),
+        ...(uri ? { uri: uri.value } : {}),
+        filename: node.content.filename,
+      },
+    };
   }
   const children: Record<string, unknown> = {};
   for (const [name, child] of node.children) children[name] = serialize(child);

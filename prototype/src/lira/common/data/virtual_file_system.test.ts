@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { type BinaryObject, binaryObject } from "../../value_objects";
+import { type BinaryObject, binaryObject, MimeCode, MimeCodelist } from "../../value_objects";
 import { VirtualFileSystem } from "./virtual_file_system";
 
 function readBlobAsText(blob: Blob): Promise<string> {
@@ -256,7 +256,7 @@ describe("VirtualFileSystem.toBlob", () => {
 
   it("keeps each file's own supplementary components alongside its value", async () => {
     const fs = new VirtualFileSystem();
-    fs.writeFile("/a.txt", binaryObject(new Uint8Array([104, 105]), { mimeCode: "text/plain", characterSetCode: "UTF-8" }));
+    fs.writeFile("/a.txt", binaryObject(new Uint8Array([104, 105]), { mimeCode: new MimeCode(MimeCodelist.TEXT_PLAIN), characterSetCode: "UTF-8" }));
     const parsed = JSON.parse(await readBlobAsText(fs.toBlob()));
     expect(parsed.children["a.txt"].content).toEqual({ value: "aGk=", mimeCode: "text/plain", characterSetCode: "UTF-8", filename: "a.txt" });
   });
@@ -272,9 +272,9 @@ describe("VirtualFileSystem: BinaryObject file content", () => {
 
   it("keeps the written supplementary components, and append keeps the existing file's own", () => {
     const fs = new VirtualFileSystem();
-    fs.writeFile("/a.txt", binaryObject(new TextEncoder().encode("one"), { mimeCode: "text/plain" }));
-    fs.writeFile("/a.txt", binaryObject(new TextEncoder().encode("two"), { mimeCode: "application/octet-stream" }), { append: true });
-    expect(fs.readFile("/a.txt").mimeCode).toBe("text/plain");
+    fs.writeFile("/a.txt", binaryObject(new TextEncoder().encode("one"), { mimeCode: new MimeCode(MimeCodelist.TEXT_PLAIN) }));
+    fs.writeFile("/a.txt", binaryObject(new TextEncoder().encode("two"), { mimeCode: new MimeCode(MimeCodelist.APPLICATION_OCTET_STREAM) }), { append: true });
+    expect(fs.readFile("/a.txt").mimeCode?.value).toBe(MimeCodelist.TEXT_PLAIN);
     expect(readText(fs, "/a.txt")).toBe("onetwo");
   });
 

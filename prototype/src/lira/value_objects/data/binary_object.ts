@@ -1,3 +1,4 @@
+import type { MimeCode } from "./code/mimeCode";
 import type { Uri } from "./uri";
 
 /** Binary Object. Type, per the UN/CEFACT Core Components Technical
@@ -5,13 +6,20 @@ import type { Uri } from "./uri";
  * Value Objects Layer) -- `value` is Binary Object. Content, and every
  * other field is one of its six supplementary components (Format. Text,
  * Mime. Code, Encoding. Code, Character Set. Code, Uniform Resource.
- * Identifier, Filename. Text). Ported from
+ * Identifier, Filename. Text), matching UN/CEFACT D25A's own
+ * `BinaryObjectType` (UDT, UniqueID UDT000002, CCTS version 2.01,
+ * value_objects/assets/uncefact/data/standard/UnqualifiedDataType_37p0.xsd).
+ * Ported from
  * value_objects/data/binary_object.py, except `value`: `bytes` there,
  * `Uint8Array` here -- the browser's own byte-sequence type, readable
  * synchronously (a `Blob` is only readable asynchronously, which would
  * turn every reader of this value object async for no reason of its
- * own) -- and `uri`: `string` there, `Uri` here -- Code.listUri's own
- * exact reasoning (data/code.ts).
+ * own) -- `uri`: `string` there, `Uri` here -- Code.listUri's own
+ * exact reasoning (data/code.ts) -- and `mimeCode`: `string` there,
+ * `MimeCode` here (data/code/mimeCode.ts) -- an `xsd:token` in D25A's
+ * own UDT, but CCTS names it a Code and D25A's own `MIME_ Code. Type`
+ * (QDT) is exactly that Code qualified for MIME types, the same way
+ * Text's own `languageCode`/`scriptCode` are Codes, not strings.
  *
  * `filename` is `readonly`: a holder may supply it as a getter bound to
  * wherever the name really lives rather than as a copied string
@@ -21,7 +29,7 @@ import type { Uri } from "./uri";
 export interface BinaryObject {
   value: Uint8Array;
   format?: string;
-  mimeCode?: string;
+  mimeCode?: MimeCode;
   encodingCode?: string;
   characterSetCode?: string;
   uri?: Uri;
