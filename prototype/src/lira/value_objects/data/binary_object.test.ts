@@ -40,8 +40,11 @@ import { MimeCode } from "./code/mimeCode";
 import { MimeCodelist } from "./enum/mimeCodelist";
 import { CharacterSetCode } from "./code/characterSetCode";
 import { CharacterSetCodelist } from "./enum/characterSetCodelist";
+import { EncodingCode } from "./code/encodingCode";
+import { EncodingCodelist } from "./enum/encodingCodelist";
 
 const utf8 = new CharacterSetCode(CharacterSetCodelist.UTF_8);
+const utf8Encoding = new EncodingCode(EncodingCodelist.UTF_8);
 
 describe("binaryObject", () => {
   it("carries only value when no supplementary components are given", () => {
@@ -64,8 +67,8 @@ describe("binaryObject", () => {
     const uri = new Uri("https://example.org/a.bin");
     const mimeCode = new MimeCode(MimeCodelist.APPLICATION_OCTET_STREAM);
     expect(
-      binaryObject(value, { format: "raw", mimeCode, encodingCode: "binary", characterSetCode: utf8, uri, filename: "a.bin" }),
-    ).toEqual({ value, format: "raw", mimeCode, encodingCode: "binary", characterSetCode: utf8, uri, filename: "a.bin" });
+      binaryObject(value, { format: "raw", mimeCode, encodingCode: utf8Encoding, characterSetCode: utf8, uri, filename: "a.bin" }),
+    ).toEqual({ value, format: "raw", mimeCode, encodingCode: utf8Encoding, characterSetCode: utf8, uri, filename: "a.bin" });
   });
 
   it("keeps value as the exact same bytes it was given, never re-encoded", () => {

@@ -34,6 +34,7 @@
  * @license MIT
  */
 import type { CharacterSetCode } from "./code/characterSetCode";
+import type { EncodingCode } from "./code/encodingCode";
 import type { MimeCode } from "./code/mimeCode";
 import type { Uri } from "./uri";
 
@@ -58,7 +59,10 @@ import type { Uri } from "./uri";
  * Text's own `languageCode`/`scriptCode` are Codes, not strings -- and
  * `characterSetCode`: `string` there, `CharacterSetCode` here
  * (data/code/characterSetCode.ts), D25A's own `Binary Object Character
- * Set_ Code. Type` (QDT) over its IANA character set code list.
+ * Set_ Code. Type` (QDT) over its IANA character set code list -- and
+ * `encodingCode`: `string` there, `EncodingCode` here
+ * (data/code/encodingCode.ts), D25A's own `Binary Object Encoding_
+ * Code. Type` (QDT) over UN/CEFACT code list 0133.
  *
  * A value, not an entity: every field is `readonly`, and a holder that
  * needs different content builds a new BinaryObject rather than
@@ -71,7 +75,7 @@ export interface BinaryObject {
   readonly value: Uint8Array;
   readonly format?: string;
   readonly mimeCode?: MimeCode;
-  readonly encodingCode?: string;
+  readonly encodingCode?: EncodingCode;
   readonly characterSetCode?: CharacterSetCode;
   readonly uri?: Uri;
   readonly filename?: string;

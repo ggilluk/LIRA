@@ -4,3 +4,8 @@ dist-pages/
 *.log
 .DS_Store
 *.tsbuildinfo
+
+# UN/CEFACT XML schema packages and their extracted schemas: local
+# reference copies only, never committed.
+src/lira/value_objects/assets/uncefact/
+src/lira/value_objects/assets/XMLSchemas-*.zip

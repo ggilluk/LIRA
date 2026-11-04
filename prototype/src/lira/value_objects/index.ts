@@ -45,6 +45,7 @@ export { DialectCode } from "./data/code/dialectCode";
 export { ScriptCode } from "./data/code/scriptCode";
 export { LanguageStyleCode } from "./data/code/languageStyleCode";
 export { CharacterSetCode } from "./data/code/characterSetCode";
+export { EncodingCode } from "./data/code/encodingCode";
 export { MimeCode } from "./data/code/mimeCode";
 export { PronounciationCodelist } from "./data/enum/pronounciationCodelist";
 export { PronounciationCategoryCodelist } from "./data/enum/pronounciationCategoryCodelist";
@@ -53,6 +54,7 @@ export { DialectCodelist, dialectCodelistFromCode } from "./data/enum/dialectCod
 export { ScriptCodelist, scriptCodelistFromCode } from "./data/enum/scriptCodelist";
 export { LanguageStyleCodelist } from "./data/enum/languageStyleCodelist";
 export { CHARACTER_SET_CODELIST_VERSION, CHARACTER_SET_LABELS, CharacterSetCodelist, characterSetCodelistFromLabel } from "./data/enum/characterSetCodelist";
+export { ENCODING_CODELIST_VERSION, ENCODING_DECODER_LABELS, ENCODING_NAMES, EncodingCodelist, encodingCodelistFromCode } from "./data/enum/encodingCodelist";
 export { MIME_CODELIST_VERSION, MimeCodelist, mimeCodelistFromCode } from "./data/enum/mimeCodelist";
 export { type Identifier, identifier, randomGraphUuid } from "./data/identifier";
 export { type Measure, measure } from "./data/measure";

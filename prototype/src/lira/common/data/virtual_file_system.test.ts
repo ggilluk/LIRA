@@ -34,7 +34,7 @@
  * @license MIT
  */
 import { describe, expect, it } from "vitest";
-import { type BinaryObject, binaryObject, CharacterSetCode, CharacterSetCodelist, MimeCode, MimeCodelist, Uri } from "../../value_objects";
+import { type BinaryObject, binaryObject, CharacterSetCode, CharacterSetCodelist, EncodingCode, EncodingCodelist, MimeCode, MimeCodelist, Uri } from "../../value_objects";
 import { VirtualFileSystem } from "./virtual_file_system";
 
 /** UTF-8 `text`, as the `BinaryObject` every VirtualFileSystem file
@@ -380,6 +380,14 @@ describe("VirtualFileSystem: supplementary components and append", () => {
     );
   });
 
+  it("append refuses an encoding that contradicts the file's own", () => {
+    const fs = new VirtualFileSystem();
+    fs.writeFile("/a.txt", binaryObject(new TextEncoder().encode("one"), { encodingCode: new EncodingCode(EncodingCodelist.UTF_8) }));
+    expect(() => fs.writeFile("/a.txt", binaryObject(new Uint8Array([0x41, 0]), { encodingCode: new EncodingCode(EncodingCodelist.UTF_16) }), { append: true })).toThrow(
+      "encoding 'UTF-16' does not match the file's 'UTF-8'",
+    );
+  });
+
   it("append keeps matching metadata, and a touched file takes its type from its first append", () => {
     const fs = new VirtualFileSystem();
     fs.touch("/a.txt");
@@ -466,7 +474,7 @@ describe("VirtualFileSystem: toBlob()/fromBlob() disk image", () => {
     fs.writeFile("/docs/a.txt", binaryObject(new TextEncoder().encode("héllo"), { mimeCode: TEXT_PLAIN, characterSetCode: UTF_8 }));
     fs.writeFile(
       "/b.bin",
-      binaryObject(new Uint8Array([0, 255, 128]), { format: "raw", mimeCode: new MimeCode("audio/wav"), encodingCode: "binary", uri: new Uri("https://example.org/b.bin") }),
+      binaryObject(new Uint8Array([0, 255, 128]), { format: "raw", mimeCode: new MimeCode("audio/wav"), encodingCode: new EncodingCode(EncodingCodelist.MUTUALLY_AGREED), uri: new Uri("https://example.org/b.bin") }),
     );
     fs.touch("/c");
 
@@ -486,7 +494,8 @@ describe("VirtualFileSystem: toBlob()/fromBlob() disk image", () => {
     expect(a.characterSetCode?.value).toBe("106");
     const b = restored.readFile("/b.bin");
     expect(Array.from(b.value)).toEqual([0, 255, 128]);
-    expect(b).toMatchObject({ format: "raw", encodingCode: "binary", filename: "b.bin" });
+    expect(b).toMatchObject({ format: "raw", filename: "b.bin" });
+    expect(b.encodingCode?.value).toBe("ZZZ");
     expect(b.mimeCode?.value).toBe("audio/wav");
     expect(b.uri?.value).toBe("https://example.org/b.bin");
     expect(restored.readFile("/c").value.byteLength).toBe(0);

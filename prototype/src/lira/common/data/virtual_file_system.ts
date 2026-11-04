@@ -77,6 +77,9 @@ import {
   CHARACTER_SET_LABELS,
   CharacterSetCode,
   type CharacterSetCodelist,
+  ENCODING_CODELIST_VERSION,
+  EncodingCode,
+  encodingCodelistFromCode,
   MIME_CODELIST_VERSION,
   MimeCode,
   Uri,
@@ -96,6 +99,7 @@ export interface FsStat {
   size: number;
   mimeCode?: MimeCode;
   characterSetCode?: CharacterSetCode;
+  encodingCode?: EncodingCode;
 }
 
 /** A stored file's own content: a frozen BinaryObject this filesystem
@@ -167,8 +171,15 @@ export class VirtualFileSystem {
     if (!node) throw new Error(`stat: cannot stat '${path}': No such file or directory`);
     const name = segments.length === 0 ? "/" : segments[segments.length - 1];
     if (node.kind === "dir") return { name, kind: "dir", size: sizeOf(node) };
-    const { mimeCode, characterSetCode } = node.content;
-    return { name, kind: "file", size: node.content.value.byteLength, ...(mimeCode ? { mimeCode } : {}), ...(characterSetCode ? { characterSetCode } : {}) };
+    const { mimeCode, characterSetCode, encodingCode } = node.content;
+    return {
+      name,
+      kind: "file",
+      size: node.content.value.byteLength,
+      ...(mimeCode ? { mimeCode } : {}),
+      ...(characterSetCode ? { characterSetCode } : {}),
+      ...(encodingCode ? { encodingCode } : {}),
+    };
   }
 
   makeDirectory(path: string): void {
@@ -342,6 +353,7 @@ export class VirtualFileSystem {
         version: IMAGE_VERSION,
         mimeCodeListVersionId: MIME_CODELIST_VERSION,
         characterSetCodeListVersionId: CHARACTER_SET_CODELIST_VERSION,
+        encodingCodeListVersionId: ENCODING_CODELIST_VERSION,
         root: manifestRoot,
       }),
     );
@@ -362,7 +374,8 @@ export class VirtualFileSystem {
    * for anything that isn't a well-formed image -- wrong magic, a
    * manifest or file range past the end of the data, a name no path
    * could reach (empty, `.`, `..`, containing `/`), an unknown character
-   * set -- and for an image whose content wouldn't fit `capacity`. */
+   * set or encoding -- and for an image whose content wouldn't fit
+ * `capacity`. */
   static fromBytes(image: Uint8Array, capacity: number = DEFAULT_FS_CAPACITY_BYTES): VirtualFileSystem {
     const invalid = (reason: string) => new Error(`not a LIRA virtual filesystem image: ${reason}`);
     const headerLength = IMAGE_MAGIC.length + 4;
@@ -456,6 +469,11 @@ function metadataMismatch(current: StoredContent, incoming: BinaryObject): strin
   if (currentCharset && incomingCharset && currentCharset.value !== incomingCharset.value) {
     return `character set '${incomingCharset.labels()[0]}' does not match the file's '${currentCharset.labels()[0]}'`;
   }
+  const currentEncoding = current.encodingCode;
+  const incomingEncoding = incoming.encodingCode;
+  if (currentEncoding && incomingEncoding && currentEncoding.value !== incomingEncoding.value) {
+    return `encoding '${incomingEncoding.name}' does not match the file's '${currentEncoding.name}'`;
+  }
   return undefined;
 }
 
@@ -502,7 +520,7 @@ function manifestOf(node: FsNode, place: (bytes: Uint8Array) => number): unknown
       length: value.byteLength,
       ...(format !== undefined ? { format } : {}),
       ...(mimeCode ? { mimeCode: mimeCode.value } : {}),
-      ...(encodingCode !== undefined ? { encodingCode } : {}),
+      ...(encodingCode ? { encodingCode: encodingCode.value } : {}),
       ...(characterSetCode ? { characterSetCode: characterSetCode.value } : {}),
       ...(uri ? { uri: uri.value } : {}),
     };
@@ -543,6 +561,13 @@ function nodeFromManifest(entry: unknown, data: Uint8Array, invalid: (reason: st
     if (!(Number(charset) in CHARACTER_SET_LABELS)) throw invalid(`unknown character set code '${charset}'`);
     characterSetCode = new CharacterSetCode(Number(charset) as CharacterSetCodelist);
   }
+  let encodingCode: EncodingCode | undefined;
+  const encoding = optionalString("encodingCode");
+  if (encoding !== undefined) {
+    const member = encodingCodelistFromCode(encoding);
+    if (member === undefined) throw invalid(`unknown encoding code '${encoding}'`);
+    encodingCode = new EncodingCode(member);
+  }
   const mime = optionalString("mimeCode");
   const uri = optionalString("uri");
   let content: BinaryObject;
@@ -551,7 +576,7 @@ function nodeFromManifest(entry: unknown, data: Uint8Array, invalid: (reason: st
       value: data.slice(offset as number, (offset as number) + (length as number)),
       format: optionalString("format"),
       mimeCode: mime !== undefined ? new MimeCode(mime) : undefined,
-      encodingCode: optionalString("encodingCode"),
+      encodingCode,
       characterSetCode,
       uri: uri !== undefined ? new Uri(uri) : undefined,
     };
