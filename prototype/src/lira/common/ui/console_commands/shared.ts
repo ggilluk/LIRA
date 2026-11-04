@@ -84,8 +84,10 @@ export function isTextMediaType(mediaType: string): boolean {
  * or why it can't be shown as text -- `cat`'s and `file`'s shared
  * reading of a BinaryObject. A non-text `mimeCode` is binary outright;
  * a `characterSetCode` is decoded with the first of its IANA labels
- * `TextDecoder` knows; with neither, the bytes are text only if they
- * are valid UTF-8, the encoding every Console write uses. */
+ * `TextDecoder` knows; failing that, an `encodingCode` with a browser
+ * decoder (UTF-8, UTF-16, ASCII, ...) decides; with none of them, the
+ * bytes are text only if they are valid UTF-8, the encoding every
+ * Console write uses. */
 export function decodeText(file: BinaryObject): { text: string } | { problem: string } {
   if (file.mimeCode && !isTextMediaType(file.mimeCode.value)) return { problem: `binary file (${file.mimeCode.value})` };
   let decoder: TextDecoder | undefined;
@@ -101,12 +103,28 @@ export function decodeText(file: BinaryObject): { text: string } | { problem: st
       }
     }
     if (!decoder) return { problem: `unsupported character set '${charsetName}'` };
+  } else if (file.encodingCode) {
+    charsetName = file.encodingCode.name;
+    const label = file.encodingCode.decoderLabel;
+    if (!label) return { problem: `unsupported encoding '${charsetName}'` };
+    decoder = new TextDecoder(label, { fatal: true });
   } else {
     decoder = new TextDecoder("utf-8", { fatal: true });
   }
   try {
     return { text: decoder.decode(file.value) };
   } catch {
-    return { problem: file.characterSetCode || file.mimeCode ? `not valid ${charsetName} text` : "binary file" };
+    return { problem: file.characterSetCode || file.encodingCode || file.mimeCode ? `not valid ${charsetName} text` : "binary file" };
   }
+}
+
+/** `base` and `name` joined with exactly one `/` between them. */
+export function joinPath(base: string, name: string): string {
+  return base.endsWith("/") ? `${base}${name}` : `${base}/${name}`;
+}
+
+/** The last segment of `path`, ignoring trailing slashes (`a/b/` is `b`). */
+export function basename(path: string): string {
+  const trimmed = path.replace(/\/+$/, "");
+  return trimmed.slice(trimmed.lastIndexOf("/") + 1) || "/";
 }

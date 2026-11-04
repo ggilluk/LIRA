@@ -19,8 +19,8 @@
  * │ Modified Date   │ 2026-11-02
  * ├─────────────────┼────────────────────────────────────────────────────────────────────
  * │ Description     │ Vitest suite for every Console command, run against a real
- * │                 │ VirtualFileSystem and fake Services, including metadata-aware
- * │                 │ cat, ls -l, stat and file.
+ * │                 │ VirtualFileSystem and fake Services, including each command's
+ * │                 │ Unix switches and metadata-aware cat, ls -l, stat and file.
  * │                 │
  * │                 │
  * ├─────────────────┼────────────────────────────────────────────────────────────────────
@@ -34,7 +34,7 @@
  * @license MIT
  */
 import { afterEach, describe, expect, it } from "vitest";
-import { type BinaryObject, binaryObject, CharacterSetCode, CharacterSetCodelist, MimeCode, MimeCodelist } from "../../../value_objects";
+import { type BinaryObject, binaryObject, CharacterSetCode, CharacterSetCodelist, EncodingCode, EncodingCodelist, MimeCode, MimeCodelist } from "../../../value_objects";
 import { VirtualFileSystem } from "../../data/virtual_file_system";
 import { ServiceStatusBoard } from "../../data/service_status";
 import { CONSOLE_COMMANDS } from "./index";
@@ -213,6 +213,16 @@ describe("cat / ls -l / stat / file read each file's own metadata", () => {
     expect(await run(CONSOLE_COMMANDS.cat, context(["/latin1.txt"], fs))).toEqual(["café"]);
   });
 
+  it("cat falls back to a file's encodingCode when it declares no character set", async () => {
+    const fs = new VirtualFileSystem();
+    fs.writeFile("/u16.txt", binaryObject(new Uint8Array([0x68, 0, 0x69, 0]), { encodingCode: new EncodingCode(EncodingCodelist.UTF_16) }));
+    fs.writeFile("/ebcdic", binaryObject(new Uint8Array([0xc1]), { encodingCode: new EncodingCode(EncodingCodelist.CODE_PAGE_500_EBCDIC_MULTINATIONAL_NO_5) }));
+    expect(await run(CONSOLE_COMMANDS.cat, context(["/u16.txt", "/ebcdic"], fs))).toEqual([
+      "hi",
+      "cat: /ebcdic: unsupported encoding 'Code page 500 (EBCDIC Multinational No. 5)', not shown",
+    ]);
+  });
+
   it("cat shows a notice, not garbage, for a non-text media type or bytes that aren't valid text", async () => {
     const fs = new VirtualFileSystem();
     fs.writeFile("/a.png", binaryObject(new Uint8Array([0x89, 0x50, 0x4e, 0x47]), { mimeCode: new MimeCode(MimeCodelist.IMAGE_PNG) }));
@@ -232,7 +242,7 @@ describe("cat / ls -l / stat / file read each file's own metadata", () => {
       "-        3  text/plain               a.txt",
       "d        5  -                        d/",
     ]);
-    expect(await run(CONSOLE_COMMANDS.ls, context(["-l", "/a.txt"], fs))).toEqual(["-        3  text/plain               a.txt"]);
+    expect(await run(CONSOLE_COMMANDS.ls, context(["-l", "/a.txt"], fs))).toEqual(["-        3  text/plain               /a.txt"]);
   });
 
   it("stat reports size, kind, media type and character set", async () => {
@@ -244,6 +254,7 @@ describe("cat / ls -l / stat / file read each file's own metadata", () => {
       "  Size: 3\tregular file",
       "  Type: text/plain",
       "Charset: UTF-8 (IANA 106)",
+      "Encoding: UTF-8 (UNCL 0133 7)",
       "  File: /b.wav",
       "  Size: 4\tregular file",
       "  Type: audio/wav (not IANA-registered)",
@@ -266,6 +277,123 @@ describe("cat / ls -l / stat / file read each file's own metadata", () => {
       "/d: inode/directory; charset=binary",
       "/nope: cannot open '/nope' (No such file or directory)",
     ]);
+  });
+});
+
+describe("Unix switches", () => {
+  async function setup(): Promise<VirtualFileSystem> {
+    const fs = new VirtualFileSystem();
+    fs.makeDirectory("/d");
+    fs.writeFile("/d/a.txt", textFile("one\n\ntwo\n"));
+    fs.writeFile("/d/.hidden", textFile("h"));
+    fs.makeDirectory("/d/sub");
+    fs.writeFile("/d/sub/b.txt", textFile("b"));
+    return fs;
+  }
+
+  it("every option-taking command answers --help with a usage line and its options", async () => {
+    const help = await run(CONSOLE_COMMANDS.rm, context(["--help"]));
+    expect(help[0]).toBe("Usage: rm [OPTION]... [FILE]...");
+    expect(help).toContain("  -r, --recursive  remove directories and their contents recursively");
+    expect(help[help.length - 1]).toMatch(/^\s+--help\s+display this help and exit$/);
+  });
+
+  it("an unknown option gets GNU's own two-line error", async () => {
+    await expect(run(CONSOLE_COMMANDS.ls, context(["-z"]))).rejects.toThrow("ls: invalid option -- 'z'\nTry 'ls --help' for more information.");
+    await expect(run(CONSOLE_COMMANDS.ls, context(["--zebra"]))).rejects.toThrow("ls: unrecognized option '--zebra'");
+  });
+
+  it("-- ends options, so a name starting with - is an operand", async () => {
+    const fs = new VirtualFileSystem();
+    fs.touch("/-x");
+    await run(CONSOLE_COMMANDS.rm, context(["--", "/-x"], fs));
+    expect(fs.list("/")).toEqual([]);
+  });
+
+  it("ls: hidden files need -a (with . and ..) or -A; -1 is one per line; options may follow operands", async () => {
+    const fs = await setup();
+    expect(await run(CONSOLE_COMMANDS.ls, context(["/d"], fs))).toEqual(["a.txt  sub/"]);
+    expect(await run(CONSOLE_COMMANDS.ls, context(["/d", "-A"], fs))).toEqual([".hidden  a.txt  sub/"]);
+    expect(await run(CONSOLE_COMMANDS.ls, context(["-a1", "/d"], fs))).toEqual(["./", "../", ".hidden", "a.txt", "sub/"]);
+  });
+
+  it("ls: several operands list files first, then each directory under a header; -R recurses; -d lists a directory itself", async () => {
+    const fs = await setup();
+    expect(await run(CONSOLE_COMMANDS.ls, context(["/d/sub", "/d/a.txt"], fs))).toEqual(["/d/a.txt", "", "/d/sub:", "b.txt"]);
+    expect(await run(CONSOLE_COMMANDS.ls, context(["-R", "/d"], fs))).toEqual(["/d:", "a.txt  sub/", "", "/d/sub:", "b.txt"]);
+    expect(await run(CONSOLE_COMMANDS.ls, context(["-d", "/d"], fs))).toEqual(["/d/"]);
+    expect(await run(CONSOLE_COMMANDS.ls, context(["/nope", "/d/sub"], fs))).toEqual(["ls: cannot access '/nope': No such file or directory", "/d/sub:", "b.txt"]);
+  });
+
+  it("ls -lh prints human-readable sizes", async () => {
+    const fs = new VirtualFileSystem();
+    fs.writeFile("/big", binaryObject(new Uint8Array(2048)));
+    expect(await run(CONSOLE_COMMANDS.ls, context(["-lh", "/big"], fs))).toEqual(["-     2.0K  -                        /big"]);
+  });
+
+  it("cat -n numbers every line across files, -b only non-blank ones, -E marks line ends", async () => {
+    const fs = await setup();
+    expect(await run(CONSOLE_COMMANDS.cat, context(["-n", "/d/a.txt", "/d/sub/b.txt"], fs))).toEqual(["     1\tone", "     2\t", "     3\ttwo", "     4\tb"]);
+    expect(await run(CONSOLE_COMMANDS.cat, context(["-b", "/d/a.txt"], fs))).toEqual(["     1\tone", "", "     2\ttwo"]);
+    expect(await run(CONSOLE_COMMANDS.cat, context(["-E", "/d/a.txt"], fs))).toEqual(["one$", "$", "two$"]);
+  });
+
+  it("echo: -n drops the trailing newline, -e interprets escapes, and other dash words are text", async () => {
+    const fs = new VirtualFileSystem();
+    await run(CONSOLE_COMMANDS.echo, context(["-n", "hi", ">", "/a"], fs));
+    expect(readText(fs, "/a")).toBe("hi");
+    expect(await run(CONSOLE_COMMANDS.echo, context(["-e", "a\\tb\\nc"]))).toEqual(["a\tb\nc"]);
+    expect(await run(CONSOLE_COMMANDS.echo, context(["-x", "--help"]))).toEqual(["-x --help"]);
+  });
+
+  it("rm: -f ignores missing files, -d removes only empty directories, -rv reports contents before the directory", async () => {
+    const fs = await setup();
+    expect(await run(CONSOLE_COMMANDS.rm, context(["-f", "/nope"], fs))).toEqual([]);
+    expect(await run(CONSOLE_COMMANDS.rm, context(["-f"], fs))).toEqual([]);
+    expect(await run(CONSOLE_COMMANDS.rm, context(["-d", "/d"], fs))).toEqual(["rm: cannot remove '/d': Directory not empty"]);
+    fs.makeDirectory("/empty");
+    expect(await run(CONSOLE_COMMANDS.rm, context(["-dv", "/empty"], fs))).toEqual(["removed directory '/empty'"]);
+    expect(await run(CONSOLE_COMMANDS.rm, context(["-rv", "/d/sub"], fs))).toEqual(["removed '/d/sub/b.txt'", "removed directory '/d/sub'"]);
+  });
+
+  it("mkdir -p creates missing parents and accepts existing ones; -v reports each", async () => {
+    const fs = new VirtualFileSystem();
+    expect(await run(CONSOLE_COMMANDS.mkdir, context(["-pv", "/a/b/c"], fs))).toEqual([
+      "mkdir: created directory '/a'",
+      "mkdir: created directory '/a/b'",
+      "mkdir: created directory '/a/b/c'",
+    ]);
+    expect(await run(CONSOLE_COMMANDS.mkdir, context(["-p", "/a/b"], fs))).toEqual([]);
+    fs.touch("/f");
+    expect(await run(CONSOLE_COMMANDS.mkdir, context(["-p", "/f/x"], fs))).toEqual(["mkdir: cannot create directory '/f/x': Not a directory"]);
+  });
+
+  it("touch -c never creates files", async () => {
+    const fs = new VirtualFileSystem();
+    await run(CONSOLE_COMMANDS.touch, context(["-c", "/a"], fs));
+    expect(fs.list("/")).toEqual([]);
+  });
+
+  it("cp/mv take several sources into a directory, refuse a non-directory target, and honour -n and -v", async () => {
+    const fs = await setup();
+    fs.makeDirectory("/out");
+    expect(await run(CONSOLE_COMMANDS.cp, context(["-v", "/d/a.txt", "/d/sub/b.txt", "/out"], fs))).toEqual(["'/d/a.txt' -> '/out/a.txt'", "'/d/sub/b.txt' -> '/out/b.txt'"]);
+    await expect(run(CONSOLE_COMMANDS.cp, context(["/d/a.txt", "/d/sub/b.txt", "/d/a.txt"], fs))).rejects.toThrow("cp: target '/d/a.txt' is not a directory");
+    fs.writeFile("/out/a.txt", textFile("keep"));
+    await run(CONSOLE_COMMANDS.cp, context(["-n", "/d/a.txt", "/out"], fs));
+    expect(readText(fs, "/out/a.txt")).toBe("keep");
+    expect(await run(CONSOLE_COMMANDS.mv, context(["-v", "/out/b.txt", "/out/c.txt"], fs))).toEqual(["renamed '/out/b.txt' -> '/out/c.txt'"]);
+    await expect(run(CONSOLE_COMMANDS.mv, context(["/out/c.txt"], fs))).rejects.toThrow("mv: missing destination file operand after '/out/c.txt'");
+  });
+
+  it("file -b leaves off the name, --mime-type the charset", async () => {
+    const fs = new VirtualFileSystem();
+    await run(CONSOLE_COMMANDS.echo, context(["hi", ">", "/a.txt"], fs));
+    expect(await run(CONSOLE_COMMANDS.file, context(["-b", "--mime-type", "/a.txt"], fs))).toEqual(["text/plain"]);
+  });
+
+  it("cd refuses more than one operand", async () => {
+    await expect(run(CONSOLE_COMMANDS.cd, context(["/", "/"]))).rejects.toThrow("cd: too many arguments");
   });
 });
 
@@ -302,18 +430,22 @@ describe("mv / cp", () => {
     expect(readText(fs, "/b.txt")).toBe("content");
   });
 
-  it("cp of a directory without -r throws, naming the real flag", async () => {
+  it("cp of a directory without -r reports it, naming the real flag", async () => {
     const fs = new VirtualFileSystem();
     fs.makeDirectory("/dir");
-    await expect(run(CONSOLE_COMMANDS.cp, context(["/dir", "/dest"], fs))).rejects.toThrow("-r not specified");
+    expect(await run(CONSOLE_COMMANDS.cp, context(["/dir", "/dest"], fs))).toEqual(["cp: -r not specified; omitting directory '/dir'"]);
   });
 });
 
 describe("df", () => {
-  it("reports the 20MB default capacity and 0% used on a fresh filesystem", async () => {
-    const output = await run(CONSOLE_COMMANDS.df, context([]));
-    expect(output[1]).toContain("20.0M");
-    expect(output[1]).toContain("0%");
+  it("reports the 20MB default capacity in 1K blocks, and human-readable with -h", async () => {
+    expect(await run(CONSOLE_COMMANDS.df, context([]))).toEqual([
+      "Filesystem     1K-blocks    Used Available Use%",
+      "blobfs             20480       0     20480   0%",
+    ]);
+    const human = await run(CONSOLE_COMMANDS.df, context(["-h"]));
+    expect(human[1]).toContain("20.0M");
+    expect(human[1]).toContain("0%");
   });
 
   it("reflects real usage once a file is written", async () => {

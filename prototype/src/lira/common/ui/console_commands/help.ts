@@ -18,8 +18,8 @@
  * │ Created Date    │ 2026-10-24
  * │ Modified Date   │ 2026-10-24
  * ├─────────────────┼────────────────────────────────────────────────────────────────────
- * │ Description     │ Console `help` command: lists every registered command from the
- * │                 │ live registry.
+ * │ Description     │ Console `help` command: lists every registered command, with a
+ * │                 │ pointer to --help and wildcard use.
  * │                 │
  * │                 │
  * │                 │
@@ -47,5 +47,8 @@ export const helpCommand: ConsoleCommand = {
     ...Object.values(commands)
       .sort((a, b) => a.name.localeCompare(b.name))
       .map((command) => `  ${command.name.padEnd(8)}${command.description}`),
+    "",
+    "Run 'COMMAND --help' for a command's options. Filenames may use the",
+    "wildcards * ? [...], and quotes or \\ keep them literal.",
   ],
 };

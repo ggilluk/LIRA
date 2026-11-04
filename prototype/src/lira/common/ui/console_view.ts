@@ -19,8 +19,8 @@
  * │ Modified Date   │ 2026-10-24
  * ├─────────────────┼────────────────────────────────────────────────────────────────────
  * │ Description     │ ConsoleView: the terminal-styled command console in the
- * │                 │ Vocabulary pane, dispatching typed lines to Console commands.
- * │                 │
+ * │                 │ Vocabulary pane. Parses each line through the shell layer
+ * │                 │ (quotes, wildcards) and dispatches it to a Console command.
  * │                 │
  * │                 │
  * ├─────────────────┼────────────────────────────────────────────────────────────────────
@@ -36,6 +36,7 @@
 import type { ServiceStatusBoard } from "../data/service_status";
 import { VirtualFileSystem } from "../data/virtual_file_system";
 import { CONSOLE_COMMANDS, type ConsoleServices, type MetricsProvider } from "./console_commands";
+import { parseCommandLine } from "./console_commands/shell";
 
 /** ConsoleView: a terminal-styled command console for the Vocabulary
  * view pane, mounted directly above ServiceStatusView's own Background
@@ -176,9 +177,11 @@ export class ConsoleView {
    * retroactively rewritten to the current directory once a later `cd`
    * changes it), records it in `commandHistory` unless blank (a bare
    * Enter press shouldn't pollute recall the way a real shell's own
-   * history doesn't either), tokenizes it (`tokenize()` below --
-   * whitespace-separated, with `"..."` quoting for an argument
-   * containing spaces), and looks the command name up in
+   * history doesn't either), parses it the way a shell would
+   * (`parseCommandLine()`, console_commands/shell.ts -- quoting,
+   * escapes, and filename wildcards expanded against `fs`, so every
+   * command receives already-expanded paths, as in a real shell), and
+   * looks the command name up in
    * `CONSOLE_COMMANDS` (console_commands/index.ts). An unrecognised
    * name is echoed back as "not found"; a recognised one runs with a
    * fresh `ConsoleCommandContext` built from this instance's own `fs`,
@@ -205,7 +208,19 @@ export class ConsoleView {
     }
     this.commandHistory.push(trimmed);
 
-    const [name, ...args] = tokenize(trimmed);
+    let words: string[];
+    try {
+      words = parseCommandLine(trimmed, this.fs);
+    } catch (error) {
+      this.lines.push({ kind: "error", text: error instanceof Error ? error.message : String(error) });
+      this.paint();
+      return;
+    }
+    if (words.length === 0) {
+      this.paint();
+      return;
+    }
+    const [name, ...args] = words;
     const command = CONSOLE_COMMANDS[name.toLowerCase()];
     if (!command) {
       this.lines.push({ kind: "error", text: `lira: command not found: ${name} (not implemented yet)` });
@@ -288,21 +303,6 @@ const BANNER_LINES: readonly string[] = ["LIRA Operating System", "Type 'help' t
  * single-user, single-filesystem Console actually has an identity for. */
 function promptFor(cwd: string): string {
   return `lira:${cwd}$ `;
-}
-
-/** `runCommand()`'s own input splitter -- whitespace-separated, with
- * `"..."` double-quoting for one argument that itself contains spaces
- * (`echo "hello world"` -> one arg `hello world`, not two). Nothing
- * fancier than that -- single quotes, escaping, and `$VAR`-style
- * expansion are all real bash features this scaffold doesn't attempt
- * (`ConsoleCommand`'s own docstring on "basic commands" being the
- * actual scope here). */
-function tokenize(input: string): string[] {
-  const tokens: string[] = [];
-  const pattern = /"([^"]*)"|(\S+)/g;
-  let match: RegExpExecArray | null;
-  while ((match = pattern.exec(input)) !== null) tokens.push(match[1] !== undefined ? match[1] : match[2]);
-  return tokens;
 }
 
 function escapeHtml(value: string): string {

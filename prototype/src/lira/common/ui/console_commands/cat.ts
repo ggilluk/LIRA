@@ -18,9 +18,9 @@
  * │ Created Date    │ 2026-10-24
  * │ Modified Date   │ 2026-11-02
  * ├─────────────────┼────────────────────────────────────────────────────────────────────
- * │ Description     │ Console `cat` command: prints each file decoded in its own
- * │                 │ character set, with a notice for binary content.
- * │                 │
+ * │ Description     │ Console `cat` command: prints files decoded in their own
+ * │                 │ character sets, with -n, -b and -E, and a notice for binary
+ * │                 │ content.
  * │                 │
  * │                 │
  * ├─────────────────┼────────────────────────────────────────────────────────────────────
@@ -34,33 +34,58 @@
  * @license MIT
  */
 import type { ConsoleCommand } from "./types";
+import { commandWithOptions } from "./options";
 import { decodeText } from "./shared";
 
-/** Doesn't reuse `shared.ts`'s own `forEachOperand()` -- that helper
- * only keeps per-operand *errors*, discarding whatever a successful
- * call returned, which is exactly the one thing `cat` needs to keep:
- * each file's own content, in argument order, interleaved with any
- * error lines a failed operand produces along the way (real bash's own
- * `cat a b c` behaviour when `b` doesn't exist -- `a` and `c` still
- * print). Each file is decoded the way its own metadata says
- * (`decodeText()`, shared.ts): its `characterSetCode` when it has one,
- * UTF-8 otherwise. A real `cat` copies raw bytes and leaves decoding to
- * the terminal; this Console has no terminal layer to do that, so a
- * file that isn't text gets a one-line notice instead of garbage. */
-export const catCommand: ConsoleCommand = {
+/** Each file's own content, in argument order, interleaved with any
+ * error line a failed operand produces along the way (real `cat a b c`
+ * when `b` doesn't exist -- `a` and `c` still print), so it can't reuse
+ * `shared.ts`'s own `forEachOperand()`, which keeps only errors. Each
+ * file is decoded the way its own metadata says (`decodeText()`,
+ * shared.ts). A real `cat` copies raw bytes and leaves decoding to the
+ * terminal; this Console has no terminal layer to do that, so a file
+ * that isn't text gets a one-line notice instead of garbage. `-n`/`-b`
+ * number lines (continuing across files, as GNU `cat` does, since it
+ * numbers the concatenation), and `-E` marks each line end with `$`. */
+export const catCommand: ConsoleCommand = commandWithOptions({
   name: "cat",
   description: "print file contents",
-  run: ({ fs, args }) => {
-    if (args.length === 0) throw new Error("cat: missing operand");
+  usage: "[OPTION]... [FILE]...",
+  summary: "Concatenate FILE(s) to the console.",
+  options: [
+    { name: "numberNonblank", short: "b", long: "number-nonblank", description: "number nonempty output lines, overrides -n" },
+    { name: "showEnds", short: "E", long: "show-ends", description: "display $ at end of each line" },
+    { name: "number", short: "n", long: "number", description: "number all output lines" },
+  ],
+  run: ({ fs, flags, operands }) => {
+    if (operands.length === 0) throw new Error("cat: missing operand");
+    const numbering = flags.has("numberNonblank") ? "nonblank" : flags.has("number") ? "all" : undefined;
+    const perLine = numbering !== undefined || flags.has("showEnds");
+    let lineNumber = 0;
     const lines: string[] = [];
-    for (const path of args) {
+    for (const path of operands) {
+      let text: string;
       try {
         const decoded = decodeText(fs.readFile(path));
-        lines.push("text" in decoded ? decoded.text : `cat: ${path}: ${decoded.problem}, not shown`);
+        if (!("text" in decoded)) {
+          lines.push(`cat: ${path}: ${decoded.problem}, not shown`);
+          continue;
+        }
+        text = decoded.text;
       } catch (error) {
         lines.push(`cat: ${error instanceof Error ? error.message : String(error)}`);
+        continue;
+      }
+      if (!perLine) {
+        lines.push(text);
+        continue;
+      }
+      const fileLines = text.endsWith("\n") ? text.slice(0, -1).split("\n") : text.split("\n");
+      for (const line of fileLines) {
+        const numbered = numbering === "all" || (numbering === "nonblank" && line !== "") ? `${String(++lineNumber).padStart(6)}\t` : "";
+        lines.push(`${numbered}${line}${flags.has("showEnds") ? "$" : ""}`);
       }
     }
     return lines;
   },
-};
+});

@@ -18,8 +18,8 @@
  * │ Created Date    │ 2026-10-24
  * │ Modified Date   │ 2026-10-24
  * ├─────────────────┼────────────────────────────────────────────────────────────────────
- * │ Description     │ Console `cp` command: copies a file, or a directory with -r.
- * │                 │
+ * │ Description     │ Console `cp` command: copies files and directories, with -r/-R,
+ * │                 │ -n and -v, including several sources into a directory.
  * │                 │
  * │                 │
  * │                 │
@@ -34,15 +34,18 @@
  * @license MIT
  */
 import type { ConsoleCommand } from "./types";
+import { transferCommand } from "./transfer";
 
-export const cpCommand: ConsoleCommand = {
+/** `cp`, over `transfer.ts`'s own shared operand handling; `-r`/`-R`
+ * copies directories, which plain `cp` refuses. */
+export const cpCommand: ConsoleCommand = transferCommand({
   name: "cp",
-  description: "copy a file or directory (-r for directories)",
-  run: ({ fs, args }) => {
-    const recursive = args.some((arg) => arg.startsWith("-") && arg.includes("r"));
-    const paths = args.filter((arg) => !arg.startsWith("-"));
-    if (paths.length !== 2) throw new Error("cp: missing destination file operand");
-    fs.copy(paths[0], paths[1], { recursive });
-    return [];
-  },
-};
+  description: "copy files and directories",
+  summary: "Copy SOURCE to DEST, or multiple SOURCE(s) to DIRECTORY.",
+  options: [
+    { name: "recursive", short: "r", long: "recursive", description: "copy directories recursively" },
+    { name: "recursive", short: "R", description: "same as -r" },
+  ],
+  verb: (source, destination) => `'${source}' -> '${destination}'`,
+  transfer: (fs, source, target, flags) => fs.copy(source, target, { recursive: flags.has("recursive") }),
+});
