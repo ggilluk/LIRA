@@ -18,8 +18,8 @@
  * │ Created Date    │ 2026-10-24
  * │ Modified Date   │ 2026-10-24
  * ├─────────────────┼────────────────────────────────────────────────────────────────────
- * │ Description     │ Helpers shared by Console commands: the multi-operand
- * │                 │ keep-going loop and byte-size formatting.
+ * │ Description     │ Helpers shared by Console commands: the multi-operand loop, byte
+ * │                 │ formatting, and decoding a BinaryObject as text by its metadata.
  * │                 │
  * │                 │
  * │                 │
@@ -33,6 +33,8 @@
  * @author Gurpinder Gill
  * @license MIT
  */
+import type { BinaryObject } from "../../../value_objects";
+
 /** `mkdir`/`touch`/`cat`/`rm`'s own shared "keep going across multiple
  * operands" loop -- real bash doesn't abort `rm a b c` just because `a`
  * doesn't exist; it prints that one operand's own error and still
@@ -66,4 +68,45 @@ export function formatBytes(bytes: number): string {
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)}K`;
   if (bytes < 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)}M`;
   return `${(bytes / (1024 * 1024 * 1024)).toFixed(1)}G`;
+}
+
+/** Media types whose content is text even though their top-level type
+ * isn't `text/` -- JSON, XML, YAML and script/source formats, plus any
+ * `+json`/`+xml`/`+yaml` structured-syntax suffix (RFC 6839). */
+const TEXTUAL_APPLICATION_TYPES = new Set(["application/json", "application/xml", "application/javascript", "application/ecmascript", "application/yaml", "application/sql", "application/toml"]);
+
+export function isTextMediaType(mediaType: string): boolean {
+  const type = mediaType.toLowerCase();
+  return type.startsWith("text/") || TEXTUAL_APPLICATION_TYPES.has(type) || /\+(json|xml|yaml)$/.test(type);
+}
+
+/** `file`'s text as a string, decoded the way its own metadata says,
+ * or why it can't be shown as text -- `cat`'s and `file`'s shared
+ * reading of a BinaryObject. A non-text `mimeCode` is binary outright;
+ * a `characterSetCode` is decoded with the first of its IANA labels
+ * `TextDecoder` knows; with neither, the bytes are text only if they
+ * are valid UTF-8, the encoding every Console write uses. */
+export function decodeText(file: BinaryObject): { text: string } | { problem: string } {
+  if (file.mimeCode && !isTextMediaType(file.mimeCode.value)) return { problem: `binary file (${file.mimeCode.value})` };
+  let decoder: TextDecoder | undefined;
+  let charsetName = "UTF-8";
+  if (file.characterSetCode) {
+    charsetName = file.characterSetCode.labels()[0];
+    for (const label of file.characterSetCode.labels()) {
+      try {
+        decoder = new TextDecoder(label, { fatal: true });
+        break;
+      } catch {
+        // not a label this platform's TextDecoder knows -- try the next alias
+      }
+    }
+    if (!decoder) return { problem: `unsupported character set '${charsetName}'` };
+  } else {
+    decoder = new TextDecoder("utf-8", { fatal: true });
+  }
+  try {
+    return { text: decoder.decode(file.value) };
+  } catch {
+    return { problem: file.characterSetCode || file.mimeCode ? `not valid ${charsetName} text` : "binary file" };
+  }
 }

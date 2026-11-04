@@ -34,9 +34,10 @@
  * @license MIT
  */
 /**
- * IANA Media Types registry (RFC 6838), version 2026-10-30 -- every MIME
- * type a `BinaryObject.mimeCode` can name (`MimeCode`,
- * data/code/mimeCode.ts).
+ * IANA Media Types registry (RFC 6838), version 2026-10-30 -- every
+ * registered MIME type a `BinaryObject.mimeCode` can name (`MimeCode`,
+ * data/code/mimeCode.ts, which also accepts unregistered ones, as
+ * D25A's own open `xsd:token` does).
  *
  * UN/CEFACT is the governing source and IANA the agency that fills the
  * list in: D25A's own `MIME_ Code. Type`

@@ -42,6 +42,8 @@ import { cdCommand } from "./cd";
 import { mkdirCommand } from "./mkdir";
 import { touchCommand } from "./touch";
 import { catCommand } from "./cat";
+import { fileCommand } from "./file";
+import { statCommand } from "./stat";
 import { echoCommand } from "./echo";
 import { rmCommand } from "./rm";
 import { mvCommand } from "./mv";
@@ -66,6 +68,8 @@ const ALL_COMMANDS: readonly ConsoleCommand[] = [
   mkdirCommand,
   touchCommand,
   catCommand,
+  statCommand,
+  fileCommand,
   echoCommand,
   rmCommand,
   mvCommand,

@@ -19,8 +19,8 @@
  * │ Modified Date   │ 2026-11-02
  * ├─────────────────┼────────────────────────────────────────────────────────────────────
  * │ Description     │ Vitest suite for every Console command, run against a real
- * │                 │ VirtualFileSystem and fake Services.
- * │                 │
+ * │                 │ VirtualFileSystem and fake Services, including metadata-aware
+ * │                 │ cat, ls -l, stat and file.
  * │                 │
  * │                 │
  * ├─────────────────┼────────────────────────────────────────────────────────────────────
@@ -34,7 +34,7 @@
  * @license MIT
  */
 import { afterEach, describe, expect, it } from "vitest";
-import { type BinaryObject, binaryObject } from "../../../value_objects";
+import { type BinaryObject, binaryObject, CharacterSetCode, CharacterSetCodelist, MimeCode, MimeCodelist } from "../../../value_objects";
 import { VirtualFileSystem } from "../../data/virtual_file_system";
 import { ServiceStatusBoard } from "../../data/service_status";
 import { CONSOLE_COMMANDS } from "./index";
@@ -201,6 +201,71 @@ describe("echo / cat", () => {
     fs.writeFile("/c.txt", textFile("C"));
     const output = await run(CONSOLE_COMMANDS.cat, context(["/a.txt", "/b.txt", "/c.txt"], fs));
     expect(output).toEqual(["A", "cat: /b.txt: No such file or directory", "C"]);
+  });
+});
+
+describe("cat / ls -l / stat / file read each file's own metadata", () => {
+  const latin1 = new CharacterSetCode(CharacterSetCodelist.ISO_8859_1_1987);
+
+  it("cat decodes a file in its own declared character set", async () => {
+    const fs = new VirtualFileSystem();
+    fs.writeFile("/latin1.txt", binaryObject(new Uint8Array([0x63, 0x61, 0x66, 0xe9]), { characterSetCode: latin1 }));
+    expect(await run(CONSOLE_COMMANDS.cat, context(["/latin1.txt"], fs))).toEqual(["café"]);
+  });
+
+  it("cat shows a notice, not garbage, for a non-text media type or bytes that aren't valid text", async () => {
+    const fs = new VirtualFileSystem();
+    fs.writeFile("/a.png", binaryObject(new Uint8Array([0x89, 0x50, 0x4e, 0x47]), { mimeCode: new MimeCode(MimeCodelist.IMAGE_PNG) }));
+    fs.writeFile("/raw", binaryObject(new Uint8Array([0xff, 0xfe, 0x00])));
+    expect(await run(CONSOLE_COMMANDS.cat, context(["/a.png", "/raw"], fs))).toEqual([
+      "cat: /a.png: binary file (image/png), not shown",
+      "cat: /raw: binary file, not shown",
+    ]);
+  });
+
+  it("ls -l lists each entry's type, size and media type", async () => {
+    const fs = new VirtualFileSystem();
+    await run(CONSOLE_COMMANDS.echo, context(["hi", ">", "/a.txt"], fs));
+    fs.makeDirectory("/d");
+    fs.writeFile("/d/x", textFile("12345"));
+    expect(await run(CONSOLE_COMMANDS.ls, context(["-l", "/"], fs))).toEqual([
+      "-        3  text/plain               a.txt",
+      "d        5  -                        d/",
+    ]);
+    expect(await run(CONSOLE_COMMANDS.ls, context(["-l", "/a.txt"], fs))).toEqual(["-        3  text/plain               a.txt"]);
+  });
+
+  it("stat reports size, kind, media type and character set", async () => {
+    const fs = new VirtualFileSystem();
+    await run(CONSOLE_COMMANDS.echo, context(["hi", ">", "/a.txt"], fs));
+    fs.writeFile("/b.wav", binaryObject(new Uint8Array(4), { mimeCode: new MimeCode("audio/wav") }));
+    expect(await run(CONSOLE_COMMANDS.stat, context(["/a.txt", "/b.wav", "/nope"], fs))).toEqual([
+      "  File: /a.txt",
+      "  Size: 3\tregular file",
+      "  Type: text/plain",
+      "Charset: UTF-8 (IANA 106)",
+      "  File: /b.wav",
+      "  Size: 4\tregular file",
+      "  Type: audio/wav (not IANA-registered)",
+      "stat: cannot stat '/nope': No such file or directory",
+    ]);
+  });
+
+  it("file reports declared types, and classifies undeclared files from their bytes", async () => {
+    const fs = new VirtualFileSystem();
+    await run(CONSOLE_COMMANDS.echo, context(["hi", ">", "/a.txt"], fs));
+    fs.touch("/empty");
+    fs.writeFile("/plain", textFile("text"));
+    fs.writeFile("/raw", binaryObject(new Uint8Array([0xff, 0x00])));
+    fs.makeDirectory("/d");
+    expect(await run(CONSOLE_COMMANDS.file, context(["/a.txt", "/empty", "/plain", "/raw", "/d", "/nope"], fs))).toEqual([
+      "/a.txt: text/plain; charset=utf-8",
+      "/empty: inode/x-empty; charset=binary",
+      "/plain: text/plain; charset=utf-8",
+      "/raw: application/octet-stream; charset=binary",
+      "/d: inode/directory; charset=binary",
+      "/nope: cannot open '/nope' (No such file or directory)",
+    ]);
   });
 });
 

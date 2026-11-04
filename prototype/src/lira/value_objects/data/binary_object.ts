@@ -18,9 +18,9 @@
  * │ Created Date    │ 2026-11-02
  * │ Modified Date   │ 2026-11-04
  * ├─────────────────┼────────────────────────────────────────────────────────────────────
- * │ Description     │ BinaryObject: the CCTS Binary Object. Type (UN/CEFACT D25A
- * │                 │ UDT000002) - bytes plus format, MIME, encoding, character set,
- * │                 │ URI and filename.
+ * │ Description     │ BinaryObject: the immutable CCTS Binary Object. Type (UN/CEFACT
+ * │                 │ D25A UDT000002) - bytes plus format, MIME code, encoding,
+ * │                 │ character set code, URI and filename.
  * │                 │
  * │                 │
  * ├─────────────────┼────────────────────────────────────────────────────────────────────
@@ -33,6 +33,7 @@
  * @author Gurpinder Gill
  * @license MIT
  */
+import type { CharacterSetCode } from "./code/characterSetCode";
 import type { MimeCode } from "./code/mimeCode";
 import type { Uri } from "./uri";
 
@@ -54,20 +55,25 @@ import type { Uri } from "./uri";
  * `MimeCode` here (data/code/mimeCode.ts) -- an `xsd:token` in D25A's
  * own UDT, but CCTS names it a Code and D25A's own `MIME_ Code. Type`
  * (QDT) is exactly that Code qualified for MIME types, the same way
- * Text's own `languageCode`/`scriptCode` are Codes, not strings.
+ * Text's own `languageCode`/`scriptCode` are Codes, not strings -- and
+ * `characterSetCode`: `string` there, `CharacterSetCode` here
+ * (data/code/characterSetCode.ts), D25A's own `Binary Object Character
+ * Set_ Code. Type` (QDT) over its IANA character set code list.
  *
- * `filename` is `readonly`: a holder may supply it as a getter bound to
- * wherever the name really lives rather than as a copied string
- * (common/data/virtual_file_system.ts's own files do exactly this, so a
- * `mv` can never leave a file's own `filename` stale) -- `readonly`
- * here is what lets a getter-only property satisfy this interface. */
+ * A value, not an entity: every field is `readonly`, and a holder that
+ * needs different content builds a new BinaryObject rather than
+ * changing this one. `readonly` can't stop writes into `value`'s own
+ * bytes (TypeScript has no read-only typed array), so a holder that
+ * must guarantee its content never changes underneath it -- the
+ * VirtualFileSystem (common/data/virtual_file_system.ts) -- copies the
+ * bytes on the way in and on the way out. */
 export interface BinaryObject {
-  value: Uint8Array;
-  format?: string;
-  mimeCode?: MimeCode;
-  encodingCode?: string;
-  characterSetCode?: string;
-  uri?: Uri;
+  readonly value: Uint8Array;
+  readonly format?: string;
+  readonly mimeCode?: MimeCode;
+  readonly encodingCode?: string;
+  readonly characterSetCode?: CharacterSetCode;
+  readonly uri?: Uri;
   readonly filename?: string;
 }
 

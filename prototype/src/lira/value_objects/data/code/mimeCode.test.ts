@@ -18,8 +18,8 @@
  * │ Created Date    │ 2026-11-04
  * │ Modified Date   │ 2026-11-04
  * ├─────────────────┼────────────────────────────────────────────────────────────────────
- * │ Description     │ Vitest suite for MimeCode's D25A attributes and
- * │                 │ mimeCodelistFromCode() lookups.
+ * │ Description     │ Vitest suite for MimeCode's D25A attributes, open media-type
+ * │                 │ values, and mimeCodelistFromCode() lookups.
  * │                 │
  * │                 │
  * │                 │
@@ -52,6 +52,23 @@ describe("MimeCode", () => {
 
   it("carries none of the Code fields D25A's MIMECodeType drops", () => {
     expect(Object.keys(new MimeCode(MimeCodelist.IMAGE_PNG)).sort()).toEqual(["listAgencyId", "listName", "listUri", "listVersionId", "value"]);
+  });
+});
+
+describe("MimeCode accepts any well-formed media type, as D25A's open xsd:token does", () => {
+  it("accepts an unregistered media type, and says it isn't registered", () => {
+    const wav = new MimeCode("audio/wav");
+    expect(wav.value).toBe("audio/wav");
+    expect(wav.isRegistered).toBe(false);
+    expect(new MimeCode("application/x-lira-image").isRegistered).toBe(false);
+    expect(new MimeCode(MimeCodelist.TEXT_PLAIN).isRegistered).toBe(true);
+    expect(new MimeCode("Text/Plain").isRegistered).toBe(true);
+  });
+
+  it("rejects anything that isn't a type/subtype media type", () => {
+    for (const bad of ["", "text", "text/", "/plain", "text/plain/extra", "text/pl ain", "text/plain; charset=utf-8"]) {
+      expect(() => new MimeCode(bad)).toThrow("not a valid media type");
+    }
   });
 });
 
