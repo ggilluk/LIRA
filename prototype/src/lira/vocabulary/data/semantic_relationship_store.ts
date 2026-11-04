@@ -1,3 +1,38 @@
+/**
+ * ┌──────────────────────────────────────────────────────────────────────────────────────┐
+ * │                                                                                      │
+ * │         ██╗     ██╗██████╗  █████╗                                                   │
+ * │         ██║     ██║██╔══██╗██╔══██╗                                                  │
+ * │         ██║     ██║██████╔╝███████║                                                  │
+ * │         ██║     ██║██╔══██╗██╔══██║                                                  │
+ * │         ███████╗██║██║  ██║██║  ██║                                                  │
+ * │         ╚══════╝╚═╝╚═╝  ╚═╝╚═╝  ╚═╝                                                  │
+ * │                                                                                      │
+ * ├─────────────────┬────────────────────────────────────────────────────────────────────
+ * │ Copyright       │ (c) Gurpinder Gill
+ * │ License         │ MIT
+ * │ Package Name    │ lira-prototype
+ * │ Module Name     │ lira/vocabulary/data/semantic_relationship_store
+ * │ Filename        │ semantic_relationship_store.ts
+ * │ File Version    │ 0.1.0
+ * │ Created Date    │ 2026-08-20
+ * │ Modified Date   │ 2026-09-20
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Description     │ SemanticRelationshipStore: storage and saved shape for
+ * │                 │ SemanticRelationships.
+ * │                 │
+ * │                 │
+ * │                 │
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Change Log      │ [CHANGELOG.md](./CHANGELOG.md)
+ * │ Issues Log      │ [ISSUES.md](./ISSUES.md)
+ * └─────────────────┴────────────────────────────────────────────────────────────────────┘
+ *
+ * @module lira/vocabulary/data/semantic_relationship_store
+ * @file semantic_relationship_store.ts
+ * @author Gurpinder Gill
+ * @license MIT
+ */
 import type { SemanticRelationship } from "./semantic_relationship";
 import { SystemPropertiesRef } from "./system_properties_ref";
 import type { SemanticRelationshipSystemPropertyTensor } from "./semantic_relationship_tensor";

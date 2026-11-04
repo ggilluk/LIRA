@@ -1,3 +1,38 @@
+/**
+ * ┌──────────────────────────────────────────────────────────────────────────────────────┐
+ * │                                                                                      │
+ * │         ██╗     ██╗██████╗  █████╗                                                   │
+ * │         ██║     ██║██╔══██╗██╔══██╗                                                  │
+ * │         ██║     ██║██████╔╝███████║                                                  │
+ * │         ██║     ██║██╔══██╗██╔══██║                                                  │
+ * │         ███████╗██║██║  ██║██║  ██║                                                  │
+ * │         ╚══════╝╚═╝╚═╝  ╚═╝╚═╝  ╚═╝                                                  │
+ * │                                                                                      │
+ * ├─────────────────┬────────────────────────────────────────────────────────────────────
+ * │ Copyright       │ (c) Gurpinder Gill
+ * │ License         │ MIT
+ * │ Package Name    │ lira-prototype
+ * │ Module Name     │ lira/common/ui/portal_shell
+ * │ Filename        │ portal_shell.ts
+ * │ File Version    │ 0.1.0
+ * │ Created Date    │ 2026-08-11
+ * │ Modified Date   │ 2026-10-29
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Description     │ PortalShell: the Portal's top-level UI. Lays out the view
+ * │                 │ panes, wires the Vocabulary and Linguistics workers, and owns
+ * │                 │ Domain save/load downloads.
+ * │                 │
+ * │                 │
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Change Log      │ [CHANGELOG.md](./CHANGELOG.md)
+ * │ Issues Log      │ [ISSUES.md](./ISSUES.md)
+ * └─────────────────┴────────────────────────────────────────────────────────────────────┘
+ *
+ * @module lira/common/ui/portal_shell
+ * @file portal_shell.ts
+ * @author Gurpinder Gill
+ * @license MIT
+ */
 import type { ServiceStatus, ServiceStatusBoard } from "../data/service_status";
 import type { PortalDomain, PortalDomainRegistry } from "../data/portal_domain";
 import { LogEventBoard } from "../data/log_event";

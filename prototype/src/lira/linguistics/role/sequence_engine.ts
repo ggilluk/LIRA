@@ -1,3 +1,38 @@
+/**
+ * ┌──────────────────────────────────────────────────────────────────────────────────────┐
+ * │                                                                                      │
+ * │         ██╗     ██╗██████╗  █████╗                                                   │
+ * │         ██║     ██║██╔══██╗██╔══██╗                                                  │
+ * │         ██║     ██║██████╔╝███████║                                                  │
+ * │         ██║     ██║██╔══██╗██╔══██║                                                  │
+ * │         ███████╗██║██║  ██║██║  ██║                                                  │
+ * │         ╚══════╝╚═╝╚═╝  ╚═╝╚═╝  ╚═╝                                                  │
+ * │                                                                                      │
+ * ├─────────────────┬────────────────────────────────────────────────────────────────────
+ * │ Copyright       │ (c) Gurpinder Gill
+ * │ License         │ MIT
+ * │ Package Name    │ lira-prototype
+ * │ Module Name     │ lira/linguistics/role/sequence_engine
+ * │ Filename        │ sequence_engine.ts
+ * │ File Version    │ 0.1.0
+ * │ Created Date    │ 2026-08-11
+ * │ Modified Date   │ 2026-09-08
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Description     │ SequenceEngine: the shared sequencing engine behind phrase,
+ * │                 │ clause and sentence reading.
+ * │                 │
+ * │                 │
+ * │                 │
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Change Log      │ [CHANGELOG.md](./CHANGELOG.md)
+ * │ Issues Log      │ [ISSUES.md](./ISSUES.md)
+ * └─────────────────┴────────────────────────────────────────────────────────────────────┘
+ *
+ * @module lira/linguistics/role/sequence_engine
+ * @file sequence_engine.ts
+ * @author Gurpinder Gill
+ * @license MIT
+ */
 import type { PartOfSpeech } from "../../vocabulary/data/enums/part_of_speech";
 import { LinguisticScope } from "../data/linguistic_scope";
 import { PhraseType } from "../data/phrase_type";

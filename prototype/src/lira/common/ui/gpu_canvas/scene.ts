@@ -1,3 +1,38 @@
+/**
+ * ┌──────────────────────────────────────────────────────────────────────────────────────┐
+ * │                                                                                      │
+ * │         ██╗     ██╗██████╗  █████╗                                                   │
+ * │         ██║     ██║██╔══██╗██╔══██╗                                                  │
+ * │         ██║     ██║██████╔╝███████║                                                  │
+ * │         ██║     ██║██╔══██╗██╔══██║                                                  │
+ * │         ███████╗██║██║  ██║██║  ██║                                                  │
+ * │         ╚══════╝╚═╝╚═╝  ╚═╝╚═╝  ╚═╝                                                  │
+ * │                                                                                      │
+ * ├─────────────────┬────────────────────────────────────────────────────────────────────
+ * │ Copyright       │ (c) Gurpinder Gill
+ * │ License         │ MIT
+ * │ Package Name    │ lira-prototype
+ * │ Module Name     │ lira/common/ui/gpu_canvas/scene
+ * │ Filename        │ scene.ts
+ * │ File Version    │ 0.1.0
+ * │ Created Date    │ 2026-10-27
+ * │ Modified Date   │ 2026-10-29
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Description     │ Canvas scene model: randomly placed cube, sphere and camera
+ * │                 │ entities, and the bouncing/spinning physics that moves them.
+ * │                 │
+ * │                 │
+ * │                 │
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Change Log      │ [CHANGELOG.md](./CHANGELOG.md)
+ * │ Issues Log      │ [ISSUES.md](./ISSUES.md)
+ * └─────────────────┴────────────────────────────────────────────────────────────────────┘
+ *
+ * @module lira/common/ui/gpu_canvas/scene
+ * @file scene.ts
+ * @author Gurpinder Gill
+ * @license MIT
+ */
 import { normalize, type Vec3 } from "./mat4";
 
 /** `"camera"` is `scene_renderer.ts`'s own camera-textured cube

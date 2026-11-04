@@ -1,3 +1,38 @@
+/**
+ * ┌──────────────────────────────────────────────────────────────────────────────────────┐
+ * │                                                                                      │
+ * │         ██╗     ██╗██████╗  █████╗                                                   │
+ * │         ██║     ██║██╔══██╗██╔══██╗                                                  │
+ * │         ██║     ██║██████╔╝███████║                                                  │
+ * │         ██║     ██║██╔══██╗██╔══██║                                                  │
+ * │         ███████╗██║██║  ██║██║  ██║                                                  │
+ * │         ╚══════╝╚═╝╚═╝  ╚═╝╚═╝  ╚═╝                                                  │
+ * │                                                                                      │
+ * ├─────────────────┬────────────────────────────────────────────────────────────────────
+ * │ Copyright       │ (c) Gurpinder Gill
+ * │ License         │ MIT
+ * │ Package Name    │ lira-prototype
+ * │ Module Name     │ lira/linguistics/role/html/form/field_set_processor
+ * │ Filename        │ field_set_processor.ts
+ * │ File Version    │ 0.1.0
+ * │ Created Date    │ 2026-08-24
+ * │ Modified Date   │ 2026-08-24
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Description     │ Reads, parses and writes FieldSet (HTML5 <fieldset>) for
+ * │                 │ HTMLProcessor.
+ * │                 │
+ * │                 │
+ * │                 │
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Change Log      │ [CHANGELOG.md](./CHANGELOG.md)
+ * │ Issues Log      │ [ISSUES.md](./ISSUES.md)
+ * └─────────────────┴────────────────────────────────────────────────────────────────────┘
+ *
+ * @module lira/linguistics/role/html/form/field_set_processor
+ * @file field_set_processor.ts
+ * @author Gurpinder Gill
+ * @license MIT
+ */
 import type { FieldSet } from "../../../data/html/form/field_set";
 import { readElement } from "../processor_support";
 import { parseInput, writeInput } from "./input_processor";

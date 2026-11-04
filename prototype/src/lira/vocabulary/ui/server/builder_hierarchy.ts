@@ -1,3 +1,38 @@
+/**
+ * ┌──────────────────────────────────────────────────────────────────────────────────────┐
+ * │                                                                                      │
+ * │         ██╗     ██╗██████╗  █████╗                                                   │
+ * │         ██║     ██║██╔══██╗██╔══██╗                                                  │
+ * │         ██║     ██║██████╔╝███████║                                                  │
+ * │         ██║     ██║██╔══██╗██╔══██║                                                  │
+ * │         ███████╗██║██║  ██║██║  ██║                                                  │
+ * │         ╚══════╝╚═╝╚═╝  ╚═╝╚═╝  ╚═╝                                                  │
+ * │                                                                                      │
+ * ├─────────────────┬────────────────────────────────────────────────────────────────────
+ * │ Copyright       │ (c) Gurpinder Gill
+ * │ License         │ MIT
+ * │ Package Name    │ lira-prototype
+ * │ Module Name     │ lira/vocabulary/ui/server/builder_hierarchy
+ * │ Filename        │ builder_hierarchy.ts
+ * │ File Version    │ 0.1.0
+ * │ Created Date    │ 2026-08-21
+ * │ Modified Date   │ 2026-09-08
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Description     │ Hierarchy-tab tree resolution for the Dictionary page.
+ * │                 │
+ * │                 │
+ * │                 │
+ * │                 │
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Change Log      │ [CHANGELOG.md](./CHANGELOG.md)
+ * │ Issues Log      │ [ISSUES.md](./ISSUES.md)
+ * └─────────────────┴────────────────────────────────────────────────────────────────────┘
+ *
+ * @module lira/vocabulary/ui/server/builder_hierarchy
+ * @file builder_hierarchy.ts
+ * @author Gurpinder Gill
+ * @license MIT
+ */
 /** Hierarchy-tab tree resolution -- split out of ui/dictionary_view.ts's
  * own DictionaryView class (formerly the public method resolveHierarchy
  * and its supporting module-level constants). */

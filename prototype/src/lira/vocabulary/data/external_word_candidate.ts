@@ -1,3 +1,38 @@
+/**
+ * ┌──────────────────────────────────────────────────────────────────────────────────────┐
+ * │                                                                                      │
+ * │         ██╗     ██╗██████╗  █████╗                                                   │
+ * │         ██║     ██║██╔══██╗██╔══██╗                                                  │
+ * │         ██║     ██║██████╔╝███████║                                                  │
+ * │         ██║     ██║██╔══██╗██╔══██║                                                  │
+ * │         ███████╗██║██║  ██║██║  ██║                                                  │
+ * │         ╚══════╝╚═╝╚═╝  ╚═╝╚═╝  ╚═╝                                                  │
+ * │                                                                                      │
+ * ├─────────────────┬────────────────────────────────────────────────────────────────────
+ * │ Copyright       │ (c) Gurpinder Gill
+ * │ License         │ MIT
+ * │ Package Name    │ lira-prototype
+ * │ Module Name     │ lira/vocabulary/data/external_word_candidate
+ * │ Filename        │ external_word_candidate.ts
+ * │ File Version    │ 0.1.0
+ * │ Created Date    │ 2026-08-11
+ * │ Modified Date   │ 2026-08-31
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Description     │ ExternalWordCandidate: one grammatical-category candidate parsed
+ * │                 │ from an external dictionary API response.
+ * │                 │
+ * │                 │
+ * │                 │
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Change Log      │ [CHANGELOG.md](./CHANGELOG.md)
+ * │ Issues Log      │ [ISSUES.md](./ISSUES.md)
+ * └─────────────────┴────────────────────────────────────────────────────────────────────┘
+ *
+ * @module lira/vocabulary/data/external_word_candidate
+ * @file external_word_candidate.ts
+ * @author Gurpinder Gill
+ * @license MIT
+ */
 import type { Code, Text } from "../../value_objects";
 import type { PartOfSpeech } from "./enums/part_of_speech";
 import type { SourceReference } from "./source_reference";

@@ -1,3 +1,38 @@
+/**
+ * ┌──────────────────────────────────────────────────────────────────────────────────────┐
+ * │                                                                                      │
+ * │         ██╗     ██╗██████╗  █████╗                                                   │
+ * │         ██║     ██║██╔══██╗██╔══██╗                                                  │
+ * │         ██║     ██║██████╔╝███████║                                                  │
+ * │         ██║     ██║██╔══██╗██╔══██║                                                  │
+ * │         ███████╗██║██║  ██║██║  ██║                                                  │
+ * │         ╚══════╝╚═╝╚═╝  ╚═╝╚═╝  ╚═╝                                                  │
+ * │                                                                                      │
+ * ├─────────────────┬────────────────────────────────────────────────────────────────────
+ * │ Copyright       │ (c) Gurpinder Gill
+ * │ License         │ MIT
+ * │ Package Name    │ lira-prototype
+ * │ Module Name     │ lira/vocabulary/data/lexical_relationship_store
+ * │ Filename        │ lexical_relationship_store.ts
+ * │ File Version    │ 0.1.0
+ * │ Created Date    │ 2026-08-11
+ * │ Modified Date   │ 2026-09-20
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Description     │ LexicalRelationshipStore: storage and saved shape for
+ * │                 │ LexicalRelationships.
+ * │                 │
+ * │                 │
+ * │                 │
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Change Log      │ [CHANGELOG.md](./CHANGELOG.md)
+ * │ Issues Log      │ [ISSUES.md](./ISSUES.md)
+ * └─────────────────┴────────────────────────────────────────────────────────────────────┘
+ *
+ * @module lira/vocabulary/data/lexical_relationship_store
+ * @file lexical_relationship_store.ts
+ * @author Gurpinder Gill
+ * @license MIT
+ */
 import type { LexicalRelationship } from "./lexical_relationship";
 import { SystemPropertiesRef } from "./system_properties_ref";
 import type { LexicalRelationshipSystemPropertyTensor } from "./lexical_relationship_tensor";

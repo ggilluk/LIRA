@@ -1,3 +1,38 @@
+/**
+ * ┌──────────────────────────────────────────────────────────────────────────────────────┐
+ * │                                                                                      │
+ * │         ██╗     ██╗██████╗  █████╗                                                   │
+ * │         ██║     ██║██╔══██╗██╔══██╗                                                  │
+ * │         ██║     ██║██████╔╝███████║                                                  │
+ * │         ██║     ██║██╔══██╗██╔══██║                                                  │
+ * │         ███████╗██║██║  ██║██║  ██║                                                  │
+ * │         ╚══════╝╚═╝╚═╝  ╚═╝╚═╝  ╚═╝                                                  │
+ * │                                                                                      │
+ * ├─────────────────┬────────────────────────────────────────────────────────────────────
+ * │ Copyright       │ (c) Gurpinder Gill
+ * │ License         │ MIT
+ * │ Package Name    │ lira-prototype
+ * │ Module Name     │ lira/value_objects/data/code/mimeCode.test
+ * │ Filename        │ mimeCode.test.ts
+ * │ File Version    │ 0.1.0
+ * │ Created Date    │ 2026-11-04
+ * │ Modified Date   │ 2026-11-04
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Description     │ Vitest suite for MimeCode's D25A attributes and
+ * │                 │ mimeCodelistFromCode() lookups.
+ * │                 │
+ * │                 │
+ * │                 │
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Change Log      │ [CHANGELOG.md](./CHANGELOG.md)
+ * │ Issues Log      │ [ISSUES.md](./ISSUES.md)
+ * └─────────────────┴────────────────────────────────────────────────────────────────────┘
+ *
+ * @module lira/value_objects/data/code/mimeCode.test
+ * @file mimeCode.test.ts
+ * @author Gurpinder Gill
+ * @license MIT
+ */
 import { describe, expect, it } from "vitest";
 import { MimeCode } from "./mimeCode";
 import { MIME_CODELIST_VERSION, MimeCodelist, mimeCodelistFromCode } from "../enum/mimeCodelist";

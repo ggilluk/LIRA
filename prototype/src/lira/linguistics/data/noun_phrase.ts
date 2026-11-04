@@ -1,3 +1,38 @@
+/**
+ * ┌──────────────────────────────────────────────────────────────────────────────────────┐
+ * │                                                                                      │
+ * │         ██╗     ██╗██████╗  █████╗                                                   │
+ * │         ██║     ██║██╔══██╗██╔══██╗                                                  │
+ * │         ██║     ██║██████╔╝███████║                                                  │
+ * │         ██║     ██║██╔══██╗██╔══██║                                                  │
+ * │         ███████╗██║██║  ██║██║  ██║                                                  │
+ * │         ╚══════╝╚═╝╚═╝  ╚═╝╚═╝  ╚═╝                                                  │
+ * │                                                                                      │
+ * ├─────────────────┬────────────────────────────────────────────────────────────────────
+ * │ Copyright       │ (c) Gurpinder Gill
+ * │ License         │ MIT
+ * │ Package Name    │ lira-prototype
+ * │ Module Name     │ lira/linguistics/data/noun_phrase
+ * │ Filename        │ noun_phrase.ts
+ * │ File Version    │ 0.1.0
+ * │ Created Date    │ 2026-09-02
+ * │ Modified Date   │ 2026-09-02
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Description     │ NounPhrase: the Linguistics Phrase narrowed by phraseType.
+ * │                 │
+ * │                 │
+ * │                 │
+ * │                 │
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Change Log      │ [CHANGELOG.md](./CHANGELOG.md)
+ * │ Issues Log      │ [ISSUES.md](./ISSUES.md)
+ * └─────────────────┴────────────────────────────────────────────────────────────────────┘
+ *
+ * @module lira/linguistics/data/noun_phrase
+ * @file noun_phrase.ts
+ * @author Gurpinder Gill
+ * @license MIT
+ */
 /** NounPhrase: this layer's own Phrase (data/phrase.ts) narrowed by
  * `phraseType` -- the same discriminant-narrowing pattern
  * MainClause/SubordinateClause already use over Clause.clauseType

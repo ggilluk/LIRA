@@ -1,3 +1,38 @@
+/**
+ * ┌──────────────────────────────────────────────────────────────────────────────────────┐
+ * │                                                                                      │
+ * │         ██╗     ██╗██████╗  █████╗                                                   │
+ * │         ██║     ██║██╔══██╗██╔══██╗                                                  │
+ * │         ██║     ██║██████╔╝███████║                                                  │
+ * │         ██║     ██║██╔══██╗██╔══██║                                                  │
+ * │         ███████╗██║██║  ██║██║  ██║                                                  │
+ * │         ╚══════╝╚═╝╚═╝  ╚═╝╚═╝  ╚═╝                                                  │
+ * │                                                                                      │
+ * ├─────────────────┬────────────────────────────────────────────────────────────────────
+ * │ Copyright       │ (c) Gurpinder Gill
+ * │ License         │ MIT
+ * │ Package Name    │ lira-prototype
+ * │ Module Name     │ lira/linguistics/role/phrase_reader
+ * │ Filename        │ phrase_reader.ts
+ * │ File Version    │ 0.1.0
+ * │ Created Date    │ 2026-08-11
+ * │ Modified Date   │ 2026-09-08
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Description     │ PhraseReader: reads a token span as Phrases through the shared
+ * │                 │ SequenceEngine, with optional position traces.
+ * │                 │
+ * │                 │
+ * │                 │
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Change Log      │ [CHANGELOG.md](./CHANGELOG.md)
+ * │ Issues Log      │ [ISSUES.md](./ISSUES.md)
+ * └─────────────────┴────────────────────────────────────────────────────────────────────┘
+ *
+ * @module lira/linguistics/role/phrase_reader
+ * @file phrase_reader.ts
+ * @author Gurpinder Gill
+ * @license MIT
+ */
 import { PartOfSpeech } from "../../vocabulary/data/enums/part_of_speech";
 import type { Word } from "../../vocabulary/data/entities/word";
 import type { Clause } from "../data/clause";

@@ -1,3 +1,38 @@
+/**
+ * ┌──────────────────────────────────────────────────────────────────────────────────────┐
+ * │                                                                                      │
+ * │         ██╗     ██╗██████╗  █████╗                                                   │
+ * │         ██║     ██║██╔══██╗██╔══██╗                                                  │
+ * │         ██║     ██║██████╔╝███████║                                                  │
+ * │         ██║     ██║██╔══██╗██╔══██║                                                  │
+ * │         ███████╗██║██║  ██║██║  ██║                                                  │
+ * │         ╚══════╝╚═╝╚═╝  ╚═╝╚═╝  ╚═╝                                                  │
+ * │                                                                                      │
+ * ├─────────────────┬────────────────────────────────────────────────────────────────────
+ * │ Copyright       │ (c) Gurpinder Gill
+ * │ License         │ MIT
+ * │ Package Name    │ lira-prototype
+ * │ Module Name     │ lira/value_objects/data/enum/languageCodelist
+ * │ Filename        │ languageCodelist.ts
+ * │ File Version    │ 0.1.0
+ * │ Created Date    │ 2026-08-30
+ * │ Modified Date   │ 2026-08-30
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Description     │ LanguageCodelist: the ISO 639-1 language list, with code
+ * │                 │ lookups.
+ * │                 │
+ * │                 │
+ * │                 │
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Change Log      │ [CHANGELOG.md](./CHANGELOG.md)
+ * │ Issues Log      │ [ISSUES.md](./ISSUES.md)
+ * └─────────────────┴────────────────────────────────────────────────────────────────────┘
+ *
+ * @module lira/value_objects/data/enum/languageCodelist
+ * @file languageCodelist.ts
+ * @author Gurpinder Gill
+ * @license MIT
+ */
 /** ISO 639-1 language list used by UN/EDIFACT 3453 and referenced by UN/CEFACT Text. Language. Identifier.
  * Numeric values are LIRA-local stable identities; enum names annotate the ISO 639-1 source code and language name. */
 export enum LanguageCodelist {

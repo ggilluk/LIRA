@@ -1,4 +1,39 @@
 /**
+ * ┌──────────────────────────────────────────────────────────────────────────────────────┐
+ * │                                                                                      │
+ * │         ██╗     ██╗██████╗  █████╗                                                   │
+ * │         ██║     ██║██╔══██╗██╔══██╗                                                  │
+ * │         ██║     ██║██████╔╝███████║                                                  │
+ * │         ██║     ██║██╔══██╗██╔══██║                                                  │
+ * │         ███████╗██║██║  ██║██║  ██║                                                  │
+ * │         ╚══════╝╚═╝╚═╝  ╚═╝╚═╝  ╚═╝                                                  │
+ * │                                                                                      │
+ * ├─────────────────┬────────────────────────────────────────────────────────────────────
+ * │ Copyright       │ (c) Gurpinder Gill
+ * │ License         │ MIT
+ * │ Package Name    │ lira-prototype
+ * │ Module Name     │ lira/vocabulary/data/entities/adjective
+ * │ Filename        │ adjective.ts
+ * │ File Version    │ 0.1.0
+ * │ Created Date    │ 2026-08-21
+ * │ Modified Date   │ 2026-08-23
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Description     │ Adjective: Word narrowed to the ADJECTIVE part of speech.
+ * │                 │
+ * │                 │
+ * │                 │
+ * │                 │
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Change Log      │ [CHANGELOG.md](./CHANGELOG.md)
+ * │ Issues Log      │ [ISSUES.md](./ISSUES.md)
+ * └─────────────────┴────────────────────────────────────────────────────────────────────┘
+ *
+ * @module lira/vocabulary/data/entities/adjective
+ * @file adjective.ts
+ * @author Gurpinder Gill
+ * @license MIT
+ */
+/**
  * Represents an Adjective -- Word's own ADJECTIVE-specific subtype.
  *
  * See `documentation/architecture/data_entity_design_decisions_log.md`

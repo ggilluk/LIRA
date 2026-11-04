@@ -1,3 +1,38 @@
+/**
+ * ┌──────────────────────────────────────────────────────────────────────────────────────┐
+ * │                                                                                      │
+ * │         ██╗     ██╗██████╗  █████╗                                                   │
+ * │         ██║     ██║██╔══██╗██╔══██╗                                                  │
+ * │         ██║     ██║██████╔╝███████║                                                  │
+ * │         ██║     ██║██╔══██╗██╔══██║                                                  │
+ * │         ███████╗██║██║  ██║██║  ██║                                                  │
+ * │         ╚══════╝╚═╝╚═╝  ╚═╝╚═╝  ╚═╝                                                  │
+ * │                                                                                      │
+ * ├─────────────────┬────────────────────────────────────────────────────────────────────
+ * │ Copyright       │ (c) Gurpinder Gill
+ * │ License         │ MIT
+ * │ Package Name    │ lira-prototype
+ * │ Module Name     │ lira/vocabulary/ui/client/client_styles
+ * │ Filename        │ client_styles.ts
+ * │ File Version    │ 0.1.0
+ * │ Created Date    │ 2026-08-21
+ * │ Modified Date   │ 2026-09-02
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Description     │ Dictionary page CSS styles.
+ * │                 │
+ * │                 │
+ * │                 │
+ * │                 │
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Change Log      │ [CHANGELOG.md](./CHANGELOG.md)
+ * │ Issues Log      │ [ISSUES.md](./ISSUES.md)
+ * └─────────────────┴────────────────────────────────────────────────────────────────────┘
+ *
+ * @module lira/vocabulary/ui/client/client_styles
+ * @file client_styles.ts
+ * @author Gurpinder Gill
+ * @license MIT
+ */
 /** Verbatim slice of PAGE_TEMPLATE's <style> block content (original
  * dictionary_view.ts lines 1765-2504) -- the @@STYLE_FRAGMENT_START/END@@
  * markers stay embedded in place, unmoved; renderFragment() finds them by

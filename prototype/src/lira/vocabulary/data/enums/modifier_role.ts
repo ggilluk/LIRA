@@ -1,3 +1,38 @@
+/**
+ * ┌──────────────────────────────────────────────────────────────────────────────────────┐
+ * │                                                                                      │
+ * │         ██╗     ██╗██████╗  █████╗                                                   │
+ * │         ██║     ██║██╔══██╗██╔══██╗                                                  │
+ * │         ██║     ██║██████╔╝███████║                                                  │
+ * │         ██║     ██║██╔══██╗██╔══██║                                                  │
+ * │         ███████╗██║██║  ██║██║  ██║                                                  │
+ * │         ╚══════╝╚═╝╚═╝  ╚═╝╚═╝  ╚═╝                                                  │
+ * │                                                                                      │
+ * ├─────────────────┬────────────────────────────────────────────────────────────────────
+ * │ Copyright       │ (c) Gurpinder Gill
+ * │ License         │ MIT
+ * │ Package Name    │ lira-prototype
+ * │ Module Name     │ lira/vocabulary/data/enums/modifier_role
+ * │ Filename        │ modifier_role.ts
+ * │ File Version    │ 0.1.0
+ * │ Created Date    │ 2026-08-19
+ * │ Modified Date   │ 2026-09-11
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Description     │ ModifierRole: the role a word plays inside a Phrase's structure.
+ * │                 │
+ * │                 │
+ * │                 │
+ * │                 │
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Change Log      │ [CHANGELOG.md](./CHANGELOG.md)
+ * │ Issues Log      │ [ISSUES.md](./ISSUES.md)
+ * └─────────────────┴────────────────────────────────────────────────────────────────────┘
+ *
+ * @module lira/vocabulary/data/enums/modifier_role
+ * @file modifier_role.ts
+ * @author Gurpinder Gill
+ * @license MIT
+ */
 /** The role a word plays within a Phrase's own internal structure --
  * distinct from that word's own stored Part of Speech, and stored
  * independently of it (data/phrase_type_patterns_and_word_roles.md's

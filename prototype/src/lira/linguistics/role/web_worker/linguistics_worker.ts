@@ -1,3 +1,38 @@
+/**
+ * ┌──────────────────────────────────────────────────────────────────────────────────────┐
+ * │                                                                                      │
+ * │         ██╗     ██╗██████╗  █████╗                                                   │
+ * │         ██║     ██║██╔══██╗██╔══██╗                                                  │
+ * │         ██║     ██║██████╔╝███████║                                                  │
+ * │         ██║     ██║██╔══██╗██╔══██║                                                  │
+ * │         ███████╗██║██║  ██║██║  ██║                                                  │
+ * │         ╚══════╝╚═╝╚═╝  ╚═╝╚═╝  ╚═╝                                                  │
+ * │                                                                                      │
+ * ├─────────────────┬────────────────────────────────────────────────────────────────────
+ * │ Copyright       │ (c) Gurpinder Gill
+ * │ License         │ MIT
+ * │ Package Name    │ lira-prototype
+ * │ Module Name     │ lira/linguistics/role/web_worker/linguistics_worker
+ * │ Filename        │ linguistics_worker.ts
+ * │ File Version    │ 0.1.0
+ * │ Created Date    │ 2026-08-11
+ * │ Modified Date   │ 2026-10-24
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Description     │ Linguistics Service worker: runs WordSeeder and the
+ * │                 │ LinguisticController off the main thread.
+ * │                 │
+ * │                 │
+ * │                 │
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Change Log      │ [CHANGELOG.md](./CHANGELOG.md)
+ * │ Issues Log      │ [ISSUES.md](./ISSUES.md)
+ * └─────────────────┴────────────────────────────────────────────────────────────────────┘
+ *
+ * @module lira/linguistics/role/web_worker/linguistics_worker
+ * @file linguistics_worker.ts
+ * @author Gurpinder Gill
+ * @license MIT
+ */
 /** The Linguistic Service: runs WordSeeder + LinguisticController
  * (GrammarConfigurator, SequenceEngine, PhraseReader/ClauseReader/
  * SentenceReader) off the main thread, inside its own real browser Web

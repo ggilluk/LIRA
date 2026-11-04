@@ -1,3 +1,38 @@
+/**
+ * ┌──────────────────────────────────────────────────────────────────────────────────────┐
+ * │                                                                                      │
+ * │         ██╗     ██╗██████╗  █████╗                                                   │
+ * │         ██║     ██║██╔══██╗██╔══██╗                                                  │
+ * │         ██║     ██║██████╔╝███████║                                                  │
+ * │         ██║     ██║██╔══██╗██╔══██║                                                  │
+ * │         ███████╗██║██║  ██║██║  ██║                                                  │
+ * │         ╚══════╝╚═╝╚═╝  ╚═╝╚═╝  ╚═╝                                                  │
+ * │                                                                                      │
+ * ├─────────────────┬────────────────────────────────────────────────────────────────────
+ * │ Copyright       │ (c) Gurpinder Gill
+ * │ License         │ MIT
+ * │ Package Name    │ lira-prototype
+ * │ Module Name     │ lira/vocabulary/ui/server/resolver_domain
+ * │ Filename        │ resolver_domain.ts
+ * │ File Version    │ 0.1.0
+ * │ Created Date    │ 2026-08-21
+ * │ Modified Date   │ 2026-09-11
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Description     │ Domain-facing resolvers for a Word or Phrase: Sense fields,
+ * │                 │ root-word status and domain label.
+ * │                 │
+ * │                 │
+ * │                 │
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Change Log      │ [CHANGELOG.md](./CHANGELOG.md)
+ * │ Issues Log      │ [ISSUES.md](./ISSUES.md)
+ * └─────────────────┴────────────────────────────────────────────────────────────────────┘
+ *
+ * @module lira/vocabulary/ui/server/resolver_domain
+ * @file resolver_domain.ts
+ * @author Gurpinder Gill
+ * @license MIT
+ */
 /** Domain-facing resolvers for a Word/Phrase -- its effective Sense-owned
  * fields, its root-word status, and its display domain label. Split out of
  * ui/dictionary_view.ts's own DictionaryView class (formerly the private

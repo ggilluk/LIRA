@@ -1,3 +1,38 @@
+/**
+ * ┌──────────────────────────────────────────────────────────────────────────────────────┐
+ * │                                                                                      │
+ * │         ██╗     ██╗██████╗  █████╗                                                   │
+ * │         ██║     ██║██╔══██╗██╔══██╗                                                  │
+ * │         ██║     ██║██████╔╝███████║                                                  │
+ * │         ██║     ██║██╔══██╗██╔══██║                                                  │
+ * │         ███████╗██║██║  ██║██║  ██║                                                  │
+ * │         ╚══════╝╚═╝╚═╝  ╚═╝╚═╝  ╚═╝                                                  │
+ * │                                                                                      │
+ * ├─────────────────┬────────────────────────────────────────────────────────────────────
+ * │ Copyright       │ (c) Gurpinder Gill
+ * │ License         │ MIT
+ * │ Package Name    │ lira-prototype
+ * │ Module Name     │ lira/vocabulary/ui/client/client_coordinations_tab_view
+ * │ Filename        │ client_coordinations_tab_view.ts
+ * │ File Version    │ 0.1.0
+ * │ Created Date    │ 2026-08-31
+ * │ Modified Date   │ 2026-09-01
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Description     │ Dictionary page client script: the Coordinations tab's
+ * │                 │ filtering and row rendering.
+ * │                 │
+ * │                 │
+ * │                 │
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Change Log      │ [CHANGELOG.md](./CHANGELOG.md)
+ * │ Issues Log      │ [ISSUES.md](./ISSUES.md)
+ * └─────────────────┴────────────────────────────────────────────────────────────────────┘
+ *
+ * @module lira/vocabulary/ui/client/client_coordinations_tab_view
+ * @file client_coordinations_tab_view.ts
+ * @author Gurpinder Gill
+ * @license MIT
+ */
 /** The Coordinations tab's own filtering and row rendering --
  * client_phrases_tab_view.ts's own leaner counterpart: Coordination is
  * seeded from a small, closed, hand-curated set today

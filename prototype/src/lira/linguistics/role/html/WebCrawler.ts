@@ -1,3 +1,38 @@
+/**
+ * ┌──────────────────────────────────────────────────────────────────────────────────────┐
+ * │                                                                                      │
+ * │         ██╗     ██╗██████╗  █████╗                                                   │
+ * │         ██║     ██║██╔══██╗██╔══██╗                                                  │
+ * │         ██║     ██║██████╔╝███████║                                                  │
+ * │         ██║     ██║██╔══██╗██╔══██║                                                  │
+ * │         ███████╗██║██║  ██║██║  ██║                                                  │
+ * │         ╚══════╝╚═╝╚═╝  ╚═╝╚═╝  ╚═╝                                                  │
+ * │                                                                                      │
+ * ├─────────────────┬────────────────────────────────────────────────────────────────────
+ * │ Copyright       │ (c) Gurpinder Gill
+ * │ License         │ MIT
+ * │ Package Name    │ lira-prototype
+ * │ Module Name     │ lira/linguistics/role/html/WebCrawler
+ * │ Filename        │ WebCrawler.ts
+ * │ File Version    │ 0.1.0
+ * │ Created Date    │ 2026-08-24
+ * │ Modified Date   │ 2026-08-24
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Description     │ WebCrawler: discovers and reads pages for HTMLProcessor.
+ * │                 │
+ * │                 │
+ * │                 │
+ * │                 │
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Change Log      │ [CHANGELOG.md](./CHANGELOG.md)
+ * │ Issues Log      │ [ISSUES.md](./ISSUES.md)
+ * └─────────────────┴────────────────────────────────────────────────────────────────────┘
+ *
+ * @module lira/linguistics/role/html/WebCrawler
+ * @file WebCrawler.ts
+ * @author Gurpinder Gill
+ * @license MIT
+ */
 import type { Document as HtmlDocument } from "../../data/html/document/document";
 import { HTMLProcessor } from "./HTML_Processor";
 

@@ -1,3 +1,38 @@
+/**
+ * ┌──────────────────────────────────────────────────────────────────────────────────────┐
+ * │                                                                                      │
+ * │         ██╗     ██╗██████╗  █████╗                                                   │
+ * │         ██║     ██║██╔══██╗██╔══██╗                                                  │
+ * │         ██║     ██║██████╔╝███████║                                                  │
+ * │         ██║     ██║██╔══██╗██╔══██║                                                  │
+ * │         ███████╗██║██║  ██║██║  ██║                                                  │
+ * │         ╚══════╝╚═╝╚═╝  ╚═╝╚═╝  ╚═╝                                                  │
+ * │                                                                                      │
+ * ├─────────────────┬────────────────────────────────────────────────────────────────────
+ * │ Copyright       │ (c) Gurpinder Gill
+ * │ License         │ MIT
+ * │ Package Name    │ lira-prototype
+ * │ Module Name     │ lira/common/ui/gpu_canvas_view
+ * │ Filename        │ gpu_canvas_view.ts
+ * │ File Version    │ 0.1.0
+ * │ Created Date    │ 2026-10-27
+ * │ Modified Date   │ 2026-10-31
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Description     │ GpuCanvasView: the Canvas tab, hosting the WebGPU scene and
+ * │                 │ reporting failures visibly through the Logger.
+ * │                 │
+ * │                 │
+ * │                 │
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Change Log      │ [CHANGELOG.md](./CHANGELOG.md)
+ * │ Issues Log      │ [ISSUES.md](./ISSUES.md)
+ * └─────────────────┴────────────────────────────────────────────────────────────────────┘
+ *
+ * @module lira/common/ui/gpu_canvas_view
+ * @file gpu_canvas_view.ts
+ * @author Gurpinder Gill
+ * @license MIT
+ */
 import { createSceneRenderer, type SceneRenderer } from "./gpu_canvas/scene_renderer";
 import type { GpuCanvasContextLike, GpuDeviceLike } from "./gpu_canvas/webgpu_types";
 import { CameraCapture } from "../data/camera_capture";

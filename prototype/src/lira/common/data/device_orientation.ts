@@ -1,3 +1,38 @@
+/**
+ * ┌──────────────────────────────────────────────────────────────────────────────────────┐
+ * │                                                                                      │
+ * │         ██╗     ██╗██████╗  █████╗                                                   │
+ * │         ██║     ██║██╔══██╗██╔══██╗                                                  │
+ * │         ██║     ██║██████╔╝███████║                                                  │
+ * │         ██║     ██║██╔══██╗██╔══██║                                                  │
+ * │         ███████╗██║██║  ██║██║  ██║                                                  │
+ * │         ╚══════╝╚═╝╚═╝  ╚═╝╚═╝  ╚═╝                                                  │
+ * │                                                                                      │
+ * ├─────────────────┬────────────────────────────────────────────────────────────────────
+ * │ Copyright       │ (c) Gurpinder Gill
+ * │ License         │ MIT
+ * │ Package Name    │ lira-prototype
+ * │ Module Name     │ lira/common/data/device_orientation
+ * │ Filename        │ device_orientation.ts
+ * │ File Version    │ 0.1.0
+ * │ Created Date    │ 2026-10-31
+ * │ Modified Date   │ 2026-10-31
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Description     │ Device tilt/heading wrapper: owns one deviceorientation listener
+ * │                 │ feeding the Canvas tab's camera cube rotation.
+ * │                 │
+ * │                 │
+ * │                 │
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Change Log      │ [CHANGELOG.md](./CHANGELOG.md)
+ * │ Issues Log      │ [ISSUES.md](./ISSUES.md)
+ * └─────────────────┴────────────────────────────────────────────────────────────────────┘
+ *
+ * @module lira/common/data/device_orientation
+ * @file device_orientation.ts
+ * @author Gurpinder Gill
+ * @license MIT
+ */
 /** The phone's own real tilt/heading, wrapped for
  * `common/ui/gpu_canvas/scene_renderer.ts`'s own camera-textured cube
  * (its own `attachOrientation()`) -- owns exactly one `deviceorientation`

@@ -1,4 +1,39 @@
 /**
+ * ┌──────────────────────────────────────────────────────────────────────────────────────┐
+ * │                                                                                      │
+ * │         ██╗     ██╗██████╗  █████╗                                                   │
+ * │         ██║     ██║██╔══██╗██╔══██╗                                                  │
+ * │         ██║     ██║██████╔╝███████║                                                  │
+ * │         ██║     ██║██╔══██╗██╔══██║                                                  │
+ * │         ███████╗██║██║  ██║██║  ██║                                                  │
+ * │         ╚══════╝╚═╝╚═╝  ╚═╝╚═╝  ╚═╝                                                  │
+ * │                                                                                      │
+ * ├─────────────────┬────────────────────────────────────────────────────────────────────
+ * │ Copyright       │ (c) Gurpinder Gill
+ * │ License         │ MIT
+ * │ Package Name    │ lira-prototype
+ * │ Module Name     │ lira/vocabulary/data/entities/noun
+ * │ Filename        │ noun.ts
+ * │ File Version    │ 0.1.0
+ * │ Created Date    │ 2026-08-18
+ * │ Modified Date   │ 2026-08-23
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Description     │ Noun: Word narrowed to the NOUN part of speech.
+ * │                 │
+ * │                 │
+ * │                 │
+ * │                 │
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Change Log      │ [CHANGELOG.md](./CHANGELOG.md)
+ * │ Issues Log      │ [ISSUES.md](./ISSUES.md)
+ * └─────────────────┴────────────────────────────────────────────────────────────────────┘
+ *
+ * @module lira/vocabulary/data/entities/noun
+ * @file noun.ts
+ * @author Gurpinder Gill
+ * @license MIT
+ */
+/**
  * Represents a Noun -- Word's own NOUN-specific subtype.
  *
  * See `documentation/architecture/data_entity_design_decisions_log.md`

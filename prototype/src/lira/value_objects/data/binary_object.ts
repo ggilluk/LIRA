@@ -1,3 +1,38 @@
+/**
+ * ┌──────────────────────────────────────────────────────────────────────────────────────┐
+ * │                                                                                      │
+ * │         ██╗     ██╗██████╗  █████╗                                                   │
+ * │         ██║     ██║██╔══██╗██╔══██╗                                                  │
+ * │         ██║     ██║██████╔╝███████║                                                  │
+ * │         ██║     ██║██╔══██╗██╔══██║                                                  │
+ * │         ███████╗██║██║  ██║██║  ██║                                                  │
+ * │         ╚══════╝╚═╝╚═╝  ╚═╝╚═╝  ╚═╝                                                  │
+ * │                                                                                      │
+ * ├─────────────────┬────────────────────────────────────────────────────────────────────
+ * │ Copyright       │ (c) Gurpinder Gill
+ * │ License         │ MIT
+ * │ Package Name    │ lira-prototype
+ * │ Module Name     │ lira/value_objects/data/binary_object
+ * │ Filename        │ binary_object.ts
+ * │ File Version    │ 0.1.0
+ * │ Created Date    │ 2026-11-02
+ * │ Modified Date   │ 2026-11-04
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Description     │ BinaryObject: the CCTS Binary Object. Type (UN/CEFACT D25A
+ * │                 │ UDT000002) - bytes plus format, MIME, encoding, character set,
+ * │                 │ URI and filename.
+ * │                 │
+ * │                 │
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Change Log      │ [CHANGELOG.md](./CHANGELOG.md)
+ * │ Issues Log      │ [ISSUES.md](./ISSUES.md)
+ * └─────────────────┴────────────────────────────────────────────────────────────────────┘
+ *
+ * @module lira/value_objects/data/binary_object
+ * @file binary_object.ts
+ * @author Gurpinder Gill
+ * @license MIT
+ */
 import type { MimeCode } from "./code/mimeCode";
 import type { Uri } from "./uri";
 

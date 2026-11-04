@@ -1,3 +1,38 @@
+/**
+ * ┌──────────────────────────────────────────────────────────────────────────────────────┐
+ * │                                                                                      │
+ * │         ██╗     ██╗██████╗  █████╗                                                   │
+ * │         ██║     ██║██╔══██╗██╔══██╗                                                  │
+ * │         ██║     ██║██████╔╝███████║                                                  │
+ * │         ██║     ██║██╔══██╗██╔══██║                                                  │
+ * │         ███████╗██║██║  ██║██║  ██║                                                  │
+ * │         ╚══════╝╚═╝╚═╝  ╚═╝╚═╝  ╚═╝                                                  │
+ * │                                                                                      │
+ * ├─────────────────┬────────────────────────────────────────────────────────────────────
+ * │ Copyright       │ (c) Gurpinder Gill
+ * │ License         │ MIT
+ * │ Package Name    │ lira-prototype
+ * │ Module Name     │ lira/common/ui/console_commands/types
+ * │ Filename        │ types.ts
+ * │ File Version    │ 0.1.0
+ * │ Created Date    │ 2026-10-24
+ * │ Modified Date   │ 2026-10-24
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Description     │ Shared types for Console commands: ConsoleCommand, the per-run
+ * │                 │ ConsoleCommandContext, and the narrow Service views `ps` uses.
+ * │                 │
+ * │                 │
+ * │                 │
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Change Log      │ [CHANGELOG.md](./CHANGELOG.md)
+ * │ Issues Log      │ [ISSUES.md](./ISSUES.md)
+ * └─────────────────┴────────────────────────────────────────────────────────────────────┘
+ *
+ * @module lira/common/ui/console_commands/types
+ * @file types.ts
+ * @author Gurpinder Gill
+ * @license MIT
+ */
 import type { ServiceStatusBoard } from "../../data/service_status";
 import type { VirtualFileSystem } from "../../data/virtual_file_system";
 

@@ -1,3 +1,38 @@
+/**
+ * ┌──────────────────────────────────────────────────────────────────────────────────────┐
+ * │                                                                                      │
+ * │         ██╗     ██╗██████╗  █████╗                                                   │
+ * │         ██║     ██║██╔══██╗██╔══██╗                                                  │
+ * │         ██║     ██║██████╔╝███████║                                                  │
+ * │         ██║     ██║██╔══██╗██╔══██║                                                  │
+ * │         ███████╗██║██║  ██║██║  ██║                                                  │
+ * │         ╚══════╝╚═╝╚═╝  ╚═╝╚═╝  ╚═╝                                                  │
+ * │                                                                                      │
+ * ├─────────────────┬────────────────────────────────────────────────────────────────────
+ * │ Copyright       │ (c) Gurpinder Gill
+ * │ License         │ MIT
+ * │ Package Name    │ lira-prototype
+ * │ Module Name     │ lira/vocabulary/role/word_coordination_seeder
+ * │ Filename        │ word_coordination_seeder.ts
+ * │ File Version    │ 0.1.0
+ * │ Created Date    │ 2026-08-31
+ * │ Modified Date   │ 2026-09-11
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Description     │ WordCoordinationSeeder: seeds fixed coordinate expressions
+ * │                 │ ("salt and pepper", ...).
+ * │                 │
+ * │                 │
+ * │                 │
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Change Log      │ [CHANGELOG.md](./CHANGELOG.md)
+ * │ Issues Log      │ [ISSUES.md](./ISSUES.md)
+ * └─────────────────┴────────────────────────────────────────────────────────────────────┘
+ *
+ * @module lira/vocabulary/role/word_coordination_seeder
+ * @file word_coordination_seeder.ts
+ * @author Gurpinder Gill
+ * @license MIT
+ */
 /** Seeds real `WordCoordination`s (`data/entities/word_coordination.ts`)
  * for a small, closed set of fixed, lexicalized coordinate expressions
  * -- "salt and pepper", "cause and effect", "back and forth", ... --

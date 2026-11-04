@@ -1,3 +1,38 @@
+/**
+ * ┌──────────────────────────────────────────────────────────────────────────────────────┐
+ * │                                                                                      │
+ * │         ██╗     ██╗██████╗  █████╗                                                   │
+ * │         ██║     ██║██╔══██╗██╔══██╗                                                  │
+ * │         ██║     ██║██████╔╝███████║                                                  │
+ * │         ██║     ██║██╔══██╗██╔══██║                                                  │
+ * │         ███████╗██║██║  ██║██║  ██║                                                  │
+ * │         ╚══════╝╚═╝╚═╝  ╚═╝╚═╝  ╚═╝                                                  │
+ * │                                                                                      │
+ * ├─────────────────┬────────────────────────────────────────────────────────────────────
+ * │ Copyright       │ (c) Gurpinder Gill
+ * │ License         │ MIT
+ * │ Package Name    │ lira-prototype
+ * │ Module Name     │ lira/vocabulary/role/preposition_sense_seeder
+ * │ Filename        │ preposition_sense_seeder.ts
+ * │ File Version    │ 0.1.0
+ * │ Created Date    │ 2026-08-25
+ * │ Modified Date   │ 2026-09-11
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Description     │ PrepositionSenseSeeder: links each curated preposition's Sense
+ * │                 │ to a grounding WordNet Sense.
+ * │                 │
+ * │                 │
+ * │                 │
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Change Log      │ [CHANGELOG.md](./CHANGELOG.md)
+ * │ Issues Log      │ [ISSUES.md](./ISSUES.md)
+ * └─────────────────┴────────────────────────────────────────────────────────────────────┘
+ *
+ * @module lira/vocabulary/role/preposition_sense_seeder
+ * @file preposition_sense_seeder.ts
+ * @author Gurpinder Gill
+ * @license MIT
+ */
 /** Seeds `RELATED` SemanticRelationship edges from each hand-curated
  * PREPOSITION Word's own primary Sense to a real WordNet Verb/Noun
  * Sense that grounds its core meaning -- e.g. "on" -> the "lie" verb

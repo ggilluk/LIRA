@@ -1,3 +1,38 @@
+/**
+ * ┌──────────────────────────────────────────────────────────────────────────────────────┐
+ * │                                                                                      │
+ * │         ██╗     ██╗██████╗  █████╗                                                   │
+ * │         ██║     ██║██╔══██╗██╔══██╗                                                  │
+ * │         ██║     ██║██████╔╝███████║                                                  │
+ * │         ██║     ██║██╔══██╗██╔══██║                                                  │
+ * │         ███████╗██║██║  ██║██║  ██║                                                  │
+ * │         ╚══════╝╚═╝╚═╝  ╚═╝╚═╝  ╚═╝                                                  │
+ * │                                                                                      │
+ * ├─────────────────┬────────────────────────────────────────────────────────────────────
+ * │ Copyright       │ (c) Gurpinder Gill
+ * │ License         │ MIT
+ * │ Package Name    │ lira-prototype
+ * │ Module Name     │ lira/common/role/logger
+ * │ Filename        │ logger.ts
+ * │ File Version    │ 0.1.0
+ * │ Created Date    │ 2026-09-14
+ * │ Modified Date   │ 2026-09-14
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Description     │ Logger: emits structured LogEvents to a pluggable LogSink, so
+ * │                 │ the same logger works on the main thread and inside Web Workers.
+ * │                 │
+ * │                 │
+ * │                 │
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Change Log      │ [CHANGELOG.md](./CHANGELOG.md)
+ * │ Issues Log      │ [ISSUES.md](./ISSUES.md)
+ * └─────────────────┴────────────────────────────────────────────────────────────────────┘
+ *
+ * @module lira/common/role/logger
+ * @file logger.ts
+ * @author Gurpinder Gill
+ * @license MIT
+ */
 import type { LogEvent, LogLevel } from "../data/log_event";
 
 /** Where a `Logger`'s own emitted `LogEvent`s actually go -- a plain

@@ -1,3 +1,38 @@
+/**
+ * ┌──────────────────────────────────────────────────────────────────────────────────────┐
+ * │                                                                                      │
+ * │         ██╗     ██╗██████╗  █████╗                                                   │
+ * │         ██║     ██║██╔══██╗██╔══██╗                                                  │
+ * │         ██║     ██║██████╔╝███████║                                                  │
+ * │         ██║     ██║██╔══██╗██╔══██║                                                  │
+ * │         ███████╗██║██║  ██║██║  ██║                                                  │
+ * │         ╚══════╝╚═╝╚═╝  ╚═╝╚═╝  ╚═╝                                                  │
+ * │                                                                                      │
+ * ├─────────────────┬────────────────────────────────────────────────────────────────────
+ * │ Copyright       │ (c) Gurpinder Gill
+ * │ License         │ MIT
+ * │ Package Name    │ lira-prototype
+ * │ Module Name     │ lira/vocabulary/role/coordination_processor
+ * │ Filename        │ coordination_processor.ts
+ * │ File Version    │ 0.1.0
+ * │ Created Date    │ 2026-08-31
+ * │ Modified Date   │ 2026-09-11
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Description     │ Construction and copying behaviour for Coordination entities.
+ * │                 │
+ * │                 │
+ * │                 │
+ * │                 │
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Change Log      │ [CHANGELOG.md](./CHANGELOG.md)
+ * │ Issues Log      │ [ISSUES.md](./ISSUES.md)
+ * └─────────────────┴────────────────────────────────────────────────────────────────────┘
+ *
+ * @module lira/vocabulary/role/coordination_processor
+ * @file coordination_processor.ts
+ * @author Gurpinder Gill
+ * @license MIT
+ */
 /** The behaviour that operates on a bare Coordination
  * (data/entities/coordination.ts) -- construction and copying.
  * Coordination's own base-entity counterpart to role/processor/word_processor.ts,

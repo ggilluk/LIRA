@@ -1,3 +1,38 @@
+/**
+ * ┌──────────────────────────────────────────────────────────────────────────────────────┐
+ * │                                                                                      │
+ * │         ██╗     ██╗██████╗  █████╗                                                   │
+ * │         ██║     ██║██╔══██╗██╔══██╗                                                  │
+ * │         ██║     ██║██████╔╝███████║                                                  │
+ * │         ██║     ██║██╔══██╗██╔══██║                                                  │
+ * │         ███████╗██║██║  ██║██║  ██║                                                  │
+ * │         ╚══════╝╚═╝╚═╝  ╚═╝╚═╝  ╚═╝                                                  │
+ * │                                                                                      │
+ * ├─────────────────┬────────────────────────────────────────────────────────────────────
+ * │ Copyright       │ (c) Gurpinder Gill
+ * │ License         │ MIT
+ * │ Package Name    │ lira-prototype
+ * │ Module Name     │ lira/vocabulary/role/noun_character_form_seeder
+ * │ Filename        │ noun_character_form_seeder.ts
+ * │ File Version    │ 0.1.0
+ * │ Created Date    │ 2026-08-20
+ * │ Modified Date   │ 2026-08-21
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Description     │ NounCharacterFormSeeder: populates character forms on the
+ * │                 │ Nouns that name each mark.
+ * │                 │
+ * │                 │
+ * │                 │
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Change Log      │ [CHANGELOG.md](./CHANGELOG.md)
+ * │ Issues Log      │ [ISSUES.md](./ISSUES.md)
+ * └─────────────────┴────────────────────────────────────────────────────────────────────┘
+ *
+ * @module lira/vocabulary/role/noun_character_form_seeder
+ * @file noun_character_form_seeder.ts
+ * @author Gurpinder Gill
+ * @license MIT
+ */
 import type { Dictionary } from "../data/dictionary";
 import { createNoun, isNoun } from "./processor/noun_processor";
 

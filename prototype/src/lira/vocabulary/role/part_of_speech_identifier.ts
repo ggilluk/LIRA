@@ -1,3 +1,38 @@
+/**
+ * ┌──────────────────────────────────────────────────────────────────────────────────────┐
+ * │                                                                                      │
+ * │         ██╗     ██╗██████╗  █████╗                                                   │
+ * │         ██║     ██║██╔══██╗██╔══██╗                                                  │
+ * │         ██║     ██║██████╔╝███████║                                                  │
+ * │         ██║     ██║██╔══██╗██╔══██║                                                  │
+ * │         ███████╗██║██║  ██║██║  ██║                                                  │
+ * │         ╚══════╝╚═╝╚═╝  ╚═╝╚═╝  ╚═╝                                                  │
+ * │                                                                                      │
+ * ├─────────────────┬────────────────────────────────────────────────────────────────────
+ * │ Copyright       │ (c) Gurpinder Gill
+ * │ License         │ MIT
+ * │ Package Name    │ lira-prototype
+ * │ Module Name     │ lira/vocabulary/role/part_of_speech_identifier
+ * │ Filename        │ part_of_speech_identifier.ts
+ * │ File Version    │ 0.1.0
+ * │ Created Date    │ 2026-08-11
+ * │ Modified Date   │ 2026-09-06
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Description     │ PartOfSpeechIdentifier: identifies candidate parts of speech
+ * │                 │ for a token from the Dictionary.
+ * │                 │
+ * │                 │
+ * │                 │
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Change Log      │ [CHANGELOG.md](./CHANGELOG.md)
+ * │ Issues Log      │ [ISSUES.md](./ISSUES.md)
+ * └─────────────────┴────────────────────────────────────────────────────────────────────┘
+ *
+ * @module lira/vocabulary/role/part_of_speech_identifier
+ * @file part_of_speech_identifier.ts
+ * @author Gurpinder Gill
+ * @license MIT
+ */
 import type { Dictionary } from "../data/dictionary";
 import { PartOfSpeech } from "../data/enums/part_of_speech";
 import { wordFormTypeLabel, type WordFormType } from "../data/enums/word_forms_enum";

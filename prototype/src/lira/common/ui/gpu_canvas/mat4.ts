@@ -1,3 +1,38 @@
+/**
+ * ┌──────────────────────────────────────────────────────────────────────────────────────┐
+ * │                                                                                      │
+ * │         ██╗     ██╗██████╗  █████╗                                                   │
+ * │         ██║     ██║██╔══██╗██╔══██╗                                                  │
+ * │         ██║     ██║██████╔╝███████║                                                  │
+ * │         ██║     ██║██╔══██╗██╔══██║                                                  │
+ * │         ███████╗██║██║  ██║██║  ██║                                                  │
+ * │         ╚══════╝╚═╝╚═╝  ╚═╝╚═╝  ╚═╝                                                  │
+ * │                                                                                      │
+ * ├─────────────────┬────────────────────────────────────────────────────────────────────
+ * │ Copyright       │ (c) Gurpinder Gill
+ * │ License         │ MIT
+ * │ Package Name    │ lira-prototype
+ * │ Module Name     │ lira/common/ui/gpu_canvas/mat4
+ * │ Filename        │ mat4.ts
+ * │ File Version    │ 0.1.0
+ * │ Created Date    │ 2026-10-27
+ * │ Modified Date   │ 2026-10-31
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Description     │ Minimal column-major 4x4 matrix and vector math for the Canvas
+ * │                 │ scene's camera and model transforms.
+ * │                 │
+ * │                 │
+ * │                 │
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Change Log      │ [CHANGELOG.md](./CHANGELOG.md)
+ * │ Issues Log      │ [ISSUES.md](./ISSUES.md)
+ * └─────────────────┴────────────────────────────────────────────────────────────────────┘
+ *
+ * @module lira/common/ui/gpu_canvas/mat4
+ * @file mat4.ts
+ * @author Gurpinder Gill
+ * @license MIT
+ */
 /** Minimal 4x4 matrix math for `scene_renderer.ts`'s own camera/model
  * transforms -- column-major `Float32Array(16)`, the same layout WGSL's
  * own `mat4x4<f32>` and every WebGPU sample expects, so a matrix built

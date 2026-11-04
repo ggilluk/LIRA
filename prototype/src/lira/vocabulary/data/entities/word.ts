@@ -1,4 +1,39 @@
 /**
+ * ┌──────────────────────────────────────────────────────────────────────────────────────┐
+ * │                                                                                      │
+ * │         ██╗     ██╗██████╗  █████╗                                                   │
+ * │         ██║     ██║██╔══██╗██╔══██╗                                                  │
+ * │         ██║     ██║██████╔╝███████║                                                  │
+ * │         ██║     ██║██╔══██╗██╔══██║                                                  │
+ * │         ███████╗██║██║  ██║██║  ██║                                                  │
+ * │         ╚══════╝╚═╝╚═╝  ╚═╝╚═╝  ╚═╝                                                  │
+ * │                                                                                      │
+ * ├─────────────────┬────────────────────────────────────────────────────────────────────
+ * │ Copyright       │ (c) Gurpinder Gill
+ * │ License         │ MIT
+ * │ Package Name    │ lira-prototype
+ * │ Module Name     │ lira/vocabulary/data/entities/word
+ * │ Filename        │ word.ts
+ * │ File Version    │ 0.1.0
+ * │ Created Date    │ 2026-08-21
+ * │ Modified Date   │ 2026-09-08
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Description     │ Word: one lexical form in one language and one grammatical
+ * │                 │ category.
+ * │                 │
+ * │                 │
+ * │                 │
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Change Log      │ [CHANGELOG.md](./CHANGELOG.md)
+ * │ Issues Log      │ [ISSUES.md](./ISSUES.md)
+ * └─────────────────┴────────────────────────────────────────────────────────────────────┘
+ *
+ * @module lira/vocabulary/data/entities/word
+ * @file word.ts
+ * @author Gurpinder Gill
+ * @license MIT
+ */
+/**
  * Represents a lexical Word within the vocabulary -- one lexical form
  * in one language and one grammatical category.
  *

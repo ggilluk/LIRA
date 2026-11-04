@@ -1,3 +1,38 @@
+/**
+ * ┌──────────────────────────────────────────────────────────────────────────────────────┐
+ * │                                                                                      │
+ * │         ██╗     ██╗██████╗  █████╗                                                   │
+ * │         ██║     ██║██╔══██╗██╔══██╗                                                  │
+ * │         ██║     ██║██████╔╝███████║                                                  │
+ * │         ██║     ██║██╔══██╗██╔══██║                                                  │
+ * │         ███████╗██║██║  ██║██║  ██║                                                  │
+ * │         ╚══════╝╚═╝╚═╝  ╚═╝╚═╝  ╚═╝                                                  │
+ * │                                                                                      │
+ * ├─────────────────┬────────────────────────────────────────────────────────────────────
+ * │ Copyright       │ (c) Gurpinder Gill
+ * │ License         │ MIT
+ * │ Package Name    │ lira-prototype
+ * │ Module Name     │ lira/vocabulary/data/entities/adjective_phrase
+ * │ Filename        │ adjective_phrase.ts
+ * │ File Version    │ 0.1.0
+ * │ Created Date    │ 2026-08-19
+ * │ Modified Date   │ 2026-09-11
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Description     │ AdjectivePhrase: Phrase narrowed to ADJECTIVE_PHRASE, with
+ * │                 │ its init type, factory and type guard.
+ * │                 │
+ * │                 │
+ * │                 │
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Change Log      │ [CHANGELOG.md](./CHANGELOG.md)
+ * │ Issues Log      │ [ISSUES.md](./ISSUES.md)
+ * └─────────────────┴────────────────────────────────────────────────────────────────────┘
+ *
+ * @module lira/vocabulary/data/entities/adjective_phrase
+ * @file adjective_phrase.ts
+ * @author Gurpinder Gill
+ * @license MIT
+ */
 /** AdjectivePhrase: Phrase's own ADJECTIVE_PHRASE-specific subtype --
  * one of PhraseType's own six grammatical shapes
  * (data/enums/phrase_type.ts's own docstring), narrowing a Phrase by

@@ -1,3 +1,38 @@
+/**
+ * ┌──────────────────────────────────────────────────────────────────────────────────────┐
+ * │                                                                                      │
+ * │         ██╗     ██╗██████╗  █████╗                                                   │
+ * │         ██║     ██║██╔══██╗██╔══██╗                                                  │
+ * │         ██║     ██║██████╔╝███████║                                                  │
+ * │         ██║     ██║██╔══██╗██╔══██║                                                  │
+ * │         ███████╗██║██║  ██║██║  ██║                                                  │
+ * │         ╚══════╝╚═╝╚═╝  ╚═╝╚═╝  ╚═╝                                                  │
+ * │                                                                                      │
+ * ├─────────────────┬────────────────────────────────────────────────────────────────────
+ * │ Copyright       │ (c) Gurpinder Gill
+ * │ License         │ MIT
+ * │ Package Name    │ lira-prototype
+ * │ Module Name     │ lira/linguistics/role/html/document/aside_processor
+ * │ Filename        │ aside_processor.ts
+ * │ File Version    │ 0.1.0
+ * │ Created Date    │ 2026-08-24
+ * │ Modified Date   │ 2026-08-24
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Description     │ Reads, parses and writes Aside (HTML5 <aside>) for HTMLProcessor.
+ * │                 │
+ * │                 │
+ * │                 │
+ * │                 │
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Change Log      │ [CHANGELOG.md](./CHANGELOG.md)
+ * │ Issues Log      │ [ISSUES.md](./ISSUES.md)
+ * └─────────────────┴────────────────────────────────────────────────────────────────────┘
+ *
+ * @module lira/linguistics/role/html/document/aside_processor
+ * @file aside_processor.ts
+ * @author Gurpinder Gill
+ * @license MIT
+ */
 import type { Aside } from "../../../data/html/document/aside";
 import { readElement, textUnits, writeTextUnits } from "../processor_support";
 

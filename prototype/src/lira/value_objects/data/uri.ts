@@ -1,3 +1,38 @@
+/**
+ * ┌──────────────────────────────────────────────────────────────────────────────────────┐
+ * │                                                                                      │
+ * │         ██╗     ██╗██████╗  █████╗                                                   │
+ * │         ██║     ██║██╔══██╗██╔══██╗                                                  │
+ * │         ██║     ██║██████╔╝███████║                                                  │
+ * │         ██║     ██║██╔══██╗██╔══██║                                                  │
+ * │         ███████╗██║██║  ██║██║  ██║                                                  │
+ * │         ╚══════╝╚═╝╚═╝  ╚═╝╚═╝  ╚═╝                                                  │
+ * │                                                                                      │
+ * ├─────────────────┬────────────────────────────────────────────────────────────────────
+ * │ Copyright       │ (c) Gurpinder Gill
+ * │ License         │ MIT
+ * │ Package Name    │ lira-prototype
+ * │ Module Name     │ lira/value_objects/data/uri
+ * │ Filename        │ uri.ts
+ * │ File Version    │ 0.1.0
+ * │ Created Date    │ 2026-10-06
+ * │ Modified Date   │ 2026-10-06
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Description     │ Uri: a validated absolute URI value object wrapping the
+ * │                 │ platform URL.
+ * │                 │
+ * │                 │
+ * │                 │
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Change Log      │ [CHANGELOG.md](./CHANGELOG.md)
+ * │ Issues Log      │ [ISSUES.md](./ISSUES.md)
+ * └─────────────────┴────────────────────────────────────────────────────────────────────┘
+ *
+ * @module lira/value_objects/data/uri
+ * @file uri.ts
+ * @author Gurpinder Gill
+ * @license MIT
+ */
 /** Uri: this prototype's own addition, no CCTS Core Component Type or
  * Python original behind it (identifier.ts's own `uuid`/`hash` are the
  * precedent for a TS-port-only value object living here). Carries every

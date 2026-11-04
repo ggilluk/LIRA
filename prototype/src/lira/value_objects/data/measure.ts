@@ -1,3 +1,38 @@
+/**
+ * ┌──────────────────────────────────────────────────────────────────────────────────────┐
+ * │                                                                                      │
+ * │         ██╗     ██╗██████╗  █████╗                                                   │
+ * │         ██║     ██║██╔══██╗██╔══██╗                                                  │
+ * │         ██║     ██║██████╔╝███████║                                                  │
+ * │         ██║     ██║██╔══██╗██╔══██║                                                  │
+ * │         ███████╗██║██║  ██║██║  ██║                                                  │
+ * │         ╚══════╝╚═╝╚═╝  ╚═╝╚═╝  ╚═╝                                                  │
+ * │                                                                                      │
+ * ├─────────────────┬────────────────────────────────────────────────────────────────────
+ * │ Copyright       │ (c) Gurpinder Gill
+ * │ License         │ MIT
+ * │ Package Name    │ lira-prototype
+ * │ Module Name     │ lira/value_objects/data/measure
+ * │ Filename        │ measure.ts
+ * │ File Version    │ 0.1.0
+ * │ Created Date    │ 2026-10-04
+ * │ Modified Date   │ 2026-10-04
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Description     │ Measure: the CCTS Measure. Type value object.
+ * │                 │
+ * │                 │
+ * │                 │
+ * │                 │
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Change Log      │ [CHANGELOG.md](./CHANGELOG.md)
+ * │ Issues Log      │ [ISSUES.md](./ISSUES.md)
+ * └─────────────────┴────────────────────────────────────────────────────────────────────┘
+ *
+ * @module lira/value_objects/data/measure
+ * @file measure.ts
+ * @author Gurpinder Gill
+ * @license MIT
+ */
 /** Measure. Type, per the UN/CEFACT Core Components Technical
  * Specification (CCTS) Core Component Type catalogue (Layer Summary:
  * Value Objects Layer). Ported from value_objects/data/measure.py;

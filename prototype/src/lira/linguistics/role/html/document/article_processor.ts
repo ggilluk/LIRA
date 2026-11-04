@@ -1,3 +1,38 @@
+/**
+ * ┌──────────────────────────────────────────────────────────────────────────────────────┐
+ * │                                                                                      │
+ * │         ██╗     ██╗██████╗  █████╗                                                   │
+ * │         ██║     ██║██╔══██╗██╔══██╗                                                  │
+ * │         ██║     ██║██████╔╝███████║                                                  │
+ * │         ██║     ██║██╔══██╗██╔══██║                                                  │
+ * │         ███████╗██║██║  ██║██║  ██║                                                  │
+ * │         ╚══════╝╚═╝╚═╝  ╚═╝╚═╝  ╚═╝                                                  │
+ * │                                                                                      │
+ * ├─────────────────┬────────────────────────────────────────────────────────────────────
+ * │ Copyright       │ (c) Gurpinder Gill
+ * │ License         │ MIT
+ * │ Package Name    │ lira-prototype
+ * │ Module Name     │ lira/linguistics/role/html/document/article_processor
+ * │ Filename        │ article_processor.ts
+ * │ File Version    │ 0.1.0
+ * │ Created Date    │ 2026-08-24
+ * │ Modified Date   │ 2026-08-24
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Description     │ Reads, parses and writes Article (HTML5 <article>) for
+ * │                 │ HTMLProcessor.
+ * │                 │
+ * │                 │
+ * │                 │
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Change Log      │ [CHANGELOG.md](./CHANGELOG.md)
+ * │ Issues Log      │ [ISSUES.md](./ISSUES.md)
+ * └─────────────────┴────────────────────────────────────────────────────────────────────┘
+ *
+ * @module lira/linguistics/role/html/document/article_processor
+ * @file article_processor.ts
+ * @author Gurpinder Gill
+ * @license MIT
+ */
 import type { Article } from "../../../data/html/document/article";
 import { readElement } from "../processor_support";
 import { parseFigure, writeFigure } from "../media/figure_processor";

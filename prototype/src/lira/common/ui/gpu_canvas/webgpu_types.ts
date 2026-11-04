@@ -1,3 +1,38 @@
+/**
+ * ┌──────────────────────────────────────────────────────────────────────────────────────┐
+ * │                                                                                      │
+ * │         ██╗     ██╗██████╗  █████╗                                                   │
+ * │         ██║     ██║██╔══██╗██╔══██╗                                                  │
+ * │         ██║     ██║██████╔╝███████║                                                  │
+ * │         ██║     ██║██╔══██╗██╔══██║                                                  │
+ * │         ███████╗██║██║  ██║██║  ██║                                                  │
+ * │         ╚══════╝╚═╝╚═╝  ╚═╝╚═╝  ╚═╝                                                  │
+ * │                                                                                      │
+ * ├─────────────────┬────────────────────────────────────────────────────────────────────
+ * │ Copyright       │ (c) Gurpinder Gill
+ * │ License         │ MIT
+ * │ Package Name    │ lira-prototype
+ * │ Module Name     │ lira/common/ui/gpu_canvas/webgpu_types
+ * │ Filename        │ webgpu_types.ts
+ * │ File Version    │ 0.1.0
+ * │ Created Date    │ 2026-10-27
+ * │ Modified Date   │ 2026-10-29
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Description     │ Minimal structural WebGPU type declarations, since the bundled
+ * │                 │ DOM types declare none and the project has no @webgpu/types.
+ * │                 │
+ * │                 │
+ * │                 │
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Change Log      │ [CHANGELOG.md](./CHANGELOG.md)
+ * │ Issues Log      │ [ISSUES.md](./ISSUES.md)
+ * └─────────────────┴────────────────────────────────────────────────────────────────────┘
+ *
+ * @module lira/common/ui/gpu_canvas/webgpu_types
+ * @file webgpu_types.ts
+ * @author Gurpinder Gill
+ * @license MIT
+ */
 /** TypeScript's own bundled `lib.dom.d.ts` declares no WebGPU types at
  * all (confirmed directly -- `console_commands/gpu.ts`'s own
  * docstring), and no `@webgpu/types` dependency exists in this

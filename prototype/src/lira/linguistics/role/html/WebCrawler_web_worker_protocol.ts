@@ -1,3 +1,38 @@
+/**
+ * ┌──────────────────────────────────────────────────────────────────────────────────────┐
+ * │                                                                                      │
+ * │         ██╗     ██╗██████╗  █████╗                                                   │
+ * │         ██║     ██║██╔══██╗██╔══██╗                                                  │
+ * │         ██║     ██║██████╔╝███████║                                                  │
+ * │         ██║     ██║██╔══██╗██╔══██║                                                  │
+ * │         ███████╗██║██║  ██║██║  ██║                                                  │
+ * │         ╚══════╝╚═╝╚═╝  ╚═╝╚═╝  ╚═╝                                                  │
+ * │                                                                                      │
+ * ├─────────────────┬────────────────────────────────────────────────────────────────────
+ * │ Copyright       │ (c) Gurpinder Gill
+ * │ License         │ MIT
+ * │ Package Name    │ lira-prototype
+ * │ Module Name     │ lira/linguistics/role/html/WebCrawler_web_worker_protocol
+ * │ Filename        │ WebCrawler_web_worker_protocol.ts
+ * │ File Version    │ 0.1.0
+ * │ Created Date    │ 2026-08-24
+ * │ Modified Date   │ 2026-08-24
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Description     │ Message protocol between the Web Crawler coordinator worker and
+ * │                 │ its client.
+ * │                 │
+ * │                 │
+ * │                 │
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Change Log      │ [CHANGELOG.md](./CHANGELOG.md)
+ * │ Issues Log      │ [ISSUES.md](./ISSUES.md)
+ * └─────────────────┴────────────────────────────────────────────────────────────────────┘
+ *
+ * @module lira/linguistics/role/html/WebCrawler_web_worker_protocol
+ * @file WebCrawler_web_worker_protocol.ts
+ * @author Gurpinder Gill
+ * @license MIT
+ */
 /** Message protocol for the Web Crawler coordinator worker.
  *
  * The crawler owns crawl state and a pool of HTML Processor workers. Requests

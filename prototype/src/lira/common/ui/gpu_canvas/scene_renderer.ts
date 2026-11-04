@@ -1,3 +1,38 @@
+/**
+ * ┌──────────────────────────────────────────────────────────────────────────────────────┐
+ * │                                                                                      │
+ * │         ██╗     ██╗██████╗  █████╗                                                   │
+ * │         ██║     ██║██╔══██╗██╔══██╗                                                  │
+ * │         ██║     ██║██████╔╝███████║                                                  │
+ * │         ██║     ██║██╔══██╗██╔══██║                                                  │
+ * │         ███████╗██║██║  ██║██║  ██║                                                  │
+ * │         ╚══════╝╚═╝╚═╝  ╚═╝╚═╝  ╚═╝                                                  │
+ * │                                                                                      │
+ * ├─────────────────┬────────────────────────────────────────────────────────────────────
+ * │ Copyright       │ (c) Gurpinder Gill
+ * │ License         │ MIT
+ * │ Package Name    │ lira-prototype
+ * │ Module Name     │ lira/common/ui/gpu_canvas/scene_renderer
+ * │ Filename        │ scene_renderer.ts
+ * │ File Version    │ 0.1.0
+ * │ Created Date    │ 2026-10-27
+ * │ Modified Date   │ 2026-10-31
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Description     │ WebGPU renderer for the Canvas scene: pipelines, buffers and the
+ * │                 │ per-frame draw, including the camera- and orientation-driven cube.
+ * │                 │
+ * │                 │
+ * │                 │
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Change Log      │ [CHANGELOG.md](./CHANGELOG.md)
+ * │ Issues Log      │ [ISSUES.md](./ISSUES.md)
+ * └─────────────────┴────────────────────────────────────────────────────────────────────┘
+ *
+ * @module lira/common/ui/gpu_canvas/scene_renderer
+ * @file scene_renderer.ts
+ * @author Gurpinder Gill
+ * @license MIT
+ */
 import { deviceOrientationToRotation, lookAt, multiply, multiplyAll, perspective, rotation, scaleUniform, translation, type Mat4, type Vec3 } from "./mat4";
 import { buildCubeMesh, buildSphereMesh, buildTexturedCubeMesh, type Mesh } from "./geometry";
 import { createRandomEntity, createRandomEntities, stepEntity, type SceneBounds, type SceneEntity } from "./scene";

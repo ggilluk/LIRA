@@ -1,3 +1,38 @@
+/**
+ * ┌──────────────────────────────────────────────────────────────────────────────────────┐
+ * │                                                                                      │
+ * │         ██╗     ██╗██████╗  █████╗                                                   │
+ * │         ██║     ██║██╔══██╗██╔══██╗                                                  │
+ * │         ██║     ██║██████╔╝███████║                                                  │
+ * │         ██║     ██║██╔══██╗██╔══██║                                                  │
+ * │         ███████╗██║██║  ██║██║  ██║                                                  │
+ * │         ╚══════╝╚═╝╚═╝  ╚═╝╚═╝  ╚═╝                                                  │
+ * │                                                                                      │
+ * ├─────────────────┬────────────────────────────────────────────────────────────────────
+ * │ Copyright       │ (c) Gurpinder Gill
+ * │ License         │ MIT
+ * │ Package Name    │ lira-prototype
+ * │ Module Name     │ lira/linguistics/data/imperative_main_clause
+ * │ Filename        │ imperative_main_clause.ts
+ * │ File Version    │ 0.1.0
+ * │ Created Date    │ 2026-09-02
+ * │ Modified Date   │ 2026-09-02
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Description     │ ImperativeMainClause: MainClause narrowed to the imperative
+ * │                 │ mood.
+ * │                 │
+ * │                 │
+ * │                 │
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Change Log      │ [CHANGELOG.md](./CHANGELOG.md)
+ * │ Issues Log      │ [ISSUES.md](./ISSUES.md)
+ * └─────────────────┴────────────────────────────────────────────────────────────────────┘
+ *
+ * @module lira/linguistics/data/imperative_main_clause
+ * @file imperative_main_clause.ts
+ * @author Gurpinder Gill
+ * @license MIT
+ */
 /** ImperativeMainClause: MainClause's own SentenceType.IMPERATIVE
  * subtype -- DeclarativeMainClause's own counterpart, one mood over
  * (declarative_main_clause.ts's own docstring on the pattern and its

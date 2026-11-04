@@ -1,3 +1,38 @@
+/**
+ * ┌──────────────────────────────────────────────────────────────────────────────────────┐
+ * │                                                                                      │
+ * │         ██╗     ██╗██████╗  █████╗                                                   │
+ * │         ██║     ██║██╔══██╗██╔══██╗                                                  │
+ * │         ██║     ██║██████╔╝███████║                                                  │
+ * │         ██║     ██║██╔══██╗██╔══██║                                                  │
+ * │         ███████╗██║██║  ██║██║  ██║                                                  │
+ * │         ╚══════╝╚═╝╚═╝  ╚═╝╚═╝  ╚═╝                                                  │
+ * │                                                                                      │
+ * ├─────────────────┬────────────────────────────────────────────────────────────────────
+ * │ Copyright       │ (c) Gurpinder Gill
+ * │ License         │ MIT
+ * │ Package Name    │ lira-prototype
+ * │ Module Name     │ lira/vocabulary/data/enums/interrogative_root_word
+ * │ Filename        │ interrogative_root_word.ts
+ * │ File Version    │ 0.1.0
+ * │ Created Date    │ 2026-08-12
+ * │ Modified Date   │ 2026-08-31
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Description     │ InterrogativeRootWord: numeric codes for the six English
+ * │                 │ interrogatives.
+ * │                 │
+ * │                 │
+ * │                 │
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Change Log      │ [CHANGELOG.md](./CHANGELOG.md)
+ * │ Issues Log      │ [ISSUES.md](./ISSUES.md)
+ * └─────────────────┴────────────────────────────────────────────────────────────────────┘
+ *
+ * @module lira/vocabulary/data/enums/interrogative_root_word
+ * @file interrogative_root_word.ts
+ * @author Gurpinder Gill
+ * @license MIT
+ */
 /** Values are numeric codes, the same convention PartOfSpeech/
  * EditorialLabel already use.
  *

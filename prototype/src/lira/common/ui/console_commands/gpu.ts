@@ -1,3 +1,38 @@
+/**
+ * ┌──────────────────────────────────────────────────────────────────────────────────────┐
+ * │                                                                                      │
+ * │         ██╗     ██╗██████╗  █████╗                                                   │
+ * │         ██║     ██║██╔══██╗██╔══██╗                                                  │
+ * │         ██║     ██║██████╔╝███████║                                                  │
+ * │         ██║     ██║██╔══██╗██╔══██║                                                  │
+ * │         ███████╗██║██║  ██║██║  ██║                                                  │
+ * │         ╚══════╝╚═╝╚═╝  ╚═╝╚═╝  ╚═╝                                                  │
+ * │                                                                                      │
+ * ├─────────────────┬────────────────────────────────────────────────────────────────────
+ * │ Copyright       │ (c) Gurpinder Gill
+ * │ License         │ MIT
+ * │ Package Name    │ lira-prototype
+ * │ Module Name     │ lira/common/ui/console_commands/gpu
+ * │ Filename        │ gpu.ts
+ * │ File Version    │ 0.1.0
+ * │ Created Date    │ 2026-10-26
+ * │ Modified Date   │ 2026-10-26
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Description     │ Console `gpu` command: reports the browser's real WebGPU
+ * │                 │ adapter and device information.
+ * │                 │
+ * │                 │
+ * │                 │
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Change Log      │ [CHANGELOG.md](./CHANGELOG.md)
+ * │ Issues Log      │ [ISSUES.md](./ISSUES.md)
+ * └─────────────────┴────────────────────────────────────────────────────────────────────┘
+ *
+ * @module lira/common/ui/console_commands/gpu
+ * @file gpu.ts
+ * @author Gurpinder Gill
+ * @license MIT
+ */
 import type { ConsoleCommand } from "./types";
 
 /** TypeScript's own bundled `lib.dom.d.ts` (tsconfig.json's own `"lib"`

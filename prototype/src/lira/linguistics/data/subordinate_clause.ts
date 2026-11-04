@@ -1,3 +1,38 @@
+/**
+ * ┌──────────────────────────────────────────────────────────────────────────────────────┐
+ * │                                                                                      │
+ * │         ██╗     ██╗██████╗  █████╗                                                   │
+ * │         ██║     ██║██╔══██╗██╔══██╗                                                  │
+ * │         ██║     ██║██████╔╝███████║                                                  │
+ * │         ██║     ██║██╔══██╗██╔══██║                                                  │
+ * │         ███████╗██║██║  ██║██║  ██║                                                  │
+ * │         ╚══════╝╚═╝╚═╝  ╚═╝╚═╝  ╚═╝                                                  │
+ * │                                                                                      │
+ * ├─────────────────┬────────────────────────────────────────────────────────────────────
+ * │ Copyright       │ (c) Gurpinder Gill
+ * │ License         │ MIT
+ * │ Package Name    │ lira-prototype
+ * │ Module Name     │ lira/linguistics/data/subordinate_clause
+ * │ Filename        │ subordinate_clause.ts
+ * │ File Version    │ 0.1.0
+ * │ Created Date    │ 2026-09-02
+ * │ Modified Date   │ 2026-09-02
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Description     │ SubordinateClause: Clause narrowed to dependent, relative and
+ * │                 │ coordinated clauses.
+ * │                 │
+ * │                 │
+ * │                 │
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Change Log      │ [CHANGELOG.md](./CHANGELOG.md)
+ * │ Issues Log      │ [ISSUES.md](./ISSUES.md)
+ * └─────────────────┴────────────────────────────────────────────────────────────────────┘
+ *
+ * @module lira/linguistics/data/subordinate_clause
+ * @file subordinate_clause.ts
+ * @author Gurpinder Gill
+ * @license MIT
+ */
 /** SubordinateClause: Clause's own DEPENDENT/RELATIVE/COORDINATED
  * subtype -- `MainClause`'s own counterpart (main_clause.ts's own
  * docstring on the narrowing pattern this mirrors). A subordinate clause

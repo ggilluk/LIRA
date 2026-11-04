@@ -1,3 +1,38 @@
+/**
+ * ┌──────────────────────────────────────────────────────────────────────────────────────┐
+ * │                                                                                      │
+ * │         ██╗     ██╗██████╗  █████╗                                                   │
+ * │         ██║     ██║██╔══██╗██╔══██╗                                                  │
+ * │         ██║     ██║██████╔╝███████║                                                  │
+ * │         ██║     ██║██╔══██╗██╔══██║                                                  │
+ * │         ███████╗██║██║  ██║██║  ██║                                                  │
+ * │         ╚══════╝╚═╝╚═╝  ╚═╝╚═╝  ╚═╝                                                  │
+ * │                                                                                      │
+ * ├─────────────────┬────────────────────────────────────────────────────────────────────
+ * │ Copyright       │ (c) Gurpinder Gill
+ * │ License         │ MIT
+ * │ Package Name    │ lira-prototype
+ * │ Module Name     │ lira/value_objects/data/code/languageStyleCode
+ * │ Filename        │ languageStyleCode.ts
+ * │ File Version    │ 0.1.0
+ * │ Created Date    │ 2026-08-31
+ * │ Modified Date   │ 2026-10-06
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Description     │ LanguageStyleCode: CCTS Code specialised for a text's register
+ * │                 │ or style of language use.
+ * │                 │
+ * │                 │
+ * │                 │
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Change Log      │ [CHANGELOG.md](./CHANGELOG.md)
+ * │ Issues Log      │ [ISSUES.md](./ISSUES.md)
+ * └─────────────────┴────────────────────────────────────────────────────────────────────┘
+ *
+ * @module lira/value_objects/data/code/languageStyleCode
+ * @file languageStyleCode.ts
+ * @author Gurpinder Gill
+ * @license MIT
+ */
 import type { Code } from "../code";
 import type { Uri } from "../uri";
 import { LanguageStyleCodelist } from "../enum/languageStyleCodelist";

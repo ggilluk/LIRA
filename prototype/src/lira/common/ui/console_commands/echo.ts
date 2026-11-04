@@ -1,3 +1,38 @@
+/**
+ * ┌──────────────────────────────────────────────────────────────────────────────────────┐
+ * │                                                                                      │
+ * │         ██╗     ██╗██████╗  █████╗                                                   │
+ * │         ██║     ██║██╔══██╗██╔══██╗                                                  │
+ * │         ██║     ██║██████╔╝███████║                                                  │
+ * │         ██║     ██║██╔══██╗██╔══██║                                                  │
+ * │         ███████╗██║██║  ██║██║  ██║                                                  │
+ * │         ╚══════╝╚═╝╚═╝  ╚═╝╚═╝  ╚═╝                                                  │
+ * │                                                                                      │
+ * ├─────────────────┬────────────────────────────────────────────────────────────────────
+ * │ Copyright       │ (c) Gurpinder Gill
+ * │ License         │ MIT
+ * │ Package Name    │ lira-prototype
+ * │ Module Name     │ lira/common/ui/console_commands/echo
+ * │ Filename        │ echo.ts
+ * │ File Version    │ 0.1.0
+ * │ Created Date    │ 2026-10-24
+ * │ Modified Date   │ 2026-11-04
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Description     │ Console `echo` command: prints text, or writes/appends it to a
+ * │                 │ file with > / >> as a UTF-8 text/plain BinaryObject.
+ * │                 │
+ * │                 │
+ * │                 │
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Change Log      │ [CHANGELOG.md](./CHANGELOG.md)
+ * │ Issues Log      │ [ISSUES.md](./ISSUES.md)
+ * └─────────────────┴────────────────────────────────────────────────────────────────────┘
+ *
+ * @module lira/common/ui/console_commands/echo
+ * @file echo.ts
+ * @author Gurpinder Gill
+ * @license MIT
+ */
 import { binaryObject, MimeCode, MimeCodelist } from "../../../value_objects";
 import type { ConsoleCommand } from "./types";
 

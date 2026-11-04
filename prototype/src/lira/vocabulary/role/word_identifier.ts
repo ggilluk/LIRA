@@ -1,3 +1,38 @@
+/**
+ * ┌──────────────────────────────────────────────────────────────────────────────────────┐
+ * │                                                                                      │
+ * │         ██╗     ██╗██████╗  █████╗                                                   │
+ * │         ██║     ██║██╔══██╗██╔══██╗                                                  │
+ * │         ██║     ██║██████╔╝███████║                                                  │
+ * │         ██║     ██║██╔══██╗██╔══██║                                                  │
+ * │         ███████╗██║██║  ██║██║  ██║                                                  │
+ * │         ╚══════╝╚═╝╚═╝  ╚═╝╚═╝  ╚═╝                                                  │
+ * │                                                                                      │
+ * ├─────────────────┬────────────────────────────────────────────────────────────────────
+ * │ Copyright       │ (c) Gurpinder Gill
+ * │ License         │ MIT
+ * │ Package Name    │ lira-prototype
+ * │ Module Name     │ lira/vocabulary/role/word_identifier
+ * │ Filename        │ word_identifier.ts
+ * │ File Version    │ 0.1.0
+ * │ Created Date    │ 2026-08-18
+ * │ Modified Date   │ 2026-08-23
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Description     │ WordIdentifier: one candidate resolution of a token to a
+ * │                 │ grammatical category.
+ * │                 │
+ * │                 │
+ * │                 │
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Change Log      │ [CHANGELOG.md](./CHANGELOG.md)
+ * │ Issues Log      │ [ISSUES.md](./ISSUES.md)
+ * └─────────────────┴────────────────────────────────────────────────────────────────────┘
+ *
+ * @module lira/vocabulary/role/word_identifier
+ * @file word_identifier.ts
+ * @author Gurpinder Gill
+ * @license MIT
+ */
 import type { PartOfSpeech } from "../data/enums/part_of_speech";
 import type { Word } from "../data/entities/word";
 

@@ -1,3 +1,38 @@
+/**
+ * ┌──────────────────────────────────────────────────────────────────────────────────────┐
+ * │                                                                                      │
+ * │         ██╗     ██╗██████╗  █████╗                                                   │
+ * │         ██║     ██║██╔══██╗██╔══██╗                                                  │
+ * │         ██║     ██║██████╔╝███████║                                                  │
+ * │         ██║     ██║██╔══██╗██╔══██║                                                  │
+ * │         ███████╗██║██║  ██║██║  ██║                                                  │
+ * │         ╚══════╝╚═╝╚═╝  ╚═╝╚═╝  ╚═╝                                                  │
+ * │                                                                                      │
+ * ├─────────────────┬────────────────────────────────────────────────────────────────────
+ * │ Copyright       │ (c) Gurpinder Gill
+ * │ License         │ MIT
+ * │ Package Name    │ lira-prototype
+ * │ Module Name     │ lira/vocabulary/role/web_worker/vocabulary_worker_protocol
+ * │ Filename        │ vocabulary_worker_protocol.ts
+ * │ File Version    │ 0.1.0
+ * │ Created Date    │ 2026-08-11
+ * │ Modified Date   │ 2026-10-24
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Description     │ Message protocol between the main thread and the Vocabulary
+ * │                 │ Service worker.
+ * │                 │
+ * │                 │
+ * │                 │
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Change Log      │ [CHANGELOG.md](./CHANGELOG.md)
+ * │ Issues Log      │ [ISSUES.md](./ISSUES.md)
+ * └─────────────────┴────────────────────────────────────────────────────────────────────┘
+ *
+ * @module lira/vocabulary/role/web_worker/vocabulary_worker_protocol
+ * @file vocabulary_worker_protocol.ts
+ * @author Gurpinder Gill
+ * @license MIT
+ */
 /** Message protocol between the main thread (VocabularyWorkerClient) and
  * the Vocabulary Service worker (vocabulary_worker.ts) -- shared here so
  * both sides are typed against the same shapes instead of each guessing

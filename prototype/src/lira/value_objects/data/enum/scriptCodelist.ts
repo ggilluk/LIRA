@@ -1,3 +1,38 @@
+/**
+ * ┌──────────────────────────────────────────────────────────────────────────────────────┐
+ * │                                                                                      │
+ * │         ██╗     ██╗██████╗  █████╗                                                   │
+ * │         ██║     ██║██╔══██╗██╔══██╗                                                  │
+ * │         ██║     ██║██████╔╝███████║                                                  │
+ * │         ██║     ██║██╔══██╗██╔══██║                                                  │
+ * │         ███████╗██║██║  ██║██║  ██║                                                  │
+ * │         ╚══════╝╚═╝╚═╝  ╚═╝╚═╝  ╚═╝                                                  │
+ * │                                                                                      │
+ * ├─────────────────┬────────────────────────────────────────────────────────────────────
+ * │ Copyright       │ (c) Gurpinder Gill
+ * │ License         │ MIT
+ * │ Package Name    │ lira-prototype
+ * │ Module Name     │ lira/value_objects/data/enum/scriptCodelist
+ * │ Filename        │ scriptCodelist.ts
+ * │ File Version    │ 0.1.0
+ * │ Created Date    │ 2026-08-30
+ * │ Modified Date   │ 2026-08-30
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Description     │ ScriptCodelist: the ISO 15924 script list, with code lookups.
+ * │                 │
+ * │                 │
+ * │                 │
+ * │                 │
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Change Log      │ [CHANGELOG.md](./CHANGELOG.md)
+ * │ Issues Log      │ [ISSUES.md](./ISSUES.md)
+ * └─────────────────┴────────────────────────────────────────────────────────────────────┘
+ *
+ * @module lira/value_objects/data/enum/scriptCodelist
+ * @file scriptCodelist.ts
+ * @author Gurpinder Gill
+ * @license MIT
+ */
 /** ISO 15924 script list. Enum values are the source ISO 15924 numeric codes; enum names annotate the alpha-4 source code and script name. */
 export enum ScriptCodelist {
   XSUX_CUNEIFORM_SUMERO_AKKADIAN = 20,

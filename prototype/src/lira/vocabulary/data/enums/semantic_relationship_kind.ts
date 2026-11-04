@@ -1,3 +1,38 @@
+/**
+ * ┌──────────────────────────────────────────────────────────────────────────────────────┐
+ * │                                                                                      │
+ * │         ██╗     ██╗██████╗  █████╗                                                   │
+ * │         ██║     ██║██╔══██╗██╔══██╗                                                  │
+ * │         ██║     ██║██████╔╝███████║                                                  │
+ * │         ██║     ██║██╔══██╗██╔══██║                                                  │
+ * │         ███████╗██║██║  ██║██║  ██║                                                  │
+ * │         ╚══════╝╚═╝╚═╝  ╚═╝╚═╝  ╚═╝                                                  │
+ * │                                                                                      │
+ * ├─────────────────┬────────────────────────────────────────────────────────────────────
+ * │ Copyright       │ (c) Gurpinder Gill
+ * │ License         │ MIT
+ * │ Package Name    │ lira-prototype
+ * │ Module Name     │ lira/vocabulary/data/enums/semantic_relationship_kind
+ * │ Filename        │ semantic_relationship_kind.ts
+ * │ File Version    │ 0.1.0
+ * │ Created Date    │ 2026-08-20
+ * │ Modified Date   │ 2026-09-05
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Description     │ SemanticRelationshipKind: every relationship two Senses can
+ * │                 │ have.
+ * │                 │
+ * │                 │
+ * │                 │
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Change Log      │ [CHANGELOG.md](./CHANGELOG.md)
+ * │ Issues Log      │ [ISSUES.md](./ISSUES.md)
+ * └─────────────────┴────────────────────────────────────────────────────────────────────┘
+ *
+ * @module lira/vocabulary/data/enums/semantic_relationship_kind
+ * @file semantic_relationship_kind.ts
+ * @author Gurpinder Gill
+ * @license MIT
+ */
 /** Classifies every kind of relationship two Senses can have to each
  * other -- the true sense-to-sense semantic facts LexicalRelationshipType's
  * own "Lexical Semantic" group (group 1) used to hold before this split

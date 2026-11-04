@@ -1,4 +1,39 @@
 /**
+ * ┌──────────────────────────────────────────────────────────────────────────────────────┐
+ * │                                                                                      │
+ * │         ██╗     ██╗██████╗  █████╗                                                   │
+ * │         ██║     ██║██╔══██╗██╔══██╗                                                  │
+ * │         ██║     ██║██████╔╝███████║                                                  │
+ * │         ██║     ██║██╔══██╗██╔══██║                                                  │
+ * │         ███████╗██║██║  ██║██║  ██║                                                  │
+ * │         ╚══════╝╚═╝╚═╝  ╚═╝╚═╝  ╚═╝                                                  │
+ * │                                                                                      │
+ * ├─────────────────┬────────────────────────────────────────────────────────────────────
+ * │ Copyright       │ (c) Gurpinder Gill
+ * │ License         │ MIT
+ * │ Package Name    │ lira-prototype
+ * │ Module Name     │ lira/vocabulary/data/entities/domain
+ * │ Filename        │ domain.ts
+ * │ File Version    │ 0.1.0
+ * │ Created Date    │ 2026-09-08
+ * │ Modified Date   │ 2026-09-13
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Description     │ Domain: a subject/topic tag (e.g. "medicine") that a Word,
+ * │                 │ Sense or Phrase belongs to.
+ * │                 │
+ * │                 │
+ * │                 │
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Change Log      │ [CHANGELOG.md](./CHANGELOG.md)
+ * │ Issues Log      │ [ISSUES.md](./ISSUES.md)
+ * └─────────────────┴────────────────────────────────────────────────────────────────────┘
+ *
+ * @module lira/vocabulary/data/entities/domain
+ * @file domain.ts
+ * @author Gurpinder Gill
+ * @license MIT
+ */
+/**
  * Represents a Domain -- a subject/topic-domain tag (e.g. "medicine",
  * "chemistry", "botany") that a Word/Sense/Phrase's own sense belongs
  * to, the closed, shared vocabulary Word.domainTag/relatedDomainTags,

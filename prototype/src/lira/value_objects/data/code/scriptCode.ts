@@ -1,3 +1,38 @@
+/**
+ * ┌──────────────────────────────────────────────────────────────────────────────────────┐
+ * │                                                                                      │
+ * │         ██╗     ██╗██████╗  █████╗                                                   │
+ * │         ██║     ██║██╔══██╗██╔══██╗                                                  │
+ * │         ██║     ██║██████╔╝███████║                                                  │
+ * │         ██║     ██║██╔══██╗██╔══██║                                                  │
+ * │         ███████╗██║██║  ██║██║  ██║                                                  │
+ * │         ╚══════╝╚═╝╚═╝  ╚═╝╚═╝  ╚═╝                                                  │
+ * │                                                                                      │
+ * ├─────────────────┬────────────────────────────────────────────────────────────────────
+ * │ Copyright       │ (c) Gurpinder Gill
+ * │ License         │ MIT
+ * │ Package Name    │ lira-prototype
+ * │ Module Name     │ lira/value_objects/data/code/scriptCode
+ * │ Filename        │ scriptCode.ts
+ * │ File Version    │ 0.1.0
+ * │ Created Date    │ 2026-08-30
+ * │ Modified Date   │ 2026-10-06
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Description     │ ScriptCode: CCTS Code specialised for ISO 15924 script codes.
+ * │                 │
+ * │                 │
+ * │                 │
+ * │                 │
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Change Log      │ [CHANGELOG.md](./CHANGELOG.md)
+ * │ Issues Log      │ [ISSUES.md](./ISSUES.md)
+ * └─────────────────┴────────────────────────────────────────────────────────────────────┘
+ *
+ * @module lira/value_objects/data/code/scriptCode
+ * @file scriptCode.ts
+ * @author Gurpinder Gill
+ * @license MIT
+ */
 import type { Code } from "../code";
 import { Uri } from "../uri";
 import { ScriptCodelist, scriptCodelistCode } from "../enum/scriptCodelist";

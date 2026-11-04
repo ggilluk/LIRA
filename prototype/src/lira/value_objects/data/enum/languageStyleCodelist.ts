@@ -1,4 +1,39 @@
 /**
+ * ┌──────────────────────────────────────────────────────────────────────────────────────┐
+ * │                                                                                      │
+ * │         ██╗     ██╗██████╗  █████╗                                                   │
+ * │         ██║     ██║██╔══██╗██╔══██╗                                                  │
+ * │         ██║     ██║██████╔╝███████║                                                  │
+ * │         ██║     ██║██╔══██╗██╔══██║                                                  │
+ * │         ███████╗██║██║  ██║██║  ██║                                                  │
+ * │         ╚══════╝╚═╝╚═╝  ╚═╝╚═╝  ╚═╝                                                  │
+ * │                                                                                      │
+ * ├─────────────────┬────────────────────────────────────────────────────────────────────
+ * │ Copyright       │ (c) Gurpinder Gill
+ * │ License         │ MIT
+ * │ Package Name    │ lira-prototype
+ * │ Module Name     │ lira/value_objects/data/enum/languageStyleCodelist
+ * │ Filename        │ languageStyleCodelist.ts
+ * │ File Version    │ 0.1.0
+ * │ Created Date    │ 2026-08-31
+ * │ Modified Date   │ 2026-08-31
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Description     │ LanguageStyleCodelist: LIRA's register/style codes (formal,
+ * │                 │ informal, slang, ...).
+ * │                 │
+ * │                 │
+ * │                 │
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Change Log      │ [CHANGELOG.md](./CHANGELOG.md)
+ * │ Issues Log      │ [ISSUES.md](./ISSUES.md)
+ * └─────────────────┴────────────────────────────────────────────────────────────────────┘
+ *
+ * @module lira/value_objects/data/enum/languageStyleCodelist
+ * @file languageStyleCodelist.ts
+ * @author Gurpinder Gill
+ * @license MIT
+ */
+/**
  * LIRA code values for a text's own register/style of language use --
  * how formal, technical, or colloquial a specific wording is.
  *

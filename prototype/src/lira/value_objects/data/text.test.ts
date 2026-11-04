@@ -1,3 +1,38 @@
+/**
+ * ┌──────────────────────────────────────────────────────────────────────────────────────┐
+ * │                                                                                      │
+ * │         ██╗     ██╗██████╗  █████╗                                                   │
+ * │         ██║     ██║██╔══██╗██╔══██╗                                                  │
+ * │         ██║     ██║██████╔╝███████║                                                  │
+ * │         ██║     ██║██╔══██╗██╔══██║                                                  │
+ * │         ███████╗██║██║  ██║██║  ██║                                                  │
+ * │         ╚══════╝╚═╝╚═╝  ╚═╝╚═╝  ╚═╝                                                  │
+ * │                                                                                      │
+ * ├─────────────────┬────────────────────────────────────────────────────────────────────
+ * │ Copyright       │ (c) Gurpinder Gill
+ * │ License         │ MIT
+ * │ Package Name    │ lira-prototype
+ * │ Module Name     │ lira/value_objects/data/text.test
+ * │ Filename        │ text.test.ts
+ * │ File Version    │ 0.1.0
+ * │ Created Date    │ 2026-08-18
+ * │ Modified Date   │ 2026-08-30
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Description     │ Vitest suite for the Text value object.
+ * │                 │
+ * │                 │
+ * │                 │
+ * │                 │
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Change Log      │ [CHANGELOG.md](./CHANGELOG.md)
+ * │ Issues Log      │ [ISSUES.md](./ISSUES.md)
+ * └─────────────────┴────────────────────────────────────────────────────────────────────┘
+ *
+ * @module lira/value_objects/data/text.test
+ * @file text.test.ts
+ * @author Gurpinder Gill
+ * @license MIT
+ */
 import { describe, expect, it } from "vitest";
 import { text, textToLowerCase, textToUpperCase } from "./text";
 import { LanguageCode } from "./code/languageCode";

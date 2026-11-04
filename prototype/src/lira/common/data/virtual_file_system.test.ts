@@ -1,3 +1,38 @@
+/**
+ * ┌──────────────────────────────────────────────────────────────────────────────────────┐
+ * │                                                                                      │
+ * │         ██╗     ██╗██████╗  █████╗                                                   │
+ * │         ██║     ██║██╔══██╗██╔══██╗                                                  │
+ * │         ██║     ██║██████╔╝███████║                                                  │
+ * │         ██║     ██║██╔══██╗██╔══██║                                                  │
+ * │         ███████╗██║██║  ██║██║  ██║                                                  │
+ * │         ╚══════╝╚═╝╚═╝  ╚═╝╚═╝  ╚═╝                                                  │
+ * │                                                                                      │
+ * ├─────────────────┬────────────────────────────────────────────────────────────────────
+ * │ Copyright       │ (c) Gurpinder Gill
+ * │ License         │ MIT
+ * │ Package Name    │ lira-prototype
+ * │ Module Name     │ lira/common/data/virtual_file_system.test
+ * │ Filename        │ virtual_file_system.test.ts
+ * │ File Version    │ 0.1.0
+ * │ Created Date    │ 2026-10-24
+ * │ Modified Date   │ 2026-11-04
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Description     │ Vitest suite for VirtualFileSystem: navigation, files and
+ * │                 │ directories, mv/cp, capacity limits, toBlob(), BinaryObject
+ * │                 │ content and by-reference filenames.
+ * │                 │
+ * │                 │
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Change Log      │ [CHANGELOG.md](./CHANGELOG.md)
+ * │ Issues Log      │ [ISSUES.md](./ISSUES.md)
+ * └─────────────────┴────────────────────────────────────────────────────────────────────┘
+ *
+ * @module lira/common/data/virtual_file_system.test
+ * @file virtual_file_system.test.ts
+ * @author Gurpinder Gill
+ * @license MIT
+ */
 import { describe, expect, it } from "vitest";
 import { type BinaryObject, binaryObject, MimeCode, MimeCodelist } from "../../value_objects";
 import { VirtualFileSystem } from "./virtual_file_system";

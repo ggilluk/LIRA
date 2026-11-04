@@ -1,3 +1,38 @@
+/**
+ * ┌──────────────────────────────────────────────────────────────────────────────────────┐
+ * │                                                                                      │
+ * │         ██╗     ██╗██████╗  █████╗                                                   │
+ * │         ██║     ██║██╔══██╗██╔══██╗                                                  │
+ * │         ██║     ██║██████╔╝███████║                                                  │
+ * │         ██║     ██║██╔══██╗██╔══██║                                                  │
+ * │         ███████╗██║██║  ██║██║  ██║                                                  │
+ * │         ╚══════╝╚═╝╚═╝  ╚═╝╚═╝  ╚═╝                                                  │
+ * │                                                                                      │
+ * ├─────────────────┬────────────────────────────────────────────────────────────────────
+ * │ Copyright       │ (c) Gurpinder Gill
+ * │ License         │ MIT
+ * │ Package Name    │ lira-prototype
+ * │ Module Name     │ lira/linguistics/role/document_reader
+ * │ Filename        │ document_reader.ts
+ * │ File Version    │ 0.1.0
+ * │ Created Date    │ 2026-08-12
+ * │ Modified Date   │ 2026-08-12
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Description     │ DocumentReader: classifies raw document lines into Heading and
+ * │                 │ Paragraph blocks, in document order.
+ * │                 │
+ * │                 │
+ * │                 │
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Change Log      │ [CHANGELOG.md](./CHANGELOG.md)
+ * │ Issues Log      │ [ISSUES.md](./ISSUES.md)
+ * └─────────────────┴────────────────────────────────────────────────────────────────────┘
+ *
+ * @module lira/linguistics/role/document_reader
+ * @file document_reader.ts
+ * @author Gurpinder Gill
+ * @license MIT
+ */
 import { createDocument, type Document } from "../data/document";
 import { matchHeadingLine, type Heading } from "../data/heading";
 import { LinguisticUnitKind } from "../data/linguistic_unit_kind";

@@ -1,3 +1,38 @@
+/**
+ * ┌──────────────────────────────────────────────────────────────────────────────────────┐
+ * │                                                                                      │
+ * │         ██╗     ██╗██████╗  █████╗                                                   │
+ * │         ██║     ██║██╔══██╗██╔══██╗                                                  │
+ * │         ██║     ██║██████╔╝███████║                                                  │
+ * │         ██║     ██║██╔══██╗██╔══██║                                                  │
+ * │         ███████╗██║██║  ██║██║  ██║                                                  │
+ * │         ╚══════╝╚═╝╚═╝  ╚═╝╚═╝  ╚═╝                                                  │
+ * │                                                                                      │
+ * ├─────────────────┬────────────────────────────────────────────────────────────────────
+ * │ Copyright       │ (c) Gurpinder Gill
+ * │ License         │ MIT
+ * │ Package Name    │ lira-prototype
+ * │ Module Name     │ lira/vocabulary/role/vocabulary_serializer
+ * │ Filename        │ vocabulary_serializer.ts
+ * │ File Version    │ 0.1.0
+ * │ Created Date    │ 2026-09-17
+ * │ Modified Date   │ 2026-09-17
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Description     │ Rebuilds the Vocabulary side-indexes after a Domain is loaded
+ * │                 │ from file.
+ * │                 │
+ * │                 │
+ * │                 │
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Change Log      │ [CHANGELOG.md](./CHANGELOG.md)
+ * │ Issues Log      │ [ISSUES.md](./ISSUES.md)
+ * └─────────────────┴────────────────────────────────────────────────────────────────────┘
+ *
+ * @module lira/vocabulary/role/vocabulary_serializer
+ * @file vocabulary_serializer.ts
+ * @author Gurpinder Gill
+ * @license MIT
+ */
 import type { Dictionary } from "../data/dictionary";
 import type { Phrases } from "../data/phrases";
 import type { WordForms } from "../data/word_forms";

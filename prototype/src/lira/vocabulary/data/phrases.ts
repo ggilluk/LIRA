@@ -1,3 +1,38 @@
+/**
+ * ┌──────────────────────────────────────────────────────────────────────────────────────┐
+ * │                                                                                      │
+ * │         ██╗     ██╗██████╗  █████╗                                                   │
+ * │         ██║     ██║██╔══██╗██╔══██╗                                                  │
+ * │         ██║     ██║██████╔╝███████║                                                  │
+ * │         ██║     ██║██╔══██╗██╔══██║                                                  │
+ * │         ███████╗██║██║  ██║██║  ██║                                                  │
+ * │         ╚══════╝╚═╝╚═╝  ╚═╝╚═╝  ╚═╝                                                  │
+ * │                                                                                      │
+ * ├─────────────────┬────────────────────────────────────────────────────────────────────
+ * │ Copyright       │ (c) Gurpinder Gill
+ * │ License         │ MIT
+ * │ Package Name    │ lira-prototype
+ * │ Module Name     │ lira/vocabulary/data/phrases
+ * │ Filename        │ phrases.ts
+ * │ File Version    │ 0.1.0
+ * │ Created Date    │ 2026-08-16
+ * │ Modified Date   │ 2026-09-17
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Description     │ Phrases: per-Domain storage for multi-word Phrases.
+ * │                 │
+ * │                 │
+ * │                 │
+ * │                 │
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Change Log      │ [CHANGELOG.md](./CHANGELOG.md)
+ * │ Issues Log      │ [ISSUES.md](./ISSUES.md)
+ * └─────────────────┴────────────────────────────────────────────────────────────────────┘
+ *
+ * @module lira/vocabulary/data/phrases
+ * @file phrases.ts
+ * @author Gurpinder Gill
+ * @license MIT
+ */
 import type { Identifier } from "../../value_objects";
 import { copyPhraseWithFreshUuid, graphUuid, type Phrase } from "./entities/phrase";
 import type { PartOfSpeech } from "./enums/part_of_speech";

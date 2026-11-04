@@ -1,3 +1,38 @@
+/**
+ * ┌──────────────────────────────────────────────────────────────────────────────────────┐
+ * │                                                                                      │
+ * │         ██╗     ██╗██████╗  █████╗                                                   │
+ * │         ██║     ██║██╔══██╗██╔══██╗                                                  │
+ * │         ██║     ██║██████╔╝███████║                                                  │
+ * │         ██║     ██║██╔══██╗██╔══██║                                                  │
+ * │         ███████╗██║██║  ██║██║  ██║                                                  │
+ * │         ╚══════╝╚═╝╚═╝  ╚═╝╚═╝  ╚═╝                                                  │
+ * │                                                                                      │
+ * ├─────────────────┬────────────────────────────────────────────────────────────────────
+ * │ Copyright       │ (c) Gurpinder Gill
+ * │ License         │ MIT
+ * │ Package Name    │ lira-prototype
+ * │ Module Name     │ lira/common/ui/console_commands/df
+ * │ Filename        │ df.ts
+ * │ File Version    │ 0.1.0
+ * │ Created Date    │ 2026-10-24
+ * │ Modified Date   │ 2026-10-24
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Description     │ Console `df` command: reports the virtual filesystem's size,
+ * │                 │ used and free space in `df -h` form.
+ * │                 │
+ * │                 │
+ * │                 │
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Change Log      │ [CHANGELOG.md](./CHANGELOG.md)
+ * │ Issues Log      │ [ISSUES.md](./ISSUES.md)
+ * └─────────────────┴────────────────────────────────────────────────────────────────────┘
+ *
+ * @module lira/common/ui/console_commands/df
+ * @file df.ts
+ * @author Gurpinder Gill
+ * @license MIT
+ */
 import type { ConsoleCommand } from "./types";
 import { formatBytes } from "./shared";
 

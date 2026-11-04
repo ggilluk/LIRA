@@ -1,3 +1,38 @@
+/**
+ * ┌──────────────────────────────────────────────────────────────────────────────────────┐
+ * │                                                                                      │
+ * │         ██╗     ██╗██████╗  █████╗                                                   │
+ * │         ██║     ██║██╔══██╗██╔══██╗                                                  │
+ * │         ██║     ██║██████╔╝███████║                                                  │
+ * │         ██║     ██║██╔══██╗██╔══██║                                                  │
+ * │         ███████╗██║██║  ██║██║  ██║                                                  │
+ * │         ╚══════╝╚═╝╚═╝  ╚═╝╚═╝  ╚═╝                                                  │
+ * │                                                                                      │
+ * ├─────────────────┬────────────────────────────────────────────────────────────────────
+ * │ Copyright       │ (c) Gurpinder Gill
+ * │ License         │ MIT
+ * │ Package Name    │ lira-prototype
+ * │ Module Name     │ lira/vocabulary/role/morphological_pointer_relationship_processor
+ * │ Filename        │ morphological_pointer_relationship_processor.ts
+ * │ File Version    │ 0.1.0
+ * │ Created Date    │ 2026-08-11
+ * │ Modified Date   │ 2026-09-05
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Description     │ MorphologicalPointerRelationshipProcessor: creates
+ * │                 │ MorphologicalPointerRelationship records and their tensor rows.
+ * │                 │
+ * │                 │
+ * │                 │
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Change Log      │ [CHANGELOG.md](./CHANGELOG.md)
+ * │ Issues Log      │ [ISSUES.md](./ISSUES.md)
+ * └─────────────────┴────────────────────────────────────────────────────────────────────┘
+ *
+ * @module lira/vocabulary/role/morphological_pointer_relationship_processor
+ * @file morphological_pointer_relationship_processor.ts
+ * @author Gurpinder Gill
+ * @license MIT
+ */
 import type { MorphologicalPointerRelationship } from "../data/morphological_pointer_relationship";
 import type { MorphologicalPointerRelationshipStore } from "../data/morphological_pointer_relationship_store";
 import type { MorphologicalPointerRelationshipSystemPropertyTensor } from "../data/morphological_pointer_relationship_tensor";

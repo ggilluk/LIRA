@@ -1,3 +1,38 @@
+/**
+ * ┌──────────────────────────────────────────────────────────────────────────────────────┐
+ * │                                                                                      │
+ * │         ██╗     ██╗██████╗  █████╗                                                   │
+ * │         ██║     ██║██╔══██╗██╔══██╗                                                  │
+ * │         ██║     ██║██████╔╝███████║                                                  │
+ * │         ██║     ██║██╔══██╗██╔══██║                                                  │
+ * │         ███████╗██║██║  ██║██║  ██║                                                  │
+ * │         ╚══════╝╚═╝╚═╝  ╚═╝╚═╝  ╚═╝                                                  │
+ * │                                                                                      │
+ * ├─────────────────┬────────────────────────────────────────────────────────────────────
+ * │ Copyright       │ (c) Gurpinder Gill
+ * │ License         │ MIT
+ * │ Package Name    │ lira-prototype
+ * │ Module Name     │ lira/linguistics/role/paragraph_reader
+ * │ Filename        │ paragraph_reader.ts
+ * │ File Version    │ 0.1.0
+ * │ Created Date    │ 2026-08-12
+ * │ Modified Date   │ 2026-08-12
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Description     │ ParagraphReader: splits paragraph text into sentences and reads
+ * │                 │ each one.
+ * │                 │
+ * │                 │
+ * │                 │
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Change Log      │ [CHANGELOG.md](./CHANGELOG.md)
+ * │ Issues Log      │ [ISSUES.md](./ISSUES.md)
+ * └─────────────────┴────────────────────────────────────────────────────────────────────┘
+ *
+ * @module lira/linguistics/role/paragraph_reader
+ * @file paragraph_reader.ts
+ * @author Gurpinder Gill
+ * @license MIT
+ */
 import { createReadingError, ReadingErrorKind, type ReadingError } from "../data/reading_error";
 import { LinguisticUnitKind } from "../data/linguistic_unit_kind";
 import { createParagraph, type Paragraph } from "../data/paragraph";

@@ -1,3 +1,38 @@
+/**
+ * ┌──────────────────────────────────────────────────────────────────────────────────────┐
+ * │                                                                                      │
+ * │         ██╗     ██╗██████╗  █████╗                                                   │
+ * │         ██║     ██║██╔══██╗██╔══██╗                                                  │
+ * │         ██║     ██║██████╔╝███████║                                                  │
+ * │         ██║     ██║██╔══██╗██╔══██║                                                  │
+ * │         ███████╗██║██║  ██║██║  ██║                                                  │
+ * │         ╚══════╝╚═╝╚═╝  ╚═╝╚═╝  ╚═╝                                                  │
+ * │                                                                                      │
+ * ├─────────────────┬────────────────────────────────────────────────────────────────────
+ * │ Copyright       │ (c) Gurpinder Gill
+ * │ License         │ MIT
+ * │ Package Name    │ lira-prototype
+ * │ Module Name     │ lira/vocabulary/data/system_properties_ref
+ * │ Filename        │ system_properties_ref.ts
+ * │ File Version    │ 0.1.0
+ * │ Created Date    │ 2026-08-11
+ * │ Modified Date   │ 2026-08-22
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Description     │ SystemPropertiesRef: a relationship's by-reference view into
+ * │                 │ its system-property tensor row.
+ * │                 │
+ * │                 │
+ * │                 │
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Change Log      │ [CHANGELOG.md](./CHANGELOG.md)
+ * │ Issues Log      │ [ISSUES.md](./ISSUES.md)
+ * └─────────────────┴────────────────────────────────────────────────────────────────────┘
+ *
+ * @module lira/vocabulary/data/system_properties_ref
+ * @file system_properties_ref.ts
+ * @author Gurpinder Gill
+ * @license MIT
+ */
 import { ACTIVATION_COL, CONFIDENCE_COL, PROVENANCE_COL, TEMPORAL_COL } from "./morphological_pointer_relationship_tensor";
 import type { RelationshipSystemPropertyTensor } from "./relationship_system_property_tensor";
 

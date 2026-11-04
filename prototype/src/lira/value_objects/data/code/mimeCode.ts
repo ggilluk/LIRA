@@ -1,3 +1,38 @@
+/**
+ * ┌──────────────────────────────────────────────────────────────────────────────────────┐
+ * │                                                                                      │
+ * │         ██╗     ██╗██████╗  █████╗                                                   │
+ * │         ██║     ██║██╔══██╗██╔══██╗                                                  │
+ * │         ██║     ██║██████╔╝███████║                                                  │
+ * │         ██║     ██║██╔══██╗██╔══██║                                                  │
+ * │         ███████╗██║██║  ██║██║  ██║                                                  │
+ * │         ╚══════╝╚═╝╚═╝  ╚═╝╚═╝  ╚═╝                                                  │
+ * │                                                                                      │
+ * ├─────────────────┬────────────────────────────────────────────────────────────────────
+ * │ Copyright       │ (c) Gurpinder Gill
+ * │ License         │ MIT
+ * │ Package Name    │ lira-prototype
+ * │ Module Name     │ lira/value_objects/data/code/mimeCode
+ * │ Filename        │ mimeCode.ts
+ * │ File Version    │ 0.1.0
+ * │ Created Date    │ 2026-11-04
+ * │ Modified Date   │ 2026-11-04
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Description     │ MimeCode: the UN/CEFACT D25A MIME_ Code. Type (UN02000117),
+ * │                 │ agency 379 (IANA), with values from the IANA Media Types
+ * │                 │ registry.
+ * │                 │
+ * │                 │
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Change Log      │ [CHANGELOG.md](./CHANGELOG.md)
+ * │ Issues Log      │ [ISSUES.md](./ISSUES.md)
+ * └─────────────────┴────────────────────────────────────────────────────────────────────┘
+ *
+ * @module lira/value_objects/data/code/mimeCode
+ * @file mimeCode.ts
+ * @author Gurpinder Gill
+ * @license MIT
+ */
 import type { Code } from "../code";
 import { Uri } from "../uri";
 import { MIME_CODELIST_VERSION, MimeCodelist } from "../enum/mimeCodelist";

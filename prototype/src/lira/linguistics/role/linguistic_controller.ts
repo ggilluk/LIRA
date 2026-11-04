@@ -1,3 +1,38 @@
+/**
+ * ┌──────────────────────────────────────────────────────────────────────────────────────┐
+ * │                                                                                      │
+ * │         ██╗     ██╗██████╗  █████╗                                                   │
+ * │         ██║     ██║██╔══██╗██╔══██╗                                                  │
+ * │         ██║     ██║██████╔╝███████║                                                  │
+ * │         ██║     ██║██╔══██╗██╔══██║                                                  │
+ * │         ███████╗██║██║  ██║██║  ██║                                                  │
+ * │         ╚══════╝╚═╝╚═╝  ╚═╝╚═╝  ╚═╝                                                  │
+ * │                                                                                      │
+ * ├─────────────────┬────────────────────────────────────────────────────────────────────
+ * │ Copyright       │ (c) Gurpinder Gill
+ * │ License         │ MIT
+ * │ Package Name    │ lira-prototype
+ * │ Module Name     │ lira/linguistics/role/linguistic_controller
+ * │ Filename        │ linguistic_controller.ts
+ * │ File Version    │ 0.1.0
+ * │ Created Date    │ 2026-08-11
+ * │ Modified Date   │ 2026-08-22
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Description     │ LinguisticController: wires the Linguistics Service's
+ * │                 │ processors, readers and grammar together.
+ * │                 │
+ * │                 │
+ * │                 │
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Change Log      │ [CHANGELOG.md](./CHANGELOG.md)
+ * │ Issues Log      │ [ISSUES.md](./ISSUES.md)
+ * └─────────────────┴────────────────────────────────────────────────────────────────────┘
+ *
+ * @module lira/linguistics/role/linguistic_controller
+ * @file linguistic_controller.ts
+ * @author Gurpinder Gill
+ * @license MIT
+ */
 import type { DictionaryProcessor } from "../../vocabulary/role/dictionary_processor";
 import type { MorphologicalPointerRelationshipStore } from "../../vocabulary/data/morphological_pointer_relationship_store";
 import type { PartOfSpeech } from "../../vocabulary/data/enums/part_of_speech";

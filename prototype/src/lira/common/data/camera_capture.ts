@@ -1,3 +1,38 @@
+/**
+ * ┌──────────────────────────────────────────────────────────────────────────────────────┐
+ * │                                                                                      │
+ * │         ██╗     ██╗██████╗  █████╗                                                   │
+ * │         ██║     ██║██╔══██╗██╔══██╗                                                  │
+ * │         ██║     ██║██████╔╝███████║                                                  │
+ * │         ██║     ██║██╔══██╗██╔══██║                                                  │
+ * │         ███████╗██║██║  ██║██║  ██║                                                  │
+ * │         ╚══════╝╚═╝╚═╝  ╚═╝╚═╝  ╚═╝                                                  │
+ * │                                                                                      │
+ * ├─────────────────┬────────────────────────────────────────────────────────────────────
+ * │ Copyright       │ (c) Gurpinder Gill
+ * │ License         │ MIT
+ * │ Package Name    │ lira-prototype
+ * │ Module Name     │ lira/common/data/camera_capture
+ * │ Filename        │ camera_capture.ts
+ * │ File Version    │ 0.1.0
+ * │ Created Date    │ 2026-10-29
+ * │ Modified Date   │ 2026-10-29
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Description     │ Live camera feed wrapper: owns one getUserMedia() MediaStream
+ * │                 │ and its <video> element for the Canvas tab's camera cube.
+ * │                 │
+ * │                 │
+ * │                 │
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Change Log      │ [CHANGELOG.md](./CHANGELOG.md)
+ * │ Issues Log      │ [ISSUES.md](./ISSUES.md)
+ * └─────────────────┴────────────────────────────────────────────────────────────────────┘
+ *
+ * @module lira/common/data/camera_capture
+ * @file camera_capture.ts
+ * @author Gurpinder Gill
+ * @license MIT
+ */
 /** A live camera feed, wrapped for `common/ui/gpu_canvas/scene_renderer.ts`'s
  * own camera-textured cube (its own `attachCamera()`) -- owns exactly
  * one `getUserMedia()` `MediaStream` and the `<video>` element it

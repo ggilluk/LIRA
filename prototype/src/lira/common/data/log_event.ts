@@ -1,3 +1,38 @@
+/**
+ * ┌──────────────────────────────────────────────────────────────────────────────────────┐
+ * │                                                                                      │
+ * │         ██╗     ██╗██████╗  █████╗                                                   │
+ * │         ██║     ██║██╔══██╗██╔══██╗                                                  │
+ * │         ██║     ██║██████╔╝███████║                                                  │
+ * │         ██║     ██║██╔══██╗██╔══██║                                                  │
+ * │         ███████╗██║██║  ██║██║  ██║                                                  │
+ * │         ╚══════╝╚═╝╚═╝  ╚═╝╚═╝  ╚═╝                                                  │
+ * │                                                                                      │
+ * ├─────────────────┬────────────────────────────────────────────────────────────────────
+ * │ Copyright       │ (c) Gurpinder Gill
+ * │ License         │ MIT
+ * │ Package Name    │ lira-prototype
+ * │ Module Name     │ lira/common/data/log_event
+ * │ Filename        │ log_event.ts
+ * │ File Version    │ 0.1.0
+ * │ Created Date    │ 2026-09-14
+ * │ Modified Date   │ 2026-09-14
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Description     │ Structured log entries (LogEvent) and the LogEventBoard that
+ * │                 │ collects them for the Portal's log view.
+ * │                 │
+ * │                 │
+ * │                 │
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Change Log      │ [CHANGELOG.md](./CHANGELOG.md)
+ * │ Issues Log      │ [ISSUES.md](./ISSUES.md)
+ * └─────────────────┴────────────────────────────────────────────────────────────────────┘
+ *
+ * @module lira/common/data/log_event
+ * @file log_event.ts
+ * @author Gurpinder Gill
+ * @license MIT
+ */
 /** One structured log entry, as emitted by `common/role/logger.ts`'s
  * `Logger` and collected by `LogEventBoard` below -- the "what happened,
  * and when" counterpart to `service_status.ts`'s own "what's happening

@@ -1,4 +1,39 @@
 /**
+ * ┌──────────────────────────────────────────────────────────────────────────────────────┐
+ * │                                                                                      │
+ * │         ██╗     ██╗██████╗  █████╗                                                   │
+ * │         ██║     ██║██╔══██╗██╔══██╗                                                  │
+ * │         ██║     ██║██████╔╝███████║                                                  │
+ * │         ██║     ██║██╔══██╗██╔══██║                                                  │
+ * │         ███████╗██║██║  ██║██║  ██║                                                  │
+ * │         ╚══════╝╚═╝╚═╝  ╚═╝╚═╝  ╚═╝                                                  │
+ * │                                                                                      │
+ * ├─────────────────┬────────────────────────────────────────────────────────────────────
+ * │ Copyright       │ (c) Gurpinder Gill
+ * │ License         │ MIT
+ * │ Package Name    │ lira-prototype
+ * │ Module Name     │ lira/value_objects/data/enum/mimeCodelist
+ * │ Filename        │ mimeCodelist.ts
+ * │ File Version    │ 0.1.0
+ * │ Created Date    │ 2026-11-04
+ * │ Modified Date   │ 2026-11-04
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Description     │ MimeCodelist: the complete IANA Media Types registry (2382
+ * │                 │ entries), generated from assets/iana/media-types.xml, with its
+ * │                 │ version and a case-insensitive lookup.
+ * │                 │
+ * │                 │
+ * ├─────────────────┼────────────────────────────────────────────────────────────────────
+ * │ Change Log      │ [CHANGELOG.md](./CHANGELOG.md)
+ * │ Issues Log      │ [ISSUES.md](./ISSUES.md)
+ * └─────────────────┴────────────────────────────────────────────────────────────────────┘
+ *
+ * @module lira/value_objects/data/enum/mimeCodelist
+ * @file mimeCodelist.ts
+ * @author Gurpinder Gill
+ * @license MIT
+ */
+/**
  * IANA Media Types registry (RFC 6838), version 2026-10-30 -- every MIME
  * type a `BinaryObject.mimeCode` can name (`MimeCode`,
  * data/code/mimeCode.ts).
