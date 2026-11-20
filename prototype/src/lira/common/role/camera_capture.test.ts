@@ -12,7 +12,7 @@
  * │ Copyright       │ (c) Gurpinder Gill
  * │ License         │ MIT
  * │ Package Name    │ lira-prototype
- * │ Module Name     │ lira/common/data/camera_capture.test
+ * │ Module Name     │ lira/common/role/camera_capture.test
  * │ Filename        │ camera_capture.test.ts
  * │ File Version    │ 0.1.0
  * │ Created Date    │ 2026-10-29
@@ -28,7 +28,7 @@
  * │ Issues Log      │ [ISSUES.md](./ISSUES.md)
  * └─────────────────┴────────────────────────────────────────────────────────────────────┘
  *
- * @module lira/common/data/camera_capture.test
+ * @module lira/common/role/camera_capture.test
  * @file camera_capture.test.ts
  * @author Gurpinder Gill
  * @license MIT

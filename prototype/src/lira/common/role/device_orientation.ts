@@ -12,7 +12,7 @@
  * │ Copyright       │ (c) Gurpinder Gill
  * │ License         │ MIT
  * │ Package Name    │ lira-prototype
- * │ Module Name     │ lira/common/data/device_orientation
+ * │ Module Name     │ lira/common/role/device_orientation
  * │ Filename        │ device_orientation.ts
  * │ File Version    │ 0.1.0
  * │ Created Date    │ 2026-10-31
@@ -28,7 +28,7 @@
  * │ Issues Log      │ [ISSUES.md](./ISSUES.md)
  * └─────────────────┴────────────────────────────────────────────────────────────────────┘
  *
- * @module lira/common/data/device_orientation
+ * @module lira/common/role/device_orientation
  * @file device_orientation.ts
  * @author Gurpinder Gill
  * @license MIT
@@ -41,9 +41,11 @@
  * converting it into a rotation matrix (`mat4.ts`'s own
  * `deviceOrientationToRotation()`) is `scene_renderer.ts`'s own job,
  * the one file that actually owns `gpu_canvas/mat4.ts` and WebGPU
- * model-matrix concerns; a plain `common/data/` sensor class has no
+ * model-matrix concerns; a plain `common/role/` sensor class has no
  * business reaching into `common/ui/` for that, even within the same
- * Architectural Layer.
+ * Architectural Layer -- this class's own job stops at the real
+ * hardware/permission plumbing (`CameraCapture`'s own counterpart in
+ * this same folder, for the same reason), not WebGPU concerns.
  *
  * `target`/`eventConstructor` are both constructor parameters with
  * real defaults (`window` itself), the same injectable-dependency

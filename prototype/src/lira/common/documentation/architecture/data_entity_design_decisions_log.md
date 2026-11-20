@@ -1363,3 +1363,49 @@ adapter" fallback still renders correctly with no regressions and no
 page errors. Confirming the real tilt tracks correctly is, once
 again, for a real phone -- the same one that reported every other
 Canvas bug this far.
+
+## Moving CameraCapture and DeviceOrientationSensor from `data/` to `role/`
+
+Caught on review, not by a bug report: `camera_capture.ts`/
+`camera_capture.test.ts` and `device_orientation.ts`/
+`device_orientation.test.ts` had both been placed in `common/data/`
+when they were first written, following `log_event.ts`/
+`service_status.ts`/`portal_domain.ts`'s own precedent in that same
+folder -- but neither one actually fits this repository's own
+Repository Layout rule (`ARCHITECTURE.md`): `data/` is for
+state-holding types whose primary job is owning a data structure
+(`Dictionary`, `TensorLiraGraph`, and -- in this same folder --
+`VirtualFileSystem`, `LogEventBoard`, `ServiceStatusBoard`,
+`PortalDomainRegistry`); `role/` is for processor/service/controller
+classes that play an active role without being `*Agent` subclasses
+(`GraphProcessor`, `DomainController`, and already, in this port,
+`Logger`).
+
+Both `CameraCapture` and `DeviceOrientationSensor` are role classes by
+that test, not data ones: their entire job is actively driving a real
+browser API -- requesting a hardware permission, attaching/detaching a
+live stream or event listener, reporting the real outcome -- the same
+shape as `Logger` (already in `role/`), just with more state of their
+own (`isReady`/`width`/`height`, the latest orientation reading) held
+in service of that job rather than being the point of the class the
+way `Dictionary`'s own lexicon or `VirtualFileSystem`'s own file tree
+is the point of theirs. Moved both (with `git mv`, preserving history)
+to `common/role/camera_capture.ts` and
+`common/role/device_orientation.ts`, alongside their own test files;
+updated the two call-site imports (`gpu_canvas_view.ts`) and every
+docstring cross-reference to the old `common/data/...` path
+(`gpu_canvas_view.ts`, `scene_renderer.ts`, `mat4.ts`,
+`device_orientation.ts`'s own layering paragraph on why it never
+reaches into `common/ui/`) to the new `common/role/...` one. The other
+four files already in `common/data/` (`log_event.ts`,
+`portal_domain.ts`, `service_status.ts`, `virtual_file_system.ts`)
+were checked against the same rule and left in place -- each one's
+primary job is still holding a data structure or collecting records
+into one, methods and all, the same bucket `Dictionary`/
+`TensorLiraGraph` already sit in on the Python side despite having
+real mutation methods of their own.
+
+No behavioural change at all -- a pure file-organisation move.
+`npx tsc -b --force` clean; `npx vitest run --no-file-parallelism`
+436/436, including both moved test files running unchanged from their
+new location.

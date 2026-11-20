@@ -12,7 +12,7 @@
  * │ Copyright       │ (c) Gurpinder Gill
  * │ License         │ MIT
  * │ Package Name    │ lira-prototype
- * │ Module Name     │ lira/common/data/device_orientation.test
+ * │ Module Name     │ lira/common/role/device_orientation.test
  * │ Filename        │ device_orientation.test.ts
  * │ File Version    │ 0.1.0
  * │ Created Date    │ 2026-10-31
@@ -28,7 +28,7 @@
  * │ Issues Log      │ [ISSUES.md](./ISSUES.md)
  * └─────────────────┴────────────────────────────────────────────────────────────────────┘
  *
- * @module lira/common/data/device_orientation.test
+ * @module lira/common/role/device_orientation.test
  * @file device_orientation.test.ts
  * @author Gurpinder Gill
  * @license MIT

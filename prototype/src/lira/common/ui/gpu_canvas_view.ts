@@ -35,8 +35,8 @@
  */
 import { createSceneRenderer, type SceneRenderer } from "./gpu_canvas/scene_renderer";
 import type { GpuCanvasContextLike, GpuDeviceLike } from "./gpu_canvas/webgpu_types";
-import { CameraCapture } from "../data/camera_capture";
-import { DeviceOrientationSensor } from "../data/device_orientation";
+import { CameraCapture } from "../role/camera_capture";
+import { DeviceOrientationSensor } from "../role/device_orientation";
 
 /** The narrow view this file needs of a real `Logger` (`role/logger.ts`)
  * -- `info`/`warn`/`error` only, the same "structural interface over
@@ -122,9 +122,9 @@ interface DeviceOrientationSensorLike {
  * cubes and spheres (`gpu_canvas/scene_renderer.ts`'s own real
  * `SceneRenderer`), plus -- once a real camera becomes available -- a
  * live camera feed textured onto one more cube in that same scene
- * (`common/data/camera_capture.ts`'s own `CameraCapture`), pinned at
+ * (`common/role/camera_capture.ts`'s own `CameraCapture`), pinned at
  * the centre and, once a real device-orientation reading becomes
- * available too (`common/data/device_orientation.ts`'s own
+ * available too (`common/role/device_orientation.ts`'s own
  * `DeviceOrientationSensor`), tilting to match the phone's own real
  * orientation instead of spinning on its own. Meant as the starting
  * harness for later experiments converting this UI to a GPU-rendered

@@ -110,7 +110,7 @@ interface EntityResource {
 }
 
 /** The narrow view `attachCamera()` needs of a real `CameraCapture`
- * (`common/data/camera_capture.ts`) -- `element`/`isReady`/`width`/
+ * (`common/role/camera_capture.ts`) -- `element`/`isReady`/`width`/
  * `height` only, the same "structural interface over the real class"
  * call `console_commands/types.ts`'s own `MetricsProvider` already
  * made, so this module (and its own tests) never needs to construct a
@@ -124,7 +124,7 @@ export interface CameraSource {
 }
 
 /** The narrow view `attachOrientation()` needs of a real
- * `DeviceOrientationSensor` (`common/data/device_orientation.ts`) --
+ * `DeviceOrientationSensor` (`common/role/device_orientation.ts`) --
  * its own raw `alpha`/`beta`/`gamma` reading only, the same
  * "structural interface over the real class" call `CameraSource`
  * above already makes. The conversion into an actual rotation matrix

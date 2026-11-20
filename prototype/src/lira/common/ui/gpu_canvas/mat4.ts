@@ -165,7 +165,7 @@ export function normalize(v: Vec3): Vec3 {
   return [v[0] / length, v[1] / length, v[2] / length];
 }
 
-/** `common/data/device_orientation.ts`'s own `DeviceOrientationSensor`
+/** `common/role/device_orientation.ts`'s own `DeviceOrientationSensor`
  * reads a raw `alpha`/`beta`/`gamma` triple straight off the real
  * `deviceorientation` event; this is the one place that turns it into
  * a `Mat4` `scene_renderer.ts` can drop straight into a model matrix
