@@ -16,11 +16,10 @@
  * │ Filename        │ gpu_canvas_view.ts
  * │ File Version    │ 0.1.0
  * │ Created Date    │ 2026-10-27
- * │ Modified Date   │ 2026-10-31
+ * │ Modified Date   │ 2026-11-24
  * ├─────────────────┼────────────────────────────────────────────────────────────────────
- * │ Description     │ GpuCanvasView: the Canvas tab, hosting the WebGPU scene and
- * │                 │ reporting failures visibly through the Logger.
- * │                 │
+ * │ Description     │ GpuCanvasView: the Canvas tab, hosting the WebGPU-drawn desktop
+ * │                 │ window UI and reporting failures visibly through the Logger.
  * │                 │
  * │                 │
  * ├─────────────────┼────────────────────────────────────────────────────────────────────
@@ -33,10 +32,8 @@
  * @author Gurpinder Gill
  * @license MIT
  */
-import { createSceneRenderer, type SceneRenderer } from "./gpu_canvas/scene_renderer";
+import { createDesktopWindowScene, type DesktopWindowScene } from "./gpu_canvas/desktop_ui/desktop_window_scene";
 import type { GpuCanvasContextLike, GpuDeviceLike } from "./gpu_canvas/webgpu_types";
-import { CameraCapture } from "../role/camera_capture";
-import { DeviceOrientationSensor } from "../role/device_orientation";
 
 /** The narrow view this file needs of a real `Logger` (`role/logger.ts`)
  * -- `info`/`warn`/`error` only, the same "structural interface over
@@ -58,13 +55,13 @@ interface LoggerLike {
  * and no `@webgpu/types` dependency exists in this project -- the same
  * narrow local type shim that file already uses. `GpuDeviceLike`/
  * `GpuCanvasContextLike` themselves come from `gpu_canvas/webgpu_types.ts`
- * now, not a separate copy here: `createSceneRenderer()` below needs
+ * now, not a separate copy here: `createDesktopWindowScene()` below needs
  * the *full* shape (buffers, pipelines, textures), so this file's own
  * device/context are already that same full shape by the time they're
  * handed over -- keeping a second, narrower local copy just for this
  * file's own `queue.submit`/`createCommandEncoder` calls would only
  * invite the two to drift apart. `GpuAdapterLike`/`NavigatorGpuLike`
- * stay local -- `scene_renderer.ts` never touches an adapter or
+ * stay local -- the scene itself never touches an adapter or
  * `navigator` at all, only the device/context this file hands it once
  * setup already succeeded. */
 interface GpuAdapterLike {
@@ -88,57 +85,38 @@ function webgpuContextOf(canvas: HTMLCanvasElement): GpuCanvasContextLike | null
   return (canvas as HTMLCanvasElement & { getContext(id: "webgpu"): GpuCanvasContextLike | null }).getContext("webgpu");
 }
 
-/** The narrow view `start()` below actually needs of a `CameraCapture`
- * -- `scene_renderer.ts`'s own `CameraSource` plus the two lifecycle
- * methods this file itself calls. `createCamera`'s own default
- * (`() => new CameraCapture()`) is what every real caller gets; the
- * injection point exists so a test can substitute a fake one without
- * constructing a real `<video>` element and triggering jsdom's own
- * real inability to decode media (`camera_capture.test.ts`'s own
- * docstring on the same gap, one layer down). */
-interface CameraCaptureLike {
-  start(): Promise<void>;
-  stop(): void;
-  readonly element: unknown;
-  readonly isReady: boolean;
-  readonly width: number;
-  readonly height: number;
-}
-
-/** `CameraCaptureLike`'s own exact counterpart for a
- * `DeviceOrientationSensor` -- `createOrientationSensor`'s own default
- * (`() => new DeviceOrientationSensor()`) is what every real caller
- * gets; the injection point exists for the same reason `createCamera`'s
- * own does (this file's own docstring on it). */
-interface DeviceOrientationSensorLike {
-  start(): Promise<void>;
-  stop(): void;
-  readonly orientation: { alpha: number; beta: number; gamma: number } | undefined;
-}
-
 /** GpuCanvasView: a dedicated, self-contained WebGPU sandbox mounted
  * into the Portal's own "Canvas" component tab (portal_shell.ts's own
- * `ComponentId`/`COMPONENTS`) -- a live scene of rotating, bouncing
- * cubes and spheres (`gpu_canvas/scene_renderer.ts`'s own real
- * `SceneRenderer`), plus -- once a real camera becomes available -- a
- * live camera feed textured onto one more cube in that same scene
- * (`common/role/camera_capture.ts`'s own `CameraCapture`), pinned at
- * the centre and, once a real device-orientation reading becomes
- * available too (`common/role/device_orientation.ts`'s own
- * `DeviceOrientationSensor`), tilting to match the phone's own real
- * orientation instead of spinning on its own. Meant as the starting
- * harness for later experiments converting this UI to a GPU-rendered
- * framework, not a finished feature of its own. Real GPU work end to
- * end --
+ * `ComponentId`/`COMPONENTS`) -- a real, interactive "modern OS
+ * desktop window" UI (`gpu_canvas/desktop_ui/desktop_window_scene.ts`'s
+ * own `DesktopWindowScene`: a title bar with working traffic-light
+ * controls, a toolbar, a content area, and a status bar, every pixel
+ * of it -- frosted-glass panels, soft shadows, vector icons, and text
+ * alike -- drawn by WebGPU draw calls, never DOM/CSS/SVG), replacing
+ * this tab's own earlier rotating cube/sphere/camera scene (now
+ * unmounted, not deleted -- `gpu_canvas/scene_renderer.ts`,
+ * `role/camera_capture.ts` and `role/device_orientation.ts` all still
+ * exist as their own reusable modules, just no longer constructed
+ * here). Meant as the starting harness for later experiments
+ * converting this UI to a GPU-rendered framework, not a finished
+ * feature of its own. Real GPU work end to end --
  * `requestAdapter()` -> `requestDevice()` -> a configured
- * `GPUCanvasContext` -> one real, depth-tested command buffer
- * submitted every frame -- not a static placeholder canvas. This file
- * itself stays the thin mount/lifecycle/error-handling shell; every
- * actual GPU resource (pipeline, meshes, per-entity buffers) and the
- * per-frame scene update live in `gpu_canvas/scene_renderer.ts`
+ * `GPUCanvasContext` -> one real command buffer submitted every frame
+ * -- not a static placeholder canvas. This file itself stays the thin
+ * mount/lifecycle/error-handling/pointer-input shell; every actual GPU
+ * resource (pipelines, meshes, per-element buffers) and the per-frame
+ * scene update live in `gpu_canvas/desktop_ui/desktop_window_scene.ts`
  * instead, so this class's own job is still legible on its own --
- * device setup and teardown -- without the scene's own details mixed
- * into it.
+ * device setup, teardown, and forwarding pointer input -- without the
+ * scene's own details mixed into it. Pointer input itself is the one
+ * real piece of "minimal vanilla JS" this feature's own specification
+ * calls for (`pointermove`/`pointerdown`/`pointerup`/`pointerleave`
+ * listeners on the canvas below, converting CSS-pixel event
+ * coordinates into the real backing-store pixel space the scene's own
+ * layout is computed in) -- capturing input only, never drawing
+ * anything itself; every visible response (hover highlight, press
+ * feedback, the window's own focus styling) is still a WebGPU draw the
+ * scene makes on its own next `renderFrame()` call.
  *
  * Self-contained the same way `ConsoleView`/`ServiceStatusView` are
  * (their own docstrings), but unlike either, `mount()` can be called
@@ -156,21 +134,17 @@ interface DeviceOrientationSensorLike {
  *
  * `logger` (`role/logger.ts`'s own `Logger`, the same one every other
  * named Service already logs through) is where every real outcome
- * here actually goes -- WebGPU/adapter/context failures, and every
- * camera outcome (requesting access, becoming ready, or failing for
- * any reason). Earlier, camera failures only ever reached
- * `console.warn()`, invisible on a phone with no attached devtools;
- * this is the real bug a live test on an actual phone surfaced (this
- * class's own `start()` docstring on the texture bug that same test
- * also caught) -- every one of these now lands in the Portal's own
+ * here actually goes -- WebGPU/adapter/context failures. Earlier,
+ * failures like these only ever reached `console.warn()`, invisible on
+ * a phone with no attached devtools; this is the real bug a live test
+ * on an actual phone surfaced, back when this tab's own camera feature
+ * first shipped -- every one of these now lands in the Portal's own
  * visible Event Log instead, the same place a WordNet seed run's own
  * progress already shows up. */
 export class GpuCanvasView {
   private container: HTMLElement | undefined;
   private device: GpuDeviceLike | undefined;
-  private renderer: SceneRenderer | undefined;
-  private cameraCapture: CameraCaptureLike | undefined;
-  private orientationSensor: DeviceOrientationSensorLike | undefined;
+  private scene: DesktopWindowScene | undefined;
   private animationFrame: number | undefined;
   private resizeObserver: ResizeObserver | undefined;
   /** Bumped by every `mount()` call -- `start()`'s own guard against a
@@ -182,8 +156,18 @@ export class GpuCanvasView {
 
   constructor(
     private readonly logger: LoggerLike,
-    private readonly createCamera: () => CameraCaptureLike = () => new CameraCapture(),
-    private readonly createOrientationSensor: () => DeviceOrientationSensorLike = () => new DeviceOrientationSensor(),
+    // `createDesktopWindowScene`'s own real default -- every real
+    // caller gets the genuine scene. The injection point exists for
+    // the same reason `createCamera`/`createOrientationSensor` used to
+    // here: `createDesktopWindowScene()` bakes a real font atlas via an
+    // ordinary 2D canvas (`font_atlas.ts`'s own docstring on why jsdom,
+    // this project's own test environment, can never do that), so
+    // `gpu_canvas_view.test.ts`'s own tests substitute a fake scene
+    // entirely here -- this class's own job is mount/destroy/resize/
+    // pointer-forwarding, already fully exercised without ever
+    // constructing a real scene; `desktop_window_scene.test.ts` is
+    // where the scene's own real behaviour is actually tested.
+    private readonly createScene: (device: GpuDeviceLike, context: GpuCanvasContextLike, format: string, canvas: HTMLCanvasElement) => DesktopWindowScene = createDesktopWindowScene,
   ) {}
 
   mount(container: HTMLElement): void {
@@ -195,30 +179,19 @@ export class GpuCanvasView {
   }
 
   /** Tears down whatever this instance currently owns -- cancels the
-   * render loop, disconnects the resize observer, stops the real
-   * camera hardware (`CameraCapture.stop()`'s own docstring on why
-   * that's an actual, necessary step, not just dropping a reference),
-   * destroys every GPU resource `SceneRenderer.destroy()` owns
-   * (meshes, per-entity buffers, the depth texture, and the camera
-   * cube's own texture/buffers if one was ever attached), and destroys
-   * the real `GPUDevice` itself, if one was ever created (every
-   * early-exit path in `start()` below returns before `this.device` is
-   * ever set, so this is always safe to call even when setup never got
-   * that far). Camera first (releasing real hardware ahead of
-   * anything else is the more time-sensitive teardown -- a camera's
-   * own recording indicator staying lit a moment longer than it needs
-   * to is a real, visible user-facing wrongness, nothing else here
-   * is), then the renderer, then the device -- the device's own
-   * `destroy()` would eventually invalidate the renderer's own
-   * resources anyway, but tearing them down explicitly first is the
-   * same "don't rely on cascading teardown" call
-   * `SceneRenderer.destroy()`'s own docstring makes. The orientation
-   * sensor's own `stop()` has no real hardware to release (its own
-   * docstring), but is stopped alongside the camera regardless -- a
-   * torn-down session should leave no listener of its own attached to
-   * `window`. Called at the top of every `mount()` (this class's own
-   * docstring above) and safe to call repeatedly or when nothing is
-   * running. */
+   * render loop, disconnects the resize observer, destroys every GPU
+   * resource `DesktopWindowScene.destroy()` owns (every pipeline,
+   * buffer, and offscreen texture the scene built), and destroys the
+   * real `GPUDevice` itself, if one was ever created (every early-exit
+   * path in `start()` below returns before `this.device` is ever set,
+   * so this is always safe to call even when setup never got that
+   * far). The scene is torn down before the device -- the device's own
+   * `destroy()` would eventually invalidate the scene's own resources
+   * anyway, but tearing them down explicitly first is the same "don't
+   * rely on cascading teardown" discipline this file's own earlier
+   * device-leak bug (this class's own design-log history) was about.
+   * Called at the top of every `mount()` (this class's own docstring
+   * above) and safe to call repeatedly or when nothing is running. */
   destroy(): void {
     if (this.animationFrame !== undefined) {
       cancelAnimationFrame(this.animationFrame);
@@ -226,12 +199,8 @@ export class GpuCanvasView {
     }
     this.resizeObserver?.disconnect();
     this.resizeObserver = undefined;
-    this.cameraCapture?.stop();
-    this.cameraCapture = undefined;
-    this.orientationSensor?.stop();
-    this.orientationSensor = undefined;
-    this.renderer?.destroy();
-    this.renderer = undefined;
+    this.scene?.destroy();
+    this.scene = undefined;
     this.device?.destroy();
     this.device = undefined;
   }
@@ -282,71 +251,55 @@ export class GpuCanvasView {
       this.resizeObserver.observe(canvas);
       resize();
 
-      // Pipeline, meshes, entities, and the depth texture are all
-      // built once here, not per frame -- `SceneRenderer.renderFrame()`
-      // below only ever updates per-entity uniform data and submits
-      // one command buffer; `gpu_canvas/scene_renderer.ts`'s own
-      // docstring on exactly what it owns and how `destroy()` tears it
-      // back down.
-      this.renderer = createSceneRenderer(device, context, gpu.getPreferredCanvasFormat(), canvas);
-      const renderer = this.renderer;
+      // Every pipeline, the font atlas, and the offscreen blur/shadow
+      // textures are all built once here, not per frame --
+      // `DesktopWindowScene.renderFrame()` below only ever updates
+      // uniform/vertex data and submits one command buffer per frame;
+      // `desktop_ui/desktop_window_scene.ts`'s own docstring on exactly
+      // what it owns and how `destroy()` tears it back down.
+      this.scene = this.createScene(device, context, gpu.getPreferredCanvasFormat(), canvas);
+      const scene = this.scene;
 
-      // Started here, but never awaited before the scene itself starts
-      // rendering below -- a camera permission prompt can take an
-      // arbitrary amount of time (or never resolve, if the user simply
-      // never answers it), and whether a camera is ever available at
-      // all is genuinely optional: the cube/sphere scene has to keep
-      // running regardless. `CameraCapture.start()`'s own docstring on
-      // why every failure here (no hardware, denied permission, an
-      // unsupported browser) is an entirely ordinary outcome, not a
-      // reason to blank the whole Canvas tab the way an adapter/device
-      // failure does -- logged (via `this.logger`, the Portal's own
-      // visible Event Log, not `console.warn()` -- this class's own
-      // docstring on why that matters), not surfaced in the pane
-      // itself, since there is nowhere honest to put a persistent
-      // "camera denied" notice without implying the rest of the
-      // already-working scene is broken too.
-      this.logger.info("Requesting camera access…");
-      const camera = this.createCamera();
-      this.cameraCapture = camera;
-      camera
-        .start()
-        .then(() => {
-          if (token !== this.sessionToken) return;
-          renderer.attachCamera(camera);
-          this.logger.info(`Camera ready (${camera.width}x${camera.height}) -- textured onto one cube in the scene.`);
-        })
-        .catch((error: unknown) => {
-          if (token !== this.sessionToken) return;
-          this.logger.warn(`Camera unavailable: ${error instanceof Error ? error.message : String(error)}`);
-        });
-
-      // Independent of the camera above -- a separate real permission
-      // (iOS Safari's own `requestPermission()`, `device_orientation.ts`'s
-      // own docstring) that resolves or fails on its own schedule, with
-      // its own entirely ordinary failure modes (unsupported browser,
-      // denied permission). Until (and unless) it ever resolves, the
-      // camera cube keeps its own existing auto-rotation fallback
-      // (`scene_renderer.ts`'s own `renderFrame()`); there is nothing
-      // here for this to block on.
-      this.logger.info("Requesting device orientation access…");
-      const orientationSensor = this.createOrientationSensor();
-      this.orientationSensor = orientationSensor;
-      orientationSensor
-        .start()
-        .then(() => {
-          if (token !== this.sessionToken) return;
-          renderer.attachOrientation(orientationSensor);
-          this.logger.info("Device orientation ready -- the camera cube now tilts to match the phone's own real orientation.");
-        })
-        .catch((error: unknown) => {
-          if (token !== this.sessionToken) return;
-          this.logger.warn(`Device orientation unavailable: ${error instanceof Error ? error.message : String(error)}`);
-        });
+      // Converts a pointer event's own CSS-pixel position (relative to
+      // the viewport, `event.clientX`/`clientY`) into the real
+      // backing-store pixel space `resize()` above already sized
+      // `canvas.width`/`canvas.height` to -- the same coordinate frame
+      // `layout.ts`'s own `computeDesktopWindowLayout()` lays the whole
+      // scene out in, so a hit-test against it has to be in that frame
+      // too, not raw CSS pixels (the two only match 1:1 when
+      // `devicePixelRatio` is exactly 1). `token`-guarded the same way
+      // `frame()` below is -- a pointer event arriving for a now-
+      // superseded session (a later `mount()` already took over) must
+      // never reach a scene already mid-`destroy()`.
+      const toCanvasPixels = (event: PointerEvent): readonly [number, number] => {
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / Math.max(1, rect.width);
+        const scaleY = canvas.height / Math.max(1, rect.height);
+        return [(event.clientX - rect.left) * scaleX, (event.clientY - rect.top) * scaleY];
+      };
+      canvas.addEventListener("pointermove", (event) => {
+        if (token !== this.sessionToken) return;
+        const [x, y] = toCanvasPixels(event);
+        scene.handlePointerMove(x, y);
+      });
+      canvas.addEventListener("pointerdown", (event) => {
+        if (token !== this.sessionToken) return;
+        const [x, y] = toCanvasPixels(event);
+        scene.handlePointerDown(x, y);
+      });
+      canvas.addEventListener("pointerup", (event) => {
+        if (token !== this.sessionToken) return;
+        const [x, y] = toCanvasPixels(event);
+        scene.handlePointerUp(x, y);
+      });
+      canvas.addEventListener("pointerleave", () => {
+        if (token !== this.sessionToken) return;
+        scene.handlePointerLeave();
+      });
 
       const frame = () => {
         if (token !== this.sessionToken) return; // destroy()/a later mount() already stopped this session
-        renderer.renderFrame(performance.now());
+        scene.renderFrame(performance.now());
         this.animationFrame = requestAnimationFrame(frame);
       };
       this.animationFrame = requestAnimationFrame(frame);

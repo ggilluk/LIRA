@@ -1409,3 +1409,202 @@ No behavioural change at all -- a pure file-organisation move.
 `npx tsc -b --force` clean; `npx vitest run --no-file-parallelism`
 436/436, including both moved test files running unchanged from their
 new location.
+
+## Canvas: a WebGPU-drawn "modern OS desktop window" UI, replacing the cube/sphere scene
+
+Requested as a new spec for the Canvas tab -- a modern desktop window
+(title bar with traffic-light controls, a toolbar, a content area, a
+status bar; translucent frosted panels, soft shadows, rounded corners,
+system-font text, crisp icons; basic focus/hover/press interactive
+state) -- with one explicit, load-bearing constraint: every visible
+pixel has to be a real WebGPU draw, not DOM/CSS/SVG laid over the
+canvas. Confirmed with the user before building anything: this
+replaces the Canvas tab's own earlier rotating cube/sphere/camera
+scene outright, rather than adding a second, togglable scene
+alongside it -- `gpu_canvas/scene_renderer.ts`, `role/camera_capture.ts`,
+and `role/device_orientation.ts` all still exist, fully tested, as
+reusable modules; `gpu_canvas_view.ts` simply no longer constructs any
+of them.
+
+A new `gpu_canvas/desktop_ui/` folder holds the whole thing, seven
+files deep, each a self-contained, independently testable library
+module in its own right (the spec's own "modular like a library for
+reuse" requirement) -- not one monolithic renderer:
+
+**`layout.ts`** -- the one GPU-free file in the folder. `roundedRectSdf()`
+is the real, standard Inigo Quilez rounded-box signed distance field
+(`sdRoundBox`) -- transcribed by hand into every WGSL shader below that
+draws a rounded shape, since WGSL has no mechanism to literally share a
+TypeScript implementation; this copy exists so the one true formula
+every shader has to agree with is itself unit-tested (identity at the
+centre, zero on the flat edge, an exact circle once `radius ===
+halfWidth === halfHeight`). `computeDesktopWindowLayout()` derives
+every band's own rect (title bar, toolbar, content, status bar), the
+three control-dot rects, and the four toolbar-button rects, fresh from
+the real canvas size every call -- the same "never cache a layout
+against a size that can change under you" discipline
+`scene_renderer.ts`'s own `computeBounds()` already established, just
+for a 2D window frame instead of a 3D camera frustum. `hitTestRects()`
+is plain axis-aligned containment, not the true rounded shape -- a
+button's own hover/press feel only has to be right under a real
+pointer; the few pixels a rounded corner shaves off aren't worth
+threading a radius through every hit-test call site for.
+
+**`panel_pipeline.ts`** -- one shared shader, one shared unit-quad mesh,
+three draw modes picked per instance (`PANEL_MODE_SOLID`/`_GLASS`/
+`_SHADOW`) rather than three separate pipelines: a toolbar button's
+hover background and the window's own frosted pane are the same
+rounded-rect SDF and the same pixel-space orthographic projection,
+differing only in whether the fragment shader samples a blurred
+backdrop texture or uses a flat fill colour; a shadow instance skips
+fill/border/glass entirely and emits a wide, analytic SDF-based soft
+falloff instead (`shadowSoftness`) -- a legitimate stand-in for
+blurring a shadow's own edge, cheaper than a real blur pass over a
+flat colour that would look identical anyway. A circle (every traffic
+light dot, every icon ring/dot) is the *same* `PanelInstance` with
+`cornerRadius === halfWidth === halfHeight` -- `layout.ts`'s own
+degeneracy, not a second shape kind.
+
+**`backdrop.ts`** -- the real mechanism behind this UI's own
+`backdrop-filter: blur()` look, not a fabricated approximation: a
+deterministic, parametrised procedural wallpaper (an analytic gradient
+plus two slow `exp()` highlights driven by `time` alone -- real colour
+computed fresh every frame, not a loaded or embedded image, this
+feature's own "no external asset" constraint) rendered into an
+offscreen texture, then a genuine two-pass separable Gaussian blur (a
+real, standard 9-tap kernel, horizontal pass into an intermediate
+texture, vertical pass into the final one) -- both passes draw one
+full-screen triangle each via the standard buffer-free technique
+(`@builtin(vertex_index)` alone, no vertex/index buffer at all, the one
+place in this folder with no per-instance geometry varying within a
+pass), a new `webgpu_types.ts`-level addition (`draw(vertexCount)`
+alongside the existing `drawIndexed()`). Rendered at half the canvas's
+own resolution, not full size -- a real compounding reason, not just
+cheaper: a lower source resolution *is* a wider effective blur radius
+for the same fixed kernel, and the glass panels' own linear-filtered
+upsample softens it further, both pushing toward a better frosted-glass
+look, not away from it. `panel_pipeline.ts`'s own `PANEL_MODE_GLASS`
+only ever samples the one final blurred texture this produces.
+
+**`icons.ts`** -- every toolbar/control glyph (close, minimize,
+maximize, back, search, settings, info) as GPU vector primitives
+(capsule-SDF line segments -- Inigo Quilez's own `sdCapsule`, same
+"transcribed, not derived" citation -- plus `panel_pipeline.ts`'s own
+circles), not an embedded SVG path or a loaded bitmap -- resolution-
+independent at any size the same way a real SVG icon would be,
+satisfying the spec's own "crisp inline SVG icons" in spirit without
+the asset this feature's own constraints rule out. Each icon is a
+short, declarative primitive list in a normalised `[-1,1]` icon-local
+box, instantiated into real pixel-space instances at draw time
+(`instantiateIconLines()`/`instantiateIconCircles()`), scaled by
+whatever real on-screen size the caller needs.
+
+**`font_atlas.ts`** -- the one real asset-preparation step in the whole
+folder, not itself a WebGPU draw: bakes a small bitmap glyph atlas for
+the spec's own "System UI font stack" (the conventional cross-platform
+fallback chain, not a single hand-picked webfont) via an ordinary 2D
+canvas, once, at setup. Baked noticeably larger than this UI ever
+displays text on screen -- a bitmap atlas only ever looks crisp sampled
+*down*, never up past its own baked resolution. The 2D context is an
+injectable dependency (`camera_capture.ts`'s own `VideoElementLike`
+pattern, one layer removed -- jsdom has no real canvas 2D rasteriser at
+all, no `canvas` npm package installed, the same real gap that file's
+own docstring already found for `<video>`), so `font_atlas.test.ts`
+can verify the real glyph-packing/grid-sizing math (cell size off the
+single widest measured glyph, UV rects, which character landed in
+which cell) against a fake, deterministic context instead of a real
+font rasteriser's own, machine-dependent measurements.
+
+**`text_pipeline.ts`** -- draws the baked atlas as plain, non-indexed
+textured quads (`pass.draw()`, not `drawIndexed()` -- glyph count
+varies string to string, so unlike every other shape in this folder,
+the *vertex data itself* varies per draw, not just a uniform
+transform), sampling only the atlas's own alpha channel (every glyph
+was baked as opaque white, so recolouring per draw -- a dim status
+line, a brighter title -- needs no second atlas baked in a different
+colour). The one real texture upload in this whole folder that isn't a
+live external image (`scene_renderer.ts`'s own camera frame) is CPU-side
+pixel data instead, hence `GpuQueueLike.writeTexture()`, a second new
+addition to `webgpu_types.ts` alongside `draw()`.
+
+**`desktop_window_scene.ts`** -- the library's own entry point,
+composing all of the above into one real, interactive window:
+`createDesktopWindowScene(device, context, format, canvas)` returns
+`renderFrame`/`handlePointerMove`/`handlePointerDown`/`handlePointerUp`/
+`handlePointerLeave`/`destroy`, the house shape every `SceneRenderer`-
+like object in this folder already takes. Three real design calls worth
+recording:
+
+- **One glass panel for the whole frame, not one per band.** A real
+  window's own title bar blends seamlessly into its body; separately
+  rounding each band's own four corners would instead show a visible
+  notch wherever two independently-rounded corners meet at what's
+  supposed to be a perfectly straight shared edge. One
+  `PANEL_MODE_GLASS` instance covers the entire window rect instead,
+  with thin hairline separator lines (`icons.ts`'s own line pipeline,
+  1px, low alpha) marking the toolbar/content and content/status-bar
+  boundaries -- the spec's own "subtle border hairlines" requirement,
+  met more literally this way than a second rounded rect ever would be.
+- **A fixed-size resource pool per shape kind (panels, lines), written
+  fresh every frame rather than allocated per frame.** How many
+  panels/lines are actually needed varies -- closing the window to its
+  reopen pill draws two panels and zero lines; the full open frame
+  draws up to fifteen and thirteen -- but WebGPU resource creation
+  itself stays at setup, the same discipline `scene_renderer.ts`'s own
+  fixed sixteen-entity loop already established, generalised here to a
+  *varying* count within a *fixed* pool (`renderFrame()` throws a real,
+  named error if a future icon ever needs more than the pool holds,
+  rather than silently overrunning it).
+- **Minimize/maximize/close are real, working toggles, not cosmetic
+  dead ends.** Minimize collapses the frame to just its own title bar;
+  maximize fills the canvas (zero margin); close hides the frame
+  entirely behind a small "Reopen Window" glass pill, centred on the
+  canvas, so clicking close is never a one-way trip. Focus is a plain
+  "was the last press inside the window's own rect" flag, dimming the
+  glass tint/border/text when false -- the same rule a real OS window
+  manager uses for active vs. inactive window styling, satisfying the
+  spec's own "basic window focus/active styling" directly. Every one
+  of these is driven by `gpu_canvas_view.ts`'s own new
+  `pointermove`/`pointerdown`/`pointerup`/`pointerleave` listeners on
+  the canvas -- the one real "minimal vanilla JS" piece the spec itself
+  calls for, converting a pointer event's CSS-pixel position into the
+  real backing-store pixel space `layout.ts`'s own rects are computed
+  in, and nothing more: every visible response (a hover highlight, a
+  press, the window's own focus dimming) is still a WebGPU draw the
+  scene makes on its own next `renderFrame()`, never a DOM/CSS effect.
+
+**`gpu_canvas_view.ts`** now constructs `createDesktopWindowScene()`
+instead of `createSceneRenderer()`; a new `createScene` constructor
+parameter (default `createDesktopWindowScene` itself) is the same
+injection-point shape the old `createCamera`/`createOrientationSensor`
+parameters used, for the same reason -- a *real* scene bakes a real
+font atlas against a real 2D canvas, which jsdom cannot provide, so
+`gpu_canvas_view.test.ts`'s own tests substitute a fake scene entirely;
+the scene's own real behaviour is `desktop_window_scene.test.ts`'s job.
+A real bug this session's own testing caught before it ever shipped:
+the first draft recreated the backdrop's own offscreen textures (and
+rebound every panel against them) on the *very first* `renderFrame()`
+call regardless of whether the canvas had actually been resized since
+setup, because the "last known backdrop size" sentinel started at `-1`
+instead of the real size setup had already built against -- a harmless
+but wasteful double allocation, caught by a resize-specific test
+expecting an exact texture count and fixed by seeding that sentinel
+from the real textures setup already created, not a magic placeholder.
+
+`npx tsc -b --force` clean; `npx vitest run --no-file-parallelism`
+489/489 -- 13 new test files across `desktop_ui/` (`layout.test.ts`,
+`panel_pipeline.test.ts`, `backdrop.test.ts`, `icons.test.ts`,
+`font_atlas.test.ts`, `text_pipeline.test.ts`,
+`desktop_window_scene.test.ts`, plus a shared `gpu_test_support.ts`
+fake-device harness every one of them imports rather than
+re-implementing) and a rewritten `gpu_canvas_view.test.ts` (pointer-
+forwarding/coordinate-conversion tests new; camera/orientation-logging
+tests removed along with the code they tested). This sandbox's own
+headless Chromium still has no real GPU adapter at all, so -- same as
+every other visual feature this whole Canvas tab has ever shipped --
+the actual on-screen result (the frosted glass, the shadows, the
+icons, the interactive feedback) could not be confirmed here with real
+pixels; live Playwright verification only reconfirmed the honest "no
+GPU adapter" fallback still renders correctly, with no regressions and
+no page errors. Seeing the real thing is, once again, for a real
+browser with a real adapter.

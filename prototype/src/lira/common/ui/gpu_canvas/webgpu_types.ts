@@ -67,6 +67,14 @@ export interface GpuRenderPassEncoderLike {
   setVertexBuffer(slot: number, buffer: GpuBufferLike): void;
   setIndexBuffer(buffer: GpuBufferLike, format: "uint16" | "uint32"): void;
   drawIndexed(indexCount: number): void;
+  // `desktop_ui/backdrop.ts`'s own wallpaper and blur passes draw a
+  // full-screen triangle with no vertex/index buffer at all (3
+  // positions synthesised in the vertex shader from `@builtin(vertex_index)`
+  // -- the standard, buffer-free full-screen-pass trick), hence a
+  // plain vertex-count `draw()` alongside `drawIndexed()` above, not a
+  // replacement for it: every other pipeline in this folder still
+  // draws real, buffer-backed geometry via `drawIndexed()`.
+  draw(vertexCount: number): void;
   end(): void;
 }
 
@@ -91,6 +99,14 @@ export interface GpuQueueLike {
   // `GPUImageCopyExternalImage`/`GPUImageCopyTexture`/`GPUExtent3D`
   // literal each time, never read back here.
   copyExternalImageToTexture(source: unknown, destination: unknown, copySize: unknown): void;
+  // `desktop_ui/font_atlas.ts`'s own baked glyph bitmap is the one
+  // other real pixel payload this whole gpu_canvas folder ever uploads
+  // (`desktop_ui/text_pipeline.ts`'s own call site) -- a plain CPU-side
+  // `Uint8ClampedArray` (the exact type `CanvasRenderingContext2D.getImageData()`
+  // itself returns), not a live external image source the way the
+  // camera cube's own frame is, so `writeTexture()` (a direct memory
+  // upload) is the correct call here, not `copyExternalImageToTexture()`.
+  writeTexture(destination: unknown, data: Uint8ClampedArray, dataLayout: unknown, size: unknown): void;
 }
 
 export interface GpuDeviceLike {
