@@ -33,7 +33,7 @@
  * @license MIT
  */
 import { describe, expect, it } from "vitest";
-import { computeDesktopWindowLayout, hitTestRects, rectCenter, rectContainsPoint, rectHalfExtent, roundedRectSdf, type Rect } from "./layout";
+import { clampWindowPosition, computeDesktopWindowLayout, hitTestRects, rectCenter, rectContainsPoint, rectHalfExtent, roundedRectSdf, type Rect } from "./layout";
 
 describe("roundedRectSdf", () => {
   it("is exactly -halfWidth at the centre of a square, radius 0", () => {
@@ -164,5 +164,39 @@ describe("computeDesktopWindowLayout", () => {
     const tall = computeDesktopWindowLayout(500, 1600);
     expect(wide.window.width).toBeGreaterThan(wide.window.height);
     expect(tall.window.height).toBeGreaterThan(tall.window.width);
+  });
+
+  it("places the window at an explicit position instead of centring it, when one is given -- the window's own size is unaffected", () => {
+    const centred = computeDesktopWindowLayout(1000, 700);
+    const positioned = computeDesktopWindowLayout(1000, 700, undefined, [37, 91]);
+    expect(positioned.window.x).toBe(37);
+    expect(positioned.window.y).toBe(91);
+    expect(positioned.window.width).toBe(centred.window.width);
+    expect(positioned.window.height).toBe(centred.window.height);
+    // Every band and control moves by the same offset as the window itself.
+    expect(positioned.titleBar.x).toBe(37);
+    expect(positioned.controlDots[0].rect.x - positioned.window.x).toBeCloseTo(centred.controlDots[0].rect.x - centred.window.x, 10);
+  });
+});
+
+describe("clampWindowPosition", () => {
+  it("leaves a position untouched when it's already fully reachable", () => {
+    expect(clampWindowPosition([100, 50], 400, 1000, 700)).toEqual([100, 50]);
+  });
+
+  it("never lets the top edge go above the desktop at all", () => {
+    expect(clampWindowPosition([100, -500], 400, 1000, 700)).toEqual([100, 0]);
+  });
+
+  it("still leaves at least the minimum draggable edge reachable on the left and right, however far the window is dragged", () => {
+    const [farLeftX] = clampWindowPosition([-10000, 50], 400, 1000, 700);
+    const [farRightX] = clampWindowPosition([10000, 50], 400, 1000, 700);
+    expect(farLeftX).toBeGreaterThan(-400); // most of a 400-wide window can go off-canvas left, but not all of it
+    expect(farRightX).toBeLessThan(1000); // and some of its own left edge always stays on-canvas on the right too
+  });
+
+  it("never pushes the bottom below 0, even on a canvas too short to need clamping there at all", () => {
+    const [, y] = clampWindowPosition([0, 50], 400, 1000, 10);
+    expect(y).toBeGreaterThanOrEqual(0);
   });
 });

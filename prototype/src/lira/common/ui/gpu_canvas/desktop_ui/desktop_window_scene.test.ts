@@ -69,14 +69,40 @@ function fakeAtlas(): FontAtlas {
  * just enough to click the real close/minimize/maximize dots by their
  * own real on-screen position, the same way a real pointer would --
  * not a private hook into the scene's own internal state. */
-function closeDotCenter(canvasWidth: number, canvasHeight: number): [number, number] {
-  const margin = 48;
-  const windowX = (canvasWidth - (canvasWidth - margin * 2)) / 2;
-  const windowY = (canvasHeight - (canvasHeight - margin * 2)) / 2;
+/** `margin` defaults to the real, undragged, non-maximized default
+ * (`DEFAULT_DESKTOP_WINDOW_LAYOUT_CONFIG.margin`) -- pass `0` for a
+ * *maximized* window instead (`renderFrame()`'s own margin-0 override
+ * while `state.maximized`), since every control's own real on-screen
+ * position shifts along with the window the moment it maximizes. */
+function windowOrigin(canvasWidth: number, canvasHeight: number, margin = 48): [number, number] {
+  return [(canvasWidth - (canvasWidth - margin * 2)) / 2, (canvasHeight - (canvasHeight - margin * 2)) / 2];
+}
+
+/** `index` 0/1/2 == close/minimize/maximize, `layout.ts`'s own
+ * documented left-to-right order. */
+function controlDotCenter(canvasWidth: number, canvasHeight: number, index: number, margin = 48): [number, number] {
+  const [windowX, windowY] = windowOrigin(canvasWidth, canvasHeight, margin);
   const dotSize = 13;
-  const dotX = windowX + 18 + dotSize / 2;
+  const dotX = windowX + 18 + index * (dotSize + 10) + dotSize / 2;
   const dotY = windowY + (44 - dotSize) / 2 + dotSize / 2;
   return [dotX, dotY];
+}
+
+function closeDotCenter(canvasWidth: number, canvasHeight: number, margin = 48): [number, number] {
+  return controlDotCenter(canvasWidth, canvasHeight, 0, margin);
+}
+
+function maximizeDotCenter(canvasWidth: number, canvasHeight: number, margin = 48): [number, number] {
+  return controlDotCenter(canvasWidth, canvasHeight, 2, margin);
+}
+
+/** A point on the title bar's own empty space -- well clear of every
+ * control dot (`layout.ts`'s own documented left-aligned dot
+ * placement), where a real press-and-drag gesture would actually grab
+ * the window, not trigger a control. */
+function titleBarDragPoint(canvasWidth: number, canvasHeight: number, margin = 48): [number, number] {
+  const [windowX, windowY] = windowOrigin(canvasWidth, canvasHeight, margin);
+  return [windowX + 300, windowY + 22];
 }
 
 describe("createDesktopWindowScene", () => {
@@ -174,5 +200,103 @@ describe("createDesktopWindowScene", () => {
     scene.destroy();
     for (const buffer of createdBuffers) expect(buffer.destroy).toHaveBeenCalledTimes(1);
     for (const texture of createdTextures) expect(texture.destroy).toHaveBeenCalledTimes(1);
+  });
+
+  describe("dragging the window by its own title bar -- the window is positionable on the desktop, not the desktop itself", () => {
+    it("moves the whole window by exactly the drag delta -- the close dot is only hit-testable at its own new position afterward", () => {
+      const { device, passes } = fakeDevice();
+      const canvas = fakeCanvas(1000, 700);
+      const scene = createDesktopWindowScene(device as never, fakeContext() as never, "bgra8unorm", canvas, fakeAtlas);
+      scene.renderFrame(0);
+
+      const [startX, startY] = titleBarDragPoint(1000, 700);
+      const [dx, dy] = [120, 40];
+      scene.handlePointerDown(startX, startY);
+      scene.handlePointerMove(startX + dx, startY + dy);
+      scene.handlePointerUp(startX + dx, startY + dy);
+      scene.renderFrame(16);
+
+      // The close dot's own ORIGINAL coordinates no longer hit anything -- the window really moved away from there.
+      const [origCx, origCy] = closeDotCenter(1000, 700);
+      scene.handlePointerDown(origCx, origCy);
+      scene.handlePointerUp(origCx, origCy);
+      scene.renderFrame(32);
+      expect(passes.at(-1)!.drawIndexed.mock.calls.length).toBeGreaterThan(5); // unaffected -- still the full open frame
+
+      // The close dot's own NEW coordinates (shifted by the same drag delta) do hit it.
+      scene.handlePointerDown(origCx + dx, origCy + dy);
+      scene.handlePointerUp(origCx + dx, origCy + dy);
+      scene.renderFrame(48);
+      expect(passes.at(-1)!.drawIndexed.mock.calls.length).toBe(2); // shadow + reopen pill only -- it really did close
+    });
+
+    it("never moves the window when the press lands on a control dot, even if the pointer then moves before release", () => {
+      const { device, passes } = fakeDevice();
+      const canvas = fakeCanvas(1000, 700);
+      const scene = createDesktopWindowScene(device as never, fakeContext() as never, "bgra8unorm", canvas, fakeAtlas);
+      scene.renderFrame(0);
+
+      const [cx, cy] = closeDotCenter(1000, 700);
+      scene.handlePointerDown(cx, cy);
+      scene.handlePointerMove(cx + 300, cy + 300); // would move the window if this were (wrongly) treated as a drag
+      scene.handlePointerUp(cx + 300, cy + 300); // released well away from the close dot -- not a valid click either
+      scene.renderFrame(16);
+
+      // The window is still exactly where it started -- the ORIGINAL close dot position still closes it.
+      scene.handlePointerDown(cx, cy);
+      scene.handlePointerUp(cx, cy);
+      scene.renderFrame(32);
+      expect(passes.at(-1)!.drawIndexed.mock.calls.length).toBe(2); // shadow + reopen pill only
+    });
+
+    it("has no effect while maximized -- un-maximizing afterward restores exactly the original, undragged position", () => {
+      const { device, passes } = fakeDevice();
+      const canvas = fakeCanvas(1000, 700);
+      const scene = createDesktopWindowScene(device as never, fakeContext() as never, "bgra8unorm", canvas, fakeAtlas);
+      scene.renderFrame(0);
+
+      const [maxCx, maxCy] = maximizeDotCenter(1000, 700);
+      scene.handlePointerDown(maxCx, maxCy);
+      scene.handlePointerUp(maxCx, maxCy);
+      scene.renderFrame(16); // now maximized
+
+      const [dragX, dragY] = titleBarDragPoint(1000, 700, 0); // margin 0 -- the title bar's own real position while maximized
+      scene.handlePointerDown(dragX, dragY);
+      scene.handlePointerMove(dragX + 400, dragY + 200);
+      scene.handlePointerUp(dragX + 400, dragY + 200);
+      scene.renderFrame(32); // attempted drag while maximized -- should be a no-op
+
+      const [maxCxMaximized, maxCyMaximized] = maximizeDotCenter(1000, 700, 0); // the maximize dot's own real position while maximized
+      scene.handlePointerDown(maxCxMaximized, maxCyMaximized);
+      scene.handlePointerUp(maxCxMaximized, maxCyMaximized);
+      scene.renderFrame(48); // un-maximize
+
+      // The close dot is back at exactly its own original, pre-maximize coordinates.
+      const [origCx, origCy] = closeDotCenter(1000, 700);
+      scene.handlePointerDown(origCx, origCy);
+      scene.handlePointerUp(origCx, origCy);
+      scene.renderFrame(64);
+      expect(passes.at(-1)!.drawIndexed.mock.calls.length).toBe(2); // shadow + reopen pill only -- the close dot really was still there
+    });
+
+    it("pointerleave ends an in-progress drag -- a later pointermove no longer moves the window", () => {
+      const { device } = fakeDevice();
+      const canvas = fakeCanvas(1000, 700);
+      const scene = createDesktopWindowScene(device as never, fakeContext() as never, "bgra8unorm", canvas, fakeAtlas);
+      scene.renderFrame(0);
+
+      const [startX, startY] = titleBarDragPoint(1000, 700);
+      scene.handlePointerDown(startX, startY);
+      scene.handlePointerMove(startX + 50, startY + 50);
+      scene.handlePointerLeave(); // ends the drag
+      scene.handlePointerMove(startX + 999, startY + 999); // should do nothing -- no drag in progress any more
+      scene.renderFrame(16);
+
+      // The close dot is still reachable near its own original position (shifted only by the first, real 50/50 move).
+      const [origCx, origCy] = closeDotCenter(1000, 700);
+      scene.handlePointerDown(origCx + 50, origCy + 50);
+      scene.handlePointerUp(origCx + 50, origCy + 50);
+      scene.renderFrame(32);
+    });
   });
 });

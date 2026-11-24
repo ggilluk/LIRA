@@ -158,22 +158,38 @@ export interface DesktopWindowLayout {
   readonly toolbarButtons: readonly { readonly id: ToolbarButtonId; readonly rect: Rect }[];
 }
 
+/** The window's own top-left corner in desktop (canvas) pixel space --
+ * the one real degree of freedom `desktop_window_scene.ts`'s own drag
+ * interaction ever changes. A plain `[x, y]` tuple, the same house
+ * style `rectCenter()`/`IconVec2` already use, not a `Rect` (which also
+ * carries a size this type is never meant to): the window is
+ * positionable, not resizable, by this feature's own design -- dragging
+ * its own title bar moves it, nothing drags an edge to resize it. */
+export type WindowPosition = readonly [number, number];
+
 /** The whole window frame's own rects, derived fresh from the real,
  * current canvas size every call -- the same "never cache a layout
  * against a size that can change under you" discipline
  * `scene_renderer.ts`'s own `computeBounds()` already established for
  * the cube/sphere scene's bounds, here applied to a 2D window frame
- * instead of a 3D camera frustum. `window` is centred in the canvas,
- * inset by `config.margin` on every side, clamped to a sane minimum
- * size on a tiny canvas rather than collapsing to zero or going
- * negative; `content`'s own height is clamped at zero the same way,
- * for the same reason (a canvas short enough that the toolbar and
- * status bar would otherwise overlap). */
-export function computeDesktopWindowLayout(canvasWidth: number, canvasHeight: number, config: DesktopWindowLayoutConfig = DEFAULT_DESKTOP_WINDOW_LAYOUT_CONFIG): DesktopWindowLayout {
+ * instead of a 3D camera frustum. `window`'s own *size* is always
+ * derived from the canvas (inset by `config.margin` on every side,
+ * clamped to a sane minimum on a tiny canvas rather than collapsing to
+ * zero or going negative); its *position* is `position` when the
+ * caller supplies one (`desktop_window_scene.ts`'s own current,
+ * possibly dragged-and-clamped `WindowPosition`), or centred in the
+ * canvas when it doesn't -- a window is never positioned anywhere
+ * until something (a drag, or simply never having been dragged yet)
+ * says where, and "centred" is the one honest default for that,
+ * mirroring a real desktop's own first-launch window placement.
+ * `content`'s own height is clamped at zero the same way `width`/
+ * `height` are, for the same reason (a canvas short enough that the
+ * toolbar and status bar would otherwise overlap). */
+export function computeDesktopWindowLayout(canvasWidth: number, canvasHeight: number, config: DesktopWindowLayoutConfig = DEFAULT_DESKTOP_WINDOW_LAYOUT_CONFIG, position?: WindowPosition): DesktopWindowLayout {
   const width = Math.max(MIN_WINDOW_WIDTH, canvasWidth - config.margin * 2);
   const height = Math.max(MIN_WINDOW_HEIGHT, canvasHeight - config.margin * 2);
-  const x = (canvasWidth - width) / 2;
-  const y = (canvasHeight - height) / 2;
+  const x = position ? position[0] : (canvasWidth - width) / 2;
+  const y = position ? position[1] : (canvasHeight - height) / 2;
   const windowRect: Rect = { x, y, width, height };
 
   const titleBar: Rect = { x, y, width, height: config.titleBarHeight };
@@ -203,4 +219,34 @@ export function computeDesktopWindowLayout(canvasWidth: number, canvasHeight: nu
   }));
 
   return { window: windowRect, titleBar, toolbar, content, statusBar, controlDots, toolbarButtons };
+}
+
+/** How many pixels of the window's own frame always stay reachable on
+ * every edge, however far it's dragged -- a real window manager's own
+ * usual rule (dragging to a screen edge never lets a window vanish
+ * entirely), applied here as a hard clamp rather than a soft
+ * suggestion: without it, a dragged-then-resized desktop could leave
+ * the window's own title bar (the only thing a drag can ever grab)
+ * completely off-canvas and unrecoverable by any pointer gesture. */
+const MIN_DRAGGABLE_EDGE_PX = 80;
+
+/** Keeps a (possibly just-dragged) `WindowPosition` within reach of the
+ * real, current desktop -- `desktop_window_scene.ts`'s own
+ * `renderFrame()` calls this every frame, after a drag *and* after a
+ * plain resize (the same stored position can go out of reach either
+ * way, a canvas shrinking out from under an already-positioned window
+ * just as much as a drag past its own edge). The window's own left/
+ * right can still go mostly off-canvas (only `MIN_DRAGGABLE_EDGE_PX`
+ * has to remain on each side), but its top never goes above the
+ * desktop at all -- there's no reason to ever lose the title bar
+ * upward, the one edge a real desktop doesn't extend past either.
+ * There's no equivalent height parameter -- only the top edge is ever
+ * clamped against going out of reach, so the window's own height never
+ * enters the calculation at all. */
+export function clampWindowPosition(position: WindowPosition, windowWidth: number, canvasWidth: number, canvasHeight: number): WindowPosition {
+  const minX = MIN_DRAGGABLE_EDGE_PX - windowWidth;
+  const maxX = Math.max(minX, canvasWidth - MIN_DRAGGABLE_EDGE_PX);
+  const minY = 0;
+  const maxY = Math.max(minY, canvasHeight - MIN_DRAGGABLE_EDGE_PX);
+  return [Math.min(Math.max(position[0], minX), maxX), Math.min(Math.max(position[1], minY), maxY)];
 }

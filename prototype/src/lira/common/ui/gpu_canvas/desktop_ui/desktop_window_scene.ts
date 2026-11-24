@@ -20,8 +20,9 @@
  * ├─────────────────┼────────────────────────────────────────────────────────────────────
  * │ Description     │ The library's own entry point: composes layout.ts/panel_pipeline.ts/
  * │                 │ backdrop.ts/icons.ts/text_pipeline.ts/font_atlas.ts into one real,
- * │                 │ interactive "modern OS window" scene, drawn entirely through WebGPU.
- * │                 │
+ * │                 │ interactive "modern OS window" scene, drawn entirely through WebGPU --
+ * │                 │ a window positioned (and draggable by its own title bar) on a
+ * │                 │ desktop, not the desktop itself.
  * ├─────────────────┼────────────────────────────────────────────────────────────────────
  * │ Change Log      │ [CHANGELOG.md](./CHANGELOG.md)
  * │ Issues Log      │ [ISSUES.md](./ISSUES.md)
@@ -35,7 +36,7 @@
 import { backdropResolution, createBackdropPipelines, createBackdropResources, createBackdropTextures, destroyBackdropResources, destroyBackdropTextures, drawBackdrop, writeBackdropUniforms } from "./backdrop";
 import { bakeFontAtlas, type FontAtlas } from "./font_atlas";
 import { CONTROL_DOT_ICONS, createLinePipeline, createLineResource, destroyLineResource, drawLine, instantiateIconCircles, instantiateIconLines, TOOLBAR_ICONS, writeLineUniforms, type LineInstance, type LineResource } from "./icons";
-import { computeDesktopWindowLayout, DEFAULT_DESKTOP_WINDOW_LAYOUT_CONFIG, hitTestRects, rectCenter, rectContainsPoint, type ControlDotId, type Rect } from "./layout";
+import { clampWindowPosition, computeDesktopWindowLayout, DEFAULT_DESKTOP_WINDOW_LAYOUT_CONFIG, hitTestRects, rectCenter, rectContainsPoint, type ControlDotId, type Rect, type WindowPosition } from "./layout";
 import {
   createPanelPipeline,
   createPanelQuadMesh,
@@ -74,7 +75,19 @@ const LINE_POOL_SIZE = 16;
  * since pointer events can arrive between frames; `focused` is a plain
  * "was the last press inside the window frame" flag (real OS windows
  * use the same rule), driving the dimmer/brighter glass tint and
- * border this file's own `buildFrameInstances()` applies. */
+ * border this file's own `renderFrame()` applies. `windowPosition` is
+ * the one real degree of freedom that makes the window a thing *on*
+ * the desktop rather than the desktop itself -- `undefined` only ever
+ * before the very first `renderFrame()` call (meaning "not yet placed
+ * anywhere, so centre it"); every frame after that writes its own
+ * resolved, clamped position straight back into this field, so "never
+ * dragged" and "dragged back to exactly the centre" end up
+ * indistinguishable, which is correct -- there's nothing more special
+ * about the initial centred position than any other. `dragging`/
+ * `dragOffset` exist only *during* a drag gesture, between a
+ * `handlePointerDown()` that started on the title bar's own empty
+ * space and the `handlePointerUp()`/`handlePointerLeave()` that ends
+ * it. */
 interface SceneState {
   focused: boolean;
   closed: boolean;
@@ -82,6 +95,9 @@ interface SceneState {
   maximized: boolean;
   hoveredId: string | undefined;
   pressedId: string | undefined;
+  windowPosition: WindowPosition | undefined;
+  dragging: boolean;
+  dragOffset: WindowPosition;
 }
 
 export interface DesktopWindowScene {
@@ -90,9 +106,10 @@ export interface DesktopWindowScene {
    * own pointer listener is the "minimal vanilla JS" this feature's own
    * specification calls for (capturing *input*, not drawing anything);
    * every visible response to it -- hover highlight, press feedback,
-   * the window's own focus styling -- is still a WebGPU draw this
-   * state change merely feeds into on the *next* `renderFrame()` call,
-   * never a DOM/CSS effect of its own. */
+   * the window's own focus styling, or the window actually moving
+   * while being dragged by its own title bar -- is still a WebGPU draw
+   * this state change merely feeds into on the *next* `renderFrame()`
+   * call, never a DOM/CSS effect of its own. */
   handlePointerMove(px: number, py: number): void;
   handlePointerDown(px: number, py: number): void;
   handlePointerUp(px: number, py: number): void;
@@ -137,8 +154,24 @@ export function createDesktopWindowScene(device: GpuDeviceLike, context: GpuCanv
   let backdropHeight = backdropTextures.height;
   let hitTargets: readonly { readonly id: string; readonly rect: Rect }[] = [];
   let focusTestRect: Rect = { x: 0, y: 0, width: 0, height: 0 };
+  // The one other rect handlePointerDown() below needs to know about
+  // outside hitTargets -- the title bar's own current rect, so a press
+  // that misses every control dot but still lands on the title bar's
+  // own empty space can be told apart from a press on the desktop
+  // behind the window entirely.
+  let lastTitleBar: Rect = { x: 0, y: 0, width: 0, height: 0 };
 
-  const state: SceneState = { focused: true, closed: false, minimized: false, maximized: false, hoveredId: undefined, pressedId: undefined };
+  const state: SceneState = {
+    focused: true,
+    closed: false,
+    minimized: false,
+    maximized: false,
+    hoveredId: undefined,
+    pressedId: undefined,
+    windowPosition: undefined,
+    dragging: false,
+    dragOffset: [0, 0],
+  };
 
   function resizeBackdropIfNeeded(width: number, height: number): void {
     const { width: targetWidth, height: targetHeight } = backdropResolution(width, height);
@@ -170,9 +203,30 @@ export function createDesktopWindowScene(device: GpuDeviceLike, context: GpuCanv
     writeBackdropUniforms(device, backdropResources, backdropTextures, nowMs / 1000);
 
     const layoutConfig = state.maximized ? { ...DEFAULT_DESKTOP_WINDOW_LAYOUT_CONFIG, margin: 0 } : DEFAULT_DESKTOP_WINDOW_LAYOUT_CONFIG;
-    const layout = computeDesktopWindowLayout(width, height, layoutConfig);
+    // Two layout passes, not one: the first (no explicit position) is
+    // only ever consulted for its own *size* and its own centred
+    // default -- the real desktop position actually used this frame is
+    // whatever `state.windowPosition` already holds (a previous frame's
+    // own resolved position, or a drag in progress), clamped back into
+    // reach of the current, real canvas size (`clampWindowPosition()`'s
+    // own docstring on why that has to happen on every resize too, not
+    // just every drag). Maximized skips both the stored position and
+    // the clamp entirely -- a maximized window is always exactly where
+    // `layoutConfig`'s own zero margin puts it, and dragging is
+    // disabled while maximized (`handlePointerDown()` below) precisely
+    // so there's never a "dragged-while-maximized" position to resolve
+    // here. The *resolved* position is written back into
+    // `state.windowPosition` every frame (even when nothing was
+    // dragged) so next frame starts from exactly where this one ended
+    // up, not from a stale pre-clamp value.
+    const unpositioned = computeDesktopWindowLayout(width, height, layoutConfig);
+    const defaultPosition: WindowPosition = [unpositioned.window.x, unpositioned.window.y];
+    const resolvedPosition: WindowPosition = state.maximized ? defaultPosition : clampWindowPosition(state.windowPosition ?? defaultPosition, unpositioned.window.width, width, height);
+    if (!state.maximized) state.windowPosition = resolvedPosition;
+    const layout = computeDesktopWindowLayout(width, height, layoutConfig, resolvedPosition);
     const effectiveWindowRect = state.minimized ? layout.titleBar : layout.window;
     focusTestRect = effectiveWindowRect;
+    lastTitleBar = layout.titleBar;
 
     const panelInstances: PanelInstance[] = [];
     const lineInstances: LineInstance[] = [];
@@ -326,15 +380,40 @@ export function createDesktopWindowScene(device: GpuDeviceLike, context: GpuCanv
   }
 
   function handlePointerMove(px: number, py: number): void {
+    if (state.dragging) {
+      // Unclamped here on purpose -- clampWindowPosition() runs once,
+      // centrally, at the top of the *next* renderFrame() call (the
+      // same place a plain resize is clamped too), rather than
+      // duplicating that same clamp here against whatever this frame's
+      // own canvas size happens to be.
+      state.windowPosition = [px - state.dragOffset[0], py - state.dragOffset[1]];
+      return; // dragging suppresses hover -- real window managers don't highlight whatever the cursor passes over mid-drag either
+    }
     state.hoveredId = hitTestRects(hitTargets, px, py);
   }
 
   function handlePointerDown(px: number, py: number): void {
-    state.pressedId = hitTestRects(hitTargets, px, py);
+    const hitId = hitTestRects(hitTargets, px, py);
+    state.pressedId = hitId;
     state.focused = state.closed || rectContainsPoint(focusTestRect, px, py);
+    // A drag starts only on the title bar's own empty space -- not on
+    // a control dot (hitId would already name one), not while closed
+    // (no title bar to grab) or maximized (nowhere to move it: the
+    // window already fills the desktop, same reasoning
+    // `renderFrame()`'s own docstring on skipping the clamp gives).
+    if (!state.closed && !state.maximized && hitId === undefined && rectContainsPoint(lastTitleBar, px, py)) {
+      state.dragging = true;
+      const [windowX, windowY] = state.windowPosition ?? [0, 0];
+      state.dragOffset = [px - windowX, py - windowY];
+    }
   }
 
   function handlePointerUp(px: number, py: number): void {
+    if (state.dragging) {
+      state.dragging = false;
+      state.pressedId = undefined;
+      return; // a drag is its own gesture -- never also a click on whatever happens to be under the pointer when it's released
+    }
     const releasedOverSamePressedTarget = state.pressedId !== undefined && state.pressedId === hitTestRects(hitTargets, px, py);
     if (releasedOverSamePressedTarget) {
       switch (state.pressedId) {
@@ -360,6 +439,7 @@ export function createDesktopWindowScene(device: GpuDeviceLike, context: GpuCanv
   function handlePointerLeave(): void {
     state.hoveredId = undefined;
     state.pressedId = undefined;
+    state.dragging = false; // the pointer leaving the canvas ends a drag in progress, rather than leaving it stuck active with no further move events to update it
   }
 
   function destroy(): void {

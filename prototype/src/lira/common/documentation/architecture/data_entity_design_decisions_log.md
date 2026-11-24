@@ -1608,3 +1608,90 @@ pixels; live Playwright verification only reconfirmed the honest "no
 GPU adapter" fallback still renders correctly, with no regressions and
 no page errors. Seeing the real thing is, once again, for a real
 browser with a real adapter.
+
+## Canvas: the window becomes positionable -- draggable by its own title bar, on a desktop that isn't itself the window
+
+Immediate follow-up feedback once the desktop window UI shipped: "the
+window is not the desktop and should be in a desktop and positionable
+in the desktop." Read as a real, specific gap, not a restatement of
+what already existed -- the wallpaper already gave the scene a desktop
+backdrop distinct from the window sitting on it, but the window itself
+had exactly one fixed position (centred, re-derived from the canvas
+size every frame) and no way to move it at all. A real desktop window
+is positionable by definition; this one wasn't.
+
+**`layout.ts`'s own `computeDesktopWindowLayout()` gained a fourth,
+optional parameter: `position?: WindowPosition`.** `WindowPosition` is
+a plain `[x, y]` tuple (the same house style `rectCenter()`/`IconVec2`
+already use) -- not a `Rect`, which also carries a size this type never
+needed: the window is positionable, not resizable, by this feature's
+own design. Omitting `position` keeps the exact old behaviour
+(centred in the canvas) -- every existing call site, and every
+existing test, kept working unchanged; only a caller that actually
+wants to place the window somewhere specific passes one. A new
+`clampWindowPosition()` keeps a (possibly just-dragged, or just
+resized-out-from-under) position within reach of the real, current
+desktop: `MIN_DRAGGABLE_EDGE_PX` (80px) always stays reachable on the
+left and right (a window can still be dragged mostly off-screen on
+either side, the same as a real window manager allows, just never
+*entirely* out of reach), while the top edge never goes above the
+desktop at all -- there's no reason a title bar, the only thing a drag
+can ever grab, should ever be lost upward.
+
+**`desktop_window_scene.ts`'s own `SceneState` gained `windowPosition`,
+`dragging`, and `dragOffset`.** `renderFrame()` now runs two layout
+passes, not one: an unpositioned pass purely for the window's own
+current *size* and its own centred default, then the real position
+actually used this frame -- `state.windowPosition` if one already
+exists (a previous frame's own resolved position, or a drag in
+progress), clamped back into reach of the *current* canvas size, since
+a plain resize can push an already-positioned window out of reach just
+as easily as a drag past its own edge can. The resolved position is
+written straight back into `state.windowPosition` every single frame,
+not just after a drag -- so "never dragged" and "dragged back to
+exactly centre" end up indistinguishable, which is correct: there was
+never anything more special about the initial centred position than
+any other reachable one.
+
+**The drag gesture itself is ordinary press-move-release on the title
+bar's own empty space, guarded the same way a real window manager
+guards it.** `handlePointerDown()` only starts a drag when the press
+hit *nothing* in `hitTargets` (no control dot, no toolbar button) and
+still landed inside the title bar's own current rect
+(`lastTitleBar`, a new piece of per-frame state alongside the existing
+`focusTestRect`) -- pressing a control dot, even one later dragged
+across before release, never starts a window drag, the same "a click
+needs to land where it started" discipline `handlePointerUp()`'s own
+`releasedOverSamePressedTarget` check already applied to every other
+control. Dragging is disabled outright while `state.maximized` (a
+maximized window already fills the whole desktop -- there's nowhere
+meaningful to drag it to, and skipping the clamp entirely while
+maximized, as `renderFrame()` already did, only stays correct if
+nothing can move the window out from under that assumption in the
+first place) and while `state.closed` (no title bar exists to grab at
+all). Un-maximizing restores the window to wherever it was dragged to
+*before* maximizing, for free -- maximizing never touches
+`state.windowPosition` at all, so the pre-maximize position simply sits
+there untouched for the whole time the window is maximized, the same
+way a real OS window manager remembers a window's own floating
+position across a maximize/restore cycle. `handlePointerMove()`
+suppresses hover updates entirely while dragging (a real window
+manager doesn't highlight whatever the cursor happens to pass over
+mid-drag either), and both `handlePointerUp()` and
+`handlePointerLeave()` end an in-progress drag -- the pointer leaving
+the canvas mid-drag stops it rather than leaving it stuck active with
+no further move events to ever update it again.
+
+`npx tsc -b --force` clean; `npx vitest run --no-file-parallelism`
+498/498 -- 4 new tests in `layout.test.ts` (explicit positioning
+leaves size/relative-offsets unchanged; `clampWindowPosition()`'s own
+no-op/top-edge/draggable-edge/degenerate-canvas cases) and 4 new in
+`desktop_window_scene.test.ts` (a real drag moves every hit-testable
+control by exactly the drag delta; pressing a control dot never starts
+a drag even if the pointer moves before release; dragging is a no-op
+while maximized and un-maximizing restores the exact pre-maximize
+position; `pointerleave` ends an in-progress drag). Live Playwright
+verification reconfirmed the honest "no GPU adapter" fallback still
+renders with no regressions and no page errors -- the drag gesture's
+own real, on-screen feel is, once again, for a real browser with a
+real pointer and a real adapter to confirm.
